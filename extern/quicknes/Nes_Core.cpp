@@ -213,7 +213,9 @@ void Nes_Core::enable_sram( bool b, bool read_only )
 
 // Unmapped memory
 
+#if !defined (NDEBUG) && 0
 static nes_addr_t last_unmapped_addr;
+#endif
 
 void Nes_Core::log_unmapped( nes_addr_t addr, int data )
 {
@@ -303,9 +305,9 @@ int Nes_Core::read_io( nes_addr_t addr )
 		// to do: to aid with recording, doesn't emulate transparent latch,
 		// so a game that held strobe at 1 and read $4016 or $4017 would not get
 		// the current A status as occurs on a NES
-		unsigned long result = joypad.joypad_latches [addr & 1];
+		int32_t result = joypad.joypad_latches [addr & 1];
 		if ( !(joypad.w4016 & 1) )
-			joypad.joypad_latches [addr & 1] = (result >> 1) | 0x80000000;
+			joypad.joypad_latches [addr & 1] = result >> 1; // ASR is intentional
 		return result & 1;
 	}
 	
@@ -348,7 +350,7 @@ void Nes_Core::reset( bool full_reset, bool erase_battery_ram )
 		
 		// SRAM
 		lrom_readable = 0;
-		sram_present = false;
+		sram_present = true;
 		enable_sram( false );
 		if ( !cart->has_battery_ram() || erase_battery_ram )
 			memset( impl->sram, 0xFF, impl->sram_size );

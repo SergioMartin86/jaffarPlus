@@ -47,11 +47,14 @@ Nes_Emu::Nes_Emu()
 	init_called = false;
 	set_palette_range( 0 );
 	memset( single_frame.palette, 0, sizeof single_frame.palette );
+	host_pixel_buff = new char[buffer_width * buffer_height()];
+	set_pixels(host_pixel_buff, buffer_width);
 }
 
 Nes_Emu::~Nes_Emu()
 {
 	delete default_sound_buf;
+	delete[] host_pixel_buff;
 }
 
 blargg_err_t Nes_Emu::init_()
@@ -121,10 +124,10 @@ void Nes_Emu::set_palette_range( int begin, int end )
 	require( host_palette_size >= palette_alignment );
 }
 
-blargg_err_t Nes_Emu::emulate_frame( int joypad1, int joypad2 )
+blargg_err_t Nes_Emu::emulate_frame( const uint32_t joypad1, const uint32_t joypad2 )
 {
-	emu.current_joypad [0] = (joypad1 |= ~0xFF);
-	emu.current_joypad [1] = (joypad2 |= ~0xFF);
+	emu.current_joypad [0] = joypad1;
+	emu.current_joypad [1] = joypad2;
 	
 	emu.ppu.host_pixels = NULL;
 	
@@ -492,3 +495,12 @@ Nes_Emu::rgb_t const Nes_Emu::nes_colors [color_table_size] =
 	{136,190,197},{184,184,184},{  0,  0,  0},{  0,  0,  0}
 };
 
+void Nes_Emu::get_regs(unsigned int *dest) const
+{
+	dest[0] = emu.r.a;
+	dest[1] = emu.r.x;
+	dest[2] = emu.r.y;
+	dest[3] = emu.r.sp;
+	dest[4] = emu.r.pc;
+	dest[5] = emu.r.status;
+}

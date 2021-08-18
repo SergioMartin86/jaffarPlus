@@ -140,8 +140,8 @@ void Train::run()
   if (_workerId == 0 && _winFrameFound == true)
   {
     printf("[Jaffar2] Win Frame Information:\n");
-    _blastem->loadState(_globalWinFrame.frameStateData);
-    _blastem->printState();
+    _quicknes->loadState(_globalWinFrame.frameStateData);
+    _quicknes->printState();
 
     printRuleStatus(_globalWinFrame);
 
@@ -460,7 +460,7 @@ void Train::computeFrames()
   // Creating thread-local storage for new frames
   std::vector<std::unique_ptr<Frame>> newFrames;
 
-//  _blastem->initialize(_romFilePath.c_str(), _saveFilePath.c_str(), true, true);
+//  _quicknes->initialize(_romFilePath.c_str(), _saveFilePath.c_str(), true, true);
 
   // Computing always the last frame while resizing the database to reduce memory footprint
   for (size_t baseFrameIdx = 0; baseFrameIdx < _currentFrameDB.size(); baseFrameIdx++)
@@ -469,8 +469,8 @@ void Train::computeFrames()
     const auto& baseFrame = _currentFrameDB[baseFrameIdx];
 
     // Getting possible moves for the current frame
-    auto gameState = _blastem->getGameState(baseFrame->frameStateData);
-    std::vector<uint8_t> possibleMoveIds = _blastem->getPossibleMoveIds(gameState);
+    auto gameState = _quicknes->getGameState(baseFrame->frameStateData);
+    std::vector<uint8_t> possibleMoveIds = _quicknes->getPossibleMoveIds(gameState);
 
     // If the restart flag is activated, then also try hitting Ctrl+A
     if (baseFrame->isRestart == true)
@@ -492,17 +492,17 @@ void Train::computeFrames()
       std::string move = _possibleMoves[moveId].c_str();
 
       // Loading frame state
-      _blastem->loadState(baseFrame->frameStateData);
+      _quicknes->loadState(baseFrame->frameStateData);
 
       // Perform the selected move
-      int error = _blastem->playFrame(move);
+      int error = _quicknes->playFrame(move);
       if (error == 1)
       {
-       _blastem->initialize(_romFilePath.c_str(), _saveFilePath.c_str(), true, true);
+       _quicknes->initialize(_romFilePath.c_str(), _saveFilePath.c_str(), true, true);
       }
 
       // Compute hash value
-      auto hash = _blastem->computeHash();
+      auto hash = _quicknes->computeHash();
 
       // Checking for the existence of the hash in the hash databases
       bool collisionDetected = _hashDatabase.contains(hash);
@@ -522,7 +522,7 @@ void Train::computeFrames()
       // If collision detected, discard this frame
       if (collisionDetected) continue;
 
-      // Creating new frame, mixing base frame information and the current blastem state
+      // Creating new frame, mixing base frame information and the current quicknes state
       auto newFrame = std::make_unique<Frame>();
       newFrame->rulesStatus = baseFrame->rulesStatus;
 
@@ -552,7 +552,7 @@ void Train::computeFrames()
       checkSpecialActions(*newFrame);
 
       // Storing the frame data
-      _blastem->saveState(newFrame->frameStateData);
+      _quicknes->saveState(newFrame->frameStateData);
 
       // Calculating current reward
       newFrame->reward = getFrameReward(*newFrame);
@@ -773,8 +773,8 @@ void Train::checkSpecialActions(const Frame &frame)
    // Checking if this rule makes guard disappear
    if (_rules[ruleId]->_isRemoveGuard == true)
    {
-    _blastem->_state.guardPositionY = 250;
-    _blastem->_state.guardPositionX = 250;
+    _quicknes->_state.guardPositionY = 250;
+    _quicknes->_state.guardPositionX = 250;
    }
   }
 }
@@ -870,13 +870,13 @@ void Train::printTrainStatus()
 
   printf("[Jaffar2] Best Frame Information:\n");
 
-  _blastem->loadState(_bestFrame.frameStateData);
-  _blastem->printState();
+  _quicknes->loadState(_bestFrame.frameStateData);
+  _quicknes->printState();
 
   printRuleStatus(_bestFrame);
 
   // Getting kid room
-  int kidCurrentRoom = _blastem->_state.kidRoom;
+  int kidCurrentRoom = _quicknes->_state.kidRoom;
 
   // Getting magnet values for the kid
   auto kidMagnet = getKidMagnetValues(_bestFrame, kidCurrentRoom);
@@ -885,7 +885,7 @@ void Train::printTrainStatus()
   printf("[Jaffar2]  + Kid Vertical Magnet Intensity: %.1f\n", kidMagnet.intensityY);
 
   // Getting guard room
-  int guardCurrentRoom = _blastem->_state.guardRoom;
+  int guardCurrentRoom = _quicknes->_state.guardRoom;
 
   // Getting magnet values for the guard
   auto guardMagnet = getGuardMagnetValues(_bestFrame, guardCurrentRoom);
@@ -973,44 +973,44 @@ float Train::getFrameReward(const Frame &frame)
   float reward = getRuleRewards(frame);
 
   // Getting kid room
-  int kidCurrentRoom = _blastem->_state.kidRoom;
+  int kidCurrentRoom = _quicknes->_state.kidRoom;
 
   // Getting magnet values for the kid
   auto kidMagnet = getKidMagnetValues(frame, kidCurrentRoom);
 
   // Getting kid's current frame
-  const auto curKidFrame = _blastem->_state.kidFrame;
+  const auto curKidFrame = _quicknes->_state.kidFrame;
 
   // Evaluating kidMagnet's reward on the X axis
-  const float kidDiffX = std::abs(_blastem->_state.kidPositionX - kidMagnet.positionX);
+  const float kidDiffX = std::abs(_quicknes->_state.kidPositionX - kidMagnet.positionX);
   reward += (float) kidMagnet.intensityX * (512.0f - kidDiffX);
 
   // For positive Y axis kidMagnet, rewarding climbing frames
   if ((float) kidMagnet.intensityY > 0.0f)
-    reward += (float) kidMagnet.intensityY * (512.0f - _blastem->_state.kidPositionY);
+    reward += (float) kidMagnet.intensityY * (512.0f - _quicknes->_state.kidPositionY);
 
   // For negative Y axis kidMagnet, rewarding falling/climbing down frames
   if ((float) kidMagnet.intensityY < 0.0f)
-    reward += (float) -1.0f * kidMagnet.intensityY * (_blastem->_state.kidPositionY);
+    reward += (float) -1.0f * kidMagnet.intensityY * (_quicknes->_state.kidPositionY);
 
   // Getting guard room
-  int guardCurrentRoom = _blastem->_state.guardRoom;
+  int guardCurrentRoom = _quicknes->_state.guardRoom;
 
   // Getting magnet values for the guard
   auto guardMagnet = getGuardMagnetValues(frame, guardCurrentRoom);
 
   // Getting guard's current frame
-  const auto curGuardFrame = _blastem->_state.guardFrame;
+  const auto curGuardFrame = _quicknes->_state.guardFrame;
 
   // Evaluating guardMagnet's reward on the X axis
-  const float guardDiffX = std::abs(_blastem->_state.guardPositionX - guardMagnet.positionX);
+  const float guardDiffX = std::abs(_quicknes->_state.guardPositionX - guardMagnet.positionX);
   reward += (float) guardMagnet.intensityX * (512.0f - guardDiffX);
 
   // For positive Y axis guardMagnet
   if ((float) guardMagnet.intensityY > 0.0f)
   {
    // Adding absolute reward for Y position
-   reward += (float) guardMagnet.intensityY * (512.0f - _blastem->_state.guardPositionY);
+   reward += (float) guardMagnet.intensityY * (512.0f - _quicknes->_state.guardPositionY);
   }
 
   // For negative Y axis guardMagnet, rewarding falling/climbing down frames
@@ -1023,7 +1023,7 @@ float Train::getFrameReward(const Frame &frame)
     if (curGuardFrame == 106) reward += -2.0f + (float) guardMagnet.intensityY;
 
     // Adding absolute reward for Y position
-    reward += (float) -1.0f * guardMagnet.intensityY * (_blastem->_state.guardPositionY);
+    reward += (float) -1.0f * guardMagnet.intensityY * (_quicknes->_state.guardPositionY);
   }
 
   // Returning reward
@@ -1100,7 +1100,7 @@ Train::Train(int argc, char *argv[])
     .required();
 
   program.add_argument("--savFile")
-    .help("Specifies the path to the blastem savefile (.state) from which to start.")
+    .help("Specifies the path to the quicknes savefile (.state) from which to start.")
     .default_value(std::string("quicksave.sav"))
     .required();
 
@@ -1182,13 +1182,13 @@ Train::Train(int argc, char *argv[])
   }
 
   // Creating Blastem Instance
-  _blastem = new blastemInstance;
-  _blastem->initialize(_romFilePath.c_str(), _saveFilePath.c_str(), true, true);
+  _quicknes = new quicknesInstance;
+  _quicknes->initialize(_romFilePath.c_str(), _saveFilePath.c_str(), true, true);
 
    // Adding rules
    for (size_t scriptId = 0; scriptId < scriptFilesJs.size(); scriptId++)
     for (size_t ruleId = 0; ruleId < scriptFilesJs[scriptId]["Rules"].size(); ruleId++)
-     _rules.push_back(new Rule(scriptFilesJs[scriptId]["Rules"][ruleId], _blastem));
+     _rules.push_back(new Rule(scriptFilesJs[scriptId]["Rules"][ruleId], _quicknes));
 
    // Setting global rule count
    _ruleCount = _rules.size();
@@ -1269,10 +1269,10 @@ Train::Train(int argc, char *argv[])
   if (_workerId == 0)
   {
     // Computing initial hash
-    const auto hash = _blastem->computeHash();
+    const auto hash = _quicknes->computeHash();
 
     auto initialFrame = std::make_unique<Frame>();
-    _blastem->saveState(initialFrame->frameStateData);
+    _quicknes->saveState(initialFrame->frameStateData);
     initialFrame->rulesStatus = rulesStatus;
 
     // Evaluating Rules on initial frame

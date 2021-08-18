@@ -1,64 +1,65 @@
-project('jaffar2', 'c', 'cpp',
+project('jaffarNES','cpp',
   version: '1.0.0',
   license: 'GPL-3.0-only',
   default_options : ['cpp_std=c++17', 'default_library=static', 'buildtype=debugoptimized'],
 )
 
-cc = meson.get_compiler('c')
 cxx = meson.get_compiler('cpp')
 
 inc = include_directories([
  'extern/libco',
- 'extern/blastem',
+ 'extern/quicknes',
+ 'extern/quicknes/fex',
  'extern/metrohash64',
  'extern/argparse',
  'extern/json/single_include'
   ])
 
 jaffar2Files = [
-  'source/blastemInstance.cc',
+  'source/quicknesInstance.cc',
   'source/utils.cc',
   'source/frame.cc',
   'source/rule.cc',
   'extern/metrohash64/metrohash64.cc'
 ]
 
-blastemFiles = [
-  'extern/libco/libco.c',
-  'extern/blastem/blastem.c',
-  'extern/blastem/system.c',
-  'extern/blastem/genesis.c',
-  'extern/blastem/vdp.c',
-  'extern/blastem/controller_info.c',
-  'extern/blastem/render_sdl.c',
-  'extern/blastem/io.c',
-  'extern/blastem/romdb.c',
-  'extern/blastem/i2c.c',
-  'extern/blastem/nor.c',
-  'extern/blastem/sega_mapper.c',
-  'extern/blastem/serialize.c',
-  'extern/blastem/config.c',
-  'extern/blastem/tern.c',
-  'extern/blastem/util.c',
-  'extern/blastem/jaffarInject.c',
-  'extern/blastem/paths.c',
-  'extern/blastem/gst.c',
-  'extern/blastem/68kinst.c',
-  'extern/blastem/m68k_core.c',
-  'extern/blastem/m68k_core_x86.c',
-  'extern/blastem/gen.c',
-  'extern/blastem/backend.c',
-  'extern/blastem/mem.c',
-  'extern/blastem/arena.c',
-  'extern/blastem/gen_x86.c',
-  'extern/blastem/backend_x86.c',
-  'extern/blastem/ym2612.c',
-  'extern/blastem/psg.c',
-  'extern/blastem/vgm.c',
-  'extern/blastem/render_audio.c',
-  'extern/blastem/bindings.c',
-  'extern/blastem/z80inst.c',
-  'extern/blastem/z80_to_x86.c',
+quicknesFiles = [
+  'extern/quicknes/fex/blargg_common.cpp',
+  'extern/quicknes/fex/blargg_errors.cpp',
+  'extern/quicknes/fex/Data_Reader.cpp',
+  'extern/quicknes/abstract_file.cpp',
+  'extern/quicknes/apu_state.cpp',
+  'extern/quicknes/Blip_Buffer.cpp',
+  'extern/quicknes/Effects_Buffer.cpp',
+  'extern/quicknes/Mapper_Fme7.cpp',
+  'extern/quicknes/Mapper_Mmc5.cpp',
+  'extern/quicknes/Mapper_Namco106.cpp',
+  'extern/quicknes/Mapper_Vrc6.cpp',
+  'extern/quicknes/misc_mappers.cpp',
+  'extern/quicknes/Mmc24.cpp',
+  'extern/quicknes/Multi_Buffer.cpp',
+  'extern/quicknes/Nes_Apu.cpp',
+  'extern/quicknes/Nes_Buffer.cpp',
+  'extern/quicknes/Nes_Cart.cpp',
+  'extern/quicknes/Nes_Core.cpp',
+  'extern/quicknes/Nes_Cpu.cpp',
+  'extern/quicknes/nes_data.cpp',
+  'extern/quicknes/Nes_Effects_Buffer.cpp',
+  'extern/quicknes/Nes_Emu.cpp',
+  'extern/quicknes/Nes_File.cpp',
+  'extern/quicknes/Nes_Fme7_Apu.cpp',
+  'extern/quicknes/Nes_Mapper.cpp',
+  'extern/quicknes/nes_mappers.cpp',
+  'extern/quicknes/Nes_Mmc1.cpp',
+  'extern/quicknes/Nes_Mmc3.cpp',
+  'extern/quicknes/Nes_Namco_Apu.cpp',
+  'extern/quicknes/Nes_Oscs.cpp',
+  'extern/quicknes/Nes_Ppu.cpp',
+  'extern/quicknes/Nes_Ppu_Impl.cpp',
+  'extern/quicknes/Nes_Ppu_Rendering.cpp',
+  'extern/quicknes/Nes_State.cpp',
+  'extern/quicknes/nes_util.cpp',
+  'extern/quicknes/Nes_Vrc6_Apu.cpp'
 ]
 
 default_library='static'
@@ -66,10 +67,6 @@ abs_base = subproject('abseil').get_variable('absl_base_dep')
 abs_cont = subproject('abseil').get_variable('absl_container_dep')
 default_library='shared'
 
-sdl2_dep = dependency('sdl2', required: true)
-sdl2_image_dep = dependency('sdl2_image', required: true)
-glew_dep = dependency('glew', required: true) 
- 
 mpi_dep = dependency('mpi', language: 'cpp', required: false)  
 if mpi_dep.found() == false
  mpi_dep = dependency('mpich', required: false)
@@ -80,32 +77,15 @@ boost_dep = dependency('boost')
 deps = [
   mpi_dep,
   boost_dep,
-  sdl2_dep,
-  sdl2_image_dep,
   abs_base,
   abs_cont
 ]
 
-blastemLib = shared_library('blastem',
-  blastemFiles,
-  c_args: [   
-  '-flto',
-  '-I/usr/include/libdrm',
-  '-std=gnu99',
-  '-Wreturn-type',
-  '-Werror=return-type',
-  '-Werror=implicit-function-declaration',
-  '-Wno-unused-value',
-  '-Wpointer-arith',
-  '-Werror=pointer-arith',
-  '-Wno-unused-function',
-  '-DHAS_PROC',
-  '-DHAVE_UNISTD_H',
-  '-DX86_64',
-  '-m64'
-  ],
+quicknesLib = shared_library('quicknes',
+  quicknesFiles,
+  cpp_args: [ '-Wfatal-errors', '-DDISABLE_AUTO_FILE', '-D__LIBRETRO__', '-DNDEBUG', '-Wno-multichar', '-fno-exceptions', '-fomit-frame-pointer', '-flto' ],
   include_directories: inc,
-  dependencies : [ sdl2_dep, sdl2_image_dep, glew_dep ],
+  dependencies : [ boost_dep ],
   link_args: [ '-lm' ]
   )
     
@@ -114,7 +94,7 @@ executable('jaffar2-test',
   jaffar2Files,
   dependencies: deps,
   include_directories: inc,
-  link_with: [ blastemLib ],
+  link_with: [ quicknesLib ],
   link_args: [ '-ldl', '-lncurses' ],
   cpp_args: [ '-Wfatal-errors', '-fpermissive' ]
   )
@@ -124,7 +104,7 @@ executable('jaffar2-train',
   jaffar2Files,
   dependencies: deps,
   include_directories: inc,
-  link_with: [ blastemLib ],
+  link_with: [ quicknesLib ],
   link_args: [ '-ldl', '-lncurses' ],
   cpp_args: [ '-Wfatal-errors', '-fpermissive' ]
   )
@@ -134,7 +114,7 @@ executable('jaffar2-play',
   jaffar2Files,
   dependencies: deps,
   include_directories: inc,
-  link_with: [ blastemLib ],
+  link_with: [ quicknesLib ],
   link_args: [ '-ldl', '-lncurses' ],
   cpp_args: [ '-Wfatal-errors', '-fpermissive' ]
   )
@@ -144,7 +124,7 @@ executable('jaffar2-show',
   jaffar2Files,
   dependencies: deps,
   include_directories: inc,
-  link_with: [ blastemLib ],
+  link_with: [ quicknesLib ],
   link_args: [ '-ldl', '-lncurses' ],
   cpp_args: [ '-Wfatal-errors', '-fpermissive' ]
   )

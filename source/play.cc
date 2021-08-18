@@ -3,7 +3,7 @@
 #include "utils.h"
 #include <ncurses.h>
 #include <unistd.h>
-#include "blastemInstance.h"
+#include "quicknesInstance.h"
 
 // Function to check for keypress taken from https://github.com/ajpaulson/learning-ncurses/blob/master/kbhit.c
 int kbhit()
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     .required();
 
   program.add_argument("savFile")
-    .help("Specifies the path to the blastem state file (.state) from which to start.")
+    .help("Specifies the path to the quicknes state file (.state) from which to start.")
     .required();
 
   program.add_argument("solutionFile")
@@ -115,32 +115,32 @@ int main(int argc, char *argv[])
   refresh();
 
   // Initializing replay generating SDLPop Instance
-  blastemInstance blastem;
-  blastem.initialize(romFilePath.c_str(), saveFilePath.c_str(), true, false);
+  quicknesInstance quicknes;
+  quicknes.initialize(romFilePath.c_str(), saveFilePath.c_str(), true, false);
 
   // Storage for sequence frames
   std::vector<uint8_t*> frameSequence;
 
   // Saving initial frame
   frameSequence.push_back((uint8_t*) malloc(sizeof(uint8_t) * _STATE_DATA_SIZE));
-  blastem.saveState(frameSequence[0]);
+  quicknes.saveState(frameSequence[0]);
 
   // Iterating move list in the sequence
   for (int i = 0; i < sequenceLength; i++)
   {
-    blastem.playFrame(moveList[i]);
+    quicknes.playFrame(moveList[i]);
 
     // Storing new frame
     frameSequence.push_back((uint8_t*) malloc(sizeof(uint8_t) * _STATE_DATA_SIZE));
-    blastem.saveState(frameSequence[i]);
+    quicknes.saveState(frameSequence[i]);
   }
 
-  printw("[Jaffar] Opening blastem window...\n");
+  printw("[Jaffar] Opening quicknes window...\n");
 
   refresh();
 
   // Initializing showing SDLPop Instance
-  blastem.initialize(romFilePath.c_str(), saveFilePath.c_str(), false, false);
+  quicknes.initialize(romFilePath.c_str(), saveFilePath.c_str(), false, false);
 
   // Variable for current step in view
   int currentStep = 1;
@@ -163,20 +163,20 @@ int main(int argc, char *argv[])
   do
   {
     // Loading requested step
-    blastem.loadState(frameSequence[currentStep - 1]);
-    blastem.redraw();
+    quicknes.loadState(frameSequence[currentStep - 1]);
+    quicknes.redraw();
 
     if (showFrameInfo)
     {
       printw("[Jaffar2] ----------------------------------------------------------------\n");
       printw("[Jaffar2] Current Step #: %d / %d\n", currentStep, sequenceLength);
       printw("[Jaffar2]  + Move: %s\n", moveList[currentStep - 1].c_str());
-      printw("[Jaffar2]  + Current Level: %2d\n", blastem._state.currentLevel);
-      printw("[Jaffar2]  + Current RNG Value: 0x%X\n", blastem._state.rngValue);
-      printw("[Jaffar2]  + Hash Value: 0x%lX\n", blastem.computeHash());
-      printw("[Jaffar2]  + Game / Video Frame: %d / %d\n", blastem._state.gameFrame, blastem._state.videoFrame);
-      printw("[Jaffar2]  + [Kid]   Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Direction: %s, HP: %d/%d\n", blastem._state.kidRoom, blastem._state.kidPositionX, blastem._state.kidPositionY, blastem._state.kidFrame, blastem._state.kidDirection == 255 ? "L" : "R", blastem._state.kidCurrentHP, blastem._state.kidMaxHP);
-      printw("[Jaffar2]  + [Guard] Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Direction: %s, HP: %d/%d\n", blastem._state.guardRoom, blastem._state.guardPositionX, blastem._state.guardPositionY, blastem._state.guardFrame, blastem._state.guardDirection == 255 ? "L" : "R", blastem._state.guardCurrentHP, blastem._state.guardMaxHP);
+      printw("[Jaffar2]  + Current Level: %2d\n", quicknes._state.currentLevel);
+      printw("[Jaffar2]  + Current RNG Value: 0x%X\n", quicknes._state.rngValue);
+      printw("[Jaffar2]  + Hash Value: 0x%lX\n", quicknes.computeHash());
+      printw("[Jaffar2]  + Game / Video Frame: %d / %d\n", quicknes._state.gameFrame, quicknes._state.videoFrame);
+      printw("[Jaffar2]  + [Kid]   Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Direction: %s, HP: %d/%d\n", quicknes._state.kidRoom, quicknes._state.kidPositionX, quicknes._state.kidPositionY, quicknes._state.kidFrame, quicknes._state.kidDirection == 255 ? "L" : "R", quicknes._state.kidCurrentHP, quicknes._state.kidMaxHP);
+      printw("[Jaffar2]  + [Guard] Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Direction: %s, HP: %d/%d\n", quicknes._state.guardRoom, quicknes._state.guardPositionX, quicknes._state.guardPositionY, quicknes._state.guardFrame, quicknes._state.guardDirection == 255 ? "L" : "R", quicknes._state.guardCurrentHP, quicknes._state.guardMaxHP);
     }
 
     // Resetting show frame info flag
@@ -229,10 +229,10 @@ int main(int argc, char *argv[])
       // Setting input as new rng
       char str[80];
       getstr(str);
-      blastem.setRNGValue(std::stol(str));
+      quicknes.setRNGValue(std::stol(str));
 
       // Replacing current sequence
-      blastem.saveState(frameSequence[currentStep-1]);
+      quicknes.saveState(frameSequence[currentStep-1]);
     }
 
     // RNG setting command
@@ -244,10 +244,10 @@ int main(int argc, char *argv[])
       // Setting input as new hp
       char str[80];
       getstr(str);
-      blastem.setHPValue(std::stol(str));
+      quicknes.setHPValue(std::stol(str));
 
       // Replacing current sequence
-      blastem.saveState(frameSequence[currentStep-1]);
+      quicknes.saveState(frameSequence[currentStep-1]);
     }
 
     // RNG setting command
@@ -259,10 +259,10 @@ int main(int argc, char *argv[])
       // Setting input as new hp
       char str[80];
       getstr(str);
-      blastem.setKidXValue(std::stol(str));
+      quicknes.setKidXValue(std::stol(str));
 
       // Replacing current sequence
-      blastem.saveState(frameSequence[currentStep-1]);
+      quicknes.saveState(frameSequence[currentStep-1]);
     }
 
   } while (command != 'q');

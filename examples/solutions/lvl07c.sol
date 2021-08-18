@@ -1,1 +1,0 @@
-. . . . . . . . . L . . . . . BL . . R . . . . . R . . . . . . RA . . . . . . . . . . . . . . . . . . . . C . . C . . R . . . D . . . . . A . . . . . . . . . . . . . . B BU . . . . . . . . . . . B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B B

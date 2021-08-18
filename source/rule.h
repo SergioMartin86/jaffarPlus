@@ -1,6 +1,6 @@
 #pragma once
 
-#include "blastemInstance.h"
+#include "quicknesInstance.h"
 #include "nlohmann/json.hpp"
 #include "utils.h"
 #include <vector>
@@ -30,7 +30,7 @@ class Condition;
 class Rule
 {
   public:
-  Rule(nlohmann::json ruleJs, blastemInstance *blastem);
+  Rule(nlohmann::json ruleJs, quicknesInstance *blastem);
   bool evaluate();
 
   // Stores an identifying label for the rule
@@ -68,7 +68,7 @@ class Rule
   // is a template that is created at compilation time.
   std::vector<Condition *> _conditions;
   size_t getPropertyType(const std::string &property);
-  void *getPropertyPointer(const std::string &property, blastemInstance *blastem);
+  void *getPropertyPointer(const std::string &property, quicknesInstance *blastem);
   operator_t getOperationType(const std::string &operation);
 
   // Function to parse the json-encoded actions

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "blastemInstance.h"
+#include "quicknesInstance.h"
 #include "frame.h"
 #include "nlohmann/json.hpp"
 #include "rule.h"
@@ -58,8 +58,8 @@ class Train
   // Communication schedule for frame exchange
   std::vector<size_t> _communicationSchedule;
 
-  // Craeting SDLPop and State class instances and rule vector
-  blastemInstance* _blastem;
+  // Craeting quicknes and State class instances and rule vector
+  quicknesInstance* _quicknes;
   std::vector<Rule *> _rules;
 
   // Frame counter

@@ -1,7 +1,7 @@
 #include "argparse.hpp"
 #include "nlohmann/json.hpp"
 #include "frame.h"
-#include "blastemInstance.h"
+#include "quicknesInstance.h"
 #include "utils.h"
 #include <unistd.h>
 
@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
   if (status == false) EXIT_WITH_ERROR("[ERROR] Could not load save state from file: %s\n", saveFilePath.c_str());
 
   // Initializing showing SDLPop Instance
-  blastemInstance showBlastem;
-  showBlastem.initialize(romFilePath.c_str(), saveFilePath.c_str(), false, false);
+  quicknesInstance showQuicknes;
+  showQuicknes.initialize(romFilePath.c_str(), saveFilePath.c_str(), false, false);
 
   // Constant loop of updates
   while (true)
@@ -67,10 +67,10 @@ int main(int argc, char *argv[])
     if (status == true)
     {
       // Loading data into state
-      showBlastem.loadState(saveData);
+      showQuicknes.loadState(saveData);
 
       // Drawing frame
-      showBlastem.redraw();
+      showQuicknes.redraw();
     }
 
     // Freeing mem

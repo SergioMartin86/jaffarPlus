@@ -39,8 +39,6 @@ Requisites
 - MPI - For distributed execution. Jaffar has been tested exclusively on MPICH
 - Meson - For compilation
 - Ninja - For compilation
-- SDL2: Jaffar has been tested using SDL2 2.0.14. 
-- SDL2-image: Jaffar has been tested using SDL2_image 2.0.5.
 - libncurses: For console output
 
 Usage
@@ -130,6 +128,4 @@ The author would like to thank:
 
 + Near (Byuu) for their coroutine library used in this bot.
 
-+ The developer(s) of BlastEm (https://www.retrodev.com/blastem/), used to drive emulation of the Genesis version of POP2. 
-
-+ The developers of QuickNES 
++ The developer(s) of QuickNES, Christopher Snowhill (kode54) and Shay Green (Blargg) used to drive NES emulation

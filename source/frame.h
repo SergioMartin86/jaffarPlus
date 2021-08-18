@@ -2,7 +2,7 @@
 
 #define _MAX_MOVE_SIZE 4
 
-#include "blastemInstance.h"
+#include "quicknesInstance.h"
 #include "nlohmann/json.hpp"
 #include "rule.h"
 #include <string>

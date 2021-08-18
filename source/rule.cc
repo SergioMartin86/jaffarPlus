@@ -2,7 +2,7 @@
 
 extern size_t _currentStep;
 
-Rule::Rule(nlohmann::json ruleJs, blastemInstance *blastem)
+Rule::Rule(nlohmann::json ruleJs, quicknesInstance *blastem)
 {
   // Adding identifying label for the rule
   if (isDefined(ruleJs, "Label") == false) EXIT_WITH_ERROR("[ERROR] Rule missing 'Label' key.\n");
@@ -290,7 +290,7 @@ size_t Rule::getPropertyType(const std::string &property)
  return 1;
 }
 
-void *Rule::getPropertyPointer(const std::string &property, blastemInstance *blastem)
+void *Rule::getPropertyPointer(const std::string &property, quicknesInstance *blastem)
 {
   if (property == "Kid Frame") return &blastem->_state.kidFrame;
   if (property == "Kid Current HP") return &blastem->_state.kidCurrentHP;

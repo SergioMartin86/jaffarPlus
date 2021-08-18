@@ -37,11 +37,13 @@ public:
 	enum { buffer_width  = Nes_Ppu::buffer_width };
 	int buffer_height() const { return buffer_height_; }
 	enum { bits_per_pixel = 8 };
-	
+
+private:
 	// Set graphics buffer to render pixels to. Pixels points to top-left pixel and
 	// row_bytes is the number of bytes to get to the next line (positive or negative).
 	void set_pixels( void* pixels, long row_bytes );
-	
+public:
+
 	// Size of image generated in graphics buffer
 	enum { image_width   = 256 };
 	enum { image_height  = 240 };
@@ -50,7 +52,10 @@ public:
 
 	// Emulate one video frame using joypad1 and joypad2 as input. Afterwards, image
 	// and sound are available for output using the accessors below.
-	virtual blargg_err_t emulate_frame( int joypad1, int joypad2 = 0 );
+	// A connected controller should have 0xffffff** in the high bits, or 0x000000**
+	// if emulating an incorrectly made third party controller.  A disconnected controller
+	// should be 0x00000000 exactly.
+	virtual blargg_err_t emulate_frame( uint32_t joypad1, uint32_t joypad2 );
 	
 	// Maximum size of palette that can be generated
 	enum { max_palette_size = 256 };
@@ -197,7 +202,20 @@ public:
 	// Optional 8K memory
 	enum { high_mem_size = 0x2000 };
 	byte* high_mem()            { return emu.impl->sram; }
-	
+
+// Prg peek/poke for debuggin
+	byte peek_prg(nes_addr_t addr) const { return *static_cast<Nes_Cpu>(emu).get_code(addr); }
+	void poke_prg(nes_addr_t addr, byte value) { *static_cast<Nes_Cpu>(emu).get_code(addr) = value; }
+	byte peek_ppu(int addr) { return emu.ppu.peekaddr(addr); }
+
+	void get_regs(unsigned int *dest) const;
+
+	byte get_ppu2000() const { return emu.ppu.w2000; }
+	byte* pal_mem() { return emu.ppu.palette; }
+	byte* oam_mem() { return emu.ppu.spr_ram; }
+
+	void set_tracecb(void (*cb)(unsigned int *dest)) { emu.set_tracecb(cb); }
+
 	// End of public interface
 public:
 	blargg_err_t set_sample_rate( long rate, class Nes_Buffer* );
@@ -236,6 +254,7 @@ private:
 	void clear_sound_buf();
 	void fade_samples( blip_sample_t*, int size, int step );
 	
+	char* host_pixel_buff;
 	char* host_pixels;
 	int host_palette_size;
 	frame_t single_frame;
@@ -263,4 +282,3 @@ inline long Nes_Emu::chr_size() const
 }
 
 #endif
-
