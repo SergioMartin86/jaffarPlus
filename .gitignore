@@ -1,0 +1,44 @@
+jaffar.best.sav
+jaffar.current.sav
+subprojects/abseil-cpp*
+subprojects/SDL2*
+subprojects/json-*
+subprojects/abseil-cpp*
+subprojects/packagecache
+build
+tools/llvm/
+tools/run-clang-format/
+*.p1r
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app

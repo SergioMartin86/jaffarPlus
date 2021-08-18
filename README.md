@@ -2,7 +2,7 @@
 
 ![](jaffar2.png)
 
-High-performance fully scalable solver for Prince of Persia 2 tool-assisted speedrunning.  
+High-performance fully scalable solver for NES tool-assisted speedrunning.  
 
 This solver is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solver for the original Prince of Persia (DOS).
 
@@ -13,7 +13,7 @@ Installation
 
  
 ```
-  git clone --recursive https://github.com/SergioMartin86/jaffar2.git
+  git clone --recursive https://github.com/SergioMartin86/jaffarNES.git
 ```
   
 2) Create build directory
@@ -132,4 +132,4 @@ The author would like to thank:
 
 + The developer(s) of BlastEm (https://www.retrodev.com/blastem/), used to drive emulation of the Genesis version of POP2. 
 
-+ BlastEm's discord server users: 'Mask of Destiny', 'WinFutureX', and 'Sik' for their help.
++ The developers of QuickNES 
