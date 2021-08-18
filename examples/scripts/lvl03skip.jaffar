@@ -1,0 +1,119 @@
+{
+  "Description": "This script searches for the fastest any% solution for Sega Genesis PoP2 level 3 Skip",  
+  
+  "Rules":
+  [
+   {
+    "Label": 3000,
+    "Description": "Setting magnet to make kid go to the left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2,  "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 3001,
+    "Description": "Rewarding kid for advancing to the second screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 }
+    ]
+   },
+
+   {
+    "Label": 3002,
+    "Description": "Rewarding kid for advancing to the potion screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  10 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 3, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 10,  "Value": 512.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 10, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 3003,
+    "Description": "Rewarding kid for drinking potion",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  10 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  191 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3002 ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 3900,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 3901,
+    "Description": "If Kid enters normal zone, fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  14 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  118 },
+     { "Property": "Kid Position X", "Op": "<", "Value":  310 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

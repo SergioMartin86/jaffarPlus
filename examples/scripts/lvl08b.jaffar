@@ -1,0 +1,138 @@
+{
+  "Description": "This script searches for the fastest any% solution for Sega Genesis PoP2 level 8",  
+  
+  "Rules":
+  [
+   {
+    "Label": 8007,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 9 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 21, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 8009,
+    "Description": "Go left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 1 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 8007 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 8010,
+    "Description": "Go left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 24 }
+    ],
+    
+    "Dependencies": [  ],
+    "Satisfies": [ 8009 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 24, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 8011,
+    "Description": "Go left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 23 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 8010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 23, "Value": 200.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 23, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 8110,
+    "Description": "Win on exiting level",
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value": 220 }
+    ],
+    
+    "Dependencies": [ ],  
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 8910,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 8912,
+    "Description": "If Kid falling to death, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Falling Speed", "Op": ">", "Value":  32 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

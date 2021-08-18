@@ -1,0 +1,181 @@
+{
+  "Description": "This script searches for the fastest any% solution for Sega Genesis PoP2 level 14c",  
+  
+  "Rules":
+  [
+  
+   {
+    "Label": 14000,
+    "Description": "Reward Guard Hurt",
+    "Conditions":
+    [
+     { "Property": "Guard 2 Current HP", "Op": "==", "Value": 4 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+       { "Type": "Add Reward", "Value": 100 }
+    ]
+   },
+   
+   {
+    "Label": 14001,
+    "Description": "Reward Guard Hurt",
+    "Conditions":
+    [
+     { "Property": "Guard 2 Current HP", "Op": "==", "Value": 3 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 14000 ],
+    
+    "Actions":
+    [
+       { "Type": "Add Reward", "Value": 100 }
+    ]
+   },
+   
+   {
+    "Label": 14002,
+    "Description": "Reward Guard Hurt",
+    "Conditions":
+    [
+     { "Property": "Guard 2 Current HP", "Op": "==", "Value": 2 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 14001 ],
+    
+    "Actions":
+    [
+       { "Type": "Add Reward", "Value": 100 }
+    ]
+   },
+   
+   {
+    "Label": 14003,
+    "Description": "Reward Guard Hurt",
+    "Conditions":
+    [
+     { "Property": "Guard 2 Current HP", "Op": "==", "Value": 1 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 14002 ],
+    
+    "Actions":
+    [
+       { "Type": "Add Reward", "Value": 100 }
+    ]
+   },
+   
+   {
+    "Label": 14004,
+    "Description": "Reward Guard Hurt",
+    "Conditions":
+    [
+     { "Property": "Guard 2 Current HP", "Op": "==", "Value": 0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 14003 ],
+    
+    "Actions":
+    [
+       { "Type": "Add Reward", "Value": 100 }
+    ]
+   },
+   
+   {
+    "Label": 14005,
+    "Description": "Reward increased health",
+    "Conditions":
+    [
+     { "Property": "Kid Max HP", "Op": ">", "Value": 9 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 14004 ],
+    
+    "Actions":
+    [
+      { "Type": "Add Reward", "Value": 1000 },
+      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 3, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 14100,
+    "Description": "Win on going back",
+    "Conditions":
+    [
+     { "Property": "Kid Max HP", "Op": ">", "Value": 9 },
+     { "Property": "Kid Room", "Op": "==", "Value": 4 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 6911,
+    "Description": "If Kid falls, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  125 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 6910,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 4911,
+    "Description": "If Kid falling to death, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Falling Speed", "Op": ">", "Value":  32 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

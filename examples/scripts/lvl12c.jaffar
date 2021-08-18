@@ -1,0 +1,304 @@
+{
+  "Description": "This script searches for the fastest any% solution for Sega Genesis PoP2 level 12c",  
+  
+  "Rules":
+  [
+   {
+    "Label": 12000,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 18 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 18, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 12001,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 22 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 22, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 12002,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 14 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 14, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 14, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 12003,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 15 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 14, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 15, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 12004,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 16 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 16, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 16, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 12005,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 6 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 16, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 6, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 12006,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 17 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 17, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 17, "Value": 330.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 17, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 12007,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 10 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 17, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 17, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 10, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 10, "Value": 512.0 }
+    ]
+   },
+   
+   {
+    "Label": 12008,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 9 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12007 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 10, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 9, "Value": 512.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 9, "Value": 1.0 }
+    ]
+   },
+   
+  {
+    "Label": 12009,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 8 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 8, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 8, "Value": 512.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 8, "Value": -1.0 }
+    ]
+   },
+   
+   {
+    "Label": 12010,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 19 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12009 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 8, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 8, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 19, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 19, "Value": 512.0 }
+    ]
+   },
+   
+   {
+    "Label": 12011,
+    "Description": "Continue Going",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 7 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 12009 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 19, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 19, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 7, "Value": 266.0 }
+    ]
+   },
+   
+   {
+    "Label": 12100,
+    "Description": "Win on going up stairs",
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value":  217 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 6910,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+  
+   {
+    "Label": 4911,
+    "Description": "If Kid falling to death, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Falling Speed", "Op": ">", "Value":  32 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

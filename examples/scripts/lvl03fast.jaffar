@@ -1,0 +1,234 @@
+{
+  "Description": "This script searches for the fastest any% solution for Sega Genesis PoP2 level 3",  
+  
+  "Rules":
+  [
+   {
+    "Label": 3000,
+    "Description": "Setting magnet to make kid go to the right on the first screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1,  "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 3001,
+    "Description": "Rewarding kid for advancing to the second screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 5,  "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 1.0 }
+    ]
+   },
+
+   {
+    "Label": 3002,
+    "Description": "Rewarding kid for advancing to the next screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 7,  "Value": 375.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 3003,
+    "Description": "Rewarding kid for advancing to the next screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  8 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 8,  "Value": 402.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 8, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 3004,
+    "Description": "Rewarding kid for advancing to the next screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  8 },
+     { "Property": "Level 3 Fast Route Door State", "Op": ">", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 8,  "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 3005,
+    "Description": "Rewarding kid for advancing to the next screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 8, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 11,  "Value": 512.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 11, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 3006,
+    "Description": "Rewarding kid for advancing to the next screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 }
+    ],
+    
+    "Dependencies": [  ],
+    "Satisfies": [ 3005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 11, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 13,  "Value": 275.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 1.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 13, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 3007,
+    "Description": "Rewarding kid for drinking potion",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  120 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3006 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 3019,
+    "Description": "Win on going up stairs",
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value":  217 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 3007 ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 3900,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 3901,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  8 },
+     { "Property": "Kid Position X", "Op": ">", "Value":  398 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  150 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+     
+   {
+    "Label": 3911,
+    "Description": "If Kid falling to death, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Falling Speed", "Op": ">", "Value":  32 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}
