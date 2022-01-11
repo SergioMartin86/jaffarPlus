@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <pthread.h>
 
 // Function to split a string into a sub-strings delimited by a character
 // Taken from stack overflow answer to https://stackoverflow.com/questions/236129/how-do-i-iterate-over-the-words-of-a-string
@@ -70,9 +71,3 @@ std::vector<T> splitVector(const T size, const T n)
 // Taken from https://stackoverflow.com/questions/116038/how-do-i-read-an-entire-file-into-a-stdstring-in-c/116220#116220
 std::string slurp(std::ifstream &in);
 
-char * path_dirname(const char *path);
-char * basename_no_extension(const char *path);
-char *path_extension(char const *path);
-char is_path_sep(char c);
-extern bool saveBinToFile(const uint8_t* src, size_t size, const char *fileName);
-extern bool loadBinFromFile(uint8_t* dst, size_t size, const char *fileName);

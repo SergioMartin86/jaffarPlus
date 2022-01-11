@@ -115,7 +115,6 @@ void Nes_Cpu::write( nes_addr_t addr, int value )
 
 void Nes_Cpu::set_tracecb(void (*cb)(unsigned int *data))
 {
-	tracecb = cb;
 }
 
 #ifndef NES_CPU_GLUE_ONLY
@@ -212,19 +211,6 @@ loop:
 	if ( clock_count >= clock_limit )
 		goto stop;
 
-	if (tracecb)
-	{
-		unsigned int scratch[7];
-		scratch[0] = a;
-		scratch[1] = x;
-		scratch[2] = y;
-		scratch[3] = sp;
-		scratch[4] = pc - 1;
-		scratch[5] = status;
-		scratch[6] = opcode;
-		tracecb(scratch);
-	}
-	
 	clock_count += clock_table [opcode];
 	unsigned data;
 	data = page [pc];

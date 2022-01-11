@@ -20,7 +20,7 @@
 //#include <memory>
 //#define BLARGG_NEW new (std::nothrow)
 
-#define DISABLE_AUTO_FILE 1
+//#define DISABLE_AUTO_FILE 1
 
 #define HAVE_STDINT_H
 

@@ -4,25 +4,6 @@ project('jaffarNES','cpp',
   default_options : ['cpp_std=c++17', 'default_library=static', 'buildtype=debugoptimized'],
 )
 
-cxx = meson.get_compiler('cpp')
-
-inc = include_directories([
- 'extern/libco',
- 'extern/quicknes',
- 'extern/quicknes/fex',
- 'extern/metrohash64',
- 'extern/argparse',
- 'extern/json/single_include'
-  ])
-
-jaffar2Files = [
-  'source/quicknesInstance.cc',
-  'source/utils.cc',
-  'source/frame.cc',
-  'source/rule.cc',
-  'extern/metrohash64/metrohash64.cc'
-]
-
 quicknesFiles = [
   'extern/quicknes/fex/blargg_common.cpp',
   'extern/quicknes/fex/blargg_errors.cpp',
@@ -62,70 +43,31 @@ quicknesFiles = [
   'extern/quicknes/Nes_Vrc6_Apu.cpp'
 ]
 
-default_library='static'
-abs_base = subproject('abseil').get_variable('absl_base_dep')
-abs_cont = subproject('abseil').get_variable('absl_container_dep')
-default_library='shared'
+inc = include_directories([
+ 'extern/quicknes',
+ 'extern/quicknes/fex',
+ 'extern/metrohash64',
+ 'extern/argparse',
+ 'extern/json/single_include'])
 
-mpi_dep = dependency('mpi', language: 'cpp', required: false)  
-if mpi_dep.found() == false
- mpi_dep = dependency('mpich', required: false)
-endif
-
-boost_dep = dependency('boost')
-
-deps = [
-  mpi_dep,
-  boost_dep,
-  abs_base,
-  abs_cont
+jaffarNESSrc = [
+ 'source/utils.cc',
+ 'source/quickNESInstance.cc'
 ]
 
 quicknesLib = shared_library('quicknes',
   quicknesFiles,
-  cpp_args: [ '-Wfatal-errors', '-DDISABLE_AUTO_FILE', '-D__LIBRETRO__', '-DNDEBUG', '-Wno-multichar', '-fno-exceptions', '-fomit-frame-pointer', '-flto' ],
+  cpp_args: [ '-Wfatal-errors', '-D__LIBRETRO__', '-DNDEBUG', '-Wno-multichar', '-fno-exceptions', '-fomit-frame-pointer', '-flto' ],
   include_directories: inc,
-  dependencies : [ boost_dep ],
+  dependencies : [ ],
   link_args: [ '-lm' ]
   )
     
-executable('jaffar2-test',
+executable('testRun',
   'source/test.cc',
-  jaffar2Files,
-  dependencies: deps,
+  jaffarNESSrc,
   include_directories: inc,
   link_with: [ quicknesLib ],
   link_args: [ '-ldl', '-lncurses' ],
-  cpp_args: [ '-Wfatal-errors', '-fpermissive' ]
+  cpp_args: [ '-Wfatal-errors', '-Wall', '-Wno-multichar' ]
   )
-  
-executable('jaffar2-train',
-  'source/train.cc',
-  jaffar2Files,
-  dependencies: deps,
-  include_directories: inc,
-  link_with: [ quicknesLib ],
-  link_args: [ '-ldl', '-lncurses' ],
-  cpp_args: [ '-Wfatal-errors', '-fpermissive' ]
-  )
-  
-executable('jaffar2-play',
-  'source/play.cc',
-  jaffar2Files,
-  dependencies: deps,
-  include_directories: inc,
-  link_with: [ quicknesLib ],
-  link_args: [ '-ldl', '-lncurses' ],
-  cpp_args: [ '-Wfatal-errors', '-fpermissive' ]
-  )
-
-executable('jaffar2-show',
-  'source/show.cc',
-  jaffar2Files,
-  dependencies: deps,
-  include_directories: inc,
-  link_with: [ quicknesLib ],
-  link_args: [ '-ldl', '-lncurses' ],
-  cpp_args: [ '-Wfatal-errors', '-fpermissive' ]
-  )
-  
