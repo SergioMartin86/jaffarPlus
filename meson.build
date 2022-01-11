@@ -48,7 +48,9 @@ inc = include_directories([
  'extern/quicknes/fex',
  'extern/metrohash64',
  'extern/argparse',
- 'extern/json/single_include'])
+ 'extern/json/single_include',
+ 'source'
+ ])
 
 jaffarNESSrc = [
  'source/utils.cc',

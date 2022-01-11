@@ -3,7 +3,7 @@
 #include <iostream>
 #include <omp.h>
 
-void quickNESInstance::initialize(const std::string& romFilePath)
+quickNESInstance::quickNESInstance(const std::string& romFilePath)
 {
  std::string romData;
  loadStringFromFile(romData, romFilePath.c_str());
@@ -12,6 +12,21 @@ void quickNESInstance::initialize(const std::string& romFilePath)
  auto result = _emu.load_ines(romFile);
 
  if (result != 0) EXIT_WITH_ERROR("Could not initialize emulator with rom file: %s\n", romFilePath.c_str());
+
+ // Getting base and specific values' pointers
+ _baseMem = _emu.low_mem();
+
+ // Game specific values
+ _screenScroll   = (uint16_t*) &_baseMem[0x071B];
+ _marioRelPosX   = (uint8_t*)  &_baseMem[0x0207];
+ _marioPosY      = (uint8_t*)  &_baseMem[0x00CE];
+ _marioDirection = (uint8_t*)  &_baseMem[0x0033];
+ _marioVelX      = (uint8_t*)  &_baseMem[0x0057];
+ _marioVelY      = (uint8_t*)  &_baseMem[0x009F];
+ _timeLeft100    = (uint8_t*)  &_baseMem[0x07F8];
+ _timeLeft10     = (uint8_t*)  &_baseMem[0x07F9];
+ _timeLeft1      = (uint8_t*)  &_baseMem[0x07FA];
+
 }
 
 void quickNESInstance::loadStateFile(const std::string& stateFilePath)
@@ -82,5 +97,11 @@ void quickNESInstance::advanceFrame(const uint8_t &move)
 
 void quickNESInstance::printFrameInfo()
 {
-  printf("[Jaffar]  + Current World: %1u-%1u\n", 1,1);
+  printf("[Jaffar]  + Current World:   %1u-%1u\n", 1,1);
+  printf("[Jaffar]  + Time Left:       %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
+  printf("[Jaffar]  + Mario Pos X:     %04u (%04u + %02u)\n", getScreenScroll() + *_marioRelPosX, getScreenScroll(), *_marioRelPosX);
+  printf("[Jaffar]  + Mario Pos Y:     %02u\n", *_marioPosY);
+  printf("[Jaffar]  + Mario Vel X:     %02d\n", *_marioVelX);
+  printf("[Jaffar]  + Mario Vel Y:     %02d\n", *_marioVelY);
+  printf("[Jaffar]  + Mario Direction: %s\n", *_marioDirection == 1 ? "Right" : "Left");
 }
