@@ -194,8 +194,8 @@ void Train::computeFrames()
       threadFrameDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
       // Getting base frame current level
-      auto curWorld = *_state[threadId]->_nes->_currentWorld;
-      auto curStage = *_state[threadId]->_nes->_currentStage;
+      auto curWorld = _state[threadId]->_nes->_currentWorld;
+      auto curStage = _state[threadId]->_nes->_currentStage;
 
       // Running possible moves
       for (size_t idx = 0; idx < possibleMoveIds.size(); idx++)
@@ -278,7 +278,7 @@ void Train::computeFrames()
         newFrame->reward = _state[threadId]->getFrameReward(newFrame->rulesStatus);
 
         // Storing the frame data, only if if belongs to the same level
-        if (curWorld == *_state[threadId]->_nes->_currentWorld && curStage == *_state[threadId]->_nes->_currentStage)
+        if (curWorld == _state[threadId]->_nes->_currentWorld && curStage == _state[threadId]->_nes->_currentStage)
         {
 
          t0 = std::chrono::steady_clock::now(); // Profiling
@@ -603,52 +603,52 @@ void Train::showSavingLoop()
     // Sleeping for one second to prevent excessive overheads
     sleep(1);
 
-    // Checking if we need to save best frame
-    if (_outputSaveBestSeconds > 0.0)
-    {
-      double bestFrameTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - bestFrameSaveTimer).count();
-      if (bestFrameTimerElapsed / 1.0e+9 > _outputSaveBestSeconds)
-      {
-        // Saving best frame data
-        std::string outputBestFilePath = _outputSaveBestPath + std::string(".best.sav");
-        uint8_t bestFrameData[_FRAME_DATA_SIZE];
-        _bestFrame.getFrameDataFromDifference(_sourceFrameData, bestFrameData);
-        _showState->_nes->deserializeState(bestFrameData);
-        _showState->_nes->saveStateFile(outputBestFilePath);
-
-        // Saving worst frame data
-        std::string outputWorstFilePath = _outputSaveBestPath + std::string(".worst.sav");
-        uint8_t worstFrameData[_FRAME_DATA_SIZE];
-        _worstFrame.getFrameDataFromDifference(_sourceFrameData, worstFrameData);
-        _showState->_nes->deserializeState(worstFrameData);
-        _showState->_nes->saveStateFile(outputWorstFilePath);
-
-        #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
-
-        // Storing the solution sequence
-        std::string bestSolutionString;
-        bestSolutionString += _possibleMoves[_bestFrame.getMove(0)];
-        for (size_t i = 1; i < _currentStep; i++)
-         bestSolutionString += std::string(" ") + _possibleMoves[_bestFrame.getMove(i)];
-        bestSolutionString += std::string(" .");
-        std::string outputSolPath = _outputSaveBestPath + std::string(".best.sol");
-        saveStringToFile(bestSolutionString, outputSolPath.c_str());
-
-        // Storing the solution sequence
-        std::string worstSolutionString;
-        worstSolutionString += _possibleMoves[_worstFrame.getMove(0)];
-        for (size_t i = 1; i < _currentStep; i++)
-         worstSolutionString += std::string(" ") + _possibleMoves[_worstFrame.getMove(i)];
-        worstSolutionString += std::string(" .");
-        std::string outputWorstSolPath = _outputSaveBestPath + std::string(".worst.sol");
-        saveStringToFile(worstSolutionString, outputWorstSolPath.c_str());
-
-        #endif
-
-        // Resetting timer
-        bestFrameSaveTimer = std::chrono::steady_clock::now();
-      }
-    }
+//    // Checking if we need to save best frame
+//    if (_outputSaveBestSeconds > 0.0)
+//    {
+//      double bestFrameTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - bestFrameSaveTimer).count();
+//      if (bestFrameTimerElapsed / 1.0e+9 > _outputSaveBestSeconds)
+//      {
+//        // Saving best frame data
+//        std::string outputBestFilePath = _outputSaveBestPath + std::string(".best.sav");
+//        uint8_t bestFrameData[_FRAME_DATA_SIZE];
+//        _bestFrame.getFrameDataFromDifference(_sourceFrameData, bestFrameData);
+//        _showState->_nes->deserializeState(bestFrameData);
+//        _showState->_nes->saveStateFile(outputBestFilePath);
+//
+//        // Saving worst frame data
+//        std::string outputWorstFilePath = _outputSaveBestPath + std::string(".worst.sav");
+//        uint8_t worstFrameData[_FRAME_DATA_SIZE];
+//        _worstFrame.getFrameDataFromDifference(_sourceFrameData, worstFrameData);
+//        _showState->_nes->deserializeState(worstFrameData);
+//        _showState->_nes->saveStateFile(outputWorstFilePath);
+//
+//        #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
+//
+//        // Storing the solution sequence
+//        std::string bestSolutionString;
+//        bestSolutionString += _possibleMoves[_bestFrame.getMove(0)];
+//        for (size_t i = 1; i < _currentStep; i++)
+//         bestSolutionString += std::string(" ") + _possibleMoves[_bestFrame.getMove(i)];
+//        bestSolutionString += std::string(" .");
+//        std::string outputSolPath = _outputSaveBestPath + std::string(".best.sol");
+//        saveStringToFile(bestSolutionString, outputSolPath.c_str());
+//
+//        // Storing the solution sequence
+//        std::string worstSolutionString;
+//        worstSolutionString += _possibleMoves[_worstFrame.getMove(0)];
+//        for (size_t i = 1; i < _currentStep; i++)
+//         worstSolutionString += std::string(" ") + _possibleMoves[_worstFrame.getMove(i)];
+//        worstSolutionString += std::string(" .");
+//        std::string outputWorstSolPath = _outputSaveBestPath + std::string(".worst.sol");
+//        saveStringToFile(worstSolutionString, outputWorstSolPath.c_str());
+//
+//        #endif
+//
+//        // Resetting timer
+//        bestFrameSaveTimer = std::chrono::steady_clock::now();
+//      }
+//    }
   }
 }
 

@@ -17,18 +17,18 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  _baseMem = _emu.low_mem();
 
  // Game specific values
- _screenScroll   = (uint16_t*) &_baseMem[0x071B];
- _marioFrame     = (uint8_t*)  &_baseMem[0x021D];
- _marioRelPosX   = (uint8_t*)  &_baseMem[0x0207];
- _marioPosY      = (uint8_t*)  &_baseMem[0x00CE];
- _marioDirection = (uint8_t*)  &_baseMem[0x0033];
- _marioVelX      = (int8_t*)  &_baseMem[0x0057];
- _marioVelY      = (int8_t*)  &_baseMem[0x009F];
- _timeLeft100    = (uint8_t*)  &_baseMem[0x07F8];
- _timeLeft10     = (uint8_t*)  &_baseMem[0x07F9];
- _timeLeft1      = (uint8_t*)  &_baseMem[0x07FA];
- _currentWorld   = (uint8_t*)  &_baseMem[0x075F];
- _currentStage   = (uint8_t*)  &_baseMem[0x075C];
+ _screenScroll    = (uint16_t*) &_baseMem[0x071B];
+ _marioFrame      = (uint8_t*)  &_baseMem[0x021D];
+ _marioRelPosX    = (uint8_t*)  &_baseMem[0x0207];
+ _marioPosY       = (uint8_t*)  &_baseMem[0x00CE];
+ _marioDirection  = (uint8_t*)  &_baseMem[0x0033];
+ _marioVelX       = (int8_t*)  &_baseMem[0x0057];
+ _marioVelY       = (int8_t*)  &_baseMem[0x009F];
+ _timeLeft100     = (uint8_t*)  &_baseMem[0x07F8];
+ _timeLeft10      = (uint8_t*)  &_baseMem[0x07F9];
+ _timeLeft1       = (uint8_t*)  &_baseMem[0x07FA];
+ _currentWorldRaw = (uint8_t*)  &_baseMem[0x075F];
+ _currentStageRaw = (uint8_t*)  &_baseMem[0x075C];
 }
 
 void quickNESInstance::loadStateFile(const std::string& stateFilePath)
@@ -63,6 +63,8 @@ void quickNESInstance::updateDerivedValues()
 {
  // Recalculating derived values
  _marioPosX = getScreenScroll() + *_marioRelPosX;
+ _currentWorld = *_currentWorldRaw + 1;
+ _currentStage = *_currentStageRaw + 1;
 }
 
 void quickNESInstance::serializeState(uint8_t* state) const
@@ -122,12 +124,12 @@ void quickNESInstance::advanceFrame(const uint8_t &move)
 
 void quickNESInstance::printFrameInfo()
 {
-  printf("[Jaffar]  + Current World-Stage:   %1u-%1u\n", *_currentWorld+1,*_currentStage+1);
-  printf("[Jaffar]  + Time Left:             %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
-  printf("[Jaffar]  + Mario Frame:           %02u\n", *_marioFrame);
-  printf("[Jaffar]  + Mario Pos X:           %04u (%04u + %02u)\n", _marioPosX, getScreenScroll(), *_marioRelPosX);
-  printf("[Jaffar]  + Mario Pos Y:           %02u\n", *_marioPosY);
-  printf("[Jaffar]  + Mario Vel X:           %02d\n", *_marioVelX);
-  printf("[Jaffar]  + Mario Vel Y:           %02d\n", *_marioVelY);
-  printf("[Jaffar]  + Mario Direction:       %s\n", *_marioDirection == 1 ? "Right" : "Left");
+  printf("[JaffarNES]  + Current World-Stage:   %1u-%1u\n", _currentWorld, _currentStage);
+  printf("[JaffarNES]  + Time Left:             %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
+  printf("[JaffarNES]  + Mario Frame:           %02u\n", *_marioFrame);
+  printf("[JaffarNES]  + Mario Pos X:           %04u (%04u + %02u)\n", _marioPosX, getScreenScroll(), *_marioRelPosX);
+  printf("[JaffarNES]  + Mario Pos Y:           %02u\n", *_marioPosY);
+  printf("[JaffarNES]  + Mario Vel X:           %02d\n", *_marioVelX);
+  printf("[JaffarNES]  + Mario Vel Y:           %02d\n", *_marioVelY);
+  printf("[JaffarNES]  + Mario Direction:       %s\n", *_marioDirection == 1 ? "Right" : "Left");
 }

@@ -1,0 +1,56 @@
+{
+  "Description": "This script searches for the fastest any% solution for NES SMB World 1-1",  
+ 
+  "Rules":
+  [
+   {
+    "Label": 1001,
+    "Description": "Setting magnet to make Mario go to the right",
+    "Conditions":
+    [
+     { "Property": "Current World", "Op": "==", "Value":  1 },
+     { "Property": "Current Stage", "Op": "==", "Value":  1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1998,
+    "Description": "If Mario dies from getting hit, then fail.",
+    "Conditions":
+    [
+     { "Property": "Mario Frame", "Op": "==", "Value":  159 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Description": "If Mario dies from falling, then fail.",
+    "Conditions":
+    [
+     { "Property": "Mario Position Y", "Op": ">", "Value":  250 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

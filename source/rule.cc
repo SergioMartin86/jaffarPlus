@@ -122,7 +122,6 @@ void Rule::parseActions(nlohmann::json actionsJs)
 
    if (actionType == "Set Mario Horizontal Magnet Intensity")
    {
-     if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
      if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
      _marioMagnetIntensityX = actionJs["Value"].get<float>();
      recognizedActionType = true;
@@ -130,7 +129,6 @@ void Rule::parseActions(nlohmann::json actionsJs)
 
    if (actionType == "Set Mario Vertical Magnet Intensity")
    {
-     if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
      if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
      _marioMagnetIntensityY = actionJs["Value"].get<float>();
      recognizedActionType = true;
@@ -178,8 +176,8 @@ void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *ne
   if (property == "Mario Direction") return nes->_marioDirection;
   if (property == "Mario Velocity X") return nes->_marioVelX;
   if (property == "Mario Velocity Y") return nes->_marioVelY;
-  if (property == "Current World") return nes->_currentWorld;
-  if (property == "Current Stage") return nes->_currentStage;
+  if (property == "Current World") return &nes->_currentWorld; // Derivative value
+  if (property == "Current Stage") return &nes->_currentStage; // Derivative value
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 

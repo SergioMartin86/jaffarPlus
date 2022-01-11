@@ -47,9 +47,11 @@ class quickNESInstance
   uint8_t* _timeLeft100;
   uint8_t* _timeLeft10;
   uint8_t* _timeLeft1;
-  uint8_t* _currentWorld;
-  uint8_t* _currentStage;
+  uint8_t* _currentWorldRaw;
+  uint8_t* _currentStageRaw;
 
   // Derivative values
   uint16_t _marioPosX;
+  uint8_t _currentWorld;
+  uint8_t _currentStage;
 };

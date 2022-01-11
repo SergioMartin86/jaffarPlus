@@ -29,7 +29,9 @@ int main(int argc, char *argv[])
  quickNESInstance nes(romFilePath);
  nes.loadStateFile(stateFilePath);
 
- for (size_t i = 0; i < 120; i++)
+ nes.advanceFrame(2);
+
+ for (size_t i = 0; i < 5; i++)
  {
   nes.advanceFrame(2);
   nes.printFrameInfo();

@@ -36,8 +36,15 @@ class State
     MetroHash64 hash;
 
     // Adding fixed hash elements
-    // hash.Update(gameState.drawn_room);
-
+    hash.Update(*_nes->_screenScroll);
+    hash.Update(*_nes->_marioFrame);
+    hash.Update(*_nes->_marioRelPosX);
+    hash.Update(*_nes->_marioPosY);
+    hash.Update(*_nes->_marioDirection);
+    hash.Update(*_nes->_marioVelX);
+    hash.Update(*_nes->_marioVelY);
+    hash.Update(*_nes->_currentWorldRaw);
+    hash.Update(*_nes->_currentStageRaw);
 
     uint64_t result;
     hash.Finalize(reinterpret_cast<uint8_t *>(&result));
