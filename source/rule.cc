@@ -35,13 +35,12 @@ Rule::Rule(nlohmann::json ruleJs, quickNESInstance *nes)
     {
      // Creating new condition object
      Condition *condition;
-     if (dtype == dt_byte) condition = new _vCondition<byte>(operation, property, NULL, conditionJs["Value"].get<byte>());
-     if (dtype == dt_sbyte) condition = new _vCondition<sbyte>(operation, property, NULL, conditionJs["Value"].get<sbyte>());
-     if (dtype == dt_short) condition = new _vCondition<short>(operation, property, NULL, conditionJs["Value"].get<short>());
-     if (dtype == dt_int) condition = new _vCondition<int>(operation, property, NULL, conditionJs["Value"].get<int>());
-     if (dtype == dt_word) condition = new _vCondition<word>(operation, property, NULL, conditionJs["Value"].get<word>());
-     if (dtype == dt_dword) condition = new _vCondition<dword>(operation, property, NULL, conditionJs["Value"].get<dword>());
-     if (dtype == dt_ulong) condition = new _vCondition<size_t>(operation, property, NULL, conditionJs["Value"].get<size_t>());
+     if (dtype == dt_uint8) condition = new _vCondition<uint8_t>(operation, property, NULL, conditionJs["Value"].get<uint8_t>());
+     if (dtype == dt_uint16) condition = new _vCondition<uint16_t>(operation, property, NULL, conditionJs["Value"].get<uint16_t>());
+     if (dtype == dt_uint32) condition = new _vCondition<uint32_t>(operation, property, NULL, conditionJs["Value"].get<uint32_t>());
+     if (dtype == dt_int8) condition = new _vCondition<int8_t>(operation, property, NULL, conditionJs["Value"].get<int8_t>());
+     if (dtype == dt_int16) condition = new _vCondition<int16_t>(operation, property, NULL, conditionJs["Value"].get<int16_t>());
+     if (dtype == dt_int32) condition = new _vCondition<int32_t>(operation, property, NULL, conditionJs["Value"].get<int32_t>());
 
      // Adding condition to the list
      _conditions.push_back(condition);
@@ -60,13 +59,12 @@ Rule::Rule(nlohmann::json ruleJs, quickNESInstance *nes)
 
      // Adding condition to the list
      Condition *condition;
-     if (dtype == dt_byte) condition = new _vCondition<byte>(operation, property, valuePtr, 0);
-     if (dtype == dt_sbyte) condition = new _vCondition<sbyte>(operation, property, valuePtr, 0);
-     if (dtype == dt_short) condition = new _vCondition<short>(operation, property, valuePtr, 0);
-     if (dtype == dt_int) condition = new _vCondition<int>(operation, property, valuePtr, 0);
-     if (dtype == dt_word) condition = new _vCondition<word>(operation, property, valuePtr, 0);
-     if (dtype == dt_dword) condition = new _vCondition<dword>(operation, property, valuePtr, 0);
-     if (dtype == dt_ulong) condition = new _vCondition<size_t>(operation, property, valuePtr, 0);
+     if (dtype == dt_uint8) condition = new _vCondition<uint8_t>(operation, property, valuePtr, 0);
+     if (dtype == dt_uint16) condition = new _vCondition<uint16_t>(operation, property, valuePtr, 0);
+     if (dtype == dt_uint32) condition = new _vCondition<uint32_t>(operation, property, valuePtr, 0);
+     if (dtype == dt_int8) condition = new _vCondition<int8_t>(operation, property, valuePtr, 0);
+     if (dtype == dt_int16) condition = new _vCondition<int16_t>(operation, property, valuePtr, 0);
+     if (dtype == dt_int32) condition = new _vCondition<int32_t>(operation, property, valuePtr, 0);
      _conditions.push_back(condition);
 
      valueFound = true;
@@ -126,7 +124,7 @@ void Rule::parseActions(nlohmann::json actionsJs)
    {
      if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
      if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-     _kidMagnetIntensityX = actionJs["Value"].get<float>();
+     _marioMagnetIntensityX = actionJs["Value"].get<float>();
      recognizedActionType = true;
    }
 
@@ -134,7 +132,7 @@ void Rule::parseActions(nlohmann::json actionsJs)
    {
      if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
      if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-     _kidMagnetIntensityY = actionJs["Value"].get<float>();
+     _marioMagnetIntensityY = actionJs["Value"].get<float>();
      recognizedActionType = true;
    }
 
@@ -158,19 +156,18 @@ operator_t Rule::getOperationType(const std::string &operation)
 
 datatype_t Rule::getPropertyType(const std::string &property)
 {
-  if (property == "Mario Frame") return uint8_t;
-  if (property == "Mario Position X") return uint16_t;
-  if (property == "Mario Position Y") return uint8_t;
-  if (property == "Mario Direction") return uint8_t;
-  if (property == "Mario Velocity X") return uint8_t;
-  if (property == "Mario Velocity Y") return uint8_t;
-  if (property == "Current World") return uint8_t;
-  if (property == "Current Stage") return uint8_t;
-
+  if (property == "Mario Frame") return dt_uint8;
+  if (property == "Mario Position X") return dt_uint16;
+  if (property == "Mario Position Y") return dt_uint8;
+  if (property == "Mario Direction") return dt_uint8;
+  if (property == "Mario Velocity X") return dt_int8;
+  if (property == "Mario Velocity Y") return dt_int8;
+  if (property == "Current World") return dt_uint8;
+  if (property == "Current Stage") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 
-  return dt_byte;
+  return dt_uint8;
 }
 
 void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *nes)
@@ -181,8 +178,8 @@ void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *ne
   if (property == "Mario Direction") return nes->_marioDirection;
   if (property == "Mario Velocity X") return nes->_marioVelX;
   if (property == "Mario Velocity Y") return nes->_marioVelY;
-  if (property == "Current World") return &gameState.current_world;
-  if (property == "Current Stage") return &gameState.current_stage;
+  if (property == "Current World") return nes->_currentWorld;
+  if (property == "Current Stage") return nes->_currentStage;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 

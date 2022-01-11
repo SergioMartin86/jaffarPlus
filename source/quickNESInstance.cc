@@ -22,8 +22,8 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  _marioRelPosX   = (uint8_t*)  &_baseMem[0x0207];
  _marioPosY      = (uint8_t*)  &_baseMem[0x00CE];
  _marioDirection = (uint8_t*)  &_baseMem[0x0033];
- _marioVelX      = (uint8_t*)  &_baseMem[0x0057];
- _marioVelY      = (uint8_t*)  &_baseMem[0x009F];
+ _marioVelX      = (int8_t*)  &_baseMem[0x0057];
+ _marioVelY      = (int8_t*)  &_baseMem[0x009F];
  _timeLeft100    = (uint8_t*)  &_baseMem[0x07F8];
  _timeLeft10     = (uint8_t*)  &_baseMem[0x07F9];
  _timeLeft1      = (uint8_t*)  &_baseMem[0x07FA];
@@ -45,6 +45,9 @@ void quickNESInstance::loadStateFile(const std::string& stateFilePath)
 
  // Loading state object into the emulator
  _emu.load_state(state);
+
+ // Updating derivative values after load
+ updateDerivedValues();
 }
 
 void quickNESInstance::saveStateFile(const std::string& stateFilePath)
@@ -54,6 +57,23 @@ void quickNESInstance::saveStateFile(const std::string& stateFilePath)
  _emu.save_state(&state);
  Auto_File_Writer stateWriter(stateFilePath.c_str());
  state.write(stateWriter);
+}
+
+void quickNESInstance::updateDerivedValues()
+{
+ // Recalculating derived values
+ _marioPosX = getScreenScroll() + *_marioRelPosX;
+}
+
+void quickNESInstance::serializeState(uint8_t* state) const
+{
+ _emu.serialize(state);
+}
+
+void quickNESInstance::deserializeState(const uint8_t* state)
+{
+ _emu.deserialize(state);
+ updateDerivedValues();
 }
 
 void quickNESInstance::advanceFrame(const uint8_t &move)
@@ -96,8 +116,8 @@ void quickNESInstance::advanceFrame(const uint8_t &move)
  // Running frame
  _emu.emulate_frame(controllerCode,0);
 
- // Recalculating derivative values
- _marioPosX = getScreenScroll() + *_marioRelPosX;
+ // Updating derived values
+ updateDerivedValues();
 }
 
 void quickNESInstance::printFrameInfo()

@@ -239,7 +239,7 @@ void Nes_Emu::serialize(uint8_t* buf) const
  emu.serialize(buf);
 }
 
-void Nes_Emu::deserialize(uint8_t* buf)
+void Nes_Emu::deserialize(const uint8_t* buf)
 {
  emu.deserialize(buf);
 }

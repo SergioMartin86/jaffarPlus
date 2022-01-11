@@ -23,7 +23,12 @@ class quickNESInstance
   // Print information about the current frame
   void printFrameInfo();
 
-  private:
+  // Function to update values that are derived from raw game data
+  void updateDerivedValues();
+
+  // Minimal serialization functions
+  void serializeState(uint8_t* state) const;
+  void deserializeState(const uint8_t* state);
 
   // Emulator instance
   Nes_Emu _emu;
@@ -37,8 +42,8 @@ class quickNESInstance
   uint8_t* _marioRelPosX;
   uint8_t* _marioPosY;
   uint8_t* _marioDirection;
-  uint8_t* _marioVelX;
-  uint8_t* _marioVelY;
+  int8_t* _marioVelX;
+  int8_t* _marioVelY;
   uint8_t* _timeLeft100;
   uint8_t* _timeLeft10;
   uint8_t* _timeLeft1;

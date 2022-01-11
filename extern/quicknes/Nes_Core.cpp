@@ -198,7 +198,7 @@ void Nes_Core::serialize(uint8_t* buf) const
  pos += sizeof(cpu::low_mem);
 }
 
-void Nes_Core::deserialize(uint8_t* buf)
+void Nes_Core::deserialize(const uint8_t* buf)
 {
  size_t pos = 0;
 

@@ -17,13 +17,12 @@ enum operator_t
 
 enum datatype_t
 {
-  dt_byte = 0,
-  dt_sbyte = 1,
-  dt_short = 2,
-  dt_int = 3,
-  dt_word = 4,
-  dt_dword = 5,
-  dt_ulong = 6
+  dt_uint8 = 0,
+  dt_uint16 = 1,
+  dt_uint32 = 2,
+  dt_int8 = 3,
+  dt_int16 = 4,
+  dt_int32 = 5
 };
 
 // Modifier that specifies whether to store move list
