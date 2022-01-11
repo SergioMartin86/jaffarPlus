@@ -49,6 +49,7 @@ inc = include_directories([
  'extern/metrohash64',
  'extern/argparse',
  'extern/json/single_include',
+ 'extern/phmap',
  'source'
  ])
 
@@ -57,16 +58,29 @@ jaffarNESSrc = [
  'source/frame.cc',
  'source/state.cc',
  'source/rule.cc',
- 'source/quickNESInstance.cc'
+ 'source/quickNESInstance.cc',
+ 'extern/metrohash64/metrohash64.cc'
 ]
+
+openMP_dep = dependency('openmp', required: true)
 
 quicknesLib = shared_library('quicknes',
   quicknesFiles,
   cpp_args: [ '-Wfatal-errors', '-D__LIBRETRO__', '-DNDEBUG', '-Wno-multichar', '-fno-exceptions', '-fomit-frame-pointer', '-flto' ],
   include_directories: inc,
-  dependencies : [ ],
   link_args: [ '-lm' ]
   )
+    
+executable('jaffarNES-train',
+  'source/train.cc',
+  jaffarNESSrc,
+  include_directories: inc,
+  dependencies: [ openMP_dep ],
+  link_with: [ quicknesLib ],
+  link_args: [ '-ldl', '-lncurses' ],
+  cpp_args: [ '-Wfatal-errors', '-Wall', '-Wno-multichar' ]
+)
+    
     
 executable('testRun',
   'source/test.cc',

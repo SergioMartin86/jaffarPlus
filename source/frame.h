@@ -43,13 +43,13 @@ class Frame
   uint8_t frameDiffValues[_MAX_FRAME_DIFF];
 
   // Fixed state data
-  char fixedStateData[_FRAME_FIXED_SIZE];
+  uint8_t fixedStateData[_FRAME_FIXED_SIZE];
 
   // Rule status vector
   bool rulesStatus[_MAX_RULE_COUNT];
 
   // Differentiation functions
-  inline void computeFrameDifference(const char* __restrict__ baseFrameData, const char* __restrict__ newFrameData)
+  inline void computeFrameDifference(const uint8_t* __restrict__ baseFrameData, const uint8_t* __restrict__ newFrameData)
   {
    frameDiffCount = 0;
    #pragma GCC unroll 32
@@ -69,7 +69,7 @@ class Frame
    memcpy(fixedStateData, &newFrameData[_FRAME_DIFFERENTIAL_SIZE], _FRAME_FIXED_SIZE);
   }
 
-  inline void getFrameDataFromDifference(const char* __restrict__ baseFrameData, char* __restrict__ stateData) const
+  inline void getFrameDataFromDifference(const uint8_t* __restrict__ baseFrameData, uint8_t* __restrict__ stateData) const
   {
     memcpy(stateData, baseFrameData, _FRAME_DIFFERENTIAL_SIZE);
     #pragma GCC unroll 32
