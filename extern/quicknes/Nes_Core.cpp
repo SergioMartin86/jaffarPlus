@@ -120,7 +120,7 @@ void Nes_Core::save_state( Nes_State_* out ) const
 		out->sram_size = sizeof impl->sram;
 		memcpy( out->sram, impl->sram, out->sram_size );
 	}
-	
+
 	out->mapper->size = 0;
 	mapper->save_state( *out->mapper );
 	out->mapper_valid = true;
@@ -134,25 +134,25 @@ void Nes_Core::save_state( Nes_State* out ) const
 void Nes_Core::load_state( Nes_State_ const& in )
 {
 	require( cart );
-	
+
 	disable_rendering();
 	error_count = 0;
-	
+
 	if ( in.nes_valid )
 		nes = in.nes;
-	
+
 	// always use frame count
 	ppu.burst_phase = 0; // avoids shimmer when seeking to same time over and over
 	nes.frame_count = in.nes.frame_count;
 	if ( (frame_count_t) nes.frame_count == invalid_frame_count )
 		nes.frame_count = 0;
-	
+
 	if ( in.cpu_valid )
 		cpu::r = *in.cpu;
-	
+
 	if ( in.joypad_valid )
 		joypad = *in.joypad;
-	
+
 	if ( in.apu_valid )
 	{
 		impl->apu.load_state( *in.apu );
@@ -163,12 +163,12 @@ void Nes_Core::load_state( Nes_State_ const& in )
 	{
 		impl->apu.reset();
 	}
-	
+
 	ppu.load_state( in );
-	
+
 	if ( in.ram_valid )
 		memcpy( cpu::low_mem, in.ram, in.ram_size );
-	
+
 	sram_present = false;
 	if ( in.sram_size )
 	{
@@ -176,9 +176,43 @@ void Nes_Core::load_state( Nes_State_ const& in )
 		memcpy( impl->sram, in.sram, min( (int) in.sram_size, (int) sizeof impl->sram ) );
 		enable_sram( true ); // mapper can override (read-only, unmapped, etc.)
 	}
-	
+
 	if ( in.mapper_valid ) // restore last since it might reconfigure things
 		mapper->load_state( *in.mapper );
+}
+
+void Nes_Core::serialize(uint8_t* buf) const
+{
+ size_t pos = 0;
+
+ memcpy(&buf[pos], &(cpu::r), sizeof(cpu::r));
+ pos += sizeof(cpu::r);
+
+ memcpy(&buf[pos], &joypad, sizeof(joypad));
+ pos += sizeof(joypad);
+
+ memcpy(&buf[pos], &ppu, sizeof(ppu));
+ pos += sizeof(ppu);
+
+ memcpy(&buf[pos], cpu::low_mem, sizeof(cpu::low_mem));
+ pos += sizeof(cpu::low_mem);
+}
+
+void Nes_Core::deserialize(uint8_t* buf)
+{
+ size_t pos = 0;
+
+ memcpy(&(cpu::r), &buf[pos], sizeof(cpu::r));
+ pos += sizeof(cpu::r);
+
+ memcpy(&joypad, &buf[pos], sizeof(joypad));
+ pos += sizeof(joypad);
+
+ memcpy(&ppu, &buf[pos], sizeof(ppu));
+ pos += sizeof(ppu);
+
+ memcpy(cpu::low_mem, &buf[pos], sizeof(cpu::low_mem));
+ pos += sizeof(cpu::low_mem);
 }
 
 void Nes_Core::enable_prg_6000()

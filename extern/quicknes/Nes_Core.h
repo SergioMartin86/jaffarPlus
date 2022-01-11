@@ -29,10 +29,13 @@ public:
 	void save_state( Nes_State* ) const;
 	void save_state( Nes_State_* ) const;
 	void load_state( Nes_State_ const& );
+	void serialize(uint8_t* buf) const;
+	void deserialize(uint8_t* buf);
 	
 	void irq_changed();
 	void event_changed();
 	
+
 public: private: friend class Nes_Emu;
 	
 	struct impl_t

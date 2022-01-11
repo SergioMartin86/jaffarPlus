@@ -54,6 +54,7 @@ inc = include_directories([
 
 jaffarNESSrc = [
  'source/utils.cc',
+ 'source/frame.cc',
  'source/quickNESInstance.cc'
 ]
 

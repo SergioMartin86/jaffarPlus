@@ -198,10 +198,10 @@ void Nes_Ppu_Impl::load_state( Nes_State_ const& in )
 	
 	if ( in.ppu_valid )
 		STATIC_CAST(ppu_state_t&,*this) = *in.ppu;
-	
+
 	if ( in.spr_ram_valid )
 		memcpy( spr_ram, in.spr_ram, sizeof spr_ram );
-	
+
 	assert( in.nametable_size <= (int) sizeof impl->nt_ram );
 	if ( in.nametable_size >= 0x800 )
 	{
@@ -209,7 +209,7 @@ void Nes_Ppu_Impl::load_state( Nes_State_ const& in )
 			memcpy( &impl->nt_ram [0x800], in.chr, 0x800 );
 		memcpy( impl->nt_ram, in.nametable, 0x800 );
 	}
-	
+
 	if ( chr_is_writable && in.chr_size )
 	{
 		assert( in.chr_size <= (int) sizeof impl->chr_ram );

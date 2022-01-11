@@ -23,6 +23,8 @@ public:
 	virtual ~Nes_Emu();
 	
 // Basic setup
+	void serialize(uint8_t* buf) const;
+	void deserialize(uint8_t* buf);
 
 	// Load iNES file into emulator and clear recording
 	blargg_err_t load_ines( Auto_File_Reader );

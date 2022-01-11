@@ -53,6 +53,7 @@ public:
 	blargg_err_t write_blocks( Nes_File_Writer& ) const;
 	void set_nes_state( nes_state_t const& );
 	blargg_err_t read_blocks( Nes_File_Reader& );
+
 	
 	enum { ram_size = 0x800 };
 	enum { sram_max = 0x2000 };

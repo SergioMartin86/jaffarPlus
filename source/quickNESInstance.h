@@ -32,9 +32,8 @@ class quickNESInstance
   uint8_t* _baseMem;
 
   // Game specific values
-  uint16_t* _screenScroll;
-  inline uint16_t getScreenScroll() { return swap_endian<uint16_t>(*_screenScroll); };
-
+  uint16_t* _screenScroll; inline uint16_t getScreenScroll() { return swap_endian<uint16_t>(*_screenScroll); };
+  uint8_t* _marioFrame;
   uint8_t* _marioRelPosX;
   uint8_t* _marioPosY;
   uint8_t* _marioDirection;
@@ -43,4 +42,9 @@ class quickNESInstance
   uint8_t* _timeLeft100;
   uint8_t* _timeLeft10;
   uint8_t* _timeLeft1;
+  uint8_t* _currentWorld;
+  uint8_t* _currentStage;
+
+  // Derivative values
+  uint16_t _marioPosX;
 };

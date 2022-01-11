@@ -234,6 +234,16 @@ blargg_err_t Nes_Emu::save_state( Auto_File_Writer out ) const
 	return err;
 }
 
+void Nes_Emu::serialize(uint8_t* buf) const
+{
+ emu.serialize(buf);
+}
+
+void Nes_Emu::deserialize(uint8_t* buf)
+{
+ emu.deserialize(buf);
+}
+
 void Nes_Emu::write_chr( void const* p, long count, long offset )
 {
 	require( (unsigned long) offset <= (unsigned long) chr_size() );
