@@ -21,6 +21,22 @@
    },
    
    {
+    "Label": 1002,
+    "Description": "If Mario gets to pipe, win.",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">=", "Value":  176 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
     "Label": 1998,
     "Description": "If Mario dies from getting hit, then fail.",
     "Conditions":
