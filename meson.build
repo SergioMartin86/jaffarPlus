@@ -66,7 +66,7 @@ openMP_dep = dependency('openmp', required: true)
 
 quicknesLib = shared_library('quicknes',
   quicknesFiles,
-  cpp_args: [ '-Wfatal-errors', '-D__LIBRETRO__', '-DNDEBUG', '-Wno-multichar', '-fno-exceptions', '-fomit-frame-pointer', '-flto' ],
+  cpp_args: [ '-Wfatal-errors', '-D__LIBRETRO__', '-DNDEBUG', '-Wno-multichar', '-fno-exceptions' ],
   include_directories: inc,
   link_args: [ '-lm' ]
   )
