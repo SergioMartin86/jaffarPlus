@@ -7,7 +7,9 @@ Rule::Rule(nlohmann::json ruleJs, quickNESInstance *nes)
   _label = ruleJs["Label"].get<size_t>();
 
   // Defining default values
-  _reward = 0.0;
+  _reward = 0.0f;
+  _marioMagnetIntensityX = 0.0f;
+  _marioMagnetIntensityY = 0.0f;
   _isWinRule = false;
   _isFailRule = false;
 

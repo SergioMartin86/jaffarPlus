@@ -58,8 +58,8 @@ class State
    // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12    13
    //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "S" };
 
-   // For now, try all combinations
-   return { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+   // For now, try all combinations. Prioritize R for readability
+   return { 0, 2, 3, 4, 5, 7, 9, 1, 6, 8, 10, 11, 12 };
 
    // Default, do nothing
    return {0};
