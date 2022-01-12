@@ -9,7 +9,7 @@
 #endif
 
 #define _MAX_MOVELIST_STORAGE ((_MAX_MOVELIST_SIZE/2) + 1)
-#define _FRAME_DATA_SIZE 3148
+#define _FRAME_DATA_SIZE 12792
 
 #include "nlohmann/json.hpp"
 #include "rule.h"

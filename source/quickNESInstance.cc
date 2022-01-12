@@ -2,6 +2,7 @@
 #include "utils.h"
 #include <iostream>
 #include <omp.h>
+#include <frame.h>
 
 quickNESInstance::quickNESInstance(const std::string& romFilePath)
 {
@@ -69,12 +70,16 @@ void quickNESInstance::updateDerivedValues()
 
 void quickNESInstance::serializeState(uint8_t* state) const
 {
- _emu.serialize(state);
+ Mem_Writer w(state, _FRAME_DATA_SIZE, 0);
+ Auto_File_Writer a(w);
+ _emu.save_state(a);
 }
 
 void quickNESInstance::deserializeState(const uint8_t* state)
 {
- _emu.deserialize(state);
+ Mem_File_Reader r(state, _FRAME_DATA_SIZE);
+ Auto_File_Reader a(r);
+ _emu.load_state(a);
  updateDerivedValues();
 }
 
