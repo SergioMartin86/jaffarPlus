@@ -224,7 +224,7 @@ void Train::computeFrames()
 
         // Compute hash value
         t0 = std::chrono::steady_clock::now(); // Profiling
-        auto hash = _state[threadId]->computeHash();
+        auto hash = _state[threadId]->_nes->computeHash();
         tf = std::chrono::steady_clock::now();
         threadHashCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -555,7 +555,7 @@ Train::Train(int argc, char *argv[])
   _winFrameFound = false;
 
   // Computing initial hash
-  const auto hash = _state[0]->computeHash();
+  const auto hash = _state[0]->_nes->computeHash();
 
   auto initialFrame = std::make_unique<Frame>();
   uint8_t gameState[_FRAME_DATA_SIZE];

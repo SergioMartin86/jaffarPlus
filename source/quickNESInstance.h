@@ -5,6 +5,7 @@
 #include <Nes_State.h>
 #include <blargg_errors.h>
 #include <string>
+#include "metrohash64.h"
 
 class quickNESInstance
 {
@@ -29,6 +30,28 @@ class quickNESInstance
   // Minimal serialization functions
   void serializeState(uint8_t* state) const;
   void deserializeState(const uint8_t* state);
+
+  // This function computes the hash for the current state
+  inline uint64_t computeHash() const
+  {
+    // Storage for hash calculation
+    MetroHash64 hash;
+
+    // Adding fixed hash elements
+    hash.Update(*_screenScroll);
+    hash.Update(*_marioFrame);
+    hash.Update(*_marioRelPosX);
+    hash.Update(*_marioPosY);
+    hash.Update(*_marioDirection);
+    hash.Update(*_marioVelX);
+    hash.Update(*_marioVelY);
+    hash.Update(*_currentWorldRaw);
+    hash.Update(*_currentStageRaw);
+
+    uint64_t result;
+    hash.Finalize(reinterpret_cast<uint8_t *>(&result));
+    return result;
+  }
 
   // Emulator instance
   Nes_Emu _emu;
