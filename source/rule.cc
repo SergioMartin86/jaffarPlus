@@ -156,12 +156,9 @@ operator_t Rule::getOperationType(const std::string &operation)
 
 datatype_t Rule::getPropertyType(const std::string &property)
 {
-  if (property == "Mario Frame") return dt_uint8;
+  if (property == "Mario State") return dt_uint8;
   if (property == "Mario Position X") return dt_uint16;
   if (property == "Mario Position Y") return dt_uint8;
-  if (property == "Mario Direction") return dt_uint8;
-  if (property == "Mario Velocity X") return dt_int8;
-  if (property == "Mario Velocity Y") return dt_int8;
   if (property == "Current World") return dt_uint8;
   if (property == "Current Stage") return dt_uint8;
 
@@ -172,12 +169,9 @@ datatype_t Rule::getPropertyType(const std::string &property)
 
 void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *nes)
 {
-  if (property == "Mario Frame") return nes->_marioFrame;
+  if (property == "Mario State") return nes->_marioState;
   if (property == "Mario Position X") return &nes->_marioPosX; // Derivative value
   if (property == "Mario Position Y") return nes->_marioPosY;
-  if (property == "Mario Direction") return nes->_marioDirection;
-  if (property == "Mario Velocity X") return nes->_marioVelX;
-  if (property == "Mario Velocity Y") return nes->_marioVelY;
   if (property == "Current World") return &nes->_currentWorld; // Derivative value
   if (property == "Current Stage") return &nes->_currentStage; // Derivative value
 
