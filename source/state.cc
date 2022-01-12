@@ -49,7 +49,7 @@ State::State(const std::string romFile, const std::string stateFile, const nlohm
 
 void State::printRuleStatus(const bool* rulesStatus)
 {
- printf("[Jaffar]  + Rule Status: ");
+ printf("[JaffarNES]  + Rule Status: ");
  for (size_t i = 0; i < _ruleCount; i++)
  {
    if (i > 0 && i % 60 == 0) printf("\n                         ");

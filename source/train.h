@@ -46,11 +46,7 @@ class Train
 
   // Craeting State class instance, one per openMP thread
   std::vector<State *> _state;
-  State* _showState;
   size_t _ruleCount;
-
-  // Storage for source frame data for differential load/save
-  uint8_t _sourceFrameData[_FRAME_DATA_SIZE];
 
   // Frame counter
   size_t _stepFramesProcessedCounter;
