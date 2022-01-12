@@ -107,7 +107,7 @@ void quickNESInstance::advanceFrame(const uint8_t &move)
   case 6: controllerCode = 0b01000001; break; // LA
   case 7: controllerCode = 0b10000001; break; // RA
   case 8: controllerCode = 0b01000010; break; // LB
-  case 9: controllerCode = 0b10000001; break; // RB
+  case 9: controllerCode = 0b10000010; break; // RB
   case 10: controllerCode = 0b11000000; break; // LR
   case 11: controllerCode = 0b11000001; break; // LRA
   case 12: controllerCode = 0b11000010; break; // LRB
