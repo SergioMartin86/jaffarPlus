@@ -2,7 +2,6 @@
 
 #include "quickNESInstance.h"
 #include "nlohmann/json.hpp"
-#include "metrohash64.h"
 #include <cstddef>
 #include "frame.h"
 #include <string>
@@ -28,28 +27,6 @@ class State
   std::vector<Rule *> _rules;
   size_t _ruleCount;
   quickNESInstance *_nes;
-
-  // This function computes the hash for the current state
-  inline uint64_t computeHash() const
-  {
-    // Storage for hash calculation
-    MetroHash64 hash;
-
-    // Adding fixed hash elements
-    hash.Update(*_nes->_screenScroll);
-    hash.Update(*_nes->_marioFrame);
-    hash.Update(*_nes->_marioRelPosX);
-    hash.Update(*_nes->_marioPosY);
-    hash.Update(*_nes->_marioDirection);
-    hash.Update(*_nes->_marioVelX);
-    hash.Update(*_nes->_marioVelY);
-    hash.Update(*_nes->_currentWorldRaw);
-    hash.Update(*_nes->_currentStageRaw);
-
-    uint64_t result;
-    hash.Finalize(reinterpret_cast<uint8_t *>(&result));
-    return result;
-  }
 
   // Function to determine the current possible moves
   inline std::vector<uint8_t> getPossibleMoveIds() const
