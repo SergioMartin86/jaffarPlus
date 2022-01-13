@@ -161,6 +161,8 @@ datatype_t Rule::getPropertyType(const std::string &property)
   if (property == "Mario Position Y") return dt_uint8;
   if (property == "Current World") return dt_uint8;
   if (property == "Current Stage") return dt_uint8;
+  if (property == "Current Screen") return dt_uint8;
+  if (property == "Level Entry Flag") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 
@@ -174,6 +176,8 @@ void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *ne
   if (property == "Mario Position Y") return nes->_marioPosY;
   if (property == "Current World") return &nes->_currentWorld; // Derivative value
   if (property == "Current Stage") return &nes->_currentStage; // Derivative value
+  if (property == "Current Screen") return nes->_currentScreen;
+  if (property == "Level Entry Flag") return nes->_levelEntryFlag;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 
