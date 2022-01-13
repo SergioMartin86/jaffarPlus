@@ -31,7 +31,7 @@ public:
 	void load_state( Nes_State_ const& );
 	void serialize(uint8_t* buf) const;
 	void deserialize(const uint8_t* buf);
-	
+
 	void irq_changed();
 	void event_changed();
 	

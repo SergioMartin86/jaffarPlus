@@ -30,6 +30,8 @@ class quickNESInstance
   // Minimal serialization functions
   void serializeState(uint8_t* state) const;
   void deserializeState(const uint8_t* state);
+  void serializeStateSmall(uint8_t* state) const;
+  void deserializeStateSmall(const uint8_t* state);
 
   // This function computes the hash for the current state
   inline uint64_t computeHash() const

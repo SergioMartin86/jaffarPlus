@@ -90,7 +90,7 @@ void Train::run()
     printf("[JaffarNES]  + Solution IGT:  %2lu:%02lu.%03lu\n", curMins, curSecs, curMilliSecs);
 
     uint8_t winFrameData[_FRAME_DATA_SIZE];
-    _winFrame.getStateData(winFrameData);
+    _winFrame.getFrameDataFromDifference(_sourceFrameData, winFrameData);
     _state[0]->pushState((uint8_t*)winFrameData);
     _state[0]->_nes->printFrameInfo();
     _state[0]->printRuleStatus(_winFrame.rulesStatus);
@@ -175,7 +175,7 @@ void Train::computeFrames()
     for (auto& baseFrame : _frameDB)
     {
       auto t0 = std::chrono::steady_clock::now(); // Profiling
-      baseFrame->getStateData(baseFrameData);
+      baseFrame->getFrameDataFromDifference(_sourceFrameData, baseFrameData);
       auto tf = std::chrono::steady_clock::now();
       threadFrameDecodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -273,11 +273,10 @@ void Train::computeFrames()
         // Storing the frame data, only if if belongs to the same level
         if (curWorld == _state[threadId]->_nes->_currentWorld && curStage == _state[threadId]->_nes->_currentStage)
         {
-
          t0 = std::chrono::steady_clock::now(); // Profiling
          uint8_t gameState[_FRAME_DATA_SIZE];
          _state[threadId]->_nes->serializeState(gameState);
-         newFrame->setStateData(gameState);
+         newFrame->computeFrameDifference(_sourceFrameData, gameState);
          tf = std::chrono::steady_clock::now(); // Profiling
          threadFrameEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
         }
@@ -395,6 +394,7 @@ void Train::printTrainStatus()
   printf("[JaffarNES]   + Frame Encoding:          %3.3fs\n", _stepFrameEncodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Decoding:          %3.3fs\n", _stepFrameDecodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Sorting            %3.3fs\n", _stepFrameDBSortingTime / 1.0e+9);
+  printf("[JaffarNES] Max Frame State Difference: %lu / %d\n", _maxFrameDiff, _MAX_FRAME_DIFF);
   printf("[JaffarNES] Frame DB Entries (Total / Max): %lu / %lu\n", _databaseSize, _maxDatabaseSize);
   printf("[JaffarNES] Frame DB Size (Total / Max): %.3fmb / %.3fmb\n", (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), (double)(_maxDatabaseSize * sizeof(Frame)) / (1024.0 * 1024.0));
   printf("[JaffarNES] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
@@ -404,7 +404,7 @@ void Train::printTrainStatus()
   printf("[JaffarNES] Best Frame Information:\n");
 
   uint8_t bestFrameData[_FRAME_DATA_SIZE];
-  _bestFrame.getStateData(bestFrameData);
+  _bestFrame.getFrameDataFromDifference(_sourceFrameData, bestFrameData);
   _state[0]->pushState(bestFrameData);
   _state[0]->_nes->printFrameInfo();
   _state[0]->printRuleStatus(_bestFrame.rulesStatus);
@@ -546,7 +546,12 @@ Train::Train(int argc, char *argv[])
   auto initialFrame = std::make_unique<Frame>();
   uint8_t gameState[_FRAME_DATA_SIZE];
   _state[0]->_nes->serializeState(gameState);
-  initialFrame->setStateData(gameState);
+
+  // Storing initial frame as base for differential comparison
+  memcpy(_sourceFrameData, gameState, _FRAME_DATA_SIZE);
+
+  // Storing initial frame difference
+  initialFrame->computeFrameDifference(_sourceFrameData, gameState);
   for (size_t i = 0; i < _ruleCount; i++) initialFrame->rulesStatus[i] = false;
 
   // Evaluating Rules on initial frame

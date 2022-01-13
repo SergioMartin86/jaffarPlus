@@ -16,8 +16,7 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 10.0 },
-     { "Type": "Set Mario Vertical Magnet Intensity", "Value": 1.0 }
+     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 }
     ]
    },
    
