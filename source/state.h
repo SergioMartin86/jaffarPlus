@@ -35,6 +35,9 @@ class State
    // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12    13
    //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "S" };
 
+   // W1-1, some keys can be skipped
+   if (_nes->_currentWorld == 1 && _nes->_currentStage == 1) return { 0, 1, 2, 3, 4, 6, 7, 9, 10 };
+
    // By default try all possible combinations
    return { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
   }
@@ -74,14 +77,15 @@ class State
     auto marioMagnet = getMarioMagnetValues(rulesStatus);
 
     // Evaluating mario magnet's reward on position
-    reward += marioMagnet.intensityX * (float)_nes->_marioPosX;
+    float velXRatio = (float)*_nes->_marioVelX/40.0f;
+    reward += marioMagnet.intensityX * (float)_nes->getScreenScroll();
+    reward += marioMagnet.intensityX * (float)*_nes->_marioRelPosX *(0.75f + 0.25f * velXRatio);
     if (marioMagnet.intensityY > 0.0f) reward += marioMagnet.intensityY * (256.0f - (float)*_nes->_marioPosY);
     if (marioMagnet.intensityY < 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioPosY;
 
-    // Evaluating mario magnet's reward on velocity
-    reward += marioMagnet.intensityX * (float)*_nes->_marioVelX * 100.0f;
-    if (marioMagnet.intensityY > 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioVelY * 100.0f;
-    if (marioMagnet.intensityY < 0.0f) reward += marioMagnet.intensityY * (float)*_nes->_marioVelY * 100.0f;
+    // Evaluating mario magnet's Y reward on velocity
+    if (marioMagnet.intensityY > 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioVelY;
+    if (marioMagnet.intensityY < 0.0f) reward += marioMagnet.intensityY * (float)*_nes->_marioVelY;
 
     // Returning reward
     return reward;

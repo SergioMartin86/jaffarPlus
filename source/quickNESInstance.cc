@@ -135,6 +135,17 @@ void quickNESInstance::deserializeState(const uint8_t* state)
  updateDerivedValues();
 }
 
+void quickNESInstance::serializeStateSmall(uint8_t* state) const
+{
+ _emu.serialize(state);
+}
+
+void quickNESInstance::deserializeStateSmall(const uint8_t* state)
+{
+ _emu.deserialize(state);
+ updateDerivedValues();
+}
+
 void quickNESInstance::advanceFrame(const uint8_t &move)
 {
  // Controller input bits

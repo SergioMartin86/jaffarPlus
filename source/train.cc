@@ -90,7 +90,7 @@ void Train::run()
     printf("[JaffarNES]  + Solution IGT:  %2lu:%02lu.%03lu\n", curMins, curSecs, curMilliSecs);
 
     uint8_t winFrameData[_FRAME_DATA_SIZE];
-    _winFrame.getStateData(winFrameData);
+    _winFrame.getFrameDataFromDifference(_referenceFrameData, winFrameData);
     _state[0]->pushState((uint8_t*)winFrameData);
     _state[0]->_nes->printFrameInfo();
     _state[0]->printRuleStatus(_winFrame.rulesStatus);
@@ -99,7 +99,7 @@ void Train::run()
 
     // Print Move History
     printf("[JaffarNES]  + Move List: ");
-    for (uint16_t i = 0; i < _currentStep-1; i++)
+    for (uint16_t i = 0; i < _currentStep; i++)
       printf("%s ", _possibleMoves[_winFrame.getMove(i)].c_str());
     printf("\n");
 
@@ -142,6 +142,13 @@ void Train::computeFrames()
   // Creating shared database for new frames
   std::vector<std::unique_ptr<Frame>> newFrames;
 
+  // Storing current source frame data for decoding
+  uint8_t currentSourceFrameData[_FRAME_DATA_SIZE];
+  memcpy(currentSourceFrameData, _referenceFrameData, _FRAME_DATA_SIZE);
+
+  // Updating reference data with the first entry of the latest frames, for encoding
+  _frameDB[0]->getFrameDataFromDifference(currentSourceFrameData, _referenceFrameData);
+
   // Initializing step timers
   _stepHashCalculationTime = 0.0;
   _stepHashCheckingTime1 = 01.0;
@@ -175,7 +182,7 @@ void Train::computeFrames()
     for (auto& baseFrame : _frameDB)
     {
       auto t0 = std::chrono::steady_clock::now(); // Profiling
-      baseFrame->getStateData(baseFrameData);
+      baseFrame->getFrameDataFromDifference(currentSourceFrameData, baseFrameData);
       auto tf = std::chrono::steady_clock::now();
       threadFrameDecodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -273,11 +280,10 @@ void Train::computeFrames()
         // Storing the frame data, only if if belongs to the same level
         if (curWorld == _state[threadId]->_nes->_currentWorld && curStage == _state[threadId]->_nes->_currentStage)
         {
-
          t0 = std::chrono::steady_clock::now(); // Profiling
          uint8_t gameState[_FRAME_DATA_SIZE];
          _state[threadId]->_nes->serializeState(gameState);
-         newFrame->setStateData(gameState);
+         newFrame->computeFrameDifference(_referenceFrameData, gameState);
          tf = std::chrono::steady_clock::now(); // Profiling
          threadFrameEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
         }
@@ -395,6 +401,7 @@ void Train::printTrainStatus()
   printf("[JaffarNES]   + Frame Encoding:          %3.3fs\n", _stepFrameEncodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Decoding:          %3.3fs\n", _stepFrameDecodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Sorting            %3.3fs\n", _stepFrameDBSortingTime / 1.0e+9);
+  printf("[JaffarNES] Max Frame State Difference: %lu / %d\n", _maxFrameDiff, _MAX_FRAME_DIFF);
   printf("[JaffarNES] Frame DB Entries (Total / Max): %lu / %lu\n", _databaseSize, _maxDatabaseSize);
   printf("[JaffarNES] Frame DB Size (Total / Max): %.3fmb / %.3fmb\n", (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), (double)(_maxDatabaseSize * sizeof(Frame)) / (1024.0 * 1024.0));
   printf("[JaffarNES] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
@@ -404,7 +411,7 @@ void Train::printTrainStatus()
   printf("[JaffarNES] Best Frame Information:\n");
 
   uint8_t bestFrameData[_FRAME_DATA_SIZE];
-  _bestFrame.getStateData(bestFrameData);
+  _bestFrame.getFrameDataFromDifference(_referenceFrameData, bestFrameData);
   _state[0]->pushState(bestFrameData);
   _state[0]->_nes->printFrameInfo();
   _state[0]->printRuleStatus(_bestFrame.rulesStatus);
@@ -546,7 +553,12 @@ Train::Train(int argc, char *argv[])
   auto initialFrame = std::make_unique<Frame>();
   uint8_t gameState[_FRAME_DATA_SIZE];
   _state[0]->_nes->serializeState(gameState);
-  initialFrame->setStateData(gameState);
+
+  // Storing initial frame as base for differential comparison
+  memcpy(_referenceFrameData, gameState, _FRAME_DATA_SIZE);
+
+  // Storing initial frame difference
+  initialFrame->computeFrameDifference(_referenceFrameData, gameState);
   for (size_t i = 0; i < _ruleCount; i++) initialFrame->rulesStatus[i] = false;
 
   // Evaluating Rules on initial frame

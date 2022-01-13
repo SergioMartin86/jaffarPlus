@@ -64,29 +64,14 @@ jaffarNESSrc = [
 
 openMP_dep = dependency('openmp', required: true)
 
-quicknesLib = shared_library('quicknes',
-  quicknesFiles,
-  cpp_args: [ '-Wfatal-errors', '-D__LIBRETRO__', '-DNDEBUG', '-Wno-multichar', '-fno-exceptions' ],
-  include_directories: inc,
-  link_args: [ '-lm' ]
-  )
-    
 executable('jaffarNES-train',
   'source/train.cc',
-  jaffarNESSrc,
+  jaffarNESSrc + quicknesFiles,
   include_directories: inc,
   dependencies: [ openMP_dep ],
-  link_with: [ quicknesLib ],
-  link_args: [ '-ldl', '-lncurses' ],
-  cpp_args: [ '-Wfatal-errors', '-Wall', '-Wno-multichar' ]
+  link_with: [ ],
+  link_args: [ '-ldl', '-lncurses', '-lm' ],
+  cpp_args: [ '-Wfatal-errors', '-D__LIBRETRO__', '-Wall', '-Wno-multichar' ]
 )
     
     
-executable('testRun',
-  'source/test.cc',
-  jaffarNESSrc,
-  include_directories: inc,
-  link_with: [ quicknesLib ],
-  link_args: [ '-ldl', '-lncurses' ],
-  cpp_args: [ '-Wfatal-errors', '-Wall', '-Wno-multichar' ]
-  )

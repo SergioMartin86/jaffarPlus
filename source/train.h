@@ -52,6 +52,9 @@ class Train
   size_t _stepFramesProcessedCounter;
   size_t _totalFramesProcessedCounter;
 
+  // Storage for source frame data for differential load/save
+  uint8_t _referenceFrameData[_FRAME_DATA_SIZE];
+
   // Frame databases
   size_t _databaseSize;
   size_t _maxDatabaseSize;
