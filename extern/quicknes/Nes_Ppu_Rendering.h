@@ -27,14 +27,12 @@ protected:
 private:
 
 	void draw_scanlines( int start, int count, byte* pixels, long pitch, int mode );
-	void draw_background_( int count );
 	
 	// destination for draw functions; avoids extra parameters
 	byte* scanline_pixels; 
 	long scanline_row_bytes;
 	
 	// fill/copy
-	void fill_background( int count );
 	void clip_left( int count );
 	void save_left( int count );
 	void restore_left( int count );
