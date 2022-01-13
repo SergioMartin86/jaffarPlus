@@ -35,11 +35,8 @@ class State
    // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12    13
    //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "S" };
 
-   // For now, try all combinations. Prioritize R for readability
-   return { 0, 2, 3, 4, 5, 7, 9, 1, 6, 8, 10, 11, 12 };
-
-   // Default, do nothing
-   return {0};
+   // By default try all possible combinations
+   return { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
   }
 
   // Function to get magnet information
@@ -76,10 +73,15 @@ class State
     // Getting magnet values for the kid
     auto marioMagnet = getMarioMagnetValues(rulesStatus);
 
-    // Evaluating marioMagnet's reward on the X axis
-    reward += (float) marioMagnet.intensityX * (float)_nes->_marioPosX;
-    if (marioMagnet.intensityY > 0.0f) reward += (float) marioMagnet.intensityY * (256.0f - (float)*_nes->_marioPosY);
-    if (marioMagnet.intensityY < 0.0f) reward += (float) -1.0f * marioMagnet.intensityY * (float)*_nes->_marioPosY;
+    // Evaluating mario magnet's reward on position
+    reward += marioMagnet.intensityX * (float)_nes->_marioPosX;
+    if (marioMagnet.intensityY > 0.0f) reward += marioMagnet.intensityY * (256.0f - (float)*_nes->_marioPosY);
+    if (marioMagnet.intensityY < 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioPosY;
+
+    // Evaluating mario magnet's reward on velocity
+    reward += marioMagnet.intensityX * (float)*_nes->_marioVelX * 100.0f;
+    if (marioMagnet.intensityY > 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioVelY * 100.0f;
+    if (marioMagnet.intensityY < 0.0f) reward += marioMagnet.intensityY * (float)*_nes->_marioVelY * 100.0f;
 
     // Returning reward
     return reward;

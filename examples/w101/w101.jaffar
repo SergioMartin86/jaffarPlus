@@ -26,7 +26,7 @@
     "Description": "If Mario gets to pipe, win.",
     "Conditions":
     [
-     { "Property": "Mario Position X", "Op": ">=", "Value":  1172 }
+     { "Property": "Mario State", "Op": "==", "Value":  3 }
     ],
     
     "Satisfies": [ ],
@@ -42,7 +42,7 @@
     "Description": "If Mario dies from getting hit, then fail.",
     "Conditions":
     [
-     { "Property": "Mario Frame", "Op": "==", "Value":  159 }
+     { "Property": "Mario State", "Op": "==", "Value":  11 }
     ],
     
     "Satisfies": [ ],

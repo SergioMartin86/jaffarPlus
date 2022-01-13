@@ -591,7 +591,7 @@ void Train::showSavingLoop()
     sleep(1);
 
     // Checking if we need to save best frame
-    if (_outputSaveBestSeconds > 0.0)
+    if (_outputSaveBestSeconds > 0.0 && _currentStep > 1)
     {
       double bestFrameTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - bestFrameSaveTimer).count();
       if (bestFrameTimerElapsed / 1.0e+9 > _outputSaveBestSeconds)
