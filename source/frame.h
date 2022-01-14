@@ -1,16 +1,19 @@
 #pragma once
 
-#ifndef _MAX_FRAME_DIFF
- #define _MAX_FRAME_DIFF 700
-#endif
+// W1-1a
+//#define _MAX_FRAME_DIFF 700
+//#define _MAX_RULE_COUNT 5
+//#define _MAX_MOVELIST_SIZE 440
 
-#ifndef _MAX_RULE_COUNT
- #define _MAX_RULE_COUNT 30
-#endif
+// W1-1b
+//#define _MAX_FRAME_DIFF 300
+//#define _MAX_RULE_COUNT 8
+//#define _MAX_MOVELIST_SIZE 150
 
-#ifndef _MAX_MOVELIST_SIZE
- #define _MAX_MOVELIST_SIZE 440
-#endif
+// W1-1c
+#define _MAX_FRAME_DIFF 800
+#define _MAX_RULE_COUNT 7
+#define _MAX_MOVELIST_SIZE 300
 
 #define _MAX_MOVELIST_STORAGE ((_MAX_MOVELIST_SIZE/2) + 1)
 #define _FRAME_DATA_SIZE 12792
