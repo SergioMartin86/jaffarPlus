@@ -22,7 +22,10 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  _screenScroll         = (uint16_t*) &_baseMem[0x071B];
  _marioAnimation       = (uint8_t*)  &_baseMem[0x0001];
  _marioState           = (uint8_t*)  &_baseMem[0x000E];
+
+ _marioBasePosX        = (uint8_t*)  &_baseMem[0x006D];
  _marioRelPosX         = (uint8_t*)  &_baseMem[0x0086];
+
  _marioPosY            = (uint8_t*)  &_baseMem[0x00CE];
  _marioMovingDirection = (uint8_t*)  &_baseMem[0x0045];
  _marioFacingDirection = (uint8_t*)  &_baseMem[0x0033];
@@ -43,6 +46,8 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  _timeLeft1            = (uint8_t*)  &_baseMem[0x07FA];
 
  _currentScreen        = (uint8_t*)  &_baseMem[0x071A];
+ _screenPosition       = (uint8_t*)  &_baseMem[0x071C];
+
  _currentWorldRaw      = (uint8_t*)  &_baseMem[0x075F];
  _currentStageRaw      = (uint8_t*)  &_baseMem[0x075C];
  _levelEntryFlag       = (uint8_t*)  &_baseMem[0x0752];
@@ -119,7 +124,7 @@ void quickNESInstance::saveStateFile(const std::string& stateFilePath)
 void quickNESInstance::updateDerivedValues()
 {
  // Recalculating derived values
- _marioPosX = getScreenScroll() + *_marioRelPosX;
+ _marioPosX = (uint16_t)*_marioBasePosX * 256 + (uint16_t)*_marioRelPosX;
  _currentWorld = *_currentWorldRaw + 1;
  _currentStage = *_currentStageRaw + 1;
 }
@@ -200,7 +205,7 @@ void quickNESInstance::printFrameInfo()
   printf("[JaffarNES]  + Time Left:              %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
   printf("[JaffarNES]  + Mario Animation:        %02u\n", *_marioAnimation);
   printf("[JaffarNES]  + Mario State:            %02u\n", *_marioState);
-  printf("[JaffarNES]  + Mario Pos X:            %04u (%04u + %02u)\n", _marioPosX, getScreenScroll(), *_marioRelPosX);
+  printf("[JaffarNES]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _marioPosX, *_marioBasePosX, (uint16_t)*_marioBasePosX * 255, *_marioRelPosX);
   printf("[JaffarNES]  + Mario Pos Y:            %02u\n", *_marioPosY);
   printf("[JaffarNES]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_marioVelX, *_marioXMoveForce, *_marioMaxVelLeft, *_marioMaxVelRight);
   printf("[JaffarNES]  + Mario Vel Y:            %02d (%02d)\n", *_marioVelY, *_marioFracVelY);
@@ -215,6 +220,7 @@ void quickNESInstance::printFrameInfo()
   printf("[JaffarNES]  + Enemy Active:           %1u%1u%1u%1u%1u\n", *_enemy1Active, *_enemy2Active, *_enemy3Active, *_enemy4Active, *_enemy5Active);
   printf("[JaffarNES]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State);
   printf("[JaffarNES]  + Hit Detection Flags:    %02u %02u %02u\n", *_marioCollision, *_enemyCollision, *_hitDetectionFlag);
-  printf("[JaffarNES]  + Screen / Level Entry:   %02u / %02u\n", *_currentScreen, *_levelEntryFlag);
+  printf("[JaffarNES]  + Screen # / Position:    %02u / %02u\n", *_currentScreen, *_screenPosition);
+  printf("[JaffarNES]  + Level Entry Flag:       %02u\n", *_levelEntryFlag);
   printf("[JaffarNES]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_animationTimer, *_jumpSwimTimer, *_runningTimer, *_blockBounceTimer, *_sideCollisionTimer, *_jumpspringTimer, *_climbSideTimer, *_enemyFrameTimer, *_frenzyEnemyTimer, *_bowserFireTimer, *_stompTimer, *_airBubbleTimer, *_multiCoinBlockTimer, *_invincibleTimer, *_starTimer);
 }

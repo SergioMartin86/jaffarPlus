@@ -77,11 +77,13 @@ class State
     auto marioMagnet = getMarioMagnetValues(rulesStatus);
 
     // Evaluating mario magnet's reward on position
-    float velXRatio = (float)*_nes->_marioVelX/40.0f;
-    reward += marioMagnet.intensityX * (float)_nes->getScreenScroll();
-    reward += marioMagnet.intensityX * (float)*_nes->_marioRelPosX *(0.75f + 0.25f * velXRatio);
+    reward += marioMagnet.intensityX * ((float)*_nes->_marioBasePosX * 256.0f + (float)*_nes->_marioRelPosX);
     if (marioMagnet.intensityY > 0.0f) reward += marioMagnet.intensityY * (256.0f - (float)*_nes->_marioPosY);
     if (marioMagnet.intensityY < 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioPosY;
+
+    // Special case: If this is W1-2, doubly reward also screen movement, because this triggers the warp zone activation
+    if (_nes->_currentWorld == 1 && _nes->_currentStage)
+     reward += 2 * marioMagnet.intensityX * ((float)*_nes->_currentScreen * 256.0f + (float)*_nes->_screenPosition);
 
     // Evaluating mario magnet's Y reward on velocity
     if (marioMagnet.intensityY > 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioVelY;

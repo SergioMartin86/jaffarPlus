@@ -43,7 +43,10 @@ class quickNESInstance
     hash.Update(*_screenScroll);
     hash.Update(*_marioAnimation);
     hash.Update(*_marioState);
+
+    hash.Update(*_marioBasePosX);
     hash.Update(*_marioRelPosX);
+
     hash.Update(*_marioXMoveForce);
     hash.Update(*_marioPosY);
     hash.Update(*_marioFacingDirection);
@@ -61,6 +64,8 @@ class quickNESInstance
     hash.Update(*_marioFriction);
 
     hash.Update(*_currentScreen);
+    hash.Update(*_screenPosition);
+
     hash.Update(*_currentWorldRaw);
     hash.Update(*_currentStageRaw);
     hash.Update(*_levelEntryFlag);
@@ -120,7 +125,10 @@ class quickNESInstance
   uint16_t* _screenScroll; inline uint16_t getScreenScroll() { return swap_endian<uint16_t>(*_screenScroll); };
   uint8_t* _marioAnimation;
   uint8_t* _marioState;
+
+  uint8_t* _marioBasePosX;
   uint8_t* _marioRelPosX;
+
   uint8_t* _marioPosY;
   uint8_t* _marioMovingDirection;
   uint8_t* _marioFacingDirection;
@@ -141,6 +149,8 @@ class quickNESInstance
   uint8_t* _timeLeft1;
 
   uint8_t* _currentScreen;
+  uint8_t* _screenPosition;
+
   uint8_t* _currentWorldRaw;
   uint8_t* _currentStageRaw;
   uint8_t* _levelEntryFlag;
