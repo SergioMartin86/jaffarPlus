@@ -79,6 +79,7 @@ class quickNESInstance
 
     hash.Update(*_marioCollision);
     hash.Update(*_enemyCollision);
+    hash.Update(*_hitDetectionFlag);
 
     // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
     hash.Update(*_animationTimer < 2 ? *_animationTimer : (uint8_t)2);
@@ -86,8 +87,8 @@ class quickNESInstance
     hash.Update(*_runningTimer < 2 ? *_runningTimer : (uint8_t)2);
     hash.Update(*_blockBounceTimer < 2 ? *_blockBounceTimer : (uint8_t)2);
     hash.Update(*_sideCollisionTimer < 2 ? *_sideCollisionTimer : (uint8_t)2);
-    hash.Update(*_jumpspringTimer < 2 ? *_jumpspringTimer : (uint8_t)2);
-    hash.Update(*_climbSideTimer < 2 ? *_climbSideTimer : (uint8_t)2);
+    hash.Update(*_jumpspringTimer);
+    hash.Update(*_climbSideTimer);
     hash.Update(*_enemyFrameTimer < 2 ? *_enemyFrameTimer : (uint8_t)2);
     hash.Update(*_frenzyEnemyTimer < 2 ? *_frenzyEnemyTimer : (uint8_t)2);
     hash.Update(*_bowserFireTimer < 2 ? *_bowserFireTimer : (uint8_t)2);
@@ -158,6 +159,7 @@ class quickNESInstance
 
   uint8_t* _marioCollision;
   uint8_t* _enemyCollision;
+  uint8_t* _hitDetectionFlag;
 
   uint8_t* _powerUpActive;
 
