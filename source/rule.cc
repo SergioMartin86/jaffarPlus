@@ -159,6 +159,7 @@ datatype_t Rule::getPropertyType(const std::string &property)
   if (property == "Mario State") return dt_uint8;
   if (property == "Mario Position X") return dt_uint16;
   if (property == "Mario Position Y") return dt_uint8;
+  if (property == "Mario Relative Position X") return dt_uint8;
   if (property == "Current World") return dt_uint8;
   if (property == "Current Stage") return dt_uint8;
   if (property == "Current Screen") return dt_uint8;
@@ -173,6 +174,7 @@ void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *ne
 {
   if (property == "Mario State") return nes->_marioState;
   if (property == "Mario Position X") return &nes->_marioPosX; // Derivative value
+  if (property == "Mario Relative Position X") return nes->_marioRelPosX;
   if (property == "Mario Position Y") return nes->_marioPosY;
   if (property == "Current World") return &nes->_currentWorld; // Derivative value
   if (property == "Current Stage") return &nes->_currentStage; // Derivative value
