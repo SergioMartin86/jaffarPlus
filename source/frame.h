@@ -16,7 +16,7 @@
 //#define _MAX_MOVELIST_SIZE 300
 
 // W2-1a
-#define _MAX_FRAME_DIFF 700
+#define _MAX_FRAME_DIFF 900
 #define _MAX_RULE_COUNT 7
 #define _MAX_MOVELIST_SIZE 1350
 
