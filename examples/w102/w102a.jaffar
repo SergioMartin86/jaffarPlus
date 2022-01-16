@@ -74,10 +74,27 @@
    
    {
     "Label": 1999,
-    "Description": "If Mario dies from falling, then fail.",
+    "Description": "If Mario falls, then fail.",
     "Conditions":
     [
-     { "Property": "Mario Position Y", "Op": ">", "Value":  250 }
+     { "Property": "Current Screen", "Op": ">=", "Value":  10 },
+     { "Property": "Mario Position Y", "Op": ">", "Value":  128 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1997,
+    "Description": "If Mario goes too far to the left, then fail.",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">", "Value":  2955 }
     ],
     
     "Satisfies": [ ],
@@ -87,6 +104,5 @@
      { "Type": "Trigger Fail" }
     ]
    }
-   
   ]  
 }
