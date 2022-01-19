@@ -40,7 +40,7 @@
    },
    
    {
-    "Label": 1004,
+    "Label": 1003,
     "Description": "Once close the corresponding pipe, win if start going down.",
     "Conditions":
     [
@@ -59,7 +59,7 @@
    },
 
    {
-    "Label": 1997,
+    "Label": 1996,
     "Description": "Don't allow mario to get on the roof",
     "Conditions":
     [
@@ -75,7 +75,7 @@
    },
       
    {
-    "Label": 1998,
+    "Label": 1997,
     "Description": "If Mario dies from getting hit, then fail.",
     "Conditions":
     [
@@ -91,7 +91,7 @@
    },
    
    {
-    "Label": 1999,
+    "Label": 1998,
     "Description": "If Mario falls, then fail.",
     "Conditions":
     [
@@ -108,7 +108,7 @@
    },
    
    {
-    "Label": 1997,
+    "Label": 1999,
     "Description": "If Mario goes too far to the right, then fail.",
     "Conditions":
     [
