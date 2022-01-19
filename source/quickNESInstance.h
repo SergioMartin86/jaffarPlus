@@ -63,8 +63,8 @@ class quickNESInstance
     hash.Update(*_marioGravity);
     hash.Update(*_marioFriction);
 
-    hash.Update(*_currentScreen);
-    hash.Update(*_screenPosition);
+    hash.Update(*_screenBasePosX);
+    hash.Update(*_screenRelPosX);
 
     hash.Update(*_currentWorldRaw);
     hash.Update(*_currentStageRaw);
@@ -81,6 +81,12 @@ class quickNESInstance
     hash.Update(*_enemy3State);
     hash.Update(*_enemy4State);
     hash.Update(*_enemy5State);
+
+    hash.Update(*_enemy1Type);
+    hash.Update(*_enemy2Type);
+    hash.Update(*_enemy3Type);
+    hash.Update(*_enemy4Type);
+    hash.Update(*_enemy5Type);
 
     hash.Update(*_marioCollision);
     hash.Update(*_enemyCollision);
@@ -104,6 +110,8 @@ class quickNESInstance
     hash.Update(*_invincibleTimer < 2 ? *_invincibleTimer : (uint8_t)2);
     hash.Update(*_starTimer < 2 ? *_starTimer : (uint8_t)2);
     hash.Update(*_powerUpActive < 2 ? *_powerUpActive : (uint8_t)2);
+
+    hash.Update(*_warpAreaOffset);
 
 //    hash.Update(*_player1Input);
 //    hash.Update(*_player1Buttons);
@@ -148,8 +156,8 @@ class quickNESInstance
   uint8_t* _timeLeft10;
   uint8_t* _timeLeft1;
 
-  uint8_t* _currentScreen;
-  uint8_t* _screenPosition;
+  uint8_t* _screenBasePosX;
+  uint8_t* _screenRelPosX;
 
   uint8_t* _currentWorldRaw;
   uint8_t* _currentStageRaw;
@@ -166,6 +174,12 @@ class quickNESInstance
   uint8_t* _enemy3State;
   uint8_t* _enemy4State;
   uint8_t* _enemy5State;
+
+  uint8_t* _enemy1Type;
+  uint8_t* _enemy2Type;
+  uint8_t* _enemy3Type;
+  uint8_t* _enemy4Type;
+  uint8_t* _enemy5Type;
 
   uint8_t* _marioCollision;
   uint8_t* _enemyCollision;
@@ -195,8 +209,12 @@ class quickNESInstance
   uint8_t* _player1GamePad1;
   uint8_t* _player1GamePad2;
 
+  uint16_t* _warpAreaOffset;
+
   // Derivative values
   uint16_t _marioPosX;
+  uint16_t _screenPosX;
+  int16_t _marioScreenOffset;
   uint8_t _currentWorld;
   uint8_t _currentStage;
 };

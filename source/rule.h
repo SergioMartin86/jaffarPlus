@@ -103,6 +103,7 @@ class Rule
   bool _isFailRule;
 
   // Stores magnet information
+  float _screenMagnetIntensityX;
   float _marioMagnetIntensityX;
   float _marioMagnetIntensityY;
 

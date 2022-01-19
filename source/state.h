@@ -64,6 +64,25 @@ class State
    return magnetInfo;
   }
 
+  // Function to get magnet information
+  inline float getScreenMagnetValue(const bool* rulesStatus) const
+  {
+   // Storage for magnet information
+   float intensityX = 0.0f;
+
+   // Iterating rule vector
+   for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++)
+   {
+    if (rulesStatus[ruleId] == true)
+    {
+      const auto& rule = _rules[ruleId];
+      intensityX = rule->_screenMagnetIntensityX;
+    }
+   }
+
+   return intensityX;
+  }
+
   // Obtains the score of a given frame
   inline float getFrameReward(const bool* rulesStatus) const
   {
@@ -76,14 +95,14 @@ class State
     // Getting magnet values for the kid
     auto marioMagnet = getMarioMagnetValues(rulesStatus);
 
+    // Evaluating screen screen magnet value
+    auto screenMagnet = getScreenMagnetValue(rulesStatus);
+    reward += screenMagnet * (float)_nes->_screenPosX;
+
     // Evaluating mario magnet's reward on position
-    reward += marioMagnet.intensityX * ((float)*_nes->_marioBasePosX * 256.0f + (float)*_nes->_marioRelPosX);
+    reward += marioMagnet.intensityX * (float)_nes->_marioPosX;
     if (marioMagnet.intensityY > 0.0f) reward += marioMagnet.intensityY * (256.0f - (float)*_nes->_marioPosY);
     if (marioMagnet.intensityY < 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioPosY;
-
-    // Special case: If this is W1-2, doubly reward also screen movement, because this triggers the warp zone activation
-    if (_nes->_currentWorld == 1 && _nes->_currentStage)
-     reward += 2 * marioMagnet.intensityX * ((float)*_nes->_currentScreen * 256.0f + (float)*_nes->_screenPosition);
 
     // Evaluating mario magnet's Y reward on velocity
     if (marioMagnet.intensityY > 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioVelY;

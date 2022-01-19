@@ -122,6 +122,13 @@ void Rule::parseActions(nlohmann::json actionsJs)
      recognizedActionType = true;
    }
 
+   if (actionType == "Set Screen Horizontal Magnet Intensity")
+   {
+     if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
+     _screenMagnetIntensityX = actionJs["Value"].get<float>();
+     recognizedActionType = true;
+   }
+
    if (actionType == "Set Mario Horizontal Magnet Intensity")
    {
      if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
@@ -157,6 +164,7 @@ operator_t Rule::getOperationType(const std::string &operation)
 datatype_t Rule::getPropertyType(const std::string &property)
 {
   if (property == "Mario State") return dt_uint8;
+  if (property == "Screen Position X") return dt_uint16;
   if (property == "Mario Position X") return dt_uint16;
   if (property == "Mario Position Y") return dt_uint8;
   if (property == "Mario Relative Position X") return dt_uint8;
@@ -164,6 +172,13 @@ datatype_t Rule::getPropertyType(const std::string &property)
   if (property == "Current Stage") return dt_uint8;
   if (property == "Current Screen") return dt_uint8;
   if (property == "Level Entry Flag") return dt_uint8;
+  if (property == "Warp Area Offset") return dt_uint16;
+  if (property == "Enemy 1 Type") return dt_uint8;
+  if (property == "Enemy 2 Type") return dt_uint8;
+  if (property == "Enemy 3 Type") return dt_uint8;
+  if (property == "Enemy 4 Type") return dt_uint8;
+  if (property == "Enemy 5 Type") return dt_uint8;
+  if (property == "Mario Screen Offset") return dt_int16;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 
@@ -173,13 +188,21 @@ datatype_t Rule::getPropertyType(const std::string &property)
 void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *nes)
 {
   if (property == "Mario State") return nes->_marioState;
+  if (property == "Screen Position X") return &nes->_screenPosX; // Derivative value
   if (property == "Mario Position X") return &nes->_marioPosX; // Derivative value
   if (property == "Mario Relative Position X") return nes->_marioRelPosX;
   if (property == "Mario Position Y") return nes->_marioPosY;
   if (property == "Current World") return &nes->_currentWorld; // Derivative value
   if (property == "Current Stage") return &nes->_currentStage; // Derivative value
-  if (property == "Current Screen") return nes->_currentScreen;
+  if (property == "Current Screen") return nes->_screenBasePosX;
   if (property == "Level Entry Flag") return nes->_levelEntryFlag;
+  if (property == "Warp Area Offset") return nes->_warpAreaOffset;
+  if (property == "Enemy 1 Type") return nes->_enemy1Type;
+  if (property == "Enemy 2 Type") return nes->_enemy2Type;
+  if (property == "Enemy 3 Type") return nes->_enemy3Type;
+  if (property == "Enemy 4 Type") return nes->_enemy4Type;
+  if (property == "Enemy 5 Type") return nes->_enemy5Type;
+  if (property == "Mario Screen Offset") return &nes->_marioScreenOffset; // Derivative value
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 

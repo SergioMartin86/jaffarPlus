@@ -45,8 +45,8 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  _timeLeft10           = (uint8_t*)  &_baseMem[0x07F9];
  _timeLeft1            = (uint8_t*)  &_baseMem[0x07FA];
 
- _currentScreen        = (uint8_t*)  &_baseMem[0x071A];
- _screenPosition       = (uint8_t*)  &_baseMem[0x071C];
+ _screenBasePosX       = (uint8_t*)  &_baseMem[0x071A];
+ _screenRelPosX        = (uint8_t*)  &_baseMem[0x071C];
 
  _currentWorldRaw      = (uint8_t*)  &_baseMem[0x075F];
  _currentStageRaw      = (uint8_t*)  &_baseMem[0x075C];
@@ -63,6 +63,12 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  _enemy3State          = (uint8_t*)  &_baseMem[0x0020];
  _enemy4State          = (uint8_t*)  &_baseMem[0x0021];
  _enemy5State          = (uint8_t*)  &_baseMem[0x0022];
+
+ _enemy1Type           = (uint8_t*)  &_baseMem[0x0016];
+ _enemy2Type           = (uint8_t*)  &_baseMem[0x0017];
+ _enemy3Type           = (uint8_t*)  &_baseMem[0x0018];
+ _enemy4Type           = (uint8_t*)  &_baseMem[0x0019];
+ _enemy5Type           = (uint8_t*)  &_baseMem[0x001A];
 
  _marioCollision       = (uint8_t*)  &_baseMem[0x0490];
  _enemyCollision       = (uint8_t*)  &_baseMem[0x0491];
@@ -91,6 +97,8 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  _player1Buttons       = (uint8_t*)  &_baseMem[0x074A];
  _player1GamePad1      = (uint8_t*)  &_baseMem[0x000A];
  _player1GamePad2      = (uint8_t*)  &_baseMem[0x000D];
+
+ _warpAreaOffset       = (uint16_t*) &_baseMem[0x0750];
 }
 
 void quickNESInstance::loadStateFile(const std::string& stateFilePath)
@@ -125,6 +133,8 @@ void quickNESInstance::updateDerivedValues()
 {
  // Recalculating derived values
  _marioPosX = (uint16_t)*_marioBasePosX * 256 + (uint16_t)*_marioRelPosX;
+ _screenPosX = (uint16_t)*_screenBasePosX * 256 + (uint16_t)*_screenRelPosX;
+ _marioScreenOffset = _marioPosX - _screenPosX;
  _currentWorld = *_currentWorldRaw + 1;
  _currentStage = *_currentStageRaw + 1;
 }
@@ -205,7 +215,9 @@ void quickNESInstance::printFrameInfo()
   printf("[JaffarNES]  + Time Left:              %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
   printf("[JaffarNES]  + Mario Animation:        %02u\n", *_marioAnimation);
   printf("[JaffarNES]  + Mario State:            %02u\n", *_marioState);
+  printf("[JaffarNES]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", _screenPosX, *_screenBasePosX, (uint16_t)*_screenBasePosX * 255, *_screenRelPosX);
   printf("[JaffarNES]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _marioPosX, *_marioBasePosX, (uint16_t)*_marioBasePosX * 255, *_marioRelPosX);
+  printf("[JaffarNES]  + Mario / Screen Offset:  %04d\n", _marioScreenOffset);
   printf("[JaffarNES]  + Mario Pos Y:            %02u\n", *_marioPosY);
   printf("[JaffarNES]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_marioVelX, *_marioXMoveForce, *_marioMaxVelLeft, *_marioMaxVelRight);
   printf("[JaffarNES]  + Mario Vel Y:            %02d (%02d)\n", *_marioVelY, *_marioFracVelY);
@@ -219,8 +231,9 @@ void quickNESInstance::printFrameInfo()
   printf("[JaffarNES]  + Powerup Active:         %1u\n", *_powerUpActive);
   printf("[JaffarNES]  + Enemy Active:           %1u%1u%1u%1u%1u\n", *_enemy1Active, *_enemy2Active, *_enemy3Active, *_enemy4Active, *_enemy5Active);
   printf("[JaffarNES]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State);
+  printf("[JaffarNES]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *_enemy1Type, *_enemy2Type, *_enemy3Type, *_enemy4Type, *_enemy5Type);
   printf("[JaffarNES]  + Hit Detection Flags:    %02u %02u %02u\n", *_marioCollision, *_enemyCollision, *_hitDetectionFlag);
-  printf("[JaffarNES]  + Screen # / Position:    %02u / %02u\n", *_currentScreen, *_screenPosition);
   printf("[JaffarNES]  + Level Entry Flag:       %02u\n", *_levelEntryFlag);
+  printf("[JaffarNES]  + Warp Area Offset:       %04u\n", *_warpAreaOffset);
   printf("[JaffarNES]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_animationTimer, *_jumpSwimTimer, *_runningTimer, *_blockBounceTimer, *_sideCollisionTimer, *_jumpspringTimer, *_climbSideTimer, *_enemyFrameTimer, *_frenzyEnemyTimer, *_bowserFireTimer, *_stompTimer, *_airBubbleTimer, *_multiCoinBlockTimer, *_invincibleTimer, *_starTimer);
 }

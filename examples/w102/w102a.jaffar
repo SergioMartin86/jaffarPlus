@@ -16,7 +16,8 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 }
+     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
+     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 1.0 }
     ]
    },
    
@@ -33,7 +34,8 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 30000 },
-     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": -1.0 }
+     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": -1.0 },
+     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 0.0 }
     ]
    },
    
@@ -48,14 +50,30 @@
      
     ],
     
-    "Satisfies": [ 1002 ],
+    "Satisfies": [ ],
     
     "Actions":
     [
      { "Type": "Trigger Win" }
     ]
    },
-   
+
+   {
+    "Label": 1997,
+    "Description": "Don't allow mario to get on the roof",
+    "Conditions":
+    [
+     { "Property": "Mario Position Y", "Op": "<", "Value":  20 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+      
    {
     "Label": 1998,
     "Description": "If Mario dies from getting hit, then fail.",
@@ -91,7 +109,7 @@
    
    {
     "Label": 1997,
-    "Description": "If Mario goes too far to the left, then fail.",
+    "Description": "If Mario goes too far to the right, then fail.",
     "Conditions":
     [
      { "Property": "Mario Position X", "Op": ">", "Value":  2955 }

@@ -16,12 +16,49 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 }
+     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
+     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 }
     ]
-   },
+   }, 
    
    {
     "Label": 1002,
+    "Description": "Reward having Mario offset the screen exactly by 132",
+    "Conditions":
+    [
+     { "Property": "Mario Screen Offset", "Op": "==", "Value":  132 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
+     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 }
+    ]
+   }, 
+   
+   {
+    "Label": 1003,
+    "Description": "Reward getting the vine",
+    "Conditions":
+    [
+     { "Property": "Enemy 2 Type", "Op": "==", "Value":  47 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
+     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 }
+    ]
+   }, 
+   
+   {
+    "Label": 1004,
     "Description": "If Mario gets to the pipe",
     "Conditions":
     [
@@ -32,7 +69,75 @@
     
     "Actions":
     [
+      { "Type": "Add Reward", "Value": 10000 },
+      { "Type": "Set Mario Horizontal Magnet Intensity", "Value": -1.0 },
+      { "Type": "Set Screen Horizontal Magnet Intensity", "Value": -10.0 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "If Mario exits the level",
+    "Conditions":
+    [
+     { "Property": "Level Entry Flag", "Op": "==", "Value":  1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
       { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 1995,
+    "Description": "If too much offset, fail",
+    "Conditions":
+    [
+     { "Property": "Mario Screen Offset", "Op": ">", "Value":  132 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }, 
+   
+   {
+    "Label": 1996,
+    "Description": "If warp area offset changes, then fail.",
+    "Conditions":
+    [
+     { "Property": "Warp Area Offset", "Op": "==", "Value": 2114 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+      
+   {
+    "Label": 1997,
+    "Description": "If going over the first blocks, fail.",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">", "Value":  345 },
+     { "Property": "Mario Position X", "Op": "<", "Value":  687 },
+     { "Property": "Mario Position Y", "Op": "<", "Value":  140 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    },
    
