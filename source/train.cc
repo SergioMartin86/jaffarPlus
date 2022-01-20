@@ -362,7 +362,7 @@ void Train::computeFrames()
   if (_hashSizeCurrent > _hashSizeUpperBound)
   {
    // Calculating how many old hash entries we need to delete to reach the lower bound
-   size_t targetDeletedHashEntries = (_hashSizeLowerBound * (1024.0 * 1024.0)) /  (double)sizeof(std::pair<const uint16_t, uint64_t>);
+   size_t targetDeletedHashEntries = ( (_hashSizeCurrent - _hashSizeLowerBound) * (1024.0 * 1024.0)) /  (double)sizeof(std::pair<const uint16_t, uint64_t>);
 
    // Calculate how many old steps we need to forget to reach the number of entries calculated before
    size_t curDeletedHashEntries = 0;
