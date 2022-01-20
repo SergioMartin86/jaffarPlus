@@ -417,12 +417,12 @@ void Train::printTrainStatus()
   _state[0]->printRuleStatus(_bestFrame.rulesStatus);
 
   // Getting magnet values for Mario
-  auto screenMagnet = _state[0]->getScreenMagnetValue(_bestFrame.rulesStatus);
-  auto marioMagnet = _state[0]->getMarioMagnetValues(_bestFrame.rulesStatus);
+  auto magnets = _state[0]->getMagnetValues(_bestFrame.rulesStatus);
 
-  printf("[JaffarNES]  + Screen Horizontal Magnet Intensity: %.1f\n", screenMagnet);
-  printf("[JaffarNES]  + Mario Horizontal Magnet Intensity: %.1f\n", marioMagnet.intensityX);
-  printf("[JaffarNES]  + Mario Vertical Magnet Intensity: %.1f\n", marioMagnet.intensityY);
+  printf("[JaffarNES]  + Screen Horizontal Magnet Intensity: %.1f\n", magnets.screenMagnetIntensityX);
+  printf("[JaffarNES]  + Mario Screen Offset Magnet Intensity: %.1f\n", magnets.marioScreenOffsetMagnetIntensityX);
+  printf("[JaffarNES]  + Mario Horizontal Magnet Intensity: %.1f\n", magnets.marioMagnetIntensityX);
+  printf("[JaffarNES]  + Mario Vertical Magnet Intensity: %.1f\n", magnets.marioMagnetIntensityY);
 
   #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
 

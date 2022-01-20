@@ -1,23 +1,3 @@
-
-// Nes_Emu 0.7.0. http://www.slack.net/~ant/nes-emu/
-
-// TODO: remove
-#if !defined (NDEBUG) && 0
-	#pragma peephole on
-	#pragma global_optimizer on
-	#pragma optimization_level 4
-	#pragma scheduling 604
-	#undef BLARGG_ENABLE_OPTIMIZER
-#endif
-
-#include "Nes_Cpu.h"
-
-#include <string.h>
-#include <limits.h>
-#include "blargg_endian.h"
-
-#include "nes_cpu_io.h"
-
 /* Copyright (C) 2003-2006 Shay Green. This module is free software; you
 can redistribute it and/or modify it under the terms of the GNU Lesser
 General Public License as published by the Free Software Foundation; either
@@ -28,7 +8,13 @@ FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
 more details. You should have received a copy of the GNU Lesser General
 Public License along with this module; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
+// Nes_Emu 0.7.0. http://www.slack.net/~ant/nes-emu/
 
+#include "Nes_Cpu.h"
+#include <string.h>
+#include <limits.h>
+#include "blargg_endian.h"
+#include "nes_cpu_io.h"
 #include "blargg_source.h"
 
 #ifdef BLARGG_ENABLE_OPTIMIZER
@@ -113,9 +99,6 @@ void Nes_Cpu::write( nes_addr_t addr, int value )
 	WRITE( addr, value );
 }
 
-void Nes_Cpu::set_tracecb(void (*cb)(unsigned int *data))
-{
-}
 
 #ifndef NES_CPU_GLUE_ONLY
 
@@ -138,6 +121,120 @@ static const unsigned char clock_table [256] = {
 	2,6,2,8,3,3,5,5,2,2,2,2,4,4,6,6,// E
 	3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7 // F
 };
+
+#define IS_NEG (nz & 0x880)
+
+ #define CALC_STATUS( out ) do {             \
+  out = status & (st_v | st_d | st_i);    \
+  out |= (c >> 8) & st_c;                 \
+  if ( IS_NEG ) out |= st_n;              \
+  if ( !(nz & 0xFF) ) out |= st_z;        \
+ } while ( 0 )
+
+ #define SET_STATUS( in ) do {               \
+  status = in & (st_v | st_d | st_i);     \
+  c = in << 8;                            \
+  nz = (in << 4) & 0x800;                 \
+  nz |= ~in & st_z;                       \
+ } while ( 0 )
+
+ // Macros
+
+ #define GET_OPERAND( addr )   page [addr]
+ #define GET_OPERAND16( addr ) GET_LE16( &page [addr] )
+
+ //#define GET_OPERAND( addr )   READ_PROG( addr )
+ //#define GET_OPERAND16( addr ) READ_PROG16( addr )
+
+ #define ADD_PAGE        (pc++, data += 0x100 * GET_OPERAND( pc ));
+ #define GET_ADDR()      GET_OPERAND16( pc )
+
+ #define HANDLE_PAGE_CROSSING( lsb ) clock_count += (lsb) >> 8;
+
+ #define INC_DEC_XY( reg, n ) reg = uint8_t (nz = reg + n); goto loop;
+
+ #define IND_Y(r,c) {                                            \
+   int temp = READ_LOW( data ) + y;                        \
+   data = temp + 0x100 * READ_LOW( uint8_t (data + 1) );   \
+   if (c) HANDLE_PAGE_CROSSING( temp );                    \
+   if (!(r) || (temp & 0x100))                             \
+    READ( data - ( temp & 0x100 ) );                    \
+  }
+
+ #define IND_X {                                                 \
+   int temp = data + x;                                    \
+   data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) ); \
+  }
+
+ #define ARITH_ADDR_MODES( op )          \
+ case op - 0x04: /* (ind,x) */           \
+  IND_X                               \
+  goto ptr##op;                       \
+ case op + 0x0C: /* (ind),y */           \
+  IND_Y(true,true)                    \
+  goto ptr##op;                       \
+ case op + 0x10: /* zp,X */              \
+  data = uint8_t (data + x);          \
+ case op + 0x00: /* zp */                \
+  data = READ_LOW( data );            \
+  goto imm##op;                       \
+ case op + 0x14: /* abs,Y */             \
+  data += y;                          \
+  goto ind##op;                       \
+ case op + 0x18: /* abs,X */             \
+  data += x;                          \
+ ind##op: {                              \
+  HANDLE_PAGE_CROSSING( data );       \
+  int temp = data;                    \
+  ADD_PAGE                            \
+  if ( temp & 0x100 )                 \
+    READ( data - 0x100 );          \
+  goto ptr##op;                       \
+ }                                       \
+ case op + 0x08: /* abs */               \
+  ADD_PAGE                            \
+ ptr##op:                                \
+  data = READ( data );                \
+ case op + 0x04: /* imm */               \
+ imm##op:                                \
+
+ #define ARITH_ADDR_MODES_PTR( op )      \
+ case op - 0x04: /* (ind,x) */           \
+  IND_X                               \
+  goto imm##op;                       \
+ case op + 0x0C:                         \
+  IND_Y(false,false)                  \
+  goto imm##op;                       \
+ case op + 0x10: /* zp,X */              \
+  data = uint8_t (data + x);          \
+  goto imm##op;                       \
+ case op + 0x14: /* abs,Y */             \
+  data += y;                          \
+  goto ind##op;                       \
+ case op + 0x18: /* abs,X */             \
+  data += x;                          \
+ ind##op: {                              \
+  int temp = data;                    \
+  ADD_PAGE                            \
+  READ( data - ( temp & 0x100 ) );    \
+  goto imm##op;                       \
+ }                                       \
+ case op + 0x08: /* abs */               \
+  ADD_PAGE                            \
+ case op + 0x00: /* zp */                \
+ imm##op:                                \
+
+ #define BRANCH( cond )      \
+ {                           \
+  pc++;                   \
+  int offset = (BOOST::int8_t) data;  \
+  int extra_clock = (pc & 0xFF) + offset; \
+  if ( !(cond) ) goto dec_clock_loop; \
+  pc += offset;       \
+  pc = BOOST::uint16_t( pc ); \
+  clock_count += (extra_clock >> 8) & 1;  \
+  goto loop;          \
+ }
 
 Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 {
@@ -170,22 +267,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	int const st_z = 0x02;
 	int const st_c = 0x01;
 	
-	#define IS_NEG (nz & 0x880)
 	
-	#define CALC_STATUS( out ) do {             \
-		out = status & (st_v | st_d | st_i);    \
-		out |= (c >> 8) & st_c;                 \
-		if ( IS_NEG ) out |= st_n;              \
-		if ( !(nz & 0xFF) ) out |= st_z;        \
-	} while ( 0 )
-
-	#define SET_STATUS( in ) do {               \
-		status = in & (st_v | st_d | st_i);     \
-		c = in << 8;                            \
-		nz = (in << 4) & 0x800;                 \
-		nz |= ~in & st_z;                       \
-	} while ( 0 )
-
 	int status;
 	int c;  // carry set if (c & 0x100) != 0
 	int nz; // Z set if (nz & 0xFF) == 0, N set if (nz & 0x880) != 0
@@ -218,105 +300,7 @@ loop:
 	switch ( opcode )
 	{
 
-// Macros
-
-#define GET_OPERAND( addr )   page [addr]
-#define GET_OPERAND16( addr ) GET_LE16( &page [addr] )
-
-//#define GET_OPERAND( addr )   READ_PROG( addr )
-//#define GET_OPERAND16( addr ) READ_PROG16( addr )
-
-#define ADD_PAGE        (pc++, data += 0x100 * GET_OPERAND( pc ));
-#define GET_ADDR()      GET_OPERAND16( pc )
-
-#define HANDLE_PAGE_CROSSING( lsb ) clock_count += (lsb) >> 8;
-
-#define INC_DEC_XY( reg, n ) reg = uint8_t (nz = reg + n); goto loop;
-
-#define IND_Y(r,c) {                                            \
-		int temp = READ_LOW( data ) + y;                        \
-		data = temp + 0x100 * READ_LOW( uint8_t (data + 1) );   \
-		if (c) HANDLE_PAGE_CROSSING( temp );                    \
-		if (!(r) || (temp & 0x100))                             \
-			READ( data - ( temp & 0x100 ) );                    \
-	}
-	
-#define IND_X {                                                 \
-		int temp = data + x;                                    \
-		data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) ); \
-	}
-	
-#define ARITH_ADDR_MODES( op )          \
-case op - 0x04: /* (ind,x) */           \
-	IND_X                               \
-	goto ptr##op;                       \
-case op + 0x0C: /* (ind),y */           \
-	IND_Y(true,true)                    \
-	goto ptr##op;                       \
-case op + 0x10: /* zp,X */              \
-	data = uint8_t (data + x);          \
-case op + 0x00: /* zp */                \
-	data = READ_LOW( data );            \
-	goto imm##op;                       \
-case op + 0x14: /* abs,Y */             \
-	data += y;                          \
-	goto ind##op;                       \
-case op + 0x18: /* abs,X */             \
-	data += x;                          \
-ind##op: {                              \
-	HANDLE_PAGE_CROSSING( data );       \
-	int temp = data;                    \
-	ADD_PAGE                            \
-	if ( temp & 0x100 )                 \
-		 READ( data - 0x100 );          \
-	goto ptr##op;                       \
-}                                       \
-case op + 0x08: /* abs */               \
-	ADD_PAGE                            \
-ptr##op:                                \
-	data = READ( data );                \
-case op + 0x04: /* imm */               \
-imm##op:                                \
-
-#define ARITH_ADDR_MODES_PTR( op )      \
-case op - 0x04: /* (ind,x) */           \
-	IND_X                               \
-	goto imm##op;                       \
-case op + 0x0C:                         \
-	IND_Y(false,false)                  \
-	goto imm##op;                       \
-case op + 0x10: /* zp,X */              \
-	data = uint8_t (data + x);          \
-	goto imm##op;                       \
-case op + 0x14: /* abs,Y */             \
-	data += y;                          \
-	goto ind##op;                       \
-case op + 0x18: /* abs,X */             \
-	data += x;                          \
-ind##op: {                              \
-	int temp = data;                    \
-	ADD_PAGE                            \
-	READ( data - ( temp & 0x100 ) );    \
-	goto imm##op;                       \
-}                                       \
-case op + 0x08: /* abs */               \
-	ADD_PAGE                            \
-case op + 0x00: /* zp */                \
-imm##op:                                \
-
-#define BRANCH( cond )      \
-{                           \
-	pc++;                   \
-	int offset = (BOOST::int8_t) data;  \
-	int extra_clock = (pc & 0xFF) + offset; \
-	if ( !(cond) ) goto dec_clock_loop; \
-	pc += offset;       \
-	pc = BOOST::uint16_t( pc ); \
-	clock_count += (extra_clock >> 8) & 1;  \
-	goto loop;          \
-}
-
-// Often-Used
+ // Often-Used
 
 	case 0xB5: // LDA zp,x
 		data = uint8_t (data + x);

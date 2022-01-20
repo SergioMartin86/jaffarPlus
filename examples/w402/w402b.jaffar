@@ -17,34 +17,17 @@
     "Actions":
     [
      { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
-     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 }
+     { "Type": "Set Mario Screen Offset Magnet Intensity", "Value": 100.0 }
     ]
    }, 
    
    {
     "Label": 1002,
-    "Description": "Reward having Mario offset the screen exactly by 132",
+    "Description": "Win on reaching a certain x position with the correct offset",
     "Conditions":
     [
+     { "Property": "Mario Position X", "Op": ">=", "Value":  767 },
      { "Property": "Mario Screen Offset", "Op": "==", "Value":  132 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
-     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 }
-    ]
-   }, 
-   
-   {
-    "Label": 1003,
-    "Description": "Win on reaching a certain x position",
-    "Conditions":
-    [
-     { "Property": "Mario Position X", "Op": ">=", "Value":  767 }
     ],
     
     "Satisfies": [ ],
@@ -56,7 +39,7 @@
    },
 
    {
-    "Label": 1995,
+    "Label": 1996,
     "Description": "If too much offset, fail",
     "Conditions":
     [
@@ -71,21 +54,6 @@
     ]
    }, 
    
-   {
-    "Label": 1996,
-    "Description": "If warp area offset changes, then fail.",
-    "Conditions":
-    [
-     { "Property": "Warp Area Offset", "Op": "==", "Value": 2114 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
       
    {
     "Label": 1997,
@@ -93,8 +61,8 @@
     "Conditions":
     [
      { "Property": "Mario Position X", "Op": ">", "Value":  345 },
-     { "Property": "Mario Position X", "Op": "<", "Value":  687 },
-     { "Property": "Mario Position Y", "Op": "<", "Value":  140 }
+     { "Property": "Mario Position X", "Op": "<", "Value":  470 },
+     { "Property": "Mario Position Y", "Op": "<", "Value":  130 }
     ],
     
     "Satisfies": [ ],
