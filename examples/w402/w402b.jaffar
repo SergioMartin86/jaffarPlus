@@ -26,7 +26,12 @@
     "Description": "Win on reaching a certain x position with the correct offset",
     "Conditions":
     [
-     { "Property": "Mario Position X", "Op": ">=", "Value":  767 },
+     { "Property": "Mario Base Position X", "Op": "==", "Value":  2 },
+     { "Property": "Mario Relative Position X", "Op": "==", "Value":  42 },
+     { "Property": "Mario Velocity X", "Op": "==", "Value":  40 },
+     { "Property": "Mario Animation", "Op": "==", "Value": 12 },
+     { "Property": "Mario Walking Frame", "Op": "==", "Value": 1 },
+     { "Property": "Mario Walking Mode", "Op": "==", "Value": 228 },
      { "Property": "Mario Screen Offset", "Op": "==", "Value":  132 }
     ],
     

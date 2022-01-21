@@ -171,11 +171,19 @@ operator_t Rule::getOperationType(const std::string &operation)
 datatype_t Rule::getPropertyType(const std::string &property)
 {
   if (property == "Mario State") return dt_uint8;
+  if (property == "Mario Animation") return dt_uint8;
+  if (property == "Mario Walking Frame") return dt_uint8;
+  if (property == "Mario Walking Mode") return dt_uint8;
+
   if (property == "Screen Position X") return dt_uint16;
-  if (property == "Mario Position X") return dt_uint16;
+
   if (property == "Mario Position Y") return dt_uint8;
   if (property == "Mario Velocity X") return dt_int8;
+
+  if (property == "Mario Base Position X") return dt_uint8;
   if (property == "Mario Relative Position X") return dt_uint8;
+  if (property == "Mario Position X") return dt_uint16;
+
   if (property == "Current World") return dt_uint8;
   if (property == "Current Stage") return dt_uint8;
   if (property == "Current Screen") return dt_uint8;
@@ -196,9 +204,16 @@ datatype_t Rule::getPropertyType(const std::string &property)
 void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *nes)
 {
   if (property == "Mario State") return nes->_marioState;
+  if (property == "Mario Animation") return nes->_marioAnimation;
+  if (property == "Mario Walking Frame") return nes->_marioWalkingFrame;
+  if (property == "Mario Walking Mode") return nes->_marioWalkingMode;
+
   if (property == "Screen Position X") return &nes->_screenPosX; // Derivative value
-  if (property == "Mario Position X") return &nes->_marioPosX; // Derivative value
+
+  if (property == "Mario Base Position X") return nes->_marioBasePosX;
   if (property == "Mario Relative Position X") return nes->_marioRelPosX;
+  if (property == "Mario Position X") return &nes->_marioPosX; // Derivative value
+
   if (property == "Mario Position Y") return nes->_marioPosY;
   if (property == "Mario Velocity X") return nes->_marioVelX;
   if (property == "Current World") return &nes->_currentWorld; // Derivative value
