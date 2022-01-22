@@ -17,30 +17,13 @@
     "Actions":
     [
      { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
-     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 }
+     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 20.0 },
+     { "Type": "Set Mario Screen Offset Magnet Intensity", "Value": 100.0 }
     ]
    }, 
    
    {
     "Label": 1002,
-    "Description": "Reward having Mario offset the screen exactly by 132",
-    "Conditions":
-    [
-     { "Property": "Mario Screen Offset", "Op": "==", "Value":  132 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
-     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 }
-    ]
-   }, 
-   
-   {
-    "Label": 1003,
     "Description": "Reward getting the vine",
     "Conditions":
     [
@@ -53,12 +36,13 @@
     [
      { "Type": "Add Reward", "Value": 10000 },
      { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
-     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 }
+     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 },
+     { "Type": "Set Mario Screen Offset Magnet Intensity", "Value": 100.0 }
     ]
    }, 
    
    {
-    "Label": 1004,
+    "Label": 1003,
     "Description": "If Mario gets to the pipe",
     "Conditions":
     [
@@ -76,7 +60,7 @@
    },
    
    {
-    "Label": 1005,
+    "Label": 1004,
     "Description": "If Mario exits the level",
     "Conditions":
     [
@@ -96,7 +80,7 @@
     "Description": "If too much offset, fail",
     "Conditions":
     [
-     { "Property": "Mario Screen Offset", "Op": ">", "Value":  132 }
+     { "Property": "Mario Screen Offset", "Op": ">", "Value":  135 }
     ],
     
     "Satisfies": [ ],

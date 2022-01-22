@@ -11,8 +11,11 @@
 // Struct to hold all of the frame's magnet information
 struct magnetInfo_t
 {
- float intensityX;
- float intensityY;
+ float marioMagnetIntensityX;
+ float marioMagnetIntensityY;
+ float screenMagnetIntensityX;
+ float marioScreenOffsetMagnetIntensityX;
+
 };
 
 class State
@@ -43,12 +46,14 @@ class State
   }
 
   // Function to get magnet information
-  inline magnetInfo_t getMarioMagnetValues(const bool* rulesStatus) const
+  inline magnetInfo_t getMagnetValues(const bool* rulesStatus) const
   {
    // Storage for magnet information
    magnetInfo_t magnetInfo;
-   magnetInfo.intensityX = 0.0f;
-   magnetInfo.intensityY = 0.0f;
+   magnetInfo.marioMagnetIntensityX = 0.0f;
+   magnetInfo.marioMagnetIntensityY = 0.0f;
+   magnetInfo.screenMagnetIntensityX = 0.0f;
+   magnetInfo.marioScreenOffsetMagnetIntensityX = 0.0f;
 
    // Iterating rule vector
    for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++)
@@ -56,31 +61,14 @@ class State
     if (rulesStatus[ruleId] == true)
     {
       const auto& rule = _rules[ruleId];
-      magnetInfo.intensityX = rule->_marioMagnetIntensityX;
-      magnetInfo.intensityY = rule->_marioMagnetIntensityY;
+      magnetInfo.marioMagnetIntensityX = rule->_marioMagnetIntensityX;
+      magnetInfo.marioMagnetIntensityY = rule->_marioMagnetIntensityY;
+      magnetInfo.screenMagnetIntensityX = rule->_screenMagnetIntensityX;
+      magnetInfo.marioScreenOffsetMagnetIntensityX = rule->_marioScreenOffsetMagnetIntensityX;
     }
    }
 
    return magnetInfo;
-  }
-
-  // Function to get magnet information
-  inline float getScreenMagnetValue(const bool* rulesStatus) const
-  {
-   // Storage for magnet information
-   float intensityX = 0.0f;
-
-   // Iterating rule vector
-   for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++)
-   {
-    if (rulesStatus[ruleId] == true)
-    {
-      const auto& rule = _rules[ruleId];
-      intensityX = rule->_screenMagnetIntensityX;
-    }
-   }
-
-   return intensityX;
   }
 
   // Obtains the score of a given frame
@@ -93,20 +81,24 @@ class State
       reward += _rules[ruleId]->_reward;
 
     // Getting magnet values for the kid
-    auto marioMagnet = getMarioMagnetValues(rulesStatus);
+    auto magnets = getMagnetValues(rulesStatus);
 
     // Evaluating screen screen magnet value
-    auto screenMagnet = getScreenMagnetValue(rulesStatus);
-    reward += screenMagnet * (float)_nes->_screenPosX;
+    reward += magnets.screenMagnetIntensityX * (float)_nes->_screenPosX;
 
-    // Evaluating mario magnet's reward on position
-    reward += marioMagnet.intensityX * (float)_nes->_marioPosX;
-    if (marioMagnet.intensityY > 0.0f) reward += marioMagnet.intensityY * (256.0f - (float)*_nes->_marioPosY);
-    if (marioMagnet.intensityY < 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioPosY;
+    // Evaluating mario / screen offset magnet value
+    reward += magnets.marioScreenOffsetMagnetIntensityX * (float)_nes->_marioScreenOffset;
+
+    // Evaluating mario magnet's reward on position X
+    reward += magnets.marioMagnetIntensityX * (float)_nes->_marioPosX;
+
+    // Evaluating mario magnet's reward on position Y
+    if (magnets.marioMagnetIntensityY > 0.0f) reward += magnets.marioMagnetIntensityY * (256.0f - (float)*_nes->_marioPosY);
+    if (magnets.marioMagnetIntensityY < 0.0f) reward += -1.0f * magnets.marioMagnetIntensityY * (float)*_nes->_marioPosY;
 
     // Evaluating mario magnet's Y reward on velocity
-    if (marioMagnet.intensityY > 0.0f) reward += -1.0f * marioMagnet.intensityY * (float)*_nes->_marioVelY;
-    if (marioMagnet.intensityY < 0.0f) reward += marioMagnet.intensityY * (float)*_nes->_marioVelY;
+    if (magnets.marioMagnetIntensityY > 0.0f) reward += -1.0f * magnets.marioMagnetIntensityY * (float)*_nes->_marioVelY;
+    if (magnets.marioMagnetIntensityY < 0.0f) reward += magnets.marioMagnetIntensityY * (float)*_nes->_marioVelY;
 
     // Returning reward
     return reward;
