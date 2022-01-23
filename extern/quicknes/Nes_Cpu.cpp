@@ -41,7 +41,6 @@ void Nes_Cpu::reset( void const* unmapped_page )
 	irq_time_ = LONG_MAX / 2 + 1;
 	end_time_ = LONG_MAX / 2 + 1;
 	
-	assert( page_size == 0x800 ); // assumes this
 	set_code_page( 0, low_mem );
 	set_code_page( 1, low_mem );
 	set_code_page( 2, low_mem );
@@ -102,7 +101,7 @@ void Nes_Cpu::write( nes_addr_t addr, int value )
 
 #ifndef NES_CPU_GLUE_ONLY
 
-static const unsigned char clock_table [256] = {
+const unsigned char clock_table [256] = {
 //  0 1 2 3 4 5 6 7 8 9 A B C D E F
 	7,6,2,8,3,3,5,5,3,2,2,2,4,4,6,6,// 0
 	3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 1
@@ -153,18 +152,18 @@ static const unsigned char clock_table [256] = {
 
  #define INC_DEC_XY( reg, n ) reg = uint8_t (nz = reg + n); goto loop;
 
- #define IND_Y(r,c) {                                            \
-   int temp = READ_LOW( data ) + l.y;                        \
+ #define IND_Y(r,c)                                             \
+   temp = READ_LOW( data ) + l.y;                        \
    data = temp + 0x100 * READ_LOW( uint8_t (data + 1) );   \
    if (c) HANDLE_PAGE_CROSSING( temp );                    \
    if (!(r) || (temp & 0x100))                             \
     READ( data - ( temp & 0x100 ) );                    \
-  }
 
- #define IND_X {                                                 \
-   int temp = data + l.x;                                    \
+
+ #define IND_X                                                  \
+   temp = data + l.x;                                    \
    data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) ); \
-  }
+
 
  #define ARITH_ADDR_MODES( op )          \
  case op - 0x04: /* (ind,l.x) */           \
@@ -183,14 +182,13 @@ static const unsigned char clock_table [256] = {
   goto ind##op;                       \
  case op + 0x18: /* abs,X */             \
   data += l.x;                          \
- ind##op: {                              \
+ ind##op:                               \
   HANDLE_PAGE_CROSSING( data );       \
-  int temp = data;                    \
+  temp = data;                    \
   ADD_PAGE                            \
   if ( temp & 0x100 )                 \
     READ( data - 0x100 );          \
   goto ptr##op;                       \
- }                                       \
  case op + 0x08: /* abs */               \
   ADD_PAGE                            \
  ptr##op:                                \
@@ -213,28 +211,25 @@ static const unsigned char clock_table [256] = {
   goto ind##op;                       \
  case op + 0x18: /* abs,X */             \
   data += l.x;                          \
- ind##op: {                              \
-  int temp = data;                    \
+ ind##op:                               \
+  temp = data;                    \
   ADD_PAGE                            \
   READ( data - ( temp & 0x100 ) );    \
   goto imm##op;                       \
- }                                       \
  case op + 0x08: /* abs */               \
   ADD_PAGE                            \
  case op + 0x00: /* zp */                \
  imm##op:                                \
 
  #define BRANCH( cond )      \
- {                           \
   l.pc++;                   \
-  int offset = (BOOST::int8_t) data;  \
-  int extra_clock = (l.pc & 0xFF) + offset; \
-  if ( !(cond) ) { clock_count--; goto loop; }\
+  if ( (cond) == false ) { clock_count--; goto loop; }\
+  offset = (int8_t) data;  \
+  extra_clock = (l.pc & 0xFF) + offset; \
   l.pc += offset;       \
   l.pc = BOOST::uint16_t( l.pc ); \
   clock_count += (extra_clock >> 8) & 1;  \
   goto loop;          \
- }
 
 Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 {
@@ -256,6 +251,10 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
  uint16_t temp;
  uint16_t addr;
  uint16_t msb;
+ int8_t offset;
+ int16_t extra_clock;
+ uint8_t carry;
+ int16_t ov;
 
 	// status flags
 	const uint8_t st_n = 0x80;
@@ -270,10 +269,8 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	int status;
 	uint16_t c;  // carry set if (c & 0x100) != 0
 	uint16_t nz; // Z set if (nz & 0xFF) == 0, N set if (nz & 0x880) != 0
-	{
-		int temp = r.status;
-		SET_STATUS( temp );
-	}
+	temp = r.status;
+	SET_STATUS( temp );
 
 	loop:
 
@@ -281,9 +278,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	uint8_t opcode = page [l.pc];
 	l.pc++;
 
-	if ( clock_count >= clock_limit )
-		goto stop;
-
+	if ( clock_count >= clock_limit )	goto stop;
 	clock_count += clock_table [opcode];
 	uint16_t data;
 	data = page [l.pc];
@@ -293,6 +288,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   // Often-Used
   case 0xB5: // LDA zp,l.x
    data = uint8_t (data + l.x);
+
   case 0xA5: // LDA zp
    l.a = nz = READ_LOW( data );
    l.pc++;
@@ -576,8 +572,8 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    l.pc++;
    goto loop;
 
-  case 0x2C:{// BIT abs
-   unsigned addr = GET_ADDR();
+  case 0x2C:// BIT abs
+   addr = GET_ADDR();
    l.pc += 2;
    status &= ~st_v;
    nz = READ_LIKELY_PPU( addr );
@@ -587,7 +583,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    // result must be zero, even if N bit is set
    nz = nz << 4 & 0x800;
    goto loop;
-  }
 
   case 0x24: // BIT zp
    nz = READ_LOW( data );
@@ -608,16 +603,15 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    goto adc_imm;
 
   ARITH_ADDR_MODES( 0x65 ) // ADC
-  adc_imm: {
-   int carry = (c >> 8) & 1;
-   int ov = (l.a ^ 0x80) + carry + (BOOST::int8_t) data; // sign-extend
+  adc_imm:
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
    status &= ~st_v;
    status |= (ov >> 2) & 0x40;
    c = nz = l.a + data + carry;
    l.pc++;
    l.a = (uint8_t) nz;
    goto loop;
-  }
 
  // Shift/rotate
 
@@ -637,14 +631,13 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    l.a = (uint8_t) nz;
    goto loop;
 
-  case 0x2A: { // ROL A
+  case 0x2A: // ROL A
    nz = l.a << 1;
-   int temp = (c >> 8) & 1;
+   temp = (c >> 8) & 1;
    c = nz;
    nz |= temp;
    l.a = (uint8_t) nz;
    goto loop;
-  }
 
   case 0x3E: // ROL abs,X
    data += l.x;
@@ -655,14 +648,13 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   case 0x0E: // ASL abs
    c = 0;
   case 0x2E: // ROL abs
-  rol_abs: {
-   int temp = data;
+  rol_abs:
+   temp = data;
    ADD_PAGE
    if ( opcode == 0x1E || opcode == 0x3E ) READ( data - ( temp & 0x100 ) );
    WRITE( data, temp = READ( data ) );
    nz = (c >> 8) & 1;
    nz |= (c = temp << 1);
-     }
      rotate_common:
    l.pc++;
    WRITE( data, (uint8_t) nz );
@@ -677,15 +669,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   case 0x4E: // LSR abs
    c = 0;
   case 0x6E: // ROR abs
-  ror_abs: {
-   int temp = data;
+  ror_abs:
+   temp = data;
    ADD_PAGE
    if ( opcode == 0x5E || opcode == 0x7E ) READ( data - ( temp & 0x100 ) );
    WRITE( data, temp = READ( data ) );
    nz = ((c >> 1) & 0x80) | (temp >> 1);
    c = temp << 8;
    goto rotate_common;
-  }
 
   case 0x76: // ROR zp,l.x
    data = uint8_t (data + l.x);
@@ -696,12 +687,11 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   case 0x46: // LSR zp
    c = 0;
   case 0x66: // ROR zp
-  ror_zp: {
-   int temp = READ_LOW( data );
+  ror_zp:
+   temp = READ_LOW( data );
    nz = ((c >> 1) & 0x80) | (temp >> 1);
    c = temp << 8;
    goto write_nz_zp;
-  }
 
   case 0x36: // ROL zp,l.x
    data = uint8_t (data + l.x);
@@ -740,12 +730,11 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE_LOW( data, nz );
    goto loop;
 
-  case 0xFE: { // INC abs,l.x
-   int temp = data + l.x;
+  case 0xFE: // INC abs,l.x
+   temp = data + l.x;
    data = l.x + GET_ADDR();
    READ( data - ( temp & 0x100 ) );
    goto inc_ptr;
-  }
 
   case 0xEE: // INC abs
    data = GET_ADDR();
@@ -753,25 +742,22 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    nz = 1;
    goto inc_common;
 
-  case 0xDE: { // DEC abs,l.x
-   int temp = data + l.x;
+  case 0xDE: // DEC abs,l.x
+   temp = data + l.x;
    data = l.x + GET_ADDR();
    READ( data - ( temp & 0x100 ) );
    goto dec_ptr;
-  }
 
   case 0xCE: // DEC abs
    data = GET_ADDR();
   dec_ptr:
    nz = -1;
-  inc_common: {
-   int temp;
+  inc_common:
    WRITE( data, temp = READ( data ) );
    nz += temp;
    l.pc += 2;
    WRITE( data, (uint8_t) nz );
    goto loop;
-  }
 
  // Transfer
 
@@ -886,7 +872,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    this->r.status = status; // update externally-visible I flag
    if ( clock_count < end_time_ )
    {
-    assert( clock_limit == end_time_ );
     if ( end_time_ <= irq_time_ )
      goto loop; // irq is later
     if ( clock_count >= irq_time_ )
@@ -894,6 +879,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
     clock_limit = irq_time_;
     goto loop;
    }
+
    // execution is stopping now, so delayed CLI must be handled by caller
    result = result_cli;
    goto end;
@@ -945,26 +931,23 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    data = nz ^ 0xFF;
    goto adc_imm;
 
-  ARITH_ADDR_MODES_PTR( 0x27 ) { // RLA
+  ARITH_ADDR_MODES_PTR( 0x27 )  // RLA
    WRITE( data, nz = READ( data ) );
-   int temp = c;
+   temp = c;
    c = nz << 1;
    nz = uint8_t( c ) | ( ( temp >> 8 ) & 0x01 );
    WRITE( data, nz );
    l.pc++;
    nz = l.a &= nz;
    goto loop;
-  }
 
-  ARITH_ADDR_MODES_PTR( 0x67 ) { // RRA
-   int temp;
+  ARITH_ADDR_MODES_PTR( 0x67 ) // RRA
    WRITE( data, temp = READ( data ) );
    nz = ((c >> 1) & 0x80) | (temp >> 1);
    WRITE( data, nz );
    data = nz;
    c = temp << 8;
    goto adc_imm;
-  }
 
   ARITH_ADDR_MODES_PTR( 0x07 ) // SLO
    WRITE( data, nz = READ( data ) );
@@ -1025,15 +1008,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    data = READ_LOW( data );
    goto lax_imm;
 
-  case 0xBF: {
+  case 0xBF:
    data += l.y;
    HANDLE_PAGE_CROSSING( data );
-   int temp = data;
+   temp = data;
    ADD_PAGE;
    if ( temp & 0x100 )
     READ( data - 0x100 );
    goto lax_ptr;
-  }
 
   case 0xAF:
    ADD_PAGE
@@ -1075,53 +1057,49 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE( data, uint8_t( l.a & l.x & ( ( data >> 8 ) + 1 ) ) );
    goto loop;
 
-  case 0x9F: { // SHA abs,Y
+  case 0x9F: // SHA abs,Y
    data += l.y;
-   int temp = data;
+   temp = data;
    ADD_PAGE
    READ( data - ( temp & 0x100 ) );
    l.pc++;
    WRITE( data, uint8_t( l.a & l.x & ( ( data >> 8 ) + 1 ) ) );
    goto loop;
-  }
 
-  case 0x9E: { // SHX abs,Y
+  case 0x9E: // SHX abs,Y
    data += l.y;
-   int temp = data;
+   temp = data;
    ADD_PAGE
    READ( data - ( temp & 0x100 ) );
    l.pc++;
    if ( !( temp & 0x100 ) )
     WRITE( data, uint8_t( l.x & ( ( data >> 8 ) + 1 ) ) );
    goto loop;
-  }
 
-  case 0x9C: { // SHY abs,X
+  case 0x9C: // SHY abs,X
    data += l.x;
-   int temp = data;
+   temp = data;
    ADD_PAGE
    READ( data - ( temp & 0x100 ) );
    l.pc++;
    if ( !( temp & 0x100) )
     WRITE( data, uint8_t( l.y & ( ( data >> 8 ) + 1 ) ) );
    goto loop;
-  }
 
-  case 0x9B: { // SHS abs,Y
+  case 0x9B: // SHS abs,Y
    data += l.y;
-   int temp = data;
+   temp = data;
    ADD_PAGE
    READ( data - ( temp & 0x100 ) );
    l.pc++;
    SET_SP( l.a & l.x );
    WRITE( data, uint8_t( l.a & l.x & ( ( data >> 8 ) + 1 ) ) );
    goto loop;
-  }
 
-  case 0xBB: { // LAS abs,Y
+  case 0xBB: // LAS abs,Y
    data += l.y;
    HANDLE_PAGE_CROSSING( data );
-   int temp = data;
+   temp = data;
    ADD_PAGE
    if ( temp & 0x100 )
     READ( data - 0x100 );
@@ -1130,7 +1108,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    l.x = l.a &= READ( data );
    SET_SP( l.a );
    goto loop;
-  }
 
  // Unimplemented
 
@@ -1156,9 +1133,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    //result = result_badop; // TODO: re-enable
    goto stop;
 	}
-
-	// If this fails then the case above is missing an opcode
-	assert( false );
 
 stop:
 	l.pc--;
