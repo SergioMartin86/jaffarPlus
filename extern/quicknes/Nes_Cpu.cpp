@@ -159,49 +159,6 @@ const unsigned char clock_table [256] = {
    if (!(r) || (temp & 0x100))                             \
     READ( data - ( temp & 0x100 ) );                    \
 
-
- #define ARITH_ADDR_MODES( op )          \
- case op - 0x04: /* (ind,l.x) */           \
-  temp = data + l.x;                                    \
-  data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) ); \
-  data = READ( data );                \
-  goto imm##op;                       \
- case op + 0x0C: /* (ind),l.y */           \
-  IND_Y(true,true)                    \
-  data = READ( data );                \
-  goto imm##op;                       \
- case op + 0x10: /* zp,X */              \
-  data = uint8_t (data + l.x);          \
-  data = READ_LOW( data );            \
-  goto imm##op;                       \
- case op + 0x00: /* zp */                \
-  data = READ_LOW( data );            \
-  goto imm##op;                       \
- case op + 0x14: /* abs,Y */             \
-  data += l.y;                          \
-  HANDLE_PAGE_CROSSING( data );       \
-  temp = data;                    \
-  ADD_PAGE                            \
-  if ( temp & 0x100 )                 \
-    READ( data - 0x100 );          \
-  data = READ( data );                \
-  goto imm##op;                       \
- case op + 0x18: /* abs,X */             \
-  data += l.x;                          \
-  HANDLE_PAGE_CROSSING( data );       \
-  temp = data;                    \
-  ADD_PAGE                            \
-  if ( temp & 0x100 )                 \
-    READ( data - 0x100 );          \
-  data = READ( data );                \
-  goto imm##op;                       \
- case op + 0x08: /* abs */               \
-  ADD_PAGE                            \
-  data = READ( data );                \
- goto imm##op;                       \
- case op + 0x04: /* imm */               \
- imm##op:                                \
-
  #define BRANCH( cond )      \
   l.pc++;                   \
   if ( (cond) == false ) { clock_count--; goto loop; }\
@@ -416,19 +373,24 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
   case 0x99: // STA abs,Y
    data += l.y;
-   goto sta_ind_common;
-
-  case 0x9D: // STA abs,X
-   data += l.x;
-  sta_ind_common:
    temp = data;
    ADD_PAGE
    READ( data - ( temp & 0x100 ) );
-   goto sta_ptr;
+   l.pc++;
+   WRITE( data, l.a );
+   goto loop;
+
+  case 0x9D: // STA abs,X
+   data += l.x;
+   temp = data;
+   ADD_PAGE
+   READ( data - ( temp & 0x100 ) );
+   l.pc++;
+   WRITE( data, l.a );
+   goto loop;
 
   case 0x8D: // STA abs
    ADD_PAGE
-  sta_ptr:
    l.pc++;
    WRITE( data, l.a );
    goto loop;
@@ -618,20 +580,215 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
  // Logical
 
-  ARITH_ADDR_MODES( 0x25 ) // AND
-   nz = (l.a &= data);
-   l.pc++;
-   goto loop;
+  case 0x25 - 0x04: // AND, (ind,l.x)
+   temp = data + l.x;
+   data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
+   data = READ( data );
+   // Common from here
+    nz = (l.a &= data);
+    l.pc++;
+    goto loop;
 
-  ARITH_ADDR_MODES( 0x45 ) // EOR
-   nz = (l.a ^= data);
-   l.pc++;
-   goto loop;
+  case 0x25 + 0x0C: // AND, (ind),l.y
+   IND_Y(true,true)
+   data = READ( data );
+   // Common from here
+    nz = (l.a &= data);
+    l.pc++;
+    goto loop;
 
-  ARITH_ADDR_MODES( 0x05 ) // ORA
-   nz = (l.a |= data);
-   l.pc++;
-   goto loop;
+  case 0x25 + 0x10: // AND, zp,X
+   data = uint8_t (data + l.x);
+   data = READ_LOW( data );
+   // Common from here
+    nz = (l.a &= data);
+    l.pc++;
+    goto loop;
+
+  case 0x25 + 0x00: // AND, zp
+   data = READ_LOW( data );
+   // Common from here
+    nz = (l.a &= data);
+    l.pc++;
+    goto loop;
+
+  case 0x25 + 0x14: // AND, abs,Y
+   data += l.y;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 ) READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    nz = (l.a &= data);
+    l.pc++;
+    goto loop;
+
+  case 0x25 + 0x18: // AND, abs,X
+   data += l.x;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 )  READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    nz = (l.a &= data);
+    l.pc++;
+    goto loop;
+
+  case 0x25 + 0x08: // AND, abs
+   ADD_PAGE
+   data = READ( data );
+   // Common from here
+    nz = (l.a &= data);
+    l.pc++;
+    goto loop;
+
+  case 0x25 + 0x04: // AND, imm
+   // Common from here
+    nz = (l.a &= data);
+    l.pc++;
+    goto loop;
+
+  case 0x45 - 0x04: // EOR, (ind,l.x)
+   temp = data + l.x;
+   data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
+   data = READ( data );
+   // Common from here
+    nz = (l.a ^= data);
+    l.pc++;
+    goto loop;
+
+  case 0x45 + 0x0C: // EOR, (ind),l.y
+   IND_Y(true,true)
+   data = READ( data );
+   // Common from here
+    nz = (l.a ^= data);
+    l.pc++;
+    goto loop;
+
+  case 0x45 + 0x10: // EOR, zp,X
+   data = uint8_t (data + l.x);
+   data = READ_LOW( data );
+   // Common from here
+    nz = (l.a ^= data);
+    l.pc++;
+    goto loop;
+
+  case 0x45 + 0x00: // EOR, zp
+   data = READ_LOW( data );
+   // Common from here
+    nz = (l.a ^= data);
+    l.pc++;
+    goto loop;
+
+  case 0x45 + 0x14: // EOR, abs,Y
+   data += l.y;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 ) READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    nz = (l.a ^= data);
+    l.pc++;
+    goto loop;
+
+  case 0x45 + 0x18: // EOR, abs,X
+   data += l.x;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 )  READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    nz = (l.a ^= data);
+    l.pc++;
+    goto loop;
+
+  case 0x45 + 0x08: // EOR, abs
+   ADD_PAGE
+   data = READ( data );
+   // Common from here
+    nz = (l.a ^= data);
+    l.pc++;
+    goto loop;
+
+  case 0x45 + 0x04: // EOR, imm
+   // Common from here
+    nz = (l.a ^= data);
+    l.pc++;
+    goto loop;
+
+  case 0x05 - 0x04: // ORA, (ind,l.x)
+   temp = data + l.x;
+   data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
+   data = READ( data );
+   // Common from here
+    nz = (l.a |= data);
+    l.pc++;
+    goto loop;
+
+  case 0x05 + 0x0C: // ORA, (ind),l.y
+   IND_Y(true,true)
+   data = READ( data );
+   // Common from here
+    nz = (l.a |= data);
+    l.pc++;
+    goto loop;
+
+  case 0x05 + 0x10: // ORA, zp,X
+   data = uint8_t (data + l.x);
+   data = READ_LOW( data );
+   // Common from here
+    nz = (l.a |= data);
+    l.pc++;
+    goto loop;
+
+  case 0x05 + 0x00: // ORA, zp
+   data = READ_LOW( data );
+   // Common from here
+    nz = (l.a |= data);
+    l.pc++;
+    goto loop;
+
+  case 0x05 + 0x14: // ORA, abs,Y
+   data += l.y;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 ) READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    nz = (l.a |= data);
+    l.pc++;
+    goto loop;
+
+  case 0x05 + 0x18: // ORA, abs,X
+   data += l.x;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 )  READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    nz = (l.a |= data);
+    l.pc++;
+    goto loop;
+
+  case 0x05 + 0x08: // ORA, abs
+   ADD_PAGE
+   data = READ( data );
+   // Common from here
+    nz = (l.a |= data);
+    l.pc++;
+    goto loop;
+
+  case 0x05 + 0x04: // ORA, imm
+   // Common from here
+    nz = (l.a |= data);
+    l.pc++;
+    goto loop;
 
   case 0x2C:// BIT abs
    addr = GET_ADDR();
@@ -658,12 +815,126 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
  // Add/subtract
 
-  ARITH_ADDR_MODES( 0xE5 ) // SBC
+  case 0xE5 - 0x04: // SBC, (ind,l.x)
+   temp = data + l.x;
+   data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
+   data = READ( data );
+   // Common from here
+    data ^= 0xFF;
+    goto adc_imm;
+
+  case 0xE5 + 0x0C: // SBC, (ind),l.y
+   IND_Y(true,true)
+   data = READ( data );
+   // Common from here
+    data ^= 0xFF;
+    goto adc_imm;
+
+  case 0xE5 + 0x10: // SBC, zp,X
+   data = uint8_t (data + l.x);
+   data = READ_LOW( data );
+   // Common from here
+    data ^= 0xFF;
+    goto adc_imm;
+
+  case 0xE5 + 0x00: // SBC, zp
+   data = READ_LOW( data );
+   // Common from here
+    data ^= 0xFF;
+    goto adc_imm;
+
+  case 0xE5 + 0x14: // SBC, abs,Y
+   data += l.y;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 ) READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    data ^= 0xFF;
+    goto adc_imm;
+
+  case 0xE5 + 0x18: // SBC, abs,X
+   data += l.x;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 )  READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    data ^= 0xFF;
+    goto adc_imm;
+
+  case 0xE5 + 0x08: // SBC, abs
+   ADD_PAGE
+   data = READ( data );
+   // Common from here
+    data ^= 0xFF;
+    goto adc_imm;
+
+  case 0xE5 + 0x04: // SBC, imm
+   // Common from here
+    data ^= 0xFF;
+    goto adc_imm;
+
   case 0xEB: // unofficial equivalent
    data ^= 0xFF;
    goto adc_imm;
 
-  ARITH_ADDR_MODES( 0x65 ) // ADC
+  case 0x65 - 0x04: // ADC, (ind,l.x)
+   temp = data + l.x;
+   data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
+   data = READ( data );
+   // Common from here
+   goto adc_imm;
+
+  case 0x65 + 0x0C: // ADC, (ind),l.y
+   IND_Y(true,true)
+   data = READ( data );
+   // Common from here
+    goto adc_imm;
+
+  case 0x65 + 0x10: // ADC, zp,X
+   data = uint8_t (data + l.x);
+   data = READ_LOW( data );
+   // Common from here
+    goto adc_imm;
+
+  case 0x65 + 0x00: // ADC, zp
+   data = READ_LOW( data );
+   // Common from here
+    goto adc_imm;
+
+  case 0x65 + 0x14: // ADC, abs,Y
+   data += l.y;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 ) READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    goto adc_imm;
+
+  case 0x65 + 0x18: // ADC, abs,X
+   data += l.x;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 )  READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+    goto adc_imm;
+
+  case 0x65 + 0x08: // ADC, abs
+   ADD_PAGE
+   data = READ( data );
+   // Common from here
+    goto adc_imm;
+
+  case 0x65 + 0x04: // ADC, imm
+   // Common from here
+    goto adc_imm;
+
   adc_imm:
    carry = (c >> 8) & 1;
    ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
