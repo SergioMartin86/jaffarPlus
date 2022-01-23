@@ -226,8 +226,7 @@ const unsigned char clock_table [256] = {
   if ( (cond) == false ) { clock_count--; goto loop; }\
   offset = (int8_t) data;  \
   extra_clock = (l.pc & 0xFF) + offset; \
-  l.pc += offset;       \
-  l.pc = BOOST::uint16_t( l.pc ); \
+  l.pc += offset; \
   clock_count += (extra_clock >> 8) & 1;  \
   goto loop;          \
 
