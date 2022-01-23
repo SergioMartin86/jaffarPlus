@@ -4,19 +4,10 @@
 #include "nlohmann/json.hpp"
 #include <cstddef>
 #include "frame.h"
+#include "rule.h"
 #include <string>
 #include <vector>
 #include <set>
-
-// Struct to hold all of the frame's magnet information
-struct magnetInfo_t
-{
- float marioMagnetIntensityX;
- float marioMagnetIntensityY;
- float screenMagnetIntensityX;
- float marioScreenOffsetMagnetIntensityX;
-
-};
 
 class State
 {
@@ -46,29 +37,26 @@ class State
   }
 
   // Function to get magnet information
-  inline magnetInfo_t getMagnetValues(const bool* rulesStatus) const
+  inline magnetSet_t getMagnetValues(const bool* rulesStatus) const
   {
    // Storage for magnet information
-   magnetInfo_t magnetInfo;
-   magnetInfo.marioMagnetIntensityX = 0.0f;
-   magnetInfo.marioMagnetIntensityY = 0.0f;
-   magnetInfo.screenMagnetIntensityX = 0.0f;
-   magnetInfo.marioScreenOffsetMagnetIntensityX = 0.0f;
+   magnetSet_t magnetSet;
 
-   // Iterating rule vector
-   for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++)
-   {
-    if (rulesStatus[ruleId] == true)
-    {
-      const auto& rule = _rules[ruleId];
-      magnetInfo.marioMagnetIntensityX = rule->_marioMagnetIntensityX;
-      magnetInfo.marioMagnetIntensityY = rule->_marioMagnetIntensityY;
-      magnetInfo.screenMagnetIntensityX = rule->_screenMagnetIntensityX;
-      magnetInfo.marioScreenOffsetMagnetIntensityX = rule->_marioScreenOffsetMagnetIntensityX;
-    }
-   }
+   magnetSet.marioScreenOffsetMagnet.intensity = 0.0f;
+   magnetSet.marioScreenOffsetMagnet.max = 0.0f;
 
-   return magnetInfo;
+   magnetSet.screenHorizontalMagnet.intensity = 0.0f;
+   magnetSet.screenHorizontalMagnet.max = 0.0f;
+
+   magnetSet.marioHorizontalMagnet.intensity = 0.0f;
+   magnetSet.marioHorizontalMagnet.max = 0.0f;
+
+   magnetSet.marioVerticalMagnet.intensity = 0.0f;
+   magnetSet.marioVerticalMagnet.max = 0.0f;
+
+   for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++) if (rulesStatus[ruleId] == true) magnetSet = _rules[ruleId]->_magnetSet;
+
+   return magnetSet;
   }
 
   // Obtains the score of a given frame
@@ -81,24 +69,20 @@ class State
       reward += _rules[ruleId]->_reward;
 
     // Getting magnet values for the kid
-    auto magnets = getMagnetValues(rulesStatus);
+    auto magnetSet = getMagnetValues(rulesStatus);
 
     // Evaluating screen screen magnet value
-    reward += magnets.screenMagnetIntensityX * (float)_nes->_screenPosX;
+    reward += magnetSet.screenHorizontalMagnet.intensity * std::min((float)_nes->_screenPosX, magnetSet.screenHorizontalMagnet.max);
 
     // Evaluating mario / screen offset magnet value
-    reward += magnets.marioScreenOffsetMagnetIntensityX * (float)_nes->_marioScreenOffset;
+    reward += magnetSet.marioScreenOffsetMagnet.intensity * std::min((float)_nes->_marioScreenOffset, magnetSet.marioScreenOffsetMagnet.max);
 
     // Evaluating mario magnet's reward on position X
-    reward += magnets.marioMagnetIntensityX * (float)_nes->_marioPosX;
+    reward += magnetSet.marioHorizontalMagnet.intensity * std::min((float)_nes->_marioPosX, magnetSet.marioHorizontalMagnet.max);
 
     // Evaluating mario magnet's reward on position Y
-    if (magnets.marioMagnetIntensityY > 0.0f) reward += magnets.marioMagnetIntensityY * (256.0f - (float)*_nes->_marioPosY);
-    if (magnets.marioMagnetIntensityY < 0.0f) reward += -1.0f * magnets.marioMagnetIntensityY * (float)*_nes->_marioPosY;
-
-    // Evaluating mario magnet's Y reward on velocity
-    if (magnets.marioMagnetIntensityY > 0.0f) reward += -1.0f * magnets.marioMagnetIntensityY * (float)*_nes->_marioVelY;
-    if (magnets.marioMagnetIntensityY < 0.0f) reward += magnets.marioMagnetIntensityY * (float)*_nes->_marioVelY;
+    if (magnetSet.marioVerticalMagnet.intensity > 0.0f) reward += magnetSet.marioVerticalMagnet.intensity * (256.0f - std::min((float)*_nes->_marioPosY, magnetSet.marioVerticalMagnet.max));
+    if (magnetSet.marioVerticalMagnet.intensity < 0.0f) reward += magnetSet.marioVerticalMagnet.intensity * (000.0f - std::max((float)*_nes->_marioPosY, magnetSet.marioVerticalMagnet.max));
 
     // Returning reward
     return reward;

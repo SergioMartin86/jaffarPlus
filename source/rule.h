@@ -25,6 +25,21 @@ enum datatype_t
   dt_int32 = 5
 };
 
+// Datatype to describe a magnet
+struct magnet_t {
+ float intensity; // How strong the magnet is
+ float max;  // What is the maximum input value to the calculation.
+};
+
+// Struct to hold all of the frame's magnet information
+struct magnetSet_t
+{
+ magnet_t marioScreenOffsetMagnet;
+ magnet_t screenHorizontalMagnet;
+ magnet_t marioHorizontalMagnet;
+ magnet_t marioVerticalMagnet;
+};
+
 // Modifier that specifies whether to store move list
 extern bool _storeMoveList;
 
@@ -103,10 +118,7 @@ class Rule
   bool _isFailRule;
 
   // Stores magnet information
-  float _marioScreenOffsetMagnetIntensityX;
-  float _screenMagnetIntensityX;
-  float _marioMagnetIntensityX;
-  float _marioMagnetIntensityY;
+  magnetSet_t _magnetSet;
 
   // Stores rules that also satisfied if this one is
   std::vector<size_t> _satisfiesLabels;

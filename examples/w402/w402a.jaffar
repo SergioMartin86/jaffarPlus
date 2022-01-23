@@ -16,9 +16,9 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
-     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 20.0 },
-     { "Type": "Set Mario Screen Offset Magnet Intensity", "Value": 100.0 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
+     { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
     ]
    }, 
    
@@ -35,9 +35,9 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Mario Horizontal Magnet Intensity", "Value": 1.0 },
-     { "Type": "Set Screen Horizontal Magnet Intensity", "Value": 10.0 },
-     { "Type": "Set Mario Screen Offset Magnet Intensity", "Value": 100.0 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
+     { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
     ]
    }, 
    
@@ -53,9 +53,7 @@
     
     "Actions":
     [
-      { "Type": "Add Reward", "Value": 10000 },
-      { "Type": "Set Mario Horizontal Magnet Intensity", "Value": -1.0 },
-      { "Type": "Set Screen Horizontal Magnet Intensity", "Value": -10.0 }
+      { "Type": "Add Reward", "Value": 10000 }
     ]
    },
    
@@ -107,24 +105,6 @@
     ]
    },
       
-   {
-    "Label": 1997,
-    "Description": "If going over the first blocks, fail.",
-    "Conditions":
-    [
-     { "Property": "Mario Position X", "Op": ">", "Value":  345 },
-     { "Property": "Mario Position X", "Op": "<", "Value":  687 },
-     { "Property": "Mario Position Y", "Op": "<", "Value":  140 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
    {
     "Label": 1998,
     "Description": "If Mario dies from getting hit, then fail.",
