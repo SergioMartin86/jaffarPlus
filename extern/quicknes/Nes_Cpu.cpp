@@ -295,7 +295,86 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   case 0x10: // BPL
    BRANCH( !IS_NEG )
 
-  ARITH_ADDR_MODES( 0xC5 ) // CMP
+  case 0xC5 - 0x04: // CMP, (ind,l.x)
+   temp = data + l.x;
+   data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
+   data = READ( data );
+   // Common from here
+   nz = l.a - data;
+   l.pc++;
+   c = ~nz;
+   nz &= 0xFF;
+   goto loop;
+
+  case 0xC5 + 0x0C: // CMP, (ind),l.y
+   IND_Y(true,true)
+   data = READ( data );
+   // Common from here
+   nz = l.a - data;
+   l.pc++;
+   c = ~nz;
+   nz &= 0xFF;
+   goto loop;
+
+  case 0xC5 + 0x10: // CMP, zp,X
+   data = uint8_t (data + l.x);
+   data = READ_LOW( data );
+   // Common from here
+   nz = l.a - data;
+   l.pc++;
+   c = ~nz;
+   nz &= 0xFF;
+   goto loop;
+
+  case 0xC5 + 0x00: // CMP, zp
+   data = READ_LOW( data );
+   // Common from here
+   nz = l.a - data;
+   l.pc++;
+   c = ~nz;
+   nz &= 0xFF;
+   goto loop;
+
+  case 0xC5 + 0x14: // CMP, abs,Y
+   data += l.y;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 ) READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+   nz = l.a - data;
+   l.pc++;
+   c = ~nz;
+   nz &= 0xFF;
+   goto loop;
+
+  case 0xC5 + 0x18: // CMP, abs,X
+   data += l.x;
+   HANDLE_PAGE_CROSSING( data );
+   temp = data;
+   ADD_PAGE
+   if ( temp & 0x100 )  READ( data - 0x100 );
+   data = READ( data );
+   // Common from here
+   nz = l.a - data;
+   l.pc++;
+   c = ~nz;
+   nz &= 0xFF;
+   goto loop;
+
+  case 0xC5 + 0x08: // CMP, abs
+   ADD_PAGE
+   data = READ( data );
+   // Common from here
+   nz = l.a - data;
+   l.pc++;
+   c = ~nz;
+   nz &= 0xFF;
+   goto loop;
+
+  case 0xC5 + 0x04: // CMP, imm
+   // Common from here
    nz = l.a - data;
    l.pc++;
    c = ~nz;
