@@ -89,7 +89,7 @@ public:
 	uint8_t low_mem [page_size > 0x800 ? page_size : 0x800];
 };
 
-inline BOOST::uint8_t* Nes_Cpu::get_code( nes_addr_t addr )
+inline uint8_t* Nes_Cpu::get_code( nes_addr_t addr )
 {
 	return (uint8_t*) code_map [addr >> page_bits] + addr;
 }
