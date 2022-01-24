@@ -69,7 +69,7 @@ public:
 	void set_tracecb(void (*cb)(unsigned int *dest));
 	
 private:
-	uint8_t const* code_map [page_count + 1];
+	uint8_t* code_map [page_count + 1];
 	nes_time_t clock_limit;
 	nes_time_t clock_count;
 	nes_time_t irq_time_;
@@ -77,7 +77,7 @@ private:
 	unsigned long error_count_;
 	
 	enum { irq_inhibit = 0x04 };
-	void set_code_page( int, uint8_t const* );
+	void set_code_page( int, uint8_t* );
 	void update_clock_limit();
 
 	void (*tracecb)(unsigned int *dest);

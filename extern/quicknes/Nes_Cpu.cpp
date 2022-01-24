@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 	#include BLARGG_ENABLE_OPTIMIZER
 #endif
 
-inline void Nes_Cpu::set_code_page( int i, uint8_t const* p )
+inline void Nes_Cpu::set_code_page( int i, uint8_t* p )
 {
 	code_map [i] = p - (unsigned) i * page_size;
 }
@@ -228,13 +228,13 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	l.y = r.y;
 	
 	// temporary values
- uint16_t addr;
- uint16_t msb;
+
+ uint8_t msb;
  int8_t offset;
- int8_t extra_clock;
+ uint8_t extra_clock;
  uint8_t carry;
  uint8_t ov;
-
+ uint16_t addr;
  uint16_t temp;
  uint16_t data;
 
@@ -243,6 +243,8 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   uint8_t opcode;
   uint8_t operand;
  };
+
+ uint8_t* page;
 
  instr_t instruction;
 
@@ -264,7 +266,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
 	loop:
 
-	uint8_t const* page = code_map [l.pc >> page_bits];
+	page = code_map [l.pc >> page_bits];
 	instruction = *((instr_t*)(&page[l.pc++]));
 	if ( clock_count >= clock_limit )	goto stop;
 	clock_count += clock_table [instruction.opcode];
