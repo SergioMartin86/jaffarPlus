@@ -228,13 +228,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	l.y = r.y;
 	
 	// temporary values
- uint16_t temp;
  uint16_t addr;
  uint16_t msb;
  int8_t offset;
- int16_t extra_clock;
+ int8_t extra_clock;
  uint8_t carry;
- int16_t ov;
+ uint8_t ov;
+
+ uint16_t temp;
  uint16_t data;
 
  struct instr_t
