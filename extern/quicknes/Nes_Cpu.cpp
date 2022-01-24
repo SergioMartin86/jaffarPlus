@@ -99,8 +99,6 @@ void Nes_Cpu::write( nes_addr_t addr, int value )
 }
 
 
-#ifndef NES_CPU_GLUE_ONLY
-
 const unsigned char clock_table [256] = {
 //  0 1 2 3 4 5 6 7 8 9 A B C D E F
 	7,6,2,8,3,3,5,5,3,2,2,2,4,4,6,6,// 0
@@ -215,7 +213,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	uint8_t opcode = page [l.pc];
 	l.pc++;
 
-	if ( clock_count >= clock_limit )	goto stop;
+	if ( clock_count >= clock_limit )	{ l.pc--; goto end; }
 	clock_count += clock_table [opcode];
 	uint16_t data;
 	data = page [l.pc];
@@ -225,6 +223,9 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   // Often-Used
   case 0xB5: // LDA zp,l.x
    data = uint8_t (data + l.x);
+   l.a = nz = READ_LOW( data );
+   l.pc++;
+   goto loop;
 
   case 0xA5: // LDA zp
    l.a = nz = READ_LOW( data );
@@ -241,7 +242,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    l.sp = (l.sp - 2) | 0x100;
    WRITE_LOW( l.sp, temp );
    goto loop;
-
 
   case 0x4C: // JMP abs
    l.pc = GET_OPERAND16( l.pc );
@@ -1967,6 +1967,11 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    goto lsr_a;
 
   case 0x0B: // ANC
+   nz = l.a &= data;
+   c = l.a << 1;
+   l.pc++;
+   goto loop;
+
   case 0x2B:
    nz = l.a &= data;
    c = l.a << 1;
@@ -2134,6 +2139,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
     clock_count -= 2;
     goto loop;
    }
+
    // fall through
   default:
    // skip over proper number of bytes
@@ -2144,13 +2150,8 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    l.pc += len - 1;
    error_count_++;
    goto loop;
-
-   //result = result_badop; // TODO: re-enable
-   goto stop;
 	}
 
-stop:
-	l.pc--;
 end:
 	
 	{
@@ -2169,6 +2170,4 @@ end:
 	
 	return result;
 }
-
-#endif
 
