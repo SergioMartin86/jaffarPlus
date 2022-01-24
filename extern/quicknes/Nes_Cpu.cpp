@@ -68,7 +68,7 @@ void Nes_Cpu::map_code( nes_addr_t start, unsigned size, const void* data )
 // Note: 'addr' is evaulated more than once in the following macros, so it
 // must not contain side-effects.
 
-//static void log_read( int opcode ) { LOG_FREQ( "read", 256, opcode ); }
+//static void log_read( int instruction.opcode ) { LOG_FREQ( "read", 256, instruction.opcode ); }
 
 #define READ_LIKELY_PPU( addr ) (NES_CPU_READ_PPU( this, (addr), (clock_count) ))
 #define READ( addr )            (NES_CPU_READ( this, (addr), (clock_count) ))
@@ -235,6 +235,15 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
  int16_t extra_clock;
  uint8_t carry;
  int16_t ov;
+ uint16_t data;
+
+ struct instr_t
+ {
+  uint8_t opcode;
+  uint8_t operand;
+ };
+
+ instr_t instruction;
 
 	// status flags
 	const uint8_t st_n = 0x80;
@@ -255,15 +264,12 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	loop:
 
 	uint8_t const* page = code_map [l.pc >> page_bits];
-	uint8_t opcode = page [l.pc];
-	l.pc++;
-
+	instruction = *((instr_t*)(&page[l.pc++]));
 	if ( clock_count >= clock_limit )	goto stop;
-	clock_count += clock_table [opcode];
-	uint16_t data;
-	data = page [l.pc];
+	clock_count += clock_table [instruction.opcode];
+	data = instruction.operand;
 
-	switch ( opcode )
+	switch ( instruction.opcode )
  {
   // Often-Used
   case 0xB5: // LDA zp,l.x
@@ -712,7 +718,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   rol_abs:
    temp = data;
    ADD_PAGE
-   if ( opcode == 0x1E || opcode == 0x3E ) READ( data - ( temp & 0x100 ) );
+   if ( instruction.opcode == 0x1E || instruction.opcode == 0x3E ) READ( data - ( temp & 0x100 ) );
    WRITE( data, temp = READ( data ) );
    nz = (c >> 8) & 1;
    nz |= (c = temp << 1);
@@ -733,7 +739,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   ror_abs:
    temp = data;
    ADD_PAGE
-   if ( opcode == 0x5E || opcode == 0x7E ) READ( data - ( temp & 0x100 ) );
+   if ( instruction.opcode == 0x5E || instruction.opcode == 0x7E ) READ( data - ( temp & 0x100 ) );
    WRITE( data, temp = READ( data ) );
    nz = ((c >> 1) & 0x80) | (temp >> 1);
    c = temp << 8;
@@ -975,7 +981,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   case 0xEA: case 0x1A: case 0x3A: case 0x5A: case 0x7A: case 0xDA: case 0xFA: // NOP
    goto loop;
 
-  case 0xC7 - 0x04: // DCP + (ind,l.x), opcode base: 0xC7 offset: 0x04
+  case 0xC7 - 0x04: // DCP + (ind,l.x), instruction.opcode base: 0xC7 offset: 0x04
    temp = data + l.x;
    data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
    // Common from here
@@ -1624,8 +1630,8 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   default:
    // skip over proper number of bytes
    static unsigned char const row [8] = { 0x95, 0x95, 0x95, 0xd5, 0x95, 0x95, 0xd5, 0xf5 };
-   int len = row [opcode >> 2 & 7] >> (opcode << 1 & 6) & 3;
-   if ( opcode == 0x9C )
+   int len = row [instruction.opcode >> 2 & 7] >> (instruction.opcode << 1 & 6) & 3;
+   if ( instruction.opcode == 0x9C )
     len = 3;
    l.pc += len - 1;
    error_count_++;
