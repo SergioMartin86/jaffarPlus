@@ -51,6 +51,8 @@ class Train
   // Frame counter
   size_t _stepFramesProcessedCounter;
   size_t _totalFramesProcessedCounter;
+  size_t _stepNewFrameCounter;
+  float _newFrameRatio;
 
   // Storage for source frame data for differential load/save
   uint8_t _referenceFrameData[_FRAME_DATA_SIZE];

@@ -137,6 +137,7 @@ void Train::computeFrames()
   // Initializing counters
   _stepFramesProcessedCounter = 0;
   _newCollisionCounter = 0;
+  _stepNewFrameCounter = 0;
   size_t startHashEntryCount = _hashDB.size();
 
   // Creating shared database for new frames
@@ -249,30 +250,20 @@ void Train::computeFrames()
         // Copying rule status from the base frame
         memcpy(newFrame->rulesStatus, baseFrame->rulesStatus, sizeof(Frame::rulesStatus));
 
-        // Copying move list
-        #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
-        memcpy(newFrame->moveHistory, baseFrame->moveHistory, sizeof(Frame::moveHistory));
-        #endif
-
-        // Storage for frame type
-        frameType type = f_regular;
-
-        // Storage for new move ids
-        std::vector<uint8_t> possibleNewMoveIds;
-
         // Evaluating rules on the new frame
         _state[threadId]->evaluateRules(newFrame->rulesStatus);
 
         // Getting frame type
-        type = _state[threadId]->getFrameType(newFrame->rulesStatus);
-
-        // If required, store move history
-        #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
-        newFrame->setMove(_currentStep, moveId);
-        #endif
+        frameType type = _state[threadId]->getFrameType(newFrame->rulesStatus);
 
         // If frame type is failed, continue to the next one
         if (type == f_fail) continue;
+
+        // Copying move list and adding new move
+        #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
+        memcpy(newFrame->moveHistory, baseFrame->moveHistory, sizeof(Frame::moveHistory));
+        newFrame->setMove(_currentStep, moveId);
+        #endif
 
         // Calculating current reward
         newFrame->reward = _state[threadId]->getFrameReward(newFrame->rulesStatus);
@@ -292,12 +283,12 @@ void Train::computeFrames()
         #pragma omp critical(insertFrame)
         {
          if (type == f_win) { _winFrameFound = true; _winFrame = *newFrame; };
-         if (type == f_regular) newFrames.push_back(std::move(newFrame));
+         if (type == f_regular) { _stepNewFrameCounter++; newFrames.push_back(std::move(newFrame)); }
         }
       }
 
       // Freeing up base frame memory
-      baseFrame.reset();
+      baseFrame.reset(nullptr);
     }
 
     // Updating timers
@@ -321,6 +312,9 @@ void Train::computeFrames()
   _stepFrameDeserializationTime /= _threadCount;
   _stepFrameEncodingTime /= _threadCount;
   _stepFrameDecodingTime /= _threadCount;
+
+  // Calculating new frame ratio (new / old)
+  _newFrameRatio = (double)_stepNewFrameCounter / (double)_frameDB.size();
 
   // Clearing all old frames
   _frameDB.clear();
@@ -401,6 +395,7 @@ void Train::printTrainStatus()
   printf("[JaffarNES]   + Frame Encoding:          %3.3fs\n", _stepFrameEncodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Decoding:          %3.3fs\n", _stepFrameDecodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Sorting            %3.3fs\n", _stepFrameDBSortingTime / 1.0e+9);
+  printf("[JaffarNES] New Frames Created (Step/Ratio): %lu / %.3f\n", _stepNewFrameCounter, _newFrameRatio);
   printf("[JaffarNES] Max Frame State Difference: %lu / %d\n", _maxFrameDiff, _MAX_FRAME_DIFF);
   printf("[JaffarNES] Frame DB Entries (Total / Max): %lu / %lu\n", _databaseSize, _maxDatabaseSize);
   printf("[JaffarNES] Frame DB Size (Total / Max): %.3fmb / %.3fmb\n", (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), (double)(_maxDatabaseSize * sizeof(Frame)) / (1024.0 * 1024.0));
@@ -447,6 +442,7 @@ Train::Train(int argc, char *argv[])
   // Initializing counters
   _stepFramesProcessedCounter = 0;
   _totalFramesProcessedCounter = 0;
+  _stepNewFrameCounter = 0;
   _newCollisionCounter = 0;
   _hashEntriesTotal = 0;
   _hashStepThreshold = 0;
