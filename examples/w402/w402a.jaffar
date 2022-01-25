@@ -93,10 +93,10 @@
 
    {
     "Label": 1995,
-    "Description": "If too much offset, fail",
+    "Description": "Don't allow mario to get on the roof",
     "Conditions":
     [
-     { "Property": "Mario Screen Offset", "Op": ">", "Value":  135 }
+     { "Property": "Mario Position Y", "Op": "<", "Value":  20 }
     ],
     
     "Satisfies": [ ],
@@ -105,7 +105,7 @@
     [
      { "Type": "Trigger Fail" }
     ]
-   }, 
+   },
    
    {
     "Label": 1996,
