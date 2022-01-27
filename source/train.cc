@@ -403,6 +403,7 @@ void Train::printTrainStatus()
   printf("[JaffarNES] Worst Reward / Best Reward: %f / %f\n", _worstFrameReward, _bestFrameReward);
   printf("[JaffarNES] Performance: %.3f Frames/s\n", (double)_stepFramesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[JaffarNES] Frames Processed: (Step/Total): %lu / %lu\n", _stepFramesProcessedCounter, _totalFramesProcessedCounter);
+  printf("[JaffarNES] Frame DB Entries (Total / Max): %lu / %lu\n", _databaseSize, _maxDatabaseSizeLowerBound);
   printf("[JaffarNES] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
   printf("[JaffarNES]   + Hash Calculation:        %3.3fs\n", _stepHashCalculationTime / 1.0e+9);
   printf("[JaffarNES]   + Hash Checking:           %3.3fs\n",  _stepHashCheckingTime / 1.0e+9);
@@ -413,10 +414,8 @@ void Train::printTrainStatus()
   printf("[JaffarNES]   + Frame Decoding:          %3.3fs\n", _stepFrameDecodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Sorting            %3.3fs\n", _stepFrameDBSortingTime / 1.0e+9);
   printf("[JaffarNES] New Frames Created Ratio: %.3f\n", _newFrameRatio);
-  printf("[JaffarNES] Max Frames In Memory (Step/Max): %lu / %lu\n", _stepMaxFramesInMemory, _totalMaxFramesInMemory);
+  printf("[JaffarNES] Max Frames In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxFramesInMemory, (double)(_stepMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0), _totalMaxFramesInMemory, (double)(_totalMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0));
   printf("[JaffarNES] Max Frame State Difference: %lu / %d\n", _maxFrameDiff, _MAX_FRAME_DIFF);
-  printf("[JaffarNES] Frame DB Entries (Total / Max): %lu / %lu\n", _databaseSize, _maxDatabaseSizeLowerBound);
-  printf("[JaffarNES] Frame DB Size (Total / Max): %.3fmb / %.3fmb\n", (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), (double)(_maxDatabaseSizeLowerBound * sizeof(Frame)) / (1024.0 * 1024.0));
   printf("[JaffarNES] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
   printf("[JaffarNES] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
   printf("[JaffarNES] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, <%.0f,%.0f>mb\n", _hashSizeStep, _hashSizeCurrent, _hashSizeLowerBound, _hashSizeUpperBound);
