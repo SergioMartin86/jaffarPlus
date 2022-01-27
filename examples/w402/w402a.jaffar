@@ -26,7 +26,7 @@
     "Description": "Reward getting the vine",
     "Conditions":
     [
-     { "Property": "Mario Position X", "Op": ">", "Value":  402 }
+     { "Property": "Mario Position X", "Op": ">", "Value":  446 }
     ],
     
     "Satisfies": [ ],
@@ -97,8 +97,8 @@
     "Conditions":
     [
      { "Property": "Mario Position Y", "Op": "<", "Value":  115 },
-     { "Property": "Mario Position X", "Op": "<", "Value":  430 },
-     { "Property": "Mario Position X", "Op": ">", "Value":  280 }
+     { "Property": "Mario Position X", "Op": ">", "Value":  338 },
+     { "Property": "Mario Position X", "Op": "<", "Value":  909 }
     ],
     
     "Satisfies": [ ], 
