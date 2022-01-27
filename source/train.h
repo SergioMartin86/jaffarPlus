@@ -51,7 +51,8 @@ class Train
   // Frame counter
   size_t _stepFramesProcessedCounter;
   size_t _totalFramesProcessedCounter;
-  size_t _stepNewFrameCounter;
+  size_t _stepMaxFramesInMemory;
+  size_t _totalMaxFramesInMemory;
   float _newFrameRatio;
 
   // Storage for source frame data for differential load/save
@@ -59,7 +60,8 @@ class Train
 
   // Frame databases
   size_t _databaseSize;
-  size_t _maxDatabaseSize;
+  size_t _maxDatabaseSizeLowerBound;
+  size_t _maxDatabaseSizeUpperBound;
   std::vector<std::unique_ptr<Frame>> _frameDB;
 
   // Frame database for showing
@@ -114,8 +116,7 @@ class Train
   double _searchTotalTime;
   double _currentStepTime;
   double _stepHashCalculationTime;
-  double _stepHashCheckingTime1;
-  double _stepHashCheckingTime2;
+  double _stepHashCheckingTime;
   double _stepHashFilteringTime;
   double _stepFrameAdvanceTime;
   double _stepFrameDeserializationTime;

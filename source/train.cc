@@ -11,7 +11,7 @@ void Train::run()
   printf("[JaffarNES] Launching JaffarNES Version %s...\n", "1.0");
   printf("[JaffarNES] Using configuration file: "); printf("%s ", _scriptFile.c_str()); printf("\n");
   printf("[JaffarNES] Frame size: %lu\n", sizeof(Frame));
-  printf("[JaffarNES] Max Frame DB entries: %lu\n", _maxDatabaseSize);
+  printf("[JaffarNES] Max Frame DB entries: %lu\n", _maxDatabaseSizeLowerBound);
 
   if (_outputSaveBestSeconds > 0)
   {
@@ -137,8 +137,9 @@ void Train::computeFrames()
   // Initializing counters
   _stepFramesProcessedCounter = 0;
   _newCollisionCounter = 0;
-  _stepNewFrameCounter = 0;
+  _stepMaxFramesInMemory = 0;
   size_t startHashEntryCount = _hashDB.size();
+  size_t baseFramesProcessed = 0;
 
   // Creating shared database for new frames
   std::vector<std::unique_ptr<Frame>> newFrames;
@@ -152,8 +153,7 @@ void Train::computeFrames()
 
   // Initializing step timers
   _stepHashCalculationTime = 0.0;
-  _stepHashCheckingTime1 = 01.0;
-  _stepHashCheckingTime2 = 0.0;
+  _stepHashCheckingTime = 01.0;
   _stepFrameAdvanceTime = 0.0;
   _stepFrameDeserializationTime = 0.0;
 
@@ -163,16 +163,12 @@ void Train::computeFrames()
     // Getting thread id
     int threadId = omp_get_thread_num();
 
-    // Thread-local storage for hash
-    phmap::flat_hash_set<uint64_t> threadLocalHashDB;
-
     // Storage for base frames
     uint8_t baseFrameData[_FRAME_DATA_SIZE];
 
     // Profiling timers
     double threadHashCalculationTime = 0.0;
-    double threadHashCheckingTime1 = 0.0;
-    double threadHashCheckingTime2 = 0.0;
+    double threadHashCheckingTime = 0.0;
     double threadFrameAdvanceTime = 0.0;
     double threadFrameDeserializationTime = 0.0;
     double threadFrameDecodingTime = 0.0;
@@ -229,17 +225,11 @@ void Train::computeFrames()
         tf = std::chrono::steady_clock::now();
         threadHashCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
-        // Checking for the existence of the hash in the hash databases (except the current one)
+        // Checking for the existence of the hash in the hash database
         t0 = std::chrono::steady_clock::now(); // Profiling
-        bool collisionDetected = !threadLocalHashDB.insert(hash).second; // First check locally for collisions
+        bool collisionDetected = !_hashDB.insert({hash, _currentStep}).second;
         tf = std::chrono::steady_clock::now();
-        threadHashCheckingTime1 += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
-
-        // Then check the shared, read-only database
-        t0 = std::chrono::steady_clock::now(); // Profiling
-        if (collisionDetected == false) collisionDetected |= !_hashDB.insert({hash, _currentStep}).second;
-        tf = std::chrono::steady_clock::now();
-        threadHashCheckingTime2 += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
+        threadHashCheckingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
         // If collision detected, discard this frame
         if (collisionDetected) { _newCollisionCounter++; continue; }
@@ -282,21 +272,47 @@ void Train::computeFrames()
         // If frame has succeded or is a regular frame, adding it in the corresponding database
         #pragma omp critical(insertFrame)
         {
+         // Storing new winning frame
          if (type == f_win) { _winFrameFound = true; _winFrame = *newFrame; };
-         if (type == f_regular) { _stepNewFrameCounter++; newFrames.push_back(std::move(newFrame)); }
+
+         if (type == f_regular)
+         {
+          // Adding frame to the new frame database
+          newFrames.push_back(std::move(newFrame));
+
+          // Updating maximum number of frames in memory
+          size_t curFrameCount = _frameDB.size() - baseFramesProcessed + newFrames.size();
+          if (curFrameCount > _stepMaxFramesInMemory) _stepMaxFramesInMemory = curFrameCount;
+         }
+
+         // If we exceeded the upper bound for new frames, do a partial sort and eliminate the worse ones
+         if (newFrames.size() > _maxDatabaseSizeUpperBound)
+         {
+          auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
+
+          // If global frames exceed the maximum allowed, sort and truncate all excessive frames
+          std::nth_element(newFrames.begin(), newFrames.begin() + _maxDatabaseSizeLowerBound, newFrames.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
+          newFrames.resize(_maxDatabaseSizeLowerBound);
+
+          auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                         // Profiling
+          _stepFrameDBSortingTime = std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
+         }
         }
       }
 
       // Freeing up base frame memory
-      baseFrame.reset(nullptr);
+      baseFrame.reset();
+
+      // Increasing base frames processed counter
+      #pragma omp atomic
+      baseFramesProcessed++;
     }
 
     // Updating timers
     #pragma omp critical
     {
      _stepHashCalculationTime += threadHashCalculationTime;
-     _stepHashCheckingTime1 += threadHashCheckingTime1;
-     _stepHashCheckingTime2 += threadHashCheckingTime2;
+     _stepHashCheckingTime += threadHashCheckingTime;
      _stepFrameAdvanceTime += threadFrameAdvanceTime;
      _stepFrameDeserializationTime += threadFrameDeserializationTime;
      _stepFrameEncodingTime += threadFrameEncodingTime;
@@ -306,27 +322,28 @@ void Train::computeFrames()
 
   // Updating timer averages
   _stepHashCalculationTime /= _threadCount;
-  _stepHashCheckingTime1 /= _threadCount;
-  _stepHashCheckingTime2 /= _threadCount;
+  _stepHashCheckingTime /= _threadCount;
   _stepFrameAdvanceTime /= _threadCount;
   _stepFrameDeserializationTime /= _threadCount;
   _stepFrameEncodingTime /= _threadCount;
   _stepFrameDecodingTime /= _threadCount;
 
   // Calculating new frame ratio (new / old)
-  _newFrameRatio = (double)_stepNewFrameCounter / (double)_frameDB.size();
+  _newFrameRatio = (double)newFrames.size() / (double)_frameDB.size();
 
   // Clearing all old frames
   _frameDB.clear();
 
+  // Updating max frames in memory counter
+  if (_stepMaxFramesInMemory > _totalMaxFramesInMemory) _totalMaxFramesInMemory = _stepMaxFramesInMemory;
+
   // Sorting local DB frames by reward
   auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
-  if (newFrames.size() > _maxDatabaseSize)
+  if (newFrames.size() > _maxDatabaseSizeLowerBound)
   {
    // If global frames exceed the maximum allowed, sort and truncate all excessive frames
-   auto m = newFrames.begin() + _maxDatabaseSize;
-   std::nth_element(newFrames.begin(), m, newFrames.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
-   newFrames.resize(_maxDatabaseSize);
+   std::nth_element(newFrames.begin(), newFrames.begin() + _maxDatabaseSizeLowerBound, newFrames.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
+   newFrames.resize(_maxDatabaseSizeLowerBound);
   }
 
   // Looking for and storing best/worst frame
@@ -388,17 +405,18 @@ void Train::printTrainStatus()
   printf("[JaffarNES] Frames Processed: (Step/Total): %lu / %lu\n", _stepFramesProcessedCounter, _totalFramesProcessedCounter);
   printf("[JaffarNES] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
   printf("[JaffarNES]   + Hash Calculation:        %3.3fs\n", _stepHashCalculationTime / 1.0e+9);
-  printf("[JaffarNES]   + Hash Checking:           %3.3fs (Local %3.3fs, Shared %3.3fs)\n",  (_stepHashCheckingTime1 + _stepHashCheckingTime2) / 1.0e+9, _stepHashCheckingTime1 / 1.0e+9, _stepHashCheckingTime2 / 1.0e+9);
+  printf("[JaffarNES]   + Hash Checking:           %3.3fs\n",  _stepHashCheckingTime / 1.0e+9);
   printf("[JaffarNES]   + Hash Filtering:          %3.3fs\n", _stepHashFilteringTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Advance:           %3.3fs\n", _stepFrameAdvanceTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Deserialization:   %3.3fs\n", _stepFrameDeserializationTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Encoding:          %3.3fs\n", _stepFrameEncodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Decoding:          %3.3fs\n", _stepFrameDecodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Sorting            %3.3fs\n", _stepFrameDBSortingTime / 1.0e+9);
-  printf("[JaffarNES] New Frames Created (Step/Ratio): %lu / %.3f\n", _stepNewFrameCounter, _newFrameRatio);
+  printf("[JaffarNES] New Frames Created Ratio: %.3f\n", _newFrameRatio);
+  printf("[JaffarNES] Max Frames In Memory (Step/Max): %lu / %lu\n", _stepMaxFramesInMemory, _totalMaxFramesInMemory);
   printf("[JaffarNES] Max Frame State Difference: %lu / %d\n", _maxFrameDiff, _MAX_FRAME_DIFF);
-  printf("[JaffarNES] Frame DB Entries (Total / Max): %lu / %lu\n", _databaseSize, _maxDatabaseSize);
-  printf("[JaffarNES] Frame DB Size (Total / Max): %.3fmb / %.3fmb\n", (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), (double)(_maxDatabaseSize * sizeof(Frame)) / (1024.0 * 1024.0));
+  printf("[JaffarNES] Frame DB Entries (Total / Max): %lu / %lu\n", _databaseSize, _maxDatabaseSizeLowerBound);
+  printf("[JaffarNES] Frame DB Size (Total / Max): %.3fmb / %.3fmb\n", (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), (double)(_maxDatabaseSizeLowerBound * sizeof(Frame)) / (1024.0 * 1024.0));
   printf("[JaffarNES] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
   printf("[JaffarNES] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
   printf("[JaffarNES] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, <%.0f,%.0f>mb\n", _hashSizeStep, _hashSizeCurrent, _hashSizeLowerBound, _hashSizeUpperBound);
@@ -442,7 +460,8 @@ Train::Train(int argc, char *argv[])
   // Initializing counters
   _stepFramesProcessedCounter = 0;
   _totalFramesProcessedCounter = 0;
-  _stepNewFrameCounter = 0;
+  _stepMaxFramesInMemory = 0;
+  _totalMaxFramesInMemory = 0;
   _newCollisionCounter = 0;
   _hashEntriesTotal = 0;
   _hashStepThreshold = 0;
@@ -461,10 +480,14 @@ Train::Train(int argc, char *argv[])
   if (const char *hashSizeUpperBoundString = std::getenv("JAFFARNES_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB")) _hashSizeUpperBound = std::stol(hashSizeUpperBoundString);
   else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
 
-  // Parsing max frame DB entries
-  size_t maxDBSizeMb = 0;
-  if (const char *MaxDBMBytesEnvString = std::getenv("JAFFARNES_MAX_FRAME_DATABASE_SIZE_MB")) maxDBSizeMb = std::stol(MaxDBMBytesEnvString);
-  else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_FRAME_DATABASE_SIZE_MB environment variable not defined.\n");
+  // Parsing max frame DB lower and upper bounds
+  size_t maxDBSizeMbLowerBound = 0;
+  if (const char *MaxDBMBytesLowerBoundEnvString = std::getenv("JAFFARNES_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB")) maxDBSizeMbLowerBound = std::stol(MaxDBMBytesLowerBoundEnvString);
+  else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
+
+  size_t maxDBSizeMbUpperBound = 0;
+  if (const char *MaxDBMBytesUpperBoundEnvString = std::getenv("JAFFARNES_MAX_FRAME_DATABASE_SIZE_UPPER_BOUND_MB")) maxDBSizeMbUpperBound = std::stol(MaxDBMBytesUpperBoundEnvString);
+  else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_FRAME_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
 
   // Parsing file output frequency
   _outputSaveBestSeconds = -1.0;
@@ -517,8 +540,9 @@ Train::Train(int argc, char *argv[])
   // Checking whether it contains the rules field
   if (isDefined(scriptJs, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file '%s' missing 'Rules' key.\n", _scriptFile.c_str());
 
-  // Calculating DB sizes
-  _maxDatabaseSize = floor(((double)maxDBSizeMb * 1024.0 * 1024.0) / ((double)sizeof(Frame)));
+  // Calculating max DB size bounds
+  _maxDatabaseSizeLowerBound = floor(((double)maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)sizeof(Frame)));
+  _maxDatabaseSizeUpperBound = floor(((double)maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(Frame)));
 
   // Resizing containers based on thread count
   _state.resize(_threadCount);

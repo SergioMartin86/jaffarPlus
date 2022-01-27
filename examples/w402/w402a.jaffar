@@ -26,7 +26,7 @@
     "Description": "Reward getting the vine",
     "Conditions":
     [
-     { "Property": "Mario Position X", "Op": ">", "Value":  330 }
+     { "Property": "Mario Position X", "Op": ">", "Value":  402 }
     ],
     
     "Satisfies": [ ],
@@ -91,6 +91,24 @@
     ]
    },
 
+   {
+    "Label": 1994,
+    "Description": "Don't allow mario to take the upper route at the beginning",
+    "Conditions":
+    [
+     { "Property": "Mario Position Y", "Op": "<", "Value":  115 },
+     { "Property": "Mario Position X", "Op": "<", "Value":  430 },
+     { "Property": "Mario Position X", "Op": ">", "Value":  280 }
+    ],
+    
+    "Satisfies": [ ], 
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
    {
     "Label": 1995,
     "Description": "Don't allow mario to get on the roof",
