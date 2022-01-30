@@ -205,9 +205,8 @@ const unsigned char clock_table [256] = {
  #define BRANCH( cond )      \
   l.pc++;                   \
   if ( (cond) == false ) { clock_count--; goto loop; }\
-  offset = (int8_t) data;  \
-  extra_clock = (l.pc & 0xFF) + offset; \
-  l.pc += offset; \
+  extra_clock = (l.pc & 0xFF) + (int8_t) data; \
+  l.pc += (int8_t) data; \
   clock_count += (extra_clock >> 8) & 1;  \
   goto loop;          \
 
@@ -230,7 +229,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	// temporary values
 
  uint8_t msb;
- int8_t offset;
  uint8_t extra_clock;
  uint8_t carry;
  uint8_t ov;
@@ -270,7 +268,27 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	instruction = *((instr_t*)(&page[l.pc++]));
 	if ( clock_count >= clock_limit )	goto stop;
 	clock_count += clock_table [instruction.opcode];
-	data = instruction.operand;
+
+ if (instruction.opcode == 0x4C)
+ {
+  l.pc = *(uint16_t*)(&page [l.pc]);
+  goto loop;
+ }
+
+ data = instruction.operand;
+
+ if (instruction.opcode == 0xF0)
+ {
+   BRANCH( !(uint8_t) nz );
+ }
+
+ if (instruction.opcode == 0xAD)
+ {
+   addr = GET_ADDR();
+   l.pc += 2;
+   l.a = nz = READ_LIKELY_PPU( addr );
+   goto loop;
+ }
 
 	switch ( instruction.opcode )
  {
@@ -292,11 +310,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE_LOW( 0x100 | (l.sp - 1), temp >> 8 );
    l.sp = (l.sp - 2) | 0x100;
    WRITE_LOW( l.sp, temp );
-   goto loop;
-
-
-  case 0x4C: // JMP abs
-   l.pc = GET_OPERAND16( l.pc );
    goto loop;
 
   case 0xE8: INC_DEC_XY( l.x, 1 )  // INX
@@ -393,9 +406,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   case 0x30: // BMI
    BRANCH( IS_NEG )
 
-  case 0xF0: // BEQ
-   BRANCH( !(uint8_t) nz );
-
   case 0x95: // STA zp,l.x
    data = uint8_t (data + l.x);
   case 0x85: // STA zp
@@ -409,12 +419,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    l.y = l.a;
   case 0x98: // TYA
    l.a = nz = l.y;
-   goto loop;
-
-  case 0xAD:// LDA abs
-   addr = GET_ADDR();
-   l.pc += 2;
-   l.a = nz = READ_LIKELY_PPU( addr );
    goto loop;
 
   case 0x60: // RTS
@@ -984,7 +988,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   case 0xEA: case 0x1A: case 0x3A: case 0x5A: case 0x7A: case 0xDA: case 0xFA: // NOP
    goto loop;
 
-  case 0xC7 - 0x04: // DCP + (ind,l.x), instruction.opcode base: 0xC7 offset: 0x04
+  case 0xC7 - 0x04: // DCP + (ind,l.x), instruction.opcode base: 0xC7 + 0x04
    temp = data + l.x;
    data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
    // Common from here
