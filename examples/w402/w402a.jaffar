@@ -23,7 +23,7 @@
    
    {
     "Label": 1002,
-    "Description": "Reward getting the vine",
+    "Description": "Passing the first part, rewarding offset addition",
     "Conditions":
     [
      { "Property": "Mario Position X", "Op": ">", "Value":  446 }
@@ -71,7 +71,7 @@
     
     "Actions":
     [
-      { "Type": "Add Reward", "Value": 10000 }
+      { "Type": "Add Reward", "Value": 50000 }
     ]
    },
    

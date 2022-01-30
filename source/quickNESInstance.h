@@ -92,24 +92,27 @@ class quickNESInstance
     hash.Update(*_enemyCollision);
     hash.Update(*_hitDetectionFlag);
 
+
     // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
     hash.Update(*_animationTimer < 2 ? *_animationTimer : (uint8_t)2);
     hash.Update(*_jumpSwimTimer < 2 ? *_jumpSwimTimer : (uint8_t)2);
     hash.Update(*_runningTimer < 2 ? *_runningTimer : (uint8_t)2);
     hash.Update(*_blockBounceTimer < 2 ? *_blockBounceTimer : (uint8_t)2);
-    hash.Update(*_sideCollisionTimer < 2 ? *_sideCollisionTimer : (uint8_t)2);
+    hash.Update(*_sideCollisionTimer);
     hash.Update(*_jumpspringTimer);
+    hash.Update(*_gameControlTimer);
     hash.Update(*_climbSideTimer);
-    hash.Update(*_enemyFrameTimer < 2 ? *_enemyFrameTimer : (uint8_t)2);
-    hash.Update(*_frenzyEnemyTimer < 2 ? *_frenzyEnemyTimer : (uint8_t)2);
-    hash.Update(*_bowserFireTimer < 2 ? *_bowserFireTimer : (uint8_t)2);
-    hash.Update(*_stompTimer < 2 ? *_stompTimer : (uint8_t)2);
-    hash.Update(*_airBubbleTimer < 2 ? *_airBubbleTimer : (uint8_t)2);
-    hash.Update(*_fallPitTimer < 2 ? *_fallPitTimer : (uint8_t)2);
-    hash.Update(*_multiCoinBlockTimer < 2 ? *_multiCoinBlockTimer : (uint8_t)2);
-    hash.Update(*_invincibleTimer < 2 ? *_invincibleTimer : (uint8_t)2);
-    hash.Update(*_starTimer < 2 ? *_starTimer : (uint8_t)2);
-    hash.Update(*_powerUpActive < 2 ? *_powerUpActive : (uint8_t)2);
+    hash.Update(*_enemyFrameTimer);
+    hash.Update(*_frenzyEnemyTimer);
+    hash.Update(*_bowserFireTimer);
+    hash.Update(*_stompTimer);
+    hash.Update(*_airBubbleTimer);
+    hash.Update(*_fallPitTimer);
+    hash.Update(*_multiCoinBlockTimer);
+    hash.Update(*_invincibleTimer);
+    hash.Update(*_starTimer);
+    hash.Update(*_powerUpActive);
+
 
     hash.Update(*_warpAreaOffset);
 
@@ -194,6 +197,7 @@ class quickNESInstance
   uint8_t* _sideCollisionTimer;
   uint8_t* _jumpspringTimer;
   uint8_t* _climbSideTimer;
+  uint8_t* _gameControlTimer;
   uint8_t* _enemyFrameTimer;
   uint8_t* _frenzyEnemyTimer;
   uint8_t* _bowserFireTimer;

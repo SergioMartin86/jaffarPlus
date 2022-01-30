@@ -275,15 +275,12 @@ void Train::computeFrames()
          // Storing new winning frame
          if (type == f_win) { _winFrameFound = true; _winFrame = *newFrame; };
 
-         if (type == f_regular)
-         {
-          // Adding frame to the new frame database
-          newFrames.push_back(std::move(newFrame));
+         // Adding frame to the new frame database
+         newFrames.push_back(std::move(newFrame));
 
-          // Updating maximum number of frames in memory
-          size_t curFrameCount = _frameDB.size() - baseFramesProcessed + newFrames.size();
-          if (curFrameCount > _stepMaxFramesInMemory) _stepMaxFramesInMemory = curFrameCount;
-         }
+         // Updating maximum number of frames in memory
+         size_t curFrameCount = _frameDB.size() - baseFramesProcessed + newFrames.size();
+         if (curFrameCount > _stepMaxFramesInMemory) _stepMaxFramesInMemory = curFrameCount;
 
          // If we exceeded the upper bound for new frames, do a partial sort and eliminate the worse ones
          if (newFrames.size() > _maxDatabaseSizeUpperBound)
