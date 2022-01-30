@@ -114,7 +114,7 @@
    },
 
    {
-    "Label": 1994,
+    "Label": 1993,
     "Description": "Don't allow mario to take the upper route at the beginning",
     "Conditions":
     [
@@ -132,7 +132,7 @@
    },
    
    {
-    "Label": 1995,
+    "Label": 1994,
     "Description": "Don't allow mario to go below the lift",
     "Conditions":
     [
@@ -154,7 +154,9 @@
     "Description": "Don't allow mario to get on the roof",
     "Conditions":
     [
-     { "Property": "Mario Position Y", "Op": "<", "Value":  20 }
+     { "Property": "Mario Position Y", "Op": "<", "Value":  50 },
+     { "Property": "Mario Position X", "Op": ">", "Value":  1000 },
+     { "Property": "Mario Position X", "Op": "<", "Value":  1150 }
     ],
     
     "Satisfies": [ ],
