@@ -154,23 +154,6 @@
    },
 
    {
-    "Label": 1992,
-    "Description": "If passing the vines without activating them, fail",
-    "Conditions":
-    [
-     { "Property": "Mario Position X", "Op": ">", "Value":  1045 },
-     { "Property": "Enemy 2 Type", "Op": "!=", "Value":  47 }
-    ],
-    
-    "Satisfies": [ ], 
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
     "Label": 1993,
     "Description": "Don't allow mario to take the upper route at the beginning",
     "Conditions":
