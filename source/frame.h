@@ -32,7 +32,7 @@
 
 // W4-2a
 #define _MAX_FRAME_DIFF 800
-#define _MAX_RULE_COUNT 12
+#define _MAX_RULE_COUNT 15
 #define _MAX_MOVELIST_SIZE 700
 
 // W4-2b

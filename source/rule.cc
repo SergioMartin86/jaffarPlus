@@ -182,6 +182,7 @@ datatype_t Rule::getPropertyType(const std::string &property)
   if (property == "Mario Animation") return dt_uint8;
   if (property == "Mario Walking Frame") return dt_uint8;
   if (property == "Mario Walking Mode") return dt_uint8;
+  if (property == "Mario Floating Mode") return dt_uint8;
 
   if (property == "Screen Position X") return dt_uint16;
 
@@ -215,6 +216,7 @@ void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *ne
   if (property == "Mario Animation") return nes->_marioAnimation;
   if (property == "Mario Walking Frame") return nes->_marioWalkingFrame;
   if (property == "Mario Walking Mode") return nes->_marioWalkingMode;
+  if (property == "Mario Floating Mode") return nes->_marioFloatingMode;
 
   if (property == "Screen Position X") return &nes->_screenPosX; // Derivative value
 

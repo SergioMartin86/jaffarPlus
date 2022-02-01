@@ -60,16 +60,56 @@
     ]
    }, 
    
-   
    {
     "Label": 1004,
+    "Description": "Once on the platform, stop trying to go up",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">", "Value":  925 },
+     { "Property": "Mario Floating Mode", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ 1003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": -0.1, "Max":  0 },
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
+     { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
+    ]
+   }, 
+   
+   {
+    "Label": 1005,
+    "Description": "At some point in the platform, we need to start jumping",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">", "Value":  1000 }
+    ],
+    
+    "Satisfies": [ 1004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": 1.0, "Max":  255 },
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
+     { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
+    ]
+   }, 
+   
+   {
+    "Label": 1006,
     "Description": "Reward getting the vine, no longer needed for him to go up",
     "Conditions":
     [
      { "Property": "Enemy 2 Type", "Op": "==", "Value":  47 }
     ],
     
-    "Satisfies": [ 1003 ],
+    "Satisfies": [ 1005 ],
     
     "Actions":
     [
@@ -82,14 +122,14 @@
    }, 
    
    {
-    "Label": 1005,
+    "Label": 1007,
     "Description": "Reward if Mario gets to the pipe",
     "Conditions":
     [
      { "Property": "Mario State", "Op": "==", "Value":  3 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 1006 ],
     
     "Actions":
     [
@@ -98,7 +138,7 @@
    },
    
    {
-    "Label": 1006,
+    "Label": 1008,
     "Description": "Win if Mario exits the level",
     "Conditions":
     [
@@ -113,6 +153,23 @@
     ]
    },
 
+   {
+    "Label": 1992,
+    "Description": "If passing the vines without activating them, fail",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">", "Value":  1045 },
+     { "Property": "Enemy 2 Type", "Op": "!=", "Value":  47 }
+    ],
+    
+    "Satisfies": [ ], 
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
    {
     "Label": 1993,
     "Description": "Don't allow mario to take the upper route at the beginning",
@@ -154,8 +211,8 @@
     "Description": "Don't allow mario to get on the roof",
     "Conditions":
     [
-     { "Property": "Mario Position Y", "Op": "<", "Value":  50 },
-     { "Property": "Mario Position X", "Op": ">", "Value":  1000 },
+     { "Property": "Mario Position Y", "Op": "<", "Value":  72 },
+     { "Property": "Mario Position X", "Op": ">", "Value":  900 },
      { "Property": "Mario Position X", "Op": "<", "Value":  1150 }
     ],
     
