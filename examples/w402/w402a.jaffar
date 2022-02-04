@@ -23,13 +23,13 @@
    
    {
     "Label": 1002,
-    "Description": "Reward getting the vine",
+    "Description": "Passing the first part, rewarding offset addition",
     "Conditions":
     [
      { "Property": "Mario Position X", "Op": ">", "Value":  446 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 1001 ],
     
     "Actions":
     [
@@ -42,17 +42,18 @@
    
    {
     "Label": 1003,
-    "Description": "Reward getting the vine",
+    "Description": "Passing the ? blocks part, make him go upwards",
     "Conditions":
     [
-     { "Property": "Enemy 2 Type", "Op": "==", "Value":  47 }
+     { "Property": "Mario Position X", "Op": ">", "Value":  900 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 1002 ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": 1.0, "Max":  255 },
      { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
      { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
      { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
@@ -61,23 +62,84 @@
    
    {
     "Label": 1004,
-    "Description": "If Mario gets to the pipe",
+    "Description": "Once on the platform, stop trying to go up",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">", "Value":  925 },
+     { "Property": "Mario Floating Mode", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ 1003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": -0.1, "Max":  0 },
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
+     { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
+    ]
+   }, 
+   
+   {
+    "Label": 1005,
+    "Description": "At some point in the platform, we need to start jumping",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">", "Value":  1000 }
+    ],
+    
+    "Satisfies": [ 1004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": 1.0, "Max":  255 },
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
+     { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
+    ]
+   }, 
+   
+   {
+    "Label": 1006,
+    "Description": "Reward getting the vine, no longer needed for him to go up",
+    "Conditions":
+    [
+     { "Property": "Enemy 2 Type", "Op": "==", "Value":  47 }
+    ],
+    
+    "Satisfies": [ 1005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": 0.0, "Max":  255 },
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
+     { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
+    ]
+   }, 
+   
+   {
+    "Label": 1007,
+    "Description": "Reward if Mario gets to the pipe",
     "Conditions":
     [
      { "Property": "Mario State", "Op": "==", "Value":  3 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 1006 ],
     
     "Actions":
     [
-      { "Type": "Add Reward", "Value": 10000 }
+      { "Type": "Add Reward", "Value": 50000 }
     ]
    },
    
    {
-    "Label": 1005,
-    "Description": "If Mario exits the level",
+    "Label": 1008,
+    "Description": "Win if Mario exits the level",
     "Conditions":
     [
      { "Property": "Level Entry Flag", "Op": "==", "Value":  1 }
@@ -92,7 +154,7 @@
    },
 
    {
-    "Label": 1994,
+    "Label": 1993,
     "Description": "Don't allow mario to take the upper route at the beginning",
     "Conditions":
     [
@@ -110,11 +172,31 @@
    },
    
    {
-    "Label": 1995,
+    "Label": 1994,
+    "Description": "Don't allow mario to go below the lift",
+    "Conditions":
+    [
+     { "Property": "Mario Position Y", "Op": ">", "Value":  155 },
+     { "Property": "Mario Position X", "Op": ">", "Value":  905 },
+     { "Property": "Mario Position X", "Op": "<", "Value":  1020 }
+    ],
+    
+    "Satisfies": [ ], 
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1996,
     "Description": "Don't allow mario to get on the roof",
     "Conditions":
     [
-     { "Property": "Mario Position Y", "Op": "<", "Value":  20 }
+     { "Property": "Mario Position Y", "Op": "<", "Value":  72 },
+     { "Property": "Mario Position X", "Op": ">", "Value":  900 },
+     { "Property": "Mario Position X", "Op": "<", "Value":  1150 }
     ],
     
     "Satisfies": [ ],
@@ -126,7 +208,7 @@
    },
    
    {
-    "Label": 1996,
+    "Label": 1997,
     "Description": "If warp area offset changes, then fail.",
     "Conditions":
     [
@@ -159,7 +241,7 @@
    
    {
     "Label": 1999,
-    "Description": "If Mario dies from falling, then fail.",
+    "Description": "If Mario dies from falling on a hole, then fail.",
     "Conditions":
     [
      { "Property": "Mario Position Y", "Op": ">", "Value":  250 }

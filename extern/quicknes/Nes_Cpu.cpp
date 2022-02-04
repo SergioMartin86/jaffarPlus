@@ -270,7 +270,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 	instruction = *((instr_t*)(&page[l.pc++]));
 	if ( clock_count >= clock_limit )	goto stop;
 	clock_count += clock_table [instruction.opcode];
-	data = instruction.operand;
+
+ if (instruction.opcode == 0x4C)
+ {
+  l.pc = *(uint16_t*)(&page [l.pc]);
+  goto loop;
+ }
+
+ data = instruction.operand;
 
 	switch ( instruction.opcode )
  {
@@ -292,11 +299,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE_LOW( 0x100 | (l.sp - 1), temp >> 8 );
    l.sp = (l.sp - 2) | 0x100;
    WRITE_LOW( l.sp, temp );
-   goto loop;
-
-
-  case 0x4C: // JMP abs
-   l.pc = GET_OPERAND16( l.pc );
    goto loop;
 
   case 0xE8: INC_DEC_XY( l.x, 1 )  // INX
@@ -395,6 +397,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
   case 0xF0: // BEQ
    BRANCH( !(uint8_t) nz );
+
 
   case 0x95: // STA zp,l.x
    data = uint8_t (data + l.x);
