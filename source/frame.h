@@ -40,10 +40,35 @@
 //#define _MAX_RULE_COUNT 10
 //#define _MAX_MOVELIST_SIZE 500
 
-// W8-1b
-#define _MAX_FRAME_DIFF 900
-#define _MAX_RULE_COUNT 10
-#define _MAX_MOVELIST_SIZE 2500
+// W8-1
+//#define _MAX_FRAME_DIFF 900
+//#define _MAX_RULE_COUNT 10
+//#define _MAX_MOVELIST_SIZE 2500
+
+// W8-2
+//#define _MAX_FRAME_DIFF 1050
+//#define _MAX_RULE_COUNT 10
+//#define _MAX_MOVELIST_SIZE 1700
+
+// W8-3
+//#define _MAX_FRAME_DIFF 850
+//#define _MAX_RULE_COUNT 10
+//#define _MAX_MOVELIST_SIZE 1500
+
+// W8-4a
+//#define _MAX_FRAME_DIFF 650
+//#define _MAX_RULE_COUNT 8
+//#define _MAX_MOVELIST_SIZE 550
+
+// W8-4b
+//#define _MAX_FRAME_DIFF 650
+//#define _MAX_RULE_COUNT 8
+//#define _MAX_MOVELIST_SIZE 300
+
+// W8-4c
+#define _MAX_FRAME_DIFF 650
+#define _MAX_RULE_COUNT 8
+#define _MAX_MOVELIST_SIZE 230
 
 #define _MAX_MOVELIST_STORAGE ((_MAX_MOVELIST_SIZE/2) + 1)
 #define _FRAME_DATA_SIZE 12792

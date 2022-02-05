@@ -17,7 +17,7 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  // Getting base and specific values' pointers
  _baseMem = _emu.low_mem();
 
- // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map for helping me find some of these items
+ // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
  // Game specific values
  _screenScroll         = (uint16_t*) &_baseMem[0x071B];
  _marioAnimation       = (uint8_t*)  &_baseMem[0x0001];
@@ -25,8 +25,11 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
 
  _marioBasePosX        = (uint8_t*)  &_baseMem[0x006D];
  _marioRelPosX         = (uint8_t*)  &_baseMem[0x0086];
+ _marioSubpixelPosX    = (uint8_t*)  &_baseMem[0x0400];
 
  _marioPosY            = (uint8_t*)  &_baseMem[0x00CE];
+ _marioSubpixelPosY    = (uint8_t*)  &_baseMem[0x0416];
+
  _marioMovingDirection = (uint8_t*)  &_baseMem[0x0045];
  _marioFacingDirection = (uint8_t*)  &_baseMem[0x0033];
  _marioFloatingMode    = (uint8_t*)  &_baseMem[0x001D];
@@ -220,6 +223,7 @@ void quickNESInstance::printFrameInfo()
   printf("[JaffarNES]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _marioPosX, *_marioBasePosX, (uint16_t)*_marioBasePosX * 255, *_marioRelPosX);
   printf("[JaffarNES]  + Mario / Screen Offset:  %04d\n", _marioScreenOffset);
   printf("[JaffarNES]  + Mario Pos Y:            %02u\n", *_marioPosY);
+  printf("[JaffarNES]  + Mario SubPixel X/Y:     %02u / %02u\n", *_marioSubpixelPosX, *_marioSubpixelPosY);
   printf("[JaffarNES]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_marioVelX, *_marioXMoveForce, *_marioMaxVelLeft, *_marioMaxVelRight);
   printf("[JaffarNES]  + Mario Vel Y:            %02d (%02d)\n", *_marioVelY, *_marioFracVelY);
   printf("[JaffarNES]  + Mario Gravity:          %02u\n", *_marioGravity);
