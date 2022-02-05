@@ -1,0 +1,90 @@
+{
+  "Description": "This script searches for the fastest any% solution for NES SMB World 8-4a",  
+ 
+  "Rules":
+  [
+   {
+    "Label": 1001,
+    "Description": "Setting magnet to make Mario go to the right",
+    "Conditions":
+    [
+     { "Property": "Current World", "Op": "==", "Value":  8 },
+     { "Property": "Current Stage", "Op": "==", "Value":  4 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max": 2436 }
+    ]
+   },
+   
+  {
+    "Label": 1002,
+    "Description": "Setting magnet to make Mario go up to the pipe",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">", "Value":  2348 }
+    ],
+    
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max": 2436 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": -1.0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    "Description": "If Mario gets to flagpole",
+    "Conditions":
+    [
+     { "Property": "Mario State", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1998,
+    "Description": "If Mario dies from getting hit, then fail.",
+    "Conditions":
+    [
+     { "Property": "Mario State", "Op": "==", "Value":  11 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Description": "If Mario dies from falling, then fail.",
+    "Conditions":
+    [
+     { "Property": "Mario Position Y", "Op": ">", "Value":  250 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

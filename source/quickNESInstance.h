@@ -46,9 +46,12 @@ class quickNESInstance
 
     hash.Update(*_marioBasePosX);
     hash.Update(*_marioRelPosX);
+    hash.Update(*_marioSubpixelPosX);
+
+    hash.Update(*_marioPosY);
+    hash.Update(*_marioSubpixelPosY);
 
     hash.Update(*_marioXMoveForce);
-    hash.Update(*_marioPosY);
     hash.Update(*_marioFacingDirection);
     hash.Update(*_marioMovingDirection);
     hash.Update(*_marioFloatingMode);
@@ -91,7 +94,6 @@ class quickNESInstance
     hash.Update(*_marioCollision);
     hash.Update(*_enemyCollision);
     hash.Update(*_hitDetectionFlag);
-
 
     // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
     hash.Update(*_animationTimer < 2 ? *_animationTimer : (uint8_t)2);
@@ -139,8 +141,11 @@ class quickNESInstance
 
   uint8_t* _marioBasePosX;
   uint8_t* _marioRelPosX;
+  uint8_t* _marioSubpixelPosX;
 
   uint8_t* _marioPosY;
+  uint8_t* _marioSubpixelPosY;
+
   uint8_t* _marioMovingDirection;
   uint8_t* _marioFacingDirection;
   uint8_t* _marioFloatingMode;
