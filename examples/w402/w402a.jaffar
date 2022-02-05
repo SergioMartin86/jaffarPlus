@@ -53,7 +53,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000 },
-     { "Type": "Set Mario Vertical Magnet", "Intensity": 1.0, "Max":  255 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": -1.0, "Max":  255 },
      { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
      { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
      { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
@@ -74,7 +74,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000 },
-     { "Type": "Set Mario Vertical Magnet", "Intensity": -0.1, "Max":  0 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": 0.1, "Max": 255 },
      { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
      { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
      { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }
@@ -94,7 +94,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000 },
-     { "Type": "Set Mario Vertical Magnet", "Intensity": 1.0, "Max":  255 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": -1.0, "Max":  255 },
      { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  1348 },
      { "Type": "Set Screen Horizontal Magnet", "Intensity": 5.0, "Max": 1216 },
      { "Type": "Set Mario Screen Offset Magnet", "Intensity": 100.0, "Max": 132 }

@@ -81,8 +81,7 @@ class State
     reward += magnetSet.marioHorizontalMagnet.intensity * std::min((float)_nes->_marioPosX, magnetSet.marioHorizontalMagnet.max);
 
     // Evaluating mario magnet's reward on position Y
-    if (magnetSet.marioVerticalMagnet.intensity > 0.0f) reward += magnetSet.marioVerticalMagnet.intensity * (256.0f - std::min((float)*_nes->_marioPosY, magnetSet.marioVerticalMagnet.max));
-    if (magnetSet.marioVerticalMagnet.intensity < 0.0f) reward += magnetSet.marioVerticalMagnet.intensity * (000.0f - std::max((float)*_nes->_marioPosY, magnetSet.marioVerticalMagnet.max));
+    reward += magnetSet.marioVerticalMagnet.intensity * std::min((float)*_nes->_marioPosY, magnetSet.marioVerticalMagnet.max);
 
     // If mario is getting into the tube, reward timer going down
     if (*_nes->_marioState == 3) reward += 1000.0f * (24.0f - (float)*_nes->_climbSideTimer);
