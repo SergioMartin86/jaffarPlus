@@ -428,19 +428,24 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
   case 0x99: // STA abs,Y
    data += l.y;
-   goto sta_ind_common;
-
-  case 0x9D: // STA abs,X
-   data += l.x;
-  sta_ind_common:
    temp = data;
    ADD_PAGE
    READ( data - ( temp & 0x100 ) );
-   goto sta_ptr;
+   l.pc++;
+   WRITE( data, l.a );
+   goto loop;
+
+  case 0x9D: // STA abs,X
+   data += l.x;
+   temp = data;
+   ADD_PAGE
+   READ( data - ( temp & 0x100 ) );
+   l.pc++;
+   WRITE( data, l.a );
+   goto loop;
 
   case 0x8D: // STA abs
    ADD_PAGE
-  sta_ptr:
    l.pc++;
    WRITE( data, l.a );
    goto loop;
@@ -550,12 +555,16 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
   case 0x91: // STA (ind),Y
    IND_Y(false,false)
-   goto sta_ptr;
+   l.pc++;
+   WRITE( data, l.a );
+   goto loop;
 
   case 0x81: // STA (ind,X)
    temp = data + l.x;
    data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
-   goto sta_ptr;
+   l.pc++;
+   WRITE( data, l.a );
+   goto loop;
 
   case 0xBC: // LDY abs,X
    data += l.x;
@@ -584,11 +593,13 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
    case 0x8C: // STY abs
    temp = l.y;
-   goto store_abs;
+   addr = GET_ADDR();
+   WRITE( addr, temp );
+   l.pc += 2;
+   goto loop;
 
   case 0x8E: // STX abs
    temp = l.x;
-  store_abs:
    addr = GET_ADDR();
    WRITE( addr, temp );
    l.pc += 2;
@@ -600,12 +611,15 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    addr = GET_ADDR();
    l.pc++;
    data = READ( addr );
-   goto cpx_data;
+   nz = l.x - data;
+   l.pc++;
+   c = ~nz;
+   nz &= 0xFF;
+   goto loop;
 
   case 0xE4: // CPX zp
    data = READ_LOW( data );
   case 0xE0: // CPX #imm
-  cpx_data:
    nz = l.x - data;
    l.pc++;
    c = ~nz;
@@ -616,12 +630,15 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    addr = GET_ADDR();
    l.pc++;
    data = READ( addr );
-   goto cpy_data;
+   nz = l.y - data;
+   l.pc++;
+   c = ~nz;
+   nz &= 0xFF;
+   goto loop;
 
   case 0xC4: // CPY zp
    data = READ_LOW( data );
   case 0xC0: // CPY #imm
-  cpy_data:
    nz = l.y - data;
    l.pc++;
    c = ~nz;
@@ -673,10 +690,16 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   ARITH_ADDR_MODES( 0xE5 ) // SBC
   case 0xEB: // unofficial equivalent
    data ^= 0xFF;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   ARITH_ADDR_MODES( 0x65 ) // ADC
-  adc_imm:
    carry = (c >> 8) & 1;
    ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
    status &= ~st_v;
@@ -807,25 +830,36 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    temp = data + l.x;
    data = l.x + GET_ADDR();
    READ( data - ( temp & 0x100 ) );
-   goto inc_ptr;
+   nz = 1;
+   WRITE( data, temp = READ( data ) );
+   nz += temp;
+   l.pc += 2;
+   WRITE( data, (uint8_t) nz );
+   goto loop;
 
   case 0xEE: // INC abs
    data = GET_ADDR();
-  inc_ptr:
    nz = 1;
-   goto inc_common;
+   WRITE( data, temp = READ( data ) );
+   nz += temp;
+   l.pc += 2;
+   WRITE( data, (uint8_t) nz );
+   goto loop;
 
   case 0xDE: // DEC abs,l.x
    temp = data + l.x;
    data = l.x + GET_ADDR();
    READ( data - ( temp & 0x100 ) );
-   goto dec_ptr;
+   nz = -1;
+   WRITE( data, temp = READ( data ) );
+   nz += temp;
+   l.pc += 2;
+   WRITE( data, (uint8_t) nz );
+   goto loop;
 
   case 0xCE: // DEC abs
    data = GET_ADDR();
-  dec_ptr:
    nz = -1;
-  inc_common:
    WRITE( data, temp = READ( data ) );
    nz += temp;
    l.pc += 2;
@@ -1085,7 +1119,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    nz = uint8_t( nz + 1 );
    WRITE( data, nz );
    data = nz ^ 0xFF;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0xE7 + 0x0C: // ISC + (ind,l.y)
    IND_Y(false,false)
@@ -1094,7 +1135,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    nz = uint8_t( nz + 1 );
    WRITE( data, nz );
    data = nz ^ 0xFF;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0xE7 + 0x10: // ISC + zp,X
    data = uint8_t (data + l.x);
@@ -1103,7 +1151,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    nz = uint8_t( nz + 1 );
    WRITE( data, nz );
    data = nz ^ 0xFF;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0xE7 + 0x14: // ISC + abs,Y
    data += l.y;
@@ -1115,7 +1170,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    nz = uint8_t( nz + 1 );
    WRITE( data, nz );
    data = nz ^ 0xFF;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0xE7 + 0x18: // ISC + abs,X
    data += l.x;
@@ -1127,7 +1189,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    nz = uint8_t( nz + 1 );
    WRITE( data, nz );
    data = nz ^ 0xFF;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0xE7 + 0x08: // ISC + abs
    ADD_PAGE
@@ -1136,7 +1205,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    nz = uint8_t( nz + 1 );
    WRITE( data, nz );
    data = nz ^ 0xFF;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0xE7 + 0x00: // ISC + zp
    // Common from here
@@ -1144,7 +1220,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    nz = uint8_t( nz + 1 );
    WRITE( data, nz );
    data = nz ^ 0xFF;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0x27 - 0x04: // RLA + (ind,l.x)
    temp = data + l.x;
@@ -1245,7 +1328,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE( data, nz );
    data = nz;
    c = temp << 8;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0x67 + 0x0C: // RRA + (ind,l.y)
    IND_Y(false,false)
@@ -1255,7 +1345,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE( data, nz );
    data = nz;
    c = temp << 8;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0x67 + 0x10: // RRA + zp,X
    data = uint8_t (data + l.x);
@@ -1265,7 +1362,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE( data, nz );
    data = nz;
    c = temp << 8;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0x67 + 0x14: // RRA + abs,Y
    data += l.y;
@@ -1278,7 +1382,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE( data, nz );
    data = nz;
    c = temp << 8;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0x67 + 0x18: // RRA + abs,X
    data += l.x;
@@ -1291,7 +1402,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE( data, nz );
    data = nz;
    c = temp << 8;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0x67 + 0x08: // RRA + abs
    ADD_PAGE
@@ -1301,7 +1419,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE( data, nz );
    data = nz;
    c = temp << 8;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0x67 + 0x00: // RRA + zp
    // Common from here
@@ -1310,7 +1435,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE( data, nz );
    data = nz;
    c = temp << 8;
-   goto adc_imm;
+   carry = (c >> 8) & 1;
+   ov = (l.a ^ 0x80) + carry + (int8_t) data; // sign-extend
+   status &= ~st_v;
+   status |= (ov >> 2) & 0x40;
+   c = nz = l.a + data + carry;
+   l.pc++;
+   l.a = (uint8_t) nz;
+   goto loop;
 
   case 0x07 - 0x04: // SLO + (ind,l.x)
    temp = data + l.x;
@@ -1507,18 +1639,26 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   case 0xA3: // LAX
    temp = data + l.x;
    data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
-   goto lax_ptr;
+   data = READ( data );
+   nz = l.x = l.a = data;
+   l.pc++;
+   goto loop;
 
   case 0xB3:
    IND_Y(true,true)
-   goto lax_ptr;
+   data = READ( data );
+   nz = l.x = l.a = data;
+   l.pc++;
+   goto loop;
 
   case 0xB7:
    data = uint8_t (data + l.y);
 
   case 0xA7:
    data = READ_LOW( data );
-   goto lax_imm;
+   nz = l.x = l.a = data;
+   l.pc++;
+   goto loop;
 
   case 0xBF:
    data += l.y;
@@ -1527,14 +1667,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    ADD_PAGE;
    if ( temp & 0x100 )
     READ( data - 0x100 );
-   goto lax_ptr;
+   data = READ( data );
+   nz = l.x = l.a = data;
+   l.pc++;
+   goto loop;
 
   case 0xAF:
    ADD_PAGE
-
-  lax_ptr:
    data = READ( data );
-  lax_imm:
    nz = l.x = l.a = data;
    l.pc++;
    goto loop;
@@ -1542,17 +1682,20 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   case 0x83: // SAX
    temp = data + l.x;
    data = 0x100 * READ_LOW( uint8_t (temp + 1) ) + READ_LOW( uint8_t (temp) );
-   goto sax_imm;
+   WRITE( data, l.a & l.x );
+   l.pc++;
+   goto loop;
 
   case 0x97:
    data = uint8_t (data + l.y);
-   goto sax_imm;
+   WRITE( data, l.a & l.x );
+   l.pc++;
+   goto loop;
 
   case 0x8F:
    ADD_PAGE
 
   case 0x87:
-  sax_imm:
    WRITE( data, l.a & l.x );
    l.pc++;
    goto loop;
