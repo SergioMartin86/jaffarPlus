@@ -146,13 +146,8 @@ const unsigned char clock_table [256] = {
  // Macros
 
  #define GET_OPERAND( addr )   flat_code_map [addr]
- #define GET_OPERAND16( addr ) GET_LE16( &flat_code_map [addr] )
-
- //#define GET_OPERAND( addr )   READ_PROG( addr )
- //#define GET_OPERAND16( addr ) READ_PROG16( addr )
-
  #define ADD_PAGE        (l.pc++, data += 0x100 * GET_OPERAND( l.pc ));
- #define GET_ADDR()      GET_OPERAND16( l.pc )
+ #define GET_ADDR()      instruction.operand
 
  #define HANDLE_PAGE_CROSSING( lsb ) clock_count += (lsb) >> 8;
 
@@ -245,11 +240,14 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
  uint16_t temp;
  uint16_t data;
 
+#pragma pack(push,1)
  struct instr_t
  {
   uint8_t opcode;
-  uint8_t operand;
+  uint16_t operand;
+  uint8_t padding;
  };
+#pragma pack(pop)
 
  instr_t instruction;
 
@@ -277,11 +275,11 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
  if (instruction.opcode == 0x4C)
  {
-  l.pc = *(uint16_t*)(&flat_code_map [l.pc]);
+  l.pc = instruction.operand;
   goto loop;
  }
 
- data = instruction.operand;
+ data = (uint8_t)instruction.operand;
 
 	switch ( instruction.opcode )
  {
@@ -299,7 +297,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
   case 0x20:  // JSR
    temp = l.pc + 1;
-   l.pc = GET_OPERAND16( l.pc );
+   l.pc = instruction.operand;
    WRITE_LOW( 0x100 | (l.sp - 1), temp >> 8 );
    l.sp = (l.sp - 2) | 0x100;
    WRITE_LOW( l.sp, temp );
