@@ -48,6 +48,8 @@ void Nes_Cpu::reset( void const* unmapped_page )
 	for ( int i = 4; i < page_count + 1; i++ )
 		set_code_page( i, (uint8_t*) unmapped_page );
 	
+	map_code_set = false;
+
 	#ifndef NDEBUG
 		blargg_verify_byte_order();
 	#endif
@@ -55,6 +57,8 @@ void Nes_Cpu::reset( void const* unmapped_page )
 
 void Nes_Cpu::map_code( nes_addr_t start, unsigned size, const void* data )
 {
+ if (map_code_set == true) return;
+
 	// address range must begin and end on page boundaries
 	require( start % page_size == 0 );
 	require( size % page_size == 0 );
@@ -63,6 +67,8 @@ void Nes_Cpu::map_code( nes_addr_t start, unsigned size, const void* data )
 	unsigned first_page = start / page_size;
 	for ( unsigned i = size / page_size; i--; )
 		set_code_page( first_page + i, (uint8_t*) data + i * page_size );
+
+	memcpy(&flat_code_map[start], data, size);
 }
 
 // Note: 'addr' is evaulated more than once in the following macros, so it
@@ -139,8 +145,8 @@ const unsigned char clock_table [256] = {
 
  // Macros
 
- #define GET_OPERAND( addr )   page [addr]
- #define GET_OPERAND16( addr ) GET_LE16( &page [addr] )
+ #define GET_OPERAND( addr )   flat_code_map [addr]
+ #define GET_OPERAND16( addr ) GET_LE16( &flat_code_map [addr] )
 
  //#define GET_OPERAND( addr )   READ_PROG( addr )
  //#define GET_OPERAND16( addr ) READ_PROG16( addr )
@@ -215,6 +221,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 {
 	set_end_time_( end );
 	clock_count = 0;
+	map_code_set = true;
 	
 	volatile result_t result = result_cycles;
 	
@@ -244,8 +251,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
   uint8_t operand;
  };
 
- uint8_t* page;
-
  instr_t instruction;
 
 	// status flags
@@ -266,14 +271,13 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
 	loop:
 
-	page = code_map [l.pc >> page_bits];
-	instruction = *((instr_t*)(&page[l.pc++]));
+	instruction = *((instr_t*)(&flat_code_map[l.pc++]));
 	if ( clock_count >= clock_limit )	goto stop;
 	clock_count += clock_table [instruction.opcode];
 
  if (instruction.opcode == 0x4C)
  {
-  l.pc = *(uint16_t*)(&page [l.pc]);
+  l.pc = *(uint16_t*)(&flat_code_map [l.pc]);
   goto loop;
  }
 
