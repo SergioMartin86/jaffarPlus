@@ -18,57 +18,57 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 #include "blargg_source.h"
 
 #ifdef BLARGG_ENABLE_OPTIMIZER
-	#include BLARGG_ENABLE_OPTIMIZER
+ #include BLARGG_ENABLE_OPTIMIZER
 #endif
 
 inline void Nes_Cpu::set_code_page( int i, uint8_t* p )
 {
-	code_map [i] = p - (unsigned) i * page_size;
+ code_map [i] = p - (unsigned) i * page_size;
 }
 
 void Nes_Cpu::reset( void const* unmapped_page )
 {
-	r.status = 0;
-	r.sp = 0;
-	r.pc = 0;
-	r.a = 0;
-	r.x = 0;
-	r.y = 0;
-	
-	error_count_ = 0;
-	clock_count = 0;
-	clock_limit = 0;
-	irq_time_ = LONG_MAX / 2 + 1;
-	end_time_ = LONG_MAX / 2 + 1;
-	
-	set_code_page( 0, low_mem );
-	set_code_page( 1, low_mem );
-	set_code_page( 2, low_mem );
-	set_code_page( 3, low_mem );
-	for ( int i = 4; i < page_count + 1; i++ )
-		set_code_page( i, (uint8_t*) unmapped_page );
-	
-	map_code_set = false;
+ r.status = 0;
+ r.sp = 0;
+ r.pc = 0;
+ r.a = 0;
+ r.x = 0;
+ r.y = 0;
 
-	#ifndef NDEBUG
-		blargg_verify_byte_order();
-	#endif
+ error_count_ = 0;
+ clock_count = 0;
+ clock_limit = 0;
+ irq_time_ = LONG_MAX / 2 + 1;
+ end_time_ = LONG_MAX / 2 + 1;
+
+ set_code_page( 0, low_mem );
+ set_code_page( 1, low_mem );
+ set_code_page( 2, low_mem );
+ set_code_page( 3, low_mem );
+ for ( int i = 4; i < page_count + 1; i++ )
+  set_code_page( i, (uint8_t*) unmapped_page );
+
+ map_code_set = false;
+
+ #ifndef NDEBUG
+  blargg_verify_byte_order();
+ #endif
 }
 
 void Nes_Cpu::map_code( nes_addr_t start, unsigned size, const void* data )
 {
  if (map_code_set == true) return;
 
-	// address range must begin and end on page boundaries
-	require( start % page_size == 0 );
-	require( size % page_size == 0 );
-	require( start + size <= 0x10000 );
-	
-	unsigned first_page = start / page_size;
-	for ( unsigned i = size / page_size; i--; )
-		set_code_page( first_page + i, (uint8_t*) data + i * page_size );
+ // address range must begin and end on page boundaries
+ require( start % page_size == 0 );
+ require( size % page_size == 0 );
+ require( start + size <= 0x10000 );
 
-	memcpy(&flat_code_map[start], data, size);
+ unsigned first_page = start / page_size;
+ for ( unsigned i = size / page_size; i--; )
+  set_code_page( first_page + i, (uint8_t*) data + i * page_size );
+
+ memcpy(&flat_code_map[start], data, size);
 }
 
 // Note: 'addr' is evaulated more than once in the following macros, so it
@@ -90,12 +90,12 @@ void Nes_Cpu::map_code( nes_addr_t start, unsigned size, const void* data )
 
 int Nes_Cpu::read( nes_addr_t addr )
 {
-	return READ( addr );
+ return READ( addr );
 }
 
 void Nes_Cpu::write( nes_addr_t addr, int value )
 {
-	WRITE( addr, value );
+ WRITE( addr, value );
 }
 
 
@@ -103,22 +103,22 @@ void Nes_Cpu::write( nes_addr_t addr, int value )
 
 const unsigned char clock_table [256] = {
 //  0 1 2 3 4 5 6 7 8 9 A B C D E F
-	7,6,2,8,3,3,5,5,3,2,2,2,4,4,6,6,// 0
-	3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 1
-	6,6,2,8,3,3,5,5,4,2,2,2,4,4,6,6,// 2
-	3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 3
-	6,6,2,8,3,3,5,5,3,2,2,2,3,4,6,6,// 4
-	3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 5
-	6,6,2,8,3,3,5,5,4,2,2,2,5,4,6,6,// 6
-	3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 7
-	2,6,2,6,3,3,3,3,2,2,2,2,4,4,4,4,// 8
-	3,6,2,6,4,4,4,4,2,5,2,5,5,5,5,5,// 9
-	2,6,2,6,3,3,3,3,2,2,2,2,4,4,4,4,// A
-	3,5,2,5,4,4,4,4,2,4,2,4,4,4,4,4,// B
-	2,6,2,8,3,3,5,5,2,2,2,2,4,4,6,6,// C
-	3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// D
-	2,6,2,8,3,3,5,5,2,2,2,2,4,4,6,6,// E
-	3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7 // F
+ 7,6,2,8,3,3,5,5,3,2,2,2,4,4,6,6,// 0
+ 3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 1
+ 6,6,2,8,3,3,5,5,4,2,2,2,4,4,6,6,// 2
+ 3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 3
+ 6,6,2,8,3,3,5,5,3,2,2,2,3,4,6,6,// 4
+ 3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 5
+ 6,6,2,8,3,3,5,5,4,2,2,2,5,4,6,6,// 6
+ 3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 7
+ 2,6,2,6,3,3,3,3,2,2,2,2,4,4,4,4,// 8
+ 3,6,2,6,4,4,4,4,2,5,2,5,5,5,5,5,// 9
+ 2,6,2,6,3,3,3,3,2,2,2,2,4,4,4,4,// A
+ 3,5,2,5,4,4,4,4,2,4,2,4,4,4,4,4,// B
+ 2,6,2,8,3,3,5,5,2,2,2,2,4,4,6,6,// C
+ 3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// D
+ 2,6,2,8,3,3,5,5,2,2,2,2,4,4,6,6,// E
+ 3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7 // F
 };
 
 #define IS_NEG (nz & 0x880)
@@ -203,22 +203,22 @@ const unsigned char clock_table [256] = {
 
 Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 {
-	set_end_time_( end );
-	clock_count = 0;
-	map_code_set = true;
-	
-	volatile result_t result = result_cycles;
-	
-	// registers
-	registers_t l;
+ set_end_time_( end );
+ clock_count = 0;
+ map_code_set = true;
 
-	l.pc = r.pc;
-	SET_SP( r.sp );
+ volatile result_t result = result_cycles;
+
+ // registers
+ registers_t l;
+
+ l.pc = r.pc;
+ SET_SP( r.sp );
  l.a = r.a;
-	l.x = r.x;
-	l.y = r.y;
-	
-	// temporary values
+ l.x = r.x;
+ l.y = r.y;
+
+ // temporary values
 
  uint8_t msb;
  int8_t offset;
@@ -232,27 +232,27 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
  uint8_t opcode;
  uint16_t operand;
 
-	// status flags
-	const uint8_t st_n = 0x80;
-	const uint8_t st_v = 0x40;
-	const uint8_t st_r = 0x20;
-	const uint8_t st_b = 0x10;
-	const uint8_t st_d = 0x08;
-	const uint8_t st_i = 0x04;
-	const uint8_t st_z = 0x02;
-	const uint8_t st_c = 0x01;
+ // status flags
+ const uint8_t st_n = 0x80;
+ const uint8_t st_v = 0x40;
+ const uint8_t st_r = 0x20;
+ const uint8_t st_b = 0x10;
+ const uint8_t st_d = 0x08;
+ const uint8_t st_i = 0x04;
+ const uint8_t st_z = 0x02;
+ const uint8_t st_c = 0x01;
 
-	int status;
-	uint16_t c;  // carry set if (c & 0x100) != 0
-	uint16_t nz; // Z set if (nz & 0xFF) == 0, N set if (nz & 0x880) != 0
-	temp = r.status;
-	SET_STATUS( temp );
+ int status;
+ uint16_t c;  // carry set if (c & 0x100) != 0
+ uint16_t nz; // Z set if (nz & 0xFF) == 0, N set if (nz & 0x880) != 0
+ temp = r.status;
+ SET_STATUS( temp );
 
-	loop:
+ loop:
 
-	opcode = flat_code_map[l.pc];
-	operand = *(uint16_t*)(&flat_code_map[l.pc+1]);
-	if ( clock_count >= clock_limit )	goto end;
+ opcode = flat_code_map[l.pc];
+ operand = *(uint16_t*)(&flat_code_map[l.pc+1]);
+ if ( clock_count >= clock_limit ) goto end;
 
  if (opcode != 0x4C) goto not_jmp;
 
@@ -266,7 +266,7 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
  clock_count += clock_table [opcode];
  data = (uint8_t) operand;
 
-	switch ( opcode )
+ switch ( opcode )
  {
   // Often-Used
   case 0xB5: // LDA zp,l.x
@@ -1626,25 +1626,25 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 
    //result = result_badop; // TODO: re-enable
    goto end;
-	}
+ }
 
 end:
-	
-	{
-		int temp;
-		CALC_STATUS( temp );
-		r.status = temp;
-	}
-	
-	this->clock_count = clock_count;
-	r.pc = l.pc;
-	r.sp = GET_SP();
-	r.a = l.a;
-	r.x = l.x;
-	r.y = l.y;
-	irq_time_ = LONG_MAX / 2 + 1;
-	
-	return result;
+
+ {
+  int temp;
+  CALC_STATUS( temp );
+  r.status = temp;
+ }
+
+ this->clock_count = clock_count;
+ r.pc = l.pc;
+ r.sp = GET_SP();
+ r.a = l.a;
+ r.x = l.x;
+ r.y = l.y;
+ irq_time_ = LONG_MAX / 2 + 1;
+
+ return result;
 }
 
 #endif

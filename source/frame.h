@@ -31,9 +31,9 @@
 //#define _MAX_MOVELIST_SIZE 1500
 
 // W4-2a
-#define _MAX_FRAME_DIFF 800
-#define _MAX_RULE_COUNT 15
-#define _MAX_MOVELIST_SIZE 700
+//#define _MAX_FRAME_DIFF 800
+//#define _MAX_RULE_COUNT 15
+//#define _MAX_MOVELIST_SIZE 700
 
 // W4-2b
 //#define _MAX_FRAME_DIFF 550
@@ -66,9 +66,14 @@
 //#define _MAX_MOVELIST_SIZE 300
 
 // W8-4c
-//#define _MAX_FRAME_DIFF 650
+//#define _MAX_FRAME_DIFF 500
 //#define _MAX_RULE_COUNT 8
 //#define _MAX_MOVELIST_SIZE 230
+
+// W8-4d
+#define _MAX_FRAME_DIFF 800
+#define _MAX_RULE_COUNT 8
+#define _MAX_MOVELIST_SIZE 750
 
 #define _MAX_MOVELIST_STORAGE ((_MAX_MOVELIST_SIZE/2) + 1)
 #define _FRAME_DATA_SIZE 12792
@@ -81,7 +86,7 @@
 
 extern size_t _maxFrameDiff;
 
-const std::vector<std::string> _possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "S" };
+const std::vector<std::string> _possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
 enum frameType
 {

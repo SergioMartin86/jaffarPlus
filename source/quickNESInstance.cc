@@ -182,8 +182,8 @@ void quickNESInstance::advanceFrame(const uint8_t &move)
  // 7 - Right / 128
 
  // Possible moves
- // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12    13
- //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "S" };
+ // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12     13    14      15
+ //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
  // Encoding movement into the NES controller code
  uint32_t controllerCode = 0;
@@ -202,7 +202,9 @@ void quickNESInstance::advanceFrame(const uint8_t &move)
   case 10: controllerCode = 0b11000000; break; // LR
   case 11: controllerCode = 0b11000001; break; // LRA
   case 12: controllerCode = 0b11000010; break; // LRB
-  case 13: controllerCode = 0b00001000; break; // S
+  case 13: controllerCode = 0b01000011; break; // LAB
+  case 14: controllerCode = 0b10000011; break; // RAB
+  case 15: controllerCode = 0b11000011; break; // LRAB
   default: EXIT_WITH_ERROR("Wrong move code passed %u\n", move);
  }
 

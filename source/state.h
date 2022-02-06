@@ -26,8 +26,8 @@ class State
   inline std::vector<uint8_t> getPossibleMoveIds() const
   {
    // Possible moves
-   // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12    13
-   //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "S" };
+   // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12    13     14      15
+   //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
    // If Mario's state is not normal (!= 8), there's nothing to do except wait
    if (*_nes->_marioState != 8) return { 0 };
@@ -36,7 +36,7 @@ class State
    if (*_nes->_marioFloatingMode == 1) return { 0, 1, 2, 4, 6, 7, 10, 11 };
 
    // By default try all possible combinations
-   return { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+   return { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
   }
 
   // Function to get magnet information
