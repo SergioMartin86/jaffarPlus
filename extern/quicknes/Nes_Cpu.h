@@ -24,6 +24,7 @@ public:
 	enum { page_count = 0x10000 >> page_bits };
 	enum { page_size = 1L << page_bits };
 	void map_code( nes_addr_t start, unsigned size, void const* code );
+	bool map_code_set = false;
 	
 	// Access memory as the emulated CPU does.
 	int  read( nes_addr_t );
@@ -70,6 +71,7 @@ public:
 	
 private:
 	uint8_t* code_map [page_count + 1];
+	uint8_t flat_code_map [(page_count + 1) * page_size];
 	nes_time_t clock_limit;
 	nes_time_t clock_count;
 	nes_time_t irq_time_;
