@@ -25,7 +25,7 @@
     "Description": "If Mario gets to bridge lowering, win",
     "Conditions":
     [
-     { "Property": "Level Loading State", "Op": "==", "Value":  0 }
+     { "Property": "Game Mode", "Op": "==", "Value":  2 }
     ],
     
     "Satisfies": [ ],
@@ -33,6 +33,22 @@
     "Actions":
     [
       { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1997,
+    "Description": "If Mario goes through pipe, then fail.",
+    "Conditions":
+    [
+     { "Property": "Mario State", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    },
    

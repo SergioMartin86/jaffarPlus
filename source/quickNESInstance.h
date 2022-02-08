@@ -72,6 +72,7 @@ class quickNESInstance
     hash.Update(*_currentWorldRaw);
     hash.Update(*_currentStageRaw);
     hash.Update(*_levelEntryFlag);
+    hash.Update(*_gameMode);
 
     hash.Update(*_enemy1Active);
     hash.Update(*_enemy2Active);
@@ -170,6 +171,7 @@ class quickNESInstance
   uint8_t* _currentWorldRaw;
   uint8_t* _currentStageRaw;
   uint8_t* _levelEntryFlag;
+  uint8_t* _gameMode;
 
   uint8_t* _enemy1Active;
   uint8_t* _enemy2Active;
