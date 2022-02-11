@@ -54,6 +54,7 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  _currentWorldRaw      = (uint8_t*)  &_baseMem[0x075F];
  _currentStageRaw      = (uint8_t*)  &_baseMem[0x075C];
  _levelEntryFlag       = (uint8_t*)  &_baseMem[0x0752];
+ _gameMode             = (uint8_t*)  &_baseMem[0x0770];
 
  _enemy1Active         = (uint8_t*)  &_baseMem[0x000F];
  _enemy2Active         = (uint8_t*)  &_baseMem[0x0010];
@@ -240,7 +241,7 @@ void quickNESInstance::printFrameInfo()
   printf("[JaffarNES]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State);
   printf("[JaffarNES]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *_enemy1Type, *_enemy2Type, *_enemy3Type, *_enemy4Type, *_enemy5Type);
   printf("[JaffarNES]  + Hit Detection Flags:    %02u %02u %02u\n", *_marioCollision, *_enemyCollision, *_hitDetectionFlag);
-  printf("[JaffarNES]  + Level Entry Flag:       %02u\n", *_levelEntryFlag);
+  printf("[JaffarNES]  + LevelEntry / GameMode:  %02u / %02u\n", *_levelEntryFlag, *_gameMode);
   printf("[JaffarNES]  + Warp Area Offset:       %04u\n", *_warpAreaOffset);
   printf("[JaffarNES]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_animationTimer, *_jumpSwimTimer, *_runningTimer, *_blockBounceTimer, *_sideCollisionTimer, *_jumpspringTimer, *_gameControlTimer, *_climbSideTimer, *_enemyFrameTimer, *_frenzyEnemyTimer, *_bowserFireTimer, *_stompTimer, *_airBubbleTimer, *_multiCoinBlockTimer, *_invincibleTimer, *_starTimer);
 }

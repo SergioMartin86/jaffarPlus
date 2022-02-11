@@ -197,6 +197,7 @@ datatype_t Rule::getPropertyType(const std::string &property)
   if (property == "Current Stage") return dt_uint8;
   if (property == "Current Screen") return dt_uint8;
   if (property == "Level Entry Flag") return dt_uint8;
+  if (property == "Game Mode") return dt_uint8;
   if (property == "Warp Area Offset") return dt_uint16;
   if (property == "Enemy 1 Type") return dt_uint8;
   if (property == "Enemy 2 Type") return dt_uint8;
@@ -230,6 +231,7 @@ void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *ne
   if (property == "Current Stage") return &nes->_currentStage; // Derivative value
   if (property == "Current Screen") return nes->_screenBasePosX;
   if (property == "Level Entry Flag") return nes->_levelEntryFlag;
+  if (property == "Game Mode") return nes->_gameMode;
   if (property == "Warp Area Offset") return nes->_warpAreaOffset;
   if (property == "Enemy 1 Type") return nes->_enemy1Type;
   if (property == "Enemy 2 Type") return nes->_enemy2Type;

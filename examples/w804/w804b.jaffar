@@ -40,7 +40,26 @@
    
    {
     "Label": 1003,
-    "Description": "If Mario gets to flagpole",
+    "Description": "Setting magnet to make Mario go up to the pipe",
+    "Conditions":
+    [
+     { "Property": "Mario Position X", "Op": ">", "Value":  2410 },
+     { "Property": "Mario Position Y", "Op": "<", "Value":  65 }
+    ],
+    
+    "Satisfies": [ 1002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max": 2436 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": 0.0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    "Description": "If Mario gets to tube, win",
     "Conditions":
     [
      { "Property": "Mario State", "Op": "==", "Value":  3 }
