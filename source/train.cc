@@ -132,17 +132,30 @@ void Train::run()
   }
 }
 
+void Train::limitFrameDatabase(std::vector<Frame*>& frameDB, size_t limit)
+{
+ // If global frames exceed the maximum allowed, sort and truncate all excessive frames
+ std::nth_element(frameDB.begin(), frameDB.begin() + _maxDatabaseSizeLowerBound, frameDB.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
+
+ // Recycle excess frames
+ for (size_t i = limit; i < frameDB.size(); i++) _freeFramesQueue.push(frameDB[i]);
+
+ // Resizing new frames database to lower bound
+ frameDB.resize(limit);
+}
+
 void Train::computeFrames()
 {
   // Initializing counters
-  _stepFramesProcessedCounter = 0;
+  _stepBaseFramesProcessedCounter = 0;
+  _stepNewFramesProcessedCounter = 0;
   _newCollisionCounter = 0;
   _stepMaxFramesInMemory = 0;
+  size_t newFramesCounter = 0;
   size_t startHashEntryCount = _hashDB.size();
-  size_t baseFramesProcessed = 0;
 
   // Creating shared database for new frames
-  std::vector<std::unique_ptr<Frame>> newFrames;
+  std::vector<Frame*> newFrames;
 
   // Storing current source frame data for decoding
   uint8_t currentSourceFrameData[_FRAME_DATA_SIZE];
@@ -153,9 +166,13 @@ void Train::computeFrames()
 
   // Initializing step timers
   _stepHashCalculationTime = 0.0;
-  _stepHashCheckingTime = 01.0;
+  _stepHashCheckingTime = 0.0;
   _stepFrameAdvanceTime = 0.0;
   _stepFrameDeserializationTime = 0.0;
+  _stepFrameEncodingTime = 0.0;
+  _stepFrameDecodingTime = 0.0;
+  _stepFrameCreationTime = 0.0;
+  _stepFrameDBSortingTime = 0.0;
 
   // Processing frame database in parallel
   #pragma omp parallel
@@ -173,9 +190,10 @@ void Train::computeFrames()
     double threadFrameDeserializationTime = 0.0;
     double threadFrameDecodingTime = 0.0;
     double threadFrameEncodingTime = 0.0;
+    double threadFrameCreationTime = 0.0;
 
     // Computing always the last frame while resizing the database to reduce memory footprint
-    #pragma omp for schedule(static)
+    #pragma omp for schedule(dynamic, 1024)
     for (auto& baseFrame : _frameDB)
     {
       auto t0 = std::chrono::steady_clock::now(); // Profiling
@@ -190,16 +208,12 @@ void Train::computeFrames()
       tf = std::chrono::steady_clock::now();
       threadFrameDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
-      // Getting base frame current level
-      auto curWorld = _state[threadId]->_nes->_currentWorld;
-      auto curStage = _state[threadId]->_nes->_currentStage;
-
       // Running possible moves
       for (size_t idx = 0; idx < possibleMoveIds.size(); idx++)
       {
         // Increasing  frames processed counter
         #pragma omp atomic
-        _stepFramesProcessedCounter++;
+        _stepNewFramesProcessedCounter++;
 
         // Getting possible move id
         auto moveId = possibleMoveIds[idx];
@@ -234,20 +248,40 @@ void Train::computeFrames()
         // If collision detected, discard this frame
         if (collisionDetected) { _newCollisionCounter++; continue; }
 
-        // Creating new frame storage
-        auto newFrame = std::make_unique<Frame>();
-
-        // Copying rule status from the base frame
-        memcpy(newFrame->rulesStatus, baseFrame->rulesStatus, sizeof(Frame::rulesStatus));
+        // Getting rule status from the base frame
+        bool rulesStatus[_MAX_RULE_COUNT];
+        memcpy(rulesStatus, baseFrame->rulesStatus, sizeof(Frame::rulesStatus));
 
         // Evaluating rules on the new frame
-        _state[threadId]->evaluateRules(newFrame->rulesStatus);
+        _state[threadId]->evaluateRules(rulesStatus);
 
         // Getting frame type
-        frameType type = _state[threadId]->getFrameType(newFrame->rulesStatus);
+        frameType type = _state[threadId]->getFrameType(rulesStatus);
 
-        // If frame type is failed, continue to the next one
+        // If frame type is failed, continue to the next possible move
         if (type == f_fail) continue;
+
+        // Storing the frame data
+        t0 = std::chrono::steady_clock::now(); // Profiling
+
+        // Allocating new frame, checking free frame queue if there's a storage we can reuse
+        Frame* newFrame;
+        bool foundFreeFrameStorage = false;
+
+        // If found, we take directly from the queue
+        #pragma omp critical(frameQueue)
+         if (_freeFramesQueue.empty() == false)
+         {
+          newFrame = _freeFramesQueue.front();
+          _freeFramesQueue.pop();
+          foundFreeFrameStorage = true;
+         }
+
+        // Otherwise we allocate a new storage
+        if (foundFreeFrameStorage == false) newFrame = new Frame;
+
+        // Copying rule status into new frame
+        memcpy(newFrame->rulesStatus, rulesStatus, sizeof(Frame::rulesStatus));
 
         // Copying move list and adding new move
         #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
@@ -258,16 +292,18 @@ void Train::computeFrames()
         // Calculating current reward
         newFrame->reward = _state[threadId]->getFrameReward(newFrame->rulesStatus);
 
-        // Storing the frame data, only if if belongs to the same level
-        if (curWorld == _state[threadId]->_nes->_currentWorld && curStage == _state[threadId]->_nes->_currentStage)
-        {
-         t0 = std::chrono::steady_clock::now(); // Profiling
-         uint8_t gameState[_FRAME_DATA_SIZE];
-         _state[threadId]->_nes->serializeState(gameState);
-         newFrame->computeFrameDifference(_referenceFrameData, gameState);
-         tf = std::chrono::steady_clock::now(); // Profiling
-         threadFrameEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
-        }
+        tf = std::chrono::steady_clock::now(); // Profiling
+        threadFrameCreationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
+
+        // Encoding the frame data
+        t0 = std::chrono::steady_clock::now(); // Profiling
+
+        uint8_t gameState[_FRAME_DATA_SIZE];
+        _state[threadId]->_nes->serializeState(gameState);
+        newFrame->computeFrameDifference(_referenceFrameData, gameState);
+
+        tf = std::chrono::steady_clock::now(); // Profiling
+        threadFrameEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
         // If frame has succeded or is a regular frame, adding it in the corresponding database
         #pragma omp critical(insertFrame)
@@ -276,33 +312,43 @@ void Train::computeFrames()
          if (type == f_win) { _winFrameFound = true; _winFrame = *newFrame; };
 
          // Adding frame to the new frame database
-         newFrames.push_back(std::move(newFrame));
+         newFrames.push_back(newFrame);
 
-         // Updating maximum number of frames in memory
-         size_t curFrameCount = _frameDB.size() - baseFramesProcessed + newFrames.size();
-         if (curFrameCount > _stepMaxFramesInMemory) _stepMaxFramesInMemory = curFrameCount;
+         // Increasing new frame counter
+         newFramesCounter++;
 
-         // If we exceeded the upper bound for new frames, do a partial sort and eliminate the worse ones
-         if (newFrames.size() > _maxDatabaseSizeUpperBound)
+         // Calculating the number of frames in use in memory
+         size_t framesInUse = _frameDB.size() - _stepBaseFramesProcessedCounter + newFrames.size();
+
+         // Increasing maximum frames in use if needed
+         if (framesInUse > _stepMaxFramesInMemory) _stepMaxFramesInMemory = framesInUse;
+
+         // If new frame db exceeds upper bound, limit it back to lower bound
+         if (framesInUse > _maxDatabaseSizeUpperBound)
          {
           auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
 
-          // If global frames exceed the maximum allowed, sort and truncate all excessive frames
-          std::nth_element(newFrames.begin(), newFrames.begin() + _maxDatabaseSizeLowerBound, newFrames.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
-          newFrames.resize(_maxDatabaseSizeLowerBound);
+          // Checking if limiting will help at all
+          if (newFrames.size() < _maxDatabaseSizeLowerBound)
+           EXIT_WITH_ERROR("[ERROR] New frames database (%lu) is smaller than lower bound (%lu) and will not bring the total frames (%lu - %lu + %lu = %lu) under the upper bound (%lu).\n", newFrames.size(), _maxDatabaseSizeLowerBound, _frameDB.size(), _stepBaseFramesProcessedCounter, newFrames.size(), framesInUse, _maxDatabaseSizeUpperBound);
 
-          auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                         // Profiling
-          _stepFrameDBSortingTime = std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
+          // Limiting new frames DB to lower bound size and recycling its frames
+          #pragma omp critical(frameQueue)
+          limitFrameDatabase(newFrames, _maxDatabaseSizeLowerBound);
+
+          auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                      // Profiling
+          _stepFrameDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
          }
         }
       }
 
-      // Freeing up base frame memory
-      baseFrame.reset();
+      // Adding used base frame back into free frame queue
+      #pragma omp critical(frameQueue)
+      _freeFramesQueue.push(baseFrame);
 
-      // Increasing base frames processed counter
+      // Increasing counter for base frames processed
       #pragma omp atomic
-      baseFramesProcessed++;
+      _stepBaseFramesProcessedCounter++;
     }
 
     // Updating timers
@@ -314,6 +360,7 @@ void Train::computeFrames()
      _stepFrameDeserializationTime += threadFrameDeserializationTime;
      _stepFrameEncodingTime += threadFrameEncodingTime;
      _stepFrameDecodingTime += threadFrameDecodingTime;
+     _stepFrameCreationTime += threadFrameCreationTime;
     }
   }
 
@@ -324,24 +371,22 @@ void Train::computeFrames()
   _stepFrameDeserializationTime /= _threadCount;
   _stepFrameEncodingTime /= _threadCount;
   _stepFrameDecodingTime /= _threadCount;
+  _stepFrameCreationTime /= _threadCount;
 
   // Calculating new frame ratio (new / old)
-  _newFrameRatio = (double)newFrames.size() / (double)_frameDB.size();
+  _stepNewFrameRatio = (double)newFramesCounter / (double)_frameDB.size();
 
   // Clearing all old frames
   _frameDB.clear();
 
   // Updating max frames in memory counter
-  if (_stepMaxFramesInMemory > _totalMaxFramesInMemory) _totalMaxFramesInMemory = _stepMaxFramesInMemory;
+  if (_stepMaxFramesInMemory > _totalMaxFramesInMemory) { _totalMaxFramesInMemory = _stepMaxFramesInMemory; _maxNewFrameRatio = _stepNewFrameRatio; _maxNewFrameRatioStep = _currentStep; }
 
   // Sorting local DB frames by reward
   auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
-  if (newFrames.size() > _maxDatabaseSizeLowerBound)
-  {
-   // If global frames exceed the maximum allowed, sort and truncate all excessive frames
-   std::nth_element(newFrames.begin(), newFrames.begin() + _maxDatabaseSizeLowerBound, newFrames.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
-   newFrames.resize(_maxDatabaseSizeLowerBound);
-  }
+
+  // If size exceeds the lower bound, limit it
+  if (newFrames.size() > _maxDatabaseSizeLowerBound) limitFrameDatabase(newFrames, _maxDatabaseSizeLowerBound);
 
   // Looking for and storing best/worst frame
   _bestFrameReward = -std::numeric_limits<float>::infinity();
@@ -356,21 +401,24 @@ void Train::computeFrames()
   std::swap(newFrames, _frameDB);
 
   auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                           // Profiling
-  _stepFrameDBSortingTime = std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
+  _stepFrameDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
 
   // Summing frame processing counters
-  _totalFramesProcessedCounter += _stepFramesProcessedCounter;
+  _totalFramesProcessedCounter += _stepNewFramesProcessedCounter;
 
   // Calculating and storing new entries created in this step and calculating size in mb to evaluate filtering
+  auto getHashSizeFromEntries = [](const ssize_t entries) { return ( ( (double)sizeof(std::pair<const uint16_t, uint64_t>) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0); };
+  auto getHashEntriesFromSize = [](const double size) { return (ssize_t)((size * 1024.0 * 1024.0) / ( (double)sizeof(std::pair<const uint16_t, uint64_t>) + (double)sizeof(void*) )); };
+
   _hashStepNewEntries.push_back(_hashDB.size() - startHashEntryCount);
-  _hashSizeCurrent = ((double)sizeof(std::pair<const uint16_t, uint64_t>)*(double)_hashDB.size()) / (1024.0 * 1024.0);
+  _hashSizeCurrent = getHashSizeFromEntries(_hashDB.size());
 
   // Filtering old hashes if we reach the upper bound
   auto hashFilteringTimeBegin = std::chrono::steady_clock::now(); // Profiling
   if (_hashSizeCurrent > _hashSizeUpperBound)
   {
    // Calculating how many old hash entries we need to delete to reach the lower bound
-   size_t targetDeletedHashEntries = ( (_hashSizeCurrent - _hashSizeLowerBound) * (1024.0 * 1024.0)) /  (double)sizeof(std::pair<const uint16_t, uint64_t>);
+   size_t targetDeletedHashEntries = getHashEntriesFromSize(_hashSizeCurrent - _hashSizeLowerBound);
 
    // Calculate how many old steps we need to forget to reach the number of entries calculated before
    size_t curDeletedHashEntries = 0;
@@ -386,8 +434,8 @@ void Train::computeFrames()
   // Hash Statistics
   _hashCollisions += _newCollisionCounter;
   _hashEntriesStep = _hashDB.size() - startHashEntryCount;
-  _hashSizeStep = ((double)sizeof(std::pair<const uint16_t, uint64_t>)*(double)_hashEntriesStep) / (1024.0 * 1024.0);
-  _hashSizeCurrent = ((double)sizeof(std::pair<const uint16_t, uint64_t>)*(double)_hashDB.size()) / (1024.0 * 1024.0);
+  _hashSizeStep = getHashSizeFromEntries(_hashEntriesStep);
+  _hashSizeCurrent = getHashSizeFromEntries(_hashDB.size());
   _hashEntriesTotal = _hashDB.size();
 }
 
@@ -398,8 +446,9 @@ void Train::printTrainStatus()
   printf("[JaffarNES] ----------------------------------------------------------------\n");
   printf("[JaffarNES] Current Step #: %u (Max: %u)\n", _currentStep, _MAX_MOVELIST_SIZE);
   printf("[JaffarNES] Worst Reward / Best Reward: %f / %f\n", _worstFrameReward, _bestFrameReward);
-  printf("[JaffarNES] Performance: %.3f Frames/s\n", (double)_stepFramesProcessedCounter / (_currentStepTime / 1.0e+9));
-  printf("[JaffarNES] Frames Processed: (Step/Total): %lu / %lu\n", _stepFramesProcessedCounter, _totalFramesProcessedCounter);
+  printf("[JaffarNES] Base Frames Performance: %.3f Frames/s\n", (double)_stepBaseFramesProcessedCounter / (_currentStepTime / 1.0e+9));
+  printf("[JaffarNES] New Frames Performance:  %.3f Frames/s\n", (double)_stepNewFramesProcessedCounter / (_currentStepTime / 1.0e+9));
+  printf("[JaffarNES] Frames Processed: (Step/Total): %lu / %lu\n", _stepNewFramesProcessedCounter, _totalFramesProcessedCounter);
   printf("[JaffarNES] Frame DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(Frame)) / (1024.0 * 1024.0));
   printf("[JaffarNES] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
   printf("[JaffarNES]   + Hash Calculation:        %3.3fs\n", _stepHashCalculationTime / 1.0e+9);
@@ -409,8 +458,9 @@ void Train::printTrainStatus()
   printf("[JaffarNES]   + Frame Deserialization:   %3.3fs\n", _stepFrameDeserializationTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Encoding:          %3.3fs\n", _stepFrameEncodingTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Decoding:          %3.3fs\n", _stepFrameDecodingTime / 1.0e+9);
+  printf("[JaffarNES]   + Frame Creation:          %3.3fs\n", _stepFrameCreationTime / 1.0e+9);
   printf("[JaffarNES]   + Frame Sorting            %3.3fs\n", _stepFrameDBSortingTime / 1.0e+9);
-  printf("[JaffarNES] New Frames Created Ratio: %.3f\n", _newFrameRatio);
+  printf("[JaffarNES] New Frames Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewFrameRatio, _maxNewFrameRatio, _maxNewFrameRatioStep);
   printf("[JaffarNES] Max Frames In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxFramesInMemory, (double)(_stepMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0), _totalMaxFramesInMemory, (double)(_totalMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0));
   printf("[JaffarNES] Max Frame State Difference: %lu / %d\n", _maxFrameDiff, _MAX_FRAME_DIFF);
   printf("[JaffarNES] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
@@ -454,7 +504,8 @@ Train::Train(int argc, char *argv[])
   _currentStepTime = 0.0;
 
   // Initializing counters
-  _stepFramesProcessedCounter = 0;
+  _stepBaseFramesProcessedCounter = 0;
+  _stepNewFramesProcessedCounter = 0;
   _totalFramesProcessedCounter = 0;
   _stepMaxFramesInMemory = 0;
   _totalMaxFramesInMemory = 0;
@@ -462,6 +513,9 @@ Train::Train(int argc, char *argv[])
   _hashEntriesTotal = 0;
   _hashStepThreshold = 0;
   _hashEntriesStep = 0;
+  _stepNewFrameRatio = 0.0;
+  _maxNewFrameRatio = 0.0;
+  _maxNewFrameRatioStep = 0;
 
   // Setting starting step
   _currentStep = 0;
@@ -476,7 +530,7 @@ Train::Train(int argc, char *argv[])
   if (const char *hashSizeUpperBoundString = std::getenv("JAFFARNES_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB")) _hashSizeUpperBound = std::stol(hashSizeUpperBoundString);
   else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
 
-  // Parsing max frame DB lower and upper bounds
+  // Parsing max frame DB lower bound
   size_t maxDBSizeMbLowerBound = 0;
   if (const char *MaxDBMBytesLowerBoundEnvString = std::getenv("JAFFARNES_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB")) maxDBSizeMbLowerBound = std::stol(MaxDBMBytesLowerBoundEnvString);
   else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
@@ -568,7 +622,7 @@ Train::Train(int argc, char *argv[])
   // Computing initial hash
   const auto hash = _state[0]->_nes->computeHash();
 
-  auto initialFrame = std::make_unique<Frame>();
+  auto initialFrame = new Frame;
   uint8_t gameState[_FRAME_DATA_SIZE];
   _state[0]->_nes->serializeState(gameState);
 
@@ -596,7 +650,7 @@ Train::Train(int argc, char *argv[])
 
   // Adding frame to the initial database
   _databaseSize = 1;
-  _frameDB.push_back(std::move(initialFrame));
+  _frameDB.push_back(initialFrame);
 
   // Initializing show thread
   if (pthread_create(&_showThreadId, NULL, showThreadFunction, this) != 0)

@@ -1,7 +1,7 @@
 project('jaffarNES','cpp',
   version: '1.0.0',
   license: 'GPL-3.0-only',
-  default_options : ['cpp_std=c++17', 'default_library=static', 'buildtype=debugoptimized'],
+  default_options : ['cpp_std=c++20', 'default_library=shared', 'buildtype=release'],
 )
 
 quicknesFiles = [

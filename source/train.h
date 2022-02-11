@@ -8,11 +8,11 @@
 #include <parallel_hashmap/phmap.h>
 #include <algorithm>
 #include <chrono>
-#include <memory>
 #include <pthread.h>
 #include <random>
 #include <string>
 #include <vector>
+#include <queue>
 #include <mutex>
 
 // Configuration for parallel hash maps
@@ -49,11 +49,14 @@ class Train
   size_t _ruleCount;
 
   // Frame counter
-  size_t _stepFramesProcessedCounter;
+  size_t _stepBaseFramesProcessedCounter;
+  size_t _stepNewFramesProcessedCounter;
   size_t _totalFramesProcessedCounter;
   size_t _stepMaxFramesInMemory;
   size_t _totalMaxFramesInMemory;
-  float _newFrameRatio;
+  float _stepNewFrameRatio;
+  float _maxNewFrameRatio;
+  uint16_t _maxNewFrameRatioStep;
 
   // Storage for source frame data for differential load/save
   uint8_t _referenceFrameData[_FRAME_DATA_SIZE];
@@ -62,10 +65,8 @@ class Train
   size_t _databaseSize;
   size_t _maxDatabaseSizeLowerBound;
   size_t _maxDatabaseSizeUpperBound;
-  std::vector<std::unique_ptr<Frame>> _frameDB;
-
-  // Frame database for showing
-  std::vector<Frame> _showFrameDB;
+  std::vector<Frame*> _frameDB;
+  std::queue<Frame*> _freeFramesQueue;
 
   // Storage for the win, best and worst frame
   Frame _bestFrame;
@@ -108,6 +109,9 @@ class Train
   // Argument parser
   void parseArgs(int argc, char *argv[]);
 
+  // Function to limit the size of a frame database and recycle its frames
+  void limitFrameDatabase(std::vector<Frame*>& frameDB, size_t limit);
+
   // Function for the show thread (saves states from time to time to display progress)
   static void *showThreadFunction(void *trainPtr);
   void showSavingLoop();
@@ -123,4 +127,5 @@ class Train
   double _stepFrameEncodingTime;
   double _stepFrameDecodingTime;
   double _stepFrameDBSortingTime;
+  double _stepFrameCreationTime;
 };
