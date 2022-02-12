@@ -56,4 +56,12 @@ void State::printRuleStatus(const bool* rulesStatus)
    printf("%d", rulesStatus[i] ? 1 : 0);
  }
  printf("\n");
+
+ // Getting magnet values
+ auto magnets = getMagnetValues(rulesStatus);
+
+ printf("[JaffarNES]  + Screen Horizontal Magnet   - Intensity: %.1f, Max: %f\n", magnets.screenHorizontalMagnet.intensity, magnets.screenHorizontalMagnet.max);
+ printf("[JaffarNES]  + Mario Screen Offset Magnet - Intensity: %.1f, Max: %f\n", magnets.marioScreenOffsetMagnet.intensity, magnets.marioScreenOffsetMagnet.max);
+ printf("[JaffarNES]  + Mario Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.max);
+ printf("[JaffarNES]  + Mario Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.max);
 }
