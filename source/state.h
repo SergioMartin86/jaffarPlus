@@ -36,7 +36,7 @@ class State
    if (*_nes->_marioFloatingMode == 1) return { 0, 1, 2, 4, 6, 7, 10, 11 };
 
    // On the floor, try all possible combinations, prioritize jumping and right direction
-   return { 0, 2, 3, 10, 4, 7, 9, 1, 6, 8,  11, 12, 13, 14, 15 };
+   return { 0, 2, 3, 10, 4, 7, 9, 1, 6, 8, 11, 12 };
   }
 
   // Function to get magnet information

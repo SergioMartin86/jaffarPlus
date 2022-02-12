@@ -66,9 +66,9 @@
 //#define _MAX_MOVELIST_SIZE 300
 
 // W8-4c
-#define _MAX_FRAME_DIFF 500
+#define _MAX_FRAME_DIFF 650
 #define _MAX_RULE_COUNT 8
-#define _MAX_MOVELIST_SIZE 230
+#define _MAX_MOVELIST_SIZE 200
 
 // W8-4d
 //#define _MAX_FRAME_DIFF 520

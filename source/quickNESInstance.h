@@ -33,6 +33,8 @@ class quickNESInstance
   void serializeStateSmall(uint8_t* state) const;
   void deserializeStateSmall(const uint8_t* state);
 
+  #define USE_LIGHT_HASH true
+
   // This function computes the hash for the current state
   inline uint64_t computeHash() const
   {
@@ -41,28 +43,28 @@ class quickNESInstance
 
     // Adding fixed hash elements
     hash.Update(*_screenScroll);
-    hash.Update(*_marioAnimation);
+    if (!USE_LIGHT_HASH) hash.Update(*_marioAnimation);
     hash.Update(*_marioState);
 
     hash.Update(*_marioBasePosX);
     hash.Update(*_marioRelPosX);
-    hash.Update(*_marioSubpixelPosX);
+    if (!USE_LIGHT_HASH) hash.Update(*_marioSubpixelPosX);
 
     hash.Update(*_marioPosY);
-    hash.Update(*_marioSubpixelPosY);
+    if (!USE_LIGHT_HASH) hash.Update(*_marioSubpixelPosY);
 
     hash.Update(*_marioXMoveForce);
     hash.Update(*_marioFacingDirection);
     hash.Update(*_marioMovingDirection);
     hash.Update(*_marioFloatingMode);
     hash.Update(*_marioWalkingMode);
-    hash.Update(*_marioWalkingDelay);
-    hash.Update(*_marioWalkingFrame);
+    if (!USE_LIGHT_HASH)  hash.Update(*_marioWalkingDelay);
+    if (!USE_LIGHT_HASH)  hash.Update(*_marioWalkingFrame);
     hash.Update(*_marioMaxVelLeft);
     hash.Update(*_marioMaxVelRight);
     hash.Update(*_marioVelX);
-    hash.Update(*_marioVelY);
-    hash.Update(*_marioFracVelY);
+    if (!USE_LIGHT_HASH) hash.Update(*_marioVelY);
+    if (!USE_LIGHT_HASH) hash.Update(*_marioFracVelY);
     hash.Update(*_marioGravity);
     hash.Update(*_marioFriction);
 
@@ -74,17 +76,17 @@ class quickNESInstance
     hash.Update(*_levelEntryFlag);
     hash.Update(*_gameMode);
 
-    hash.Update(*_enemy1Active);
-    hash.Update(*_enemy2Active);
-    hash.Update(*_enemy3Active);
-    hash.Update(*_enemy4Active);
-    hash.Update(*_enemy5Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy1Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy2Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy3Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy4Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy5Active);
 
-    hash.Update(*_enemy1State);
-    hash.Update(*_enemy2State);
-    hash.Update(*_enemy3State);
-    hash.Update(*_enemy4State);
-    hash.Update(*_enemy5State);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy1State);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy2State);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy3State);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy4State);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemy5State);
 
     hash.Update(*_enemy1Type);
     hash.Update(*_enemy2Type);
@@ -92,29 +94,29 @@ class quickNESInstance
     hash.Update(*_enemy4Type);
     hash.Update(*_enemy5Type);
 
-    hash.Update(*_marioCollision);
-    hash.Update(*_enemyCollision);
+    if (!USE_LIGHT_HASH) hash.Update(*_marioCollision);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemyCollision);
     hash.Update(*_hitDetectionFlag);
 
     // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
-    hash.Update(*_animationTimer < 2 ? *_animationTimer : (uint8_t)2);
+    if (!USE_LIGHT_HASH)  hash.Update(*_animationTimer < 2 ? *_animationTimer : (uint8_t)2);
     hash.Update(*_jumpSwimTimer < 2 ? *_jumpSwimTimer : (uint8_t)2);
     hash.Update(*_runningTimer < 2 ? *_runningTimer : (uint8_t)2);
     hash.Update(*_blockBounceTimer < 2 ? *_blockBounceTimer : (uint8_t)2);
-    hash.Update(*_sideCollisionTimer);
-    hash.Update(*_jumpspringTimer);
-    hash.Update(*_gameControlTimer);
-    hash.Update(*_climbSideTimer);
-    hash.Update(*_enemyFrameTimer);
-    hash.Update(*_frenzyEnemyTimer);
-    hash.Update(*_bowserFireTimer);
-    hash.Update(*_stompTimer);
-    hash.Update(*_airBubbleTimer);
-    hash.Update(*_fallPitTimer);
-    hash.Update(*_multiCoinBlockTimer);
-    hash.Update(*_invincibleTimer);
-    hash.Update(*_starTimer);
-    hash.Update(*_powerUpActive);
+    if (!USE_LIGHT_HASH) hash.Update(*_sideCollisionTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_jumpspringTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameControlTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_climbSideTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_enemyFrameTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_frenzyEnemyTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_bowserFireTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_stompTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_airBubbleTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_fallPitTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_multiCoinBlockTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_invincibleTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_starTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_powerUpActive);
 
 
     hash.Update(*_warpAreaOffset);
