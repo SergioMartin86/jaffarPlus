@@ -13,6 +13,10 @@ class quickNESInstance
 
   // Initializes the miniPop instance
   quickNESInstance(const std::string& romFilePath);
+  quickNESInstance(Nes_Emu* emulator);
+
+  // Function to set pointers to game-specific values
+  void setGameValuePointers();
 
   // Loading/Saving state files
   void loadStateFile(const std::string& stateFilePath);
@@ -20,6 +24,7 @@ class quickNESInstance
 
   // Advance a frame
   void advanceFrame(const uint8_t &move);
+  void advanceFrame(const std::string& move);
 
   // Print information about the current frame
   void printFrameInfo();
@@ -132,7 +137,7 @@ class quickNESInstance
   }
 
   // Emulator instance
-  Nes_Emu _emu;
+  Nes_Emu* _emu;
 
   // Base low-memory pointer
   uint8_t* _baseMem;

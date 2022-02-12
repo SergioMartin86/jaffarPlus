@@ -4,18 +4,38 @@
 #include <omp.h>
 #include <frame.h>
 
+#ifdef NCURSES
+ #include <ncurses.h>
+ #define LOG printw
+#else
+ #define LOG printf
+#endif
+
 quickNESInstance::quickNESInstance(const std::string& romFilePath)
 {
+ _emu = new Nes_Emu;
  std::string romData;
  loadStringFromFile(romData, romFilePath.c_str());
  Mem_File_Reader romReader(romData.data(), (int)romData.size());
  Auto_File_Reader romFile(romReader);
- auto result = _emu.load_ines(romFile);
+ auto result = _emu->load_ines(romFile);
 
  if (result != 0) EXIT_WITH_ERROR("Could not initialize emulator with rom file: %s\n", romFilePath.c_str());
 
+ setGameValuePointers();
+}
+
+quickNESInstance::quickNESInstance(Nes_Emu* emulator)
+{
+ _emu = emulator;
+
+ setGameValuePointers();
+}
+
+void quickNESInstance::setGameValuePointers()
+{
  // Getting base and specific values' pointers
- _baseMem = _emu.low_mem();
+ _baseMem = _emu->low_mem();
 
  // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
  // Game specific values
@@ -119,7 +139,7 @@ void quickNESInstance::loadStateFile(const std::string& stateFilePath)
  state.read(stateFile);
 
  // Loading state object into the emulator
- _emu.load_state(state);
+ _emu->load_state(state);
 
  // Updating derivative values after load
  updateDerivedValues();
@@ -129,7 +149,7 @@ void quickNESInstance::saveStateFile(const std::string& stateFilePath)
 {
  // Saving state
  Nes_State state;
- _emu.save_state(&state);
+ _emu->save_state(&state);
  Auto_File_Writer stateWriter(stateFilePath.c_str());
  state.write(stateWriter);
 }
@@ -148,44 +168,65 @@ void quickNESInstance::serializeState(uint8_t* state) const
 {
  Mem_Writer w(state, _FRAME_DATA_SIZE, 0);
  Auto_File_Writer a(w);
- _emu.save_state(a);
+ _emu->save_state(a);
 }
 
 void quickNESInstance::deserializeState(const uint8_t* state)
 {
  Mem_File_Reader r(state, _FRAME_DATA_SIZE);
  Auto_File_Reader a(r);
- _emu.load_state(a);
+ _emu->load_state(a);
  updateDerivedValues();
 }
 
 void quickNESInstance::serializeStateSmall(uint8_t* state) const
 {
- _emu.serialize(state);
+ _emu->serialize(state);
 }
 
 void quickNESInstance::deserializeStateSmall(const uint8_t* state)
 {
- _emu.deserialize(state);
+ _emu->deserialize(state);
  updateDerivedValues();
+}
+
+// Controller input bits
+// 0 - A / 1
+// 1 - B / 2
+// 2 - Select / 4
+// 3 - Start / 8
+// 4 - Up / 16
+// 5 - Down / 32
+// 6 - Left / 64
+// 7 - Right / 128
+// Possible moves
+// Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12     13    14      15
+//_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
+
+void quickNESInstance::advanceFrame(const std::string& move)
+{
+ if (move == ".") { advanceFrame(0); return; }
+ if (move == "L") { advanceFrame(1); return; }
+ if (move == "R") { advanceFrame(2); return; }
+ if (move == "D") { advanceFrame(3); return; }
+ if (move == "A") { advanceFrame(4); return; }
+ if (move == "B") { advanceFrame(5); return; }
+ if (move == "LA") { advanceFrame(6); return; }
+ if (move == "RA") { advanceFrame(7); return; }
+ if (move == "LB") { advanceFrame(8); return; }
+ if (move == "RB") { advanceFrame(9); return; }
+ if (move == "LR") { advanceFrame(10); return; }
+ if (move == "LRA") { advanceFrame(11); return; }
+ if (move == "LRB") { advanceFrame(12); return; }
+ if (move == "LAB") { advanceFrame(13); return; }
+ if (move == "RAB") { advanceFrame(14); return; }
+ if (move == "LRAB") { advanceFrame(15); return; }
+
+ EXIT_WITH_ERROR("Unrecognized move: %s\n", move.c_str());
 }
 
 void quickNESInstance::advanceFrame(const uint8_t &move)
 {
- // Controller input bits
- // 0 - A / 1
- // 1 - B / 2
- // 2 - Select / 4
- // 3 - Start / 8
- // 4 - Up / 16
- // 5 - Down / 32
- // 6 - Left / 64
- // 7 - Right / 128
-
- // Possible moves
- // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12     13    14      15
- //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
-
  // Encoding movement into the NES controller code
  uint32_t controllerCode = 0;
  switch (move)
@@ -210,7 +251,7 @@ void quickNESInstance::advanceFrame(const uint8_t &move)
  }
 
  // Running frame
- _emu.emulate_frame(controllerCode,0);
+ _emu->emulate_frame(controllerCode,0);
 
  // Updating derived values
  updateDerivedValues();
@@ -218,30 +259,30 @@ void quickNESInstance::advanceFrame(const uint8_t &move)
 
 void quickNESInstance::printFrameInfo()
 {
-  printf("[JaffarNES]  + Current World-Stage:    %1u-%1u\n", _currentWorld, _currentStage);
-  printf("[JaffarNES]  + Time Left:              %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
-  printf("[JaffarNES]  + Mario Animation:        %02u\n", *_marioAnimation);
-  printf("[JaffarNES]  + Mario State:            %02u\n", *_marioState);
-  printf("[JaffarNES]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", _screenPosX, *_screenBasePosX, (uint16_t)*_screenBasePosX * 255, *_screenRelPosX);
-  printf("[JaffarNES]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _marioPosX, *_marioBasePosX, (uint16_t)*_marioBasePosX * 255, *_marioRelPosX);
-  printf("[JaffarNES]  + Mario / Screen Offset:  %04d\n", _marioScreenOffset);
-  printf("[JaffarNES]  + Mario Pos Y:            %02u\n", *_marioPosY);
-  printf("[JaffarNES]  + Mario SubPixel X/Y:     %02u / %02u\n", *_marioSubpixelPosX, *_marioSubpixelPosY);
-  printf("[JaffarNES]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_marioVelX, *_marioXMoveForce, *_marioMaxVelLeft, *_marioMaxVelRight);
-  printf("[JaffarNES]  + Mario Vel Y:            %02d (%02d)\n", *_marioVelY, *_marioFracVelY);
-  printf("[JaffarNES]  + Mario Gravity:          %02u\n", *_marioGravity);
-  printf("[JaffarNES]  + Mario Friction:         %02u\n", *_marioFriction);
-  printf("[JaffarNES]  + Mario Moving Direction: %s\n", *_marioMovingDirection == 1 ? "Right" : "Left");
-  printf("[JaffarNES]  + Mario Facing Direction: %s\n", *_marioFacingDirection == 1 ? "Right" : "Left");
-  printf("[JaffarNES]  + Mario Floating Mode:    %02u\n", *_marioFloatingMode);
-  printf("[JaffarNES]  + Mario Walking:          %02u %02u %02u\n", *_marioWalkingMode, *_marioWalkingDelay, *_marioWalkingFrame);
-  printf("[JaffarNES]  + Player 1 Inputs:        %02u %02u %02u %02u\n", *_player1Input, *_player1Buttons, *_player1GamePad1, *_player1GamePad2);
-  printf("[JaffarNES]  + Powerup Active:         %1u\n", *_powerUpActive);
-  printf("[JaffarNES]  + Enemy Active:           %1u%1u%1u%1u%1u\n", *_enemy1Active, *_enemy2Active, *_enemy3Active, *_enemy4Active, *_enemy5Active);
-  printf("[JaffarNES]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State);
-  printf("[JaffarNES]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *_enemy1Type, *_enemy2Type, *_enemy3Type, *_enemy4Type, *_enemy5Type);
-  printf("[JaffarNES]  + Hit Detection Flags:    %02u %02u %02u\n", *_marioCollision, *_enemyCollision, *_hitDetectionFlag);
-  printf("[JaffarNES]  + LevelEntry / GameMode:  %02u / %02u\n", *_levelEntryFlag, *_gameMode);
-  printf("[JaffarNES]  + Warp Area Offset:       %04u\n", *_warpAreaOffset);
-  printf("[JaffarNES]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_animationTimer, *_jumpSwimTimer, *_runningTimer, *_blockBounceTimer, *_sideCollisionTimer, *_jumpspringTimer, *_gameControlTimer, *_climbSideTimer, *_enemyFrameTimer, *_frenzyEnemyTimer, *_bowserFireTimer, *_stompTimer, *_airBubbleTimer, *_multiCoinBlockTimer, *_invincibleTimer, *_starTimer);
+  LOG("[JaffarNES]  + Current World-Stage:    %1u-%1u\n", _currentWorld, _currentStage);
+  LOG("[JaffarNES]  + Time Left:              %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
+  LOG("[JaffarNES]  + Mario Animation:        %02u\n", *_marioAnimation);
+  LOG("[JaffarNES]  + Mario State:            %02u\n", *_marioState);
+  LOG("[JaffarNES]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", _screenPosX, *_screenBasePosX, (uint16_t)*_screenBasePosX * 255, *_screenRelPosX);
+  LOG("[JaffarNES]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _marioPosX, *_marioBasePosX, (uint16_t)*_marioBasePosX * 255, *_marioRelPosX);
+  LOG("[JaffarNES]  + Mario / Screen Offset:  %04d\n", _marioScreenOffset);
+  LOG("[JaffarNES]  + Mario Pos Y:            %02u\n", *_marioPosY);
+  LOG("[JaffarNES]  + Mario SubPixel X/Y:     %02u / %02u\n", *_marioSubpixelPosX, *_marioSubpixelPosY);
+  LOG("[JaffarNES]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_marioVelX, *_marioXMoveForce, *_marioMaxVelLeft, *_marioMaxVelRight);
+  LOG("[JaffarNES]  + Mario Vel Y:            %02d (%02d)\n", *_marioVelY, *_marioFracVelY);
+  LOG("[JaffarNES]  + Mario Gravity:          %02u\n", *_marioGravity);
+  LOG("[JaffarNES]  + Mario Friction:         %02u\n", *_marioFriction);
+  LOG("[JaffarNES]  + Mario Moving Direction: %s\n", *_marioMovingDirection == 1 ? "Right" : "Left");
+  LOG("[JaffarNES]  + Mario Facing Direction: %s\n", *_marioFacingDirection == 1 ? "Right" : "Left");
+  LOG("[JaffarNES]  + Mario Floating Mode:    %02u\n", *_marioFloatingMode);
+  LOG("[JaffarNES]  + Mario Walking:          %02u %02u %02u\n", *_marioWalkingMode, *_marioWalkingDelay, *_marioWalkingFrame);
+  LOG("[JaffarNES]  + Player 1 Inputs:        %02u %02u %02u %02u\n", *_player1Input, *_player1Buttons, *_player1GamePad1, *_player1GamePad2);
+  LOG("[JaffarNES]  + Powerup Active:         %1u\n", *_powerUpActive);
+  LOG("[JaffarNES]  + Enemy Active:           %1u%1u%1u%1u%1u\n", *_enemy1Active, *_enemy2Active, *_enemy3Active, *_enemy4Active, *_enemy5Active);
+  LOG("[JaffarNES]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State);
+  LOG("[JaffarNES]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *_enemy1Type, *_enemy2Type, *_enemy3Type, *_enemy4Type, *_enemy5Type);
+  LOG("[JaffarNES]  + Hit Detection Flags:    %02u %02u %02u\n", *_marioCollision, *_enemyCollision, *_hitDetectionFlag);
+  LOG("[JaffarNES]  + LevelEntry / GameMode:  %02u / %02u\n", *_levelEntryFlag, *_gameMode);
+  LOG("[JaffarNES]  + Warp Area Offset:       %04u\n", *_warpAreaOffset);
+  LOG("[JaffarNES]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_animationTimer, *_jumpSwimTimer, *_runningTimer, *_blockBounceTimer, *_sideCollisionTimer, *_jumpspringTimer, *_gameControlTimer, *_climbSideTimer, *_enemyFrameTimer, *_frenzyEnemyTimer, *_bowserFireTimer, *_stompTimer, *_airBubbleTimer, *_multiCoinBlockTimer, *_invincibleTimer, *_starTimer);
 }
