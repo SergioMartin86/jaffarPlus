@@ -27,7 +27,9 @@
 	fex_zip_type,
 */
 
+#ifndef HAVE_STDINT_H
 #define HAVE_STDINT_H
+#endif
 
 // Use standard config.h if present
 #ifdef HAVE_CONFIG_H

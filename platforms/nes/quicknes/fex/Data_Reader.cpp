@@ -21,7 +21,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 // Data_Reader
 
-blargg_err_t Data_Reader::read( void* p, int n )
+blargg_err_t Data_Reader::read( void* p, uint64_t n)
 {
 	assert( n >= 0 );
 	
@@ -84,7 +84,7 @@ blargg_err_t Data_Reader::skip_v( int count )
 	return blargg_ok;
 }
 
-blargg_err_t Data_Reader::skip( int n )
+blargg_err_t Data_Reader::skip( uint64_t n )
 {
 	assert( n >= 0 );
 	
@@ -350,7 +350,8 @@ size_t utf16_encode_char( unsigned cur_wchar, blargg_wchar_t * out )
 {
 	if ( cur_wchar < 0x10000 )
 	{
-        if ( out ) *out = (blargg_wchar_t) cur_wchar; return 1;
+   if ( out ) *out = (blargg_wchar_t) cur_wchar;
+   return 1;
 	}
 	else if ( cur_wchar < ( 1 << 20 ) )
 	{

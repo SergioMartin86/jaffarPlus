@@ -82,15 +82,11 @@
 //#define _MAX_RULE_COUNT 8
 //#define _MAX_MOVELIST_SIZE 300
 
-#define _MAX_MOVELIST_STORAGE ((_MAX_MOVELIST_SIZE/2) + 1)
-#define _FRAME_DIFFERENTIAL_SIZE _FRAME_DATA_SIZE
-
-#include "nlohmann/json.hpp"
-#include "rule.hpp"
+#include "utils.hpp"
 #include <string>
 #include <vector>
 
-extern size_t _maxFrameDiff;
+static size_t _maxFrameDiff;
 
 const std::vector<std::string> _possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
@@ -104,7 +100,12 @@ enum frameType
 class Frame
 {
   public:
-  Frame();
+
+  Frame()
+  {
+    // Setting initially with no differences wrt base frame
+    frameDiffCount = 0;
+  }
 
   // Positions of the difference with respect to a base frame
   uint16_t frameDiffPositions[_MAX_FRAME_DIFF];
@@ -119,7 +120,7 @@ class Frame
    frameDiffCount = 0;
    #pragma GCC unroll 32
    #pragma GCC ivdep
-   for (uint16_t i = 0; i < _FRAME_DIFFERENTIAL_SIZE; i++) if (baseFrameData[i] != newFrameData[i])
+   for (uint16_t i = 0; i < _FRAME_DATA_SIZE; i++) if (baseFrameData[i] != newFrameData[i])
    {
     frameDiffPositions[frameDiffCount] = i;
     frameDiffValues[frameDiffCount] = (uint8_t)newFrameData[i];
@@ -135,7 +136,7 @@ class Frame
 
   inline void getFrameDataFromDifference(const uint8_t* __restrict__ baseFrameData, uint8_t* __restrict__ stateData) const
   {
-    memcpy(stateData, baseFrameData, _FRAME_DIFFERENTIAL_SIZE);
+    memcpy(stateData, baseFrameData, _FRAME_DATA_SIZE);
     #pragma GCC unroll 32
     #pragma GCC ivdep
     for (uint16_t i = 0; i < frameDiffCount; i++) stateData[frameDiffPositions[i]] = frameDiffValues[i];
@@ -144,28 +145,17 @@ class Frame
 #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
   // Stores the entire move history of the frame
-  char moveHistory[_MAX_MOVELIST_STORAGE];
+  uint16_t moveHistory[_MAX_MOVELIST_SIZE];
 
   // Move r/w operations
-  inline void setMove(const size_t idx, const uint8_t move)
+  inline void setMove(const size_t idx, const uint16_t move)
   {
-    size_t basePos = idx / 2;
-    uint8_t baseVal = moveHistory[basePos];
-    uint8_t newVal;
-
-    if (idx % 2 == 0) newVal = (baseVal & 0xF0) | (move & 0x0F);
-    if (idx % 2 == 1) newVal = (baseVal & 0x0F) | (move << 4);
-
-    moveHistory[basePos] = newVal;
+    moveHistory[idx] = move;
   }
 
-  inline uint8_t getMove(const size_t idx)
+  inline uint16_t getMove(const size_t idx) const
   {
-   size_t basePos = idx / 2;
-   uint8_t val = moveHistory[basePos];
-   if (idx % 2 == 0) val = val & 0x0F;
-   if (idx % 2 == 1) val = val >> 4;
-   return val;
+   return moveHistory[idx];
   }
 
 #endif

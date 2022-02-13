@@ -16,7 +16,6 @@ jaffarNESIncludes = include_directories([
 
 jaffarNESSrc = [
  'source/utils.cpp',
- 'source/frame.cpp',
  'source/state.cpp',
  'source/rule.cpp',
  'extern/metrohash64/metrohash64.cc'
