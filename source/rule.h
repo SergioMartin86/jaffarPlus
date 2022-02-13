@@ -1,6 +1,5 @@
 #pragma once
 
-#include "quickNESInstance.h"
 #include "nlohmann/json.hpp"
 #include "utils.h"
 #include <vector>
@@ -42,6 +41,7 @@ struct magnetSet_t
 
 // Modifier that specifies whether to store move list
 extern bool _storeMoveList;
+class State;
 
 class Condition
 {
@@ -105,7 +105,7 @@ inline bool _vCondition<T>::evaluate()
 class Rule
 {
   public:
-  Rule(nlohmann::json ruleJs, quickNESInstance *nes);
+  Rule(nlohmann::json ruleJs, State *state);
 
   // Stores an identifying label for the rule
   size_t _label;
@@ -132,7 +132,7 @@ class Rule
   std::vector<Condition *> _conditions;
   size_t _conditionCount;
   datatype_t getPropertyType(const std::string &property);
-  void *getPropertyPointer(const std::string &property, quickNESInstance *nes);
+  void *getPropertyPointer(const std::string &property, State *state);
   operator_t getOperationType(const std::string &operation);
 
   // Function to parse the json-encoded actions

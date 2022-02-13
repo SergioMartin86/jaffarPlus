@@ -1,6 +1,7 @@
 #include "rule.h"
+#include "state.h"
 
-Rule::Rule(nlohmann::json ruleJs, quickNESInstance *nes)
+Rule::Rule(nlohmann::json ruleJs, State *state)
 {
   // Adding identifying label for the rule
   if (isDefined(ruleJs, "Label") == false) EXIT_WITH_ERROR("[ERROR] Rule missing 'Label' key.\n");
@@ -31,7 +32,7 @@ Rule::Rule(nlohmann::json ruleJs, quickNESInstance *nes)
     if (isDefined(conditionJs, "Property") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition missing 'Property' key.\n", _label);
     if (conditionJs["Property"].is_string() == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition operand 1 must be a string with the name of a property.\n", _label);
     datatype_t dtype = getPropertyType(conditionJs["Property"].get<std::string>());
-    auto property = getPropertyPointer(conditionJs["Property"].get<std::string>(), nes);
+    auto property = getPropertyPointer(conditionJs["Property"].get<std::string>(), state);
 
     // Parsing second operand (number)
     if (isDefined(conditionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition missing 'Value' key.\n", _label);
@@ -61,7 +62,7 @@ Rule::Rule(nlohmann::json ruleJs, quickNESInstance *nes)
      if (valueType != dtype) EXIT_WITH_ERROR("[ERROR] Rule %lu, property (%s) and value (%s) types must coincide.\n", _label, conditionJs["Property"].get<std::string>(), conditionJs["Value"].get<std::string>());
 
      // Getting value pointer
-     auto valuePtr = getPropertyPointer(conditionJs["Value"].get<std::string>(), nes);
+     auto valuePtr = getPropertyPointer(conditionJs["Value"].get<std::string>(), state);
 
      // Adding condition to the list
      Condition *condition;
@@ -211,34 +212,34 @@ datatype_t Rule::getPropertyType(const std::string &property)
   return dt_uint8;
 }
 
-void *Rule::getPropertyPointer(const std::string &property, quickNESInstance *nes)
+void *Rule::getPropertyPointer(const std::string &property, State *state)
 {
-  if (property == "Mario State") return nes->_marioState;
-  if (property == "Mario Animation") return nes->_marioAnimation;
-  if (property == "Mario Walking Frame") return nes->_marioWalkingFrame;
-  if (property == "Mario Walking Mode") return nes->_marioWalkingMode;
-  if (property == "Mario Floating Mode") return nes->_marioFloatingMode;
+  if (property == "Mario State") return state->_marioState;
+  if (property == "Mario Animation") return state->_marioAnimation;
+  if (property == "Mario Walking Frame") return state->_marioWalkingFrame;
+  if (property == "Mario Walking Mode") return state->_marioWalkingMode;
+  if (property == "Mario Floating Mode") return state->_marioFloatingMode;
 
-  if (property == "Screen Position X") return &nes->_screenPosX; // Derivative value
+  if (property == "Screen Position X") return &state->_screenPosX; // Derivative value
 
-  if (property == "Mario Base Position X") return nes->_marioBasePosX;
-  if (property == "Mario Relative Position X") return nes->_marioRelPosX;
-  if (property == "Mario Position X") return &nes->_marioPosX; // Derivative value
+  if (property == "Mario Base Position X") return state->_marioBasePosX;
+  if (property == "Mario Relative Position X") return state->_marioRelPosX;
+  if (property == "Mario Position X") return &state->_marioPosX; // Derivative value
 
-  if (property == "Mario Position Y") return nes->_marioPosY;
-  if (property == "Mario Velocity X") return nes->_marioVelX;
-  if (property == "Current World") return &nes->_currentWorld; // Derivative value
-  if (property == "Current Stage") return &nes->_currentStage; // Derivative value
-  if (property == "Current Screen") return nes->_screenBasePosX;
-  if (property == "Level Entry Flag") return nes->_levelEntryFlag;
-  if (property == "Game Mode") return nes->_gameMode;
-  if (property == "Warp Area Offset") return nes->_warpAreaOffset;
-  if (property == "Enemy 1 Type") return nes->_enemy1Type;
-  if (property == "Enemy 2 Type") return nes->_enemy2Type;
-  if (property == "Enemy 3 Type") return nes->_enemy3Type;
-  if (property == "Enemy 4 Type") return nes->_enemy4Type;
-  if (property == "Enemy 5 Type") return nes->_enemy5Type;
-  if (property == "Mario Screen Offset") return &nes->_marioScreenOffset; // Derivative value
+  if (property == "Mario Position Y") return state->_marioPosY;
+  if (property == "Mario Velocity X") return state->_marioVelX;
+  if (property == "Current World") return &state->_currentWorld; // Derivative value
+  if (property == "Current Stage") return &state->_currentStage; // Derivative value
+  if (property == "Current Screen") return state->_screenBasePosX;
+  if (property == "Level Entry Flag") return state->_levelEntryFlag;
+  if (property == "Game Mode") return state->_gameMode;
+  if (property == "Warp Area Offset") return state->_warpAreaOffset;
+  if (property == "Enemy 1 Type") return state->_enemy1Type;
+  if (property == "Enemy 2 Type") return state->_enemy2Type;
+  if (property == "Enemy 3 Type") return state->_enemy3Type;
+  if (property == "Enemy 4 Type") return state->_enemy4Type;
+  if (property == "Enemy 5 Type") return state->_enemy5Type;
+  if (property == "Mario Screen Offset") return &state->_marioScreenOffset; // Derivative value
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 

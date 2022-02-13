@@ -92,7 +92,7 @@ void Train::run()
     uint8_t winFrameData[_FRAME_DATA_SIZE];
     _winFrame.getFrameDataFromDifference(_referenceFrameData, winFrameData);
     _state[0]->pushState((uint8_t*)winFrameData);
-    _state[0]->_nes->printFrameInfo();
+    _state[0]->printStateInfo();
     _state[0]->printRuleStatus(_winFrame.rulesStatus);
 
     #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
@@ -235,7 +235,7 @@ void Train::computeFrames()
 
         // Compute hash value
         t0 = std::chrono::steady_clock::now(); // Profiling
-        auto hash = _state[threadId]->_nes->computeHash();
+        auto hash = _state[threadId]->computeHash();
         tf = std::chrono::steady_clock::now();
         threadHashCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -472,7 +472,7 @@ void Train::printTrainStatus()
   uint8_t bestFrameData[_FRAME_DATA_SIZE];
   _bestFrame.getFrameDataFromDifference(_referenceFrameData, bestFrameData);
   _state[0]->pushState(bestFrameData);
-  _state[0]->_nes->printFrameInfo();
+  _state[0]->printStateInfo();
   _state[0]->printRuleStatus(_bestFrame.rulesStatus);
 
   #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
@@ -596,7 +596,10 @@ Train::Train(int argc, char *argv[])
    int threadId = omp_get_thread_num();
 
    #pragma omp critical
-    _state[threadId] = new State(romFilePath, stateFilePath, scriptJs["Rules"]);
+   {
+    _state[threadId] = new State(romFilePath, stateFilePath);
+    _state[threadId]->parseRules(scriptJs["Rules"]);
+   }
   }
 
   printf("[JaffarNES] QuickNES initialized.\n");
@@ -612,7 +615,7 @@ Train::Train(int argc, char *argv[])
   _winFrameFound = false;
 
   // Computing initial hash
-  const auto hash = _state[0]->_nes->computeHash();
+  const auto hash = _state[0]->computeHash();
 
   auto initialFrame = new Frame;
   uint8_t gameState[_FRAME_DATA_SIZE];

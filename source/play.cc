@@ -1,4 +1,5 @@
 #include "argparse.hpp"
+#include "state.h"
 #include "quickNESInstance.h"
 #include "utils.h"
 #include <ncurses.h>
@@ -135,8 +136,11 @@ int main(int argc, char *argv[])
   gui->setScale(2);
 
   // Initializing replay generating quickNES Instance
-  quickNESInstance genNES(hqnState.emu());
-  genNES.loadStateFile(stateFilePath);
+  quickNESInstance genGameInstance(hqnState.emu());
+  genGameInstance.loadStateFile(stateFilePath);
+
+  // Initializing game state
+  State genState(&genGameInstance);
 
   // Storage for sequence frames
   size_t stateSize;
@@ -154,7 +158,7 @@ int main(int argc, char *argv[])
   // Iterating move list in the sequence
   for (int i = 0; i < sequenceLength; i++)
   {
-    genNES.advanceFrame(moveList[i]);
+    genState.advanceFrame(moveList[i]);
 
     // Storing new frame
     state = (uint8_t*) malloc(stateSize);
@@ -185,7 +189,7 @@ int main(int argc, char *argv[])
   {
    // Loading requested step
    hqnState.loadState((char*)frameSequenceData[currentStep], frameSequenceSize[currentStep]);
-   genNES.advanceFrame(moveList[currentStep]);
+   genState.advanceFrame(moveList[currentStep]);
 
     // Update display
     gui->update(true);
@@ -195,8 +199,8 @@ int main(int argc, char *argv[])
       printw("[JaffarNES] ----------------------------------------------------------------\n");
       printw("[JaffarNES] Current Step #: %d / %d\n", currentStep, sequenceLength);
       printw("[JaffarNES]  + Move: %s\n", moveList[currentStep].c_str());
-      printw("[JaffarNES]  + Hash:                   0x%lX\n", genNES.computeHash());
-      genNES.printFrameInfo();
+      printw("[JaffarNES]  + Hash:                   0x%lX\n", genState.computeHash());
+      genState.printStateInfo();
     }
 
     // Resetting show frame info flag
@@ -231,7 +235,7 @@ int main(int argc, char *argv[])
     {
       // Storing replay file
       std::string saveFileName = "jaffar.state";
-      genNES.saveStateFile(saveFileName);
+      genGameInstance.saveStateFile(saveFileName);
       printw("[JaffarNES] Saved state to %s\n", saveFileName.c_str());
 
       // Do no show frame info again after this action
