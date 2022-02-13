@@ -41,7 +41,9 @@ struct magnetSet_t
 
 // Modifier that specifies whether to store move list
 extern bool _storeMoveList;
-class GameInstance;
+
+// Pre-declaration of game instance class
+class GameInstanceBase;
 
 class Condition
 {
@@ -105,7 +107,7 @@ inline bool _vCondition<T>::evaluate()
 class Rule
 {
   public:
-  Rule(nlohmann::json ruleJs, GameInstance *gameInstance);
+  Rule(nlohmann::json ruleJs, GameInstanceBase *gameInstance);
 
   // Stores an identifying label for the rule
   size_t _label;
@@ -132,7 +134,7 @@ class Rule
   std::vector<Condition *> _conditions;
   size_t _conditionCount;
   datatype_t getPropertyType(const std::string &property);
-  void *getPropertyPointer(const std::string &property, GameInstance *gameInstance);
+  void *getPropertyPointer(const std::string &property, GameInstanceBase *gameInstance);
   operator_t getOperationType(const std::string &operation);
 
   // Function to parse the json-encoded actions

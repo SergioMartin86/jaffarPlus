@@ -1,7 +1,7 @@
 #include "rule.hpp"
 #include "gameInstance.hpp"
 
-Rule::Rule(nlohmann::json ruleJs, GameInstance* gameInstance)
+Rule::Rule(nlohmann::json ruleJs, GameInstanceBase* gameInstance)
 {
   // Adding identifying label for the rule
   if (isDefined(ruleJs, "Label") == false) EXIT_WITH_ERROR("[ERROR] Rule missing 'Label' key.\n");
@@ -212,7 +212,7 @@ datatype_t Rule::getPropertyType(const std::string &property)
   return dt_uint8;
 }
 
-void *Rule::getPropertyPointer(const std::string &property, GameInstance* gameInstance)
+void *Rule::getPropertyPointer(const std::string &property, GameInstanceBase* gameInstance)
 {
   if (property == "Mario State") return gameInstance->_gameData.marioState;
   if (property == "Mario Animation") return gameInstance->_gameData.marioAnimation;

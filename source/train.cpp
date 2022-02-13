@@ -299,7 +299,7 @@ void Train::computeFrames()
         t0 = std::chrono::steady_clock::now(); // Profiling
 
         uint8_t gameState[_FRAME_DATA_SIZE];
-        _gameInstances[threadId]->_emu->serializeState(gameState);
+        _gameInstances[threadId]->popState(gameState);
         newFrame->computeFrameDifference(_referenceFrameData, gameState);
 
         tf = std::chrono::steady_clock::now(); // Profiling
@@ -619,7 +619,7 @@ Train::Train(int argc, char *argv[])
 
   auto initialFrame = new Frame;
   uint8_t gameState[_FRAME_DATA_SIZE];
-  _gameInstances[0]->_emu->serializeState(gameState);
+  _gameInstances[0]->popState(gameState);
 
   // Storing initial frame as base for differential comparison
   memcpy(_referenceFrameData, gameState, _FRAME_DATA_SIZE);
