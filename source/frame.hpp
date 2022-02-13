@@ -1,87 +1,6 @@
 #pragma once
 
 #include <gameInstance.hpp>
-
-// W1-1a
-//#define _MAX_FRAME_DIFF 700
-//#define _MAX_RULE_COUNT 5
-//#define _MAX_MOVELIST_SIZE 440
-
-// W1-1b
-//#define _MAX_FRAME_DIFF 300
-//#define _MAX_RULE_COUNT 8
-//#define _MAX_MOVELIST_SIZE 150
-
-// W1-1c
-//#define _MAX_FRAME_DIFF 650
-//#define _MAX_RULE_COUNT 7
-//#define _MAX_MOVELIST_SIZE 300
-
-// W1-2a
-//#define _MAX_FRAME_DIFF 900
-//#define _MAX_RULE_COUNT 7
-//#define _MAX_MOVELIST_SIZE 1350
-
-// W1-2b
-//#define _MAX_FRAME_DIFF 700
-//#define _MAX_RULE_COUNT 10
-//#define _MAX_MOVELIST_SIZE 450
-
-// W4-1a
-//#define _MAX_FRAME_DIFF 900
-//#define _MAX_RULE_COUNT 5
-//#define _MAX_MOVELIST_SIZE 1500
-
-// W4-2a
-//#define _MAX_FRAME_DIFF 800
-//#define _MAX_RULE_COUNT 15
-//#define _MAX_MOVELIST_SIZE 700
-
-// W4-2b
-//#define _MAX_FRAME_DIFF 550
-//#define _MAX_RULE_COUNT 10
-//#define _MAX_MOVELIST_SIZE 500
-
-// W8-1
-//#define _MAX_FRAME_DIFF 900
-//#define _MAX_RULE_COUNT 10
-//#define _MAX_MOVELIST_SIZE 2500
-
-// W8-2
-//#define _MAX_FRAME_DIFF 1050
-//#define _MAX_RULE_COUNT 10
-//#define _MAX_MOVELIST_SIZE 1700
-
-// W8-3
-//#define _MAX_FRAME_DIFF 850
-//#define _MAX_RULE_COUNT 10
-//#define _MAX_MOVELIST_SIZE 1500
-
-// W8-4a
-//#define _MAX_FRAME_DIFF 650
-//#define _MAX_RULE_COUNT 8
-//#define _MAX_MOVELIST_SIZE 550
-
-// W8-4b
-//#define _MAX_FRAME_DIFF 650
-//#define _MAX_RULE_COUNT 8
-//#define _MAX_MOVELIST_SIZE 300
-
-// W8-4c
-#define _MAX_FRAME_DIFF 750
-#define _MAX_RULE_COUNT 8
-#define _MAX_MOVELIST_SIZE 200
-
-// W8-4d
-//#define _MAX_FRAME_DIFF 520
-//#define _MAX_RULE_COUNT 8
-//#define _MAX_MOVELIST_SIZE 700
-
-// W8-4e
-//#define _MAX_FRAME_DIFF 600
-//#define _MAX_RULE_COUNT 8
-//#define _MAX_MOVELIST_SIZE 300
-
 #include "utils.hpp"
 
 static size_t _maxFrameDiff;
@@ -95,17 +14,19 @@ enum frameType
 
 class Frame
 {
-  public:
-
-  Frame()
-  {
-    // Setting initially with no differences wrt base frame
-    frameDiffCount = 0;
-  }
+  private:
 
   // Positions of the difference with respect to a base frame
   uint16_t frameDiffPositions[_MAX_FRAME_DIFF];
   uint8_t frameDiffValues[_MAX_FRAME_DIFF];
+
+  // Positions of the difference with respect to a base frame
+  uint16_t frameDiffCount;
+
+  public:
+
+  // The score calculated for this frame
+  float reward;
 
   // Rule status vector
   bool rulesStatus[_MAX_RULE_COUNT];
@@ -138,7 +59,7 @@ class Frame
     for (uint16_t i = 0; i < frameDiffCount; i++) stateData[frameDiffPositions[i]] = frameDiffValues[i];
   }
 
-#ifndef JAFFAR_DISABLE_MOVE_HISTORY
+  #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
   // Stores the entire move history of the frame
   uint16_t moveHistory[_MAX_MOVELIST_SIZE];
@@ -154,11 +75,5 @@ class Frame
    return moveHistory[idx];
   }
 
-#endif
-
-  // The score calculated for this frame
-  float reward;
-
-  // Positions of the difference with respect to a base frame
-  uint16_t frameDiffCount;
+  #endif
 };

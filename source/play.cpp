@@ -1,14 +1,12 @@
+#include <ncurses.h>
+#include <unistd.h>
+#include <SDL.h>
 #include "argparse.hpp"
+#include "hqn.h"
+#include "hqn_gui_controller.h"
 #include "state.hpp"
 #include "gameInstance.hpp"
 #include "utils.hpp"
-#include <ncurses.h>
-#include <unistd.h>
-#include "hqn.h"
-#include "hqn_gui_controller.h"
-#include <SDL.h>
-
-#define _FRAME_SIZE 3148
 
 // Function to check for keypress taken from https://github.com/ajpaulson/learning-ncurses/blob/master/kbhit.c
 int kbhit()
