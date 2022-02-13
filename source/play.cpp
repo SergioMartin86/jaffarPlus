@@ -1,7 +1,7 @@
 #include "argparse.hpp"
-#include "state.h"
-#include "quickNESInstance.h"
-#include "utils.h"
+#include "state.hpp"
+#include "gameInstance.hpp"
+#include "utils.hpp"
 #include <ncurses.h>
 #include <unistd.h>
 #include "hqn.h"
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
   gui->setScale(2);
 
   // Initializing replay generating quickNES Instance
-  quickNESInstance genGameInstance(hqnState.emu());
+  gameInstance genGameInstance(hqnState.emu());
   genGameInstance.loadStateFile(stateFilePath);
 
   // Initializing game state

@@ -1,6 +1,6 @@
-#include "train.h"
+#include "train.hpp"
 #include "argparse.hpp"
-#include "utils.h"
+#include "utils.hpp"
 #include <omp.h>
 #include <unistd.h>
 #include <algorithm>

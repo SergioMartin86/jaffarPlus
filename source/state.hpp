@@ -1,20 +1,22 @@
 #pragma once
 
-#include "quickNESInstance.h"
+#include "gameInstance.hpp"
 #include "nlohmann/json.hpp"
+#include "frame.hpp"
+#include "rule.hpp"
+#include "metrohash64.h"
 #include <cstddef>
-#include "frame.h"
-#include "rule.h"
 #include <string>
 #include <vector>
 #include <set>
+
 
 class State
 {
   public:
 
   State(const std::string romFile, const std::string stateFile);
-  State(quickNESInstance * nes);
+  State(gameInstance * nes);
 
   // Rule parser
   void parseRules(const nlohmann::json rulesConfig);
@@ -24,7 +26,7 @@ class State
 
   std::vector<Rule *> _rules;
   size_t _ruleCount;
-  quickNESInstance *_nes;
+  gameInstance *_nes;
 
   // Game specific values
   uint16_t* _screenScroll; inline uint16_t getScreenScroll() { return swap_endian<uint16_t>(*_screenScroll); };

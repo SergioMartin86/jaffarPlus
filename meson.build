@@ -15,18 +15,17 @@ jaffarNESIncludes = include_directories([
  ])
 
 jaffarNESSrc = [
- 'source/utils.cc',
- 'source/frame.cc',
- 'source/state.cc',
- 'source/rule.cc',
- 'source/quickNESInstance.cc',
+ 'source/utils.cpp',
+ 'source/frame.cpp',
+ 'source/state.cpp',
+ 'source/rule.cpp',
  'extern/metrohash64/metrohash64.cc'
 ]
 
 executable('jaffarNES-train',
-  'source/train.cc',
-  jaffarNESSrc + quickernesSrc,
-  include_directories: [ jaffarNESIncludes, quickernesIncludes ],
+  'source/train.cpp',
+  jaffarNESSrc + quickernesSrc + gameInstanceSrc,
+  include_directories: [ jaffarNESIncludes, quickernesIncludes, gameInstanceIncludes ],
   dependencies: [ dependency('openmp', required: true) ],
   link_with: [ ],
   link_args: [ ],
@@ -34,9 +33,9 @@ executable('jaffarNES-train',
 )
 
 executable('jaffarNES-play',
-  'source/play.cc',
-  jaffarNESSrc + hqnSrc + quicknesSrc,
-  include_directories: [ jaffarNESIncludes, hqnIncludes, quicknesIncludes ],
+  'source/play.cpp',
+  jaffarNESSrc + hqnSrc + quicknesSrc + gameInstanceSrc,
+  include_directories: [ jaffarNESIncludes, hqnIncludes, quicknesIncludes, gameInstanceIncludes ],
   dependencies: [ dependency('sdl2'), dependency('SDL2_image')],
   link_with: [ ],
   link_args: [ '-lncurses' ],

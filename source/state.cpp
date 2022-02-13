@@ -1,5 +1,5 @@
-#include "state.h"
-#include "utils.h"
+#include "state.hpp"
+#include "utils.hpp"
 
 #ifdef NCURSES
  #include <ncurses.h>
@@ -13,7 +13,7 @@ extern nlohmann::json _scriptJs;
 State::State(const std::string romFile, const std::string stateFile)
 {
   // Creating quickNES instance
-  _nes = new quickNESInstance(romFile);
+  _nes = new gameInstance(romFile);
   _nes->loadStateFile(stateFile);
 
   // Setting game-specific value pointers
@@ -23,7 +23,7 @@ State::State(const std::string romFile, const std::string stateFile)
   updateDerivedValues();
 }
 
-State::State(quickNESInstance * nes)
+State::State(gameInstance* nes)
 {
   // Copying quickNES instance
   _nes = nes;

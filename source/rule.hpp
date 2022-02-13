@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nlohmann/json.hpp"
-#include "utils.h"
+#include "utils.hpp"
 #include <vector>
 
 enum operator_t

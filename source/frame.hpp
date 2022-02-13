@@ -1,5 +1,7 @@
 #pragma once
 
+#include <gameInstance.hpp>
+
 // W1-1a
 //#define _MAX_FRAME_DIFF 700
 //#define _MAX_RULE_COUNT 5
@@ -81,11 +83,10 @@
 //#define _MAX_MOVELIST_SIZE 300
 
 #define _MAX_MOVELIST_STORAGE ((_MAX_MOVELIST_SIZE/2) + 1)
-#define _FRAME_DATA_SIZE 12792
 #define _FRAME_DIFFERENTIAL_SIZE _FRAME_DATA_SIZE
 
 #include "nlohmann/json.hpp"
-#include "rule.h"
+#include "rule.hpp"
 #include <string>
 #include <vector>
 
@@ -128,7 +129,7 @@ class Frame
    if (frameDiffCount > _maxFrameDiff)
    {
     _maxFrameDiff = frameDiffCount;
-     if (frameDiffCount > _MAX_FRAME_DIFF) EXIT_WITH_ERROR("[Error] Exceeded maximum frame difference: %d > %d. Increase this maximum in the frame.h source file and rebuild.\n", frameDiffCount, _MAX_FRAME_DIFF);
+     if (frameDiffCount > _MAX_FRAME_DIFF) EXIT_WITH_ERROR("[Error] Exceeded maximum frame difference: %d > %d. Increase this maximum in the frame.hpp source file and rebuild.\n", frameDiffCount, _MAX_FRAME_DIFF);
    }
   }
 

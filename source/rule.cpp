@@ -1,5 +1,5 @@
-#include "rule.h"
-#include "state.h"
+#include "rule.hpp"
+#include "state.hpp"
 
 Rule::Rule(nlohmann::json ruleJs, State *state)
 {

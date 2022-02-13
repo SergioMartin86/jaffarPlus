@@ -1,19 +1,19 @@
 #pragma once
 
-#include <utils.h>
 #include <Nes_Emu.h>
 #include <Nes_State.h>
 #include <blargg_errors.h>
 #include <string>
-#include "metrohash64.h"
 
-class quickNESInstance
+#define _FRAME_DATA_SIZE 12792
+
+class gameInstance
 {
   public:
 
   // Initializes the miniPop instance
-  quickNESInstance(const std::string& romFilePath);
-  quickNESInstance(Nes_Emu* emulator);
+  gameInstance(const std::string& romFilePath);
+  gameInstance(Nes_Emu* emulator);
 
   // Loading/Saving state files
   void loadStateFile(const std::string& stateFilePath);

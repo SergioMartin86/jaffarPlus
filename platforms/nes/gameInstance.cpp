@@ -1,10 +1,8 @@
-#include "quickNESInstance.h"
-#include "utils.h"
+#include "gameInstance.hpp"
+#include "utils.hpp"
 #include <iostream>
-#include <omp.h>
-#include <frame.h>
 
-quickNESInstance::quickNESInstance(const std::string& romFilePath)
+gameInstance::gameInstance(const std::string& romFilePath)
 {
  _emu = new Nes_Emu;
  std::string romData;
@@ -19,7 +17,7 @@ quickNESInstance::quickNESInstance(const std::string& romFilePath)
  _baseMem = _emu->low_mem();
 }
 
-quickNESInstance::quickNESInstance(Nes_Emu* emulator)
+gameInstance::gameInstance(Nes_Emu* emulator)
 {
  _emu = emulator;
 
@@ -27,7 +25,7 @@ quickNESInstance::quickNESInstance(Nes_Emu* emulator)
  _baseMem = _emu->low_mem();
 }
 
-void quickNESInstance::loadStateFile(const std::string& stateFilePath)
+void gameInstance::loadStateFile(const std::string& stateFilePath)
 {
  // Loading state data
  std::string stateData;
@@ -43,7 +41,7 @@ void quickNESInstance::loadStateFile(const std::string& stateFilePath)
  _emu->load_state(state);
 }
 
-void quickNESInstance::saveStateFile(const std::string& stateFilePath)
+void gameInstance::saveStateFile(const std::string& stateFilePath)
 {
  // Saving state
  Nes_State state;
@@ -52,14 +50,14 @@ void quickNESInstance::saveStateFile(const std::string& stateFilePath)
  state.write(stateWriter);
 }
 
-void quickNESInstance::serializeState(uint8_t* state) const
+void gameInstance::serializeState(uint8_t* state) const
 {
  Mem_Writer w(state, _FRAME_DATA_SIZE, 0);
  Auto_File_Writer a(w);
  _emu->save_state(a);
 }
 
-void quickNESInstance::deserializeState(const uint8_t* state)
+void gameInstance::deserializeState(const uint8_t* state)
 {
  Mem_File_Reader r(state, _FRAME_DATA_SIZE);
  Auto_File_Reader a(r);
@@ -79,7 +77,7 @@ void quickNESInstance::deserializeState(const uint8_t* state)
 // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12     13    14      15
 //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
-void quickNESInstance::advanceFrame(const std::string& move)
+void gameInstance::advanceFrame(const std::string& move)
 {
  if (move == ".") { advanceFrame(0); return; }
  if (move == "L") { advanceFrame(1); return; }
@@ -101,7 +99,7 @@ void quickNESInstance::advanceFrame(const std::string& move)
  EXIT_WITH_ERROR("Unrecognized move: %s\n", move.c_str());
 }
 
-void quickNESInstance::advanceFrame(const uint8_t &move)
+void gameInstance::advanceFrame(const uint8_t &move)
 {
  // Encoding movement into the NES controller code
  uint32_t controllerCode = 0;

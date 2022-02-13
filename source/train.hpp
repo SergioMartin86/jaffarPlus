@@ -1,10 +1,9 @@
 #pragma once
 
-#include "quickNESInstance.h"
-#include "frame.h"
+#include "frame.hpp"
+#include "rule.hpp"
+#include "state.hpp"
 #include "nlohmann/json.hpp"
-#include "rule.h"
-#include "state.h"
 #include <parallel_hashmap/phmap.h>
 #include <algorithm>
 #include <chrono>
