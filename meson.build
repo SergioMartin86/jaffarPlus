@@ -44,7 +44,6 @@ quicknesFiles = [
 ]
 
 jaffarNES_inc = include_directories([
- 'extern/hqn/src',
  'extern/quicknes',
  'extern/quicknes/fex',
  'extern/metrohash64',
@@ -72,7 +71,7 @@ executable('jaffarNES-train',
   dependencies: [ openMP_dep ],
   link_with: [ ],
   link_args: [ ],
-  cpp_args: [ '-Wfatal-errors', '-D__LIBRETRO__', '-Wall', '-Wno-multichar', '-DLOG=printf' ]
+  cpp_args: [ '-Wfatal-errors', '-D__LIBRETRO__', '-Wall', '-Wno-multichar' ]
 )
 
 hqnFiles = [
@@ -131,7 +130,7 @@ jaffarNESplay_inc = include_directories([
  ])
     
 sdl2_dep = dependency('sdl2')
-sdl2_image_dep = dependency('sdl2_image')
+sdl2_image_dep = dependency('SDL2_image')
 
 executable('jaffarNES-play',
   'source/play.cc',
