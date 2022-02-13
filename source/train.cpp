@@ -229,7 +229,7 @@ void Train::computeFrames()
 
         // Perform the selected move
         t0 = std::chrono::steady_clock::now(); // Profiling
-        _state[threadId]->_game->advanceFrame(moveId);
+        _state[threadId]->_emu->advanceFrame(moveId);
         tf = std::chrono::steady_clock::now();
         threadFrameAdvanceTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -299,7 +299,7 @@ void Train::computeFrames()
         t0 = std::chrono::steady_clock::now(); // Profiling
 
         uint8_t gameState[_FRAME_DATA_SIZE];
-        _state[threadId]->_game->serializeState(gameState);
+        _state[threadId]->_emu->serializeState(gameState);
         newFrame->computeFrameDifference(_referenceFrameData, gameState);
 
         tf = std::chrono::steady_clock::now(); // Profiling
@@ -619,7 +619,7 @@ Train::Train(int argc, char *argv[])
 
   auto initialFrame = new Frame;
   uint8_t gameState[_FRAME_DATA_SIZE];
-  _state[0]->_game->serializeState(gameState);
+  _state[0]->_emu->serializeState(gameState);
 
   // Storing initial frame as base for differential comparison
   memcpy(_referenceFrameData, gameState, _FRAME_DATA_SIZE);

@@ -88,13 +88,13 @@
 #define _FRAME_DATA_SIZE 12792
 const std::vector<std::string> _possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
-class gameInstance
+class EmuInstance
 {
   public:
 
   // Initializes the miniPop instance
-  gameInstance(const std::string& romFilePath);
-  gameInstance(Nes_Emu* emulator);
+  EmuInstance(const std::string& romFilePath);
+  EmuInstance(Nes_Emu* emulator);
 
   // Loading/Saving state files
   void loadStateFile(const std::string& stateFilePath);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gameInstance.hpp>
+#include <emuInstance.hpp>
 #include "utils.hpp"
 
 static size_t _maxFrameDiff;

@@ -5,7 +5,7 @@
 #include "hqn.h"
 #include "hqn_gui_controller.h"
 #include "state.hpp"
-#include "gameInstance.hpp"
+#include "emuInstance.hpp"
 #include "utils.hpp"
 
 // Function to check for keypress taken from https://github.com/ajpaulson/learning-ncurses/blob/master/kbhit.c
@@ -134,11 +134,11 @@ int main(int argc, char *argv[])
   gui->setScale(2);
 
   // Initializing replay generating quickNES Instance
-  gameInstance genGameInstance(hqnState.emu());
-  genGameInstance.loadStateFile(stateFilePath);
+  EmuInstance genEmuInstance(hqnState.emu());
+  genEmuInstance.loadStateFile(stateFilePath);
 
   // Initializing game state
-  State genState(&genGameInstance);
+  State genState(&genEmuInstance);
 
   // Storage for sequence frames
   size_t stateSize;
@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
     {
       // Storing replay file
       std::string saveFileName = "jaffar.state";
-      genGameInstance.saveStateFile(saveFileName);
+      genEmuInstance.saveStateFile(saveFileName);
       printw("[JaffarNES] Saved state to %s\n", saveFileName.c_str());
 
       // Do no show frame info again after this action

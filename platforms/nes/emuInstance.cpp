@@ -1,8 +1,8 @@
-#include "gameInstance.hpp"
+#include "emuInstance.hpp"
 #include "utils.hpp"
 #include <iostream>
 
-gameInstance::gameInstance(const std::string& romFilePath)
+EmuInstance::EmuInstance(const std::string& romFilePath)
 {
  _emu = new Nes_Emu;
  std::string romData;
@@ -17,7 +17,7 @@ gameInstance::gameInstance(const std::string& romFilePath)
  _baseMem = _emu->low_mem();
 }
 
-gameInstance::gameInstance(Nes_Emu* emulator)
+EmuInstance::EmuInstance(Nes_Emu* emulator)
 {
  _emu = emulator;
 
@@ -25,7 +25,7 @@ gameInstance::gameInstance(Nes_Emu* emulator)
  _baseMem = _emu->low_mem();
 }
 
-void gameInstance::loadStateFile(const std::string& stateFilePath)
+void EmuInstance::loadStateFile(const std::string& stateFilePath)
 {
  // Loading state data
  std::string stateData;
@@ -41,7 +41,7 @@ void gameInstance::loadStateFile(const std::string& stateFilePath)
  _emu->load_state(state);
 }
 
-void gameInstance::saveStateFile(const std::string& stateFilePath)
+void EmuInstance::saveStateFile(const std::string& stateFilePath)
 {
  // Saving state
  Nes_State state;
@@ -50,14 +50,14 @@ void gameInstance::saveStateFile(const std::string& stateFilePath)
  state.write(stateWriter);
 }
 
-void gameInstance::serializeState(uint8_t* state) const
+void EmuInstance::serializeState(uint8_t* state) const
 {
  Mem_Writer w(state, _FRAME_DATA_SIZE, 0);
  Auto_File_Writer a(w);
  _emu->save_state(a);
 }
 
-void gameInstance::deserializeState(const uint8_t* state)
+void EmuInstance::deserializeState(const uint8_t* state)
 {
  Mem_File_Reader r(state, _FRAME_DATA_SIZE);
  Auto_File_Reader a(r);
@@ -77,7 +77,7 @@ void gameInstance::deserializeState(const uint8_t* state)
 // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12     13    14      15
 //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
-void gameInstance::advanceFrame(const std::string& move)
+void EmuInstance::advanceFrame(const std::string& move)
 {
  if (move == ".") { advanceFrame(0); return; }
  if (move == "L") { advanceFrame(1); return; }
@@ -99,7 +99,7 @@ void gameInstance::advanceFrame(const std::string& move)
  EXIT_WITH_ERROR("Unrecognized move: %s\n", move.c_str());
 }
 
-void gameInstance::advanceFrame(const uint8_t &move)
+void EmuInstance::advanceFrame(const uint8_t &move)
 {
  // Encoding movement into the NES controller code
  uint32_t controllerCode = 0;

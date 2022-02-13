@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gameInstance.hpp"
+#include "emuInstance.hpp"
 #include "nlohmann/json.hpp"
 #include "frame.hpp"
 #include "rule.hpp"
@@ -16,7 +16,7 @@ class State
   public:
 
   State(const std::string romFile, const std::string stateFile);
-  State(gameInstance* game);
+  State(EmuInstance* emu);
 
   // Rule parser
   void parseRules(const nlohmann::json rulesConfig);
@@ -26,7 +26,7 @@ class State
 
   std::vector<Rule *> _rules;
   size_t _ruleCount;
-  gameInstance *_game;
+  EmuInstance *_emu;
 
   // Game specific values
   uint16_t* _screenScroll; inline uint16_t getScreenScroll() { return swap_endian<uint16_t>(*_screenScroll); };
@@ -125,8 +125,8 @@ class State
   #define USE_LIGHT_HASH true
 
   // Function to advance frame
-  void advanceFrame(const uint8_t &move) { _game->advanceFrame(move); updateDerivedValues(); };
-  void advanceFrame(const std::string& move) { _game->advanceFrame(move); updateDerivedValues(); };
+  void advanceFrame(const uint8_t &move) { _emu->advanceFrame(move); updateDerivedValues(); };
+  void advanceFrame(const std::string& move) { _emu->advanceFrame(move); updateDerivedValues(); };
 
   // This function computes the hash for the current state
   inline uint64_t computeHash() const
@@ -226,12 +226,12 @@ class State
 
   void serializeState(uint8_t* state) const
   {
-   _game->serializeState(state);
+   _emu->serializeState(state);
   }
 
   void deserializeState(const uint8_t* state)
   {
-   _game->deserializeState(state);
+   _emu->deserializeState(state);
    updateDerivedValues();
   }
 
@@ -239,91 +239,91 @@ class State
   {
    // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
    // Game specific values
-   _screenScroll         = (uint16_t*) &_game->_baseMem[0x071B];
-   _marioAnimation       = (uint8_t*)  &_game->_baseMem[0x0001];
-   _marioState           = (uint8_t*)  &_game->_baseMem[0x000E];
+   _screenScroll         = (uint16_t*) &_emu->_baseMem[0x071B];
+   _marioAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
+   _marioState           = (uint8_t*)  &_emu->_baseMem[0x000E];
 
-   _marioBasePosX        = (uint8_t*)  &_game->_baseMem[0x006D];
-   _marioRelPosX         = (uint8_t*)  &_game->_baseMem[0x0086];
-   _marioSubpixelPosX    = (uint8_t*)  &_game->_baseMem[0x0400];
+   _marioBasePosX        = (uint8_t*)  &_emu->_baseMem[0x006D];
+   _marioRelPosX         = (uint8_t*)  &_emu->_baseMem[0x0086];
+   _marioSubpixelPosX    = (uint8_t*)  &_emu->_baseMem[0x0400];
 
-   _marioPosY            = (uint8_t*)  &_game->_baseMem[0x00CE];
-   _marioSubpixelPosY    = (uint8_t*)  &_game->_baseMem[0x0416];
+   _marioPosY            = (uint8_t*)  &_emu->_baseMem[0x00CE];
+   _marioSubpixelPosY    = (uint8_t*)  &_emu->_baseMem[0x0416];
 
-   _marioMovingDirection = (uint8_t*)  &_game->_baseMem[0x0045];
-   _marioFacingDirection = (uint8_t*)  &_game->_baseMem[0x0033];
-   _marioFloatingMode    = (uint8_t*)  &_game->_baseMem[0x001D];
-   _marioWalkingMode     = (uint8_t*)  &_game->_baseMem[0x0702];
-   _marioWalkingDelay    = (uint8_t*)  &_game->_baseMem[0x070C];
-   _marioWalkingFrame    = (uint8_t*)  &_game->_baseMem[0x070D];
-   _marioMaxVelLeft      = (int8_t*)   &_game->_baseMem[0x0450];
-   _marioMaxVelRight     = (int8_t*)   &_game->_baseMem[0x0456];
-   _marioVelX            = (int8_t*)   &_game->_baseMem[0x0057];
-   _marioXMoveForce      = (int8_t*)   &_game->_baseMem[0x0705];
-   _marioVelY            = (int8_t*)   &_game->_baseMem[0x009F];
-   _marioFracVelY        = (int8_t*)   &_game->_baseMem[0x0433];
-   _marioGravity         = (uint8_t*)  &_game->_baseMem[0x0709];
-   _marioFriction        = (uint8_t*)  &_game->_baseMem[0x0701];
-   _timeLeft100          = (uint8_t*)  &_game->_baseMem[0x07F8];
-   _timeLeft10           = (uint8_t*)  &_game->_baseMem[0x07F9];
-   _timeLeft1            = (uint8_t*)  &_game->_baseMem[0x07FA];
+   _marioMovingDirection = (uint8_t*)  &_emu->_baseMem[0x0045];
+   _marioFacingDirection = (uint8_t*)  &_emu->_baseMem[0x0033];
+   _marioFloatingMode    = (uint8_t*)  &_emu->_baseMem[0x001D];
+   _marioWalkingMode     = (uint8_t*)  &_emu->_baseMem[0x0702];
+   _marioWalkingDelay    = (uint8_t*)  &_emu->_baseMem[0x070C];
+   _marioWalkingFrame    = (uint8_t*)  &_emu->_baseMem[0x070D];
+   _marioMaxVelLeft      = (int8_t*)   &_emu->_baseMem[0x0450];
+   _marioMaxVelRight     = (int8_t*)   &_emu->_baseMem[0x0456];
+   _marioVelX            = (int8_t*)   &_emu->_baseMem[0x0057];
+   _marioXMoveForce      = (int8_t*)   &_emu->_baseMem[0x0705];
+   _marioVelY            = (int8_t*)   &_emu->_baseMem[0x009F];
+   _marioFracVelY        = (int8_t*)   &_emu->_baseMem[0x0433];
+   _marioGravity         = (uint8_t*)  &_emu->_baseMem[0x0709];
+   _marioFriction        = (uint8_t*)  &_emu->_baseMem[0x0701];
+   _timeLeft100          = (uint8_t*)  &_emu->_baseMem[0x07F8];
+   _timeLeft10           = (uint8_t*)  &_emu->_baseMem[0x07F9];
+   _timeLeft1            = (uint8_t*)  &_emu->_baseMem[0x07FA];
 
-   _screenBasePosX       = (uint8_t*)  &_game->_baseMem[0x071A];
-   _screenRelPosX        = (uint8_t*)  &_game->_baseMem[0x071C];
+   _screenBasePosX       = (uint8_t*)  &_emu->_baseMem[0x071A];
+   _screenRelPosX        = (uint8_t*)  &_emu->_baseMem[0x071C];
 
-   _currentWorldRaw      = (uint8_t*)  &_game->_baseMem[0x075F];
-   _currentStageRaw      = (uint8_t*)  &_game->_baseMem[0x075C];
-   _levelEntryFlag       = (uint8_t*)  &_game->_baseMem[0x0752];
-   _gameMode             = (uint8_t*)  &_game->_baseMem[0x0770];
+   _currentWorldRaw      = (uint8_t*)  &_emu->_baseMem[0x075F];
+   _currentStageRaw      = (uint8_t*)  &_emu->_baseMem[0x075C];
+   _levelEntryFlag       = (uint8_t*)  &_emu->_baseMem[0x0752];
+   _gameMode             = (uint8_t*)  &_emu->_baseMem[0x0770];
 
-   _enemy1Active         = (uint8_t*)  &_game->_baseMem[0x000F];
-   _enemy2Active         = (uint8_t*)  &_game->_baseMem[0x0010];
-   _enemy3Active         = (uint8_t*)  &_game->_baseMem[0x0011];
-   _enemy4Active         = (uint8_t*)  &_game->_baseMem[0x0012];
-   _enemy5Active         = (uint8_t*)  &_game->_baseMem[0x0013];
+   _enemy1Active         = (uint8_t*)  &_emu->_baseMem[0x000F];
+   _enemy2Active         = (uint8_t*)  &_emu->_baseMem[0x0010];
+   _enemy3Active         = (uint8_t*)  &_emu->_baseMem[0x0011];
+   _enemy4Active         = (uint8_t*)  &_emu->_baseMem[0x0012];
+   _enemy5Active         = (uint8_t*)  &_emu->_baseMem[0x0013];
 
-   _enemy1State          = (uint8_t*)  &_game->_baseMem[0x001E];
-   _enemy2State          = (uint8_t*)  &_game->_baseMem[0x001F];
-   _enemy3State          = (uint8_t*)  &_game->_baseMem[0x0020];
-   _enemy4State          = (uint8_t*)  &_game->_baseMem[0x0021];
-   _enemy5State          = (uint8_t*)  &_game->_baseMem[0x0022];
+   _enemy1State          = (uint8_t*)  &_emu->_baseMem[0x001E];
+   _enemy2State          = (uint8_t*)  &_emu->_baseMem[0x001F];
+   _enemy3State          = (uint8_t*)  &_emu->_baseMem[0x0020];
+   _enemy4State          = (uint8_t*)  &_emu->_baseMem[0x0021];
+   _enemy5State          = (uint8_t*)  &_emu->_baseMem[0x0022];
 
-   _enemy1Type           = (uint8_t*)  &_game->_baseMem[0x0016];
-   _enemy2Type           = (uint8_t*)  &_game->_baseMem[0x0017];
-   _enemy3Type           = (uint8_t*)  &_game->_baseMem[0x0018];
-   _enemy4Type           = (uint8_t*)  &_game->_baseMem[0x0019];
-   _enemy5Type           = (uint8_t*)  &_game->_baseMem[0x001A];
+   _enemy1Type           = (uint8_t*)  &_emu->_baseMem[0x0016];
+   _enemy2Type           = (uint8_t*)  &_emu->_baseMem[0x0017];
+   _enemy3Type           = (uint8_t*)  &_emu->_baseMem[0x0018];
+   _enemy4Type           = (uint8_t*)  &_emu->_baseMem[0x0019];
+   _enemy5Type           = (uint8_t*)  &_emu->_baseMem[0x001A];
 
-   _marioCollision       = (uint8_t*)  &_game->_baseMem[0x0490];
-   _enemyCollision       = (uint8_t*)  &_game->_baseMem[0x0491];
-   _hitDetectionFlag     = (uint8_t*)  &_game->_baseMem[0x0722];
+   _marioCollision       = (uint8_t*)  &_emu->_baseMem[0x0490];
+   _enemyCollision       = (uint8_t*)  &_emu->_baseMem[0x0491];
+   _hitDetectionFlag     = (uint8_t*)  &_emu->_baseMem[0x0722];
 
-   _powerUpActive        = (uint8_t*)  &_game->_baseMem[0x0014];
+   _powerUpActive        = (uint8_t*)  &_emu->_baseMem[0x0014];
 
-   _animationTimer       = (uint8_t*)  &_game->_baseMem[0x0781];
-   _jumpSwimTimer        = (uint8_t*)  &_game->_baseMem[0x0782];
-   _runningTimer         = (uint8_t*)  &_game->_baseMem[0x0783];
-   _blockBounceTimer     = (uint8_t*)  &_game->_baseMem[0x0784];
-   _sideCollisionTimer   = (uint8_t*)  &_game->_baseMem[0x0785];
-   _jumpspringTimer      = (uint8_t*)  &_game->_baseMem[0x0786];
-   _gameControlTimer     = (uint8_t*)  &_game->_baseMem[0x0787];
-   _climbSideTimer       = (uint8_t*)  &_game->_baseMem[0x0789];
-   _enemyFrameTimer      = (uint8_t*)  &_game->_baseMem[0x078A];
-   _frenzyEnemyTimer     = (uint8_t*)  &_game->_baseMem[0x078F];
-   _bowserFireTimer      = (uint8_t*)  &_game->_baseMem[0x0790];
-   _stompTimer           = (uint8_t*)  &_game->_baseMem[0x0791];
-   _airBubbleTimer       = (uint8_t*)  &_game->_baseMem[0x0792];
-   _fallPitTimer         = (uint8_t*)  &_game->_baseMem[0x0795];
-   _multiCoinBlockTimer  = (uint8_t*)  &_game->_baseMem[0x079D];
-   _invincibleTimer      = (uint8_t*)  &_game->_baseMem[0x079E];
-   _starTimer            = (uint8_t*)  &_game->_baseMem[0x079F];
+   _animationTimer       = (uint8_t*)  &_emu->_baseMem[0x0781];
+   _jumpSwimTimer        = (uint8_t*)  &_emu->_baseMem[0x0782];
+   _runningTimer         = (uint8_t*)  &_emu->_baseMem[0x0783];
+   _blockBounceTimer     = (uint8_t*)  &_emu->_baseMem[0x0784];
+   _sideCollisionTimer   = (uint8_t*)  &_emu->_baseMem[0x0785];
+   _jumpspringTimer      = (uint8_t*)  &_emu->_baseMem[0x0786];
+   _gameControlTimer     = (uint8_t*)  &_emu->_baseMem[0x0787];
+   _climbSideTimer       = (uint8_t*)  &_emu->_baseMem[0x0789];
+   _enemyFrameTimer      = (uint8_t*)  &_emu->_baseMem[0x078A];
+   _frenzyEnemyTimer     = (uint8_t*)  &_emu->_baseMem[0x078F];
+   _bowserFireTimer      = (uint8_t*)  &_emu->_baseMem[0x0790];
+   _stompTimer           = (uint8_t*)  &_emu->_baseMem[0x0791];
+   _airBubbleTimer       = (uint8_t*)  &_emu->_baseMem[0x0792];
+   _fallPitTimer         = (uint8_t*)  &_emu->_baseMem[0x0795];
+   _multiCoinBlockTimer  = (uint8_t*)  &_emu->_baseMem[0x079D];
+   _invincibleTimer      = (uint8_t*)  &_emu->_baseMem[0x079E];
+   _starTimer            = (uint8_t*)  &_emu->_baseMem[0x079F];
 
-   _player1Input         = (uint8_t*)  &_game->_baseMem[0x06FC];
-   _player1Buttons       = (uint8_t*)  &_game->_baseMem[0x074A];
-   _player1GamePad1      = (uint8_t*)  &_game->_baseMem[0x000A];
-   _player1GamePad2      = (uint8_t*)  &_game->_baseMem[0x000D];
+   _player1Input         = (uint8_t*)  &_emu->_baseMem[0x06FC];
+   _player1Buttons       = (uint8_t*)  &_emu->_baseMem[0x074A];
+   _player1GamePad1      = (uint8_t*)  &_emu->_baseMem[0x000A];
+   _player1GamePad2      = (uint8_t*)  &_emu->_baseMem[0x000D];
 
-   _warpAreaOffset       = (uint16_t*) &_game->_baseMem[0x0750];
+   _warpAreaOffset       = (uint16_t*) &_emu->_baseMem[0x0750];
   }
 
   inline void updateDerivedValues()
@@ -444,12 +444,12 @@ class State
   // Serialization/Deserialization Routines
   inline void pushState(const uint8_t* __restrict__ inputStateData) const
   {
-    _game->deserializeState(inputStateData);
+    _emu->deserializeState(inputStateData);
   }
 
   inline void popState(uint8_t* __restrict__ outputStateData) const
   {
-   _game->serializeState(outputStateData);
+   _emu->serializeState(outputStateData);
   }
 
   // Get frame type

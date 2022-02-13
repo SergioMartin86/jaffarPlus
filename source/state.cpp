@@ -13,8 +13,8 @@ extern nlohmann::json _scriptJs;
 State::State(const std::string romFile, const std::string stateFile)
 {
   // Creating quickNES instance
-  _game = new gameInstance(romFile);
-  _game->loadStateFile(stateFile);
+  _emu = new EmuInstance(romFile);
+  _emu->loadStateFile(stateFile);
 
   // Setting game-specific value pointers
   setGameValuePointers();
@@ -23,10 +23,10 @@ State::State(const std::string romFile, const std::string stateFile)
   updateDerivedValues();
 }
 
-State::State(gameInstance* game)
+State::State(EmuInstance* emu)
 {
-  // Copying game instance pointer
-  _game = game;
+  // Copying emu instance pointer
+  _emu = emu;
 
   // Setting game-specific value pointers
   setGameValuePointers();
