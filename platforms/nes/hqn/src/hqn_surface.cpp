@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <cstring>
 #include <cmath>
-#include <SDL_platform.h>
 #include "hqn_surface.h"
+#include <SDL_platform.h>
 
 namespace hqn
 {

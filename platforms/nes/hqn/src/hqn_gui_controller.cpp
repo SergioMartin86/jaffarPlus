@@ -185,7 +185,6 @@ bool GUIController::resizeOverlay(size_t w, size_t h)
 void GUIController::update(bool readNES)
 {
     void *nesPixels = nullptr;
-    void *overlayPixels = nullptr;
     int pitch = 0;
 
     if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0)

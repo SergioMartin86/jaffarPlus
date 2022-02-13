@@ -83,12 +83,8 @@
 //#define _MAX_MOVELIST_SIZE 300
 
 #include "utils.hpp"
-#include <string>
-#include <vector>
 
 static size_t _maxFrameDiff;
-
-const std::vector<std::string> _possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
 enum frameType
 {
@@ -123,7 +119,7 @@ class Frame
    for (uint16_t i = 0; i < _FRAME_DATA_SIZE; i++) if (baseFrameData[i] != newFrameData[i])
    {
     frameDiffPositions[frameDiffCount] = i;
-    frameDiffValues[frameDiffCount] = (uint8_t)newFrameData[i];
+    frameDiffValues[frameDiffCount] = newFrameData[i];
     frameDiffCount++;
    }
 

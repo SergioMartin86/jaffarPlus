@@ -2,10 +2,11 @@
 
 #include <Nes_Emu.h>
 #include <Nes_State.h>
-#include <blargg_errors.h>
 #include <string>
+#include <vector>
 
 #define _FRAME_DATA_SIZE 12792
+const std::vector<std::string> _possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
 class gameInstance
 {

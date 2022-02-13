@@ -21,7 +21,7 @@ jaffarNESSrc = [
  'extern/metrohash64/metrohash64.cc'
 ]
 
-executable('jaffarNES-train',
+executable('jaffar',
   'source/train.cpp',
   jaffarNESSrc + quickernesSrc + gameInstanceSrc,
   include_directories: [ jaffarNESIncludes, quickernesIncludes, gameInstanceIncludes ],

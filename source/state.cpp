@@ -13,8 +13,8 @@ extern nlohmann::json _scriptJs;
 State::State(const std::string romFile, const std::string stateFile)
 {
   // Creating quickNES instance
-  _nes = new gameInstance(romFile);
-  _nes->loadStateFile(stateFile);
+  _game = new gameInstance(romFile);
+  _game->loadStateFile(stateFile);
 
   // Setting game-specific value pointers
   setGameValuePointers();
@@ -23,10 +23,10 @@ State::State(const std::string romFile, const std::string stateFile)
   updateDerivedValues();
 }
 
-State::State(gameInstance* nes)
+State::State(gameInstance* game)
 {
-  // Copying quickNES instance
-  _nes = nes;
+  // Copying game instance pointer
+  _game = game;
 
   // Setting game-specific value pointers
   setGameValuePointers();
@@ -78,7 +78,7 @@ void State::parseRules(const nlohmann::json rulesConfig)
 
 void State::printRuleStatus(const bool* rulesStatus)
 {
- printf("[JaffarNES]  + Rule Status: ");
+ printf("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _ruleCount; i++)
  {
    if (i > 0 && i % 60 == 0) printf("\n                         ");
@@ -89,38 +89,38 @@ void State::printRuleStatus(const bool* rulesStatus)
  // Getting magnet values
  auto magnets = getMagnetValues(rulesStatus);
 
- printf("[JaffarNES]  + Screen Horizontal Magnet   - Intensity: %.1f, Max: %f\n", magnets.screenHorizontalMagnet.intensity, magnets.screenHorizontalMagnet.max);
- printf("[JaffarNES]  + Mario Screen Offset Magnet - Intensity: %.1f, Max: %f\n", magnets.marioScreenOffsetMagnet.intensity, magnets.marioScreenOffsetMagnet.max);
- printf("[JaffarNES]  + Mario Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.max);
- printf("[JaffarNES]  + Mario Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.max);
+ printf("[Jaffar]  + Screen Horizontal Magnet   - Intensity: %.1f, Max: %f\n", magnets.screenHorizontalMagnet.intensity, magnets.screenHorizontalMagnet.max);
+ printf("[Jaffar]  + Mario Screen Offset Magnet - Intensity: %.1f, Max: %f\n", magnets.marioScreenOffsetMagnet.intensity, magnets.marioScreenOffsetMagnet.max);
+ printf("[Jaffar]  + Mario Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.max);
+ printf("[Jaffar]  + Mario Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.max);
 }
 
 void State::printStateInfo() const
 {
-  LOG("[JaffarNES]  + Current World-Stage:    %1u-%1u\n", _currentWorld, _currentStage);
-  LOG("[JaffarNES]  + Time Left:              %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
-  LOG("[JaffarNES]  + Mario Animation:        %02u\n", *_marioAnimation);
-  LOG("[JaffarNES]  + Mario State:            %02u\n", *_marioState);
-  LOG("[JaffarNES]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", _screenPosX, *_screenBasePosX, (uint16_t)*_screenBasePosX * 255, *_screenRelPosX);
-  LOG("[JaffarNES]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _marioPosX, *_marioBasePosX, (uint16_t)*_marioBasePosX * 255, *_marioRelPosX);
-  LOG("[JaffarNES]  + Mario / Screen Offset:  %04d\n", _marioScreenOffset);
-  LOG("[JaffarNES]  + Mario Pos Y:            %02u\n", *_marioPosY);
-  LOG("[JaffarNES]  + Mario SubPixel X/Y:     %02u / %02u\n", *_marioSubpixelPosX, *_marioSubpixelPosY);
-  LOG("[JaffarNES]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_marioVelX, *_marioXMoveForce, *_marioMaxVelLeft, *_marioMaxVelRight);
-  LOG("[JaffarNES]  + Mario Vel Y:            %02d (%02d)\n", *_marioVelY, *_marioFracVelY);
-  LOG("[JaffarNES]  + Mario Gravity:          %02u\n", *_marioGravity);
-  LOG("[JaffarNES]  + Mario Friction:         %02u\n", *_marioFriction);
-  LOG("[JaffarNES]  + Mario Moving Direction: %s\n", *_marioMovingDirection == 1 ? "Right" : "Left");
-  LOG("[JaffarNES]  + Mario Facing Direction: %s\n", *_marioFacingDirection == 1 ? "Right" : "Left");
-  LOG("[JaffarNES]  + Mario Floating Mode:    %02u\n", *_marioFloatingMode);
-  LOG("[JaffarNES]  + Mario Walking:          %02u %02u %02u\n", *_marioWalkingMode, *_marioWalkingDelay, *_marioWalkingFrame);
-  LOG("[JaffarNES]  + Player 1 Inputs:        %02u %02u %02u %02u\n", *_player1Input, *_player1Buttons, *_player1GamePad1, *_player1GamePad2);
-  LOG("[JaffarNES]  + Powerup Active:         %1u\n", *_powerUpActive);
-  LOG("[JaffarNES]  + Enemy Active:           %1u%1u%1u%1u%1u\n", *_enemy1Active, *_enemy2Active, *_enemy3Active, *_enemy4Active, *_enemy5Active);
-  LOG("[JaffarNES]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State);
-  LOG("[JaffarNES]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *_enemy1Type, *_enemy2Type, *_enemy3Type, *_enemy4Type, *_enemy5Type);
-  LOG("[JaffarNES]  + Hit Detection Flags:    %02u %02u %02u\n", *_marioCollision, *_enemyCollision, *_hitDetectionFlag);
-  LOG("[JaffarNES]  + LevelEntry / GameMode:  %02u / %02u\n", *_levelEntryFlag, *_gameMode);
-  LOG("[JaffarNES]  + Warp Area Offset:       %04u\n", *_warpAreaOffset);
-  LOG("[JaffarNES]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_animationTimer, *_jumpSwimTimer, *_runningTimer, *_blockBounceTimer, *_sideCollisionTimer, *_jumpspringTimer, *_gameControlTimer, *_climbSideTimer, *_enemyFrameTimer, *_frenzyEnemyTimer, *_bowserFireTimer, *_stompTimer, *_airBubbleTimer, *_multiCoinBlockTimer, *_invincibleTimer, *_starTimer);
+  LOG("[Jaffar]  + Current World-Stage:    %1u-%1u\n", _currentWorld, _currentStage);
+  LOG("[Jaffar]  + Time Left:              %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
+  LOG("[Jaffar]  + Mario Animation:        %02u\n", *_marioAnimation);
+  LOG("[Jaffar]  + Mario State:            %02u\n", *_marioState);
+  LOG("[Jaffar]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", _screenPosX, *_screenBasePosX, (uint16_t)*_screenBasePosX * 255, *_screenRelPosX);
+  LOG("[Jaffar]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _marioPosX, *_marioBasePosX, (uint16_t)*_marioBasePosX * 255, *_marioRelPosX);
+  LOG("[Jaffar]  + Mario / Screen Offset:  %04d\n", _marioScreenOffset);
+  LOG("[Jaffar]  + Mario Pos Y:            %02u\n", *_marioPosY);
+  LOG("[Jaffar]  + Mario SubPixel X/Y:     %02u / %02u\n", *_marioSubpixelPosX, *_marioSubpixelPosY);
+  LOG("[Jaffar]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_marioVelX, *_marioXMoveForce, *_marioMaxVelLeft, *_marioMaxVelRight);
+  LOG("[Jaffar]  + Mario Vel Y:            %02d (%02d)\n", *_marioVelY, *_marioFracVelY);
+  LOG("[Jaffar]  + Mario Gravity:          %02u\n", *_marioGravity);
+  LOG("[Jaffar]  + Mario Friction:         %02u\n", *_marioFriction);
+  LOG("[Jaffar]  + Mario Moving Direction: %s\n", *_marioMovingDirection == 1 ? "Right" : "Left");
+  LOG("[Jaffar]  + Mario Facing Direction: %s\n", *_marioFacingDirection == 1 ? "Right" : "Left");
+  LOG("[Jaffar]  + Mario Floating Mode:    %02u\n", *_marioFloatingMode);
+  LOG("[Jaffar]  + Mario Walking:          %02u %02u %02u\n", *_marioWalkingMode, *_marioWalkingDelay, *_marioWalkingFrame);
+  LOG("[Jaffar]  + Player 1 Inputs:        %02u %02u %02u %02u\n", *_player1Input, *_player1Buttons, *_player1GamePad1, *_player1GamePad2);
+  LOG("[Jaffar]  + Powerup Active:         %1u\n", *_powerUpActive);
+  LOG("[Jaffar]  + Enemy Active:           %1u%1u%1u%1u%1u\n", *_enemy1Active, *_enemy2Active, *_enemy3Active, *_enemy4Active, *_enemy5Active);
+  LOG("[Jaffar]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State);
+  LOG("[Jaffar]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *_enemy1Type, *_enemy2Type, *_enemy3Type, *_enemy4Type, *_enemy5Type);
+  LOG("[Jaffar]  + Hit Detection Flags:    %02u %02u %02u\n", *_marioCollision, *_enemyCollision, *_hitDetectionFlag);
+  LOG("[Jaffar]  + LevelEntry / GameMode:  %02u / %02u\n", *_levelEntryFlag, *_gameMode);
+  LOG("[Jaffar]  + Warp Area Offset:       %04u\n", *_warpAreaOffset);
+  LOG("[Jaffar]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_animationTimer, *_jumpSwimTimer, *_runningTimer, *_blockBounceTimer, *_sideCollisionTimer, *_jumpspringTimer, *_gameControlTimer, *_climbSideTimer, *_enemyFrameTimer, *_frenzyEnemyTimer, *_bowserFireTimer, *_stompTimer, *_airBubbleTimer, *_multiCoinBlockTimer, *_invincibleTimer, *_starTimer);
 }

@@ -1,9 +1,9 @@
 #ifndef __HQN_SURFACE_H__
 #define __HQN_SURFACE_H__
 
+#include <SDL_surface.h>
 #include "hqn.h"
 #include <cstdint>
-#include <SDL_surface.h>
 
 namespace hqn
 {

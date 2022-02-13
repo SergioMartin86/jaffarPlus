@@ -7,17 +7,17 @@
 
 void Train::run()
 {
-  printf("[JaffarNES] ----------------------------------------------------------------\n");
-  printf("[JaffarNES] Launching JaffarNES Version %s...\n", "1.0");
-  printf("[JaffarNES] Using configuration file: "); printf("%s ", _scriptFile.c_str()); printf("\n");
-  printf("[JaffarNES] Frame size: %lu\n", sizeof(Frame));
-  printf("[JaffarNES] Max Frame DB entries: %lu\n", _maxDatabaseSizeLowerBound);
+  printf("[Jaffar] ----------------------------------------------------------------\n");
+  printf("[Jaffar] Launching Jaffar Version %s...\n", "1.0");
+  printf("[Jaffar] Using configuration file: "); printf("%s ", _scriptFile.c_str()); printf("\n");
+  printf("[Jaffar] Frame size: %lu\n", sizeof(Frame));
+  printf("[Jaffar] Max Frame DB entries: %lu\n", _maxDatabaseSizeLowerBound);
 
   if (_outputSaveBestSeconds > 0)
   {
-    printf("[JaffarNES] Saving best frame every: %.3f seconds.\n", _outputSaveBestSeconds);
-    printf("[JaffarNES]  + Savefile Path: %s\n", _outputSaveBestPath.c_str());
-    printf("[JaffarNES]  + Solution Path: %s\n", _outputSolutionBestPath.c_str());
+    printf("[Jaffar] Saving best frame every: %.3f seconds.\n", _outputSaveBestSeconds);
+    printf("[Jaffar]  + Savefile Path: %s\n", _outputSaveBestPath.c_str());
+    printf("[Jaffar]  + Solution Path: %s\n", _outputSolutionBestPath.c_str());
   }
 
   // Sleep for a second to show this message
@@ -59,22 +59,22 @@ void Train::run()
     _databaseSize = _frameDB.size();
     if (_databaseSize == 0)
     {
-      printf("[JaffarNES] Frame database depleted with no winning frames, finishing...\n");
+      printf("[Jaffar] Frame database depleted with no winning frames, finishing...\n");
       terminate = true;
     }
 
     // Terminate if a winning rule was found
     if (_winFrameFound)
     {
-      printf("[JaffarNES] Winning frame reached in %u moves, finishing...\n", _currentStep-1);
+      printf("[Jaffar] Winning frame reached in %u moves, finishing...\n", _currentStep-1);
       terminate = true;
     }
 
     // Terminate if maximum number of frames was reached
     if (_currentStep > _MAX_MOVELIST_SIZE-1)
     {
-      printf("[JaffarNES] Maximum frame number reached, finishing...\n");
-      printf("[JaffarNES] To run JaffarNES for more steps, modify this limit in frame.h and rebuild.\n");
+      printf("[Jaffar] Maximum frame number reached, finishing...\n");
+      printf("[Jaffar] To run Jaffar for more steps, modify this limit in frame.h and rebuild.\n");
       terminate = true;
     }
   }
@@ -82,12 +82,12 @@ void Train::run()
   // Print winning frame if found
   if (_winFrameFound == true)
   {
-    printf("[JaffarNES] Win Frame Information:\n");
+    printf("[Jaffar] Win Frame Information:\n");
     size_t timeStep = _currentStep-1;
     size_t curMins = timeStep / 720;
     size_t curSecs = (timeStep - (curMins * 720)) / 12;
     size_t curMilliSecs = ceil((double)(timeStep - (curMins * 720) - (curSecs * 12)) / 0.012);
-    printf("[JaffarNES]  + Solution IGT:  %2lu:%02lu.%03lu\n", curMins, curSecs, curMilliSecs);
+    printf("[Jaffar]  + Solution IGT:  %2lu:%02lu.%03lu\n", curMins, curSecs, curMilliSecs);
 
     uint8_t winFrameData[_FRAME_DATA_SIZE];
     _winFrame.getFrameDataFromDifference(_referenceFrameData, winFrameData);
@@ -95,10 +95,10 @@ void Train::run()
     _state[0]->printStateInfo();
     _state[0]->printRuleStatus(_winFrame.rulesStatus);
 
-    #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
+    #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
     // Print Move History
-    printf("[JaffarNES]  + Move List: ");
+    printf("[Jaffar]  + Move List: ");
     for (uint16_t i = 0; i < _currentStep; i++)
       printf("%s ", _possibleMoves[_winFrame.getMove(i)].c_str());
     printf("\n");
@@ -117,7 +117,7 @@ void Train::run()
   {
    auto lastFrame = _winFrameFound ? _winFrame : _bestFrame;
 
-   #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
+   #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
    // Storing the solution sequence
    std::string solutionString;
@@ -229,7 +229,7 @@ void Train::computeFrames()
 
         // Perform the selected move
         t0 = std::chrono::steady_clock::now(); // Profiling
-        _state[threadId]->_nes->advanceFrame(moveId);
+        _state[threadId]->_game->advanceFrame(moveId);
         tf = std::chrono::steady_clock::now();
         threadFrameAdvanceTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -284,7 +284,7 @@ void Train::computeFrames()
         memcpy(newFrame->rulesStatus, rulesStatus, sizeof(Frame::rulesStatus));
 
         // Copying move list and adding new move
-        #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
+        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
         memcpy(newFrame->moveHistory, baseFrame->moveHistory, sizeof(Frame::moveHistory));
         newFrame->setMove(_currentStep, moveId);
         #endif
@@ -299,7 +299,7 @@ void Train::computeFrames()
         t0 = std::chrono::steady_clock::now(); // Profiling
 
         uint8_t gameState[_FRAME_DATA_SIZE];
-        _state[threadId]->_nes->serializeState(gameState);
+        _state[threadId]->_game->serializeState(gameState);
         newFrame->computeFrameDifference(_referenceFrameData, gameState);
 
         tf = std::chrono::steady_clock::now(); // Profiling
@@ -443,31 +443,31 @@ void Train::computeFrames()
 
 void Train::printTrainStatus()
 {
-  printf("[JaffarNES] ----------------------------------------------------------------\n");
-  printf("[JaffarNES] Current Step #: %u (Max: %u)\n", _currentStep, _MAX_MOVELIST_SIZE);
-  printf("[JaffarNES] Worst Reward / Best Reward: %f / %f\n", _worstFrameReward, _bestFrameReward);
-  printf("[JaffarNES] Base Frames Performance: %.3f Frames/s\n", (double)_stepBaseFramesProcessedCounter / (_currentStepTime / 1.0e+9));
-  printf("[JaffarNES] New Frames Performance:  %.3f Frames/s\n", (double)_stepNewFramesProcessedCounter / (_currentStepTime / 1.0e+9));
-  printf("[JaffarNES] Frames Processed: (Step/Total): %lu / %lu\n", _stepNewFramesProcessedCounter, _totalFramesProcessedCounter);
-  printf("[JaffarNES] Frame DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(Frame)) / (1024.0 * 1024.0));
-  printf("[JaffarNES] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
-  printf("[JaffarNES]   + Hash Calculation:        %3.3fs\n", _stepHashCalculationTime / 1.0e+9);
-  printf("[JaffarNES]   + Hash Checking:           %3.3fs\n",  _stepHashCheckingTime / 1.0e+9);
-  printf("[JaffarNES]   + Hash Filtering:          %3.3fs\n", _stepHashFilteringTime / 1.0e+9);
-  printf("[JaffarNES]   + Frame Advance:           %3.3fs\n", _stepFrameAdvanceTime / 1.0e+9);
-  printf("[JaffarNES]   + Frame Deserialization:   %3.3fs\n", _stepFrameDeserializationTime / 1.0e+9);
-  printf("[JaffarNES]   + Frame Encoding:          %3.3fs\n", _stepFrameEncodingTime / 1.0e+9);
-  printf("[JaffarNES]   + Frame Decoding:          %3.3fs\n", _stepFrameDecodingTime / 1.0e+9);
-  printf("[JaffarNES]   + Frame Creation:          %3.3fs\n", _stepFrameCreationTime / 1.0e+9);
-  printf("[JaffarNES]   + Frame Sorting            %3.3fs\n", _stepFrameDBSortingTime / 1.0e+9);
-  printf("[JaffarNES] New Frames Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewFrameRatio, _maxNewFrameRatio, _maxNewFrameRatioStep);
-  printf("[JaffarNES] Max Frames In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxFramesInMemory, (double)(_stepMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0), _totalMaxFramesInMemory, (double)(_totalMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0));
-  printf("[JaffarNES] Max Frame State Difference: %lu / %d\n", _maxFrameDiff, _MAX_FRAME_DIFF);
-  printf("[JaffarNES] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
-  printf("[JaffarNES] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
-  printf("[JaffarNES] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, <%.0f,%.0f>mb\n", _hashSizeStep, _hashSizeCurrent, _hashSizeLowerBound, _hashSizeUpperBound);
-  printf("[JaffarNES] Hash DB Step Threshold: %u\n", _hashStepThreshold);
-  printf("[JaffarNES] Best Frame Information:\n");
+  printf("[Jaffar] ----------------------------------------------------------------\n");
+  printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _MAX_MOVELIST_SIZE);
+  printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstFrameReward, _bestFrameReward);
+  printf("[Jaffar] Base Frames Performance: %.3f Frames/s\n", (double)_stepBaseFramesProcessedCounter / (_currentStepTime / 1.0e+9));
+  printf("[Jaffar] New Frames Performance:  %.3f Frames/s\n", (double)_stepNewFramesProcessedCounter / (_currentStepTime / 1.0e+9));
+  printf("[Jaffar] Frames Processed: (Step/Total): %lu / %lu\n", _stepNewFramesProcessedCounter, _totalFramesProcessedCounter);
+  printf("[Jaffar] Frame DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(Frame)) / (1024.0 * 1024.0));
+  printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
+  printf("[Jaffar]   + Hash Calculation:        %3.3fs\n", _stepHashCalculationTime / 1.0e+9);
+  printf("[Jaffar]   + Hash Checking:           %3.3fs\n",  _stepHashCheckingTime / 1.0e+9);
+  printf("[Jaffar]   + Hash Filtering:          %3.3fs\n", _stepHashFilteringTime / 1.0e+9);
+  printf("[Jaffar]   + Frame Advance:           %3.3fs\n", _stepFrameAdvanceTime / 1.0e+9);
+  printf("[Jaffar]   + Frame Deserialization:   %3.3fs\n", _stepFrameDeserializationTime / 1.0e+9);
+  printf("[Jaffar]   + Frame Encoding:          %3.3fs\n", _stepFrameEncodingTime / 1.0e+9);
+  printf("[Jaffar]   + Frame Decoding:          %3.3fs\n", _stepFrameDecodingTime / 1.0e+9);
+  printf("[Jaffar]   + Frame Creation:          %3.3fs\n", _stepFrameCreationTime / 1.0e+9);
+  printf("[Jaffar]   + Frame Sorting            %3.3fs\n", _stepFrameDBSortingTime / 1.0e+9);
+  printf("[Jaffar] New Frames Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewFrameRatio, _maxNewFrameRatio, _maxNewFrameRatioStep);
+  printf("[Jaffar] Max Frames In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxFramesInMemory, (double)(_stepMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0), _totalMaxFramesInMemory, (double)(_totalMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0));
+  printf("[Jaffar] Max Frame State Difference: %lu / %d\n", _maxFrameDiff, _MAX_FRAME_DIFF);
+  printf("[Jaffar] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
+  printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
+  printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, <%.0f,%.0f>mb\n", _hashSizeStep, _hashSizeCurrent, _hashSizeLowerBound, _hashSizeUpperBound);
+  printf("[Jaffar] Hash DB Step Threshold: %u\n", _hashStepThreshold);
+  printf("[Jaffar] Best Frame Information:\n");
 
   uint8_t bestFrameData[_FRAME_DATA_SIZE];
   _bestFrame.getFrameDataFromDifference(_referenceFrameData, bestFrameData);
@@ -475,10 +475,10 @@ void Train::printTrainStatus()
   _state[0]->printStateInfo();
   _state[0]->printRuleStatus(_bestFrame.rulesStatus);
 
-  #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
+  #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
   // Print Move History
-  printf("[JaffarNES]  + Move List: ");
+  printf("[Jaffar]  + Move List: ");
   for (size_t i = 0; i < _currentStep; i++)
     printf("%s ", _possibleMoves[_bestFrame.getMove(i)].c_str());
   printf("\n");
@@ -516,35 +516,35 @@ Train::Train(int argc, char *argv[])
   _winFrameFound = false;
 
   // Parsing max hash DB entries
-  if (const char *hashSizeLowerBoundString = std::getenv("JAFFARNES_MAX_HASH_DATABASE_SIZE_LOWER_BOUND_MB")) _hashSizeLowerBound = std::stol(hashSizeLowerBoundString);
-  else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_HASH_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
+  if (const char *hashSizeLowerBoundString = std::getenv("JAFFAR_MAX_HASH_DATABASE_SIZE_LOWER_BOUND_MB")) _hashSizeLowerBound = std::stol(hashSizeLowerBoundString);
+  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_HASH_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
 
-  if (const char *hashSizeUpperBoundString = std::getenv("JAFFARNES_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB")) _hashSizeUpperBound = std::stol(hashSizeUpperBoundString);
-  else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
+  if (const char *hashSizeUpperBoundString = std::getenv("JAFFAR_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB")) _hashSizeUpperBound = std::stol(hashSizeUpperBoundString);
+  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
 
   // Parsing max frame DB lower bound
   size_t maxDBSizeMbLowerBound = 0;
-  if (const char *MaxDBMBytesLowerBoundEnvString = std::getenv("JAFFARNES_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB")) maxDBSizeMbLowerBound = std::stol(MaxDBMBytesLowerBoundEnvString);
-  else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
+  if (const char *MaxDBMBytesLowerBoundEnvString = std::getenv("JAFFAR_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB")) maxDBSizeMbLowerBound = std::stol(MaxDBMBytesLowerBoundEnvString);
+  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
 
   size_t maxDBSizeMbUpperBound = 0;
-  if (const char *MaxDBMBytesUpperBoundEnvString = std::getenv("JAFFARNES_MAX_FRAME_DATABASE_SIZE_UPPER_BOUND_MB")) maxDBSizeMbUpperBound = std::stol(MaxDBMBytesUpperBoundEnvString);
-  else EXIT_WITH_ERROR("[JaffarNES] JAFFARNES_MAX_FRAME_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
+  if (const char *MaxDBMBytesUpperBoundEnvString = std::getenv("JAFFAR_MAX_FRAME_DATABASE_SIZE_UPPER_BOUND_MB")) maxDBSizeMbUpperBound = std::stol(MaxDBMBytesUpperBoundEnvString);
+  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_FRAME_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
 
   // Parsing file output frequency
   _outputSaveBestSeconds = -1.0;
-  if (const char *outputSaveBestSecondsEnv = std::getenv("JAFFARNES_SAVE_BEST_EVERY_SECONDS")) _outputSaveBestSeconds = std::stof(outputSaveBestSecondsEnv);
+  if (const char *outputSaveBestSecondsEnv = std::getenv("JAFFAR_SAVE_BEST_EVERY_SECONDS")) _outputSaveBestSeconds = std::stof(outputSaveBestSecondsEnv);
 
   // Parsing savegame files output path
   _outputSaveBestPath = "/tmp/jaffar";
-  if (const char *outputSaveBestPathEnv = std::getenv("JAFFARNES_SAVE_BEST_PATH")) _outputSaveBestPath = std::string(outputSaveBestPathEnv);
+  if (const char *outputSaveBestPathEnv = std::getenv("JAFFAR_SAVE_BEST_PATH")) _outputSaveBestPath = std::string(outputSaveBestPathEnv);
 
   // Parsing solution files output path
   _outputSolutionBestPath = "/tmp/jaffar.best.sol";
-  if (const char *outputSolutionBestPathEnv = std::getenv("JAFFARNES_SOLUTION_BEST_PATH")) _outputSolutionBestPath = std::string(outputSolutionBestPathEnv);
+  if (const char *outputSolutionBestPathEnv = std::getenv("JAFFAR_SOLUTION_BEST_PATH")) _outputSolutionBestPath = std::string(outputSolutionBestPathEnv);
 
   // Parsing command line arguments
-  argparse::ArgumentParser program("jaffarNES-train", "1.0");
+  argparse::ArgumentParser program("jaffar", "1.0");
 
   program.add_argument("romFile")
     .help("Specifies the path to the NES rom file (.nes) from which to start.")
@@ -602,7 +602,7 @@ Train::Train(int argc, char *argv[])
    }
   }
 
-  printf("[JaffarNES] QuickNES initialized.\n");
+  printf("[Jaffar] Game initialized.\n");
 
   // Setting initial values
   _hasFinalized = false;
@@ -619,7 +619,7 @@ Train::Train(int argc, char *argv[])
 
   auto initialFrame = new Frame;
   uint8_t gameState[_FRAME_DATA_SIZE];
-  _state[0]->_nes->serializeState(gameState);
+  _state[0]->_game->serializeState(gameState);
 
   // Storing initial frame as base for differential comparison
   memcpy(_referenceFrameData, gameState, _FRAME_DATA_SIZE);
@@ -675,7 +675,7 @@ void Train::showSavingLoop()
       double bestFrameTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - bestFrameSaveTimer).count();
       if (bestFrameTimerElapsed / 1.0e+9 > _outputSaveBestSeconds)
       {
-        #ifndef JAFFARNES_DISABLE_MOVE_HISTORY
+        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
         // Storing the solution sequence
         std::string bestSolutionString;
