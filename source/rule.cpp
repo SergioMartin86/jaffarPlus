@@ -1,5 +1,5 @@
 #include "rule.hpp"
-#include "gameInstance.hpp"
+#include "gameRules.hpp"
 
 Rule::Rule(nlohmann::json ruleJs, GameInstanceBase* gameInstance)
 {
@@ -10,13 +10,12 @@ Rule::Rule(nlohmann::json ruleJs, GameInstanceBase* gameInstance)
   // Defining default values
   _reward = 0.0f;
 
-  _magnetSet.marioScreenOffsetMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f };
-  _magnetSet.screenHorizontalMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f };
-  _magnetSet.marioHorizontalMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f };
-  _magnetSet.marioVerticalMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f };
-
+  // Setting default win/fail values
   _isWinRule = false;
   _isFailRule = false;
+
+  // Setting initial game-specific rule data
+  initializeRuleData();
 
   // Adding conditions. All of them must be satisfied for the rule to count
   if (isDefined(ruleJs, "Conditions") == false) EXIT_WITH_ERROR("[ERROR] Rule missing 'Conditions' key.\n");
@@ -127,38 +126,10 @@ void Rule::parseActions(nlohmann::json actionsJs)
      recognizedActionType = true;
    }
 
-   if (actionType == "Set Mario Screen Offset Magnet")
-   {
-     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
-     if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-     _magnetSet.marioScreenOffsetMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .max = actionJs["Max"].get<float>() };
-     recognizedActionType = true;
-   }
+   // If not recognized yet, it must be a game specific action
+   if (recognizedActionType == false) recognizedActionType = parseGameAction(actionJs, actionId);
 
-   if (actionType == "Set Screen Horizontal Magnet")
-   {
-    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
-    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-    _magnetSet.screenHorizontalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .max = actionJs["Max"].get<float>() };
-     recognizedActionType = true;
-   }
-
-   if (actionType == "Set Mario Horizontal Magnet")
-   {
-    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
-    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-    _magnetSet.marioHorizontalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .max = actionJs["Max"].get<float>() };
-     recognizedActionType = true;
-   }
-
-   if (actionType == "Set Mario Vertical Magnet")
-   {
-    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
-    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-    _magnetSet.marioVerticalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .max = actionJs["Max"].get<float>() };
-     recognizedActionType = true;
-   }
-
+   // If not recognized at all, then fail
    if (recognizedActionType == false) EXIT_WITH_ERROR("[ERROR] Unrecognized rule %lu, action %lu type: %s\n", _label, actionId, actionType.c_str());
   }
 }
@@ -177,71 +148,3 @@ operator_t Rule::getOperationType(const std::string &operation)
   return op_equal;
 }
 
-datatype_t Rule::getPropertyType(const std::string &property)
-{
-  if (property == "Mario State") return dt_uint8;
-  if (property == "Mario Animation") return dt_uint8;
-  if (property == "Mario Walking Frame") return dt_uint8;
-  if (property == "Mario Walking Mode") return dt_uint8;
-  if (property == "Mario Floating Mode") return dt_uint8;
-
-  if (property == "Screen Position X") return dt_uint16;
-
-  if (property == "Mario Position Y") return dt_uint8;
-  if (property == "Mario Velocity X") return dt_int8;
-
-  if (property == "Mario Base Position X") return dt_uint8;
-  if (property == "Mario Relative Position X") return dt_uint8;
-  if (property == "Mario Position X") return dt_uint16;
-
-  if (property == "Current World") return dt_uint8;
-  if (property == "Current Stage") return dt_uint8;
-  if (property == "Current Screen") return dt_uint8;
-  if (property == "Level Entry Flag") return dt_uint8;
-  if (property == "Game Mode") return dt_uint8;
-  if (property == "Warp Area Offset") return dt_uint16;
-  if (property == "Enemy 1 Type") return dt_uint8;
-  if (property == "Enemy 2 Type") return dt_uint8;
-  if (property == "Enemy 3 Type") return dt_uint8;
-  if (property == "Enemy 4 Type") return dt_uint8;
-  if (property == "Enemy 5 Type") return dt_uint8;
-  if (property == "Mario Screen Offset") return dt_int16;
-
-  EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
-
-  return dt_uint8;
-}
-
-void *Rule::getPropertyPointer(const std::string &property, GameInstanceBase* gameInstance)
-{
-  if (property == "Mario State") return gameInstance->_gameData.marioState;
-  if (property == "Mario Animation") return gameInstance->_gameData.marioAnimation;
-  if (property == "Mario Walking Frame") return gameInstance->_gameData.marioWalkingFrame;
-  if (property == "Mario Walking Mode") return gameInstance->_gameData.marioWalkingMode;
-  if (property == "Mario Floating Mode") return gameInstance->_gameData.marioFloatingMode;
-
-  if (property == "Screen Position X") return &gameInstance->_gameData.screenPosX; // Derivative value
-
-  if (property == "Mario Base Position X") return gameInstance->_gameData.marioBasePosX;
-  if (property == "Mario Relative Position X") return gameInstance->_gameData.marioRelPosX;
-  if (property == "Mario Position X") return &gameInstance->_gameData.marioPosX; // Derivative value
-
-  if (property == "Mario Position Y") return gameInstance->_gameData.marioPosY;
-  if (property == "Mario Velocity X") return gameInstance->_gameData.marioVelX;
-  if (property == "Current World") return &gameInstance->_gameData.currentWorld; // Derivative value
-  if (property == "Current Stage") return &gameInstance->_gameData.currentStage; // Derivative value
-  if (property == "Current Screen") return gameInstance->_gameData.screenBasePosX;
-  if (property == "Level Entry Flag") return gameInstance->_gameData.levelEntryFlag;
-  if (property == "Game Mode") return gameInstance->_gameData.gameMode;
-  if (property == "Warp Area Offset") return gameInstance->_gameData.warpAreaOffset;
-  if (property == "Enemy 1 Type") return gameInstance->_gameData.enemy1Type;
-  if (property == "Enemy 2 Type") return gameInstance->_gameData.enemy2Type;
-  if (property == "Enemy 3 Type") return gameInstance->_gameData.enemy3Type;
-  if (property == "Enemy 4 Type") return gameInstance->_gameData.enemy4Type;
-  if (property == "Enemy 5 Type") return gameInstance->_gameData.enemy5Type;
-  if (property == "Mario Screen Offset") return &gameInstance->_gameData.marioScreenOffset; // Derivative value
-
-  EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
-
-  return NULL;
-}

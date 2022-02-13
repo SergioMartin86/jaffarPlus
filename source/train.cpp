@@ -290,7 +290,7 @@ void Train::computeFrames()
         #endif
 
         // Calculating current reward
-        newFrame->reward = _gameInstances[threadId]->getFrameReward(newFrame->rulesStatus);
+        newFrame->reward = _gameInstances[threadId]->getStateReward(newFrame->rulesStatus);
 
         tf = std::chrono::steady_clock::now(); // Profiling
         threadFrameCreationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
@@ -632,7 +632,7 @@ Train::Train(int argc, char *argv[])
   _gameInstances[0]->evaluateRules(initialFrame->rulesStatus);
 
   // Evaluating Score on initial frame
-  initialFrame->reward = _gameInstances[0]->getFrameReward(initialFrame->rulesStatus);
+  initialFrame->reward = _gameInstances[0]->getStateReward(initialFrame->rulesStatus);
 
   // Registering hash for initial frame
   _hashDB[0] = hash;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gameData.hpp"
+#include "gameInstanceData.hpp"
 #include "emuInstance.hpp"
 #include "nlohmann/json.hpp"
 #include "frame.hpp"
@@ -21,7 +21,7 @@ class GameInstanceBase
  public:
 
   // Container for game-specific values
-  gameData_t _gameData;
+ gameInstanceData_t _data;
 
   // Storage for rules
   std::vector<Rule *> _rules;
@@ -172,11 +172,8 @@ class GameInstanceBase
   // Function to determine the current possible moves
   virtual inline std::vector<uint8_t> getPossibleMoveIds() const = 0;
 
-  // Function to get magnet information
-  virtual inline magnetSet_t getMagnetValues(const bool* rulesStatus) const = 0;
-
   // Obtains the score of a given frame
-  virtual inline float getFrameReward(const bool* rulesStatus) const = 0;
+  virtual inline float getStateReward(const bool* rulesStatus) const = 0;
 
   // Function to print
   virtual void printStateInfo() const = 0;

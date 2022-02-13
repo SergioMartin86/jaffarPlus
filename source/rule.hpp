@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameRulesData.hpp"
 #include "nlohmann/json.hpp"
 #include "utils.hpp"
 #include <vector>
@@ -23,24 +24,6 @@ enum datatype_t
   dt_int16 = 4,
   dt_int32 = 5
 };
-
-// Datatype to describe a magnet
-struct magnet_t {
- float intensity; // How strong the magnet is
- float max;  // What is the maximum input value to the calculation.
-};
-
-// Struct to hold all of the frame's magnet information
-struct magnetSet_t
-{
- magnet_t marioScreenOffsetMagnet;
- magnet_t screenHorizontalMagnet;
- magnet_t marioHorizontalMagnet;
- magnet_t marioVerticalMagnet;
-};
-
-// Modifier that specifies whether to store move list
-extern bool _storeMoveList;
 
 // Pre-declaration of game instance class
 class GameInstanceBase;
@@ -119,8 +102,8 @@ class Rule
   bool _isWinRule;
   bool _isFailRule;
 
-  // Stores magnet information
-  magnetSet_t _magnetSet;
+  // Stores game-specific rule information
+  gameRuleData_t _data;
 
   // Stores rules that also satisfied if this one is
   std::vector<size_t> _satisfiesLabels;
@@ -137,8 +120,14 @@ class Rule
   void *getPropertyPointer(const std::string &property, GameInstanceBase *gameInstance);
   operator_t getOperationType(const std::string &operation);
 
+  // Function to initialize game rule data
+  void initializeRuleData();
+
   // Function to parse the json-encoded actions
   void parseActions(nlohmann::json actionsJs);
+
+  // Function to parse game-specific actions
+  bool parseGameAction(nlohmann::json actionJs, size_t actionId);
 
   public:
 
