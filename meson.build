@@ -1,5 +1,5 @@
-project('jaffarNES','cpp',
-  version: '1.0.0',
+project('jaffar','cpp',
+  version: '2.0.0',
   license: 'GPL-3.0-only',
   default_options : ['cpp_std=c++20', 'default_library=shared', 'buildtype=release'],
 )
@@ -31,7 +31,7 @@ executable('jaffar',
   cpp_args: [ '-Wfatal-errors', '-Wall' ] + quickernesCFlags
 )
 
-executable('jaffarNES-play',
+executable('jaffar-play',
   'source/play.cpp',
   jaffarNESSrc + hqnSrc + quicknesSrc + gameInstanceSrc,
   include_directories: [ jaffarNESIncludes, hqnIncludes, quicknesIncludes, gameInstanceIncludes ],
