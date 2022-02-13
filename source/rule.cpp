@@ -214,32 +214,32 @@ datatype_t Rule::getPropertyType(const std::string &property)
 
 void *Rule::getPropertyPointer(const std::string &property, State *state)
 {
-  if (property == "Mario State") return state->_marioState;
-  if (property == "Mario Animation") return state->_marioAnimation;
-  if (property == "Mario Walking Frame") return state->_marioWalkingFrame;
-  if (property == "Mario Walking Mode") return state->_marioWalkingMode;
-  if (property == "Mario Floating Mode") return state->_marioFloatingMode;
+  if (property == "Mario State") return state->_gameData.marioState;
+  if (property == "Mario Animation") return state->_gameData.marioAnimation;
+  if (property == "Mario Walking Frame") return state->_gameData.marioWalkingFrame;
+  if (property == "Mario Walking Mode") return state->_gameData.marioWalkingMode;
+  if (property == "Mario Floating Mode") return state->_gameData.marioFloatingMode;
 
-  if (property == "Screen Position X") return &state->_screenPosX; // Derivative value
+  if (property == "Screen Position X") return &state->_gameData.screenPosX; // Derivative value
 
-  if (property == "Mario Base Position X") return state->_marioBasePosX;
-  if (property == "Mario Relative Position X") return state->_marioRelPosX;
-  if (property == "Mario Position X") return &state->_marioPosX; // Derivative value
+  if (property == "Mario Base Position X") return state->_gameData.marioBasePosX;
+  if (property == "Mario Relative Position X") return state->_gameData.marioRelPosX;
+  if (property == "Mario Position X") return &state->_gameData.marioPosX; // Derivative value
 
-  if (property == "Mario Position Y") return state->_marioPosY;
-  if (property == "Mario Velocity X") return state->_marioVelX;
-  if (property == "Current World") return &state->_currentWorld; // Derivative value
-  if (property == "Current Stage") return &state->_currentStage; // Derivative value
-  if (property == "Current Screen") return state->_screenBasePosX;
-  if (property == "Level Entry Flag") return state->_levelEntryFlag;
-  if (property == "Game Mode") return state->_gameMode;
-  if (property == "Warp Area Offset") return state->_warpAreaOffset;
-  if (property == "Enemy 1 Type") return state->_enemy1Type;
-  if (property == "Enemy 2 Type") return state->_enemy2Type;
-  if (property == "Enemy 3 Type") return state->_enemy3Type;
-  if (property == "Enemy 4 Type") return state->_enemy4Type;
-  if (property == "Enemy 5 Type") return state->_enemy5Type;
-  if (property == "Mario Screen Offset") return &state->_marioScreenOffset; // Derivative value
+  if (property == "Mario Position Y") return state->_gameData.marioPosY;
+  if (property == "Mario Velocity X") return state->_gameData.marioVelX;
+  if (property == "Current World") return &state->_gameData.currentWorld; // Derivative value
+  if (property == "Current Stage") return &state->_gameData.currentStage; // Derivative value
+  if (property == "Current Screen") return state->_gameData.screenBasePosX;
+  if (property == "Level Entry Flag") return state->_gameData.levelEntryFlag;
+  if (property == "Game Mode") return state->_gameData.gameMode;
+  if (property == "Warp Area Offset") return state->_gameData.warpAreaOffset;
+  if (property == "Enemy 1 Type") return state->_gameData.enemy1Type;
+  if (property == "Enemy 2 Type") return state->_gameData.enemy2Type;
+  if (property == "Enemy 3 Type") return state->_gameData.enemy3Type;
+  if (property == "Enemy 4 Type") return state->_gameData.enemy4Type;
+  if (property == "Enemy 5 Type") return state->_gameData.enemy5Type;
+  if (property == "Mario Screen Offset") return &state->_gameData.marioScreenOffset; // Derivative value
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 

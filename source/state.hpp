@@ -18,9 +18,109 @@
  #define LOG printf
 #endif
 
+struct gameData_t
+{
+ // Game specific values
+ uint16_t* screenScroll;
+ uint8_t* marioAnimation;
+ uint8_t* marioState;
+
+ uint8_t* marioBasePosX;
+ uint8_t* marioRelPosX;
+ uint8_t* marioSubpixelPosX;
+
+ uint8_t* marioPosY;
+ uint8_t* marioSubpixelPosY;
+
+ uint8_t* marioMovingDirection;
+ uint8_t* marioFacingDirection;
+ uint8_t* marioFloatingMode;
+ uint8_t* marioWalkingMode;
+ uint8_t* marioWalkingDelay;
+ uint8_t* marioWalkingFrame;
+ int8_t* marioMaxVelLeft;
+ int8_t* marioMaxVelRight;
+ int8_t* marioVelX;
+ int8_t* marioXMoveForce;
+ int8_t* marioVelY;
+ int8_t* marioFracVelY;
+ uint8_t* marioGravity;
+ uint8_t* marioFriction;
+ uint8_t* timeLeft100;
+ uint8_t* timeLeft10;
+ uint8_t* timeLeft1;
+
+ uint8_t* screenBasePosX;
+ uint8_t* screenRelPosX;
+
+ uint8_t* currentWorldRaw;
+ uint8_t* currentStageRaw;
+ uint8_t* levelEntryFlag;
+ uint8_t* gameMode;
+
+ uint8_t* enemy1Active;
+ uint8_t* enemy2Active;
+ uint8_t* enemy3Active;
+ uint8_t* enemy4Active;
+ uint8_t* enemy5Active;
+
+ uint8_t* enemy1State;
+ uint8_t* enemy2State;
+ uint8_t* enemy3State;
+ uint8_t* enemy4State;
+ uint8_t* enemy5State;
+
+ uint8_t* enemy1Type;
+ uint8_t* enemy2Type;
+ uint8_t* enemy3Type;
+ uint8_t* enemy4Type;
+ uint8_t* enemy5Type;
+
+ uint8_t* marioCollision;
+ uint8_t* enemyCollision;
+ uint8_t* hitDetectionFlag;
+
+ uint8_t* powerUpActive;
+
+ uint8_t* animationTimer;
+ uint8_t* jumpSwimTimer;
+ uint8_t* runningTimer;
+ uint8_t* blockBounceTimer;
+ uint8_t* sideCollisionTimer;
+ uint8_t* jumpspringTimer;
+ uint8_t* climbSideTimer;
+ uint8_t* gameControlTimer;
+ uint8_t* enemyFrameTimer;
+ uint8_t* frenzyEnemyTimer;
+ uint8_t* bowserFireTimer;
+ uint8_t* stompTimer;
+ uint8_t* airBubbleTimer;
+ uint8_t* fallPitTimer;
+ uint8_t* multiCoinBlockTimer;
+ uint8_t* invincibleTimer;
+ uint8_t* starTimer;
+
+ uint8_t* player1Input;
+ uint8_t* player1Buttons;
+ uint8_t* player1GamePad1;
+ uint8_t* player1GamePad2;
+
+ uint16_t* warpAreaOffset;
+
+ // Derivative values
+ uint16_t marioPosX;
+ uint16_t screenPosX;
+ int16_t marioScreenOffset;
+ uint8_t currentWorld;
+ uint8_t currentStage;
+};
+
 class State
 {
  public:
+
+  // Container for game-specific values
+  gameData_t _gameData;
 
   // Constructor for the underlying emulator using a rom file and a state
   State(const std::string romFile, const std::string stateFile)
@@ -94,100 +194,6 @@ class State
   size_t _ruleCount;
   EmuInstance *_emu;
 
-  // Game specific values
-  uint16_t* _screenScroll; inline uint16_t getScreenScroll() { return swap_endian<uint16_t>(*_screenScroll); };
-  uint8_t* _marioAnimation;
-  uint8_t* _marioState;
-
-  uint8_t* _marioBasePosX;
-  uint8_t* _marioRelPosX;
-  uint8_t* _marioSubpixelPosX;
-
-  uint8_t* _marioPosY;
-  uint8_t* _marioSubpixelPosY;
-
-  uint8_t* _marioMovingDirection;
-  uint8_t* _marioFacingDirection;
-  uint8_t* _marioFloatingMode;
-  uint8_t* _marioWalkingMode;
-  uint8_t* _marioWalkingDelay;
-  uint8_t* _marioWalkingFrame;
-  int8_t* _marioMaxVelLeft;
-  int8_t* _marioMaxVelRight;
-  int8_t* _marioVelX;
-  int8_t* _marioXMoveForce;
-  int8_t* _marioVelY;
-  int8_t* _marioFracVelY;
-  uint8_t* _marioGravity;
-  uint8_t* _marioFriction;
-  uint8_t* _timeLeft100;
-  uint8_t* _timeLeft10;
-  uint8_t* _timeLeft1;
-
-  uint8_t* _screenBasePosX;
-  uint8_t* _screenRelPosX;
-
-  uint8_t* _currentWorldRaw;
-  uint8_t* _currentStageRaw;
-  uint8_t* _levelEntryFlag;
-  uint8_t* _gameMode;
-
-  uint8_t* _enemy1Active;
-  uint8_t* _enemy2Active;
-  uint8_t* _enemy3Active;
-  uint8_t* _enemy4Active;
-  uint8_t* _enemy5Active;
-
-  uint8_t* _enemy1State;
-  uint8_t* _enemy2State;
-  uint8_t* _enemy3State;
-  uint8_t* _enemy4State;
-  uint8_t* _enemy5State;
-
-  uint8_t* _enemy1Type;
-  uint8_t* _enemy2Type;
-  uint8_t* _enemy3Type;
-  uint8_t* _enemy4Type;
-  uint8_t* _enemy5Type;
-
-  uint8_t* _marioCollision;
-  uint8_t* _enemyCollision;
-  uint8_t* _hitDetectionFlag;
-
-  uint8_t* _powerUpActive;
-
-  uint8_t* _animationTimer;
-  uint8_t* _jumpSwimTimer;
-  uint8_t* _runningTimer;
-  uint8_t* _blockBounceTimer;
-  uint8_t* _sideCollisionTimer;
-  uint8_t* _jumpspringTimer;
-  uint8_t* _climbSideTimer;
-  uint8_t* _gameControlTimer;
-  uint8_t* _enemyFrameTimer;
-  uint8_t* _frenzyEnemyTimer;
-  uint8_t* _bowserFireTimer;
-  uint8_t* _stompTimer;
-  uint8_t* _airBubbleTimer;
-  uint8_t* _fallPitTimer;
-  uint8_t* _multiCoinBlockTimer;
-  uint8_t* _invincibleTimer;
-  uint8_t* _starTimer;
-
-  uint8_t* _player1Input;
-  uint8_t* _player1Buttons;
-  uint8_t* _player1GamePad1;
-  uint8_t* _player1GamePad2;
-
-  uint16_t* _warpAreaOffset;
-
-  // Derivative values
-  uint16_t _marioPosX;
-  uint16_t _screenPosX;
-  int16_t _marioScreenOffset;
-  uint8_t _currentWorld;
-  uint8_t _currentStage;
-
   #define USE_LIGHT_HASH true
 
   // Function to advance frame
@@ -201,89 +207,89 @@ class State
     MetroHash64 hash;
 
     // Adding fixed hash elements
-    hash.Update(*_screenScroll);
-    if (!USE_LIGHT_HASH) hash.Update(*_marioAnimation);
-    hash.Update(*_marioState);
+    hash.Update(*_gameData.screenScroll);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.marioAnimation);
+    hash.Update(*_gameData.marioState);
 
-    hash.Update(*_marioBasePosX);
-    hash.Update(*_marioRelPosX);
-    if (!USE_LIGHT_HASH) hash.Update(*_marioSubpixelPosX);
+    hash.Update(*_gameData.marioBasePosX);
+    hash.Update(*_gameData.marioRelPosX);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.marioSubpixelPosX);
 
-    hash.Update(*_marioPosY);
-    if (!USE_LIGHT_HASH) hash.Update(*_marioSubpixelPosY);
+    hash.Update(*_gameData.marioPosY);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.marioSubpixelPosY);
 
-    hash.Update(*_marioXMoveForce);
-    hash.Update(*_marioFacingDirection);
-    hash.Update(*_marioMovingDirection);
-    hash.Update(*_marioFloatingMode);
-    hash.Update(*_marioWalkingMode);
-    if (!USE_LIGHT_HASH)  hash.Update(*_marioWalkingDelay);
-    if (!USE_LIGHT_HASH)  hash.Update(*_marioWalkingFrame);
-    hash.Update(*_marioMaxVelLeft);
-    hash.Update(*_marioMaxVelRight);
-    hash.Update(*_marioVelX);
-    if (!USE_LIGHT_HASH) hash.Update(*_marioVelY);
-    if (!USE_LIGHT_HASH) hash.Update(*_marioFracVelY);
-    hash.Update(*_marioGravity);
-    hash.Update(*_marioFriction);
+    hash.Update(*_gameData.marioXMoveForce);
+    hash.Update(*_gameData.marioFacingDirection);
+    hash.Update(*_gameData.marioMovingDirection);
+    hash.Update(*_gameData.marioFloatingMode);
+    hash.Update(*_gameData.marioWalkingMode);
+    if (!USE_LIGHT_HASH)  hash.Update(*_gameData.marioWalkingDelay);
+    if (!USE_LIGHT_HASH)  hash.Update(*_gameData.marioWalkingFrame);
+    hash.Update(*_gameData.marioMaxVelLeft);
+    hash.Update(*_gameData.marioMaxVelRight);
+    hash.Update(*_gameData.marioVelX);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.marioVelY);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.marioFracVelY);
+    hash.Update(*_gameData.marioGravity);
+    hash.Update(*_gameData.marioFriction);
 
-    hash.Update(*_screenBasePosX);
-    hash.Update(*_screenRelPosX);
+    hash.Update(*_gameData.screenBasePosX);
+    hash.Update(*_gameData.screenRelPosX);
 
-    hash.Update(*_currentWorldRaw);
-    hash.Update(*_currentStageRaw);
-    hash.Update(*_levelEntryFlag);
-    hash.Update(*_gameMode);
+    hash.Update(*_gameData.currentWorldRaw);
+    hash.Update(*_gameData.currentStageRaw);
+    hash.Update(*_gameData.levelEntryFlag);
+    hash.Update(*_gameData.gameMode);
 
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy1Active);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy2Active);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy3Active);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy4Active);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy5Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy1Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy2Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy3Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy4Active);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy5Active);
 
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy1State);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy2State);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy3State);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy4State);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemy5State);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy1State);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy2State);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy3State);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy4State);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemy5State);
 
-    hash.Update(*_enemy1Type);
-    hash.Update(*_enemy2Type);
-    hash.Update(*_enemy3Type);
-    hash.Update(*_enemy4Type);
-    hash.Update(*_enemy5Type);
+    hash.Update(*_gameData.enemy1Type);
+    hash.Update(*_gameData.enemy2Type);
+    hash.Update(*_gameData.enemy3Type);
+    hash.Update(*_gameData.enemy4Type);
+    hash.Update(*_gameData.enemy5Type);
 
-    if (!USE_LIGHT_HASH) hash.Update(*_marioCollision);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemyCollision);
-    hash.Update(*_hitDetectionFlag);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.marioCollision);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemyCollision);
+    hash.Update(*_gameData.hitDetectionFlag);
 
     // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
-    if (!USE_LIGHT_HASH)  hash.Update(*_animationTimer < 2 ? *_animationTimer : (uint8_t)2);
-    hash.Update(*_jumpSwimTimer < 2 ? *_jumpSwimTimer : (uint8_t)2);
-    hash.Update(*_runningTimer < 2 ? *_runningTimer : (uint8_t)2);
-    hash.Update(*_blockBounceTimer < 2 ? *_blockBounceTimer : (uint8_t)2);
-    if (!USE_LIGHT_HASH) hash.Update(*_sideCollisionTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_jumpspringTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_gameControlTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_climbSideTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_enemyFrameTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_frenzyEnemyTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_bowserFireTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_stompTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_airBubbleTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_fallPitTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_multiCoinBlockTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_invincibleTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_starTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_powerUpActive);
+    if (!USE_LIGHT_HASH)  hash.Update(*_gameData.animationTimer < 2 ? *_gameData.animationTimer : (uint8_t)2);
+    hash.Update(*_gameData.jumpSwimTimer < 2 ? *_gameData.jumpSwimTimer : (uint8_t)2);
+    hash.Update(*_gameData.runningTimer < 2 ? *_gameData.runningTimer : (uint8_t)2);
+    hash.Update(*_gameData.blockBounceTimer < 2 ? *_gameData.blockBounceTimer : (uint8_t)2);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.sideCollisionTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.jumpspringTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.gameControlTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.climbSideTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.enemyFrameTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.frenzyEnemyTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.bowserFireTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.stompTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.airBubbleTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.fallPitTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.multiCoinBlockTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.invincibleTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.starTimer);
+    if (!USE_LIGHT_HASH) hash.Update(*_gameData.powerUpActive);
 
 
-    hash.Update(*_warpAreaOffset);
+    hash.Update(*_gameData.warpAreaOffset);
 
-  //    hash.Update(*_player1Input);
-  //    hash.Update(*_player1Buttons);
-  //    hash.Update(*_player1GamePad1);
-  //    hash.Update(*_player1GamePad2);
+  //    hash.Update(*_gameData.player1Input);
+  //    hash.Update(*_gameData.player1Buttons);
+  //    hash.Update(*_gameData.player1GamePad1);
+  //    hash.Update(*_gameData.player1GamePad2);
 
     uint64_t result;
     hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -305,101 +311,101 @@ class State
   {
    // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
    // Game specific values
-   _screenScroll         = (uint16_t*) &_emu->_baseMem[0x071B];
-   _marioAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
-   _marioState           = (uint8_t*)  &_emu->_baseMem[0x000E];
+   _gameData.screenScroll         = (uint16_t*) &_emu->_baseMem[0x071B];
+   _gameData.marioAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
+   _gameData.marioState           = (uint8_t*)  &_emu->_baseMem[0x000E];
 
-   _marioBasePosX        = (uint8_t*)  &_emu->_baseMem[0x006D];
-   _marioRelPosX         = (uint8_t*)  &_emu->_baseMem[0x0086];
-   _marioSubpixelPosX    = (uint8_t*)  &_emu->_baseMem[0x0400];
+   _gameData.marioBasePosX        = (uint8_t*)  &_emu->_baseMem[0x006D];
+   _gameData.marioRelPosX         = (uint8_t*)  &_emu->_baseMem[0x0086];
+   _gameData.marioSubpixelPosX    = (uint8_t*)  &_emu->_baseMem[0x0400];
 
-   _marioPosY            = (uint8_t*)  &_emu->_baseMem[0x00CE];
-   _marioSubpixelPosY    = (uint8_t*)  &_emu->_baseMem[0x0416];
+   _gameData.marioPosY            = (uint8_t*)  &_emu->_baseMem[0x00CE];
+   _gameData.marioSubpixelPosY    = (uint8_t*)  &_emu->_baseMem[0x0416];
 
-   _marioMovingDirection = (uint8_t*)  &_emu->_baseMem[0x0045];
-   _marioFacingDirection = (uint8_t*)  &_emu->_baseMem[0x0033];
-   _marioFloatingMode    = (uint8_t*)  &_emu->_baseMem[0x001D];
-   _marioWalkingMode     = (uint8_t*)  &_emu->_baseMem[0x0702];
-   _marioWalkingDelay    = (uint8_t*)  &_emu->_baseMem[0x070C];
-   _marioWalkingFrame    = (uint8_t*)  &_emu->_baseMem[0x070D];
-   _marioMaxVelLeft      = (int8_t*)   &_emu->_baseMem[0x0450];
-   _marioMaxVelRight     = (int8_t*)   &_emu->_baseMem[0x0456];
-   _marioVelX            = (int8_t*)   &_emu->_baseMem[0x0057];
-   _marioXMoveForce      = (int8_t*)   &_emu->_baseMem[0x0705];
-   _marioVelY            = (int8_t*)   &_emu->_baseMem[0x009F];
-   _marioFracVelY        = (int8_t*)   &_emu->_baseMem[0x0433];
-   _marioGravity         = (uint8_t*)  &_emu->_baseMem[0x0709];
-   _marioFriction        = (uint8_t*)  &_emu->_baseMem[0x0701];
-   _timeLeft100          = (uint8_t*)  &_emu->_baseMem[0x07F8];
-   _timeLeft10           = (uint8_t*)  &_emu->_baseMem[0x07F9];
-   _timeLeft1            = (uint8_t*)  &_emu->_baseMem[0x07FA];
+   _gameData.marioMovingDirection = (uint8_t*)  &_emu->_baseMem[0x0045];
+   _gameData.marioFacingDirection = (uint8_t*)  &_emu->_baseMem[0x0033];
+   _gameData.marioFloatingMode    = (uint8_t*)  &_emu->_baseMem[0x001D];
+   _gameData.marioWalkingMode     = (uint8_t*)  &_emu->_baseMem[0x0702];
+   _gameData.marioWalkingDelay    = (uint8_t*)  &_emu->_baseMem[0x070C];
+   _gameData.marioWalkingFrame    = (uint8_t*)  &_emu->_baseMem[0x070D];
+   _gameData.marioMaxVelLeft      = (int8_t*)   &_emu->_baseMem[0x0450];
+   _gameData.marioMaxVelRight     = (int8_t*)   &_emu->_baseMem[0x0456];
+   _gameData.marioVelX            = (int8_t*)   &_emu->_baseMem[0x0057];
+   _gameData.marioXMoveForce      = (int8_t*)   &_emu->_baseMem[0x0705];
+   _gameData.marioVelY            = (int8_t*)   &_emu->_baseMem[0x009F];
+   _gameData.marioFracVelY        = (int8_t*)   &_emu->_baseMem[0x0433];
+   _gameData.marioGravity         = (uint8_t*)  &_emu->_baseMem[0x0709];
+   _gameData.marioFriction        = (uint8_t*)  &_emu->_baseMem[0x0701];
+   _gameData.timeLeft100          = (uint8_t*)  &_emu->_baseMem[0x07F8];
+   _gameData.timeLeft10           = (uint8_t*)  &_emu->_baseMem[0x07F9];
+   _gameData.timeLeft1            = (uint8_t*)  &_emu->_baseMem[0x07FA];
 
-   _screenBasePosX       = (uint8_t*)  &_emu->_baseMem[0x071A];
-   _screenRelPosX        = (uint8_t*)  &_emu->_baseMem[0x071C];
+   _gameData.screenBasePosX       = (uint8_t*)  &_emu->_baseMem[0x071A];
+   _gameData.screenRelPosX        = (uint8_t*)  &_emu->_baseMem[0x071C];
 
-   _currentWorldRaw      = (uint8_t*)  &_emu->_baseMem[0x075F];
-   _currentStageRaw      = (uint8_t*)  &_emu->_baseMem[0x075C];
-   _levelEntryFlag       = (uint8_t*)  &_emu->_baseMem[0x0752];
-   _gameMode             = (uint8_t*)  &_emu->_baseMem[0x0770];
+   _gameData.currentWorldRaw      = (uint8_t*)  &_emu->_baseMem[0x075F];
+   _gameData.currentStageRaw      = (uint8_t*)  &_emu->_baseMem[0x075C];
+   _gameData.levelEntryFlag       = (uint8_t*)  &_emu->_baseMem[0x0752];
+   _gameData.gameMode             = (uint8_t*)  &_emu->_baseMem[0x0770];
 
-   _enemy1Active         = (uint8_t*)  &_emu->_baseMem[0x000F];
-   _enemy2Active         = (uint8_t*)  &_emu->_baseMem[0x0010];
-   _enemy3Active         = (uint8_t*)  &_emu->_baseMem[0x0011];
-   _enemy4Active         = (uint8_t*)  &_emu->_baseMem[0x0012];
-   _enemy5Active         = (uint8_t*)  &_emu->_baseMem[0x0013];
+   _gameData.enemy1Active         = (uint8_t*)  &_emu->_baseMem[0x000F];
+   _gameData.enemy2Active         = (uint8_t*)  &_emu->_baseMem[0x0010];
+   _gameData.enemy3Active         = (uint8_t*)  &_emu->_baseMem[0x0011];
+   _gameData.enemy4Active         = (uint8_t*)  &_emu->_baseMem[0x0012];
+   _gameData.enemy5Active         = (uint8_t*)  &_emu->_baseMem[0x0013];
 
-   _enemy1State          = (uint8_t*)  &_emu->_baseMem[0x001E];
-   _enemy2State          = (uint8_t*)  &_emu->_baseMem[0x001F];
-   _enemy3State          = (uint8_t*)  &_emu->_baseMem[0x0020];
-   _enemy4State          = (uint8_t*)  &_emu->_baseMem[0x0021];
-   _enemy5State          = (uint8_t*)  &_emu->_baseMem[0x0022];
+   _gameData.enemy1State          = (uint8_t*)  &_emu->_baseMem[0x001E];
+   _gameData.enemy2State          = (uint8_t*)  &_emu->_baseMem[0x001F];
+   _gameData.enemy3State          = (uint8_t*)  &_emu->_baseMem[0x0020];
+   _gameData.enemy4State          = (uint8_t*)  &_emu->_baseMem[0x0021];
+   _gameData.enemy5State          = (uint8_t*)  &_emu->_baseMem[0x0022];
 
-   _enemy1Type           = (uint8_t*)  &_emu->_baseMem[0x0016];
-   _enemy2Type           = (uint8_t*)  &_emu->_baseMem[0x0017];
-   _enemy3Type           = (uint8_t*)  &_emu->_baseMem[0x0018];
-   _enemy4Type           = (uint8_t*)  &_emu->_baseMem[0x0019];
-   _enemy5Type           = (uint8_t*)  &_emu->_baseMem[0x001A];
+   _gameData.enemy1Type           = (uint8_t*)  &_emu->_baseMem[0x0016];
+   _gameData.enemy2Type           = (uint8_t*)  &_emu->_baseMem[0x0017];
+   _gameData.enemy3Type           = (uint8_t*)  &_emu->_baseMem[0x0018];
+   _gameData.enemy4Type           = (uint8_t*)  &_emu->_baseMem[0x0019];
+   _gameData.enemy5Type           = (uint8_t*)  &_emu->_baseMem[0x001A];
 
-   _marioCollision       = (uint8_t*)  &_emu->_baseMem[0x0490];
-   _enemyCollision       = (uint8_t*)  &_emu->_baseMem[0x0491];
-   _hitDetectionFlag     = (uint8_t*)  &_emu->_baseMem[0x0722];
+   _gameData.marioCollision       = (uint8_t*)  &_emu->_baseMem[0x0490];
+   _gameData.enemyCollision       = (uint8_t*)  &_emu->_baseMem[0x0491];
+   _gameData.hitDetectionFlag     = (uint8_t*)  &_emu->_baseMem[0x0722];
 
-   _powerUpActive        = (uint8_t*)  &_emu->_baseMem[0x0014];
+   _gameData.powerUpActive        = (uint8_t*)  &_emu->_baseMem[0x0014];
 
-   _animationTimer       = (uint8_t*)  &_emu->_baseMem[0x0781];
-   _jumpSwimTimer        = (uint8_t*)  &_emu->_baseMem[0x0782];
-   _runningTimer         = (uint8_t*)  &_emu->_baseMem[0x0783];
-   _blockBounceTimer     = (uint8_t*)  &_emu->_baseMem[0x0784];
-   _sideCollisionTimer   = (uint8_t*)  &_emu->_baseMem[0x0785];
-   _jumpspringTimer      = (uint8_t*)  &_emu->_baseMem[0x0786];
-   _gameControlTimer     = (uint8_t*)  &_emu->_baseMem[0x0787];
-   _climbSideTimer       = (uint8_t*)  &_emu->_baseMem[0x0789];
-   _enemyFrameTimer      = (uint8_t*)  &_emu->_baseMem[0x078A];
-   _frenzyEnemyTimer     = (uint8_t*)  &_emu->_baseMem[0x078F];
-   _bowserFireTimer      = (uint8_t*)  &_emu->_baseMem[0x0790];
-   _stompTimer           = (uint8_t*)  &_emu->_baseMem[0x0791];
-   _airBubbleTimer       = (uint8_t*)  &_emu->_baseMem[0x0792];
-   _fallPitTimer         = (uint8_t*)  &_emu->_baseMem[0x0795];
-   _multiCoinBlockTimer  = (uint8_t*)  &_emu->_baseMem[0x079D];
-   _invincibleTimer      = (uint8_t*)  &_emu->_baseMem[0x079E];
-   _starTimer            = (uint8_t*)  &_emu->_baseMem[0x079F];
+   _gameData.animationTimer       = (uint8_t*)  &_emu->_baseMem[0x0781];
+   _gameData.jumpSwimTimer        = (uint8_t*)  &_emu->_baseMem[0x0782];
+   _gameData.runningTimer         = (uint8_t*)  &_emu->_baseMem[0x0783];
+   _gameData.blockBounceTimer     = (uint8_t*)  &_emu->_baseMem[0x0784];
+   _gameData.sideCollisionTimer   = (uint8_t*)  &_emu->_baseMem[0x0785];
+   _gameData.jumpspringTimer      = (uint8_t*)  &_emu->_baseMem[0x0786];
+   _gameData.gameControlTimer     = (uint8_t*)  &_emu->_baseMem[0x0787];
+   _gameData.climbSideTimer       = (uint8_t*)  &_emu->_baseMem[0x0789];
+   _gameData.enemyFrameTimer      = (uint8_t*)  &_emu->_baseMem[0x078A];
+   _gameData.frenzyEnemyTimer     = (uint8_t*)  &_emu->_baseMem[0x078F];
+   _gameData.bowserFireTimer      = (uint8_t*)  &_emu->_baseMem[0x0790];
+   _gameData.stompTimer           = (uint8_t*)  &_emu->_baseMem[0x0791];
+   _gameData.airBubbleTimer       = (uint8_t*)  &_emu->_baseMem[0x0792];
+   _gameData.fallPitTimer         = (uint8_t*)  &_emu->_baseMem[0x0795];
+   _gameData.multiCoinBlockTimer  = (uint8_t*)  &_emu->_baseMem[0x079D];
+   _gameData.invincibleTimer      = (uint8_t*)  &_emu->_baseMem[0x079E];
+   _gameData.starTimer            = (uint8_t*)  &_emu->_baseMem[0x079F];
 
-   _player1Input         = (uint8_t*)  &_emu->_baseMem[0x06FC];
-   _player1Buttons       = (uint8_t*)  &_emu->_baseMem[0x074A];
-   _player1GamePad1      = (uint8_t*)  &_emu->_baseMem[0x000A];
-   _player1GamePad2      = (uint8_t*)  &_emu->_baseMem[0x000D];
+   _gameData.player1Input         = (uint8_t*)  &_emu->_baseMem[0x06FC];
+   _gameData.player1Buttons       = (uint8_t*)  &_emu->_baseMem[0x074A];
+   _gameData.player1GamePad1      = (uint8_t*)  &_emu->_baseMem[0x000A];
+   _gameData.player1GamePad2      = (uint8_t*)  &_emu->_baseMem[0x000D];
 
-   _warpAreaOffset       = (uint16_t*) &_emu->_baseMem[0x0750];
+   _gameData.warpAreaOffset       = (uint16_t*) &_emu->_baseMem[0x0750];
   }
 
   inline void updateDerivedValues()
   {
    // Recalculating derived values
-   _marioPosX = (uint16_t)*_marioBasePosX * 256 + (uint16_t)*_marioRelPosX;
-   _screenPosX = (uint16_t)*_screenBasePosX * 256 + (uint16_t)*_screenRelPosX;
-   _marioScreenOffset = _marioPosX - _screenPosX;
-   _currentWorld = *_currentWorldRaw + 1;
-   _currentStage = *_currentStageRaw + 1;
+   _gameData.marioPosX = (uint16_t)*_gameData.marioBasePosX * 256 + (uint16_t)*_gameData.marioRelPosX;
+   _gameData.screenPosX = (uint16_t)*_gameData.screenBasePosX * 256 + (uint16_t)*_gameData.screenRelPosX;
+   _gameData.marioScreenOffset = _gameData.marioPosX - _gameData.screenPosX;
+   _gameData.currentWorld = *_gameData.currentWorldRaw + 1;
+   _gameData.currentStage = *_gameData.currentStageRaw + 1;
   }
 
   // Function to determine the current possible moves
@@ -410,10 +416,10 @@ class State
    //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
    // If Mario's state is not normal (!= 8), there's nothing to do except wait
-   if (*_marioState != 8) return { 0 };
+   if (*_gameData.marioState != 8) return { 0 };
 
    // If floating, B, D have no effect
-   if (*_marioFloatingMode == 1) return { 0, 1, 2, 4, 6, 7, 10, 11 };
+   if (*_gameData.marioFloatingMode == 1) return { 0, 1, 2, 4, 6, 7, 10, 11 };
 
    // On the floor, try all possible combinations, prioritize jumping and right direction
    return { 0, 2, 3, 10, 4, 7, 9, 1, 6, 8, 11, 12 };
@@ -455,19 +461,19 @@ class State
     auto magnetSet = getMagnetValues(rulesStatus);
 
     // Evaluating screen screen magnet value
-    reward += magnetSet.screenHorizontalMagnet.intensity * std::min((float)_screenPosX, magnetSet.screenHorizontalMagnet.max);
+    reward += magnetSet.screenHorizontalMagnet.intensity * std::min((float)_gameData.screenPosX, magnetSet.screenHorizontalMagnet.max);
 
     // Evaluating mario / screen offset magnet value
-    reward += magnetSet.marioScreenOffsetMagnet.intensity * std::min((float)_marioScreenOffset, magnetSet.marioScreenOffsetMagnet.max);
+    reward += magnetSet.marioScreenOffsetMagnet.intensity * std::min((float)_gameData.marioScreenOffset, magnetSet.marioScreenOffsetMagnet.max);
 
     // Evaluating mario magnet's reward on position X
-    reward += magnetSet.marioHorizontalMagnet.intensity * std::min((float)_marioPosX, magnetSet.marioHorizontalMagnet.max);
+    reward += magnetSet.marioHorizontalMagnet.intensity * std::min((float)_gameData.marioPosX, magnetSet.marioHorizontalMagnet.max);
 
     // Evaluating mario magnet's reward on position Y
-    reward += magnetSet.marioVerticalMagnet.intensity * std::min((float)*_marioPosY, magnetSet.marioVerticalMagnet.max);
+    reward += magnetSet.marioVerticalMagnet.intensity * std::min((float)*_gameData.marioPosY, magnetSet.marioVerticalMagnet.max);
 
     // If mario is getting into the tube, reward timer going down
-    if (*_marioState == 3) reward += 1000.0f * (24.0f - (float)*_climbSideTimer);
+    if (*_gameData.marioState == 3) reward += 1000.0f * (24.0f - (float)*_gameData.climbSideTimer);
 
     // Returning reward
     return reward;
@@ -554,31 +560,31 @@ class State
 
   void printStateInfo() const
   {
-    LOG("[Jaffar]  + Current World-Stage:    %1u-%1u\n", _currentWorld, _currentStage);
-    LOG("[Jaffar]  + Time Left:              %1u%1u%1u\n", *_timeLeft100, *_timeLeft10, *_timeLeft1);
-    LOG("[Jaffar]  + Mario Animation:        %02u\n", *_marioAnimation);
-    LOG("[Jaffar]  + Mario State:            %02u\n", *_marioState);
-    LOG("[Jaffar]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", _screenPosX, *_screenBasePosX, (uint16_t)*_screenBasePosX * 255, *_screenRelPosX);
-    LOG("[Jaffar]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _marioPosX, *_marioBasePosX, (uint16_t)*_marioBasePosX * 255, *_marioRelPosX);
-    LOG("[Jaffar]  + Mario / Screen Offset:  %04d\n", _marioScreenOffset);
-    LOG("[Jaffar]  + Mario Pos Y:            %02u\n", *_marioPosY);
-    LOG("[Jaffar]  + Mario SubPixel X/Y:     %02u / %02u\n", *_marioSubpixelPosX, *_marioSubpixelPosY);
-    LOG("[Jaffar]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_marioVelX, *_marioXMoveForce, *_marioMaxVelLeft, *_marioMaxVelRight);
-    LOG("[Jaffar]  + Mario Vel Y:            %02d (%02d)\n", *_marioVelY, *_marioFracVelY);
-    LOG("[Jaffar]  + Mario Gravity:          %02u\n", *_marioGravity);
-    LOG("[Jaffar]  + Mario Friction:         %02u\n", *_marioFriction);
-    LOG("[Jaffar]  + Mario Moving Direction: %s\n", *_marioMovingDirection == 1 ? "Right" : "Left");
-    LOG("[Jaffar]  + Mario Facing Direction: %s\n", *_marioFacingDirection == 1 ? "Right" : "Left");
-    LOG("[Jaffar]  + Mario Floating Mode:    %02u\n", *_marioFloatingMode);
-    LOG("[Jaffar]  + Mario Walking:          %02u %02u %02u\n", *_marioWalkingMode, *_marioWalkingDelay, *_marioWalkingFrame);
-    LOG("[Jaffar]  + Player 1 Inputs:        %02u %02u %02u %02u\n", *_player1Input, *_player1Buttons, *_player1GamePad1, *_player1GamePad2);
-    LOG("[Jaffar]  + Powerup Active:         %1u\n", *_powerUpActive);
-    LOG("[Jaffar]  + Enemy Active:           %1u%1u%1u%1u%1u\n", *_enemy1Active, *_enemy2Active, *_enemy3Active, *_enemy4Active, *_enemy5Active);
-    LOG("[Jaffar]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State);
-    LOG("[Jaffar]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *_enemy1Type, *_enemy2Type, *_enemy3Type, *_enemy4Type, *_enemy5Type);
-    LOG("[Jaffar]  + Hit Detection Flags:    %02u %02u %02u\n", *_marioCollision, *_enemyCollision, *_hitDetectionFlag);
-    LOG("[Jaffar]  + LevelEntry / GameMode:  %02u / %02u\n", *_levelEntryFlag, *_gameMode);
-    LOG("[Jaffar]  + Warp Area Offset:       %04u\n", *_warpAreaOffset);
-    LOG("[Jaffar]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_animationTimer, *_jumpSwimTimer, *_runningTimer, *_blockBounceTimer, *_sideCollisionTimer, *_jumpspringTimer, *_gameControlTimer, *_climbSideTimer, *_enemyFrameTimer, *_frenzyEnemyTimer, *_bowserFireTimer, *_stompTimer, *_airBubbleTimer, *_multiCoinBlockTimer, *_invincibleTimer, *_starTimer);
+    LOG("[Jaffar]  + Current World-Stage:    %1u-%1u\n", _gameData.currentWorld, _gameData.currentStage);
+    LOG("[Jaffar]  + Time Left:              %1u%1u%1u\n", *_gameData.timeLeft100, *_gameData.timeLeft10, *_gameData.timeLeft1);
+    LOG("[Jaffar]  + Mario Animation:        %02u\n", *_gameData.marioAnimation);
+    LOG("[Jaffar]  + Mario State:            %02u\n", *_gameData.marioState);
+    LOG("[Jaffar]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", _gameData.screenPosX, *_gameData.screenBasePosX, (uint16_t)*_gameData.screenBasePosX * 255, *_gameData.screenRelPosX);
+    LOG("[Jaffar]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _gameData.marioPosX, *_gameData.marioBasePosX, (uint16_t)*_gameData.marioBasePosX * 255, *_gameData.marioRelPosX);
+    LOG("[Jaffar]  + Mario / Screen Offset:  %04d\n", _gameData.marioScreenOffset);
+    LOG("[Jaffar]  + Mario Pos Y:            %02u\n", *_gameData.marioPosY);
+    LOG("[Jaffar]  + Mario SubPixel X/Y:     %02u / %02u\n", *_gameData.marioSubpixelPosX, *_gameData.marioSubpixelPosY);
+    LOG("[Jaffar]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_gameData.marioVelX, *_gameData.marioXMoveForce, *_gameData.marioMaxVelLeft, *_gameData.marioMaxVelRight);
+    LOG("[Jaffar]  + Mario Vel Y:            %02d (%02d)\n", *_gameData.marioVelY, *_gameData.marioFracVelY);
+    LOG("[Jaffar]  + Mario Gravity:          %02u\n", *_gameData.marioGravity);
+    LOG("[Jaffar]  + Mario Friction:         %02u\n", *_gameData.marioFriction);
+    LOG("[Jaffar]  + Mario Moving Direction: %s\n", *_gameData.marioMovingDirection == 1 ? "Right" : "Left");
+    LOG("[Jaffar]  + Mario Facing Direction: %s\n", *_gameData.marioFacingDirection == 1 ? "Right" : "Left");
+    LOG("[Jaffar]  + Mario Floating Mode:    %02u\n", *_gameData.marioFloatingMode);
+    LOG("[Jaffar]  + Mario Walking:          %02u %02u %02u\n", *_gameData.marioWalkingMode, *_gameData.marioWalkingDelay, *_gameData.marioWalkingFrame);
+    LOG("[Jaffar]  + Player 1 Inputs:        %02u %02u %02u %02u\n", *_gameData.player1Input, *_gameData.player1Buttons, *_gameData.player1GamePad1, *_gameData.player1GamePad2);
+    LOG("[Jaffar]  + Powerup Active:         %1u\n", *_gameData.powerUpActive);
+    LOG("[Jaffar]  + Enemy Active:           %1u%1u%1u%1u%1u\n", *_gameData.enemy1Active, *_gameData.enemy2Active, *_gameData.enemy3Active, *_gameData.enemy4Active, *_gameData.enemy5Active);
+    LOG("[Jaffar]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_gameData.enemy1State, *_gameData.enemy2State, *_gameData.enemy3State, *_gameData.enemy4State, *_gameData.enemy5State);
+    LOG("[Jaffar]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *_gameData.enemy1Type, *_gameData.enemy2Type, *_gameData.enemy3Type, *_gameData.enemy4Type, *_gameData.enemy5Type);
+    LOG("[Jaffar]  + Hit Detection Flags:    %02u %02u %02u\n", *_gameData.marioCollision, *_gameData.enemyCollision, *_gameData.hitDetectionFlag);
+    LOG("[Jaffar]  + LevelEntry / GameMode:  %02u / %02u\n", *_gameData.levelEntryFlag, *_gameData.gameMode);
+    LOG("[Jaffar]  + Warp Area Offset:       %04u\n", *_gameData.warpAreaOffset);
+    LOG("[Jaffar]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_gameData.animationTimer, *_gameData.jumpSwimTimer, *_gameData.runningTimer, *_gameData.blockBounceTimer, *_gameData.sideCollisionTimer, *_gameData.jumpspringTimer, *_gameData.gameControlTimer, *_gameData.climbSideTimer, *_gameData.enemyFrameTimer, *_gameData.frenzyEnemyTimer, *_gameData.bowserFireTimer, *_gameData.stompTimer, *_gameData.airBubbleTimer, *_gameData.multiCoinBlockTimer, *_gameData.invincibleTimer, *_gameData.starTimer);
   }
 };
