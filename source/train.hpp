@@ -2,7 +2,7 @@
 
 #include "frame.hpp"
 #include "rule.hpp"
-#include "state.hpp"
+#include "gameInstance.hpp"
 #include "nlohmann/json.hpp"
 #include <parallel_hashmap/phmap.h>
 #include <algorithm>
@@ -43,8 +43,8 @@ class Train
   // Store the number of openMP threads in use
   int _threadCount;
 
-  // Craeting State class instance, one per openMP thread
-  std::vector<State *> _state;
+  // Creating game instances, one per openMP thread
+  std::vector<GameInstance*> _gameInstances;
   size_t _ruleCount;
 
   // Frame counter

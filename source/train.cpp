@@ -91,9 +91,9 @@ void Train::run()
 
     uint8_t winFrameData[_FRAME_DATA_SIZE];
     _winFrame.getFrameDataFromDifference(_referenceFrameData, winFrameData);
-    _state[0]->pushState((uint8_t*)winFrameData);
-    _state[0]->printStateInfo();
-    _state[0]->printRuleStatus(_winFrame.rulesStatus);
+    _gameInstances[0]->pushState((uint8_t*)winFrameData);
+    _gameInstances[0]->printStateInfo();
+    _gameInstances[0]->printRuleStatus(_winFrame.rulesStatus);
 
     #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
@@ -203,8 +203,8 @@ void Train::computeFrames()
 
       // Getting possible moves for the current frame
       t0 = std::chrono::steady_clock::now(); // Profiling
-      _state[threadId]->pushState(baseFrameData);
-      std::vector<uint8_t> possibleMoveIds = _state[threadId]->getPossibleMoveIds();
+      _gameInstances[threadId]->pushState(baseFrameData);
+      std::vector<uint8_t> possibleMoveIds = _gameInstances[threadId]->getPossibleMoveIds();
       tf = std::chrono::steady_clock::now();
       threadFrameDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -222,20 +222,20 @@ void Train::computeFrames()
         if (idx > 0)
         {
          t0 = std::chrono::steady_clock::now(); // Profiling
-         _state[threadId]->pushState(baseFrameData);
+         _gameInstances[threadId]->pushState(baseFrameData);
          tf = std::chrono::steady_clock::now();
          threadFrameDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
         }
 
         // Perform the selected move
         t0 = std::chrono::steady_clock::now(); // Profiling
-        _state[threadId]->_emu->advanceFrame(moveId);
+        _gameInstances[threadId]->_emu->advanceFrame(moveId);
         tf = std::chrono::steady_clock::now();
         threadFrameAdvanceTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
         // Compute hash value
         t0 = std::chrono::steady_clock::now(); // Profiling
-        auto hash = _state[threadId]->computeHash();
+        auto hash = _gameInstances[threadId]->computeHash();
         tf = std::chrono::steady_clock::now();
         threadHashCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -253,10 +253,10 @@ void Train::computeFrames()
         memcpy(rulesStatus, baseFrame->rulesStatus, sizeof(Frame::rulesStatus));
 
         // Evaluating rules on the new frame
-        _state[threadId]->evaluateRules(rulesStatus);
+        _gameInstances[threadId]->evaluateRules(rulesStatus);
 
         // Getting frame type
-        frameType type = _state[threadId]->getFrameType(rulesStatus);
+        frameType type = _gameInstances[threadId]->getFrameType(rulesStatus);
 
         // If frame type is failed, continue to the next possible move
         if (type == f_fail) continue;
@@ -290,7 +290,7 @@ void Train::computeFrames()
         #endif
 
         // Calculating current reward
-        newFrame->reward = _state[threadId]->getFrameReward(newFrame->rulesStatus);
+        newFrame->reward = _gameInstances[threadId]->getFrameReward(newFrame->rulesStatus);
 
         tf = std::chrono::steady_clock::now(); // Profiling
         threadFrameCreationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
@@ -299,7 +299,7 @@ void Train::computeFrames()
         t0 = std::chrono::steady_clock::now(); // Profiling
 
         uint8_t gameState[_FRAME_DATA_SIZE];
-        _state[threadId]->_emu->serializeState(gameState);
+        _gameInstances[threadId]->_emu->serializeState(gameState);
         newFrame->computeFrameDifference(_referenceFrameData, gameState);
 
         tf = std::chrono::steady_clock::now(); // Profiling
@@ -471,9 +471,9 @@ void Train::printTrainStatus()
 
   uint8_t bestFrameData[_FRAME_DATA_SIZE];
   _bestFrame.getFrameDataFromDifference(_referenceFrameData, bestFrameData);
-  _state[0]->pushState(bestFrameData);
-  _state[0]->printStateInfo();
-  _state[0]->printRuleStatus(_bestFrame.rulesStatus);
+  _gameInstances[0]->pushState(bestFrameData);
+  _gameInstances[0]->printStateInfo();
+  _gameInstances[0]->printRuleStatus(_bestFrame.rulesStatus);
 
   #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
@@ -587,7 +587,7 @@ Train::Train(int argc, char *argv[])
   _maxDatabaseSizeUpperBound = floor(((double)maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(Frame)));
 
   // Resizing containers based on thread count
-  _state.resize(_threadCount);
+  _gameInstances.resize(_threadCount);
 
   // Initializing thread-specific instances
   #pragma omp parallel
@@ -597,8 +597,8 @@ Train::Train(int argc, char *argv[])
 
    #pragma omp critical
    {
-    _state[threadId] = new State(romFilePath, stateFilePath);
-    _state[threadId]->parseRules(scriptJs["Rules"]);
+    _gameInstances[threadId] = new GameInstance(romFilePath, stateFilePath);
+    _gameInstances[threadId]->parseRules(scriptJs["Rules"]);
    }
   }
 
@@ -609,17 +609,17 @@ Train::Train(int argc, char *argv[])
   _hashCollisions = 0;
 
   // Check rule count does not exceed maximum
-  _ruleCount = _state[0]->_rules.size();
+  _ruleCount = _gameInstances[0]->_rules.size();
 
   // Setting win status
   _winFrameFound = false;
 
   // Computing initial hash
-  const auto hash = _state[0]->computeHash();
+  const auto hash = _gameInstances[0]->computeHash();
 
   auto initialFrame = new Frame;
   uint8_t gameState[_FRAME_DATA_SIZE];
-  _state[0]->_emu->serializeState(gameState);
+  _gameInstances[0]->_emu->serializeState(gameState);
 
   // Storing initial frame as base for differential comparison
   memcpy(_referenceFrameData, gameState, _FRAME_DATA_SIZE);
@@ -629,10 +629,10 @@ Train::Train(int argc, char *argv[])
   for (size_t i = 0; i < _ruleCount; i++) initialFrame->rulesStatus[i] = false;
 
   // Evaluating Rules on initial frame
-  _state[0]->evaluateRules(initialFrame->rulesStatus);
+  _gameInstances[0]->evaluateRules(initialFrame->rulesStatus);
 
   // Evaluating Score on initial frame
-  initialFrame->reward = _state[0]->getFrameReward(initialFrame->rulesStatus);
+  initialFrame->reward = _gameInstances[0]->getFrameReward(initialFrame->rulesStatus);
 
   // Registering hash for initial frame
   _hashDB[0] = hash;

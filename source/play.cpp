@@ -4,7 +4,7 @@
 #include "argparse.hpp"
 #include "hqn.h"
 #include "hqn_gui_controller.h"
-#include "state.hpp"
+#include "gameInstance.hpp"
 #include "emuInstance.hpp"
 #include "utils.hpp"
 
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
   genEmuInstance.loadStateFile(stateFilePath);
 
   // Initializing game state
-  State genState(&genEmuInstance);
+  GameInstance gameInstance(&genEmuInstance);
 
   // Storage for sequence frames
   size_t stateSize;
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
   // Iterating move list in the sequence
   for (int i = 0; i < sequenceLength; i++)
   {
-    genState.advanceFrame(moveList[i]);
+    gameInstance.advanceFrame(moveList[i]);
 
     // Storing new frame
     state = (uint8_t*) malloc(stateSize);
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
   {
    // Loading requested step
    hqnState.loadState((char*)frameSequenceData[currentStep], frameSequenceSize[currentStep]);
-   genState.advanceFrame(moveList[currentStep]);
+   gameInstance.advanceFrame(moveList[currentStep]);
 
     // Update display
     gui->update(true);
@@ -197,8 +197,8 @@ int main(int argc, char *argv[])
       printw("[JaffarNES] ----------------------------------------------------------------\n");
       printw("[JaffarNES] Current Step #: %d / %d\n", currentStep, sequenceLength);
       printw("[JaffarNES]  + Move: %s\n", moveList[currentStep].c_str());
-      printw("[JaffarNES]  + Hash:                   0x%lX\n", genState.computeHash());
-      genState.printStateInfo();
+      printw("[JaffarNES]  + Hash:                   0x%lX\n", gameInstance.computeHash());
+      gameInstance.printStateInfo();
     }
 
     // Resetting show frame info flag

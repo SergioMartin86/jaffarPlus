@@ -5,9 +5,6 @@
 #include "frame.hpp"
 #include "rule.hpp"
 #include "metrohash64.h"
-#include <cstddef>
-#include <string>
-#include <vector>
 #include <set>
 
 // If we use NCurses, we need to use the appropriate printing function
@@ -115,7 +112,7 @@ struct gameData_t
  uint8_t currentStage;
 };
 
-class State
+class GameInstance
 {
  public:
 
@@ -123,7 +120,7 @@ class State
   gameData_t _gameData;
 
   // Constructor for the underlying emulator using a rom file and a state
-  State(const std::string romFile, const std::string stateFile)
+  GameInstance(const std::string romFile, const std::string stateFile)
   {
     // Creating quickNES instance
     _emu = new EmuInstance(romFile);
@@ -137,7 +134,7 @@ class State
   }
 
   // Constructor using an already existing emulator
-  State(EmuInstance* emu)
+  GameInstance(EmuInstance* emu)
   {
     // Copying emu instance pointer
     _emu = emu;

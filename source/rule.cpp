@@ -1,7 +1,7 @@
 #include "rule.hpp"
-#include "state.hpp"
+#include "gameInstance.hpp"
 
-Rule::Rule(nlohmann::json ruleJs, State *state)
+Rule::Rule(nlohmann::json ruleJs, GameInstance* gameInstance)
 {
   // Adding identifying label for the rule
   if (isDefined(ruleJs, "Label") == false) EXIT_WITH_ERROR("[ERROR] Rule missing 'Label' key.\n");
@@ -32,7 +32,7 @@ Rule::Rule(nlohmann::json ruleJs, State *state)
     if (isDefined(conditionJs, "Property") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition missing 'Property' key.\n", _label);
     if (conditionJs["Property"].is_string() == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition operand 1 must be a string with the name of a property.\n", _label);
     datatype_t dtype = getPropertyType(conditionJs["Property"].get<std::string>());
-    auto property = getPropertyPointer(conditionJs["Property"].get<std::string>(), state);
+    auto property = getPropertyPointer(conditionJs["Property"].get<std::string>(), gameInstance);
 
     // Parsing second operand (number)
     if (isDefined(conditionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition missing 'Value' key.\n", _label);
@@ -62,7 +62,7 @@ Rule::Rule(nlohmann::json ruleJs, State *state)
      if (valueType != dtype) EXIT_WITH_ERROR("[ERROR] Rule %lu, property (%s) and value (%s) types must coincide.\n", _label, conditionJs["Property"].get<std::string>(), conditionJs["Value"].get<std::string>());
 
      // Getting value pointer
-     auto valuePtr = getPropertyPointer(conditionJs["Value"].get<std::string>(), state);
+     auto valuePtr = getPropertyPointer(conditionJs["Value"].get<std::string>(), gameInstance);
 
      // Adding condition to the list
      Condition *condition;
@@ -212,34 +212,34 @@ datatype_t Rule::getPropertyType(const std::string &property)
   return dt_uint8;
 }
 
-void *Rule::getPropertyPointer(const std::string &property, State *state)
+void *Rule::getPropertyPointer(const std::string &property, GameInstance* gameInstance)
 {
-  if (property == "Mario State") return state->_gameData.marioState;
-  if (property == "Mario Animation") return state->_gameData.marioAnimation;
-  if (property == "Mario Walking Frame") return state->_gameData.marioWalkingFrame;
-  if (property == "Mario Walking Mode") return state->_gameData.marioWalkingMode;
-  if (property == "Mario Floating Mode") return state->_gameData.marioFloatingMode;
+  if (property == "Mario State") return gameInstance->_gameData.marioState;
+  if (property == "Mario Animation") return gameInstance->_gameData.marioAnimation;
+  if (property == "Mario Walking Frame") return gameInstance->_gameData.marioWalkingFrame;
+  if (property == "Mario Walking Mode") return gameInstance->_gameData.marioWalkingMode;
+  if (property == "Mario Floating Mode") return gameInstance->_gameData.marioFloatingMode;
 
-  if (property == "Screen Position X") return &state->_gameData.screenPosX; // Derivative value
+  if (property == "Screen Position X") return &gameInstance->_gameData.screenPosX; // Derivative value
 
-  if (property == "Mario Base Position X") return state->_gameData.marioBasePosX;
-  if (property == "Mario Relative Position X") return state->_gameData.marioRelPosX;
-  if (property == "Mario Position X") return &state->_gameData.marioPosX; // Derivative value
+  if (property == "Mario Base Position X") return gameInstance->_gameData.marioBasePosX;
+  if (property == "Mario Relative Position X") return gameInstance->_gameData.marioRelPosX;
+  if (property == "Mario Position X") return &gameInstance->_gameData.marioPosX; // Derivative value
 
-  if (property == "Mario Position Y") return state->_gameData.marioPosY;
-  if (property == "Mario Velocity X") return state->_gameData.marioVelX;
-  if (property == "Current World") return &state->_gameData.currentWorld; // Derivative value
-  if (property == "Current Stage") return &state->_gameData.currentStage; // Derivative value
-  if (property == "Current Screen") return state->_gameData.screenBasePosX;
-  if (property == "Level Entry Flag") return state->_gameData.levelEntryFlag;
-  if (property == "Game Mode") return state->_gameData.gameMode;
-  if (property == "Warp Area Offset") return state->_gameData.warpAreaOffset;
-  if (property == "Enemy 1 Type") return state->_gameData.enemy1Type;
-  if (property == "Enemy 2 Type") return state->_gameData.enemy2Type;
-  if (property == "Enemy 3 Type") return state->_gameData.enemy3Type;
-  if (property == "Enemy 4 Type") return state->_gameData.enemy4Type;
-  if (property == "Enemy 5 Type") return state->_gameData.enemy5Type;
-  if (property == "Mario Screen Offset") return &state->_gameData.marioScreenOffset; // Derivative value
+  if (property == "Mario Position Y") return gameInstance->_gameData.marioPosY;
+  if (property == "Mario Velocity X") return gameInstance->_gameData.marioVelX;
+  if (property == "Current World") return &gameInstance->_gameData.currentWorld; // Derivative value
+  if (property == "Current Stage") return &gameInstance->_gameData.currentStage; // Derivative value
+  if (property == "Current Screen") return gameInstance->_gameData.screenBasePosX;
+  if (property == "Level Entry Flag") return gameInstance->_gameData.levelEntryFlag;
+  if (property == "Game Mode") return gameInstance->_gameData.gameMode;
+  if (property == "Warp Area Offset") return gameInstance->_gameData.warpAreaOffset;
+  if (property == "Enemy 1 Type") return gameInstance->_gameData.enemy1Type;
+  if (property == "Enemy 2 Type") return gameInstance->_gameData.enemy2Type;
+  if (property == "Enemy 3 Type") return gameInstance->_gameData.enemy3Type;
+  if (property == "Enemy 4 Type") return gameInstance->_gameData.enemy4Type;
+  if (property == "Enemy 5 Type") return gameInstance->_gameData.enemy5Type;
+  if (property == "Mario Screen Offset") return &gameInstance->_gameData.marioScreenOffset; // Derivative value
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, property.c_str());
 
