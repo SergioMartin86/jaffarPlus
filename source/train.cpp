@@ -443,7 +443,7 @@ void Train::printTrainStatus()
   printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] State size: %lu bytes\n", _stateSize);
   printf("[Jaffar] States Processed: (Step/Total): %lu / %lu\n", _stepNewStatesProcessedCounter, _totalStatesProcessedCounter);
-  printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(State)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(State)) / (1024.0 * 1024.0));
+  printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * _stateSize) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * _stateSize) / (1024.0 * 1024.0));
   printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
   printf("[Jaffar]   + Hash Calculation:        %3.3fs\n", _stepHashCalculationTime / 1.0e+9);
   printf("[Jaffar]   + Hash Checking:           %3.3fs\n",  _stepHashCheckingTime / 1.0e+9);
@@ -455,7 +455,7 @@ void Train::printTrainStatus()
   printf("[Jaffar]   + State Creation:          %3.3fs\n", _stepStateCreationTime / 1.0e+9);
   printf("[Jaffar]   + State Sorting            %3.3fs\n", _stepStateDBSortingTime / 1.0e+9);
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
-  printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0));
+  printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * _stateSize) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * _stateSize) / (1024.0 * 1024.0));
   printf("[Jaffar] Max State State Difference: %u / %u\n", _maxStateDiff, _maxDifferenceCount);
   printf("[Jaffar] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
   printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
@@ -507,22 +507,6 @@ Train::Train(int argc, char *argv[])
   // Flag to determine if win state was found
   _winStateFound = false;
 
-  // Parsing max hash DB entries
-  if (const char *hashSizeLowerBoundString = std::getenv("JAFFAR_MAX_HASH_DATABASE_SIZE_LOWER_BOUND_MB")) _hashSizeLowerBound = std::stol(hashSizeLowerBoundString);
-  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_HASH_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
-
-  if (const char *hashSizeUpperBoundString = std::getenv("JAFFAR_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB")) _hashSizeUpperBound = std::stol(hashSizeUpperBoundString);
-  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
-
-  // Parsing max state DB lower bound
-  size_t maxDBSizeMbLowerBound = 0;
-  if (const char *MaxDBMBytesLowerBoundEnvString = std::getenv("JAFFAR_MAX_STATE_DATABASE_SIZE_LOWER_BOUND_MB")) maxDBSizeMbLowerBound = std::stol(MaxDBMBytesLowerBoundEnvString);
-  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_STATE_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
-
-  size_t maxDBSizeMbUpperBound = 0;
-  if (const char *MaxDBMBytesUpperBoundEnvString = std::getenv("JAFFAR_MAX_STATE_DATABASE_SIZE_UPPER_BOUND_MB")) maxDBSizeMbUpperBound = std::stol(MaxDBMBytesUpperBoundEnvString);
-  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_STATE_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
-
   // Parsing file output frequency
   _outputSaveBestSeconds = -1.0;
   if (const char *outputSaveBestSecondsEnv = std::getenv("JAFFAR_SAVE_BEST_EVERY_SECONDS")) _outputSaveBestSeconds = std::stof(outputSaveBestSecondsEnv);
@@ -551,10 +535,25 @@ Train::Train(int argc, char *argv[])
   std::string configFileString;
   auto status = loadStringFromFile(configFileString, configFile.c_str());
   if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
-
   nlohmann::json config;
   try { config = nlohmann::json::parse(configFileString); }
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
+
+  // Parsing Jaffar configuration
+  if (isDefined(config, "Jaffar Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Jaffar Configuration' key.\n");
+
+  // Parsing database sizes
+  if (isDefined(config["Jaffar Configuration"], "Max State Database Size Lower Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Max State Database Size Lower Bound (Mb)' key.\n");
+  _maxDBSizeMbLowerBound = config["Jaffar Configuration"]["Max State Database Size Lower Bound (Mb)"].get<size_t>();
+
+  if (isDefined(config["Jaffar Configuration"], "Max State Database Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Max State Database Size Upper Bound (Mb)' key.\n");
+  _maxDBSizeMbUpperBound = config["Jaffar Configuration"]["Max State Database Size Upper Bound (Mb)"].get<size_t>();
+
+  if (isDefined(config["Jaffar Configuration"], "Max Hash Database Size Lower Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Max Hash Database Size Lower Bound (Mb)' key.\n");
+  _hashSizeLowerBound = config["Jaffar Configuration"]["Max Hash Database Size Lower Bound (Mb)"].get<size_t>();
+
+  if (isDefined(config["Jaffar Configuration"], "Max Hash Database Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Max Hash Database Size Upper Bound (Mb)' key.\n");
+  _hashSizeUpperBound = config["Jaffar Configuration"]["Max Hash Database Size Upper Bound (Mb)"].get<size_t>();
 
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
@@ -580,8 +579,8 @@ Train::Train(int argc, char *argv[])
   State::parseConfiguration(config);
 
   // Calculating max DB size bounds
-  _maxDatabaseSizeLowerBound = floor(((double)maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)_stateSize));
-  _maxDatabaseSizeUpperBound = floor(((double)maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)_stateSize));
+  _maxDatabaseSizeLowerBound = floor(((double)_maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)_stateSize));
+  _maxDatabaseSizeUpperBound = floor(((double)_maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)_stateSize));
 
   printf("[Jaffar] Game initialized.\n");
 

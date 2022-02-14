@@ -9,7 +9,6 @@ void Rule::initializeRuleData()
  _data.screenHorizontalMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f, .min = 0.0f };
  _data.marioHorizontalMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f, .min = 0.0f };
  _data.marioVerticalMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f, .min = 0.0f };
-
 }
 
 bool Rule::parseGameAction(nlohmann::json actionJs, size_t actionId)

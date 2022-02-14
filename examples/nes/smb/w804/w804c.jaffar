@@ -13,6 +13,14 @@
     "Max Move Count": 200,
     "Store Move List": true    
   },
+  
+  "Jaffar Configuration": 
+  {
+    "Max State Database Size Lower Bound (Mb)": 140000,
+    "Max State Database Size Upper Bound (Mb)": 200000,
+    "Max Hash Database Size Lower Bound (Mb)": 12000,
+    "Max Hash Database Size Upper Bound (Mb)": 20000
+  },
  
   "Rules":
   [
@@ -33,7 +41,7 @@
     ]
    },
    
-  {
+   {
     "Label": 1002,
     "Description": "Setting magnet to make Mario go up to the pipe",
     "Conditions":

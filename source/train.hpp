@@ -59,6 +59,8 @@ class Train
 
   // State databases
   size_t _databaseSize;
+  size_t _maxDBSizeMbLowerBound;
+  size_t _maxDBSizeMbUpperBound;
   size_t _maxDatabaseSizeLowerBound;
   size_t _maxDatabaseSizeUpperBound;
   std::vector<State*> _stateDB;
