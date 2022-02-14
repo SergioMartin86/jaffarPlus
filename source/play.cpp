@@ -1,9 +1,7 @@
 #include <ncurses.h>
 #include <unistd.h>
-#include <SDL.h>
 #include "argparse.hpp"
-#include "hqn.h"
-#include "hqn_gui_controller.h"
+#include "playbackInstance.hpp"
 #include "gameInstance.hpp"
 #include "emuInstance.hpp"
 #include "utils.hpp"
@@ -98,16 +96,7 @@ int main(int argc, char *argv[])
 
   refresh();
 
-  // Opening rendering window
-  SDL_SetMainReady();
-  // We can only call SDL_InitSubSystem once
-  if (!SDL_WasInit(SDL_INIT_VIDEO))
-  {
-      if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
-      {
-          EXIT_WITH_ERROR("Failed to initialize video: %s", SDL_GetError());
-      }
-  }
+
 /*
   hqn::HQNState hqnState;
   hqnState.loadROM(romFilePath.c_str());
@@ -118,13 +107,11 @@ int main(int argc, char *argv[])
   GameInstance gameInstance(configJs);
 
   // Storage for sequence frames
-  size_t stateSize;
-  hqnState.saveStateSize(&stateSize);
   std::vector<uint8_t*> frameSequenceData;
   std::vector<size_t> frameSequenceSize;
 
   // Saving initial frame
-  uint8_t* state = (uint8_t*) malloc(stateSize);
+  uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE);
   size_t savedSize;
   hqnState.saveState(state, stateSize, &savedSize);
   frameSequenceData.push_back(state);
@@ -151,8 +138,7 @@ int main(int argc, char *argv[])
   if (isReproduce == false)
   {
    printw("[Jaffar] Available commands:\n");
-   printw("[Jaffar]  n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 \n");
-   printw("[Jaffar]  s: quicksave | r: create replay | q: quit  \n");
+   printw("[Jaffar]  n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | s: quicksave | q: quit\n");
   }
 
   // Flag to display frame information
@@ -174,7 +160,6 @@ int main(int argc, char *argv[])
       printw("[Jaffar] ----------------------------------------------------------------\n");
       printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
       printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
-      printw("[Jaffar]  + Hash:                   0x%lX\n", gameInstance.computeHash());
       gameInstance.printStateInfo();
     }
 
