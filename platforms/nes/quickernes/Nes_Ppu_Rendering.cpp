@@ -55,6 +55,35 @@ inline Nes_Ppu_Impl::cached_tile_t const& Nes_Ppu_Impl::get_bg_tile( int index )
 
 // Fill
 
+void Nes_Ppu_Rendering::fill_background( int count )
+{
+	ptrdiff_t const next_line = scanline_row_bytes - image_width;
+	uint32_t* pixels = (uint32_t*) scanline_pixels;
+	
+	unsigned long fill = palette_offset;
+	if ( (vram_addr & 0x3f00) == 0x3f00 )
+	{
+		// PPU uses current palette entry if addr is within palette ram
+		int color = vram_addr & 0x1f;
+		if ( !(color & 3) )
+			color &= 0x0f;
+		fill += color * 0x01010101;
+	}
+	
+	for ( int n = count; n--; )
+	{
+		for ( int n = image_width / 16; n--; )
+		{
+			pixels [0] = fill;
+			pixels [1] = fill;
+			pixels [2] = fill;
+			pixels [3] = fill;
+			pixels += 4;
+		}
+		pixels = (uint32_t*) ((byte*) pixels + next_line);
+	}
+}
+
 void Nes_Ppu_Rendering::clip_left( int count )
 {
 	ptrdiff_t next_line = scanline_row_bytes;
@@ -104,6 +133,94 @@ void Nes_Ppu_Rendering::restore_left( int count )
 }
 
 // Background
+
+void Nes_Ppu_Rendering::draw_background_( int remain )
+{
+	// Draws 'remain' background scanlines. Does not modify vram_addr.
+	
+	int vram_addr = this->vram_addr & 0x7fff;
+	byte* row_pixels = scanline_pixels - pixel_x;
+	int left_clip = (w2001 >> 1 & 1) ^ 1;
+	row_pixels += left_clip * 8;
+	do
+	{
+		// scanlines until next row
+		int height = 8 - (vram_addr >> 12);
+		if ( height > remain )
+			height = remain;
+		
+		// handle hscroll change before next scanline
+		int hscroll_changed = (vram_addr ^ vram_temp) & 0x41f;
+		int addr = vram_addr;
+		if ( hscroll_changed )
+		{
+			vram_addr ^= hscroll_changed;
+			height = 1; // hscroll will change after first line
+		}
+		remain -= height;
+		
+		// increment address for next row
+		vram_addr += height << 12;
+		assert( vram_addr < 0x10000 );
+		if ( vram_addr & 0x8000 )
+		{
+			int y = (vram_addr + 0x20) & 0x3e0;
+			vram_addr &= 0x7fff & ~0x3e0;
+			if ( y == 30 * 0x20 )
+				y = 0x800; // toggle vertical nametable
+			vram_addr ^= y;
+		}
+		
+		// nametable change usually occurs in middle of row
+		byte const* nametable = get_nametable( addr );
+		byte const* nametable2 = get_nametable( addr ^ 0x400 );
+		int count2 = addr & 31;
+		int count = 32 - count2 - left_clip;
+
+		// this conditional is commented out because of mmc2\4
+		// normally, the extra row of pixels is only fetched when pixel_ x is not 0, which makes sense
+		// but here, we need a correct fetch pattern to pick up 0xfd\0xfe tiles off the edge of the display
+		
+		// this doesn't cause any problems with buffer overflow because the framebuffer we're rendering to is
+		// already guarded (width = 272)
+		// this doesn't give us a fully correct ppu fetch pattern, but it's close enough for punch out
+
+		//if ( pixel_x )
+			count2++;
+		
+		byte const* attr_table = &nametable [0x3c0 | (addr >> 4 & 0x38)];
+		int bg_bank = (w2000 << 4) & 0x100;
+		addr += left_clip;
+		
+		// output pixels
+		ptrdiff_t const row_bytes = scanline_row_bytes;
+		byte* pixels = row_pixels;
+		row_pixels += height * row_bytes;
+		
+		unsigned long const mask = 0x03030303 + zero;
+		unsigned long const attrib_factor = 0x04040404 + zero;
+		
+		if ( height == 8 )
+		{
+			// unclipped
+			assert( (addr >> 12) == 0 );
+			addr &= 0x03ff;
+			int const fine_y = 0;
+			int const clipped = false;
+			#include "Nes_Ppu_Bg.h"
+		}
+		else
+		{
+			// clipped
+			int const fine_y = addr >> 12;
+			addr &= 0x03ff;
+			height -= fine_y & 1;
+			int const clipped = true;
+			#include "Nes_Ppu_Bg.h"
+		}
+	}
+	while ( remain );
+}
 
 // Sprites
 
@@ -296,6 +413,8 @@ void Nes_Ppu_Rendering::draw_scanlines( int start, int count,
 	{
 		// no background
 		clip_mode |= bg_mask; // avoid unnecessary save/restore
+		if ( mode & bg_mask )
+			fill_background( count );
 	}
 	
 	if ( start == 0 && mode & 1 )
@@ -313,6 +432,9 @@ void Nes_Ppu_Rendering::draw_scanlines( int start, int count,
 		
 		if ( draw_mode & bg_mask )
 		{
+			//dprintf( "bg  %3d-%3d\n", start, start + count - 1 );
+			draw_background_( count );
+			
 			if ( clip_mode == bg_mask )
 				clip_left( count );
 			
@@ -329,7 +451,7 @@ void Nes_Ppu_Rendering::draw_scanlines( int start, int count,
 			//dprintf( "obj %3d-%3d\n", start, start + count - 1 );
 			
 			draw_sprites_( start, start + count );
-
+			
 			if ( clip_mode == obj_mask )
 				restore_left( count );
 			

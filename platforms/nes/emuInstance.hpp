@@ -6,6 +6,7 @@
 #include <utils.hpp>
 #include <string>
 #include <vector>
+#include <utils.hpp>
 
 #define _STATE_DATA_SIZE 12792
 const std::vector<std::string> _possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };

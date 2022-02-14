@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "argparse.hpp"
 #include "playbackInstance.hpp"
 #include "gameInstance.hpp"
@@ -51,6 +52,10 @@ int main(int argc, char *argv[])
     .help("path to the Jaffar configuration script (.jaffar) file to run.")
     .required();
 
+  program.add_argument("solutionFile")
+    .help("path to the solution sequence file (.sol) to reproduce.")
+    .required();
+
   program.add_argument("--reproduce")
     .help("Plays the entire sequence without interruptions")
     .default_value(false)
@@ -76,6 +81,9 @@ int main(int argc, char *argv[])
   auto statusSolution = loadStringFromFile(moveSequence, solutionFile.c_str());
   if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n%s \n", solutionFile.c_str(), program.help().str().c_str());
 
+  // Getting reproduce flag
+  bool isReproduce = program.get<bool>("--reproduce");
+
   // Initializing ncurses screen
   initscr();
   cbreak();
@@ -96,50 +104,48 @@ int main(int argc, char *argv[])
 
   refresh();
 
-
-/*
-  hqn::HQNState hqnState;
-  hqnState.loadROM(romFilePath.c_str());
-  hqn::GUIController* gui = hqn::GUIController::create(hqnState);
-  gui->setScale(2);
+//   hqn::HQNState hqnState;
 
   // Initializing game state
-  GameInstance gameInstance(configJs);
+  GameInstance gameInstance;
+  gameInstance.initialize(configJs);
 
-  // Storage for sequence frames
-  std::vector<uint8_t*> frameSequenceData;
-  std::vector<size_t> frameSequenceSize;
+  // Storage for sequence frames and rule evaluation
+  std::vector<uint8_t*> stateSequence;
+  std::vector<bool*> ruleStatusSequence;
 
   // Saving initial frame
   uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE);
-  size_t savedSize;
-  hqnState.saveState(state, stateSize, &savedSize);
-  frameSequenceData.push_back(state);
-  frameSequenceSize.push_back(savedSize);
+  gameInstance.popState(state);
+  stateSequence.push_back(state);
+
+  // Saving initial rule status
+  bool* rulesStatus = (bool*) calloc(_ruleCount, sizeof(bool));
+  gameInstance.evaluateRules(rulesStatus);
+  ruleStatusSequence.push_back(rulesStatus);
 
   // Iterating move list in the sequence
   for (int i = 0; i < sequenceLength; i++)
   {
-    gameInstance.advanceFrame(moveList[i]);
+    // Advancing state
+    gameInstance.advanceState(moveList[i]);
 
-    // Storing new frame
-    state = (uint8_t*) malloc(stateSize);
-    hqnState.saveState(state, stateSize, &savedSize);
-    frameSequenceData.push_back(state);
-    frameSequenceSize.push_back(savedSize);
+    // Storing new state
+    state = (uint8_t*) malloc(_STATE_DATA_SIZE);
+    gameInstance.popState(state);
+    stateSequence.push_back(state);
+
+    // Storing new rules
+    rulesStatus = (bool*) malloc(_ruleCount * sizeof(bool));
+    memcpy(rulesStatus, ruleStatusSequence[i], _ruleCount * sizeof(bool));
+    gameInstance.evaluateRules(rulesStatus);
+    ruleStatusSequence.push_back(rulesStatus);
   }
 
   printw("[Jaffar] Opening Game window...\n");
 
   // Variable for current step in view
   int currentStep = 0;
-
-  // Print command list
-  if (isReproduce == false)
-  {
-   printw("[Jaffar] Available commands:\n");
-   printw("[Jaffar]  n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | s: quicksave | q: quit\n");
-  }
 
   // Flag to display frame information
   bool showFrameInfo = true;
@@ -149,62 +155,62 @@ int main(int argc, char *argv[])
   do
   {
    // Loading requested step
-   hqnState.loadState((char*)frameSequenceData[currentStep], frameSequenceSize[currentStep]);
-   gameInstance.advanceFrame(moveList[currentStep]);
+   gameInstance.pushState(stateSequence[currentStep]);
 
-    // Update display
-    gui->update(true);
+   // Update display
+   //gui->update(true);
 
-    if (showFrameInfo)
-    {
-      printw("[Jaffar] ----------------------------------------------------------------\n");
-      printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
-      printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
-      gameInstance.printStateInfo();
-    }
+   if (showFrameInfo)
+   {
+     clear();
+     printw("[Jaffar] ----------------------------------------------------------------\n");
+     printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
+     printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
+     gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
+     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | s: quicksave | q: quit\n");
+   }
 
-    // Resetting show frame info flag
-    showFrameInfo = true;
+   // Resetting show frame info flag
+   showFrameInfo = true;
 
-    // If we're reproducing do not have an interactive interface
-    if (isReproduce)
-    {
-     usleep(16667);
-     currentStep++;
-     if (currentStep > sequenceLength) { currentStep--; isReproduce = false; }
-     continue;
-    }
+   // If we're reproducing do not have an interactive interface
+   if (isReproduce)
+   {
+    usleep(16667);
+    currentStep++;
+    if (currentStep > sequenceLength) { currentStep--; isReproduce = false; }
+    continue;
+   }
 
-    // Get command
-    command = getKeyPress();
+   // Get command
+   command = getKeyPress();
 
-    // Advance/Rewind commands
-    if (command == 'n') currentStep = currentStep - 1;
-    if (command == 'm') currentStep = currentStep + 1;
-    if (command == 'h') currentStep = currentStep - 10;
-    if (command == 'j') currentStep = currentStep + 10;
-    if (command == 'y') currentStep = currentStep - 100;
-    if (command == 'u') currentStep = currentStep + 100;
+   // Advance/Rewind commands
+   if (command == 'n') currentStep = currentStep - 1;
+   if (command == 'm') currentStep = currentStep + 1;
+   if (command == 'h') currentStep = currentStep - 10;
+   if (command == 'j') currentStep = currentStep + 10;
+   if (command == 'y') currentStep = currentStep - 100;
+   if (command == 'u') currentStep = currentStep + 100;
 
-    // Correct current step if requested more than possible
-    if (currentStep < 0) currentStep = 0;
-    if (currentStep > sequenceLength) currentStep = sequenceLength;
+   // Correct current step if requested more than possible
+   if (currentStep < 0) currentStep = 0;
+   if (currentStep > sequenceLength) currentStep = sequenceLength;
 
-    // Quicksave creation command
-    if (command == 's')
-    {
-      // Storing replay file
-      std::string saveFileName = "jaffar.state";
-      genEmuInstance.saveStateFile(saveFileName);
-      printw("[Jaffar] Saved state to %s\n", saveFileName.c_str());
+   // Quicksave creation command
+   if (command == 's')
+   {
+     // Storing replay file
+     std::string saveFileName = "jaffar.state";
+     gameInstance.saveStateFile(saveFileName);
+     printw("[Jaffar] Saved state to %s\n", saveFileName.c_str());
 
-      // Do no show frame info again after this action
-      showFrameInfo = false;
-    }
+     // Do no show frame info again after this action
+     showFrameInfo = false;
+   }
 
   } while (command != 'q');
 
   // Ending ncurses window
   endwin();
-  */
 }

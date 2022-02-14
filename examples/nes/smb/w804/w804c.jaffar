@@ -28,7 +28,7 @@
      "Max Size Upper Bound (Mb)": 20000
     },
     
-    "Save Intermediate Results"
+    "Save Intermediate Results":
     {
      "Enabled": true,
      "Frequency (s)": 1.0,

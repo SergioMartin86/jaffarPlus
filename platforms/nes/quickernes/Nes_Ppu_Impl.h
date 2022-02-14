@@ -30,7 +30,7 @@ public:
 	enum { image_left = 8 };
 	enum { buffer_width = image_width + 16 };
 	enum { buffer_height = image_height };
-	
+
 	int write_2007( int );
 	int peekaddr(int);
 	

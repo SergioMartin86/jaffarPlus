@@ -1,13 +1,13 @@
 #pragma once
 
-#include <playbackInstanceBase.hpp>
 #include <SDL.h>
 #include <hqn.h>
 #include <hqn_gui_controller.h>
 #include <utils.hpp>
 #include <string>
+#include <playbackInstanceBase.hpp>
 
-class PlaybackInstance
+class PlaybackInstance : public PlaybackInstanceBase
 {
  private:
 
@@ -44,7 +44,6 @@ class PlaybackInstance
   // Creating HQN GUI
   _hqnGUI = hqn::GUIController::create(_hqnState);
   _hqnGUI->setScale(2);
-
  }
 
  // Function to load state
@@ -58,4 +57,5 @@ class PlaybackInstance
  {
 
  }
+
 };

@@ -318,8 +318,8 @@ class GameInstance : public GameInstanceBase
     LOG("[Jaffar]  + Rule Status: ");
     for (size_t i = 0; i < _ruleCount; i++)
     {
-      if (i > 0 && i % 60 == 0) printf("\n                         ");
-      printf("%d", rulesStatus[i] ? 1 : 0);
+      if (i > 0 && i % 60 == 0) LOG("\n                         ");
+      LOG("%d", rulesStatus[i] ? 1 : 0);
     }
     LOG("\n");
 

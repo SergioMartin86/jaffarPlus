@@ -8,14 +8,6 @@
 #include "metrohash64.h"
 #include <set>
 
-// If we use NCurses, we need to use the appropriate printing function
-#ifdef NCURSES
- #include <ncurses.h>
- #define LOG printw
-#else
- #define LOG printf
-#endif
-
 class GameInstanceBase
 {
  public:
@@ -118,6 +110,9 @@ class GameInstanceBase
   // Serialization/Deserialization Routines
   inline void popState(uint8_t* __restrict__ outputStateData) const { _emu->serializeState(outputStateData); }
   inline void pushState(const uint8_t* __restrict__ inputStateData) { _emu->deserializeState(inputStateData);  updateDerivedValues(); }
+
+  inline void saveStateFile(const std::string& outputFilePath) const { _emu->saveStateFile(outputFilePath); }
+  inline void loadStateFile(const std::string& inputFilePath) { _emu->loadStateFile(inputFilePath);  updateDerivedValues(); }
 
   // Evaluates the rule set on a given frame. Returns true if it is a fail.
   inline void evaluateRules(bool* rulesStatus) const

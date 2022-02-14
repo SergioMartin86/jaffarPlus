@@ -5,7 +5,7 @@
 
 class PlaybackInstanceBase
 {
-  public:
+ public:
 
   // Initializes the playback module instance
  PlaybackInstanceBase(const nlohmann::json& config) {};

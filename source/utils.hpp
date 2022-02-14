@@ -9,6 +9,14 @@
 #include <vector>
 #include <pthread.h>
 
+// If we use NCurses, we need to use the appropriate printing function
+#ifdef NCURSES
+ #include <ncurses.h>
+ #define LOG printw
+#else
+ #define LOG printf
+#endif
+
 // Function to split a string into a sub-strings delimited by a character
 // Taken from stack overflow answer to https://stackoverflow.com/questions/236129/how-do-i-iterate-over-the-words-of-a-string
 // By Evan Teran
