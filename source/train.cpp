@@ -89,8 +89,7 @@ void Train::run()
     uint8_t winStateData[_STATE_DATA_SIZE];
     _winState.getStateDataFromDifference(_referenceStateData, winStateData);
     _gameInstances[0]->pushState((uint8_t*)winStateData);
-    _gameInstances[0]->printStateInfo();
-    _gameInstances[0]->printRuleStatus(_winState.rulesStatus);
+    _gameInstances[0]->printStateInfo(_winState.rulesStatus);
 
     // Print Move History
     if (_storeMoveList)
@@ -467,8 +466,7 @@ void Train::printTrainStatus()
   uint8_t bestStateData[_STATE_DATA_SIZE];
   _bestState.getStateDataFromDifference(_referenceStateData, bestStateData);
   _gameInstances[0]->pushState(bestStateData);
-  _gameInstances[0]->printStateInfo();
-  _gameInstances[0]->printRuleStatus(_bestState.rulesStatus);
+  _gameInstances[0]->printStateInfo(_bestState.rulesStatus);
 
   // Print Move History
   if (_storeMoveList)

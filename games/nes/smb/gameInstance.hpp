@@ -234,23 +234,23 @@ class GameInstance : public GameInstanceBase
   inline gameRuleData_t getMagnetValues(const bool* rulesStatus) const
   {
    // Storage for magnet information
-   gameRuleData_t magnetSet;
+   gameRuleData_t magnets;
 
-   magnetSet.marioScreenOffsetMagnet.intensity = 0.0f;
-   magnetSet.marioScreenOffsetMagnet.max = 0.0f;
+   magnets.marioScreenOffsetMagnet.intensity = 0.0f;
+   magnets.marioScreenOffsetMagnet.max = 0.0f;
 
-   magnetSet.screenHorizontalMagnet.intensity = 0.0f;
-   magnetSet.screenHorizontalMagnet.max = 0.0f;
+   magnets.screenHorizontalMagnet.intensity = 0.0f;
+   magnets.screenHorizontalMagnet.max = 0.0f;
 
-   magnetSet.marioHorizontalMagnet.intensity = 0.0f;
-   magnetSet.marioHorizontalMagnet.max = 0.0f;
+   magnets.marioHorizontalMagnet.intensity = 0.0f;
+   magnets.marioHorizontalMagnet.max = 0.0f;
 
-   magnetSet.marioVerticalMagnet.intensity = 0.0f;
-   magnetSet.marioVerticalMagnet.max = 0.0f;
+   magnets.marioVerticalMagnet.intensity = 0.0f;
+   magnets.marioVerticalMagnet.max = 0.0f;
 
-   for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++) if (rulesStatus[ruleId] == true) magnetSet = _rules[ruleId]->_data;
+   for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++) if (rulesStatus[ruleId] == true) magnets = _rules[ruleId]->_data;
 
-   return magnetSet;
+   return magnets;
   }
 
   // Obtains the score of a given frame
@@ -263,19 +263,19 @@ class GameInstance : public GameInstanceBase
       reward += _rules[ruleId]->_reward;
 
     // Getting magnet values for the kid
-    auto magnetSet = getMagnetValues(rulesStatus);
+    auto magnets = getMagnetValues(rulesStatus);
 
     // Evaluating screen screen magnet value
-    reward += magnetSet.screenHorizontalMagnet.intensity * std::min((float)_data.screenPosX, magnetSet.screenHorizontalMagnet.max);
+    reward += magnets.screenHorizontalMagnet.intensity * std::min((float)_data.screenPosX, magnets.screenHorizontalMagnet.max);
 
     // Evaluating mario / screen offset magnet value
-    reward += magnetSet.marioScreenOffsetMagnet.intensity * std::min((float)_data.marioScreenOffset, magnetSet.marioScreenOffsetMagnet.max);
+    reward += magnets.marioScreenOffsetMagnet.intensity * std::min((float)_data.marioScreenOffset, magnets.marioScreenOffsetMagnet.max);
 
     // Evaluating mario magnet's reward on position X
-    reward += magnetSet.marioHorizontalMagnet.intensity * std::min((float)_data.marioPosX, magnetSet.marioHorizontalMagnet.max);
+    reward += magnets.marioHorizontalMagnet.intensity * std::min((float)_data.marioPosX, magnets.marioHorizontalMagnet.max);
 
     // Evaluating mario magnet's reward on position Y
-    reward += magnetSet.marioVerticalMagnet.intensity * std::min((float)*_data.marioPosY, magnetSet.marioVerticalMagnet.max);
+    reward += magnets.marioVerticalMagnet.intensity * std::min((float)*_data.marioPosY, magnets.marioVerticalMagnet.max);
 
     // If mario is getting into the tube, reward timer going down
     if (*_data.marioState == 3) reward += 1000.0f * (24.0f - (float)*_data.climbSideTimer);
@@ -284,9 +284,11 @@ class GameInstance : public GameInstanceBase
     return reward;
   }
 
-  void printStateInfo() const override
+  void printStateInfo(const bool* rulesStatus) const override
   {
     LOG("[Jaffar]  + Current World-Stage:    %1u-%1u\n", _data.currentWorld, _data.currentStage);
+    LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
+    LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
     LOG("[Jaffar]  + Time Left:              %1u%1u%1u\n", *_data.timeLeft100, *_data.timeLeft10, *_data.timeLeft1);
     LOG("[Jaffar]  + Mario Animation:        %02u\n", *_data.marioAnimation);
     LOG("[Jaffar]  + Mario State:            %02u\n", *_data.marioState);
@@ -313,9 +315,18 @@ class GameInstance : public GameInstanceBase
     LOG("[Jaffar]  + Warp Area Offset:       %04u\n", *_data.warpAreaOffset);
     LOG("[Jaffar]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_data.animationTimer, *_data.jumpSwimTimer, *_data.runningTimer, *_data.blockBounceTimer, *_data.sideCollisionTimer, *_data.jumpspringTimer, *_data.gameControlTimer, *_data.climbSideTimer, *_data.enemyFrameTimer, *_data.frenzyEnemyTimer, *_data.bowserFireTimer, *_data.stompTimer, *_data.airBubbleTimer, *_data.multiCoinBlockTimer, *_data.invincibleTimer, *_data.starTimer);
 
-//    LOG("[Jaffar]  + Screen Horizontal Magnet   - Intensity: %.1f, Max: %f\n", magnets.screenHorizontalMagnet.intensity, magnets.screenHorizontalMagnet.max);
-//    LOG("[Jaffar]  + Mario Screen Offset Magnet - Intensity: %.1f, Max: %f\n", magnets.marioScreenOffsetMagnet.intensity, magnets.marioScreenOffsetMagnet.max);
-//    LOG("[Jaffar]  + Mario Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.max);
-//    LOG("[Jaffar]  + Mario Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.max);
+    LOG("[Jaffar]  + Rule Status: ");
+    for (size_t i = 0; i < _ruleCount; i++)
+    {
+      if (i > 0 && i % 60 == 0) printf("\n                         ");
+      printf("%d", rulesStatus[i] ? 1 : 0);
+    }
+    LOG("\n");
+
+    auto magnets = getMagnetValues(rulesStatus);
+    LOG("[Jaffar]  + Screen Horizontal Magnet   - Intensity: %.1f, Max: %f\n", magnets.screenHorizontalMagnet.intensity, magnets.screenHorizontalMagnet.max);
+    LOG("[Jaffar]  + Mario Screen Offset Magnet - Intensity: %.1f, Max: %f\n", magnets.marioScreenOffsetMagnet.intensity, magnets.marioScreenOffsetMagnet.max);
+    LOG("[Jaffar]  + Mario Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.max);
+    LOG("[Jaffar]  + Mario Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.max);
   }
 };

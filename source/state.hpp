@@ -63,6 +63,12 @@ class State
    curPos += _ruleCount * sizeof(bool);
   }
 
+  // Destructor frees up base pointer
+  ~State()
+  {
+   delete _basePointer;
+  }
+
   // Parsing configuration
   static void parseConfiguration(const nlohmann::json& config)
   {
@@ -121,7 +127,7 @@ class State
     for (uint16_t i = 0; i < stateDiffCount; i++) stateData[stateDiffPositions[i]] = stateDiffValues[i];
   }
 
-  void setMoveHistory(const uint8_t* sourceMoveHistory)
+  inline void setMoveHistory(const uint8_t* sourceMoveHistory)
   {
    memcpy(moveHistory, sourceMoveHistory, sizeof(uint8_t) * _maxMoveCount);
   }

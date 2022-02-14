@@ -111,18 +111,6 @@ class GameInstanceBase
    return type;
   }
 
-  // Function to print rule status
-  void printRuleStatus(const bool* rulesStatus) const
-  {
-   LOG("[Jaffar]  + Rule Status: ");
-   for (size_t i = 0; i < _ruleCount; i++)
-   {
-     if (i > 0 && i % 60 == 0) printf("\n                         ");
-     printf("%d", rulesStatus[i] ? 1 : 0);
-   }
-   LOG("\n");
-  }
-
   // Function to advance frame
   void advanceState(const uint8_t &move) { _emu->advanceState(move); updateDerivedValues(); };
   void advanceState(const std::string& move) { _emu->advanceState(move); updateDerivedValues(); };
@@ -181,5 +169,5 @@ class GameInstanceBase
   virtual inline float getStateReward(const bool* rulesStatus) const = 0;
 
   // Function to print
-  virtual void printStateInfo() const = 0;
+  virtual void printStateInfo(const bool* rulesStatus) const = 0;
 };
