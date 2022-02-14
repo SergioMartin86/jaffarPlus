@@ -1,0 +1,1 @@
+option('game', type : 'combo', choices : ['nes/smb'], description: 'Selects the game to run Jaffar with')

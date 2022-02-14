@@ -1,0 +1,9 @@
+# We don't want to add any roms to github here
+*.nes
+*.bin
+*.gen
+*.dat
+*.rom
+*.zip
+*.gz
+*.7z
