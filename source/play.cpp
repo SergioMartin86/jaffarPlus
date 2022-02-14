@@ -71,8 +71,8 @@ int main(int argc, char *argv[])
   auto statusConfig = loadStringFromFile(configFileString, configFile.c_str());
   if (statusConfig == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
 
-  nlohmann::json configJs;
-  try { configJs = nlohmann::json::parse(configFileString); }
+  nlohmann::json config;
+  try { config = nlohmann::json::parse(configFileString); }
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
   // If sequence file defined, load it and play it
@@ -104,11 +104,9 @@ int main(int argc, char *argv[])
 
   refresh();
 
-//   hqn::HQNState hqnState;
-
   // Initializing game state
   GameInstance gameInstance;
-  gameInstance.initialize(configJs);
+  gameInstance.initialize(config);
 
   // Storage for sequence frames and rule evaluation
   std::vector<uint8_t*> stateSequence;
@@ -144,6 +142,8 @@ int main(int argc, char *argv[])
 
   printw("[Jaffar] Opening Game window...\n");
 
+  PlaybackInstance playbackInstance(config);
+
   // Variable for current step in view
   int currentStep = 0;
 
@@ -158,7 +158,6 @@ int main(int argc, char *argv[])
    gameInstance.pushState(stateSequence[currentStep]);
 
    // Update display
-   //gui->update(true);
 
    if (showFrameInfo)
    {
@@ -176,7 +175,6 @@ int main(int argc, char *argv[])
    // If we're reproducing do not have an interactive interface
    if (isReproduce)
    {
-    usleep(16667);
     currentStep++;
     if (currentStep > sequenceLength) { currentStep--; isReproduce = false; }
     continue;

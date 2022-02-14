@@ -5,6 +5,7 @@
 #include <hqn_gui_controller.h>
 #include <utils.hpp>
 #include <string>
+#include <emuInstance.hpp>
 #include <playbackInstanceBase.hpp>
 
 class PlaybackInstance : public PlaybackInstanceBase
@@ -22,9 +23,12 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Initializes the playback module instance
  PlaybackInstance(const nlohmann::json& config) : PlaybackInstanceBase(config)
  {
+  // Checking whether it contains the emulator configuration field
+  if (isDefined(config, "Emulator Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Emulator Configuration' key.\n");
+
   // Checking whether configuration contains the rom file
-  if (isDefined(config, "Rom File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rom File' key.\n");
-  std::string romFilePath = config["Rom File"].get<std::string>();
+  if (isDefined(config["Emulator Configuration"], "Rom File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rom File' key.\n");
+  std::string romFilePath = config["Emulator Configuration"]["Rom File"].get<std::string>();
 
   // Loading Rom into HQN
   _hqnState.loadROM(romFilePath.c_str());
@@ -49,13 +53,14 @@ class PlaybackInstance : public PlaybackInstanceBase
  // Function to load state
  void loadState(const uint8_t* state) override
  {
-
+  _hqnState.loadState((char*)state, _STATE_DATA_SIZE);
  }
 
  // Function to render frame
  void renderFrame(const uint8_t move) override
  {
-
+  usleep(16667);
+  _hqnGUI->update(true);
  }
 
 };
