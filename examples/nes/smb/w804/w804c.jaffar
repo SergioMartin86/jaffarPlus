@@ -1,16 +1,17 @@
 {
   "Description": "This script searches for the fastest any% solution for NES SMB World 8-4c",  
  
-  "Jaffar Configuration": 
+  "Emulator Configuration": 
   {
     "Rom File": "../smb.nes",
     "State File": "w804c.state"
   },
   
-  "Emulator Configuration": 
+  "State Configuration": 
   {
-    "Rom File": "../smb.nes",
-    "State File": "w804c.state"
+    "Max Difference Count": 750,
+    "Max Move Count": 200,
+    "Store Move List": true    
   },
  
   "Rules":

@@ -68,10 +68,10 @@ void Train::run()
     }
 
     // Terminate if maximum number of states was reached
-    if (_currentStep > _MAX_MOVELIST_SIZE-1)
+    if (_currentStep >= _maxMoveCount)
     {
       printf("[Jaffar] Maximum state number reached, finishing...\n");
-      printf("[Jaffar] To run Jaffar for more steps, modify this limit in state.h and rebuild.\n");
+      printf("[Jaffar] To run Jaffar for more steps, increase 'Max Move Count' in the .jaffar file.\n");
       terminate = true;
     }
   }
@@ -92,15 +92,14 @@ void Train::run()
     _gameInstances[0]->printStateInfo();
     _gameInstances[0]->printRuleStatus(_winState.rulesStatus);
 
-    #ifndef JAFFAR_DISABLE_MOVE_HISTORY
-
     // Print Move History
-    printf("[Jaffar]  + Move List: ");
-    for (uint16_t i = 0; i < _currentStep; i++)
-      printf("%s ", _possibleMoves[_winState.getMove(i)].c_str());
-    printf("\n");
-
-    #endif
+    if (_storeMoveList)
+    {
+     printf("[Jaffar]  + Move List: ");
+     for (uint16_t i = 0; i < _currentStep; i++)
+       printf("%s ", _possibleMoves[_winState.getMove(i)].c_str());
+     printf("\n");
+    }
   }
 
   // Marking the end of the run
@@ -114,18 +113,17 @@ void Train::run()
   {
    auto lastState = _winStateFound ? _winState : _bestState;
 
-   #ifndef JAFFAR_DISABLE_MOVE_HISTORY
-
    // Storing the solution sequence
-   std::string solutionString;
-   solutionString += _possibleMoves[lastState.getMove(0)];
-   for (size_t i = 1; i < _currentStep; i++)
-    solutionString += std::string(" ") + _possibleMoves[lastState.getMove(i)];
-   solutionString += std::string(" .");
-   std::string outputBestSolutionFilePath = _outputSaveBestPath + std::string(".best.sol");
-   saveStringToFile(solutionString, outputBestSolutionFilePath.c_str());
-
-   #endif
+   if (_storeMoveList)
+   {
+    std::string solutionString;
+    solutionString += _possibleMoves[lastState.getMove(0)];
+    for (size_t i = 1; i < _currentStep; i++)
+     solutionString += std::string(" ") + _possibleMoves[lastState.getMove(i)];
+    solutionString += std::string(" .");
+    std::string outputBestSolutionFilePath = _outputSaveBestPath + std::string(".best.sol");
+    saveStringToFile(solutionString, outputBestSolutionFilePath.c_str());
+   }
   }
 }
 
@@ -246,8 +244,8 @@ void Train::computeStates()
         if (collisionDetected) { _newCollisionCounter++; continue; }
 
         // Getting rule status from the base state
-        bool rulesStatus[_MAX_RULE_COUNT];
-        memcpy(rulesStatus, baseState->rulesStatus, sizeof(State::rulesStatus));
+        bool rulesStatus[_ruleCount];
+        memcpy(rulesStatus, baseState->rulesStatus, sizeof(rulesStatus));
 
         // Evaluating rules on the new state
         _gameInstances[threadId]->evaluateRules(rulesStatus);
@@ -278,13 +276,14 @@ void Train::computeStates()
         if (foundFreeStateStorage == false) newState = new State;
 
         // Copying rule status into new state
-        memcpy(newState->rulesStatus, rulesStatus, sizeof(State::rulesStatus));
+        memcpy(newState->rulesStatus, rulesStatus, sizeof(rulesStatus));
 
         // Copying move list and adding new move
-        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
-        memcpy(newState->moveHistory, baseState->moveHistory, sizeof(State::moveHistory));
-        newState->setMove(_currentStep, moveId);
-        #endif
+        if (_storeMoveList)
+        {
+         newState->setMoveHistory(baseState->moveHistory);
+         newState->setMove(_currentStep, moveId);
+        }
 
         // Calculating current reward
         newState->reward = _gameInstances[threadId]->getStateReward(newState->rulesStatus);
@@ -439,11 +438,11 @@ void Train::computeStates()
 void Train::printTrainStatus()
 {
   printf("[Jaffar] ----------------------------------------------------------------\n");
-  printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _MAX_MOVELIST_SIZE);
+  printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _maxMoveCount);
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
   printf("[Jaffar] Base States Performance: %.3f States/s\n", (double)_stepBaseStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
-  printf("[Jaffar] State size: %lu bytes\n", sizeof(State));
+  printf("[Jaffar] State size: %lu bytes\n", _stateSize);
   printf("[Jaffar] States Processed: (Step/Total): %lu / %lu\n", _stepNewStatesProcessedCounter, _totalStatesProcessedCounter);
   printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(State)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(State)) / (1024.0 * 1024.0));
   printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
@@ -458,7 +457,7 @@ void Train::printTrainStatus()
   printf("[Jaffar]   + State Sorting            %3.3fs\n", _stepStateDBSortingTime / 1.0e+9);
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
   printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0));
-  printf("[Jaffar] Max State State Difference: %lu / %d\n", _maxStateDiff, _MAX_STATE_DIFF);
+  printf("[Jaffar] Max State State Difference: %u / %u\n", _maxStateDiff, _maxDifferenceCount);
   printf("[Jaffar] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
   printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
   printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, <%.0f,%.0f>mb\n", _hashSizeStep, _hashSizeCurrent, _hashSizeLowerBound, _hashSizeUpperBound);
@@ -471,15 +470,14 @@ void Train::printTrainStatus()
   _gameInstances[0]->printStateInfo();
   _gameInstances[0]->printRuleStatus(_bestState.rulesStatus);
 
-  #ifndef JAFFAR_DISABLE_MOVE_HISTORY
-
   // Print Move History
-  printf("[Jaffar]  + Move List: ");
-  for (size_t i = 0; i < _currentStep; i++)
-    printf("%s ", _possibleMoves[_bestState.getMove(i)].c_str());
-  printf("\n");
-
-  #endif
+  if (_storeMoveList)
+  {
+   printf("[Jaffar]  + Move List: ");
+   for (size_t i = 0; i < _currentStep; i++)
+     printf("%s ", _possibleMoves[_bestState.getMove(i)].c_str());
+   printf("\n");
+  }
 }
 
 Train::Train(int argc, char *argv[])
@@ -556,13 +554,9 @@ Train::Train(int argc, char *argv[])
   auto status = loadStringFromFile(configFileString, configFile.c_str());
   if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
 
-  nlohmann::json configJs;
-  try { configJs = nlohmann::json::parse(configFileString); }
+  nlohmann::json config;
+  try { config = nlohmann::json::parse(configFileString); }
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
-
-  // Calculating max DB size bounds
-  _maxDatabaseSizeLowerBound = floor(((double)maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
-  _maxDatabaseSizeUpperBound = floor(((double)maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
 
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
@@ -577,18 +571,25 @@ Train::Train(int argc, char *argv[])
    #pragma omp critical
    {
     _gameInstances[threadId] = new GameInstance();
-    _gameInstances[threadId]->initialize(configJs);
+    _gameInstances[threadId]->initialize(config);
    }
   }
+
+  // Storing rule count
+  _ruleCount = _gameInstances[0]->_rules.size();
+
+  // Parsing state configuration
+  State::parseConfiguration(config);
+
+  // Calculating max DB size bounds
+  _maxDatabaseSizeLowerBound = floor(((double)maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)_stateSize));
+  _maxDatabaseSizeUpperBound = floor(((double)maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)_stateSize));
 
   printf("[Jaffar] Game initialized.\n");
 
   // Setting initial values
   _hasFinalized = false;
   _hashCollisions = 0;
-
-  // Check rule count does not exceed maximum
-  _ruleCount = _gameInstances[0]->_rules.size();
 
   // Setting win status
   _winStateFound = false;
@@ -654,27 +655,25 @@ void Train::showSavingLoop()
       double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - bestStateSaveTimer).count();
       if (bestStateTimerElapsed / 1.0e+9 > _outputSaveBestSeconds)
       {
-        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
+       // Storing the best and worst solution sequences
+        if (_storeMoveList)
+        {
+         std::string bestSolutionString;
+         bestSolutionString += _possibleMoves[_bestState.getMove(0)];
+         for (size_t i = 1; i < _currentStep; i++)
+          bestSolutionString += std::string(" ") + _possibleMoves[_bestState.getMove(i)];
+         bestSolutionString += std::string(" .");
+         std::string outputSolPath = _outputSaveBestPath + std::string(".best.sol");
+         saveStringToFile(bestSolutionString, outputSolPath.c_str());
 
-        // Storing the solution sequence
-        std::string bestSolutionString;
-        bestSolutionString += _possibleMoves[_bestState.getMove(0)];
-        for (size_t i = 1; i < _currentStep; i++)
-         bestSolutionString += std::string(" ") + _possibleMoves[_bestState.getMove(i)];
-        bestSolutionString += std::string(" .");
-        std::string outputSolPath = _outputSaveBestPath + std::string(".best.sol");
-        saveStringToFile(bestSolutionString, outputSolPath.c_str());
-
-        // Storing the solution sequence
-        std::string worstSolutionString;
-        worstSolutionString += _possibleMoves[_worstState.getMove(0)];
-        for (size_t i = 1; i < _currentStep; i++)
-         worstSolutionString += std::string(" ") + _possibleMoves[_worstState.getMove(i)];
-        worstSolutionString += std::string(" .");
-        std::string outputWorstSolPath = _outputSaveBestPath + std::string(".worst.sol");
-        saveStringToFile(worstSolutionString, outputWorstSolPath.c_str());
-
-        #endif
+         std::string worstSolutionString;
+         worstSolutionString += _possibleMoves[_worstState.getMove(0)];
+         for (size_t i = 1; i < _currentStep; i++)
+          worstSolutionString += std::string(" ") + _possibleMoves[_worstState.getMove(i)];
+         worstSolutionString += std::string(" .");
+         std::string outputWorstSolPath = _outputSaveBestPath + std::string(".worst.sol");
+         saveStringToFile(worstSolutionString, outputWorstSolPath.c_str());
+        }
 
         // Resetting timer
         bestStateSaveTimer = std::chrono::steady_clock::now();

@@ -26,12 +26,8 @@ class GameInstanceBase
   // Storage for rules
   std::vector<Rule *> _rules;
 
-  // Counter for number of rules
-  size_t _ruleCount;
-
   // Underlying emulator instance
   EmuInstance *_emu;
-
 
   // virtual destructor
   virtual ~GameInstanceBase() = default;
@@ -70,8 +66,6 @@ class GameInstanceBase
 
    // Setting global rule count
    _ruleCount = _rules.size();
-
-   if (_ruleCount > _MAX_RULE_COUNT) EXIT_WITH_ERROR("[ERROR] Configured Jaffar to run %lu rules, but the specified script contains %lu. Modify frame.h and rebuild to run this script.\n", _MAX_RULE_COUNT, _ruleCount);
 
    // Checking for repeated rule labels
    std::set<size_t> ruleLabelSet;
