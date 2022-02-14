@@ -12,7 +12,7 @@ void Train::run()
 
   if (_outputSaveBestSeconds > 0)
   {
-    printf("[Jaffar] Saving best frame every: %.3f seconds.\n", _outputSaveBestSeconds);
+    printf("[Jaffar] Saving best state every: %.3f seconds.\n", _outputSaveBestSeconds);
     printf("[Jaffar]  + Savefile Path: %s\n", _outputSaveBestPath.c_str());
     printf("[Jaffar]  + Solution Path: %s\n", _outputSolutionBestPath.c_str());
   }
@@ -40,64 +40,64 @@ void Train::run()
     printTrainStatus();
 
     /////////////////////////////////////////////////////////////////
-    /// Main frame processing cycle begin
+    /// Main state processing cycle begin
     /////////////////////////////////////////////////////////////////
 
-    computeFrames();
+    computeStates();
 
     /////////////////////////////////////////////////////////////////
-    /// Main frame processing cycle end
+    /// Main state processing cycle end
     /////////////////////////////////////////////////////////////////
 
     // Advancing step
     _currentStep++;
 
     // Terminate if all DBs are depleted and no winning rule was found
-    _databaseSize = _frameDB.size();
+    _databaseSize = _stateDB.size();
     if (_databaseSize == 0)
     {
-      printf("[Jaffar] Frame database depleted with no winning frames, finishing...\n");
+      printf("[Jaffar] State database depleted with no winning states, finishing...\n");
       terminate = true;
     }
 
     // Terminate if a winning rule was found
-    if (_winFrameFound)
+    if (_winStateFound)
     {
-      printf("[Jaffar] Winning frame reached in %u moves, finishing...\n", _currentStep-1);
+      printf("[Jaffar] Winning state reached in %u moves, finishing...\n", _currentStep-1);
       terminate = true;
     }
 
-    // Terminate if maximum number of frames was reached
+    // Terminate if maximum number of states was reached
     if (_currentStep > _MAX_MOVELIST_SIZE-1)
     {
-      printf("[Jaffar] Maximum frame number reached, finishing...\n");
-      printf("[Jaffar] To run Jaffar for more steps, modify this limit in frame.h and rebuild.\n");
+      printf("[Jaffar] Maximum state number reached, finishing...\n");
+      printf("[Jaffar] To run Jaffar for more steps, modify this limit in state.h and rebuild.\n");
       terminate = true;
     }
   }
 
-  // Print winning frame if found
-  if (_winFrameFound == true)
+  // Print winning state if found
+  if (_winStateFound == true)
   {
-    printf("[Jaffar] Win Frame Information:\n");
+    printf("[Jaffar] Win State Information:\n");
     size_t timeStep = _currentStep-1;
     size_t curMins = timeStep / 720;
     size_t curSecs = (timeStep - (curMins * 720)) / 12;
     size_t curMilliSecs = ceil((double)(timeStep - (curMins * 720) - (curSecs * 12)) / 0.012);
     printf("[Jaffar]  + Solution IGT:  %2lu:%02lu.%03lu\n", curMins, curSecs, curMilliSecs);
 
-    uint8_t winFrameData[_FRAME_DATA_SIZE];
-    _winFrame.getFrameDataFromDifference(_referenceFrameData, winFrameData);
-    _gameInstances[0]->pushState((uint8_t*)winFrameData);
+    uint8_t winStateData[_STATE_DATA_SIZE];
+    _winState.getStateDataFromDifference(_referenceStateData, winStateData);
+    _gameInstances[0]->pushState((uint8_t*)winStateData);
     _gameInstances[0]->printStateInfo();
-    _gameInstances[0]->printRuleStatus(_winFrame.rulesStatus);
+    _gameInstances[0]->printRuleStatus(_winState.rulesStatus);
 
     #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
     // Print Move History
     printf("[Jaffar]  + Move List: ");
     for (uint16_t i = 0; i < _currentStep; i++)
-      printf("%s ", _possibleMoves[_winFrame.getMove(i)].c_str());
+      printf("%s ", _possibleMoves[_winState.getMove(i)].c_str());
     printf("\n");
 
     #endif
@@ -109,18 +109,18 @@ void Train::run()
   // Stopping show thread
   pthread_join(_showThreadId, NULL);
 
-  // If it has finalized with a win, save the winning frame
+  // If it has finalized with a win, save the winning state
   if (_outputSaveBestSeconds > 0.0)
   {
-   auto lastFrame = _winFrameFound ? _winFrame : _bestFrame;
+   auto lastState = _winStateFound ? _winState : _bestState;
 
    #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
    // Storing the solution sequence
    std::string solutionString;
-   solutionString += _possibleMoves[lastFrame.getMove(0)];
+   solutionString += _possibleMoves[lastState.getMove(0)];
    for (size_t i = 1; i < _currentStep; i++)
-    solutionString += std::string(" ") + _possibleMoves[lastFrame.getMove(i)];
+    solutionString += std::string(" ") + _possibleMoves[lastState.getMove(i)];
    solutionString += std::string(" .");
    std::string outputBestSolutionFilePath = _outputSaveBestPath + std::string(".best.sol");
    saveStringToFile(solutionString, outputBestSolutionFilePath.c_str());
@@ -129,88 +129,88 @@ void Train::run()
   }
 }
 
-void Train::limitFrameDatabase(std::vector<Frame*>& frameDB, size_t limit)
+void Train::limitStateDatabase(std::vector<State*>& stateDB, size_t limit)
 {
- // If global frames exceed the maximum allowed, sort and truncate all excessive frames
- std::nth_element(frameDB.begin(), frameDB.begin() + _maxDatabaseSizeLowerBound, frameDB.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
+ // If global states exceed the maximum allowed, sort and truncate all excessive states
+ std::nth_element(stateDB.begin(), stateDB.begin() + _maxDatabaseSizeLowerBound, stateDB.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
 
- // Recycle excess frames
- for (size_t i = limit; i < frameDB.size(); i++) _freeFramesQueue.push(frameDB[i]);
+ // Recycle excess states
+ for (size_t i = limit; i < stateDB.size(); i++) _freeStatesQueue.push(stateDB[i]);
 
- // Resizing new frames database to lower bound
- frameDB.resize(limit);
+ // Resizing new states database to lower bound
+ stateDB.resize(limit);
 }
 
-void Train::computeFrames()
+void Train::computeStates()
 {
   // Initializing counters
-  _stepBaseFramesProcessedCounter = 0;
-  _stepNewFramesProcessedCounter = 0;
+  _stepBaseStatesProcessedCounter = 0;
+  _stepNewStatesProcessedCounter = 0;
   _newCollisionCounter = 0;
-  _stepMaxFramesInMemory = 0;
-  size_t newFramesCounter = 0;
+  _stepMaxStatesInMemory = 0;
+  size_t newStatesCounter = 0;
   size_t startHashEntryCount = _hashDB.size();
 
-  // Creating shared database for new frames
-  std::vector<Frame*> newFrames;
+  // Creating shared database for new states
+  std::vector<State*> newStates;
 
-  // Storing current source frame data for decoding
-  uint8_t currentSourceFrameData[_FRAME_DATA_SIZE];
-  memcpy(currentSourceFrameData, _referenceFrameData, _FRAME_DATA_SIZE);
+  // Storing current source state data for decoding
+  uint8_t currentSourceStateData[_STATE_DATA_SIZE];
+  memcpy(currentSourceStateData, _referenceStateData, _STATE_DATA_SIZE);
 
-  // Updating reference data with the first entry of the latest frames, for encoding
-  _frameDB[0]->getFrameDataFromDifference(currentSourceFrameData, _referenceFrameData);
+  // Updating reference data with the first entry of the latest states, for encoding
+  _stateDB[0]->getStateDataFromDifference(currentSourceStateData, _referenceStateData);
 
   // Initializing step timers
   _stepHashCalculationTime = 0.0;
   _stepHashCheckingTime = 0.0;
-  _stepFrameAdvanceTime = 0.0;
-  _stepFrameDeserializationTime = 0.0;
-  _stepFrameEncodingTime = 0.0;
-  _stepFrameDecodingTime = 0.0;
-  _stepFrameCreationTime = 0.0;
-  _stepFrameDBSortingTime = 0.0;
+  _stepStateAdvanceTime = 0.0;
+  _stepStateDeserializationTime = 0.0;
+  _stepStateEncodingTime = 0.0;
+  _stepStateDecodingTime = 0.0;
+  _stepStateCreationTime = 0.0;
+  _stepStateDBSortingTime = 0.0;
 
-  // Processing frame database in parallel
+  // Processing state database in parallel
   #pragma omp parallel
   {
     // Getting thread id
     int threadId = omp_get_thread_num();
 
-    // Storage for base frames
-    uint8_t baseFrameData[_FRAME_DATA_SIZE];
+    // Storage for base states
+    uint8_t baseStateData[_STATE_DATA_SIZE];
 
     // Profiling timers
     double threadHashCalculationTime = 0.0;
     double threadHashCheckingTime = 0.0;
-    double threadFrameAdvanceTime = 0.0;
-    double threadFrameDeserializationTime = 0.0;
-    double threadFrameDecodingTime = 0.0;
-    double threadFrameEncodingTime = 0.0;
-    double threadFrameCreationTime = 0.0;
+    double threadStateAdvanceTime = 0.0;
+    double threadStateDeserializationTime = 0.0;
+    double threadStateDecodingTime = 0.0;
+    double threadStateEncodingTime = 0.0;
+    double threadStateCreationTime = 0.0;
 
-    // Computing always the last frame while resizing the database to reduce memory footprint
+    // Computing always the last state while resizing the database to reduce memory footprint
     #pragma omp for schedule(dynamic, 1024)
-    for (auto& baseFrame : _frameDB)
+    for (auto& baseState : _stateDB)
     {
       auto t0 = std::chrono::steady_clock::now(); // Profiling
-      baseFrame->getFrameDataFromDifference(currentSourceFrameData, baseFrameData);
+      baseState->getStateDataFromDifference(currentSourceStateData, baseStateData);
       auto tf = std::chrono::steady_clock::now();
-      threadFrameDecodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
+      threadStateDecodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
-      // Getting possible moves for the current frame
+      // Getting possible moves for the current state
       t0 = std::chrono::steady_clock::now(); // Profiling
-      _gameInstances[threadId]->pushState(baseFrameData);
+      _gameInstances[threadId]->pushState(baseStateData);
       std::vector<uint8_t> possibleMoveIds = _gameInstances[threadId]->getPossibleMoveIds();
       tf = std::chrono::steady_clock::now();
-      threadFrameDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
+      threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
       // Running possible moves
       for (size_t idx = 0; idx < possibleMoveIds.size(); idx++)
       {
-        // Increasing  frames processed counter
+        // Increasing  states processed counter
         #pragma omp atomic
-        _stepNewFramesProcessedCounter++;
+        _stepNewStatesProcessedCounter++;
 
         // Getting possible move id
         auto moveId = possibleMoveIds[idx];
@@ -219,16 +219,16 @@ void Train::computeFrames()
         if (idx > 0)
         {
          t0 = std::chrono::steady_clock::now(); // Profiling
-         _gameInstances[threadId]->pushState(baseFrameData);
+         _gameInstances[threadId]->pushState(baseStateData);
          tf = std::chrono::steady_clock::now();
-         threadFrameDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
+         threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
         }
 
         // Perform the selected move
         t0 = std::chrono::steady_clock::now(); // Profiling
-        _gameInstances[threadId]->advanceFrame(moveId);
+        _gameInstances[threadId]->advanceState(moveId);
         tf = std::chrono::steady_clock::now();
-        threadFrameAdvanceTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
+        threadStateAdvanceTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
         // Compute hash value
         t0 = std::chrono::steady_clock::now(); // Profiling
@@ -242,110 +242,110 @@ void Train::computeFrames()
         tf = std::chrono::steady_clock::now();
         threadHashCheckingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
-        // If collision detected, discard this frame
+        // If collision detected, discard this state
         if (collisionDetected) { _newCollisionCounter++; continue; }
 
-        // Getting rule status from the base frame
+        // Getting rule status from the base state
         bool rulesStatus[_MAX_RULE_COUNT];
-        memcpy(rulesStatus, baseFrame->rulesStatus, sizeof(Frame::rulesStatus));
+        memcpy(rulesStatus, baseState->rulesStatus, sizeof(State::rulesStatus));
 
-        // Evaluating rules on the new frame
+        // Evaluating rules on the new state
         _gameInstances[threadId]->evaluateRules(rulesStatus);
 
-        // Getting frame type
-        frameType type = _gameInstances[threadId]->getFrameType(rulesStatus);
+        // Getting state type
+        stateType type = _gameInstances[threadId]->getStateType(rulesStatus);
 
-        // If frame type is failed, continue to the next possible move
+        // If state type is failed, continue to the next possible move
         if (type == f_fail) continue;
 
-        // Storing the frame data
+        // Storing the state data
         t0 = std::chrono::steady_clock::now(); // Profiling
 
-        // Allocating new frame, checking free frame queue if there's a storage we can reuse
-        Frame* newFrame;
-        bool foundFreeFrameStorage = false;
+        // Allocating new state, checking free state queue if there's a storage we can reuse
+        State* newState;
+        bool foundFreeStateStorage = false;
 
         // If found, we take directly from the queue
-        #pragma omp critical(frameQueue)
-         if (_freeFramesQueue.empty() == false)
+        #pragma omp critical(stateQueue)
+         if (_freeStatesQueue.empty() == false)
          {
-          newFrame = _freeFramesQueue.front();
-          _freeFramesQueue.pop();
-          foundFreeFrameStorage = true;
+          newState = _freeStatesQueue.front();
+          _freeStatesQueue.pop();
+          foundFreeStateStorage = true;
          }
 
         // Otherwise we allocate a new storage
-        if (foundFreeFrameStorage == false) newFrame = new Frame;
+        if (foundFreeStateStorage == false) newState = new State;
 
-        // Copying rule status into new frame
-        memcpy(newFrame->rulesStatus, rulesStatus, sizeof(Frame::rulesStatus));
+        // Copying rule status into new state
+        memcpy(newState->rulesStatus, rulesStatus, sizeof(State::rulesStatus));
 
         // Copying move list and adding new move
         #ifndef JAFFAR_DISABLE_MOVE_HISTORY
-        memcpy(newFrame->moveHistory, baseFrame->moveHistory, sizeof(Frame::moveHistory));
-        newFrame->setMove(_currentStep, moveId);
+        memcpy(newState->moveHistory, baseState->moveHistory, sizeof(State::moveHistory));
+        newState->setMove(_currentStep, moveId);
         #endif
 
         // Calculating current reward
-        newFrame->reward = _gameInstances[threadId]->getStateReward(newFrame->rulesStatus);
+        newState->reward = _gameInstances[threadId]->getStateReward(newState->rulesStatus);
 
         tf = std::chrono::steady_clock::now(); // Profiling
-        threadFrameCreationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
+        threadStateCreationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
-        // Encoding the frame data
+        // Encoding the state data
         t0 = std::chrono::steady_clock::now(); // Profiling
 
-        uint8_t gameState[_FRAME_DATA_SIZE];
+        uint8_t gameState[_STATE_DATA_SIZE];
         _gameInstances[threadId]->popState(gameState);
-        newFrame->computeFrameDifference(_referenceFrameData, gameState);
+        newState->computeStateDifference(_referenceStateData, gameState);
 
         tf = std::chrono::steady_clock::now(); // Profiling
-        threadFrameEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
+        threadStateEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
-        // If frame has succeded or is a regular frame, adding it in the corresponding database
-        #pragma omp critical(insertFrame)
+        // If state has succeded or is a regular state, adding it in the corresponding database
+        #pragma omp critical(insertState)
         {
-         // Storing new winning frame
-         if (type == f_win) { _winFrameFound = true; _winFrame = *newFrame; };
+         // Storing new winning state
+         if (type == f_win) { _winStateFound = true; _winState = *newState; };
 
-         // Adding frame to the new frame database
-         newFrames.push_back(newFrame);
+         // Adding state to the new state database
+         newStates.push_back(newState);
 
-         // Increasing new frame counter
-         newFramesCounter++;
+         // Increasing new state counter
+         newStatesCounter++;
 
-         // Calculating the number of frames in use in memory
-         size_t framesInUse = _frameDB.size() - _stepBaseFramesProcessedCounter + newFrames.size();
+         // Calculating the number of states in use in memory
+         size_t statesInUse = _stateDB.size() - _stepBaseStatesProcessedCounter + newStates.size();
 
-         // Increasing maximum frames in use if needed
-         if (framesInUse > _stepMaxFramesInMemory) _stepMaxFramesInMemory = framesInUse;
+         // Increasing maximum states in use if needed
+         if (statesInUse > _stepMaxStatesInMemory) _stepMaxStatesInMemory = statesInUse;
 
-         // If new frame db exceeds upper bound, limit it back to lower bound
-         if (framesInUse > _maxDatabaseSizeUpperBound)
+         // If new state db exceeds upper bound, limit it back to lower bound
+         if (statesInUse > _maxDatabaseSizeUpperBound)
          {
           auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
 
           // Checking if limiting will help at all
-          if (newFrames.size() < _maxDatabaseSizeLowerBound)
-           EXIT_WITH_ERROR("[ERROR] New frames database (%lu) is smaller than lower bound (%lu) and will not bring the total frames (%lu - %lu + %lu = %lu) under the upper bound (%lu).\n", newFrames.size(), _maxDatabaseSizeLowerBound, _frameDB.size(), _stepBaseFramesProcessedCounter, newFrames.size(), framesInUse, _maxDatabaseSizeUpperBound);
+          if (newStates.size() < _maxDatabaseSizeLowerBound)
+           EXIT_WITH_ERROR("[ERROR] New states database (%lu) is smaller than lower bound (%lu) and will not bring the total states (%lu - %lu + %lu = %lu) under the upper bound (%lu).\n", newStates.size(), _maxDatabaseSizeLowerBound, _stateDB.size(), _stepBaseStatesProcessedCounter, newStates.size(), statesInUse, _maxDatabaseSizeUpperBound);
 
-          // Limiting new frames DB to lower bound size and recycling its frames
-          #pragma omp critical(frameQueue)
-          limitFrameDatabase(newFrames, _maxDatabaseSizeLowerBound);
+          // Limiting new states DB to lower bound size and recycling its states
+          #pragma omp critical(stateQueue)
+          limitStateDatabase(newStates, _maxDatabaseSizeLowerBound);
 
           auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                      // Profiling
-          _stepFrameDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
+          _stepStateDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
          }
         }
       }
 
-      // Adding used base frame back into free frame queue
-      #pragma omp critical(frameQueue)
-      _freeFramesQueue.push(baseFrame);
+      // Adding used base state back into free state queue
+      #pragma omp critical(stateQueue)
+      _freeStatesQueue.push(baseState);
 
-      // Increasing counter for base frames processed
+      // Increasing counter for base states processed
       #pragma omp atomic
-      _stepBaseFramesProcessedCounter++;
+      _stepBaseStatesProcessedCounter++;
     }
 
     // Updating timers
@@ -353,55 +353,55 @@ void Train::computeFrames()
     {
      _stepHashCalculationTime += threadHashCalculationTime;
      _stepHashCheckingTime += threadHashCheckingTime;
-     _stepFrameAdvanceTime += threadFrameAdvanceTime;
-     _stepFrameDeserializationTime += threadFrameDeserializationTime;
-     _stepFrameEncodingTime += threadFrameEncodingTime;
-     _stepFrameDecodingTime += threadFrameDecodingTime;
-     _stepFrameCreationTime += threadFrameCreationTime;
+     _stepStateAdvanceTime += threadStateAdvanceTime;
+     _stepStateDeserializationTime += threadStateDeserializationTime;
+     _stepStateEncodingTime += threadStateEncodingTime;
+     _stepStateDecodingTime += threadStateDecodingTime;
+     _stepStateCreationTime += threadStateCreationTime;
     }
   }
 
   // Updating timer averages
   _stepHashCalculationTime /= _threadCount;
   _stepHashCheckingTime /= _threadCount;
-  _stepFrameAdvanceTime /= _threadCount;
-  _stepFrameDeserializationTime /= _threadCount;
-  _stepFrameEncodingTime /= _threadCount;
-  _stepFrameDecodingTime /= _threadCount;
-  _stepFrameCreationTime /= _threadCount;
+  _stepStateAdvanceTime /= _threadCount;
+  _stepStateDeserializationTime /= _threadCount;
+  _stepStateEncodingTime /= _threadCount;
+  _stepStateDecodingTime /= _threadCount;
+  _stepStateCreationTime /= _threadCount;
 
-  // Calculating new frame ratio (new / old)
-  _stepNewFrameRatio = (double)newFramesCounter / (double)_frameDB.size();
+  // Calculating new state ratio (new / old)
+  _stepNewStateRatio = (double)newStatesCounter / (double)_stateDB.size();
 
-  // Clearing all old frames
-  _frameDB.clear();
+  // Clearing all old states
+  _stateDB.clear();
 
-  // Updating max frames in memory counter
-  if (_stepMaxFramesInMemory > _totalMaxFramesInMemory) { _totalMaxFramesInMemory = _stepMaxFramesInMemory; _maxNewFrameRatio = _stepNewFrameRatio; _maxNewFrameRatioStep = _currentStep; }
+  // Updating max states in memory counter
+  if (_stepMaxStatesInMemory > _totalMaxStatesInMemory) { _totalMaxStatesInMemory = _stepMaxStatesInMemory; _maxNewStateRatio = _stepNewStateRatio; _maxNewStateRatioStep = _currentStep; }
 
-  // Sorting local DB frames by reward
+  // Sorting local DB states by reward
   auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
 
   // If size exceeds the lower bound, limit it
-  if (newFrames.size() > _maxDatabaseSizeLowerBound) limitFrameDatabase(newFrames, _maxDatabaseSizeLowerBound);
+  if (newStates.size() > _maxDatabaseSizeLowerBound) limitStateDatabase(newStates, _maxDatabaseSizeLowerBound);
 
-  // Looking for and storing best/worst frame
-  _bestFrameReward = -std::numeric_limits<float>::infinity();
-  _worstFrameReward = std::numeric_limits<float>::infinity();
-  for (const auto& frame : newFrames)
+  // Looking for and storing best/worst state
+  _bestStateReward = -std::numeric_limits<float>::infinity();
+  _worstStateReward = std::numeric_limits<float>::infinity();
+  for (const auto& state : newStates)
   {
-   if (frame->reward > _bestFrameReward) { _bestFrame = *frame; _bestFrameReward = _bestFrame.reward; }
-   if (frame->reward < _worstFrameReward) { _worstFrame = *frame; _worstFrameReward = _worstFrame.reward; }
+   if (state->reward > _bestStateReward) { _bestState = *state; _bestStateReward = _bestState.reward; }
+   if (state->reward < _worstStateReward) { _worstState = *state; _worstStateReward = _worstState.reward; }
   }
 
-  // Setting new frames to be current frames for the next step
-  std::swap(newFrames, _frameDB);
+  // Setting new states to be current states for the next step
+  std::swap(newStates, _stateDB);
 
   auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                           // Profiling
-  _stepFrameDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
+  _stepStateDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
 
-  // Summing frame processing counters
-  _totalFramesProcessedCounter += _stepNewFramesProcessedCounter;
+  // Summing state processing counters
+  _totalStatesProcessedCounter += _stepNewStatesProcessedCounter;
 
   // Calculating and storing new entries created in this step and calculating size in mb to evaluate filtering
   auto getHashSizeFromEntries = [](const ssize_t entries) { return ( ( (double)sizeof(std::pair<const uint16_t, uint64_t>) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0); };
@@ -436,49 +436,47 @@ void Train::computeFrames()
   _hashEntriesTotal = _hashDB.size();
 }
 
-
-
 void Train::printTrainStatus()
 {
   printf("[Jaffar] ----------------------------------------------------------------\n");
   printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _MAX_MOVELIST_SIZE);
-  printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstFrameReward, _bestFrameReward);
-  printf("[Jaffar] Base Frames Performance: %.3f Frames/s\n", (double)_stepBaseFramesProcessedCounter / (_currentStepTime / 1.0e+9));
-  printf("[Jaffar] New Frames Performance:  %.3f Frames/s\n", (double)_stepNewFramesProcessedCounter / (_currentStepTime / 1.0e+9));
-  printf("[Jaffar] Frame size: %lu\n", sizeof(Frame));
-  printf("[Jaffar] Frames Processed: (Step/Total): %lu / %lu\n", _stepNewFramesProcessedCounter, _totalFramesProcessedCounter);
-  printf("[Jaffar] Frame DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(Frame)) / (1024.0 * 1024.0));
+  printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
+  printf("[Jaffar] Base States Performance: %.3f States/s\n", (double)_stepBaseStatesProcessedCounter / (_currentStepTime / 1.0e+9));
+  printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
+  printf("[Jaffar] State size: %lu bytes\n", sizeof(State));
+  printf("[Jaffar] States Processed: (Step/Total): %lu / %lu\n", _stepNewStatesProcessedCounter, _totalStatesProcessedCounter);
+  printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(State)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(State)) / (1024.0 * 1024.0));
   printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
   printf("[Jaffar]   + Hash Calculation:        %3.3fs\n", _stepHashCalculationTime / 1.0e+9);
   printf("[Jaffar]   + Hash Checking:           %3.3fs\n",  _stepHashCheckingTime / 1.0e+9);
   printf("[Jaffar]   + Hash Filtering:          %3.3fs\n", _stepHashFilteringTime / 1.0e+9);
-  printf("[Jaffar]   + Frame Advance:           %3.3fs\n", _stepFrameAdvanceTime / 1.0e+9);
-  printf("[Jaffar]   + Frame Deserialization:   %3.3fs\n", _stepFrameDeserializationTime / 1.0e+9);
-  printf("[Jaffar]   + Frame Encoding:          %3.3fs\n", _stepFrameEncodingTime / 1.0e+9);
-  printf("[Jaffar]   + Frame Decoding:          %3.3fs\n", _stepFrameDecodingTime / 1.0e+9);
-  printf("[Jaffar]   + Frame Creation:          %3.3fs\n", _stepFrameCreationTime / 1.0e+9);
-  printf("[Jaffar]   + Frame Sorting            %3.3fs\n", _stepFrameDBSortingTime / 1.0e+9);
-  printf("[Jaffar] New Frames Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewFrameRatio, _maxNewFrameRatio, _maxNewFrameRatioStep);
-  printf("[Jaffar] Max Frames In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxFramesInMemory, (double)(_stepMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0), _totalMaxFramesInMemory, (double)(_totalMaxFramesInMemory * sizeof(Frame)) / (1024.0 * 1024.0));
-  printf("[Jaffar] Max Frame State Difference: %lu / %d\n", _maxFrameDiff, _MAX_FRAME_DIFF);
+  printf("[Jaffar]   + State Advance:           %3.3fs\n", _stepStateAdvanceTime / 1.0e+9);
+  printf("[Jaffar]   + State Deserialization:   %3.3fs\n", _stepStateDeserializationTime / 1.0e+9);
+  printf("[Jaffar]   + State Encoding:          %3.3fs\n", _stepStateEncodingTime / 1.0e+9);
+  printf("[Jaffar]   + State Decoding:          %3.3fs\n", _stepStateDecodingTime / 1.0e+9);
+  printf("[Jaffar]   + State Creation:          %3.3fs\n", _stepStateCreationTime / 1.0e+9);
+  printf("[Jaffar]   + State Sorting            %3.3fs\n", _stepStateDBSortingTime / 1.0e+9);
+  printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
+  printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0));
+  printf("[Jaffar] Max State State Difference: %lu / %d\n", _maxStateDiff, _MAX_STATE_DIFF);
   printf("[Jaffar] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
   printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
   printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, <%.0f,%.0f>mb\n", _hashSizeStep, _hashSizeCurrent, _hashSizeLowerBound, _hashSizeUpperBound);
   printf("[Jaffar] Hash DB Step Threshold: %u\n", _hashStepThreshold);
-  printf("[Jaffar] Best Frame Information:\n");
+  printf("[Jaffar] Best State Information:\n");
 
-  uint8_t bestFrameData[_FRAME_DATA_SIZE];
-  _bestFrame.getFrameDataFromDifference(_referenceFrameData, bestFrameData);
-  _gameInstances[0]->pushState(bestFrameData);
+  uint8_t bestStateData[_STATE_DATA_SIZE];
+  _bestState.getStateDataFromDifference(_referenceStateData, bestStateData);
+  _gameInstances[0]->pushState(bestStateData);
   _gameInstances[0]->printStateInfo();
-  _gameInstances[0]->printRuleStatus(_bestFrame.rulesStatus);
+  _gameInstances[0]->printRuleStatus(_bestState.rulesStatus);
 
   #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
   // Print Move History
   printf("[Jaffar]  + Move List: ");
   for (size_t i = 0; i < _currentStep; i++)
-    printf("%s ", _possibleMoves[_bestFrame.getMove(i)].c_str());
+    printf("%s ", _possibleMoves[_bestState.getMove(i)].c_str());
   printf("\n");
 
   #endif
@@ -494,24 +492,24 @@ Train::Train(int argc, char *argv[])
   _currentStepTime = 0.0;
 
   // Initializing counters
-  _stepBaseFramesProcessedCounter = 0;
-  _stepNewFramesProcessedCounter = 0;
-  _totalFramesProcessedCounter = 0;
-  _stepMaxFramesInMemory = 0;
-  _totalMaxFramesInMemory = 0;
+  _stepBaseStatesProcessedCounter = 0;
+  _stepNewStatesProcessedCounter = 0;
+  _totalStatesProcessedCounter = 0;
+  _stepMaxStatesInMemory = 0;
+  _totalMaxStatesInMemory = 0;
   _newCollisionCounter = 0;
   _hashEntriesTotal = 0;
   _hashStepThreshold = 0;
   _hashEntriesStep = 0;
-  _stepNewFrameRatio = 0.0;
-  _maxNewFrameRatio = 0.0;
-  _maxNewFrameRatioStep = 0;
+  _stepNewStateRatio = 0.0;
+  _maxNewStateRatio = 0.0;
+  _maxNewStateRatioStep = 0;
 
   // Setting starting step
   _currentStep = 0;
 
-  // Flag to determine if win frame was found
-  _winFrameFound = false;
+  // Flag to determine if win state was found
+  _winStateFound = false;
 
   // Parsing max hash DB entries
   if (const char *hashSizeLowerBoundString = std::getenv("JAFFAR_MAX_HASH_DATABASE_SIZE_LOWER_BOUND_MB")) _hashSizeLowerBound = std::stol(hashSizeLowerBoundString);
@@ -520,14 +518,14 @@ Train::Train(int argc, char *argv[])
   if (const char *hashSizeUpperBoundString = std::getenv("JAFFAR_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB")) _hashSizeUpperBound = std::stol(hashSizeUpperBoundString);
   else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_HASH_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
 
-  // Parsing max frame DB lower bound
+  // Parsing max state DB lower bound
   size_t maxDBSizeMbLowerBound = 0;
-  if (const char *MaxDBMBytesLowerBoundEnvString = std::getenv("JAFFAR_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB")) maxDBSizeMbLowerBound = std::stol(MaxDBMBytesLowerBoundEnvString);
-  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_FRAME_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
+  if (const char *MaxDBMBytesLowerBoundEnvString = std::getenv("JAFFAR_MAX_STATE_DATABASE_SIZE_LOWER_BOUND_MB")) maxDBSizeMbLowerBound = std::stol(MaxDBMBytesLowerBoundEnvString);
+  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_STATE_DATABASE_SIZE_LOWER_BOUND_MB environment variable not defined.\n");
 
   size_t maxDBSizeMbUpperBound = 0;
-  if (const char *MaxDBMBytesUpperBoundEnvString = std::getenv("JAFFAR_MAX_FRAME_DATABASE_SIZE_UPPER_BOUND_MB")) maxDBSizeMbUpperBound = std::stol(MaxDBMBytesUpperBoundEnvString);
-  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_FRAME_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
+  if (const char *MaxDBMBytesUpperBoundEnvString = std::getenv("JAFFAR_MAX_STATE_DATABASE_SIZE_UPPER_BOUND_MB")) maxDBSizeMbUpperBound = std::stol(MaxDBMBytesUpperBoundEnvString);
+  else EXIT_WITH_ERROR("[Jaffar] JAFFAR_MAX_STATE_DATABASE_SIZE_UPPER_BOUND_MB environment variable not defined.\n");
 
   // Parsing file output frequency
   _outputSaveBestSeconds = -1.0;
@@ -563,8 +561,8 @@ Train::Train(int argc, char *argv[])
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
   // Calculating max DB size bounds
-  _maxDatabaseSizeLowerBound = floor(((double)maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)sizeof(Frame)));
-  _maxDatabaseSizeUpperBound = floor(((double)maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(Frame)));
+  _maxDatabaseSizeLowerBound = floor(((double)maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
+  _maxDatabaseSizeUpperBound = floor(((double)maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
 
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
@@ -593,40 +591,40 @@ Train::Train(int argc, char *argv[])
   _ruleCount = _gameInstances[0]->_rules.size();
 
   // Setting win status
-  _winFrameFound = false;
+  _winStateFound = false;
 
   // Computing initial hash
   const auto hash = _gameInstances[0]->computeHash();
 
-  auto initialFrame = new Frame;
-  uint8_t gameState[_FRAME_DATA_SIZE];
+  auto initialState = new State;
+  uint8_t gameState[_STATE_DATA_SIZE];
   _gameInstances[0]->popState(gameState);
 
-  // Storing initial frame as base for differential comparison
-  memcpy(_referenceFrameData, gameState, _FRAME_DATA_SIZE);
+  // Storing initial state as base for differential comparison
+  memcpy(_referenceStateData, gameState, _STATE_DATA_SIZE);
 
-  // Storing initial frame difference
-  initialFrame->computeFrameDifference(_referenceFrameData, gameState);
-  for (size_t i = 0; i < _ruleCount; i++) initialFrame->rulesStatus[i] = false;
+  // Storing initial state difference
+  initialState->computeStateDifference(_referenceStateData, gameState);
+  for (size_t i = 0; i < _ruleCount; i++) initialState->rulesStatus[i] = false;
 
-  // Evaluating Rules on initial frame
-  _gameInstances[0]->evaluateRules(initialFrame->rulesStatus);
+  // Evaluating Rules on initial state
+  _gameInstances[0]->evaluateRules(initialState->rulesStatus);
 
-  // Evaluating Score on initial frame
-  initialFrame->reward = _gameInstances[0]->getStateReward(initialFrame->rulesStatus);
+  // Evaluating Score on initial state
+  initialState->reward = _gameInstances[0]->getStateReward(initialState->rulesStatus);
 
-  // Registering hash for initial frame
+  // Registering hash for initial state
   _hashDB[0] = hash;
 
-  // Copying initial frame into the best/worst frame
-  _bestFrame = *initialFrame;
-  _worstFrame = *initialFrame;
-  _bestFrameReward = initialFrame->reward;
-  _worstFrameReward = initialFrame->reward;
+  // Copying initial state into the best/worst state
+  _bestState = *initialState;
+  _worstState = *initialState;
+  _bestStateReward = initialState->reward;
+  _worstStateReward = initialState->reward;
 
-  // Adding frame to the initial database
+  // Adding state to the initial database
   _databaseSize = 1;
-  _frameDB.push_back(initialFrame);
+  _stateDB.push_back(initialState);
 
   // Initializing show thread
   if (pthread_create(&_showThreadId, NULL, showThreadFunction, this) != 0)
@@ -642,36 +640,36 @@ void *Train::showThreadFunction(void *trainPtr)
 
 void Train::showSavingLoop()
 {
-  // Timer for saving frames
-  auto bestFrameSaveTimer = std::chrono::steady_clock::now();
+  // Timer for saving states
+  auto bestStateSaveTimer = std::chrono::steady_clock::now();
 
   while (_hasFinalized == false)
   {
     // Sleeping for one second to prevent excessive overheads
     sleep(1);
 
-    // Checking if we need to save best frame
+    // Checking if we need to save best state
     if (_outputSaveBestSeconds > 0.0 && _currentStep > 1)
     {
-      double bestFrameTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - bestFrameSaveTimer).count();
-      if (bestFrameTimerElapsed / 1.0e+9 > _outputSaveBestSeconds)
+      double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - bestStateSaveTimer).count();
+      if (bestStateTimerElapsed / 1.0e+9 > _outputSaveBestSeconds)
       {
         #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
         // Storing the solution sequence
         std::string bestSolutionString;
-        bestSolutionString += _possibleMoves[_bestFrame.getMove(0)];
+        bestSolutionString += _possibleMoves[_bestState.getMove(0)];
         for (size_t i = 1; i < _currentStep; i++)
-         bestSolutionString += std::string(" ") + _possibleMoves[_bestFrame.getMove(i)];
+         bestSolutionString += std::string(" ") + _possibleMoves[_bestState.getMove(i)];
         bestSolutionString += std::string(" .");
         std::string outputSolPath = _outputSaveBestPath + std::string(".best.sol");
         saveStringToFile(bestSolutionString, outputSolPath.c_str());
 
         // Storing the solution sequence
         std::string worstSolutionString;
-        worstSolutionString += _possibleMoves[_worstFrame.getMove(0)];
+        worstSolutionString += _possibleMoves[_worstState.getMove(0)];
         for (size_t i = 1; i < _currentStep; i++)
-         worstSolutionString += std::string(" ") + _possibleMoves[_worstFrame.getMove(i)];
+         worstSolutionString += std::string(" ") + _possibleMoves[_worstState.getMove(i)];
         worstSolutionString += std::string(" .");
         std::string outputWorstSolPath = _outputSaveBestPath + std::string(".worst.sol");
         saveStringToFile(worstSolutionString, outputWorstSolPath.c_str());
@@ -679,7 +677,7 @@ void Train::showSavingLoop()
         #endif
 
         // Resetting timer
-        bestFrameSaveTimer = std::chrono::steady_clock::now();
+        bestStateSaveTimer = std::chrono::steady_clock::now();
       }
     }
   }

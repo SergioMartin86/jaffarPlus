@@ -8,86 +8,86 @@
 #include <vector>
 
 // W1-1a
-//#define _MAX_FRAME_DIFF 700
+//#define _MAX_STATE_DIFF 700
 //#define _MAX_RULE_COUNT 5
 //#define _MAX_MOVELIST_SIZE 440
 
 // W1-1b
-//#define _MAX_FRAME_DIFF 300
+//#define _MAX_STATE_DIFF 300
 //#define _MAX_RULE_COUNT 8
 //#define _MAX_MOVELIST_SIZE 150
 
 // W1-1c
-//#define _MAX_FRAME_DIFF 650
+//#define _MAX_STATE_DIFF 650
 //#define _MAX_RULE_COUNT 7
 //#define _MAX_MOVELIST_SIZE 300
 
 // W1-2a
-//#define _MAX_FRAME_DIFF 900
+//#define _MAX_STATE_DIFF 900
 //#define _MAX_RULE_COUNT 7
 //#define _MAX_MOVELIST_SIZE 1350
 
 // W1-2b
-//#define _MAX_FRAME_DIFF 700
+//#define _MAX_STATE_DIFF 700
 //#define _MAX_RULE_COUNT 10
 //#define _MAX_MOVELIST_SIZE 450
 
 // W4-1a
-//#define _MAX_FRAME_DIFF 900
+//#define _MAX_STATE_DIFF 900
 //#define _MAX_RULE_COUNT 5
 //#define _MAX_MOVELIST_SIZE 1500
 
 // W4-2a
-//#define _MAX_FRAME_DIFF 800
+//#define _MAX_STATE_DIFF 800
 //#define _MAX_RULE_COUNT 15
 //#define _MAX_MOVELIST_SIZE 700
 
 // W4-2b
-//#define _MAX_FRAME_DIFF 550
+//#define _MAX_STATE_DIFF 550
 //#define _MAX_RULE_COUNT 10
 //#define _MAX_MOVELIST_SIZE 500
 
 // W8-1
-//#define _MAX_FRAME_DIFF 900
+//#define _MAX_STATE_DIFF 900
 //#define _MAX_RULE_COUNT 10
 //#define _MAX_MOVELIST_SIZE 2500
 
 // W8-2
-//#define _MAX_FRAME_DIFF 1050
+//#define _MAX_STATE_DIFF 1050
 //#define _MAX_RULE_COUNT 10
 //#define _MAX_MOVELIST_SIZE 1700
 
 // W8-3
-//#define _MAX_FRAME_DIFF 850
+//#define _MAX_STATE_DIFF 850
 //#define _MAX_RULE_COUNT 10
 //#define _MAX_MOVELIST_SIZE 1500
 
 // W8-4a
-//#define _MAX_FRAME_DIFF 650
+//#define _MAX_STATE_DIFF 650
 //#define _MAX_RULE_COUNT 8
 //#define _MAX_MOVELIST_SIZE 550
 
 // W8-4b
-//#define _MAX_FRAME_DIFF 650
+//#define _MAX_STATE_DIFF 650
 //#define _MAX_RULE_COUNT 8
 //#define _MAX_MOVELIST_SIZE 300
 
 // W8-4c
-#define _MAX_FRAME_DIFF 750
+#define _MAX_STATE_DIFF 750
 #define _MAX_RULE_COUNT 8
 #define _MAX_MOVELIST_SIZE 200
 
 // W8-4d
-//#define _MAX_FRAME_DIFF 520
+//#define _MAX_STATE_DIFF 520
 //#define _MAX_RULE_COUNT 8
 //#define _MAX_MOVELIST_SIZE 700
 
 // W8-4e
-//#define _MAX_FRAME_DIFF 600
+//#define _MAX_STATE_DIFF 600
 //#define _MAX_RULE_COUNT 8
 //#define _MAX_MOVELIST_SIZE 300
 
-#define _FRAME_DATA_SIZE 12792
+#define _STATE_DATA_SIZE 12792
 const std::vector<std::string> _possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
 class EmuInstance : public EmuInstanceBase
@@ -161,14 +161,14 @@ class EmuInstance : public EmuInstanceBase
 
  void serializeState(uint8_t* state) const override
  {
-  Mem_Writer w(state, _FRAME_DATA_SIZE, 0);
+  Mem_Writer w(state, _STATE_DATA_SIZE, 0);
   Auto_File_Writer a(w);
   _emu->save_state(a);
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  Mem_File_Reader r(state, _FRAME_DATA_SIZE);
+  Mem_File_Reader r(state, _STATE_DATA_SIZE);
   Auto_File_Reader a(r);
   _emu->load_state(a);
  }
@@ -186,29 +186,29 @@ class EmuInstance : public EmuInstanceBase
  // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12     13    14      15
  //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
- void advanceFrame(const std::string& move) override
+ void advanceState(const std::string& move) override
  {
-  if (move == ".") { advanceFrame(0); return; }
-  if (move == "L") { advanceFrame(1); return; }
-  if (move == "R") { advanceFrame(2); return; }
-  if (move == "D") { advanceFrame(3); return; }
-  if (move == "A") { advanceFrame(4); return; }
-  if (move == "B") { advanceFrame(5); return; }
-  if (move == "LA") { advanceFrame(6); return; }
-  if (move == "RA") { advanceFrame(7); return; }
-  if (move == "LB") { advanceFrame(8); return; }
-  if (move == "RB") { advanceFrame(9); return; }
-  if (move == "LR") { advanceFrame(10); return; }
-  if (move == "LRA") { advanceFrame(11); return; }
-  if (move == "LRB") { advanceFrame(12); return; }
-  if (move == "LAB") { advanceFrame(13); return; }
-  if (move == "RAB") { advanceFrame(14); return; }
-  if (move == "LRAB") { advanceFrame(15); return; }
+  if (move == ".") { advanceState(0); return; }
+  if (move == "L") { advanceState(1); return; }
+  if (move == "R") { advanceState(2); return; }
+  if (move == "D") { advanceState(3); return; }
+  if (move == "A") { advanceState(4); return; }
+  if (move == "B") { advanceState(5); return; }
+  if (move == "LA") { advanceState(6); return; }
+  if (move == "RA") { advanceState(7); return; }
+  if (move == "LB") { advanceState(8); return; }
+  if (move == "RB") { advanceState(9); return; }
+  if (move == "LR") { advanceState(10); return; }
+  if (move == "LRA") { advanceState(11); return; }
+  if (move == "LRB") { advanceState(12); return; }
+  if (move == "LAB") { advanceState(13); return; }
+  if (move == "RAB") { advanceState(14); return; }
+  if (move == "LRAB") { advanceState(15); return; }
 
   EXIT_WITH_ERROR("Unrecognized move: %s\n", move.c_str());
  }
 
- void advanceFrame(const uint8_t &move) override
+ void advanceState(const uint8_t &move) override
  {
   // Encoding movement into the NES controller code
   uint32_t controllerCode = 0;

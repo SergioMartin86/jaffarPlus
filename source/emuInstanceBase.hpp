@@ -15,9 +15,9 @@ class EmuInstanceBase
   virtual void loadStateFile(const std::string& stateFilePath) = 0;
   virtual void saveStateFile(const std::string& stateFilePath) const = 0;
 
-  // Function to advance frame
-  virtual void advanceFrame(const uint8_t &move) = 0;
-  virtual void advanceFrame(const std::string& move) = 0;
+  // Function to advance state
+  virtual void advanceState(const uint8_t &move) = 0;
+  virtual void advanceState(const std::string& move) = 0;
 
   // Minimal serialization functions
   virtual void serializeState(uint8_t* state) const  = 0;

@@ -3,7 +3,7 @@
 #include "gameInstanceData.hpp"
 #include "emuInstance.hpp"
 #include "nlohmann/json.hpp"
-#include "frame.hpp"
+#include "state.hpp"
 #include "rule.hpp"
 #include "metrohash64.h"
 #include <set>
@@ -103,9 +103,9 @@ class GameInstanceBase
   }
 
   // Function to return frame type
-  inline frameType getFrameType(const bool* rulesStatus) const
+  inline stateType getStateType(const bool* rulesStatus) const
   {
-   frameType type = f_regular;
+   stateType type = f_regular;
 
    for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
     if (rulesStatus[ruleId] == true)
@@ -130,8 +130,8 @@ class GameInstanceBase
   }
 
   // Function to advance frame
-  void advanceFrame(const uint8_t &move) { _emu->advanceFrame(move); updateDerivedValues(); };
-  void advanceFrame(const std::string& move) { _emu->advanceFrame(move); updateDerivedValues(); };
+  void advanceState(const uint8_t &move) { _emu->advanceState(move); updateDerivedValues(); };
+  void advanceState(const std::string& move) { _emu->advanceState(move); updateDerivedValues(); };
 
   // Serialization/Deserialization Routines
   inline void popState(uint8_t* __restrict__ outputStateData) const { _emu->serializeState(outputStateData); }

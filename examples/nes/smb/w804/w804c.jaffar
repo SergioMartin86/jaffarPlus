@@ -1,6 +1,12 @@
 {
   "Description": "This script searches for the fastest any% solution for NES SMB World 8-4c",  
  
+  "Jaffar Configuration": 
+  {
+    "Rom File": "../smb.nes",
+    "State File": "w804c.state"
+  },
+  
   "Emulator Configuration": 
   {
     "Rom File": "../smb.nes",
