@@ -21,7 +21,7 @@ class GameInstanceBase
  public:
 
   // Container for game-specific values
- gameInstanceData_t _data;
+  gameInstanceData_t _data;
 
   // Storage for rules
   std::vector<Rule *> _rules;
@@ -32,23 +32,34 @@ class GameInstanceBase
   // Underlying emulator instance
   EmuInstance *_emu;
 
-  // Constructor for the underlying emulator using a rom file and a state
-  GameInstanceBase(const std::string romFile, const std::string stateFile)
-  {
-    // Creating quickNES instance
-    _emu = new EmuInstance(romFile);
-    _emu->loadStateFile(stateFile);
-  }
-
-  // Constructor using an already existing emulator
-  GameInstanceBase(EmuInstance* emu)
-  {
-    // Copying emu instance pointer
-    _emu = emu;
-  }
 
   // virtual destructor
   virtual ~GameInstanceBase() = default;
+
+  // Initialize game instance using the Jaffar configuration file
+  virtual void initialize(const nlohmann::json& config)
+  {
+   // Checking whether it contains the emulator configuration field
+   if (isDefined(config, "Emulator Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Emulator Configuration' key.\n");
+
+   // Creating emulator instance
+   _emu = new EmuInstance(config["Emulator Configuration"]);
+
+   // Setting game-specific value pointers
+   setGameValuePointers();
+
+   // Updating initial derived values
+   updateDerivedValues();
+
+   // Checking whether it contains the rules field
+   if (isDefined(config, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rules' key.\n");
+
+   // Parsing rules
+   parseRules(config["Rules"]);
+  }
+
+  // Function to set base emulator pointer
+  void setEmulator(EmuInstance* emu) { _emu = emu; }
 
   // Rule parser
   void parseRules(const nlohmann::json rulesConfig)

@@ -2,6 +2,7 @@
 
 #include <Nes_Emu.h>
 #include <Nes_State.h>
+#include <utils.hpp>
 #include <string>
 #include <vector>
 
@@ -92,9 +93,11 @@ class EmuInstance
 {
   public:
 
-  // Initializes the miniPop instance
-  EmuInstance(const std::string& romFilePath);
-  EmuInstance(Nes_Emu* emulator);
+  // Initializes the emulator instance
+  EmuInstance(const nlohmann::json& config);
+
+  // Function to set emulator instance
+  void setEmulator(Nes_Emu* emulator);
 
   // Loading/Saving state files
   void loadStateFile(const std::string& stateFilePath);

@@ -6,22 +6,12 @@ class GameInstance : public GameInstanceBase
 {
  public:
 
-  GameInstance(const std::string romFile, const std::string stateFile) : GameInstanceBase(romFile, stateFile)
+  void initialize(const nlohmann::json& config) override
   {
-   // Setting game-specific value pointers
-   setGameValuePointers();
+    // Always call the base class initialization
+    GameInstanceBase::initialize(config);
 
-   // Updating initial derived values
-   updateDerivedValues();
-  };
-
-  GameInstance(EmuInstance* emu) : GameInstanceBase(emu)
-  {
-   // Setting game-specific value pointers
-   setGameValuePointers();
-
-   // Updating initial derived values
-   updateDerivedValues();
+    // Any SMB-specific configuration goes here
   };
 
   #define USE_LIGHT_HASH true

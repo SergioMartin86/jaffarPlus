@@ -8,10 +8,7 @@
 void Train::run()
 {
   printf("[Jaffar] ----------------------------------------------------------------\n");
-  printf("[Jaffar] Launching Jaffar Version %s...\n", "1.0");
-  printf("[Jaffar] Using configuration file: "); printf("%s ", _scriptFile.c_str()); printf("\n");
-  printf("[Jaffar] Frame size: %lu\n", sizeof(Frame));
-  printf("[Jaffar] Max Frame DB entries: %lu\n", _maxDatabaseSizeLowerBound);
+  printf("[Jaffar] Launching Jaffar...\n");
 
   if (_outputSaveBestSeconds > 0)
   {
@@ -448,6 +445,7 @@ void Train::printTrainStatus()
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstFrameReward, _bestFrameReward);
   printf("[Jaffar] Base Frames Performance: %.3f Frames/s\n", (double)_stepBaseFramesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] New Frames Performance:  %.3f Frames/s\n", (double)_stepNewFramesProcessedCounter / (_currentStepTime / 1.0e+9));
+  printf("[Jaffar] Frame size: %lu\n", sizeof(Frame));
   printf("[Jaffar] Frames Processed: (Step/Total): %lu / %lu\n", _stepNewFramesProcessedCounter, _totalFramesProcessedCounter);
   printf("[Jaffar] Frame DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(Frame)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(Frame)) / (1024.0 * 1024.0));
   printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
@@ -544,17 +542,9 @@ Train::Train(int argc, char *argv[])
   if (const char *outputSolutionBestPathEnv = std::getenv("JAFFAR_SOLUTION_BEST_PATH")) _outputSolutionBestPath = std::string(outputSolutionBestPathEnv);
 
   // Parsing command line arguments
-  argparse::ArgumentParser program("jaffar", "1.0");
+  argparse::ArgumentParser program("jaffar", "2.0");
 
-  program.add_argument("romFile")
-    .help("Specifies the path to the NES rom file (.nes) from which to start.")
-    .required();
-
-  program.add_argument("stateFile")
-    .help("Specifies the path to the NES state file (.state) from which to start.")
-    .required();
-
-  program.add_argument("jaffarFile")
+  program.add_argument("configFile")
     .help("path to the Jaffar configuration script (.jaffar) file to run.")
     .required();
 
@@ -562,25 +552,15 @@ Train::Train(int argc, char *argv[])
   try { program.parse_args(argc, argv);  }
   catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
 
-  // Getting rom file path
-  auto romFilePath = program.get<std::string>("romFile");
+  // Parsing config file
+  std::string configFile = program.get<std::string>("configFile");
+  std::string configFileString;
+  auto status = loadStringFromFile(configFileString, configFile.c_str());
+  if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
 
-  // Getting state file path
-  auto stateFilePath = program.get<std::string>("stateFile");
-
-  // Parsing config files
-  _scriptFile = program.get<std::string>("jaffarFile");
-  nlohmann::json scriptFileJs;
-  std::string scriptString;
-  auto status = loadStringFromFile(scriptString, _scriptFile.c_str());
-  if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar script file: %s\n%s \n", _scriptFile.c_str(), program.help().str().c_str());
-
-  nlohmann::json scriptJs;
-  try { scriptJs = nlohmann::json::parse(scriptString); }
-  catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", _scriptFile.c_str(), err.what()); }
-
-  // Checking whether it contains the rules field
-  if (isDefined(scriptJs, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file '%s' missing 'Rules' key.\n", _scriptFile.c_str());
+  nlohmann::json configJs;
+  try { configJs = nlohmann::json::parse(configFileString); }
+  catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
   // Calculating max DB size bounds
   _maxDatabaseSizeLowerBound = floor(((double)maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)sizeof(Frame)));
@@ -595,10 +575,11 @@ Train::Train(int argc, char *argv[])
    // Getting thread id
    int threadId = omp_get_thread_num();
 
+   // Doing this as a critical section so not all threads try to access files at the same time
    #pragma omp critical
    {
-    _gameInstances[threadId] = new GameInstance(romFilePath, stateFilePath);
-    _gameInstances[threadId]->parseRules(scriptJs["Rules"]);
+    _gameInstances[threadId] = new GameInstance();
+    _gameInstances[threadId]->initialize(configJs);
    }
   }
 

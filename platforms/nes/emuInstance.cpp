@@ -2,22 +2,33 @@
 #include "utils.hpp"
 #include <iostream>
 
-EmuInstance::EmuInstance(const std::string& romFilePath)
+EmuInstance::EmuInstance(const nlohmann::json& config)
 {
- _emu = new Nes_Emu;
+ // Checking whether configuration contains the rom file
+  if (isDefined(config, "Rom File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rom File' key.\n");
+  std::string romFilePath = config["Rom File"].get<std::string>();
+
+ // Checking whether configuration contains the state file
+ if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
+ std::string stateFilePath = config["State File"].get<std::string>();
+
+ // Creating new emulator and loading rom
+ auto emu = new Nes_Emu;
  std::string romData;
  loadStringFromFile(romData, romFilePath.c_str());
  Mem_File_Reader romReader(romData.data(), (int)romData.size());
  Auto_File_Reader romFile(romReader);
- auto result = _emu->load_ines(romFile);
-
+ auto result = emu->load_ines(romFile);
  if (result != 0) EXIT_WITH_ERROR("Could not initialize emulator with rom file: %s\n", romFilePath.c_str());
 
- // Setting base memory pointer
- _baseMem = _emu->low_mem();
+ // Setting emulator
+ setEmulator(emu);
+
+ // Loading state file
+ loadStateFile(stateFilePath);
 }
 
-EmuInstance::EmuInstance(Nes_Emu* emulator)
+void EmuInstance::setEmulator(Nes_Emu* emulator)
 {
  _emu = emulator;
 

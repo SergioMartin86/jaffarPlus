@@ -12,7 +12,7 @@ gameIncludes = include_directories(['games/' + game])
 platform = game.split('/')[0]
 subdir('platforms/' + platform)
 
-# Getting common Jaffar includes
+# Common Jaffar include dirs
 jaffarIncludes = include_directories([
  'extern/metrohash64',
  'extern/argparse',
@@ -21,12 +21,16 @@ jaffarIncludes = include_directories([
  'source'
  ])
 
-# Getting common Jaffar sources
+# Common Jaffar sources
 jaffarSrc = [
  'source/utils.cpp',
  'source/rule.cpp',
  'extern/metrohash64/metrohash64.cc'
 ]
+
+# Common Jaffar CFlags
+
+jaffarCFlags = [ '-Wfatal-errors', '-Wall' ] 
 
 # Building main Jaffar training executable
 executable('jaffar',
@@ -36,7 +40,7 @@ executable('jaffar',
   dependencies: [ dependency('openmp', required: true) ],
   link_with: [ ],
   link_args: [ ],
-  cpp_args: [ '-Wfatal-errors', '-Wall' ] + quickernesCFlags
+  cpp_args: [ jaffarCFlags, platformTrainCFlags ]
 )
 
 # Building playback/validation tool
@@ -47,7 +51,7 @@ executable('jaffar-play',
   dependencies: [ dependency('sdl2'), dependency('SDL2_image')],
   link_with: [ ],
   link_args: [ '-lncurses' ],
-  cpp_args: [ '-Wfatal-errors', '-Wall', '-DNCURSES' ] + quicknesCFlags + hqnCFlags 
+  cpp_args: [ jaffarCFlags, '-DNCURSES', platformPlayCFlags ] 
 )
     
     

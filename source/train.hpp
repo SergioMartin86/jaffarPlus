@@ -31,9 +31,6 @@ class Train
   // Storage for current step
   uint16_t _currentStep;
 
-  // Jaffar script file
-  std::string _scriptFile;
-
   // File output config
   double _outputSaveBestSeconds;
   std::string _outputSaveBestPath;

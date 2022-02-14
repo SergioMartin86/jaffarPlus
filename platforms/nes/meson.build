@@ -8,9 +8,14 @@ srcDir = meson.current_source_dir()
 emuInstanceSrc = [ srcDir + '/emuInstance.cpp' ]
 emuInstanceIncludes = include_directories(['.'])
 
-# Train/Playback specific includes
+# Platform's specific includes, source files and flags for training
 
 platformTrainSrc = [ emuInstanceSrc, quickernesSrc ]
-platformPlaySrc = [ emuInstanceSrc, hqnSrc, quicknesSrc ]
 platformTrainIncludes = [ emuInstanceIncludes, quickernesIncludes ]
+platformTrainCFlags = [ quickernesCFlags ] 
+
+# Platform's specific includes, source files and flags for playback
+
 platformPlayIncludes = [ emuInstanceIncludes, hqnIncludes, quicknesIncludes ]
+platformPlaySrc = [ emuInstanceSrc, hqnSrc, quicknesSrc ]
+platformPlayCFlags = [ hqnCFlags, quicknesCFlags ]

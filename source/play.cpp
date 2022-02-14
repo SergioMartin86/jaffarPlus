@@ -46,19 +46,11 @@ int getKeyPress()
 
 int main(int argc, char *argv[])
 {
-  // Defining arguments
-  argparse::ArgumentParser program("jaffarNES-play", "1.0");
+  // Parsing command line arguments
+  argparse::ArgumentParser program("jaffar-play", "2.0");
 
-  program.add_argument("romFile")
-    .help("Specifies the path to the NES rom file (.nes) to emulate.")
-    .required();
-
-  program.add_argument("stateFile")
-    .help("Specifies the path to the NES state file (.state) from which to start.")
-    .required();
-
-  program.add_argument("solutionFile")
-    .help("path to the JaffarNES solution (.sol) file to run.")
+  program.add_argument("configFile")
+    .help("path to the Jaffar configuration script (.jaffar) file to run.")
     .required();
 
   program.add_argument("--reproduce")
@@ -66,31 +58,25 @@ int main(int argc, char *argv[])
     .default_value(false)
     .implicit_value(true);
 
-  // Parsing command line
-  try
-  {
-    program.parse_args(argc, argv);
-  }
-  catch (const std::runtime_error &err)
-  {
-    fprintf(stderr, "[JaffarNES] Error parsing command line arguments: %s\n%s", err.what(), program.help().str().c_str());
-    exit(-1);
-  }
+  // Try to parse arguments
+  try { program.parse_args(argc, argv);  }
+  catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
 
-  // Getting reproduce path
-  bool isReproduce = program.get<bool>("--reproduce");
+  // Parsing config file
+  std::string configFile = program.get<std::string>("configFile");
+  std::string configFileString;
+  auto statusConfig = loadStringFromFile(configFileString, configFile.c_str());
+  if (statusConfig == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
 
-  // Getting rom file path
-  std::string romFilePath = program.get<std::string>("romFile");
-
-  // Getting state file path
-  std::string stateFilePath = program.get<std::string>("stateFile");
+  nlohmann::json configJs;
+  try { configJs = nlohmann::json::parse(configFileString); }
+  catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
   // If sequence file defined, load it and play it
   std::string moveSequence;
   std::string solutionFile = program.get<std::string>("solutionFile");
-  auto status = loadStringFromFile(moveSequence, solutionFile.c_str());
-  if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n%s \n", solutionFile.c_str(), program.help().str().c_str());
+  auto statusSolution = loadStringFromFile(moveSequence, solutionFile.c_str());
+  if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n%s \n", solutionFile.c_str(), program.help().str().c_str());
 
   // Initializing ncurses screen
   initscr();
@@ -106,16 +92,11 @@ int main(int argc, char *argv[])
   const int sequenceLength = moveList.size()-1;
 
   // Printing info
-  printw("[JaffarNES] Playing sequence file: %s\n", solutionFile.c_str());
-  printw("[JaffarNES] Sequence Size: %d moves.\n", sequenceLength);
-  printw("[JaffarNES] Generating frame sequence...\n");
+  printw("[Jaffar] Playing sequence file: %s\n", solutionFile.c_str());
+  printw("[Jaffar] Sequence Size: %d moves.\n", sequenceLength);
+  printw("[Jaffar] Generating frame sequence...\n");
 
   refresh();
-
-  // Loading state file
-  std::string stateFileData;
-  status = loadStringFromFile(stateFileData, stateFilePath.c_str());
-  if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from state file: %s\n%s \n", stateFilePath.c_str(), program.help().str().c_str());
 
   // Opening rendering window
   SDL_SetMainReady();
@@ -127,18 +108,14 @@ int main(int argc, char *argv[])
           EXIT_WITH_ERROR("Failed to initialize video: %s", SDL_GetError());
       }
   }
-
+/*
   hqn::HQNState hqnState;
   hqnState.loadROM(romFilePath.c_str());
   hqn::GUIController* gui = hqn::GUIController::create(hqnState);
   gui->setScale(2);
 
-  // Initializing replay generating quickNES Instance
-  EmuInstance genEmuInstance(hqnState.emu());
-  genEmuInstance.loadStateFile(stateFilePath);
-
   // Initializing game state
-  GameInstance gameInstance(&genEmuInstance);
+  GameInstance gameInstance(configJs);
 
   // Storage for sequence frames
   size_t stateSize;
@@ -165,7 +142,7 @@ int main(int argc, char *argv[])
     frameSequenceSize.push_back(savedSize);
   }
 
-  printw("[JaffarNES] Opening SDLPop window...\n");
+  printw("[Jaffar] Opening Game window...\n");
 
   // Variable for current step in view
   int currentStep = 0;
@@ -173,9 +150,9 @@ int main(int argc, char *argv[])
   // Print command list
   if (isReproduce == false)
   {
-   printw("[JaffarNES] Available commands:\n");
-   printw("[JaffarNES]  n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 \n");
-   printw("[JaffarNES]  s: quicksave | r: create replay | q: quit  \n");
+   printw("[Jaffar] Available commands:\n");
+   printw("[Jaffar]  n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 \n");
+   printw("[Jaffar]  s: quicksave | r: create replay | q: quit  \n");
   }
 
   // Flag to display frame information
@@ -194,10 +171,10 @@ int main(int argc, char *argv[])
 
     if (showFrameInfo)
     {
-      printw("[JaffarNES] ----------------------------------------------------------------\n");
-      printw("[JaffarNES] Current Step #: %d / %d\n", currentStep, sequenceLength);
-      printw("[JaffarNES]  + Move: %s\n", moveList[currentStep].c_str());
-      printw("[JaffarNES]  + Hash:                   0x%lX\n", gameInstance.computeHash());
+      printw("[Jaffar] ----------------------------------------------------------------\n");
+      printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
+      printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
+      printw("[Jaffar]  + Hash:                   0x%lX\n", gameInstance.computeHash());
       gameInstance.printStateInfo();
     }
 
@@ -234,7 +211,7 @@ int main(int argc, char *argv[])
       // Storing replay file
       std::string saveFileName = "jaffar.state";
       genEmuInstance.saveStateFile(saveFileName);
-      printw("[JaffarNES] Saved state to %s\n", saveFileName.c_str());
+      printw("[Jaffar] Saved state to %s\n", saveFileName.c_str());
 
       // Do no show frame info again after this action
       showFrameInfo = false;
@@ -244,4 +221,5 @@ int main(int argc, char *argv[])
 
   // Ending ncurses window
   endwin();
+  */
 }
