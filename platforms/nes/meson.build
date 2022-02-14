@@ -5,7 +5,7 @@ subdir('quickernes')
 # Declaring source and include dirs for a NES game instance / emulator
 
 srcDir = meson.current_source_dir()
-emuInstanceSrc = [ srcDir + '/emuInstance.cpp' ]
+emuInstanceSrc = [ ]
 emuInstanceIncludes = include_directories(['.'])
 
 # Platform's specific includes, source files and flags for training

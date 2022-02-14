@@ -226,7 +226,7 @@ void Train::computeFrames()
 
         // Perform the selected move
         t0 = std::chrono::steady_clock::now(); // Profiling
-        _gameInstances[threadId]->_emu->advanceFrame(moveId);
+        _gameInstances[threadId]->advanceFrame(moveId);
         tf = std::chrono::steady_clock::now();
         threadFrameAdvanceTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
