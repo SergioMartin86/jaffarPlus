@@ -543,17 +543,17 @@ Train::Train(int argc, char *argv[])
   if (isDefined(config, "Jaffar Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Jaffar Configuration' key.\n");
 
   // Parsing database sizes
-  if (isDefined(config["Jaffar Configuration"], "Max State Database Size Lower Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Max State Database Size Lower Bound (Mb)' key.\n");
-  _maxDBSizeMbLowerBound = config["Jaffar Configuration"]["Max State Database Size Lower Bound (Mb)"].get<size_t>();
+  if (isDefined(config["Jaffar Configuration"], "State Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["State Database"], "Max Size Lower Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database', 'Max Size Lower Bound (Mb)' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["State Database"], "Max Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database', 'Max Size Upper Bound (Mb)' key.\n");
+  _maxDBSizeMbLowerBound = config["Jaffar Configuration"]["State Database"]["Max Size Lower Bound (Mb)"].get<size_t>();
+  _maxDBSizeMbUpperBound = config["Jaffar Configuration"]["State Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
 
-  if (isDefined(config["Jaffar Configuration"], "Max State Database Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Max State Database Size Upper Bound (Mb)' key.\n");
-  _maxDBSizeMbUpperBound = config["Jaffar Configuration"]["Max State Database Size Upper Bound (Mb)"].get<size_t>();
-
-  if (isDefined(config["Jaffar Configuration"], "Max Hash Database Size Lower Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Max Hash Database Size Lower Bound (Mb)' key.\n");
-  _hashSizeLowerBound = config["Jaffar Configuration"]["Max Hash Database Size Lower Bound (Mb)"].get<size_t>();
-
-  if (isDefined(config["Jaffar Configuration"], "Max Hash Database Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Max Hash Database Size Upper Bound (Mb)' key.\n");
-  _hashSizeUpperBound = config["Jaffar Configuration"]["Max Hash Database Size Upper Bound (Mb)"].get<size_t>();
+  if (isDefined(config["Jaffar Configuration"], "Hash Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["Hash Database"], "Max Size Lower Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Max Size Lower Bound (Mb)' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["Hash Database"], "Max Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Max Size Upper Bound (Mb)' key.\n");
+  _hashSizeLowerBound = config["Jaffar Configuration"]["Hash Database"]["Max Size Lower Bound (Mb)"].get<size_t>();
+  _hashSizeUpperBound = config["Jaffar Configuration"]["Hash Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
 
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
