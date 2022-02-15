@@ -1,19 +1,21 @@
 #pragma once
 
+#include <gameInstance.hpp>
 #include <utils.hpp>
 #include <string>
 
 class PlaybackInstanceBase
 {
+ protected:
+
+ GameInstance* _game;
+
  public:
 
   // Initializes the playback module instance
- PlaybackInstanceBase(const nlohmann::json& config) {};
+ PlaybackInstanceBase(GameInstance* game) { _game = game; };
  virtual ~PlaybackInstanceBase() = default;
 
- // Function to load state
- virtual void loadState(const uint8_t* state) = 0;
-
  // Function to render frame
- virtual void renderFrame(const uint8_t move) = 0;
+ virtual void renderFrame() = 0;
 };

@@ -239,7 +239,7 @@ private:
 	long timestamp() const { return emu.nes.frame_count; }
 	void set_timestamp( long t ) { emu.nes.frame_count = t; }
 	
-private:
+public:
 	// noncopyable
 	Nes_Emu( const Nes_Emu& );
 	Nes_Emu& operator = ( const Nes_Emu& );

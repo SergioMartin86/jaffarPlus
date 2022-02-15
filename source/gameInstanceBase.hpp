@@ -103,7 +103,7 @@ class GameInstanceBase
    return type;
   }
 
-  // Function to advance frame
+  // Function to advance state
   void advanceState(const uint8_t &move) { _emu->advanceState(move); updateDerivedValues(); };
   void advanceState(const std::string& move) { _emu->advanceState(move); updateDerivedValues(); };
 

@@ -185,7 +185,7 @@ double HQNState::getFPS() const
 }
 
 // Copied from bizinterface.cpp in BizHawk/quicknes
-void HQNState::blit(int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom)
+void HQNState::blit(int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom) const
 {
     // what is the point of the 256 color bitmap and the dynamic color allocation to it?
     // why not just render directly to a 512 color bitmap with static palette positions?

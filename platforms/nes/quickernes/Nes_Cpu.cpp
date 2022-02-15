@@ -55,6 +55,10 @@ void Nes_Cpu::reset( void const* unmapped_page )
  #endif
 }
 
+void Nes_Cpu::set_tracecb(void (*cb)(unsigned int *data))
+{
+}
+
 void Nes_Cpu::map_code( nes_addr_t start, unsigned size, const void* data )
 {
  if (map_code_set == true) return;

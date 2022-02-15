@@ -16,7 +16,7 @@ class EmuInstance : public EmuInstanceBase
  public:
 
  // Emulator instance
- Nes_Emu* _emu;
+ Nes_Emu* _nes;
 
  // Base low-memory pointer
  uint8_t* _baseMem;
@@ -24,8 +24,8 @@ class EmuInstance : public EmuInstanceBase
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
   // Checking whether configuration contains the rom file
-   if (isDefined(config, "Rom File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rom File' key.\n");
-   std::string romFilePath = config["Rom File"].get<std::string>();
+  if (isDefined(config, "Rom File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rom File' key.\n");
+  std::string romFilePath = config["Rom File"].get<std::string>();
 
   // Checking whether configuration contains the state file
   if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
@@ -49,10 +49,10 @@ class EmuInstance : public EmuInstanceBase
 
  void setEmulator(Nes_Emu* emulator)
  {
-  _emu = emulator;
+  _nes = emulator;
 
   // Setting base memory pointer
-  _baseMem = _emu->low_mem();
+  _baseMem = _nes->low_mem();
  }
 
  void loadStateFile(const std::string& stateFilePath) override
@@ -68,14 +68,14 @@ class EmuInstance : public EmuInstanceBase
   state.read(stateFile);
 
   // Loading state object into the emulator
-  _emu->load_state(state);
+  _nes->load_state(state);
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
  {
   // Saving state
   Nes_State state;
-  _emu->save_state(&state);
+  _nes->save_state(&state);
   Auto_File_Writer stateWriter(stateFilePath.c_str());
   state.write(stateWriter);
  }
@@ -84,14 +84,14 @@ class EmuInstance : public EmuInstanceBase
  {
   Mem_Writer w(state, _STATE_DATA_SIZE, 0);
   Auto_File_Writer a(w);
-  _emu->save_state(a);
+  _nes->save_state(a);
  }
 
  void deserializeState(const uint8_t* state) override
  {
   Mem_File_Reader r(state, _STATE_DATA_SIZE);
   Auto_File_Reader a(r);
-  _emu->load_state(a);
+  _nes->load_state(a);
  }
 
  // Controller input bits
@@ -155,7 +155,7 @@ class EmuInstance : public EmuInstanceBase
   }
 
   // Running frame
-  _emu->emulate_frame(controllerCode,0);
+  _nes->emulate_frame(controllerCode,0);
  }
 
 };

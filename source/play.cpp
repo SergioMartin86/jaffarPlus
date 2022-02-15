@@ -108,6 +108,10 @@ int main(int argc, char *argv[])
   GameInstance gameInstance;
   gameInstance.initialize(config);
 
+  // Initializing playback instance
+  printw("[Jaffar] Opening Game window...\n");
+  PlaybackInstance playbackInstance(&gameInstance);
+
   // Storage for sequence frames and rule evaluation
   std::vector<uint8_t*> stateSequence;
   std::vector<bool*> ruleStatusSequence;
@@ -125,24 +129,20 @@ int main(int argc, char *argv[])
   // Iterating move list in the sequence
   for (int i = 0; i < sequenceLength; i++)
   {
-    // Advancing state
-    gameInstance.advanceState(moveList[i]);
+   // Advancing state
+   gameInstance.advanceState(moveList[i]);
 
-    // Storing new state
-    state = (uint8_t*) malloc(_STATE_DATA_SIZE);
-    gameInstance.popState(state);
-    stateSequence.push_back(state);
+   // Storing new state
+   state = (uint8_t*) malloc(_STATE_DATA_SIZE);
+   gameInstance.popState(state);
+   stateSequence.push_back(state);
 
-    // Storing new rules
-    rulesStatus = (bool*) malloc(_ruleCount * sizeof(bool));
-    memcpy(rulesStatus, ruleStatusSequence[i], _ruleCount * sizeof(bool));
-    gameInstance.evaluateRules(rulesStatus);
-    ruleStatusSequence.push_back(rulesStatus);
+   // Storing new rules
+   rulesStatus = (bool*) malloc(_ruleCount * sizeof(bool));
+   memcpy(rulesStatus, ruleStatusSequence[i], _ruleCount * sizeof(bool));
+   gameInstance.evaluateRules(rulesStatus);
+   ruleStatusSequence.push_back(rulesStatus);
   }
-
-  printw("[Jaffar] Opening Game window...\n");
-
-  PlaybackInstance playbackInstance(config);
 
   // Variable for current step in view
   int currentStep = 0;
@@ -157,8 +157,10 @@ int main(int argc, char *argv[])
    // Loading requested step
    gameInstance.pushState(stateSequence[currentStep]);
 
-   // Update display
+   // Updating display
+   playbackInstance.renderFrame();
 
+   // Showing frame information
    if (showFrameInfo)
    {
      clear();
@@ -166,7 +168,7 @@ int main(int argc, char *argv[])
      printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
      printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
-     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | s: quicksave | q: quit\n");
+     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | s: quicksave | p: play | q: quit\n");
    }
 
    // Resetting show frame info flag
@@ -202,6 +204,16 @@ int main(int argc, char *argv[])
      std::string saveFileName = "jaffar.state";
      gameInstance.saveStateFile(saveFileName);
      printw("[Jaffar] Saved state to %s\n", saveFileName.c_str());
+
+     // Do no show frame info again after this action
+     showFrameInfo = false;
+   }
+
+   // Playback
+   if (command == 'p')
+   {
+     // Start playback from current point
+     isReproduce = true;
 
      // Do no show frame info again after this action
      showFrameInfo = false;

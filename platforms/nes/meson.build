@@ -1,5 +1,4 @@
 subdir('hqn')
-subdir('quicknes')
 subdir('quickernes')
 
 # Declaring source and include dirs for a NES game instance / emulator
@@ -16,6 +15,6 @@ platformTrainCFlags = [ quickernesCFlags ]
 
 # Platform's specific includes, source files and flags for playback
 
-platformPlayIncludes = [ emuInstanceIncludes, hqnIncludes, quicknesIncludes ]
-platformPlaySrc = [ emuInstanceSrc, hqnSrc, quicknesSrc ]
-platformPlayCFlags = [ hqnCFlags, quicknesCFlags ]
+platformPlayIncludes = [ emuInstanceIncludes, hqnIncludes, quickernesIncludes ]
+platformPlaySrc = [ emuInstanceSrc, hqnSrc, quickernesSrc ]
+platformPlayCFlags = [ hqnCFlags, quickernesCFlags ]

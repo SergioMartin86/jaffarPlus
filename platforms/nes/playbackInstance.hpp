@@ -5,7 +5,6 @@
 #include <hqn_gui_controller.h>
 #include <utils.hpp>
 #include <string>
-#include <emuInstance.hpp>
 #include <playbackInstanceBase.hpp>
 
 class PlaybackInstance : public PlaybackInstanceBase
@@ -21,17 +20,10 @@ class PlaybackInstance : public PlaybackInstanceBase
  public:
 
   // Initializes the playback module instance
- PlaybackInstance(const nlohmann::json& config) : PlaybackInstanceBase(config)
+ PlaybackInstance(GameInstance* game) : PlaybackInstanceBase(game)
  {
-  // Checking whether it contains the emulator configuration field
-  if (isDefined(config, "Emulator Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Emulator Configuration' key.\n");
-
-  // Checking whether configuration contains the rom file
-  if (isDefined(config["Emulator Configuration"], "Rom File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rom File' key.\n");
-  std::string romFilePath = config["Emulator Configuration"]["Rom File"].get<std::string>();
-
-  // Loading Rom into HQN
-  _hqnState.loadROM(romFilePath.c_str());
+  // Loading Emulator instance HQN
+  _hqnState.m_emu = _game->_emu->_nes;
 
   // Opening rendering window
   SDL_SetMainReady();
@@ -41,7 +33,7 @@ class PlaybackInstance : public PlaybackInstanceBase
   {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
     {
-        EXIT_WITH_ERROR("Failed to initialize video: %s", SDL_GetError());
+     EXIT_WITH_ERROR("Failed to initialize video: %s", SDL_GetError());
     }
   }
 
@@ -50,17 +42,23 @@ class PlaybackInstance : public PlaybackInstanceBase
   _hqnGUI->setScale(2);
  }
 
- // Function to load state
- void loadState(const uint8_t* state) override
- {
-  _hqnState.loadState((char*)state, _STATE_DATA_SIZE);
- }
-
  // Function to render frame
- void renderFrame(const uint8_t move) override
+ void renderFrame() override
  {
+  // Sleeping for 1/60th of a second
   usleep(16667);
-  _hqnGUI->update(true);
- }
 
+  // Storing current game state
+  uint8_t emuState[_STATE_DATA_SIZE];
+  _game->_emu->serializeState(emuState);
+
+  // Since renderer is off by one frame, we need to emulate an additional frame
+  _game->advanceState(".");
+  int32_t curImage[BLIT_SIZE];
+  _hqnState.blit(curImage, hqn::HQNState::NES_VIDEO_PALETTE, 0, 0, 0, 0);
+  _hqnGUI->update_blit(curImage);
+
+  // Reload game state
+  _game->_emu->deserializeState(emuState);
+ }
 };

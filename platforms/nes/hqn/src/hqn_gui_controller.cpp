@@ -12,6 +12,7 @@ namespace hqn
 
 const char *DEFAULT_WINDOW_TITLE = "HeadlessQuickNES";
 
+
 const SDL_Rect NES_BLIT_RECT = { 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT };
 
 // Determine the letterboxing required to display something on screen.
@@ -187,9 +188,27 @@ void GUIController::update(bool readNES)
     void *nesPixels = nullptr;
     int pitch = 0;
 
-    if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0)
-        return;
+    if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0) return;
+
     m_state.blit((int32_t*)nesPixels, HQNState::NES_VIDEO_PALETTE, 0, 0, 0, 0);
+    SDL_UnlockTexture(m_tex);
+
+    // render to screen
+    SDL_RenderClear(m_renderer);
+    SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, &m_nesDest);
+    SDL_RenderPresent(m_renderer);
+    // Process any outstanding events
+    processEvents();
+}
+
+void GUIController::update_blit(int32_t* blit)
+{
+    void *nesPixels = nullptr;
+    int pitch = 0;
+
+    if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0) return;
+
+    memcpy(nesPixels, blit, sizeof(int32_t) * BLIT_SIZE);
     SDL_UnlockTexture(m_tex);
 
     // render to screen

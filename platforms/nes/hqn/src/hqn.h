@@ -4,6 +4,8 @@
 #include <Nes_Emu.h>
 #include <cstdint>
 
+#define BLIT_SIZE 65536
+
 namespace hqn
 {
 
@@ -31,6 +33,9 @@ function.
 class HQNState
 {
 public:
+
+    /* A reference to the emulator instance. */
+    Nes_Emu *m_emu;
 
     static const int32_t *NES_VIDEO_PALETTE;
 
@@ -103,7 +108,7 @@ public:
      * Blit the contents of the NES screen to dest. Dest should be able to hold 256*240 ints.
      * Unless you want to change the color palette you should use NES_VIDEO_PALETTE for colors.
      */
-    void blit(int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom);
+    void blit(int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom) const;
 
     inline HQNListener *getListener() const
     { return m_listener; }
@@ -121,8 +126,6 @@ private:
     // Safely unload the currently loaded rom
     void unloadRom();
 
-    /* A reference to the emulator instance. */
-    Nes_Emu *m_emu;
     /* ROM file stored in memory because reasons */
     uint8_t *m_romData;
     size_t m_romSize;

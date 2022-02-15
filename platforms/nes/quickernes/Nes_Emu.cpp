@@ -113,7 +113,6 @@ void Nes_Emu::reset( bool full_reset, bool erase_battery_ram )
 	clear_sound_buf();
 	set_timestamp( 0 );
 	emu.reset( full_reset, erase_battery_ram );
-	enable_sound(false);
 }
 
 void Nes_Emu::set_palette_range( int begin, int end )
@@ -129,9 +128,53 @@ blargg_err_t Nes_Emu::emulate_frame( const uint32_t joypad1, const uint32_t joyp
 {
 	emu.current_joypad [0] = joypad1;
 	emu.current_joypad [1] = joypad2;
+	
 	emu.ppu.host_pixels = NULL;
-	emu.ppu.max_palette_size = 0;
-	emu.emulate_frame();
+	
+	unsigned changed_count = sound_buf->channels_changed_count();
+	bool new_enabled = (frame_ != NULL);
+	if ( sound_buf_changed_count != changed_count || sound_enabled != new_enabled )
+	{
+		sound_buf_changed_count = changed_count;
+		sound_enabled = new_enabled;
+		enable_sound( sound_enabled );
+	}
+	
+	frame_t* f = frame_;
+	if ( f )
+	{
+		emu.ppu.max_palette_size = host_palette_size;
+		emu.ppu.host_palette = f->palette + emu.ppu.palette_begin;
+		// add black and white for emulator to use (unless emulator uses entire
+		// palette for frame)
+		f->palette [252] = 0x0F;
+		f->palette [254] = 0x30;
+		f->palette [255] = 0x0F;
+		if ( host_pixels )
+			emu.ppu.host_pixels = (BOOST::uint8_t*) host_pixels +
+					emu.ppu.host_row_bytes * f->top;
+		
+		if ( sound_buf->samples_avail() )
+			clear_sound_buf();
+		
+		nes_time_t frame_len = emu.emulate_frame();
+		sound_buf->end_frame( frame_len, false );
+		
+		f = frame_;
+		f->sample_count      = sound_buf->samples_avail();
+		f->chan_count        = sound_buf->samples_per_frame();
+		f->palette_begin     = emu.ppu.palette_begin;
+		f->palette_size      = emu.ppu.palette_size;
+		f->joypad_read_count = emu.joypad_read_count;
+		f->burst_phase       = emu.ppu.burst_phase;
+		f->pitch             = emu.ppu.host_row_bytes;
+		f->pixels            = emu.ppu.host_pixels + f->left;
+	}
+	else
+	{
+		emu.ppu.max_palette_size = 0;
+		emu.emulate_frame();
+	}
 	
 	return 0;
 }

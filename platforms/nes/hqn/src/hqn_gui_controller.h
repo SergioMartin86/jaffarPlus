@@ -99,6 +99,7 @@ public:
      */
     void setCloseOperation(CloseOperation ops);
     CloseOperation getCloseOperation() const;
+    void update_blit(int32_t* blit);
 
     // Methods overriden from superclass.
     virtual void onLoadROM(HQNState *state, const char *filename);
