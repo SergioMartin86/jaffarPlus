@@ -63,12 +63,6 @@ class State
    curPos += _ruleCount * sizeof(bool);
   }
 
-  // Destructor frees up base pointer
-  ~State()
-  {
-   delete _basePointer;
-  }
-
   // Parsing configuration
   static void parseConfiguration(const nlohmann::json& config)
   {

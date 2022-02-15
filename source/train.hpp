@@ -34,9 +34,7 @@ class Train
   // Saving intermediate result settings
   bool _outputEnabled;
   double _outputSaveFrequency;
-  std::string _outputSaveBestPath;
   std::string _outputSolutionBestPath;
-  std::string _outputSaveWorstPath;
   std::string _outputSolutionWorstPath;
 
   // Store the number of openMP threads in use

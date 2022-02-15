@@ -44,7 +44,7 @@ class GameInstance : public GameInstanceBase
     hash.Update(*_data.marioMaxVelLeft);
     hash.Update(*_data.marioMaxVelRight);
     hash.Update(*_data.marioVelX);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.marioVelY);
+    hash.Update(*_data.marioVelY);
     if (!USE_LIGHT_HASH) hash.Update(*_data.marioFracVelY);
     hash.Update(*_data.marioGravity);
     hash.Update(*_data.marioFriction);

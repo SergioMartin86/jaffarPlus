@@ -32,9 +32,7 @@
     {
      "Enabled": true,
      "Frequency (s)": 1.0,
-     "Best State Path": "/tmp/jaffar.best.state",
      "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst State Path": "/tmp/jaffar.worst.state",
      "Worst Solution Path": "/tmp/jaffar.worst.sol"
     }
   },

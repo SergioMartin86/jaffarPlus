@@ -98,7 +98,7 @@ void Train::run()
    {
     std::string solutionString;
     solutionString += EmuInstance::moveCodeToString(lastState.moveHistory[0]);
-    for (size_t i = 1; i < _currentStep; i++) solutionString += std::string(" ") + EmuInstance::moveCodeToString(lastState.moveHistory[i]);
+    for (size_t i = 1; i < _currentStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState.moveHistory[i]);
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    }
   }
@@ -525,15 +525,11 @@ Train::Train(int argc, char *argv[])
   if (isDefined(config["Jaffar Configuration"], "Save Intermediate Results") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results' key.\n");
   if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Enabled") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Enabled' key.\n");
   if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Frequency (s)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Frequency (s)' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Best State Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best State Path' key.\n");
   if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Best Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best Solution Path' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Worst State Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst State Path' key.\n");
   if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Worst Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst Solution Path' key.\n");
   _outputEnabled = config["Jaffar Configuration"]["Save Intermediate Results"]["Enabled"].get<bool>();
   _outputSaveFrequency = config["Jaffar Configuration"]["Save Intermediate Results"]["Frequency (s)"].get<float>();
-  _outputSaveBestPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Best State Path"].get<std::string>();
   _outputSolutionBestPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Best Solution Path"].get<std::string>();
-  _outputSaveWorstPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Worst State Path"].get<std::string>();
   _outputSolutionWorstPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Worst Solution Path"].get<std::string>();
 
   // Resizing containers based on thread count
@@ -641,12 +637,12 @@ void Train::showSavingLoop()
         {
          std::string bestSolutionString;
          bestSolutionString += EmuInstance::moveCodeToString(_bestState.moveHistory[0]);
-         for (size_t i = 1; i < _currentStep; i++) bestSolutionString += std::string(" ") + EmuInstance::moveCodeToString(_bestState.moveHistory[i]);
+         for (size_t i = 1; i < _currentStep; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState.moveHistory[i]);
          saveStringToFile(bestSolutionString, _outputSolutionBestPath.c_str());
 
          std::string worstSolutionString;
          worstSolutionString += EmuInstance::moveCodeToString(_worstState.moveHistory[0]);
-         for (size_t i = 1; i < _currentStep; i++) worstSolutionString += std::string(" ") + EmuInstance::moveCodeToString(_worstState.moveHistory[i]);
+         for (size_t i = 1; i < _currentStep; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState.moveHistory[i]);
          saveStringToFile(worstSolutionString, _outputSolutionWorstPath.c_str());
         }
 
