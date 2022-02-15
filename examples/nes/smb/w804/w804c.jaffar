@@ -32,10 +32,10 @@
     {
      "Enabled": true,
      "Frequency (s)": 1.0,
-     "Best State Path": "w804c.best.state",
-     "Best Solution Path": "w804c.best.sol",
-     "Worst State Path": "w804c.worst.state",
-     "Worst Solution Path": "w804c.worst.sol"
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst State Path": "/tmp/jaffar.worst.state",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
     }
   },
  

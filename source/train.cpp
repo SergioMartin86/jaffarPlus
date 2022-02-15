@@ -7,26 +7,10 @@
 
 void Train::run()
 {
-  printf("[Jaffar] ----------------------------------------------------------------\n");
-  printf("[Jaffar] Launching Jaffar...\n");
-
-  if (_outputSaveBestSeconds > 0)
-  {
-    printf("[Jaffar] Saving best state every: %.3f seconds.\n", _outputSaveBestSeconds);
-    printf("[Jaffar]  + Savefile Path: %s\n", _outputSaveBestPath.c_str());
-    printf("[Jaffar]  + Solution Path: %s\n", _outputSolutionBestPath.c_str());
-  }
-
-  // Sleep for a second to show this message
-  sleep(2);
-
   auto searchTimeBegin = std::chrono::steady_clock::now();      // Profiling
   auto currentStepTimeBegin = std::chrono::steady_clock::now(); // Profiling
 
-  // Storage for termination trigger
-  bool terminate = false;
-
-  while (terminate == false)
+  while (_hasFinalized == false)
   {
     // Profiling information
     auto searchTimeEnd = std::chrono::steady_clock::now();                                                            // Profiling
@@ -57,14 +41,14 @@ void Train::run()
     if (_databaseSize == 0)
     {
       printf("[Jaffar] State database depleted with no winning states, finishing...\n");
-      terminate = true;
+      _hasFinalized = true;
     }
 
     // Terminate if a winning rule was found
     if (_winStateFound)
     {
       printf("[Jaffar] Winning state reached in %u moves, finishing...\n", _currentStep-1);
-      terminate = true;
+      _hasFinalized = true;
     }
 
     // Terminate if maximum number of states was reached
@@ -72,7 +56,7 @@ void Train::run()
     {
       printf("[Jaffar] Maximum state number reached, finishing...\n");
       printf("[Jaffar] To run Jaffar for more steps, increase 'Max Move Count' in the .jaffar file.\n");
-      terminate = true;
+      _hasFinalized = true;
     }
   }
 
@@ -96,20 +80,17 @@ void Train::run()
     {
      printf("[Jaffar]  + Move List: ");
      for (uint16_t i = 0; i < _currentStep; i++)
-       printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState.moveHistory[i])).c_str());
+      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState.moveHistory[i])).c_str());
      printf("\n");
     }
   }
 
-  // Marking the end of the run
-  _hasFinalized = true;
-
   // Stopping show thread
-  pthread_join(_showThreadId, NULL);
-
-  // If it has finalized with a win, save the winning state
-  if (_outputSaveBestSeconds > 0.0)
+  if (_outputEnabled)
   {
+   pthread_join(_showThreadId, NULL);
+
+   // If it has finalized with a win, save the winning state
    auto lastState = _winStateFound ? _winState : _bestState;
 
    // Storing the solution sequence
@@ -117,11 +98,8 @@ void Train::run()
    {
     std::string solutionString;
     solutionString += EmuInstance::moveCodeToString(lastState.moveHistory[0]);
-    for (size_t i = 1; i < _currentStep; i++)
-     solutionString += std::string(" ") + EmuInstance::moveCodeToString(lastState.moveHistory[i]);
-    solutionString += std::string(" .");
-    std::string outputBestSolutionFilePath = _outputSaveBestPath + std::string(".best.sol");
-    saveStringToFile(solutionString, outputBestSolutionFilePath.c_str());
+    for (size_t i = 1; i < _currentStep; i++) solutionString += std::string(" ") + EmuInstance::moveCodeToString(lastState.moveHistory[i]);
+    saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    }
   }
 }
@@ -507,18 +485,6 @@ Train::Train(int argc, char *argv[])
   // Flag to determine if win state was found
   _winStateFound = false;
 
-  // Parsing file output frequency
-  _outputSaveBestSeconds = -1.0;
-  if (const char *outputSaveBestSecondsEnv = std::getenv("JAFFAR_SAVE_BEST_EVERY_SECONDS")) _outputSaveBestSeconds = std::stof(outputSaveBestSecondsEnv);
-
-  // Parsing savegame files output path
-  _outputSaveBestPath = "/tmp/jaffar";
-  if (const char *outputSaveBestPathEnv = std::getenv("JAFFAR_SAVE_BEST_PATH")) _outputSaveBestPath = std::string(outputSaveBestPathEnv);
-
-  // Parsing solution files output path
-  _outputSolutionBestPath = "/tmp/jaffar.best.sol";
-  if (const char *outputSolutionBestPathEnv = std::getenv("JAFFAR_SOLUTION_BEST_PATH")) _outputSolutionBestPath = std::string(outputSolutionBestPathEnv);
-
   // Parsing command line arguments
   argparse::ArgumentParser program("jaffar", "2.0");
 
@@ -554,6 +520,21 @@ Train::Train(int argc, char *argv[])
   if (isDefined(config["Jaffar Configuration"]["Hash Database"], "Max Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Max Size Upper Bound (Mb)' key.\n");
   _hashSizeLowerBound = config["Jaffar Configuration"]["Hash Database"]["Max Size Lower Bound (Mb)"].get<size_t>();
   _hashSizeUpperBound = config["Jaffar Configuration"]["Hash Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
+
+  // Parsing file output frequency
+  if (isDefined(config["Jaffar Configuration"], "Save Intermediate Results") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Enabled") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Enabled' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Frequency (s)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Frequency (s)' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Best State Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best State Path' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Best Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best Solution Path' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Worst State Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst State Path' key.\n");
+  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Worst Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst Solution Path' key.\n");
+  _outputEnabled = config["Jaffar Configuration"]["Save Intermediate Results"]["Enabled"].get<bool>();
+  _outputSaveFrequency = config["Jaffar Configuration"]["Save Intermediate Results"]["Frequency (s)"].get<float>();
+  _outputSaveBestPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Best State Path"].get<std::string>();
+  _outputSolutionBestPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Best Solution Path"].get<std::string>();
+  _outputSaveWorstPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Worst State Path"].get<std::string>();
+  _outputSolutionWorstPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Worst Solution Path"].get<std::string>();
 
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
@@ -625,7 +606,8 @@ Train::Train(int argc, char *argv[])
   _stateDB.push_back(initialState);
 
   // Initializing show thread
-  if (pthread_create(&_showThreadId, NULL, showThreadFunction, this) != 0)
+  if (_outputEnabled)
+   if (pthread_create(&_showThreadId, NULL, showThreadFunction, this) != 0)
     EXIT_WITH_ERROR("[ERROR] Could not create show thread.\n");
 }
 
@@ -647,29 +629,25 @@ void Train::showSavingLoop()
     sleep(1);
 
     // Checking if we need to save best state
-    if (_outputSaveBestSeconds > 0.0 && _currentStep > 1)
+    if (_outputSaveFrequency > 0.0 && _currentStep > 1)
     {
       double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - bestStateSaveTimer).count();
-      if (bestStateTimerElapsed / 1.0e+9 > _outputSaveBestSeconds)
+      if (bestStateTimerElapsed / 1.0e+9 > _outputSaveFrequency)
       {
+       // Storing best and worst states
+
        // Storing the best and worst solution sequences
         if (_storeMoveList)
         {
          std::string bestSolutionString;
          bestSolutionString += EmuInstance::moveCodeToString(_bestState.moveHistory[0]);
-         for (size_t i = 1; i < _currentStep; i++)
-          bestSolutionString += std::string(" ") + EmuInstance::moveCodeToString(_bestState.moveHistory[i]);
-         bestSolutionString += std::string(" .");
-         std::string outputSolPath = _outputSaveBestPath + std::string(".best.sol");
-         saveStringToFile(bestSolutionString, outputSolPath.c_str());
+         for (size_t i = 1; i < _currentStep; i++) bestSolutionString += std::string(" ") + EmuInstance::moveCodeToString(_bestState.moveHistory[i]);
+         saveStringToFile(bestSolutionString, _outputSolutionBestPath.c_str());
 
          std::string worstSolutionString;
          worstSolutionString += EmuInstance::moveCodeToString(_worstState.moveHistory[0]);
-         for (size_t i = 1; i < _currentStep; i++)
-          worstSolutionString += std::string(" ") + EmuInstance::moveCodeToString(_worstState.moveHistory[i]);
-         worstSolutionString += std::string(" .");
-         std::string outputWorstSolPath = _outputSaveBestPath + std::string(".worst.sol");
-         saveStringToFile(worstSolutionString, outputWorstSolPath.c_str());
+         for (size_t i = 1; i < _currentStep; i++) worstSolutionString += std::string(" ") + EmuInstance::moveCodeToString(_worstState.moveHistory[i]);
+         saveStringToFile(worstSolutionString, _outputSolutionWorstPath.c_str());
         }
 
         // Resetting timer

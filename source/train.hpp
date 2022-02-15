@@ -31,11 +31,13 @@ class Train
   // Storage for current step
   uint16_t _currentStep;
 
-  // File output config
-  double _outputSaveBestSeconds;
+  // Saving intermediate result settings
+  bool _outputEnabled;
+  double _outputSaveFrequency;
   std::string _outputSaveBestPath;
   std::string _outputSolutionBestPath;
-  bool _showSDLPopPreview;
+  std::string _outputSaveWorstPath;
+  std::string _outputSolutionWorstPath;
 
   // Store the number of openMP threads in use
   int _threadCount;
