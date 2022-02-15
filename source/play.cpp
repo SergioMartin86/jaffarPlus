@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     .required();
 
   program.add_argument("--reproduce")
-    .help("Plays the entire sequence without interruptions")
+    .help("Plays the entire sequence without interruptions and exit at the end.")
     .default_value(false)
     .implicit_value(true);
 
@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
 
   // Getting reproduce flag
   bool isReproduce = program.get<bool>("--reproduce");
+  bool exitOnFinish = isReproduce;
 
   // Initializing ncurses screen
   initscr();
@@ -178,7 +179,11 @@ int main(int argc, char *argv[])
    if (isReproduce)
    {
     currentStep++;
-    if (currentStep > sequenceLength) { currentStep--; isReproduce = false; }
+    if (currentStep > sequenceLength)
+    {
+     if (exitOnFinish) { endwin(); return 0; }
+     currentStep--; isReproduce = false;
+    }
     continue;
    }
 
