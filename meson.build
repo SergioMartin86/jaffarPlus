@@ -18,7 +18,9 @@ jaffarIncludes = include_directories([
  'extern/argparse',
  'extern/json/single_include',
  'extern/phmap',
- 'source'
+ 'source',
+ 'games',
+ 'platforms'
  ])
 
 # Common Jaffar sources
