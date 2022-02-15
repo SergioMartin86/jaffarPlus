@@ -9,7 +9,6 @@
 #include <utils.hpp>
 
 #define _STATE_DATA_SIZE 12792
-const std::vector<std::string> _possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
 
 class EmuInstance : public EmuInstanceBase
 {
@@ -103,59 +102,56 @@ class EmuInstance : public EmuInstanceBase
  // 5 - Down / 32
  // 6 - Left / 64
  // 7 - Right / 128
- // Possible moves
- // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12     13    14      15
- //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
+
+ // Move Format:
+ // RLDUTSBA
+ // ........
+
+ static uint8_t moveStringToCode(const std::string& move)
+ {
+  uint8_t moveCode = 0;
+
+  for (size_t i = 0; i < move.size(); i++) switch(move[i])
+  {
+    case 'R': moveCode |= 0b10000000; break;
+    case 'L': moveCode |= 0b01000000; break;
+    case 'D': moveCode |= 0b00100000; break;
+    case 'U': moveCode |= 0b00010000; break;
+    case 'S': moveCode |= 0b00001000; break;
+    case 'T': moveCode |= 0b00000100; break;
+    case 'B': moveCode |= 0b00000010; break;
+    case 'A': moveCode |= 0b00000001; break;
+    case '.': break;
+    default: EXIT_WITH_ERROR("Move provided cannot be parsed: '%s', unrecognized character: '%c'\n", move.c_str(), move[i]);
+  }
+
+  return moveCode;
+ }
+
+ static std::string moveCodeToString(const uint8_t move)
+ {
+  std::string moveString;
+
+  if (move & 0b10000000) moveString += 'R'; else moveString += '.';
+  if (move & 0b01000000) moveString += 'L'; else moveString += '.';
+  if (move & 0b00100000) moveString += 'D'; else moveString += '.';
+  if (move & 0b00010000) moveString += 'U'; else moveString += '.';
+  if (move & 0b00001000) moveString += 'S'; else moveString += '.';
+  if (move & 0b00000100) moveString += 'T'; else moveString += '.';
+  if (move & 0b00000010) moveString += 'B'; else moveString += '.';
+  if (move & 0b00000001) moveString += 'A'; else moveString += '.';
+
+  return moveString;
+ }
 
  void advanceState(const std::string& move) override
  {
-  if (move == ".") { advanceState(0); return; }
-  if (move == "L") { advanceState(1); return; }
-  if (move == "R") { advanceState(2); return; }
-  if (move == "D") { advanceState(3); return; }
-  if (move == "A") { advanceState(4); return; }
-  if (move == "B") { advanceState(5); return; }
-  if (move == "LA") { advanceState(6); return; }
-  if (move == "RA") { advanceState(7); return; }
-  if (move == "LB") { advanceState(8); return; }
-  if (move == "RB") { advanceState(9); return; }
-  if (move == "LR") { advanceState(10); return; }
-  if (move == "LRA") { advanceState(11); return; }
-  if (move == "LRB") { advanceState(12); return; }
-  if (move == "LAB") { advanceState(13); return; }
-  if (move == "RAB") { advanceState(14); return; }
-  if (move == "LRAB") { advanceState(15); return; }
-
-  EXIT_WITH_ERROR("Unrecognized move: %s\n", move.c_str());
+  advanceState(moveStringToCode(move));
  }
 
- void advanceState(const uint8_t &move) override
+ void advanceState(const uint8_t move) override
  {
-  // Encoding movement into the NES controller code
-  uint32_t controllerCode = 0;
-  switch (move)
-  {
-   case 0: controllerCode = 0b00000000; break; // .
-   case 1: controllerCode = 0b01000000; break; // L
-   case 2: controllerCode = 0b10000000; break; // R
-   case 3: controllerCode = 0b00100000; break; // D
-   case 4: controllerCode = 0b00000001; break; // A
-   case 5: controllerCode = 0b00000010; break; // B
-   case 6: controllerCode = 0b01000001; break; // LA
-   case 7: controllerCode = 0b10000001; break; // RA
-   case 8: controllerCode = 0b01000010; break; // LB
-   case 9: controllerCode = 0b10000010; break; // RB
-   case 10: controllerCode = 0b11000000; break; // LR
-   case 11: controllerCode = 0b11000001; break; // LRA
-   case 12: controllerCode = 0b11000010; break; // LRB
-   case 13: controllerCode = 0b01000011; break; // LAB
-   case 14: controllerCode = 0b10000011; break; // RAB
-   case 15: controllerCode = 0b11000011; break; // LRAB
-   default: EXIT_WITH_ERROR("Wrong move code passed %u\n", move);
-  }
-
-  // Running frame
-  _nes->emulate_frame(controllerCode,0);
+  _nes->emulate_frame(move,0);
  }
 
 };

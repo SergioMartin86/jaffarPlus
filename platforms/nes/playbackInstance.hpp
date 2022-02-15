@@ -24,6 +24,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  {
   // Loading Emulator instance HQN
   _hqnState.m_emu = _game->_emu->_nes;
+  _hqnState.m_emu->_doRendering = true;
 
   // Opening rendering window
   SDL_SetMainReady();

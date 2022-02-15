@@ -214,20 +214,16 @@ class GameInstance : public GameInstanceBase
   }
 
   // Function to determine the current possible moves
-  inline std::vector<uint8_t> getPossibleMoveIds() const override
+  inline std::vector<std::string> getPossibleMoves() const override
   {
-   // Possible moves
-   // Move Ids =        0    1    2    3    4    5     6     7     8    9     10    11      12    13     14      15
-   //_possibleMoves = {".", "L", "R", "D", "A", "B", "LA", "RA", "LB", "RB", "LR", "LRA", "LRB", "LAB", "RAB", "LRAB" };
-
    // If Mario's state is not normal (!= 8), there's nothing to do except wait
-   if (*_data.marioState != 8) return { 0 };
+   if (*_data.marioState != 8) return { "." };
 
    // If floating, B, D have no effect
-   if (*_data.marioFloatingMode == 1) return { 0, 1, 2, 4, 6, 7, 10, 11 };
+   if (*_data.marioFloatingMode == 1) return { ".", "L", "R", "A", "LA", "RA", "LR", "LRA" };
 
    // On the floor, try all possible combinations, prioritize jumping and right direction
-   return { 0, 2, 3, 10, 4, 7, 9, 1, 6, 8, 11, 12 };
+   return { ".", "R", "D", "LR", "A", "RA", "RB", "L", "LA", "LB", "LRA", "LRB" };
   }
 
   // Function to get magnet information

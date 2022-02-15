@@ -59,7 +59,7 @@ void Nes_Ppu_Rendering::fill_background( int count )
 {
 	ptrdiff_t const next_line = scanline_row_bytes - image_width;
 	uint32_t* pixels = (uint32_t*) scanline_pixels;
-	
+
 	unsigned long fill = palette_offset;
 	if ( (vram_addr & 0x3f00) == 0x3f00 )
 	{
@@ -69,7 +69,7 @@ void Nes_Ppu_Rendering::fill_background( int count )
 			color &= 0x0f;
 		fill += color * 0x01010101;
 	}
-	
+
 	for ( int n = count; n--; )
 	{
 		for ( int n = image_width / 16; n--; )
@@ -137,7 +137,7 @@ void Nes_Ppu_Rendering::restore_left( int count )
 void Nes_Ppu_Rendering::draw_background_( int remain )
 {
 	// Draws 'remain' background scanlines. Does not modify vram_addr.
-	
+
 	int vram_addr = this->vram_addr & 0x7fff;
 	byte* row_pixels = scanline_pixels - pixel_x;
 	int left_clip = (w2001 >> 1 & 1) ^ 1;
@@ -148,7 +148,7 @@ void Nes_Ppu_Rendering::draw_background_( int remain )
 		int height = 8 - (vram_addr >> 12);
 		if ( height > remain )
 			height = remain;
-		
+
 		// handle hscroll change before next scanline
 		int hscroll_changed = (vram_addr ^ vram_temp) & 0x41f;
 		int addr = vram_addr;
@@ -158,7 +158,7 @@ void Nes_Ppu_Rendering::draw_background_( int remain )
 			height = 1; // hscroll will change after first line
 		}
 		remain -= height;
-		
+
 		// increment address for next row
 		vram_addr += height << 12;
 		assert( vram_addr < 0x10000 );
@@ -170,7 +170,7 @@ void Nes_Ppu_Rendering::draw_background_( int remain )
 				y = 0x800; // toggle vertical nametable
 			vram_addr ^= y;
 		}
-		
+
 		// nametable change usually occurs in middle of row
 		byte const* nametable = get_nametable( addr );
 		byte const* nametable2 = get_nametable( addr ^ 0x400 );
@@ -180,26 +180,26 @@ void Nes_Ppu_Rendering::draw_background_( int remain )
 		// this conditional is commented out because of mmc2\4
 		// normally, the extra row of pixels is only fetched when pixel_ x is not 0, which makes sense
 		// but here, we need a correct fetch pattern to pick up 0xfd\0xfe tiles off the edge of the display
-		
+
 		// this doesn't cause any problems with buffer overflow because the framebuffer we're rendering to is
 		// already guarded (width = 272)
 		// this doesn't give us a fully correct ppu fetch pattern, but it's close enough for punch out
 
 		//if ( pixel_x )
 			count2++;
-		
+
 		byte const* attr_table = &nametable [0x3c0 | (addr >> 4 & 0x38)];
 		int bg_bank = (w2000 << 4) & 0x100;
 		addr += left_clip;
-		
+
 		// output pixels
 		ptrdiff_t const row_bytes = scanline_row_bytes;
 		byte* pixels = row_pixels;
 		row_pixels += height * row_bytes;
-		
+
 		unsigned long const mask = 0x03030303 + zero;
 		unsigned long const attrib_factor = 0x04040404 + zero;
-		
+
 		if ( height == 8 )
 		{
 			// unclipped

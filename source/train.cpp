@@ -96,7 +96,7 @@ void Train::run()
     {
      printf("[Jaffar]  + Move List: ");
      for (uint16_t i = 0; i < _currentStep; i++)
-       printf("%s ", _possibleMoves[_winState.getMove(i)].c_str());
+       printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState.moveHistory[i])).c_str());
      printf("\n");
     }
   }
@@ -116,9 +116,9 @@ void Train::run()
    if (_storeMoveList)
    {
     std::string solutionString;
-    solutionString += _possibleMoves[lastState.getMove(0)];
+    solutionString += EmuInstance::moveCodeToString(lastState.moveHistory[0]);
     for (size_t i = 1; i < _currentStep; i++)
-     solutionString += std::string(" ") + _possibleMoves[lastState.getMove(i)];
+     solutionString += std::string(" ") + EmuInstance::moveCodeToString(lastState.moveHistory[i]);
     solutionString += std::string(" .");
     std::string outputBestSolutionFilePath = _outputSaveBestPath + std::string(".best.sol");
     saveStringToFile(solutionString, outputBestSolutionFilePath.c_str());
@@ -198,19 +198,19 @@ void Train::computeStates()
       // Getting possible moves for the current state
       t0 = std::chrono::steady_clock::now(); // Profiling
       _gameInstances[threadId]->pushState(baseStateData);
-      std::vector<uint8_t> possibleMoveIds = _gameInstances[threadId]->getPossibleMoveIds();
+      std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves();
       tf = std::chrono::steady_clock::now();
       threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
       // Running possible moves
-      for (size_t idx = 0; idx < possibleMoveIds.size(); idx++)
+      for (size_t idx = 0; idx < possibleMoves.size(); idx++)
       {
         // Increasing  states processed counter
         #pragma omp atomic
         _stepNewStatesProcessedCounter++;
 
-        // Getting possible move id
-        auto moveId = possibleMoveIds[idx];
+        // Getting possible move and its code
+        auto moveId = EmuInstance::moveStringToCode(possibleMoves[idx]);
 
         // If this comes after the first move, we need to reload the base state
         if (idx > 0)
@@ -281,7 +281,7 @@ void Train::computeStates()
         if (_storeMoveList)
         {
          newState->setMoveHistory(baseState->moveHistory);
-         newState->setMove(_currentStep, moveId);
+         newState->moveHistory[_currentStep] = moveId;
         }
 
         // Calculating current reward
@@ -473,7 +473,7 @@ void Train::printTrainStatus()
   {
    printf("[Jaffar]  + Move List: ");
    for (size_t i = 0; i < _currentStep; i++)
-     printf("%s ", _possibleMoves[_bestState.getMove(i)].c_str());
+     printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_bestState.moveHistory[i])).c_str());
    printf("\n");
   }
 }
@@ -656,17 +656,17 @@ void Train::showSavingLoop()
         if (_storeMoveList)
         {
          std::string bestSolutionString;
-         bestSolutionString += _possibleMoves[_bestState.getMove(0)];
+         bestSolutionString += EmuInstance::moveCodeToString(_bestState.moveHistory[0]);
          for (size_t i = 1; i < _currentStep; i++)
-          bestSolutionString += std::string(" ") + _possibleMoves[_bestState.getMove(i)];
+          bestSolutionString += std::string(" ") + EmuInstance::moveCodeToString(_bestState.moveHistory[i]);
          bestSolutionString += std::string(" .");
          std::string outputSolPath = _outputSaveBestPath + std::string(".best.sol");
          saveStringToFile(bestSolutionString, outputSolPath.c_str());
 
          std::string worstSolutionString;
-         worstSolutionString += _possibleMoves[_worstState.getMove(0)];
+         worstSolutionString += EmuInstance::moveCodeToString(_worstState.moveHistory[0]);
          for (size_t i = 1; i < _currentStep; i++)
-          worstSolutionString += std::string(" ") + _possibleMoves[_worstState.getMove(i)];
+          worstSolutionString += std::string(" ") + EmuInstance::moveCodeToString(_worstState.moveHistory[i]);
          worstSolutionString += std::string(" .");
          std::string outputWorstSolPath = _outputSaveBestPath + std::string(".worst.sol");
          saveStringToFile(worstSolutionString, outputWorstSolPath.c_str());

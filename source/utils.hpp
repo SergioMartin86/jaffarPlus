@@ -80,6 +80,16 @@ std::vector<T> splitVector(const T size, const T n)
 // Taken from https://stackoverflow.com/questions/116038/how-do-i-read-an-entire-file-into-a-stdstring-in-c/116220#116220
 std::string slurp(std::ifstream &in);
 
+inline std::string simplifyMove(const std::string& move)
+{
+ std::string simpleMove;
+
+ bool isEmptyMove = true;
+ for (size_t i = 0; i < move.size(); i++) if (move[i] != '.') { simpleMove += move[i]; isEmptyMove = false; }
+ if (isEmptyMove) return ".";
+ return simpleMove;
+}
+
 // Taken from https://stackoverflow.com/a/4956493
 template <typename T>
 T swap_endian(T u)

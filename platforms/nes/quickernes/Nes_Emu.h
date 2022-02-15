@@ -29,6 +29,8 @@ public:
 	// Load iNES file into emulator and clear recording
 	blargg_err_t load_ines( Auto_File_Reader );
 	
+	bool _doRendering;
+
 	// Set sample rate for sound generation
 	blargg_err_t set_sample_rate( long );
 	

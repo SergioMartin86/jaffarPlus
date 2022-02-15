@@ -16,7 +16,7 @@ class EmuInstanceBase
   virtual void saveStateFile(const std::string& stateFilePath) const = 0;
 
   // Function to advance state
-  virtual void advanceState(const uint8_t &move) = 0;
+  virtual void advanceState(const uint8_t move) = 0;
   virtual void advanceState(const std::string& move) = 0;
 
   // Minimal serialization functions

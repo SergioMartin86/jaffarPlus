@@ -158,7 +158,7 @@ class GameInstanceBase
   virtual inline void updateDerivedValues() = 0;
 
   // Function to determine the current possible moves
-  virtual inline std::vector<uint8_t> getPossibleMoveIds() const = 0;
+  virtual inline std::vector<std::string> getPossibleMoves() const = 0;
 
   // Obtains the score of a given frame
   virtual inline float getStateReward(const bool* rulesStatus) const = 0;
