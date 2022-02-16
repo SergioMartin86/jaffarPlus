@@ -235,9 +235,6 @@ class GameInstance : public GameInstanceBase
    magnets.marioScreenOffsetMagnet.intensity = 0.0f;
    magnets.marioScreenOffsetMagnet.max = 0.0f;
 
-   magnets.screenHorizontalMagnet.intensity = 0.0f;
-   magnets.screenHorizontalMagnet.max = 0.0f;
-
    magnets.marioHorizontalMagnet.intensity = 0.0f;
    magnets.marioHorizontalMagnet.max = 0.0f;
 
@@ -261,9 +258,6 @@ class GameInstance : public GameInstanceBase
     // Getting magnet values for the kid
     auto magnets = getMagnetValues(rulesStatus);
 
-    // Evaluating screen screen magnet value
-    reward += magnets.screenHorizontalMagnet.intensity * std::min((float)_data.screenPosX, magnets.screenHorizontalMagnet.max);
-
     // Evaluating mario / screen offset magnet value
     reward += magnets.marioScreenOffsetMagnet.intensity * std::min((float)_data.marioScreenOffset, magnets.marioScreenOffsetMagnet.max);
 
@@ -272,9 +266,6 @@ class GameInstance : public GameInstanceBase
 
     // Evaluating mario magnet's reward on position Y
     reward += magnets.marioVerticalMagnet.intensity * std::min((float)*_data.marioPosY, magnets.marioVerticalMagnet.max);
-
-    // If mario is getting into the tube, reward timer going down
-    if (*_data.marioState == 3) reward += 1000.0f * (24.0f - (float)*_data.climbSideTimer);
 
     // Returning reward
     return reward;
@@ -320,7 +311,6 @@ class GameInstance : public GameInstanceBase
     LOG("\n");
 
     auto magnets = getMagnetValues(rulesStatus);
-    LOG("[Jaffar]  + Screen Horizontal Magnet   - Intensity: %.1f, Max: %f\n", magnets.screenHorizontalMagnet.intensity, magnets.screenHorizontalMagnet.max);
     LOG("[Jaffar]  + Mario Screen Offset Magnet - Intensity: %.1f, Max: %f\n", magnets.marioScreenOffsetMagnet.intensity, magnets.marioScreenOffsetMagnet.max);
     LOG("[Jaffar]  + Mario Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.max);
     LOG("[Jaffar]  + Mario Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.max);

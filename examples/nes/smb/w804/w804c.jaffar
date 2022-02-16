@@ -52,7 +52,7 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max": 6000 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 6000 }
     ]
    },
    
@@ -69,7 +69,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": -1.0, "Max": 6000 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": -1.0, "Min": 0, "Max": 6000 }
     ]
    },
    

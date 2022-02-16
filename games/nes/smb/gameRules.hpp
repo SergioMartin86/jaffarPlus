@@ -5,10 +5,9 @@
 
 void Rule::initializeRuleData()
 {
- _data.marioScreenOffsetMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f, .min = 0.0f };
- _data.screenHorizontalMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f, .min = 0.0f };
- _data.marioHorizontalMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f, .min = 0.0f };
- _data.marioVerticalMagnet = magnet_t { .intensity = 0.0f, .max = 0.0f, .min = 0.0f };
+ _data.marioScreenOffsetMagnet = magnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
+ _data.marioHorizontalMagnet = magnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
+ _data.marioVerticalMagnet = magnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
 }
 
 bool Rule::parseGameAction(nlohmann::json actionJs, size_t actionId)
@@ -19,32 +18,27 @@ bool Rule::parseGameAction(nlohmann::json actionJs, size_t actionId)
   if (actionType == "Set Mario Screen Offset Magnet")
   {
     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
     if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-    _data.marioScreenOffsetMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .max = actionJs["Max"].get<float>() };
-    recognizedActionType = true;
-  }
-
-  if (actionType == "Set Screen Horizontal Magnet")
-  {
-   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
-   if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-   _data.screenHorizontalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .max = actionJs["Max"].get<float>() };
+    _data.marioScreenOffsetMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
     recognizedActionType = true;
   }
 
   if (actionType == "Set Mario Horizontal Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-   _data.marioHorizontalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .max = actionJs["Max"].get<float>() };
+   _data.marioHorizontalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
     recognizedActionType = true;
   }
 
   if (actionType == "Set Mario Vertical Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-   _data.marioVerticalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .max = actionJs["Max"].get<float>() };
+   _data.marioVerticalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
     recognizedActionType = true;
   }
 
