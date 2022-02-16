@@ -31,12 +31,8 @@ class PlaybackInstance : public PlaybackInstanceBase
 
   // We can only call SDL_InitSubSystem once
   if (!SDL_WasInit(SDL_INIT_VIDEO))
-  {
-    if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
-    {
-     EXIT_WITH_ERROR("Failed to initialize video: %s", SDL_GetError());
-    }
-  }
+   if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
+    EXIT_WITH_ERROR("Failed to initialize video: %s", SDL_GetError());
 
   // Creating HQN GUI
   _hqnGUI = hqn::GUIController::create(_hqnState);

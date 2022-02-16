@@ -14,8 +14,6 @@ class GameInstance : public GameInstanceBase
     // Any SMB-specific configuration goes here
   };
 
-  #define USE_LIGHT_HASH true
-
   // This function computes the hash for the current state
   inline uint64_t computeHash() const override
   {
@@ -24,28 +22,28 @@ class GameInstance : public GameInstanceBase
 
     // Adding fixed hash elements
     hash.Update(*_data.screenScroll);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.marioAnimation);
+    // hash.Update(*_data.marioAnimation);
     hash.Update(*_data.marioState);
 
     hash.Update(*_data.marioBasePosX);
     hash.Update(*_data.marioRelPosX);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.marioSubpixelPosX);
+    // hash.Update(*_data.marioSubpixelPosX);
 
     hash.Update(*_data.marioPosY);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.marioSubpixelPosY);
+    // hash.Update(*_data.marioSubpixelPosY);
 
     hash.Update(*_data.marioXMoveForce);
     hash.Update(*_data.marioFacingDirection);
     hash.Update(*_data.marioMovingDirection);
     hash.Update(*_data.marioFloatingMode);
     hash.Update(*_data.marioWalkingMode);
-    if (!USE_LIGHT_HASH)  hash.Update(*_data.marioWalkingDelay);
-    if (!USE_LIGHT_HASH)  hash.Update(*_data.marioWalkingFrame);
+    //  hash.Update(*_data.marioWalkingDelay);
+    //  hash.Update(*_data.marioWalkingFrame);
     hash.Update(*_data.marioMaxVelLeft);
     hash.Update(*_data.marioMaxVelRight);
     hash.Update(*_data.marioVelX);
     hash.Update(*_data.marioVelY);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.marioFracVelY);
+    // hash.Update(*_data.marioFracVelY);
     hash.Update(*_data.marioGravity);
     hash.Update(*_data.marioFriction);
 
@@ -57,17 +55,17 @@ class GameInstance : public GameInstanceBase
     hash.Update(*_data.levelEntryFlag);
     hash.Update(*_data.gameMode);
 
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy1Active);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy2Active);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy3Active);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy4Active);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy5Active);
+    // hash.Update(*_data.enemy1Active);
+    // hash.Update(*_data.enemy2Active);
+    // hash.Update(*_data.enemy3Active);
+    // hash.Update(*_data.enemy4Active);
+    // hash.Update(*_data.enemy5Active);
 
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy1State);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy2State);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy3State);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy4State);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemy5State);
+    // hash.Update(*_data.enemy1State);
+    // hash.Update(*_data.enemy2State);
+    // hash.Update(*_data.enemy3State);
+    // hash.Update(*_data.enemy4State);
+    // hash.Update(*_data.enemy5State);
 
     hash.Update(*_data.enemy1Type);
     hash.Update(*_data.enemy2Type);
@@ -75,37 +73,32 @@ class GameInstance : public GameInstanceBase
     hash.Update(*_data.enemy4Type);
     hash.Update(*_data.enemy5Type);
 
-    if (!USE_LIGHT_HASH) hash.Update(*_data.marioCollision);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemyCollision);
+    // hash.Update(*_data.marioCollision);
+    // hash.Update(*_data.enemyCollision);
     hash.Update(*_data.hitDetectionFlag);
 
     // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
-    if (!USE_LIGHT_HASH)  hash.Update(*_data.animationTimer < 2 ? *_data.animationTimer : (uint8_t)2);
+    //  hash.Update(*_data.animationTimer < 2 ? *_data.animationTimer : (uint8_t)2);
     hash.Update(*_data.jumpSwimTimer < 2 ? *_data.jumpSwimTimer : (uint8_t)2);
     hash.Update(*_data.runningTimer < 2 ? *_data.runningTimer : (uint8_t)2);
     hash.Update(*_data.blockBounceTimer < 2 ? *_data.blockBounceTimer : (uint8_t)2);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.sideCollisionTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.jumpspringTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.gameControlTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.climbSideTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.enemyFrameTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.frenzyEnemyTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.bowserFireTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.stompTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.airBubbleTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.fallPitTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.multiCoinBlockTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.invincibleTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.starTimer);
-    if (!USE_LIGHT_HASH) hash.Update(*_data.powerUpActive);
+    // hash.Update(*_data.sideCollisionTimer);
+    // hash.Update(*_data.jumpspringTimer);
+    // hash.Update(*_data.gameControlTimer);
+    // hash.Update(*_data.climbSideTimer);
+    // hash.Update(*_data.enemyFrameTimer);
+    // hash.Update(*_data.frenzyEnemyTimer);
+    // hash.Update(*_data.bowserFireTimer);
+    // hash.Update(*_data.stompTimer);
+    // hash.Update(*_data.airBubbleTimer);
+    // hash.Update(*_data.fallPitTimer);
+    // hash.Update(*_data.multiCoinBlockTimer);
+    // hash.Update(*_data.invincibleTimer);
+    // hash.Update(*_data.starTimer);
+    // hash.Update(*_data.powerUpActive);
 
 
     hash.Update(*_data.warpAreaOffset);
-
-  //    hash.Update(*_data.player1Input);
-  //    hash.Update(*_data.player1Buttons);
-  //    hash.Update(*_data.player1GamePad1);
-  //    hash.Update(*_data.player1GamePad2);
 
     uint64_t result;
     hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -115,7 +108,6 @@ class GameInstance : public GameInstanceBase
   inline void setGameValuePointers() override
   {
    // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
-   // Game specific values
    _data.screenScroll         = (uint16_t*) &_emu->_baseMem[0x071B];
    _data.marioAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
    _data.marioState           = (uint8_t*)  &_emu->_baseMem[0x000E];
@@ -258,14 +250,26 @@ class GameInstance : public GameInstanceBase
     // Getting magnet values for the kid
     auto magnets = getMagnetValues(rulesStatus);
 
+    // Container for bounding calculations
+    float boundedValue = 0.0;
+
     // Evaluating mario / screen offset magnet value
-    reward += magnets.marioScreenOffsetMagnet.intensity * std::min((float)_data.marioScreenOffset, magnets.marioScreenOffsetMagnet.max);
+    boundedValue = (float)_data.marioScreenOffset;
+    boundedValue = std::min(boundedValue, magnets.marioScreenOffsetMagnet.max);
+    boundedValue = std::max(boundedValue, magnets.marioScreenOffsetMagnet.min);
+    reward += magnets.marioScreenOffsetMagnet.intensity * boundedValue;
 
     // Evaluating mario magnet's reward on position X
-    reward += magnets.marioHorizontalMagnet.intensity * std::min((float)_data.marioPosX, magnets.marioHorizontalMagnet.max);
+    boundedValue = (float)_data.marioPosX;
+    boundedValue = std::min(boundedValue, magnets.marioHorizontalMagnet.max);
+    boundedValue = std::max(boundedValue, magnets.marioHorizontalMagnet.min);
+    reward += magnets.marioHorizontalMagnet.intensity * boundedValue;
 
     // Evaluating mario magnet's reward on position Y
-    reward += magnets.marioVerticalMagnet.intensity * std::min((float)*_data.marioPosY, magnets.marioVerticalMagnet.max);
+    boundedValue = (float)*_data.marioPosY;
+    boundedValue = std::min(boundedValue, magnets.marioVerticalMagnet.max);
+    boundedValue = std::max(boundedValue, magnets.marioVerticalMagnet.min);
+    reward += magnets.marioHorizontalMagnet.intensity * boundedValue;
 
     // Returning reward
     return reward;
@@ -303,11 +307,7 @@ class GameInstance : public GameInstanceBase
     LOG("[Jaffar]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_data.animationTimer, *_data.jumpSwimTimer, *_data.runningTimer, *_data.blockBounceTimer, *_data.sideCollisionTimer, *_data.jumpspringTimer, *_data.gameControlTimer, *_data.climbSideTimer, *_data.enemyFrameTimer, *_data.frenzyEnemyTimer, *_data.bowserFireTimer, *_data.stompTimer, *_data.airBubbleTimer, *_data.multiCoinBlockTimer, *_data.invincibleTimer, *_data.starTimer);
 
     LOG("[Jaffar]  + Rule Status: ");
-    for (size_t i = 0; i < _ruleCount; i++)
-    {
-      if (i > 0 && i % 60 == 0) LOG("\n                         ");
-      LOG("%d", rulesStatus[i] ? 1 : 0);
-    }
+    for (size_t i = 0; i < _ruleCount; i++) LOG("%d", rulesStatus[i] ? 1 : 0);
     LOG("\n");
 
     auto magnets = getMagnetValues(rulesStatus);

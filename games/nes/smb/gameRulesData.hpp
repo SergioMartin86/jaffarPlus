@@ -3,7 +3,7 @@
 // Datatype to describe a magnet
 struct magnet_t {
  float intensity; // How strong the magnet is
- float min;  // What is the maximum input value to the calculation.
+ float min;  // What is the minimum input value to the calculation.
  float max;  // What is the maximum input value to the calculation.
 };
 
