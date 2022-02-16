@@ -214,15 +214,8 @@ int main(int argc, char *argv[])
      showFrameInfo = false;
    }
 
-   // Playback
-   if (command == 'p')
-   {
-     // Start playback from current point
-     isReproduce = true;
-
-     // Do no show frame info again after this action
-     showFrameInfo = false;
-   }
+   // Start playback from current point
+   if (command == 'p') isReproduce = true;
 
   } while (command != 'q');
 
