@@ -71,16 +71,16 @@ void Train::run()
     printf("[Jaffar]  + Solution IGT:  %2lu:%02lu.%03lu\n", curMins, curSecs, curMilliSecs);
 
     uint8_t winStateData[_STATE_DATA_SIZE];
-    _winState.getStateDataFromDifference(_referenceStateData, winStateData);
+    _winState->getStateDataFromDifference(_referenceStateData, winStateData);
     _gameInstances[0]->pushState((uint8_t*)winStateData);
-    _gameInstances[0]->printStateInfo(_winState.rulesStatus);
+    _gameInstances[0]->printStateInfo(_winState->rulesStatus);
 
     // Print Move History
     if (_storeMoveList)
     {
      printf("[Jaffar]  + Move List: ");
      for (uint16_t i = 0; i < _currentStep; i++)
-      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState.moveHistory[i])).c_str());
+      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState->moveHistory[i])).c_str());
      printf("\n");
     }
   }
@@ -97,8 +97,8 @@ void Train::run()
    if (_storeMoveList)
    {
     std::string solutionString;
-    solutionString += EmuInstance::moveCodeToString(lastState.moveHistory[0]);
-    for (size_t i = 1; i < _currentStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState.moveHistory[i]);
+    solutionString += EmuInstance::moveCodeToString(lastState->moveHistory[0]);
+    for (size_t i = 1; i < _currentStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->moveHistory[i]);
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    }
   }
@@ -282,7 +282,7 @@ void Train::computeStates()
         #pragma omp critical(insertState)
         {
          // Storing new winning state
-         if (type == f_win) { _winStateFound = true; _winState = *newState; };
+         if (type == f_win) { _winStateFound = true; _winState->copy(newState); };
 
          // Adding state to the new state database
          newStates.push_back(newState);
@@ -366,8 +366,8 @@ void Train::computeStates()
   _worstStateReward = std::numeric_limits<float>::infinity();
   for (const auto& state : newStates)
   {
-   if (state->reward > _bestStateReward) { _bestState = *state; _bestStateReward = _bestState.reward; }
-   if (state->reward < _worstStateReward) { _worstState = *state; _worstStateReward = _worstState.reward; }
+   if (state->reward > _bestStateReward) { _bestState->copy(state); _bestStateReward = _bestState->reward; }
+   if (state->reward < _worstStateReward) { _worstState->copy(state); _worstStateReward = _worstState->reward; }
   }
 
   // Setting new states to be current states for the next step
@@ -442,16 +442,16 @@ void Train::printTrainStatus()
   printf("[Jaffar] Best State Information:\n");
 
   uint8_t bestStateData[_STATE_DATA_SIZE];
-  _bestState.getStateDataFromDifference(_referenceStateData, bestStateData);
+  _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
   _gameInstances[0]->pushState(bestStateData);
-  _gameInstances[0]->printStateInfo(_bestState.rulesStatus);
+  _gameInstances[0]->printStateInfo(_bestState->rulesStatus);
 
   // Print Move History
   if (_storeMoveList)
   {
    printf("[Jaffar]  + Move List: ");
    for (size_t i = 0; i < _currentStep; i++)
-     printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_bestState.moveHistory[i])).c_str());
+     printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_bestState->moveHistory[i])).c_str());
    printf("\n");
   }
 }
@@ -591,9 +591,14 @@ Train::Train(int argc, char *argv[])
   // Registering hash for initial state
   _hashDB[0] = hash;
 
+  // Creating storage for win, best and worst states
+  _winState = new State;
+  _bestState = new State;
+  _worstState = new State;
+
   // Copying initial state into the best/worst state
-  _bestState = *initialState;
-  _worstState = *initialState;
+  _bestState->copy(initialState);
+  _worstState->copy(initialState);
   _bestStateReward = initialState->reward;
   _worstStateReward = initialState->reward;
 
@@ -636,13 +641,13 @@ void Train::showSavingLoop()
         if (_storeMoveList)
         {
          std::string bestSolutionString;
-         bestSolutionString += EmuInstance::moveCodeToString(_bestState.moveHistory[0]);
-         for (size_t i = 1; i < _currentStep; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState.moveHistory[i]);
+         bestSolutionString += EmuInstance::moveCodeToString(_bestState->moveHistory[0]);
+         for (size_t i = 1; i < _currentStep; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState->moveHistory[i]);
          saveStringToFile(bestSolutionString, _outputSolutionBestPath.c_str());
 
          std::string worstSolutionString;
-         worstSolutionString += EmuInstance::moveCodeToString(_worstState.moveHistory[0]);
-         for (size_t i = 1; i < _currentStep; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState.moveHistory[i]);
+         worstSolutionString += EmuInstance::moveCodeToString(_worstState->moveHistory[0]);
+         for (size_t i = 1; i < _currentStep; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState->moveHistory[i]);
          saveStringToFile(worstSolutionString, _outputSolutionWorstPath.c_str());
         }
 

@@ -1,21 +1,22 @@
 #include "rule.hpp"
-#include "gameRules.hpp"
+#include "gameRule.hpp"
+#include "gameInstance.hpp"
 
-Rule::Rule(nlohmann::json ruleJs, GameInstanceBase* gameInstance)
+Rule::Rule()
 {
-  // Adding identifying label for the rule
-  if (isDefined(ruleJs, "Label") == false) EXIT_WITH_ERROR("[ERROR] Rule missing 'Label' key.\n");
-  _label = ruleJs["Label"].get<size_t>();
-
   // Defining default values
   _reward = 0.0f;
 
   // Setting default win/fail values
   _isWinRule = false;
   _isFailRule = false;
+}
 
-  // Setting initial game-specific rule data
-  initializeRuleData();
+void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
+{
+  // Adding identifying label for the rule
+  if (isDefined(ruleJs, "Label") == false) EXIT_WITH_ERROR("[ERROR] Rule missing 'Label' key.\n");
+  _label = ruleJs["Label"].get<size_t>();
 
   // Adding conditions. All of them must be satisfied for the rule to count
   if (isDefined(ruleJs, "Conditions") == false) EXIT_WITH_ERROR("[ERROR] Rule missing 'Conditions' key.\n");
@@ -31,7 +32,7 @@ Rule::Rule(nlohmann::json ruleJs, GameInstanceBase* gameInstance)
     if (isDefined(conditionJs, "Property") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition missing 'Property' key.\n", _label);
     if (conditionJs["Property"].is_string() == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition operand 1 must be a string with the name of a property.\n", _label);
     datatype_t dtype = getPropertyType(conditionJs["Property"].get<std::string>());
-    auto property = getPropertyPointer(conditionJs["Property"].get<std::string>(), gameInstance);
+    auto property = getPropertyPointer(conditionJs["Property"].get<std::string>(), (GameInstance*)gameInstance);
 
     // Parsing second operand (number)
     if (isDefined(conditionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition missing 'Value' key.\n", _label);
@@ -61,7 +62,7 @@ Rule::Rule(nlohmann::json ruleJs, GameInstanceBase* gameInstance)
      if (valueType != dtype) EXIT_WITH_ERROR("[ERROR] Rule %lu, property (%s) and value (%s) types must coincide.\n", _label, conditionJs["Property"].get<std::string>(), conditionJs["Value"].get<std::string>());
 
      // Getting value pointer
-     auto valuePtr = getPropertyPointer(conditionJs["Value"].get<std::string>(), gameInstance);
+     auto valuePtr = getPropertyPointer(conditionJs["Value"].get<std::string>(), (GameInstance*)gameInstance);
 
      // Adding condition to the list
      Condition *condition;

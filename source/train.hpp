@@ -67,9 +67,9 @@ class Train
   std::queue<State*> _freeStatesQueue;
 
   // Storage for the win, best and worst state
-  State _bestState;
+  State* _bestState;
   float _bestStateReward;
-  State _worstState;
+  State* _worstState;
   float _worstStateReward;
 
   // Hash information
@@ -90,7 +90,7 @@ class Train
 
   // Storage for the position of win rules, for win detection
   bool _winStateFound;
-  State _winState;
+  State* _winState;
 
   // SDLPop instance and Id for the show thread
   pthread_t _showThreadId;

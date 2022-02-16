@@ -26,6 +26,9 @@ class State
 
   uint8_t* _basePointer;
 
+  // Prevent direct copies
+  State& operator=(const State&) = delete;
+
   public:
 
   // Positions of the difference with respect to a base state
@@ -61,6 +64,13 @@ class State
 
    rulesStatus = (bool*)&_basePointer[curPos];
    curPos += _ruleCount * sizeof(bool);
+  }
+
+  void copy(const State* state)
+  {
+   memcpy(_basePointer, state->_basePointer, _stateVariableSize);
+   reward = state->reward;
+   stateDiffCount = state->stateDiffCount;
   }
 
   // Parsing configuration

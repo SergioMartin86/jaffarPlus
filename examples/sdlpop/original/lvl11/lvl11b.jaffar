@@ -1,0 +1,273 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 11",
+  
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": [ 30, 43, 44, 45, 46, 112, 420, 421, 424, 425, 427, 428, 429 ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 14, "Column": 4, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 15, "Column": 4, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 14, "Column": 6, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 15, "Column": 16, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 14, "Column": 20, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 15, "Column": 20, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 14, "Column": 24, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 15, "Column": 24, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 14, "Column": 28, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 15, "Column": 28, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 14, "Column": 32, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 15, "Column": 32, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 14, "Column": 36, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 15, "Column": 36, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 7, "Column": 0, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 2, "Column": 0, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 7, "Column": 8, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 2, "Column": 8, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 2, "Column": 12, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 2, "Column": 16, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 2, "Column": 20, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 7, "Column": 16, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 4, "Column": 8, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 7, "Column": 20, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 7, "Column": 24, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 2, "Column": 20, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 2, "Column": 24, "Type": "Full", "Description": "Falling Tile" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Index": 47, "Type": "Full", "Description": "Gate" },
+     { "Index": 558, "Type": "Full", "Description": "Gate" },
+     { "Index": 410, "Type": "Full", "Description": "Loose Tile on Top L1" },
+     { "Index": 411, "Type": "Full", "Description": "Loose Tile on Top R1" },
+     { "Index": 414, "Type": "Full", "Description": "Loose Tile on Top R2" },
+     { "Index": 415, "Type": "Full", "Description": "Loose Tile on Top R3" },
+     { "Index": 416, "Type": "Full", "Description": "Loose Tile on Top R4" },
+     { "Index": 417, "Type": "Full", "Description": "Loose Tile on Top R5" },
+     { "Index": 418, "Type": "Full", "Description": "Loose Tile on Top R6" },
+     { "Index": 419, "Type": "Full", "Description": "Loose Tile on Top R7" },
+     { "Index": 200, "Type": "Full", "Description": "Loose Tile on Top R8" },
+     { "Index": 202, "Type": "Full", "Description": "Loose Tile on Top R9" },
+     { "Index": 203, "Type": "Full", "Description": "Loose Tile on Top R10" },
+     { "Index": 204, "Type": "Full", "Description": "Loose Tile on Top R11" },
+     { "Index": 205, "Type": "Full", "Description": "Loose Tile on Top R12" },
+     { "Index": 206, "Type": "Full", "Description": "Loose Tile on Top R13" }
+   ]
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 11020,
+    "Description": "Continue going through the next screen.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value": 1 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 200.0 }
+    ]
+   },
+   
+   {
+    "Label": 11001,
+    "Description": "Have Kid go up.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value": 15 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11020 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": -1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 138.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 15, "Value": 77.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 15, "Value": 1.0 }
+    ]
+   },
+  
+   {
+    "Label": 11002,
+    "Description": "Reward Kid for arriving in the ceiling, and keep going right.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value": 14 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11001 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": -10.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 15, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 14, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 14, "Value": 200.0 }
+    ]
+   },
+
+   {
+    "Label": 11003,
+    "Description": "Reward Kid for arriving in the ceiling, and keep going right.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value": 7 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11002 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 14, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 1 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 7, "Value": 150.0 }
+    ]
+   },
+   
+   {
+    "Label": 11104,
+    "Description": "Reward Kid for taking down two key tiles and coming back.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Tile FG State", "Index": 43, "Op": "==", "Value": 14 },
+     { "Property": "Tile FG State", "Index": 46, "Op": "==", "Value": 14 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11003 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 50.0 }
+    ]
+   },
+   
+   {
+    "Label": 11005,
+    "Description": "If the kid has opened the door, have him exit the room.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value": 2 },
+     { "Property": "Kid Position X", "Op": "<", "Value": 70 },
+     { "Property": "Kid Position Y", "Op": "==", "Value": 118 }
+    ],
+    
+    "Dependencies": [ 11104 ],
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 200.0 }
+    ]
+   },
+   
+   {
+    "Label": 11006,
+    "Description": "Keep going to the right.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value": 19 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11005, 11104 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 19, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 19, "Value": 200.0 }
+    ]
+   },
+   
+   {
+    "Label": 11007,
+    "Description": "Keep going to the right.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value": 22 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11006 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 19, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 22, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 22, "Value": 77.0 }
+    ]
+   },
+   
+   {
+    "Label": 11008,
+    "Description": "Keep going to the right.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value": 22 },
+     { "Property": "Kid Position Y", "Op": "==", "Value": 55 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11007 ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 11019,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

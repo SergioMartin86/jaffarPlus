@@ -1,0 +1,223 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 3 (second part)",  
+
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types":
+   [ 
+    { "Room": 3, "Tile": 13, "Type": "Full" },
+    { "Room": 8, "Tile": 23, "Type": "Full" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 3, "Column": 8, "Type": "Full" },
+    { "Room": 20, "Column": 8, "Type": "Full" },
+    { "Room": 8, "Column": 8, "Type": "Full" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Room": 6, "Tile": 24, "Type": "Full", "Comment": "Exit Door" },
+    { "Room": 3, "Tile": 13, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 5, "Tile": 10, "Type": "Full", "Comment": "Gate" },
+    { "Room": 5, "Tile": 5, "Type": "Full", "Comment": "Chomper" }
+   ]
+  },
+  
+  "Rules":
+   [
+    {
+     "Label": 3010,
+     "Description": "Setting magnet to make kid go to the left.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  2 },
+      { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 2,  "Value": 0.0 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 }
+     ]
+    },
+    
+    {
+     "Label": 3011,
+     "Description": "Rewarding kid for advancing to the second screen. Keep going left and rewarding climbing.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  1 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3010 ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 1,  "Value": 0.0 },
+      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 1,  "Value": 1.0 }
+     ]
+    },
+    
+    {
+     "Label": 3111,
+     "Description": "Rewarding kid for advancing to the second screen. Keep going left and rewarding climbing.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  1 },
+      { "Property": "Kid Position Y", "Op": "==", "Value":  5 },
+      { "Property": "Kid Position X", "Op": "<", "Value":  128 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 }
+     ]
+    },
+    
+    {
+     "Label": 3012,
+     "Description": "Rewarding kid for advancing to the third screen.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  5 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3011 ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 0.0 },
+      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 1, "Value": 0.0 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 1.0 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 5, "Value": 55.0 },
+      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 5, "Value": -1.0 }
+     ]
+    }, 
+    
+    {
+     "Label": 3013,
+     "Description": "Reward kid arriving in the exit room, set magnets to go to door opening tile.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  6 },
+      { "Property": "Kid Position Y", "Op": "<", "Value":  100 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3012 ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 1.0 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 6,  "Value": 190.0 }
+     ]
+    },
+    
+    {
+     "Label": 3014,
+     "Description": "If kid has activated the exit door tile, now go back left and reward climbing",
+     "Conditions":
+     [ 
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Exit Door Open", "Op": "==", "Value":  1 },
+      { "Property": "Kid Room", "Op": "==", "Value":  6 },
+      { "Property": "Kid Position Y", "Op": "<", "Value":  100 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3013 ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 5000 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 6, "Value": 55.0 },
+      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 6,  "Value": 1.0 }
+     ]
+    },
+    
+    {
+     "Label": 3015,
+     "Description": "Rewarding kid for coming back upstairs.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  5 },
+      { "Property": "Exit Door Open", "Op": "==", "Value":  1 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3014 ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": -1.0 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 6,  "Value": 128.0 },
+      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 6,  "Value": 0.0 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 1.0 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 5,  "Value": 200.0 },
+      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 5,  "Value": 1.0 }
+     ]
+    },
+    
+    {
+     "Label": 3016,
+     "Description": "Rewarding kid for coming back upstairs.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  5 },
+      { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
+      { "Property": "Exit Door Open", "Op": "==", "Value":  1 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3014 ],
+     
+     "Actions":
+     [
+      { "Type": "Trigger Win" }
+     ]
+    },
+    
+    {
+     "Label": 3019,
+     "Description": "If Kid dies, then fail.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Trigger Fail" }
+     ]
+    }
+   ]  
+}

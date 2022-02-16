@@ -1,0 +1,186 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 3 (second part)",  
+
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types":
+   [ 
+    { "Room": 3, "Tile": 13, "Type": "Full" },
+    { "Room": 8, "Tile": 23, "Type": "Full" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 3, "Column": 8, "Type": "Full" },
+    { "Room": 20, "Column": 8, "Type": "Full" },
+    { "Room": 8, "Column": 8, "Type": "Full" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Room": 3, "Tile": 13, "Type": "Full", "Comment": "Loose Tile" }
+   ]
+  },
+  
+  "Rules":
+   [
+    {
+    "Label": 3100,
+    "Description": "Reward getting to a forbidden room",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  3 },
+     { "Property": "Kid Room", "Op": "<", "Value":  0 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+
+   { 
+    "Label": 3101,
+    "Description": "Reward getting to a forbidden room",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  3 },
+     { "Property": "Kid Room", "Op": ">", "Value":  24 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+    {
+     "Label": 3015,
+     "Description": "Rewarding kid for coming back upstairs.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  5 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 1.0 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 5,  "Value": 200.0 }
+     ]
+    },
+    
+    {
+     "Label": 3016,
+     "Description": "Continuing to the right past the skeleton and then down.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  1 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3015 ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 0.0 },
+      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 5,  "Value": 0.0 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 1,  "Value": 220.0 }
+     ]
+    },
+    
+    {
+     "Label": 3017,
+     "Description": "Continuing to the left to the exit.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  3 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3016 ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 0.0 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 3, "Value": 1.0 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 3,  "Value": 30.0 }
+     ]
+    },
+    
+    {
+     "Label": 3018,
+     "Description": "Continuing to the left and get close to the exit door.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Room", "Op": "==", "Value":  6 },
+      { "Property": "Kid Position Y", "Op": ">", "Value":  100 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3017 ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 500 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 3, "Value": 0.0 },
+      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 1.0 },
+      { "Type": "Set Kid Horizontal Magnet Position", "Room": 6,  "Value": 128.0 }
+     ]
+    },
+    
+    {
+     "Label": 3019,
+     "Description": "If Kid dies, then fail.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": "==", "Value":  3 },
+      { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Trigger Fail" }
+     ]
+    },
+    
+    {
+     "Label": 3020,
+     "Description": "If Kid exits the level, then win.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": ">", "Value":  3 },
+      { "Property": "Current Level", "Op": "!=", "Value":  15 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [ 3018 ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 1000 },
+      { "Type": "Trigger Win" }
+     ]
+    }
+   ]  
+}

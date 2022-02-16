@@ -1,0 +1,342 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 1",  
+  
+ 
+  "State Configuration":
+  {
+   "Property Hash Types":
+   [
+   ],
+   "Static Tile Hash Types":
+   [
+   ],
+    
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+   ]
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 11014,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  8 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 8, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 8, "Value": 255.0 }
+    ]
+   },
+   
+   {
+    "Label": 11015,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  9 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11014 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 8, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 9, "Value": -1.0 }
+    ]
+   },
+   
+   {
+    "Label": 11016,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  9 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  60 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11015 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 9, "Value": 160.0 }
+    ]
+   },
+   
+   {
+    "Label": 11017,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  12 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11016 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 12, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 12, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 11018,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  13 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11017 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 12, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 13, "Value": -1.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 13, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 11019,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  13 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  60 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11018 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 13, "Value": 180.0 }
+    ]
+   },
+   
+   {
+    "Label": 11119,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  14 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11019 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 13, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 14, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 14, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 11020,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  15 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11119 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 14, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 15, "Value": 0.0 },
+     { "Type": "Set Guard Vertical Magnet Intensity", "Room": 15, "Value": -1.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 15, "Value": 1.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 15, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 11021,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Tile BG State", "Room": 14, "Tile": 9, "Op": ">", "Value": 0, "Comment": "Gate" }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11020 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 15, "Value": 255.0 },
+     { "Type": "Set Guard Vertical Magnet Intensity", "Room": 15, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 15, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 11022,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  14 },
+     { "Property": "Tile BG State", "Room": 14, "Tile": 9, "Op": ">", "Value": 0, "Comment": "Gate" }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11021 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 14, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 14, "Value": 255.0 }
+    ]
+   },
+      
+   {
+    "Label": 11023,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11022 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 14, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 16, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 16, "Value": 255.0 },
+     { "Type": "Set Guard Vertical Magnet Intensity", "Room": 16, "Value": -1.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 16, "Value": 1.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 16, "Value": 255.0 }
+    ]
+   },
+   
+   {
+    "Label": 11024,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Tile BG State", "Room": 14, "Tile": 26, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11023 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 16, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 16, "Value": 0.0 },
+     { "Type": "Set Guard Vertical Magnet Intensity", "Room": 16, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 16, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 11025,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Room", "Op": "==", "Value":  14 },
+     { "Property": "Tile BG State", "Room": 14, "Tile": 26, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11024 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 14, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 14, "Value": 140.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 14, "Value": -1.0 }
+    ]
+   },
+   
+   {
+     "Label": 11026,
+     "Description": "If Kid exits the level, then win.",
+     "Conditions":
+     [
+      { "Property": "Current Level", "Op": ">", "Value":  11 }
+     ],
+     
+     "Dependencies": [ ],
+     "Satisfies": [  ],
+     
+     "Actions":
+     [
+      { "Type": "Trigger Win" }
+     ]
+   },
+   
+   {
+    "Label": 11030,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  11 },
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

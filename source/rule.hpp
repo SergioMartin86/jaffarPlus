@@ -1,6 +1,5 @@
 #pragma once
 
-#include "gameRulesData.hpp"
 #include "nlohmann/json.hpp"
 #include "utils.hpp"
 #include <vector>
@@ -25,8 +24,7 @@ enum datatype_t
   dt_int32 = 5
 };
 
-// Pre-declaration of game instance class
-class GameInstanceBase;
+class GameInstance;
 
 class Condition
 {
@@ -90,7 +88,8 @@ inline bool _vCondition<T>::evaluate()
 class Rule
 {
   public:
-  Rule(nlohmann::json ruleJs, GameInstanceBase *gameInstance);
+  Rule();
+  virtual ~Rule() = default;
 
   // Stores an identifying label for the rule
   size_t _label;
@@ -102,34 +101,31 @@ class Rule
   bool _isWinRule;
   bool _isFailRule;
 
-  // Stores game-specific rule information
-  gameRuleData_t _data;
-
   // Stores rules that also satisfied if this one is
   std::vector<size_t> _satisfiesLabels;
   std::vector<size_t> _satisfiesIndexes;
 
-  private:
+  protected:
 
   // Conditions are evaluated frequently, so this optimized for performance
   // Operands are pre-parsed as pointers/immediates and the evaluation function
   // is a template that is created at compilation time.
   std::vector<Condition *> _conditions;
   size_t _conditionCount;
-  datatype_t getPropertyType(const std::string &property);
-  void *getPropertyPointer(const std::string &property, GameInstanceBase *gameInstance);
+  virtual datatype_t getPropertyType(const std::string &property) = 0;
+  virtual void *getPropertyPointer(const std::string &property, GameInstance* gameInstance) = 0;
   operator_t getOperationType(const std::string &operation);
-
-  // Function to initialize game rule data
-  void initializeRuleData();
 
   // Function to parse the json-encoded actions
   void parseActions(nlohmann::json actionsJs);
 
   // Function to parse game-specific actions
-  bool parseGameAction(nlohmann::json actionJs, size_t actionId);
+  virtual bool parseGameAction(nlohmann::json actionJs, size_t actionId) = 0;
 
   public:
+
+  // Function to initialize game rule data
+  void initialize(nlohmann::json ruleJs, void* gameInstance);
 
   // The rule is achieved only if all conditions are met
   inline bool evaluate() const

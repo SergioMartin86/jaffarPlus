@@ -1,0 +1,196 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 7 until drinking the potion",
+  
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": 
+   [
+    { "Room": 7, "Tile": 5, "Comment": "Loose Tile" },
+    { "Room": 7, "Tile": 25, "Comment": "Debris" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 7, "Column": 16, "Type": "Full" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Room": 7, "Tile": 5, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 7, "Tile": 23, "Type": "Full", "Comment": "Gate" },
+    { "Room": 2, "Tile": 8, "Type": "Full", "Comment": "Chomper" }
+   ]
+  },
+  
+  "Rules":
+  [
+   
+   {
+    "Label": 7001,
+    "Description": "Setting magnet to make kid go advancing to the right screen while luring guard.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 230.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 2, "Value": 2.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 2, "Value": 230.0 }
+    ]
+   },
+   
+   {
+    "Label": 7002,   
+    "Description": "Clearing magnets and rewarding when they get closed to the tile.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Kid Position X", "Op": ">", "Value":  220 },
+     { "Property": "Guard Room", "Op": "==", "Value":  2 },
+     { "Property": "Guard Position X", "Op": ">", "Value":  220 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 7001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 7, "Value": 120.0 },
+     { "Type": "Set Guard Vertical Magnet Intensity", "Room": 7, "Value": -1.0 }
+    ]
+   },
+   
+   {
+    "Label": 7003,
+    "Description": "If Guard starts falling, then obtain reward",
+    "Conditions":
+    [
+     { "Property": "Guard Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Frame", "Op": "==", "Value": 102 } 
+    ],
+
+    "Dependencies": [ ],
+    "Satisfies": [ 7002 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 5000 }
+    ]
+   },
+
+   {
+    "Label": 7004,
+    "Description": "Reward having the guard go down alive.",
+    "Conditions":
+    [
+     { "Property": "Guard Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Position Y", "Op": "==", "Value":  181 },
+     { "Property": "Guard Current HP", "Op": ">", "Value":  0 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 7003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 7, "Value": 0.0 },
+     { "Type": "Set Guard Vertical Magnet Intensity", "Room": 7, "Value": 0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 7, "Value": 128 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 7, "Value": -1 }
+    ]
+   },
+   
+   {
+    "Label": 7005,
+    "Description": "If both Kid and Guard got to get down, then go to the left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  181 },
+     { "Property": "Kid Current HP", "Op": ">", "Value":  0 },
+     { "Property": "Guard Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Position Y", "Op": "==", "Value":  181 },
+     { "Property": "Guard Current HP", "Op": ">", "Value":  0 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 7004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 7, "Value": 55 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 7, "Value": 0 }
+    ]
+   },
+   
+   {
+    "Label": 7006,
+    "Description": "Keep going left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  120 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 7005 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win"}
+    ]
+   },
+   
+   {
+    "Label": 7997,
+    "Description": "If Guard dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Guard Room", "Op": "==", "Value": "Kid Room" },
+     { "Property": "Guard Room", "Op": "!=", "Value": 1 },
+     { "Property": "Guard Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+    
+   {
+    "Label": 7998,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

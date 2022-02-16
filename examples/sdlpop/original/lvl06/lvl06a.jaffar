@@ -1,0 +1,119 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 6",  
+  
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": [  ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+   ]
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 6000,
+    "Description": "Setting magnet to make kid go to the left on the first screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  6 },
+     { "Property": "Kid Room", "Op": "==", "Value":  24 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 24, "Value": 55.0 }
+    ]
+   },
+   
+   {
+    "Label": 6001,
+    "Description": "Setting magnet to make kid go advancing to the left screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  6 },
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 6000 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 55.0 }
+    ]
+   },
+   
+   {
+    "Label": 6002,
+    "Description": "Setting magnet to make kid go advancing to the left screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  6 },
+     { "Property": "Kid Room", "Op": "==", "Value":  15 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 6001 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 15, "Value": 55.0 }
+    ]
+   },
+
+   {
+    "Label": 6003,
+    "Description": "If Kid passes the chasm, win.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  6 },
+     { "Property": "Kid Room", "Op": "==", "Value":  15 },
+     { "Property": "Kid Position X", "Op": "==", "Value":  108 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  33 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 6002 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 6006,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  6 },
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

@@ -1,0 +1,144 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 9.",
+  
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": [ ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+   ]
+  },
+  
+  "Rules":
+  [
+  {
+    "Label": 9013,
+    "Description": "[Checkpoint] Reward arriving to the next screen",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  9 },
+     { "Property": "Kid Room", "Op": "==", "Value":  18 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 18, "Value": 160.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 1.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 18, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 9014,
+    "Description": "Once kid reached the opening door frame, reward",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  9 },
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Kid Position X", "Op": "==", "Value":  146}
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 9013 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 18, "Value": 55.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 9016,
+    "Description": "Once kid reached the 3rd guard, keep going left",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  9 },
+     { "Property": "Kid Room", "Op": "==", "Value":  17 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 9014 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 3000 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 18, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 17, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 17, "Value": 55.0 }
+    ]
+   },
+   
+   {
+    "Label": 9017,
+    "Description": "After the guard, keep going to the left",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  9 },
+     { "Property": "Kid Room", "Op": "==", "Value":  19 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 9016 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 17, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 19, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 19, "Value": 55.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 19, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 9018,
+    "Description": "If arrived in the next screen on top, reward and keep going.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  9 },
+     { "Property": "Kid Room", "Op": "==", "Value":  19 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 }
+    ],
+   
+    "Dependencies": [ ],
+    "Satisfies": [ 9017 ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 9030,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  9 },
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}
