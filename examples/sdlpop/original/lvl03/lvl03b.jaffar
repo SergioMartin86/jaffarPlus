@@ -1,7 +1,21 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 3 (second part)",  
 
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl03b.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 45,
+    "Max Move Count": 390,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
    "Static Tile Hash Types":
@@ -24,6 +38,35 @@
     { "Room": 5, "Tile": 10, "Type": "Full", "Comment": "Gate" },
     { "Room": 5, "Tile": 5, "Type": "Full", "Comment": "Chomper" }
    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 150,
+     "Max Size Upper Bound (Mb)": 220
+    },
+    
+    "Hash Database":
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
@@ -141,7 +184,7 @@
      "Conditions":
      [ 
       { "Property": "Current Level", "Op": "==", "Value":  3 },
-      { "Property": "Exit Door Open", "Op": "==", "Value":  1 },
+      { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Level Door" },
       { "Property": "Kid Room", "Op": "==", "Value":  6 },
       { "Property": "Kid Position Y", "Op": "<", "Value":  100 }
      ],
@@ -164,7 +207,7 @@
      [
       { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Kid Room", "Op": "==", "Value":  5 },
-      { "Property": "Exit Door Open", "Op": "==", "Value":  1 }
+      { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
      ],
      
      "Dependencies": [ ],
@@ -190,7 +233,7 @@
       { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Kid Room", "Op": "==", "Value":  5 },
       { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
-      { "Property": "Exit Door Open", "Op": "==", "Value":  1 }
+      { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
      ],
      
      "Dependencies": [ ],
@@ -200,24 +243,7 @@
      [
       { "Type": "Trigger Win" }
      ]
-    },
-    
-    {
-     "Label": 3019,
-     "Description": "If Kid dies, then fail.",
-     "Conditions":
-     [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
-      { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-     ],
-     
-     "Dependencies": [ ],
-     "Satisfies": [ ],
-     
-     "Actions":
-     [
-      { "Type": "Trigger Fail" }
-     ]
     }
+    
    ]  
 }

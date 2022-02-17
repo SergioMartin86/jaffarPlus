@@ -72,6 +72,8 @@ class State
    curPos += _ruleCount * sizeof(bool);
   }
 
+  ~State() { delete _basePointer; }
+
   void copy(const State* state)
   {
    memcpy(fixedStateData, state->fixedStateData, _STATE_FIXED_SIZE);

@@ -1,7 +1,21 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 3 (first part before checkpoint)",  
 
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl03a.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 55,
+    "Max Move Count": 530,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ "Kid Current HP" ],
    
@@ -34,6 +48,35 @@
    ]
   },
   
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 150,
+     "Max Size Upper Bound (Mb)": 220
+    },
+    
+    "Hash Database":
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
+  
   "Rules":
    [
     {
@@ -45,7 +88,6 @@
      { "Property": "Kid Room", "Op": "<", "Value":  0 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -63,7 +105,6 @@
      { "Property": "Kid Room", "Op": ">", "Value":  24 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -81,7 +122,6 @@
       { "Property": "Kid Room", "Op": "==", "Value":  9 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -100,7 +140,6 @@
       { "Property": "Kid Room", "Op": "==", "Value":  12 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -122,7 +161,6 @@
       { "Property": "Kid Room", "Op": "==", "Value":  11 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -145,7 +183,6 @@
       { "Property": "Kid Room", "Op": "==", "Value":  14 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -168,7 +205,6 @@
       { "Property": "Kid Position X", "Op": ">", "Value":  173 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -187,7 +223,6 @@
       { "Property": "Kid Room", "Op": "==", "Value":  11 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -208,7 +243,6 @@
       { "Property": "Kid Room", "Op": "==", "Value":  10 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -229,7 +263,6 @@
       { "Property": "Kid Room", "Op": "==", "Value":  7 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -251,30 +284,11 @@
       { "Property": "Checkpoint Reached", "Op": "==", "Value": 1 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ 3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007 ],
      
      "Actions":
      [
       { "Type": "Trigger Win" }
-     ]
-    },
-    
-    {
-     "Label": 3019,
-     "Description": "If Kid dies, then fail.",
-     "Conditions":
-     [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
-      { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-     ],
-     
-     "Dependencies": [ ],
-     "Satisfies": [ ],
-     
-     "Actions":
-     [
-      { "Type": "Trigger Fail" }
      ]
     }
    ]  

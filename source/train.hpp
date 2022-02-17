@@ -63,8 +63,6 @@ class Train
   size_t _maxDatabaseSizeLowerBound;
   size_t _maxDatabaseSizeUpperBound;
   std::vector<State*> _stateDB;
-  std::queue<State*> _freeStatesQueue;
-  Lock _freeStatesQueueLock;
 
   // Storage for the win, best and worst state
   State* _bestState;

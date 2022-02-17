@@ -63,22 +63,9 @@ void Train::run()
   // Print winning state if found
   if (_winStateFound == true)
   {
-    printf("[Jaffar] Win State Information:\n");
-    size_t timeStep = _currentStep-1;
-    size_t curMins = timeStep / 720;
-    size_t curSecs = (timeStep - (curMins * 720)) / 12;
-    size_t curMilliSecs = ceil((double)(timeStep - (curMins * 720) - (curSecs * 12)) / 0.012);
-    printf("[Jaffar]  + Solution IGT:  %2lu:%02lu.%03lu\n", curMins, curSecs, curMilliSecs);
-
-    uint8_t winStateData[_STATE_DATA_SIZE];
-    _winState->getStateDataFromDifference(_referenceStateData, winStateData);
-    _gameInstances[0]->pushState((uint8_t*)winStateData);
-    _gameInstances[0]->printStateInfo(_winState->rulesStatus);
-
-    // Print Move History
     if (_storeMoveList)
     {
-     printf("[Jaffar]  + Move List: ");
+     printf("[Jaffar]  + Win Move List: ");
      for (uint16_t i = 0; i < _currentStep; i++)
       printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState->moveHistory[i])).c_str());
      printf("\n");
@@ -110,9 +97,7 @@ void Train::limitStateDatabase(std::vector<State*>& stateDB, size_t limit)
  std::nth_element(stateDB.begin(), stateDB.begin() + _maxDatabaseSizeLowerBound, stateDB.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
 
  // Recycle excess states
- _freeStatesQueueLock.lock();
- for (size_t i = limit; i < stateDB.size(); i++) _freeStatesQueue.push(stateDB[i]);
- _freeStatesQueueLock.unlock();
+ for (size_t i = limit; i < stateDB.size(); i++) delete stateDB[i];
 
  // Resizing new states database to lower bound
  stateDB.resize(limit);
@@ -227,44 +212,26 @@ void Train::computeStates()
         // Storing the state data
         t0 = std::chrono::steady_clock::now(); // Profiling
 
+        // Allocating new state, checking free state queue if there's a storage we can reuse
+        State* newState = new State;
+
         // Getting rule status from the base state
-        bool rulesStatus[_ruleCount];
-        memcpy(rulesStatus, baseState->rulesStatus, sizeof(rulesStatus));
+        memcpy(newState->rulesStatus, baseState->rulesStatus, sizeof(bool) * _ruleCount);
 
         // Evaluating rules on the new state
-        _gameInstances[threadId]->evaluateRules(rulesStatus);
+        _gameInstances[threadId]->evaluateRules(newState->rulesStatus);
 
         // Getting state type
-        stateType type = _gameInstances[threadId]->getStateType(rulesStatus);
+        stateType type = _gameInstances[threadId]->getStateType(newState->rulesStatus);
 
         tf = std::chrono::steady_clock::now(); // Profiling
         threadStateEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
         // If state type is failed, continue to the next possible move
-        if (type == f_fail) continue;
+        if (type == f_fail) { delete newState; continue; }
 
         // Storing the state data
         t0 = std::chrono::steady_clock::now(); // Profiling
-
-        // Allocating new state, checking free state queue if there's a storage we can reuse
-        State* newState = nullptr;
-
-        // If found, we take directly from the queue
-        if (_freeStatesQueueLock.trylock())
-        {
-         if (_freeStatesQueue.empty() == false)
-         {
-          newState = _freeStatesQueue.front();
-          _freeStatesQueue.pop();
-         }
-         _freeStatesQueueLock.unlock();
-        }
-
-        // Otherwise we allocate a new storage
-        if (newState == nullptr) newState = new State;
-
-        // Copying rule status into new state
-        memcpy(newState->rulesStatus, rulesStatus, sizeof(rulesStatus));
 
         // Copying move list and adding new move
         if (_storeMoveList)
@@ -326,12 +293,7 @@ void Train::computeStates()
       }
 
       // Adding used base state back into free state queue
-      t0 = std::chrono::steady_clock::now(); // Profiling
-      _freeStatesQueueLock.lock();
-      _freeStatesQueue.push(baseState);
-      _freeStatesQueueLock.unlock();
-      tf = std::chrono::steady_clock::now(); // Profiling
-      threadStateCreationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
+      delete baseState;
 
       // Increasing counter for base states processed
       #pragma omp atomic

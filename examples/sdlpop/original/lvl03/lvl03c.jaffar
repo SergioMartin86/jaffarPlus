@@ -1,7 +1,21 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 3 (second part)",  
 
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl03c.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 55,
+    "Max Move Count": 200,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
    "Static Tile Hash Types":
@@ -21,6 +35,35 @@
    [
     { "Room": 3, "Tile": 13, "Type": "Full", "Comment": "Loose Tile" }
    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 150,
+     "Max Size Upper Bound (Mb)": 220
+    },
+    
+    "Hash Database":
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
@@ -143,24 +186,6 @@
       { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 3, "Value": 0.0 },
       { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 1.0 },
       { "Type": "Set Kid Horizontal Magnet Position", "Room": 6,  "Value": 128.0 }
-     ]
-    },
-    
-    {
-     "Label": 3019,
-     "Description": "If Kid dies, then fail.",
-     "Conditions":
-     [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
-      { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-     ],
-     
-     "Dependencies": [ ],
-     "Satisfies": [ ],
-     
-     "Actions":
-     [
-      { "Type": "Trigger Fail" }
      ]
     },
     
