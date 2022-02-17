@@ -726,6 +726,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  {
   // Loading state from underlying miniPop
   std::string state = _game->_emu->getSDLPopStateString();
+  state.resize(_STATE_DATA_SIZE);
   loadState(state);
 
   restore_room_after_quick_load();
