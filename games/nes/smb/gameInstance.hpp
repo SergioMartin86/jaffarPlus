@@ -2,317 +2,124 @@
 
 #include "gameInstanceBase.hpp"
 
+// Datatype to describe a magnet
+struct magnet_t {
+ float intensity; // How strong the magnet is
+ float min;  // What is the minimum input value to the calculation.
+ float max;  // What is the maximum input value to the calculation.
+};
+
+// Datatype to describe a magnet
+struct magnetSet_t {
+ // Relevant mario magnets
+ magnet_t marioScreenOffsetMagnet;
+ magnet_t marioHorizontalMagnet;
+ magnet_t marioVerticalMagnet;
+};
+
 class GameInstance : public GameInstanceBase
 {
  public:
 
-  void initialize(const nlohmann::json& config) override
-  {
-    // Always call the base class initialization
-    GameInstanceBase::initialize(config);
+  // Container for game-specific values
+  uint16_t* screenScroll;
+  uint8_t* marioAnimation;
+  uint8_t* marioState;
 
-    // Any SMB-specific configuration goes here
-  };
+  uint8_t* marioBasePosX;
+  uint8_t* marioRelPosX;
+  uint8_t* marioSubpixelPosX;
 
-  // This function computes the hash for the current state
-  inline uint64_t computeHash() const override
-  {
-    // Storage for hash calculation
-    MetroHash64 hash;
+  uint8_t* marioPosY;
+  uint8_t* marioSubpixelPosY;
 
-    // Adding fixed hash elements
-    hash.Update(*_data.screenScroll);
-    // hash.Update(*_data.marioAnimation);
-    hash.Update(*_data.marioState);
+  uint8_t* marioMovingDirection;
+  uint8_t* marioFacingDirection;
+  uint8_t* marioFloatingMode;
+  uint8_t* marioWalkingMode;
+  uint8_t* marioWalkingDelay;
+  uint8_t* marioWalkingFrame;
+  int8_t* marioMaxVelLeft;
+  int8_t* marioMaxVelRight;
+  int8_t* marioVelX;
+  int8_t* marioXMoveForce;
+  int8_t* marioVelY;
+  int8_t* marioFracVelY;
+  uint8_t* marioGravity;
+  uint8_t* marioFriction;
+  uint8_t* timeLeft100;
+  uint8_t* timeLeft10;
+  uint8_t* timeLeft1;
 
-    hash.Update(*_data.marioBasePosX);
-    hash.Update(*_data.marioRelPosX);
-    // hash.Update(*_data.marioSubpixelPosX);
+  uint8_t* screenBasePosX;
+  uint8_t* screenRelPosX;
 
-    hash.Update(*_data.marioPosY);
-    // hash.Update(*_data.marioSubpixelPosY);
+  uint8_t* currentWorldRaw;
+  uint8_t* currentStageRaw;
+  uint8_t* levelEntryFlag;
+  uint8_t* gameMode;
 
-    hash.Update(*_data.marioXMoveForce);
-    hash.Update(*_data.marioFacingDirection);
-    hash.Update(*_data.marioMovingDirection);
-    hash.Update(*_data.marioFloatingMode);
-    hash.Update(*_data.marioWalkingMode);
-    //  hash.Update(*_data.marioWalkingDelay);
-    //  hash.Update(*_data.marioWalkingFrame);
-    hash.Update(*_data.marioMaxVelLeft);
-    hash.Update(*_data.marioMaxVelRight);
-    hash.Update(*_data.marioVelX);
-    hash.Update(*_data.marioVelY);
-    // hash.Update(*_data.marioFracVelY);
-    hash.Update(*_data.marioGravity);
-    hash.Update(*_data.marioFriction);
+  uint8_t* enemy1Active;
+  uint8_t* enemy2Active;
+  uint8_t* enemy3Active;
+  uint8_t* enemy4Active;
+  uint8_t* enemy5Active;
 
-    hash.Update(*_data.screenBasePosX);
-    hash.Update(*_data.screenRelPosX);
+  uint8_t* enemy1State;
+  uint8_t* enemy2State;
+  uint8_t* enemy3State;
+  uint8_t* enemy4State;
+  uint8_t* enemy5State;
 
-    hash.Update(*_data.currentWorldRaw);
-    hash.Update(*_data.currentStageRaw);
-    hash.Update(*_data.levelEntryFlag);
-    hash.Update(*_data.gameMode);
+  uint8_t* enemy1Type;
+  uint8_t* enemy2Type;
+  uint8_t* enemy3Type;
+  uint8_t* enemy4Type;
+  uint8_t* enemy5Type;
 
-    // hash.Update(*_data.enemy1Active);
-    // hash.Update(*_data.enemy2Active);
-    // hash.Update(*_data.enemy3Active);
-    // hash.Update(*_data.enemy4Active);
-    // hash.Update(*_data.enemy5Active);
+  uint8_t* marioCollision;
+  uint8_t* enemyCollision;
+  uint8_t* hitDetectionFlag;
 
-    // hash.Update(*_data.enemy1State);
-    // hash.Update(*_data.enemy2State);
-    // hash.Update(*_data.enemy3State);
-    // hash.Update(*_data.enemy4State);
-    // hash.Update(*_data.enemy5State);
+  uint8_t* powerUpActive;
 
-    hash.Update(*_data.enemy1Type);
-    hash.Update(*_data.enemy2Type);
-    hash.Update(*_data.enemy3Type);
-    hash.Update(*_data.enemy4Type);
-    hash.Update(*_data.enemy5Type);
+  uint8_t* animationTimer;
+  uint8_t* jumpSwimTimer;
+  uint8_t* runningTimer;
+  uint8_t* blockBounceTimer;
+  uint8_t* sideCollisionTimer;
+  uint8_t* jumpspringTimer;
+  uint8_t* climbSideTimer;
+  uint8_t* gameControlTimer;
+  uint8_t* enemyFrameTimer;
+  uint8_t* frenzyEnemyTimer;
+  uint8_t* bowserFireTimer;
+  uint8_t* stompTimer;
+  uint8_t* airBubbleTimer;
+  uint8_t* fallPitTimer;
+  uint8_t* multiCoinBlockTimer;
+  uint8_t* invincibleTimer;
+  uint8_t* starTimer;
 
-    // hash.Update(*_data.marioCollision);
-    // hash.Update(*_data.enemyCollision);
-    hash.Update(*_data.hitDetectionFlag);
+  uint8_t* player1Input;
+  uint8_t* player1Buttons;
+  uint8_t* player1GamePad1;
+  uint8_t* player1GamePad2;
 
-    // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
-    //  hash.Update(*_data.animationTimer < 2 ? *_data.animationTimer : (uint8_t)2);
-    hash.Update(*_data.jumpSwimTimer < 2 ? *_data.jumpSwimTimer : (uint8_t)2);
-    hash.Update(*_data.runningTimer < 2 ? *_data.runningTimer : (uint8_t)2);
-    hash.Update(*_data.blockBounceTimer < 2 ? *_data.blockBounceTimer : (uint8_t)2);
-    // hash.Update(*_data.sideCollisionTimer);
-    // hash.Update(*_data.jumpspringTimer);
-    // hash.Update(*_data.gameControlTimer);
-    // hash.Update(*_data.climbSideTimer);
-    // hash.Update(*_data.enemyFrameTimer);
-    // hash.Update(*_data.frenzyEnemyTimer);
-    // hash.Update(*_data.bowserFireTimer);
-    // hash.Update(*_data.stompTimer);
-    // hash.Update(*_data.airBubbleTimer);
-    // hash.Update(*_data.fallPitTimer);
-    // hash.Update(*_data.multiCoinBlockTimer);
-    // hash.Update(*_data.invincibleTimer);
-    // hash.Update(*_data.starTimer);
-    // hash.Update(*_data.powerUpActive);
+  uint16_t* warpAreaOffset;
 
+  // Derivative values
+  uint16_t marioPosX;
+  uint16_t screenPosX;
+  int16_t marioScreenOffset;
+  uint8_t currentWorld;
+  uint8_t currentStage;
 
-    hash.Update(*_data.warpAreaOffset);
-
-    uint64_t result;
-    hash.Finalize(reinterpret_cast<uint8_t *>(&result));
-    return result;
-  }
-
-  inline void setGameValuePointers() override
-  {
-   // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
-   _data.screenScroll         = (uint16_t*) &_emu->_baseMem[0x071B];
-   _data.marioAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
-   _data.marioState           = (uint8_t*)  &_emu->_baseMem[0x000E];
-
-   _data.marioBasePosX        = (uint8_t*)  &_emu->_baseMem[0x006D];
-   _data.marioRelPosX         = (uint8_t*)  &_emu->_baseMem[0x0086];
-   _data.marioSubpixelPosX    = (uint8_t*)  &_emu->_baseMem[0x0400];
-
-   _data.marioPosY            = (uint8_t*)  &_emu->_baseMem[0x00CE];
-   _data.marioSubpixelPosY    = (uint8_t*)  &_emu->_baseMem[0x0416];
-
-   _data.marioMovingDirection = (uint8_t*)  &_emu->_baseMem[0x0045];
-   _data.marioFacingDirection = (uint8_t*)  &_emu->_baseMem[0x0033];
-   _data.marioFloatingMode    = (uint8_t*)  &_emu->_baseMem[0x001D];
-   _data.marioWalkingMode     = (uint8_t*)  &_emu->_baseMem[0x0702];
-   _data.marioWalkingDelay    = (uint8_t*)  &_emu->_baseMem[0x070C];
-   _data.marioWalkingFrame    = (uint8_t*)  &_emu->_baseMem[0x070D];
-   _data.marioMaxVelLeft      = (int8_t*)   &_emu->_baseMem[0x0450];
-   _data.marioMaxVelRight     = (int8_t*)   &_emu->_baseMem[0x0456];
-   _data.marioVelX            = (int8_t*)   &_emu->_baseMem[0x0057];
-   _data.marioXMoveForce      = (int8_t*)   &_emu->_baseMem[0x0705];
-   _data.marioVelY            = (int8_t*)   &_emu->_baseMem[0x009F];
-   _data.marioFracVelY        = (int8_t*)   &_emu->_baseMem[0x0433];
-   _data.marioGravity         = (uint8_t*)  &_emu->_baseMem[0x0709];
-   _data.marioFriction        = (uint8_t*)  &_emu->_baseMem[0x0701];
-   _data.timeLeft100          = (uint8_t*)  &_emu->_baseMem[0x07F8];
-   _data.timeLeft10           = (uint8_t*)  &_emu->_baseMem[0x07F9];
-   _data.timeLeft1            = (uint8_t*)  &_emu->_baseMem[0x07FA];
-
-   _data.screenBasePosX       = (uint8_t*)  &_emu->_baseMem[0x071A];
-   _data.screenRelPosX        = (uint8_t*)  &_emu->_baseMem[0x071C];
-
-   _data.currentWorldRaw      = (uint8_t*)  &_emu->_baseMem[0x075F];
-   _data.currentStageRaw      = (uint8_t*)  &_emu->_baseMem[0x075C];
-   _data.levelEntryFlag       = (uint8_t*)  &_emu->_baseMem[0x0752];
-   _data.gameMode             = (uint8_t*)  &_emu->_baseMem[0x0770];
-
-   _data.enemy1Active         = (uint8_t*)  &_emu->_baseMem[0x000F];
-   _data.enemy2Active         = (uint8_t*)  &_emu->_baseMem[0x0010];
-   _data.enemy3Active         = (uint8_t*)  &_emu->_baseMem[0x0011];
-   _data.enemy4Active         = (uint8_t*)  &_emu->_baseMem[0x0012];
-   _data.enemy5Active         = (uint8_t*)  &_emu->_baseMem[0x0013];
-
-   _data.enemy1State          = (uint8_t*)  &_emu->_baseMem[0x001E];
-   _data.enemy2State          = (uint8_t*)  &_emu->_baseMem[0x001F];
-   _data.enemy3State          = (uint8_t*)  &_emu->_baseMem[0x0020];
-   _data.enemy4State          = (uint8_t*)  &_emu->_baseMem[0x0021];
-   _data.enemy5State          = (uint8_t*)  &_emu->_baseMem[0x0022];
-
-   _data.enemy1Type           = (uint8_t*)  &_emu->_baseMem[0x0016];
-   _data.enemy2Type           = (uint8_t*)  &_emu->_baseMem[0x0017];
-   _data.enemy3Type           = (uint8_t*)  &_emu->_baseMem[0x0018];
-   _data.enemy4Type           = (uint8_t*)  &_emu->_baseMem[0x0019];
-   _data.enemy5Type           = (uint8_t*)  &_emu->_baseMem[0x001A];
-
-   _data.marioCollision       = (uint8_t*)  &_emu->_baseMem[0x0490];
-   _data.enemyCollision       = (uint8_t*)  &_emu->_baseMem[0x0491];
-   _data.hitDetectionFlag     = (uint8_t*)  &_emu->_baseMem[0x0722];
-
-   _data.powerUpActive        = (uint8_t*)  &_emu->_baseMem[0x0014];
-
-   _data.animationTimer       = (uint8_t*)  &_emu->_baseMem[0x0781];
-   _data.jumpSwimTimer        = (uint8_t*)  &_emu->_baseMem[0x0782];
-   _data.runningTimer         = (uint8_t*)  &_emu->_baseMem[0x0783];
-   _data.blockBounceTimer     = (uint8_t*)  &_emu->_baseMem[0x0784];
-   _data.sideCollisionTimer   = (uint8_t*)  &_emu->_baseMem[0x0785];
-   _data.jumpspringTimer      = (uint8_t*)  &_emu->_baseMem[0x0786];
-   _data.gameControlTimer     = (uint8_t*)  &_emu->_baseMem[0x0787];
-   _data.climbSideTimer       = (uint8_t*)  &_emu->_baseMem[0x0789];
-   _data.enemyFrameTimer      = (uint8_t*)  &_emu->_baseMem[0x078A];
-   _data.frenzyEnemyTimer     = (uint8_t*)  &_emu->_baseMem[0x078F];
-   _data.bowserFireTimer      = (uint8_t*)  &_emu->_baseMem[0x0790];
-   _data.stompTimer           = (uint8_t*)  &_emu->_baseMem[0x0791];
-   _data.airBubbleTimer       = (uint8_t*)  &_emu->_baseMem[0x0792];
-   _data.fallPitTimer         = (uint8_t*)  &_emu->_baseMem[0x0795];
-   _data.multiCoinBlockTimer  = (uint8_t*)  &_emu->_baseMem[0x079D];
-   _data.invincibleTimer      = (uint8_t*)  &_emu->_baseMem[0x079E];
-   _data.starTimer            = (uint8_t*)  &_emu->_baseMem[0x079F];
-
-   _data.player1Input         = (uint8_t*)  &_emu->_baseMem[0x06FC];
-   _data.player1Buttons       = (uint8_t*)  &_emu->_baseMem[0x074A];
-   _data.player1GamePad1      = (uint8_t*)  &_emu->_baseMem[0x000A];
-   _data.player1GamePad2      = (uint8_t*)  &_emu->_baseMem[0x000D];
-
-   _data.warpAreaOffset       = (uint16_t*) &_emu->_baseMem[0x0750];
-  }
-
-  inline void updateDerivedValues() override
-  {
-   // Recalculating derived values
-   _data.marioPosX = (uint16_t)*_data.marioBasePosX * 256 + (uint16_t)*_data.marioRelPosX;
-   _data.screenPosX = (uint16_t)*_data.screenBasePosX * 256 + (uint16_t)*_data.screenRelPosX;
-   _data.marioScreenOffset = _data.marioPosX - _data.screenPosX;
-   _data.currentWorld = *_data.currentWorldRaw + 1;
-   _data.currentStage = *_data.currentStageRaw + 1;
-  }
-
-  // Function to determine the current possible moves
-  inline std::vector<std::string> getPossibleMoves() const override
-  {
-   // If Mario's state is not normal (!= 8), there's nothing to do except wait
-   if (*_data.marioState != 8) return { "." };
-
-   // If floating, B, D have no effect
-   if (*_data.marioFloatingMode == 1) return { ".", "L", "R", "A", "LA", "RA", "LR", "LRA" };
-
-   // On the floor, try all possible combinations, prioritize jumping and right direction
-   return { ".", "R", "D", "LR", "A", "RA", "RB", "L", "LA", "LB", "LRA", "LRB" };
-  }
-
-  // Function to get magnet information
-  inline gameRuleData_t getMagnetValues(const bool* rulesStatus) const
-  {
-   // Storage for magnet information
-   gameRuleData_t magnets;
-
-   magnets.marioScreenOffsetMagnet.intensity = 0.0f;
-   magnets.marioScreenOffsetMagnet.max = 0.0f;
-
-   magnets.marioHorizontalMagnet.intensity = 0.0f;
-   magnets.marioHorizontalMagnet.max = 0.0f;
-
-   magnets.marioVerticalMagnet.intensity = 0.0f;
-   magnets.marioVerticalMagnet.max = 0.0f;
-
-   for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++) if (rulesStatus[ruleId] == true) magnets = _rules[ruleId]->_data;
-
-   return magnets;
-  }
-
-  // Obtains the score of a given frame
-  inline float getStateReward(const bool* rulesStatus) const override
-  {
-    // Getting rewards from rules
-    float reward = 0.0;
-    for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
-     if (rulesStatus[ruleId] == true)
-      reward += _rules[ruleId]->_reward;
-
-    // Getting magnet values for the kid
-    auto magnets = getMagnetValues(rulesStatus);
-
-    // Container for bounding calculations
-    float boundedValue = 0.0;
-
-    // Evaluating mario / screen offset magnet value
-    boundedValue = (float)_data.marioScreenOffset;
-    boundedValue = std::min(boundedValue, magnets.marioScreenOffsetMagnet.max);
-    boundedValue = std::max(boundedValue, magnets.marioScreenOffsetMagnet.min);
-    reward += magnets.marioScreenOffsetMagnet.intensity * boundedValue;
-
-    // Evaluating mario magnet's reward on position X
-    boundedValue = (float)_data.marioPosX;
-    boundedValue = std::min(boundedValue, magnets.marioHorizontalMagnet.max);
-    boundedValue = std::max(boundedValue, magnets.marioHorizontalMagnet.min);
-    reward += magnets.marioHorizontalMagnet.intensity * boundedValue;
-
-    // Evaluating mario magnet's reward on position Y
-    boundedValue = (float)*_data.marioPosY;
-    boundedValue = std::min(boundedValue, magnets.marioVerticalMagnet.max);
-    boundedValue = std::max(boundedValue, magnets.marioVerticalMagnet.min);
-    reward += magnets.marioHorizontalMagnet.intensity * boundedValue;
-
-    // Returning reward
-    return reward;
-  }
-
-  void printStateInfo(const bool* rulesStatus) const override
-  {
-    LOG("[Jaffar]  + Current World-Stage:    %1u-%1u\n", _data.currentWorld, _data.currentStage);
-    LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
-    LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
-    LOG("[Jaffar]  + Time Left:              %1u%1u%1u\n", *_data.timeLeft100, *_data.timeLeft10, *_data.timeLeft1);
-    LOG("[Jaffar]  + Mario Animation:        %02u\n", *_data.marioAnimation);
-    LOG("[Jaffar]  + Mario State:            %02u\n", *_data.marioState);
-    LOG("[Jaffar]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", _data.screenPosX, *_data.screenBasePosX, (uint16_t)*_data.screenBasePosX * 255, *_data.screenRelPosX);
-    LOG("[Jaffar]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", _data.marioPosX, *_data.marioBasePosX, (uint16_t)*_data.marioBasePosX * 255, *_data.marioRelPosX);
-    LOG("[Jaffar]  + Mario / Screen Offset:  %04d\n", _data.marioScreenOffset);
-    LOG("[Jaffar]  + Mario Pos Y:            %02u\n", *_data.marioPosY);
-    LOG("[Jaffar]  + Mario SubPixel X/Y:     %02u / %02u\n", *_data.marioSubpixelPosX, *_data.marioSubpixelPosY);
-    LOG("[Jaffar]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_data.marioVelX, *_data.marioXMoveForce, *_data.marioMaxVelLeft, *_data.marioMaxVelRight);
-    LOG("[Jaffar]  + Mario Vel Y:            %02d (%02d)\n", *_data.marioVelY, *_data.marioFracVelY);
-    LOG("[Jaffar]  + Mario Gravity:          %02u\n", *_data.marioGravity);
-    LOG("[Jaffar]  + Mario Friction:         %02u\n", *_data.marioFriction);
-    LOG("[Jaffar]  + Mario Moving Direction: %s\n", *_data.marioMovingDirection == 1 ? "Right" : "Left");
-    LOG("[Jaffar]  + Mario Facing Direction: %s\n", *_data.marioFacingDirection == 1 ? "Right" : "Left");
-    LOG("[Jaffar]  + Mario Floating Mode:    %02u\n", *_data.marioFloatingMode);
-    LOG("[Jaffar]  + Mario Walking:          %02u %02u %02u\n", *_data.marioWalkingMode, *_data.marioWalkingDelay, *_data.marioWalkingFrame);
-    LOG("[Jaffar]  + Player 1 Inputs:        %02u %02u %02u %02u\n", *_data.player1Input, *_data.player1Buttons, *_data.player1GamePad1, *_data.player1GamePad2);
-    LOG("[Jaffar]  + Powerup Active:         %1u\n", *_data.powerUpActive);
-    LOG("[Jaffar]  + Enemy Active:           %1u%1u%1u%1u%1u\n", *_data.enemy1Active, *_data.enemy2Active, *_data.enemy3Active, *_data.enemy4Active, *_data.enemy5Active);
-    LOG("[Jaffar]  + Enemy State:            %02u %02u %02u %02u %02u\n", *_data.enemy1State, *_data.enemy2State, *_data.enemy3State, *_data.enemy4State, *_data.enemy5State);
-    LOG("[Jaffar]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *_data.enemy1Type, *_data.enemy2Type, *_data.enemy3Type, *_data.enemy4Type, *_data.enemy5Type);
-    LOG("[Jaffar]  + Hit Detection Flags:    %02u %02u %02u\n", *_data.marioCollision, *_data.enemyCollision, *_data.hitDetectionFlag);
-    LOG("[Jaffar]  + LevelEntry / GameMode:  %02u / %02u\n", *_data.levelEntryFlag, *_data.gameMode);
-    LOG("[Jaffar]  + Warp Area Offset:       %04u\n", *_data.warpAreaOffset);
-    LOG("[Jaffar]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_data.animationTimer, *_data.jumpSwimTimer, *_data.runningTimer, *_data.blockBounceTimer, *_data.sideCollisionTimer, *_data.jumpspringTimer, *_data.gameControlTimer, *_data.climbSideTimer, *_data.enemyFrameTimer, *_data.frenzyEnemyTimer, *_data.bowserFireTimer, *_data.stompTimer, *_data.airBubbleTimer, *_data.multiCoinBlockTimer, *_data.invincibleTimer, *_data.starTimer);
-
-    LOG("[Jaffar]  + Rule Status: ");
-    for (size_t i = 0; i < _ruleCount; i++) LOG("%d", rulesStatus[i] ? 1 : 0);
-    LOG("\n");
-
-    auto magnets = getMagnetValues(rulesStatus);
-    LOG("[Jaffar]  + Mario Screen Offset Magnet - Intensity: %.1f, Max: %f\n", magnets.marioScreenOffsetMagnet.intensity, magnets.marioScreenOffsetMagnet.max);
-    LOG("[Jaffar]  + Mario Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.max);
-    LOG("[Jaffar]  + Mario Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.max);
-  }
+  GameInstance(EmuInstance* emu, const nlohmann::json& config);
+  uint64_t computeHash() const override;
+  void updateDerivedValues() override;
+  std::vector<std::string> getPossibleMoves() const override;
+  magnetSet_t getMagnetValues(const bool* rulesStatus) const;
+  float getStateReward(const bool* rulesStatus) const override;
+  void printStateInfo(const bool* rulesStatus) const override;
 };

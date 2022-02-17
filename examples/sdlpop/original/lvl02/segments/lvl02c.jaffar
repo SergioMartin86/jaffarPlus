@@ -1,0 +1,142 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 2",  
+
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": 
+   [
+    { "Room": 18, "Tile": 5, "Comment": "Loose Tile -> Empty" },
+    { "Room": 18, "Tile": 25, "Comment": "Floor -> Debris" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 18, "Column": 16, "Type": "Full", "Comment": "Falling Tile" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Room": 7, "Tile": 10, "Type": "Full", "Comment": "Gate" },
+    { "Room": 18, "Tile": 5, "Type": "Full", "Comment": "Loose Tile" }
+   ]
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 2008,
+    "Description": "Meet guard and go left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 11, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 11, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2010,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 2008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 11, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 18, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2011,
+    "Description": "Meet other guard and keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 2010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 7, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2012,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 2011 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 13, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2022,
+    "Description": "[Checkpoint] Reward climbing up.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 2020,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

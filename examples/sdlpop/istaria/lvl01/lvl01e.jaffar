@@ -1,0 +1,112 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 1",  
+  
+ 
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": [ ],
+   "Falling Tiles Hash Types": [ ],
+   "Active Objects Hash Types":
+   [
+   ]
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1014,
+    "Description": "Reward open door, continue.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  22 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 22,  "Value": 255.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22,  "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1015,
+    "Description": "Reward open door, continue.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  23 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 1014 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22,  "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 23,  "Value": 255.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 23,  "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1016,
+    "Description": "Reward open door, continue.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  21 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 1015 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 23,  "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 21,  "Value": 130.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 21,  "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1017,
+    "Description": "If we reach next level, win.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": ">", "Value":  1 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 1016 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  1 },
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

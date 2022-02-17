@@ -1,0 +1,176 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 5",  
+  
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": [  ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Index": 520, "Type": "Full" }
+   ]
+  },
+  
+  "Rules":
+  [
+   
+   {
+    "Label": 5005,
+    "Description": "Rewarding kid for advancing to screen 16.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  5 },
+     { "Property": "Kid Room", "Op": "==", "Value":  16 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 16, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 16, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 5006,
+    "Description": "Rewarding kid for advancing to screen 15.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  5 },
+     { "Property": "Kid Room", "Op": "==", "Value":  15 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 5005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 16, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 15, "Value": 55.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 5008,
+    "Description": "Opening Exit door.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  5 },
+     { "Property": "Exit Door Open", "Op": "==", "Value":  1 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [ 
+     { "Type": "Add Reward", "Value": 100000 }
+    ]
+   },
+   
+   {
+    "Label": 5007,
+    "Description": "Rewarding kid for advancing to the last screen 18.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  5 },
+     { "Property": "Kid Room", "Op": "==", "Value":  18 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 5006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 18, "Value": 115.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18 , "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 5017,
+    "Description": "Rewarding kid for starting to climb door.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  5 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  217 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 5008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 2000 }
+    ]
+   },
+   
+   {
+    "Label": 5009,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  5 },
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" } 
+    ]
+   },
+   
+   {
+    "Label": 5129,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  5 },
+     { "Property": "Kid Room", "Op": "==", "Value":  5 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 5010,
+    "Description": "If Kid starts exits the level, then win.",
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value":  217 },
+     { "Property": "Current Level", "Op": "!=", "Value":  15 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 5017 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+   
+  ]  
+}

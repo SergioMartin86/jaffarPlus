@@ -1,0 +1,106 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 13",
+  
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": [ ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 1, "Column": 8, "Type": "Full", "Description": "Falling Tile" },
+    { "Room": 16, "Column": 8, "Type": "Full", "Description": "Falling Tile" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Index": 2, "Type": "Full", "Description": "Loose Tile on Top" }
+   ]
+  },
+  
+  "Rules":
+  [
+    
+   {
+    "Label": 13003,
+    "Description": "[Checkpoint] Keep going up and into jaffar's room.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  13 },
+     { "Property": "Kid Room", "Op": "==", "Value": 3 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 3, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 3, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 3, "Value": 200.0 }
+    ]
+   },
+   
+   {
+    "Label": 13004,
+    "Description": "Reward entering Jaffar's room.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  13 },
+     { "Property": "Kid Room", "Op": "==", "Value": 3 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 13003 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 3, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 3, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 1, "Value": 100.0 },
+     { "Type": "Set Guard Vertical Magnet Intensity", "Room": 1, "Value": -1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 116.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 }
+    ]
+   },
+      
+   {
+    "Label": 13998,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  13 },
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 13999,
+    "Description": "If Jaffar dies, then win.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  13 },
+     { "Property": "Guard Room", "Op": "==", "Value": "Kid Room" },
+     { "Property": "Guard Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}

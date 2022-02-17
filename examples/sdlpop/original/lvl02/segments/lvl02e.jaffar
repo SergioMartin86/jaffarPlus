@@ -1,0 +1,158 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 2",  
+
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types":
+   [
+    { "Room": 9, "Tile": 27, "Comment": "Loose Tile -> Nothing" },
+    { "Room": 2, "Tile": 7, "Comment": "Floor -> Debris" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 9, "Column": 24, "Type": "Full", "Comment": "Falling Tile" },
+    { "Room": 2, "Column": 24, "Type": "Full", "Comment": "Falling Tile" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+   { "Room": 9, "Tile": 27, "Type": "Full", "Comment": "Loose Tile" },
+   { "Room": 23, "Tile": 14, "Type": "Index Only", "Comment": "Exit Door" }
+   ]
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 2017,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 21 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 21, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 21, "Value": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2018,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 2017 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 21, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 130.0 }
+    ]
+   },
+   
+   {
+    "Label": 2019,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  9 }
+    ],
+    
+    "Satisfies": [ 2018 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 9, "Value": 2.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 9, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2020,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
+    ],
+    
+    "Satisfies": [ 2019 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 9, "Value": 255.0 }
+    ]
+   },
+   
+   {
+    "Label": 2021,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" },
+     { "Property": "Kid Room", "Op": "==", "Value":  23 }
+    ],
+    
+    "Satisfies": [ 2019 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 23, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 23, "Value": 130.0 }
+    ]
+   },
+   
+   
+   {
+    "Label": 2998,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 2999,
+    "Description": "If we reach next level, win.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": ">", "Value":  2 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}

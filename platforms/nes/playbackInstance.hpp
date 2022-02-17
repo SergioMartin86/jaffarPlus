@@ -20,7 +20,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  public:
 
   // Initializes the playback module instance
- PlaybackInstance(GameInstance* game) : PlaybackInstanceBase(game)
+ PlaybackInstance(GameInstance* game) : PlaybackInstanceBase(game, const nlohmann::json& config)
  {
   // Loading Emulator instance HQN
   _hqnState.m_emu = _game->_emu->_nes;

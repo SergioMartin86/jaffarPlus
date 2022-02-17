@@ -1,0 +1,228 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 4",  
+  
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": [  ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+   ]
+  },
+   
+  "Rules":
+  [
+   {
+    "Label": 4004,
+    "Description": "Rewarding kid for advancing to screen 24.",
+    "Conditions":
+    [ 
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Kid Room", "Op": "==", "Value":  24 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 24, "Value": 205.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 1.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 24, "Value": 205.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 24, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 4005,
+    "Description": "Rewarding kid for advancing to screen 7.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Kid Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Room", "Op": "==", "Value":  7 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 4004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 24, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 7, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 7, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 4006,
+    "Description": "Rewarding for sending guard to next screen.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Guard Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Position X", "Op": ">", "Value": 200 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 4005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 7, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 4007,
+    "Description": "Rewarding sheathing sword.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Kid Room", "Op": "==", "Value":  24 },
+     { "Property": "Guard Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Position X", "Op": ">", "Value": 200 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 4006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 24, "Value": 220.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 4008,
+    "Description": "Rewarding sheathing sword.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Kid Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Position X", "Op": ">", "Value": 200 },
+     { "Property": "Kid Position X", "Op": ">", "Value": 50 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 4007 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 7, "Value": 220.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 4009,
+    "Description": "Rewarding kid for advancing to screen 4 (mirror room).",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Kid Room", "Op": "==", "Value":  4 },
+     { "Property": "Guard Room", "Op": "==", "Value":  4 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 4008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Trigger Win" }
+    ]
+   },
+      
+   {
+    "Label": 4106,
+    "Description": "Win if exit door is open.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Exit Door Open", "Op": "==", "Value":  1 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 4998,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 4999,
+    "Description": "If Guard dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Guard Current HP", "Op": "==", "Value":  0 },
+     { "Property": "Guard Room", "Op": "==", "Value":  "Kid Room" }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 4991,
+    "Description": "If Guard falls, then fail.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  4 },
+     { "Property": "Guard Position Y", "Op": ">", "Value":  120 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

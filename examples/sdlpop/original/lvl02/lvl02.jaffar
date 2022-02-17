@@ -1,0 +1,498 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 2",  
+
+  "State Configuration":
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types":
+   [
+    { "Room": 4, "Tile": 18, "Comment": "Loose Tile -> Empty" },
+    { "Room": 4, "Tile": 19, "Comment": "Loose Tile -> Empty" },
+    { "Room": 4, "Tile": 28, "Comment": "Floor -> Debris" },
+    { "Room": 4, "Tile": 29, "Comment": "Floor -> Debris" },
+    { "Room": 9, "Tile": 27, "Comment": "Loose Tile -> Nothing" },
+    { "Room": 2, "Tile": 7, "Comment": "Floor -> Debris" },
+    { "Room": 18, "Tile": 5, "Comment": "Loose Tile -> Empty" },
+    { "Room": 18, "Tile": 25, "Comment": "Floor -> Debris" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 9, "Column": 24, "Type": "Full", "Comment": "Falling Tile" },
+    { "Room": 2, "Column": 24, "Type": "Full", "Comment": "Falling Tile" },
+    { "Room": 18, "Column": 16, "Type": "Full", "Comment": "Falling Tile" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Room": 4, "Tile": 18, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 4, "Tile": 19, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 6, "Tile": 16, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 6, "Tile": 14, "Type": "Full", "Comment": "Spikes" },
+    { "Room": 7, "Tile": 10, "Type": "Full", "Comment": "Gate" },
+    { "Room": 18, "Tile": 5, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 18, "Tile": 10, "Type": "Full", "Comment": "Gate" },
+    { "Room": 9, "Tile": 27, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 23, "Tile": 14, "Type": "Index Only", "Comment": "Exit Door" }
+   ]
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 2000,
+    "Description": "Reward arrival to the level. Setting magnet to make kid go to the left on the first screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 2000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 5,  "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 2001,
+    "Description": "Rewarding kid for advancing to the second screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4 }
+    ],
+    
+    "Satisfies": [ 2000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 4, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 4,  "Value": 55.0 }
+    ]
+   },
+   
+   {
+    "Label": 2002,
+    "Description": "Rewarding kid for advancing to the third screen.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 }
+    ],
+    
+    "Satisfies": [ 2001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 4, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 6,  "Value": 0.0 }
+    ]
+   }, 
+   
+   {
+    "Label": 2003,
+    "Description": "Reward kid arriving in the center, set magnets to encourage climbing up.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Kid Position X", "Op": "<", "Value":  98 }
+    ],
+    
+    "Satisfies": [ 2002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 6,  "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 2004,
+    "Description": "[Checkpoint] Reward kid for climbing. Set magnet to go to the left.",
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 }
+    ],
+    
+    "Satisfies": [ 2003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 1.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 6,  "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 2005,
+    "Description": "If Kid advances to the left on the upper level, reward him and go left/up.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  60 }
+    ],
+    
+    "Satisfies": [ 2004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 6, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 55 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 1,  "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 2006,
+    "Description": "Make kid keep going up and then left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  22 }
+    ],
+    
+    "Satisfies": [ 2005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 1, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 22, "Value": 55 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 22,  "Value": 1.0 }
+    ]
+   },
+   
+{
+    "Label": 2007,
+    "Description": "Make kid keep going up and then left.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  22 }
+    ],
+    
+    "Satisfies": [ 2006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 22, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2008,
+    "Description": "Meet guard and go left.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  11 }
+    ],
+    
+    "Satisfies": [ 2007 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 11, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 11, "Value": 55 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 11, "Value": 1.0 }
+    ]
+   },
+   
+  {
+    "Label": 2009,
+    "Description": "Meet guard and go left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 }
+    ],
+    
+    "Satisfies": [ 2008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 11, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 11, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2010,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 }
+    ],
+    
+    "Satisfies": [ 2009 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 11, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 18, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2011,
+    "Description": "Meet other guard and keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 }
+    ],
+    
+    "Satisfies": [ 2010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 7, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2012,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 }
+    ],
+    
+    "Satisfies": [ 2011 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 7, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 13, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2013,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  15 }
+    ],
+    
+    "Satisfies": [ 2012 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 15, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2014,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 }
+    ],
+    
+    "Satisfies": [ 2013 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 16, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 16, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2015,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  19 }
+    ],
+    
+    "Satisfies": [ 2014 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 16, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 19, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 19, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2016,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  21 }
+    ],
+    
+    "Satisfies": [ 2015 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 19, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 21, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 21, "Value": 86 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 21, "Value": 1.0 }
+    ]
+   },
+    {
+    "Label": 2017,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 21 }
+    ],
+    
+    "Satisfies": [ 2016 ],
+    
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 21, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 21, "Value": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2018,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 2017 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 21, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 130.0 }
+    ]
+   },
+   
+   {
+    "Label": 2019,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  9 }
+    ],
+    
+    "Satisfies": [ 2018 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 9, "Value": 2.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 9, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2020,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
+    ],
+    
+    "Satisfies": [ 2019 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 9, "Value": 255.0 }
+    ]
+   },
+   
+   {
+    "Label": 2021,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" },
+     { "Property": "Kid Room", "Op": "==", "Value":  23 }
+    ],
+    
+    "Satisfies": [ 2019 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 23, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 23, "Value": 130.0 }
+    ]
+   },
+   
+   {
+    "Label": 2998,
+    "Description": "If we reach next level, win.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": ">", "Value":  2 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 2999,
+    "Description": "If Kid dies, then fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

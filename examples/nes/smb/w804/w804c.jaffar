@@ -14,12 +14,16 @@
     "Store Move List": true    
   },
   
+  "Game Configuration": 
+  {
+  },
+  
   "Jaffar Configuration": 
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 140000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 150000,
+     "Max Size Upper Bound (Mb)": 220000
     },
     
     "Hash Database":
@@ -52,7 +56,7 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 6000 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Min": 3128, "Max": 3463 }
     ]
    },
    
@@ -69,7 +73,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": -1.0, "Min": 0, "Max": 6000 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": -1.0, "Min": 3128, "Max": 3463 }
     ]
    },
    
