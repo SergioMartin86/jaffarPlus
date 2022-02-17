@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
    gameInstance.pushState(stateSequence[currentStep]);
 
    // Updating display
-   playbackInstance.renderFrame();
+   playbackInstance.renderFrame(currentStep, moveList[currentStep]);
 
    // Showing frame information
    if (showFrameInfo)

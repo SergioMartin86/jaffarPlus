@@ -17,5 +17,5 @@ class PlaybackInstanceBase
  virtual ~PlaybackInstanceBase() = default;
 
  // Function to render frame
- virtual void renderFrame() = 0;
+ virtual void renderFrame(const uint16_t currentStep, const std::string& move) = 0;
 };

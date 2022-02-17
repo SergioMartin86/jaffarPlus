@@ -132,7 +132,6 @@ class PlaybackInstance : public PlaybackInstanceBase
  size_t _IGTMins;
  size_t _IGTSecs;
  size_t _IGTMillisecs;
- std::string _move;
  std::string _overlayPath;
 
  SDL_Surface* _downSurface;
@@ -560,7 +559,6 @@ class PlaybackInstance : public PlaybackInstanceBase
   _IGTMins = 0;
   _IGTSecs = 0;
   _IGTMillisecs = 0;
-  _move = ".";
 
    if (dirExists(_game->_emu->_sdlPopEnvRoot.c_str()))
    {
@@ -722,7 +720,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  }
 
  // Function to render frame
- void renderFrame() override
+ void renderFrame(const uint16_t currentStep, const std::string& move) override
  {
   // Loading state from underlying miniPop
   std::string state = _game->_emu->getSDLPopStateString();
@@ -732,8 +730,13 @@ class PlaybackInstance : public PlaybackInstanceBase
   restore_room_after_quick_load();
   draw_game_frame();
 
+  // Calculating timing
+  size_t curMins = currentStep / 720;
+  size_t curSecs = (currentStep % 720) / 12;
+  size_t curMilliSecs = floor((double)(currentStep % 12) / 0.012);
+
   char IGTText[512];
-  sprintf(IGTText, "IGT %2lu:%02lu.%03lu", _IGTMins, _IGTSecs, _IGTMillisecs);
+  sprintf(IGTText, "IGT %2lu:%02lu.%03lu", curMins, curSecs, curMilliSecs);
   display_text_bottom(IGTText);
 
   SDL_Surface* downSurface = _downSurface;
@@ -742,11 +745,11 @@ class PlaybackInstance : public PlaybackInstanceBase
   SDL_Surface* rightSurface = _rightSurface;
   SDL_Surface* shiftSurface = _shiftSurface;
 
-  if (_move.find("D") != std::string::npos) downSurface = _down2Surface;
-  if (_move.find("U") != std::string::npos) upSurface = _up2Surface;
-  if (_move.find("L") != std::string::npos) leftSurface = _left2Surface;
-  if (_move.find("R") != std::string::npos) rightSurface = _right2Surface;
-  if (_move.find("S") != std::string::npos) shiftSurface = _shift2Surface;
+  if (move.find("D") != std::string::npos) downSurface = _down2Surface;
+  if (move.find("U") != std::string::npos) upSurface = _up2Surface;
+  if (move.find("L") != std::string::npos) leftSurface = _left2Surface;
+  if (move.find("R") != std::string::npos) rightSurface = _right2Surface;
+  if (move.find("S") != std::string::npos) shiftSurface = _shift2Surface;
 
   draw_image_transp_vga(downSurface, 280, 170);
   draw_image_transp_vga(upSurface, 280, 150);
