@@ -10,9 +10,9 @@
   
   "State Configuration": 
   {
-    "Max Difference Count": 150,
+    "Max Difference Count": 40,
     "Max Move Count": 250,
-    "Store Move List": true    
+    "Store Move List": false    
   },
   
   "Game Configuration": 
@@ -39,8 +39,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 150,
-     "Max Size Upper Bound (Mb)": 220
+     "Max Size Lower Bound (Mb)": 150000,
+     "Max Size Upper Bound (Mb)": 220000
     },
     
     "Hash Database":

@@ -31,6 +31,9 @@ class State
 
   public:
 
+  // Fixed state data
+  char fixedStateData[_STATE_FIXED_SIZE];
+
   // Positions of the difference with respect to a base state
   uint16_t* stateDiffPositions;
   uint8_t* stateDiffValues;
@@ -71,6 +74,7 @@ class State
 
   void copy(const State* state)
   {
+   memcpy(fixedStateData, state->fixedStateData, _STATE_FIXED_SIZE);
    memcpy(_basePointer, state->_basePointer, _stateVariableSize);
    reward = state->reward;
    stateDiffCount = state->stateDiffCount;
@@ -109,13 +113,16 @@ class State
   // Differentiation functions
   inline void computeStateDifference(const uint8_t* __restrict__ baseStateData, const uint8_t* __restrict__ newStateData)
   {
+   // Copying fixed state data first
+   memcpy(fixedStateData, newStateData, _STATE_FIXED_SIZE);
+
    stateDiffCount = 0;
    #pragma GCC unroll 32
    #pragma GCC ivdep
-   for (uint16_t i = 0; i < _STATE_DATA_SIZE; i++) if (baseStateData[i] != newStateData[i])
+   for (uint16_t i = 0; i < _STATE_DIFFERENTIAL_SIZE; i++) if (baseStateData[_STATE_FIXED_SIZE + i] != newStateData[_STATE_FIXED_SIZE + i])
    {
-    stateDiffPositions[stateDiffCount] = i;
-    stateDiffValues[stateDiffCount] = newStateData[i];
+    stateDiffPositions[stateDiffCount] = _STATE_FIXED_SIZE + i;
+    stateDiffValues[stateDiffCount] = newStateData[_STATE_FIXED_SIZE + i];
     stateDiffCount++;
    }
 
@@ -128,7 +135,9 @@ class State
 
   inline void getStateDataFromDifference(const uint8_t* __restrict__ baseStateData, uint8_t* __restrict__ stateData) const
   {
-    memcpy(stateData, baseStateData, _STATE_DATA_SIZE);
+    memcpy(stateData, fixedStateData, _STATE_FIXED_SIZE);
+    memcpy(&stateData[_STATE_FIXED_SIZE], &baseStateData[_STATE_FIXED_SIZE], _STATE_DIFFERENTIAL_SIZE);
+
     #pragma GCC unroll 32
     #pragma GCC ivdep
     for (uint16_t i = 0; i < stateDiffCount; i++) stateData[stateDiffPositions[i]] = stateDiffValues[i];

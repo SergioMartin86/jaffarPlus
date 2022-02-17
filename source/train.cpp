@@ -110,7 +110,9 @@ void Train::limitStateDatabase(std::vector<State*>& stateDB, size_t limit)
  std::nth_element(stateDB.begin(), stateDB.begin() + _maxDatabaseSizeLowerBound, stateDB.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
 
  // Recycle excess states
+ _freeStatesQueueLock.lock();
  for (size_t i = limit; i < stateDB.size(); i++) _freeStatesQueue.push(stateDB[i]);
+ _freeStatesQueueLock.unlock();
 
  // Resizing new states database to lower bound
  stateDB.resize(limit);
@@ -145,6 +147,7 @@ void Train::computeStates()
   _stepStateDecodingTime = 0.0;
   _stepStateCreationTime = 0.0;
   _stepStateDBSortingTime = 0.0;
+  _stepStateEvaluationTime = 0.0;
 
   // Processing state database in parallel
   #pragma omp parallel
@@ -163,6 +166,7 @@ void Train::computeStates()
     double threadStateDecodingTime = 0.0;
     double threadStateEncodingTime = 0.0;
     double threadStateCreationTime = 0.0;
+    double threadStateEvaluationTime = 0.0;
 
     // Computing always the last state while resizing the database to reduce memory footprint
     #pragma omp for schedule(dynamic, 1024)
@@ -220,6 +224,9 @@ void Train::computeStates()
         // If collision detected, discard this state
         if (collisionDetected) { _newCollisionCounter++; continue; }
 
+        // Storing the state data
+        t0 = std::chrono::steady_clock::now(); // Profiling
+
         // Getting rule status from the base state
         bool rulesStatus[_ruleCount];
         memcpy(rulesStatus, baseState->rulesStatus, sizeof(rulesStatus));
@@ -230,6 +237,9 @@ void Train::computeStates()
         // Getting state type
         stateType type = _gameInstances[threadId]->getStateType(rulesStatus);
 
+        tf = std::chrono::steady_clock::now(); // Profiling
+        threadStateEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
+
         // If state type is failed, continue to the next possible move
         if (type == f_fail) continue;
 
@@ -237,20 +247,21 @@ void Train::computeStates()
         t0 = std::chrono::steady_clock::now(); // Profiling
 
         // Allocating new state, checking free state queue if there's a storage we can reuse
-        State* newState;
-        bool foundFreeStateStorage = false;
+        State* newState = nullptr;
 
         // If found, we take directly from the queue
-        #pragma omp critical(stateQueue)
+        if (_freeStatesQueueLock.trylock())
+        {
          if (_freeStatesQueue.empty() == false)
          {
           newState = _freeStatesQueue.front();
           _freeStatesQueue.pop();
-          foundFreeStateStorage = true;
          }
+         _freeStatesQueueLock.unlock();
+        }
 
         // Otherwise we allocate a new storage
-        if (foundFreeStateStorage == false) newState = new State;
+        if (newState == nullptr) newState = new State;
 
         // Copying rule status into new state
         memcpy(newState->rulesStatus, rulesStatus, sizeof(rulesStatus));
@@ -306,7 +317,6 @@ void Train::computeStates()
            EXIT_WITH_ERROR("[ERROR] New states database (%lu) is smaller than lower bound (%lu) and will not bring the total states (%lu - %lu + %lu = %lu) under the upper bound (%lu).\n", newStates.size(), _maxDatabaseSizeLowerBound, _stateDB.size(), _stepBaseStatesProcessedCounter, newStates.size(), statesInUse, _maxDatabaseSizeUpperBound);
 
           // Limiting new states DB to lower bound size and recycling its states
-          #pragma omp critical(stateQueue)
           limitStateDatabase(newStates, _maxDatabaseSizeLowerBound);
 
           auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                      // Profiling
@@ -316,8 +326,12 @@ void Train::computeStates()
       }
 
       // Adding used base state back into free state queue
-      #pragma omp critical(stateQueue)
+      t0 = std::chrono::steady_clock::now(); // Profiling
+      _freeStatesQueueLock.lock();
       _freeStatesQueue.push(baseState);
+      _freeStatesQueueLock.unlock();
+      tf = std::chrono::steady_clock::now(); // Profiling
+      threadStateCreationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
       // Increasing counter for base states processed
       #pragma omp atomic
@@ -334,6 +348,7 @@ void Train::computeStates()
      _stepStateEncodingTime += threadStateEncodingTime;
      _stepStateDecodingTime += threadStateDecodingTime;
      _stepStateCreationTime += threadStateCreationTime;
+     _stepStateEvaluationTime += threadStateEvaluationTime;
     }
   }
 
@@ -345,18 +360,19 @@ void Train::computeStates()
   _stepStateEncodingTime /= _threadCount;
   _stepStateDecodingTime /= _threadCount;
   _stepStateCreationTime /= _threadCount;
+  _stepStateEvaluationTime /= _threadCount;
 
   // Calculating new state ratio (new / old)
   _stepNewStateRatio = (double)newStatesCounter / (double)_stateDB.size();
+
+  // Sorting local DB states by reward
+  auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
 
   // Clearing all old states
   _stateDB.clear();
 
   // Updating max states in memory counter
   if (_stepMaxStatesInMemory > _totalMaxStatesInMemory) { _totalMaxStatesInMemory = _stepMaxStatesInMemory; _maxNewStateRatio = _stepNewStateRatio; _maxNewStateRatioStep = _currentStep; }
-
-  // Sorting local DB states by reward
-  auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
 
   // If size exceeds the lower bound, limit it
   if (newStates.size() > _maxDatabaseSizeLowerBound) limitStateDatabase(newStates, _maxDatabaseSizeLowerBound);
@@ -373,11 +389,14 @@ void Train::computeStates()
   // Setting new states to be current states for the next step
   std::swap(newStates, _stateDB);
 
+  // Summing state processing counters
+  _totalStatesProcessedCounter += _stepNewStatesProcessedCounter;
+
   auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                           // Profiling
   _stepStateDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
 
-  // Summing state processing counters
-  _totalStatesProcessedCounter += _stepNewStatesProcessedCounter;
+  // Filtering old hashes if we reach the upper bound
+  auto hashFilteringTimeBegin = std::chrono::steady_clock::now(); // Profiling
 
   // Calculating and storing new entries created in this step and calculating size in mb to evaluate filtering
   auto getHashSizeFromEntries = [](const ssize_t entries) { return ( ( (double)sizeof(std::pair<const uint16_t, uint64_t>) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0); };
@@ -386,8 +405,6 @@ void Train::computeStates()
   _hashStepNewEntries.push_back(_hashDB.size() - startHashEntryCount);
   _hashSizeCurrent = getHashSizeFromEntries(_hashDB.size());
 
-  // Filtering old hashes if we reach the upper bound
-  auto hashFilteringTimeBegin = std::chrono::steady_clock::now(); // Profiling
   if (_hashSizeCurrent > _hashSizeUpperBound)
   {
    // Calculating how many old hash entries we need to delete to reach the lower bound
@@ -430,6 +447,7 @@ void Train::printTrainStatus()
   printf("[Jaffar]   + State Deserialization:   %3.3fs\n", _stepStateDeserializationTime / 1.0e+9);
   printf("[Jaffar]   + State Encoding:          %3.3fs\n", _stepStateEncodingTime / 1.0e+9);
   printf("[Jaffar]   + State Decoding:          %3.3fs\n", _stepStateDecodingTime / 1.0e+9);
+  printf("[Jaffar]   + State Evaluation:        %3.3fs\n", _stepStateEvaluationTime / 1.0e+9);
   printf("[Jaffar]   + State Creation:          %3.3fs\n", _stepStateCreationTime / 1.0e+9);
   printf("[Jaffar]   + State Sorting            %3.3fs\n", _stepStateDBSortingTime / 1.0e+9);
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
@@ -588,6 +606,7 @@ Train::Train(int argc, char *argv[])
 
   // Storing initial state as base for differential comparison
   memcpy(_referenceStateData, gameState, _STATE_DATA_SIZE);
+  initialState->computeStateDifference(_referenceStateData, gameState);
 
   // Storing initial state difference
   for (size_t i = 0; i < _ruleCount; i++) initialState->rulesStatus[i] = false;
