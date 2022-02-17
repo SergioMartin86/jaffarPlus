@@ -386,7 +386,11 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  if (kidCurrentRoom == 0 || kidCurrentRoom >= 25) reward += 128.0f;
 
  // Apply bonus when kid is climbing exit stairs
- if (curKidFrame >= 217 && curKidFrame <= 228) reward += 2000.0f;
+ if (curKidFrame >= 217 && curKidFrame <= 228)
+ {
+   reward += 1000.0f;
+   reward += 100.0f * ((float)curKidFrame - 217.0f);
+ }
 
  // For some levels, keeping HP allows for later skips
  reward += gameState.hitp_curr * 100.0f;
