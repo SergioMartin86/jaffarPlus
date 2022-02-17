@@ -148,6 +148,9 @@ int main(int argc, char *argv[])
   // Variable for current step in view
   int currentStep = 0;
 
+  // Flag to continue running playback
+  bool continueRunning = true;
+
   // Flag to display frame information
   bool showFrameInfo = true;
 
@@ -170,6 +173,7 @@ int main(int argc, char *argv[])
      printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
      printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | s: quicksave | p: play | q: quit\n");
+     refresh();
    }
 
    // Resetting show frame info flag
@@ -181,8 +185,8 @@ int main(int argc, char *argv[])
     currentStep++;
     if (currentStep > sequenceLength)
     {
-     if (exitOnFinish) { endwin(); return 0; }
-     currentStep--;
+     if (exitOnFinish) { sleep(1); continueRunning = false; }
+     currentStep--; isReproduce = false;
     }
     continue;
    }
@@ -217,7 +221,10 @@ int main(int argc, char *argv[])
    // Start playback from current point
    if (command == 'p') isReproduce = true;
 
-  } while (command != 'q');
+   // Start playback from current point
+   if (command == 'q') continueRunning = false;
+
+  } while (continueRunning);
 
   // Ending ncurses window
   endwin();
