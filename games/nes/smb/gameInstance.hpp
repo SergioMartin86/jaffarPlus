@@ -115,9 +115,8 @@ class GameInstance : public GameInstanceBase
   uint8_t currentWorld;
   uint8_t currentStage;
 
-  void initialize(const nlohmann::json& config) override;
+  GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;
-  void setGameValuePointers() override;
   void updateDerivedValues() override;
   std::vector<std::string> getPossibleMoves() const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;

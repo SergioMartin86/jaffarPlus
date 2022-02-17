@@ -1,4 +1,4 @@
-project('jaffar','cpp',
+project('jaffar','c','cpp',
   version: '2.0.0',
   license: 'GPL-3.0-only',
   default_options : ['cpp_std=c++20', 'default_library=shared', 'buildtype=release']
@@ -40,9 +40,9 @@ executable('jaffar',
   'source/train.cpp',
   jaffarSrc + platformTrainSrc + gameInstanceSrc,
   include_directories: [ jaffarIncludes, platformTrainIncludes, gameInstanceIncludes ],
-  dependencies: [ dependency('openmp', required: true) ],
-  link_with: [ ],
-  link_args: [ ],
+  dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
+  link_with: [ platformTrainLibs ],
+  link_args: [ platformTrainLFlags ],
   cpp_args: [ jaffarCFlags, platformTrainCFlags ]
 )
 
@@ -51,10 +51,10 @@ executable('jaffar-play',
   'source/play.cpp',
   jaffarSrc + platformPlaySrc + gameInstanceSrc,
   include_directories: [ jaffarIncludes, platformPlayIncludes, gameInstanceIncludes ],
-  dependencies: [ dependency('sdl2'), dependency('SDL2_image')],
-  link_with: [ ],
-  link_args: [ '-lncurses' ],
-  cpp_args: [ jaffarCFlags, '-DNCURSES', platformPlayCFlags ] 
+  dependencies: [ platformPlayDependencies ],
+  link_with: [ platformPlayLibs ],
+  link_args: [ platformPlayLFlags, '-lncurses' ],
+  cpp_args: [ jaffarCFlags, platformPlayCFlags, '-DNCURSES' ] 
 )
     
     

@@ -13,7 +13,7 @@ class PlaybackInstanceBase
  public:
 
   // Initializes the playback module instance
- PlaybackInstanceBase(GameInstance* game) { _game = game; };
+ PlaybackInstanceBase(GameInstance* game, const nlohmann::json& config) { _game = game; };
  virtual ~PlaybackInstanceBase() = default;
 
  // Function to render frame

@@ -47,6 +47,9 @@ class State
 
   State()
   {
+   // Initializing difference count to zero
+   stateDiffCount = 0;
+
    // Creating new storage for variable statesize
    _basePointer = new uint8_t[_stateVariableSize];
 

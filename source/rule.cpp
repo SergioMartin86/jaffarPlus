@@ -31,8 +31,8 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
     // Parsing first operand (property name)
     if (isDefined(conditionJs, "Property") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition missing 'Property' key.\n", _label);
     if (conditionJs["Property"].is_string() == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition operand 1 must be a string with the name of a property.\n", _label);
-    datatype_t dtype = getPropertyType(conditionJs["Property"].get<std::string>());
-    auto property = getPropertyPointer(conditionJs["Property"].get<std::string>(), (GameInstance*)gameInstance);
+    datatype_t dtype = getPropertyType(conditionJs);
+    auto property = getPropertyPointer(conditionJs, (GameInstance*)gameInstance);
 
     // Parsing second operand (number)
     if (isDefined(conditionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition missing 'Value' key.\n", _label);

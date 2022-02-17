@@ -14,6 +14,10 @@
     "Store Move List": true    
   },
   
+  "Game Configuration": 
+  {
+  },
+  
   "Jaffar Configuration": 
   {
     "State Database":

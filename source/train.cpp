@@ -532,6 +532,15 @@ Train::Train(int argc, char *argv[])
   _outputSolutionBestPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Best Solution Path"].get<std::string>();
   _outputSolutionWorstPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Worst Solution Path"].get<std::string>();
 
+  // Checking whether it contains the rules field
+  if (isDefined(config, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rules' key.\n");
+
+  // Checking whether it contains the emulator configuration field
+  if (isDefined(config, "Emulator Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Emulator Configuration' key.\n");
+
+  // Checking whether it contains the Game configuration field
+  if (isDefined(config, "Game Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Game Configuration' key.\n");
+
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
 
@@ -544,8 +553,10 @@ Train::Train(int argc, char *argv[])
    // Doing this as a critical section so not all threads try to access files at the same time
    #pragma omp critical
    {
-    _gameInstances[threadId] = new GameInstance();
-    _gameInstances[threadId]->initialize(config);
+    // Creating game and emulator instances, and parsing rules
+    auto emuInstance = new EmuInstance(config["Emulator Configuration"]);
+    _gameInstances[threadId] = new GameInstance(emuInstance, config["Game Configuration"]);
+    _gameInstances[threadId]->parseRules(config["Rules"]);
    }
   }
 
@@ -579,7 +590,6 @@ Train::Train(int argc, char *argv[])
   memcpy(_referenceStateData, gameState, _STATE_DATA_SIZE);
 
   // Storing initial state difference
-  initialState->computeStateDifference(_referenceStateData, gameState);
   for (size_t i = 0; i < _ruleCount; i++) initialState->rulesStatus[i] = false;
 
   // Evaluating Rules on initial state

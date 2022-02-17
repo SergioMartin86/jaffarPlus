@@ -81,6 +81,18 @@ int main(int argc, char *argv[])
   auto statusSolution = loadStringFromFile(moveSequence, solutionFile.c_str());
   if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n%s \n", solutionFile.c_str(), program.help().str().c_str());
 
+  // Checking whether it contains the rules field
+  if (isDefined(config, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rules' key.\n");
+
+  // Checking whether it contains the emulator configuration field
+  if (isDefined(config, "Emulator Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Emulator Configuration' key.\n");
+
+  // Checking whether it contains the Game configuration field
+  if (isDefined(config, "Game Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Game Configuration' key.\n");
+
+  // Checking whether it contains the Game configuration field
+  if (isDefined(config, "Playback Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Playback Configuration' key.\n");
+
   // Getting reproduce flag
   bool isReproduce = program.get<bool>("--reproduce");
   bool exitOnFinish = isReproduce;
@@ -105,13 +117,17 @@ int main(int argc, char *argv[])
 
   refresh();
 
+
+  // Initializing emulator
+  auto emuInstance = new EmuInstance(config["Emulator Configuration"]);
+
   // Initializing game state
-  GameInstance gameInstance;
-  gameInstance.initialize(config);
+  GameInstance gameInstance(emuInstance, config["Game Configuration"]);
+  gameInstance.parseRules(config["Rules"]);
 
   // Initializing playback instance
   printw("[Jaffar] Opening Game window...\n");
-  PlaybackInstance playbackInstance(&gameInstance);
+  PlaybackInstance playbackInstance(&gameInstance, config["Playback Configuration"]);
 
   // Storage for sequence frames and rule evaluation
   std::vector<uint8_t*> stateSequence;

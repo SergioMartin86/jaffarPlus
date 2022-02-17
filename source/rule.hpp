@@ -112,8 +112,8 @@ class Rule
   // is a template that is created at compilation time.
   std::vector<Condition *> _conditions;
   size_t _conditionCount;
-  virtual datatype_t getPropertyType(const std::string &property) = 0;
-  virtual void *getPropertyPointer(const std::string &property, GameInstance* gameInstance) = 0;
+  virtual datatype_t getPropertyType(const nlohmann::json& property) = 0;
+  virtual void *getPropertyPointer(const nlohmann::json& property, GameInstance* gameInstance) = 0;
   operator_t getOperationType(const std::string &operation);
 
   // Function to parse the json-encoded actions

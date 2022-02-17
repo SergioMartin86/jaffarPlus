@@ -13,8 +13,8 @@ class GameRule : public Rule
  ~GameRule() = default;
 
  bool parseGameAction(nlohmann::json actionJs, size_t actionId) override;
- datatype_t getPropertyType(const std::string &property) override;
- void *getPropertyPointer(const std::string &property, GameInstance* gameInstance) override;
+ datatype_t getPropertyType(const nlohmann::json& condition) override;
+ void *getPropertyPointer(const nlohmann::json& condition, GameInstance* gameInstance) override;
 
 };
 

@@ -15,48 +15,27 @@ class EmuInstance : public EmuInstanceBase
 {
  public:
 
- // miniPop instance
- miniPoPInstance *_miniPop;
+ std::string _sdlPopEnvRoot;
+ std::string _levelsFilePath;
+ std::string _stateFilePath;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
   // Checking whether configuration contains the rom file
   if (isDefined(config, "Levels File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Levels File' key.\n");
-  std::string levelsFilePath = config["Levels File"].get<std::string>();
+  _levelsFilePath = config["Levels File"].get<std::string>();
 
   if (isDefined(config, "SDLPop Root Path") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'SDLPop Root Path' key.\n");
-  std::string envRoot = config["SDLPop Root Path"].get<std::string>();
+  _sdlPopEnvRoot = config["SDLPop Root Path"].get<std::string>();
 
   // Checking whether configuration contains the state file
   if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
-  std::string stateFilePath = config["State File"].get<std::string>();
-
-  // Looking for sdlpop for base data in default folders when running examples
-  if (dirExists("extern/SDLPoP/"))
-  {
-    sprintf(exe_dir, "extern/SDLPoP/");
-    found_exe_dir = true;
-  }
-  if (dirExists("../extern/SDLPoP/"))
-  {
-    sprintf(exe_dir, "../extern/SDLPoP/");
-    found_exe_dir = true;
-  }
-  if (dirExists("../../extern/SDLPoP/"))
-  {
-    found_exe_dir = true;
-    sprintf(exe_dir, "../../extern/SDLPoP/");
-  }
-  if (dirExists("../../../extern/SDLPoP/"))
-  {
-    sprintf(exe_dir, "../../../extern/SDLPoP/");
-    found_exe_dir = true;
-  }
+  _stateFilePath = config["State File"].get<std::string>();
 
   // If not found, looking for the SDLPOP_ROOT env variable
-  if (envRoot != NULL) if (dirExists(envRoot))
+  if (dirExists(_sdlPopEnvRoot.c_str()))
   {
-    sprintf(exe_dir, envRoot);
+    sprintf(exe_dir, "%s", _sdlPopEnvRoot.c_str());
     found_exe_dir = true;
   }
 
@@ -67,7 +46,7 @@ class EmuInstance : public EmuInstanceBase
   }
 
   // Setting levels.dat path
-  sprintf(levels_file, levelsFilePath);
+  sprintf(levels_file, "%s", _levelsFilePath.c_str());
 
   // Setting argument config
   is_validate_mode = true;
@@ -110,7 +89,6 @@ class EmuInstance : public EmuInstanceBase
   // init_game
 
   text_time_remaining = 0;
-  text_time_total = 0;
   is_show_time = 1;
   gameState.checkpoint = 0;
   resurrect_time = 0;
@@ -120,7 +98,7 @@ class EmuInstance : public EmuInstanceBase
   gameState.need_level1_music = custom->intro_music_time_initial;
 
   // Loading state file
-  loadStateFile(stateFilePath);
+  loadStateFile(_stateFilePath);
  }
 
  void startLevel(const word level)
@@ -176,51 +154,39 @@ class EmuInstance : public EmuInstanceBase
   return (randomSeed + 4292436285) * 3115528533;
  }
 
- void setEmulator(Nes_Emu* emulator)
- {
-  _nes = emulator;
-
-  // Setting base memory pointer
-  _baseMem = _nes->low_mem();
- }
-
- void loadStateFile(const std::string& stateFilePath) override
- {
-  // Loading state data
-  std::string stateData;
-  if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: %s\n", stateFilePath.c_str());
-  Mem_File_Reader stateReader(stateData.data(), (int)stateData.size());
-  Auto_File_Reader stateFile(stateReader);
-
-  // Loading state data into state object
-  Nes_State state;
-  state.read(stateFile);
-
-  // Loading state object into the emulator
-  _nes->load_state(state);
- }
-
- void saveStateFile(const std::string& stateFilePath) const override
+ std::string getSDLPopStateString() const
  {
   // Saving state
-  Nes_State state;
-  _nes->save_state(&state);
-  Auto_File_Writer stateWriter(stateFilePath.c_str());
-  state.write(stateWriter);
+  std::string miniPopState;
+  miniPopState.resize(_STATE_DATA_SIZE);
+  serializeState((uint8_t*)miniPopState.data());
+  auto sdlPopState = saveSdlPopState(miniPopState);
+  return sdlPopState;
  }
 
+ void loadStateFile(const std::string& _stateFilePath) override
+ {
+  // Loading state data
+  std::string sdlPopState;
+  loadStringFromFile(sdlPopState, _stateFilePath.c_str());
+  std::string miniPopState = loadSdlPopState(sdlPopState);
+  deserializeState((uint8_t*)miniPopState.data());
+ }
+
+ void saveStateFile(const std::string& _stateFilePath) const override
+ {
+  // Saving state
+  auto sdlPopState = getSDLPopStateString();
+  saveStringToFile(sdlPopState, _stateFilePath.c_str());
+ }
  void serializeState(uint8_t* state) const override
  {
-  Mem_Writer w(state, _STATE_DATA_SIZE, 0);
-  Auto_File_Writer a(w);
-  _nes->save_state(a);
+  memcpy(state, &gameState, _STATE_DATA_SIZE);
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  Mem_File_Reader r(state, _STATE_DATA_SIZE);
-  Auto_File_Reader a(r);
-  _nes->load_state(a);
+  memcpy(&gameState, state, _STATE_DATA_SIZE);
  }
 
  // Controller input bits

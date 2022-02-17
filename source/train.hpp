@@ -42,7 +42,6 @@ class Train
 
   // Creating game instances, one per openMP thread
   std::vector<GameInstance*> _gameInstances;
-  size_t _ruleCount;
 
   // State counter
   size_t _stepBaseStatesProcessedCounter;

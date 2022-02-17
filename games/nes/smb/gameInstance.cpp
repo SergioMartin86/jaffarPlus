@@ -1,12 +1,99 @@
 #include "gameInstance.hpp"
 #include "gameRule.hpp"
 
-void GameInstance::initialize(const nlohmann::json& config)
+GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 {
-  // Always call the base class initialization
-  GameInstanceBase::initialize(config);
+  // Setting emulator
+  _emu = emu;
 
-  // Any SMB-specific configuration goes here
+  // Setting relevant SMB pointers
+
+  // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
+  screenScroll         = (uint16_t*) &_emu->_baseMem[0x071B];
+  marioAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
+  marioState           = (uint8_t*)  &_emu->_baseMem[0x000E];
+
+  marioBasePosX        = (uint8_t*)  &_emu->_baseMem[0x006D];
+  marioRelPosX         = (uint8_t*)  &_emu->_baseMem[0x0086];
+  marioSubpixelPosX    = (uint8_t*)  &_emu->_baseMem[0x0400];
+
+  marioPosY            = (uint8_t*)  &_emu->_baseMem[0x00CE];
+  marioSubpixelPosY    = (uint8_t*)  &_emu->_baseMem[0x0416];
+
+  marioMovingDirection = (uint8_t*)  &_emu->_baseMem[0x0045];
+  marioFacingDirection = (uint8_t*)  &_emu->_baseMem[0x0033];
+  marioFloatingMode    = (uint8_t*)  &_emu->_baseMem[0x001D];
+  marioWalkingMode     = (uint8_t*)  &_emu->_baseMem[0x0702];
+  marioWalkingDelay    = (uint8_t*)  &_emu->_baseMem[0x070C];
+  marioWalkingFrame    = (uint8_t*)  &_emu->_baseMem[0x070D];
+  marioMaxVelLeft      = (int8_t*)   &_emu->_baseMem[0x0450];
+  marioMaxVelRight     = (int8_t*)   &_emu->_baseMem[0x0456];
+  marioVelX            = (int8_t*)   &_emu->_baseMem[0x0057];
+  marioXMoveForce      = (int8_t*)   &_emu->_baseMem[0x0705];
+  marioVelY            = (int8_t*)   &_emu->_baseMem[0x009F];
+  marioFracVelY        = (int8_t*)   &_emu->_baseMem[0x0433];
+  marioGravity         = (uint8_t*)  &_emu->_baseMem[0x0709];
+  marioFriction        = (uint8_t*)  &_emu->_baseMem[0x0701];
+  timeLeft100          = (uint8_t*)  &_emu->_baseMem[0x07F8];
+  timeLeft10           = (uint8_t*)  &_emu->_baseMem[0x07F9];
+  timeLeft1            = (uint8_t*)  &_emu->_baseMem[0x07FA];
+
+  screenBasePosX       = (uint8_t*)  &_emu->_baseMem[0x071A];
+  screenRelPosX        = (uint8_t*)  &_emu->_baseMem[0x071C];
+
+  currentWorldRaw      = (uint8_t*)  &_emu->_baseMem[0x075F];
+  currentStageRaw      = (uint8_t*)  &_emu->_baseMem[0x075C];
+  levelEntryFlag       = (uint8_t*)  &_emu->_baseMem[0x0752];
+  gameMode             = (uint8_t*)  &_emu->_baseMem[0x0770];
+
+  enemy1Active         = (uint8_t*)  &_emu->_baseMem[0x000F];
+  enemy2Active         = (uint8_t*)  &_emu->_baseMem[0x0010];
+  enemy3Active         = (uint8_t*)  &_emu->_baseMem[0x0011];
+  enemy4Active         = (uint8_t*)  &_emu->_baseMem[0x0012];
+  enemy5Active         = (uint8_t*)  &_emu->_baseMem[0x0013];
+
+  enemy1State          = (uint8_t*)  &_emu->_baseMem[0x001E];
+  enemy2State          = (uint8_t*)  &_emu->_baseMem[0x001F];
+  enemy3State          = (uint8_t*)  &_emu->_baseMem[0x0020];
+  enemy4State          = (uint8_t*)  &_emu->_baseMem[0x0021];
+  enemy5State          = (uint8_t*)  &_emu->_baseMem[0x0022];
+
+  enemy1Type           = (uint8_t*)  &_emu->_baseMem[0x0016];
+  enemy2Type           = (uint8_t*)  &_emu->_baseMem[0x0017];
+  enemy3Type           = (uint8_t*)  &_emu->_baseMem[0x0018];
+  enemy4Type           = (uint8_t*)  &_emu->_baseMem[0x0019];
+  enemy5Type           = (uint8_t*)  &_emu->_baseMem[0x001A];
+
+  marioCollision       = (uint8_t*)  &_emu->_baseMem[0x0490];
+  enemyCollision       = (uint8_t*)  &_emu->_baseMem[0x0491];
+  hitDetectionFlag     = (uint8_t*)  &_emu->_baseMem[0x0722];
+
+  powerUpActive        = (uint8_t*)  &_emu->_baseMem[0x0014];
+
+  animationTimer       = (uint8_t*)  &_emu->_baseMem[0x0781];
+  jumpSwimTimer        = (uint8_t*)  &_emu->_baseMem[0x0782];
+  runningTimer         = (uint8_t*)  &_emu->_baseMem[0x0783];
+  blockBounceTimer     = (uint8_t*)  &_emu->_baseMem[0x0784];
+  sideCollisionTimer   = (uint8_t*)  &_emu->_baseMem[0x0785];
+  jumpspringTimer      = (uint8_t*)  &_emu->_baseMem[0x0786];
+  gameControlTimer     = (uint8_t*)  &_emu->_baseMem[0x0787];
+  climbSideTimer       = (uint8_t*)  &_emu->_baseMem[0x0789];
+  enemyFrameTimer      = (uint8_t*)  &_emu->_baseMem[0x078A];
+  frenzyEnemyTimer     = (uint8_t*)  &_emu->_baseMem[0x078F];
+  bowserFireTimer      = (uint8_t*)  &_emu->_baseMem[0x0790];
+  stompTimer           = (uint8_t*)  &_emu->_baseMem[0x0791];
+  airBubbleTimer       = (uint8_t*)  &_emu->_baseMem[0x0792];
+  fallPitTimer         = (uint8_t*)  &_emu->_baseMem[0x0795];
+  multiCoinBlockTimer  = (uint8_t*)  &_emu->_baseMem[0x079D];
+  invincibleTimer      = (uint8_t*)  &_emu->_baseMem[0x079E];
+  starTimer            = (uint8_t*)  &_emu->_baseMem[0x079F];
+
+  player1Input         = (uint8_t*)  &_emu->_baseMem[0x06FC];
+  player1Buttons       = (uint8_t*)  &_emu->_baseMem[0x074A];
+  player1GamePad1      = (uint8_t*)  &_emu->_baseMem[0x000A];
+  player1GamePad2      = (uint8_t*)  &_emu->_baseMem[0x000D];
+
+  warpAreaOffset       = (uint16_t*) &_emu->_baseMem[0x0750];
 };
 
 // This function computes the hash for the current state
@@ -100,95 +187,6 @@ uint64_t GameInstance::computeHash() const
   return result;
 }
 
-void GameInstance::setGameValuePointers()
-{
- // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
- screenScroll         = (uint16_t*) &_emu->_baseMem[0x071B];
- marioAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
- marioState           = (uint8_t*)  &_emu->_baseMem[0x000E];
-
- marioBasePosX        = (uint8_t*)  &_emu->_baseMem[0x006D];
- marioRelPosX         = (uint8_t*)  &_emu->_baseMem[0x0086];
- marioSubpixelPosX    = (uint8_t*)  &_emu->_baseMem[0x0400];
-
- marioPosY            = (uint8_t*)  &_emu->_baseMem[0x00CE];
- marioSubpixelPosY    = (uint8_t*)  &_emu->_baseMem[0x0416];
-
- marioMovingDirection = (uint8_t*)  &_emu->_baseMem[0x0045];
- marioFacingDirection = (uint8_t*)  &_emu->_baseMem[0x0033];
- marioFloatingMode    = (uint8_t*)  &_emu->_baseMem[0x001D];
- marioWalkingMode     = (uint8_t*)  &_emu->_baseMem[0x0702];
- marioWalkingDelay    = (uint8_t*)  &_emu->_baseMem[0x070C];
- marioWalkingFrame    = (uint8_t*)  &_emu->_baseMem[0x070D];
- marioMaxVelLeft      = (int8_t*)   &_emu->_baseMem[0x0450];
- marioMaxVelRight     = (int8_t*)   &_emu->_baseMem[0x0456];
- marioVelX            = (int8_t*)   &_emu->_baseMem[0x0057];
- marioXMoveForce      = (int8_t*)   &_emu->_baseMem[0x0705];
- marioVelY            = (int8_t*)   &_emu->_baseMem[0x009F];
- marioFracVelY        = (int8_t*)   &_emu->_baseMem[0x0433];
- marioGravity         = (uint8_t*)  &_emu->_baseMem[0x0709];
- marioFriction        = (uint8_t*)  &_emu->_baseMem[0x0701];
- timeLeft100          = (uint8_t*)  &_emu->_baseMem[0x07F8];
- timeLeft10           = (uint8_t*)  &_emu->_baseMem[0x07F9];
- timeLeft1            = (uint8_t*)  &_emu->_baseMem[0x07FA];
-
- screenBasePosX       = (uint8_t*)  &_emu->_baseMem[0x071A];
- screenRelPosX        = (uint8_t*)  &_emu->_baseMem[0x071C];
-
- currentWorldRaw      = (uint8_t*)  &_emu->_baseMem[0x075F];
- currentStageRaw      = (uint8_t*)  &_emu->_baseMem[0x075C];
- levelEntryFlag       = (uint8_t*)  &_emu->_baseMem[0x0752];
- gameMode             = (uint8_t*)  &_emu->_baseMem[0x0770];
-
- enemy1Active         = (uint8_t*)  &_emu->_baseMem[0x000F];
- enemy2Active         = (uint8_t*)  &_emu->_baseMem[0x0010];
- enemy3Active         = (uint8_t*)  &_emu->_baseMem[0x0011];
- enemy4Active         = (uint8_t*)  &_emu->_baseMem[0x0012];
- enemy5Active         = (uint8_t*)  &_emu->_baseMem[0x0013];
-
- enemy1State          = (uint8_t*)  &_emu->_baseMem[0x001E];
- enemy2State          = (uint8_t*)  &_emu->_baseMem[0x001F];
- enemy3State          = (uint8_t*)  &_emu->_baseMem[0x0020];
- enemy4State          = (uint8_t*)  &_emu->_baseMem[0x0021];
- enemy5State          = (uint8_t*)  &_emu->_baseMem[0x0022];
-
- enemy1Type           = (uint8_t*)  &_emu->_baseMem[0x0016];
- enemy2Type           = (uint8_t*)  &_emu->_baseMem[0x0017];
- enemy3Type           = (uint8_t*)  &_emu->_baseMem[0x0018];
- enemy4Type           = (uint8_t*)  &_emu->_baseMem[0x0019];
- enemy5Type           = (uint8_t*)  &_emu->_baseMem[0x001A];
-
- marioCollision       = (uint8_t*)  &_emu->_baseMem[0x0490];
- enemyCollision       = (uint8_t*)  &_emu->_baseMem[0x0491];
- hitDetectionFlag     = (uint8_t*)  &_emu->_baseMem[0x0722];
-
- powerUpActive        = (uint8_t*)  &_emu->_baseMem[0x0014];
-
- animationTimer       = (uint8_t*)  &_emu->_baseMem[0x0781];
- jumpSwimTimer        = (uint8_t*)  &_emu->_baseMem[0x0782];
- runningTimer         = (uint8_t*)  &_emu->_baseMem[0x0783];
- blockBounceTimer     = (uint8_t*)  &_emu->_baseMem[0x0784];
- sideCollisionTimer   = (uint8_t*)  &_emu->_baseMem[0x0785];
- jumpspringTimer      = (uint8_t*)  &_emu->_baseMem[0x0786];
- gameControlTimer     = (uint8_t*)  &_emu->_baseMem[0x0787];
- climbSideTimer       = (uint8_t*)  &_emu->_baseMem[0x0789];
- enemyFrameTimer      = (uint8_t*)  &_emu->_baseMem[0x078A];
- frenzyEnemyTimer     = (uint8_t*)  &_emu->_baseMem[0x078F];
- bowserFireTimer      = (uint8_t*)  &_emu->_baseMem[0x0790];
- stompTimer           = (uint8_t*)  &_emu->_baseMem[0x0791];
- airBubbleTimer       = (uint8_t*)  &_emu->_baseMem[0x0792];
- fallPitTimer         = (uint8_t*)  &_emu->_baseMem[0x0795];
- multiCoinBlockTimer  = (uint8_t*)  &_emu->_baseMem[0x079D];
- invincibleTimer      = (uint8_t*)  &_emu->_baseMem[0x079E];
- starTimer            = (uint8_t*)  &_emu->_baseMem[0x079F];
-
- player1Input         = (uint8_t*)  &_emu->_baseMem[0x06FC];
- player1Buttons       = (uint8_t*)  &_emu->_baseMem[0x074A];
- player1GamePad1      = (uint8_t*)  &_emu->_baseMem[0x000A];
- player1GamePad2      = (uint8_t*)  &_emu->_baseMem[0x000D];
-
- warpAreaOffset       = (uint16_t*) &_emu->_baseMem[0x0750];
-}
 
 void GameInstance::updateDerivedValues()
 {

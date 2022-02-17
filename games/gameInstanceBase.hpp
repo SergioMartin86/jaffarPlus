@@ -21,28 +21,6 @@ class GameInstanceBase
   // virtual destructor
   virtual ~GameInstanceBase() = default;
 
-  // Initialize game instance using the Jaffar configuration file
-  virtual void initialize(const nlohmann::json& config)
-  {
-   // Checking whether it contains the emulator configuration field
-   if (isDefined(config, "Emulator Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Emulator Configuration' key.\n");
-
-   // Creating emulator instance
-   _emu = new EmuInstance(config["Emulator Configuration"]);
-
-   // Setting game-specific value pointers
-   setGameValuePointers();
-
-   // Updating initial derived values
-   updateDerivedValues();
-
-   // Checking whether it contains the rules field
-   if (isDefined(config, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rules' key.\n");
-
-   // Parsing rules
-   parseRules(config["Rules"]);
-  }
-
   // Rule parser
   void parseRules(const nlohmann::json rulesConfig);
 
@@ -68,9 +46,6 @@ class GameInstanceBase
 
   // This function computes the hash for the current state
   virtual uint64_t computeHash() const = 0;
-
-  // This function sets the relevant pointers for game data
-  virtual void setGameValuePointers() = 0;
 
   // This function updates derivate values (those who require calculation from raw values) after a state is re-loaded
   virtual void updateDerivedValues() = 0;
