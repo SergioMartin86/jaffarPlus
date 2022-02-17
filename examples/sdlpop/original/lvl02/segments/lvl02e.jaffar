@@ -1,7 +1,21 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 2",  
 
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../../LEVELS.DAT",
+    "State File": "lvl02e.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 55,
+    "Max Move Count": 280,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
    "Static Tile Hash Types":
@@ -18,9 +32,38 @@
    
    "Active Objects Hash Types":
    [
-   { "Room": 9, "Tile": 27, "Type": "Full", "Comment": "Loose Tile" },
-   { "Room": 23, "Tile": 14, "Type": "Index Only", "Comment": "Exit Door" }
+    { "Room": 9, "Tile": 27, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 23, "Tile": 14, "Type": "Index Only", "Comment": "Exit Door" }
    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 150,
+     "Max Size Upper Bound (Mb)": 220
+    },
+    
+    "Hash Database":
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
