@@ -157,22 +157,6 @@
    },
    
    {
-    "Label": 1998,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
     "Label": 1999,
     "Description": "If we reach next level, win.",
     "Conditions":

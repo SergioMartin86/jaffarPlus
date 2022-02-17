@@ -285,7 +285,9 @@ class EmuInstance : public EmuInstanceBase
    if (gameState.current_level == 15)
     gameState.next_level = custom->copyprot_level;
 
-   startLevel(gameState.next_level);
+   // Preventing changing level on win
+   // startLevel(gameState.next_level);
+   gameState.current_level = gameState.next_level;
 
    // Handle cutscenes
    //if (gameState.next_level == 2) for (size_t i = 0; i < 3; i++) gameState.random_seed = advanceRNGState(gameState.random_seed);
