@@ -230,7 +230,7 @@ magnetInfo_t GameInstance::getKidMagnetValues(const bool* rulesStatus, const int
  magnetInfo.intensityY = 0.0f;
 
  // Iterating rule vector
- for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++)
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
  {
   if (rulesStatus[ruleId] == true)
   {
@@ -264,7 +264,7 @@ magnetInfo_t GameInstance::getGuardMagnetValues(const bool* rulesStatus, const i
  magnetInfo.intensityY = 0.0f;
 
  // Iterating rule vector
- for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++)
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   if (rulesStatus[ruleId] == true)
   {
     const auto& rule = _rules[ruleId];
@@ -410,7 +410,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + RNG State: 0x%08X (Last Loose Tile Sound Id: %d)\n", gameState.random_seed, gameState.last_loose_sound);
 
   LOG("[Jaffar]  + Rule Status: ");
-  for (size_t i = 0; i < _ruleCount; i++) LOG("%d", rulesStatus[i] ? 1 : 0);
+  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
   LOG("\n");
 
   // Getting kid room

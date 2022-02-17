@@ -12,12 +12,9 @@ void GameInstanceBase::parseRules(const nlohmann::json rulesConfig)
   _rules.push_back(rule);
  }
 
- // Setting global rule count
- _ruleCount = _rules.size();
-
  // Checking for repeated rule labels
  std::set<size_t> ruleLabelSet;
- for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++)
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
  {
   size_t label = _rules[ruleId]->_label;
   ruleLabelSet.insert(label);
@@ -26,14 +23,14 @@ void GameInstanceBase::parseRules(const nlohmann::json rulesConfig)
  }
 
  // Looking for rule satisfied sub-rules indexes that match their labels
- for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++)
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   for (size_t satisfiedId = 0; satisfiedId < _rules[ruleId]->_satisfiesLabels.size(); satisfiedId++)
   {
    bool foundLabel = false;
    size_t label = _rules[ruleId]->_satisfiesLabels[satisfiedId];
    if (label == _rules[ruleId]->_label) EXIT_WITH_ERROR("[ERROR] Rule %lu references itself in satisfied vector.\n", label);
 
-   for (size_t subRuleId = 0; subRuleId < _ruleCount; subRuleId++)
+   for (size_t subRuleId = 0; subRuleId < _rules.size(); subRuleId++)
     if (_rules[subRuleId]->_label == label)
     {
      _rules[ruleId]->_satisfiesIndexes[satisfiedId] = subRuleId;
