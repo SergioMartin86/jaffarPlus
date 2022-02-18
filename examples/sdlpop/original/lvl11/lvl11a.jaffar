@@ -68,7 +68,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 6 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -86,7 +85,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 1 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 11000 ],
 
     "Actions":
@@ -107,7 +105,6 @@
      { "Property": "Kid Position X", "Op": ">", "Value": 140 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 11020 ],
 
     "Actions":
