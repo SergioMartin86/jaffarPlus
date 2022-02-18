@@ -115,14 +115,14 @@ class Train
   // Profiling and Debugging
   double _searchTotalTime;
   double _currentStepTime;
-  double _stepHashCalculationTime;
-  double _stepHashCheckingTime;
-  double _stepHashFilteringTime;
-  double _stepStateAdvanceTime;
-  double _stepStateDeserializationTime;
-  double _stepStateEncodingTime;
-  double _stepStateDecodingTime;
-  double _stepStateDBSortingTime;
-  double _stepStateCreationTime;
-  double _stepStateEvaluationTime;
+  ssize_t _stepHashCalculationTime;
+  ssize_t _stepHashCheckingTime;
+  ssize_t _stepHashFilteringTime;
+  ssize_t _stepStateAdvanceTime;
+  ssize_t _stepStateDeserializationTime;
+  ssize_t _stepStateEncodingTime;
+  ssize_t _stepStateDecodingTime;
+  ssize_t _stepStateDBSortingTime;
+  ssize_t _stepStateCreationTime;
+  ssize_t _stepStateEvaluationTime;
 };

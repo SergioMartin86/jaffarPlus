@@ -1,7 +1,21 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 5",  
   
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl05b.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 65,
+    "Max Move Count": 250,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
    "Static Tile Hash Types": [  ],
@@ -12,7 +26,37 @@
    
    "Active Objects Hash Types":
    [
+    { "Room": 18, "Tile": 14, "Type": "Full", "Comment": "Exit Door" }
    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 150,
+     "Max Size Upper Bound (Mb)": 220
+    },
+    
+    "Hash Database":
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
@@ -22,11 +66,9 @@
     "Description": "Rewarding kid for crossing the door.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
      { "Property": "Kid Room", "Op": "==", "Value":  8 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
     
     "Actions":
@@ -41,11 +83,9 @@
     "Description": "Rewarding kid for advancing to screen 12.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
      { "Property": "Kid Room", "Op": "==", "Value":  12 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 5002 ],
     
     "Actions":
@@ -62,11 +102,9 @@
     "Description": "Rewarding kid for advancing to screen 2.",
     "Conditions":
     [ 
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
      { "Property": "Kid Room", "Op": "==", "Value":  2 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 5003 ],
     
     "Actions":
@@ -83,11 +121,9 @@
     "Description": "Rewarding kid for advancing to screen 16.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
      { "Property": "Kid Room", "Op": "==", "Value":  16 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 5004 ],
     
     "Actions":
@@ -104,11 +140,9 @@
     "Description": "Rewarding kid for advancing to screen 15.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
      { "Property": "Kid Room", "Op": "==", "Value":  15 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 5005 ],
     
     "Actions":
@@ -125,11 +159,9 @@
     "Description": "Opening Exit door.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
-     { "Property": "Exit Door Open", "Op": "==", "Value":  1 }
+     { "Property": "Tile BG State", "Room": 18, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
     
     "Actions":
@@ -143,11 +175,9 @@
     "Description": "Rewarding kid for advancing to the last screen 18.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
      { "Property": "Kid Room", "Op": "==", "Value":  18 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 5006 ],
     
     "Actions":
@@ -164,11 +194,9 @@
     "Description": "Rewarding kid for starting to climb door.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
      { "Property": "Kid Frame", "Op": "==", "Value":  217 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 5008 ],
     
     "Actions":
@@ -176,35 +204,15 @@
      { "Type": "Add Reward", "Value": 2000 }
     ]
    },
-   
-   {
-    "Label": 5009,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
+
    {
     "Label": 5129,
-    "Description": "If Kid dies, then fail.",
+    "Description": "If Kid falls in the room, then fail.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  5 },
      { "Property": "Kid Room", "Op": "==", "Value":  5 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
     
     "Actions":
@@ -222,7 +230,6 @@
      { "Property": "Current Level", "Op": "!=", "Value":  15 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 5017 ],
     
     "Actions":

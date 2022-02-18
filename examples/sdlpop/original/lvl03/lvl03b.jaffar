@@ -76,12 +76,10 @@
      "Description": "Setting magnet to make kid go to the left.",
      "Conditions":
      [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Kid Room", "Op": "==", "Value":  2 },
       { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -97,11 +95,9 @@
      "Description": "Rewarding kid for advancing to the second screen. Keep going left and rewarding climbing.",
      "Conditions":
      [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Kid Room", "Op": "==", "Value":  1 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ 3010 ],
      
      "Actions":
@@ -119,13 +115,11 @@
      "Description": "Rewarding kid for advancing to the second screen. Keep going left and rewarding climbing.",
      "Conditions":
      [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Kid Room", "Op": "==", "Value":  1 },
       { "Property": "Kid Position Y", "Op": "==", "Value":  5 },
       { "Property": "Kid Position X", "Op": "<", "Value":  128 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ ],
      
      "Actions":
@@ -139,11 +133,9 @@
      "Description": "Rewarding kid for advancing to the third screen.",
      "Conditions":
      [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Kid Room", "Op": "==", "Value":  5 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ 3011 ],
      
      "Actions":
@@ -162,12 +154,10 @@
      "Description": "Reward kid arriving in the exit room, set magnets to go to door opening tile.",
      "Conditions":
      [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Kid Room", "Op": "==", "Value":  6 },
       { "Property": "Kid Position Y", "Op": "<", "Value":  100 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ 3012 ],
      
      "Actions":
@@ -183,13 +173,11 @@
      "Description": "If kid has activated the exit door tile, now go back left and reward climbing",
      "Conditions":
      [ 
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Level Door" },
       { "Property": "Kid Room", "Op": "==", "Value":  6 },
       { "Property": "Kid Position Y", "Op": "<", "Value":  100 }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ 3013 ],
      
      "Actions":
@@ -205,12 +193,10 @@
      "Description": "Rewarding kid for coming back upstairs.",
      "Conditions":
      [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Kid Room", "Op": "==", "Value":  5 },
       { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ 3014 ],
      
      "Actions":
@@ -230,13 +216,11 @@
      "Description": "Rewarding kid for coming back upstairs.",
      "Conditions":
      [
-      { "Property": "Current Level", "Op": "==", "Value":  3 },
       { "Property": "Kid Room", "Op": "==", "Value":  5 },
       { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
       { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
      ],
      
-     "Dependencies": [ ],
      "Satisfies": [ 3014 ],
      
      "Actions":

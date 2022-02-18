@@ -1,7 +1,21 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 5",  
   
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl05a.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 55,
+    "Max Move Count": 250,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
    "Static Tile Hash Types": [  ],
@@ -16,6 +30,35 @@
    ]
   },
   
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 150,
+     "Max Size Upper Bound (Mb)": 220
+    },
+    
+    "Hash Database":
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
+  
   "Rules":
   [
    {
@@ -26,7 +69,6 @@
      { "Property": "Kid Room", "Op": "==", "Value":  7 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -45,7 +87,6 @@
      { "Property": "Tile BG State", "Room": 7, "Tile": 29, "Op": ">", "Value": 0, "Comment": "Gate" }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 5000 ],
 
     "Actions":
@@ -62,7 +103,6 @@
      { "Property": "Kid Room", "Op": "==", "Value":  9 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 5001 ],
 
     "Actions":
@@ -83,7 +123,6 @@
      { "Property": "Guard Room", "Op": "==", "Value":  7 }
     ],
     
-    "Dependencies": [ 5000 ],
     "Satisfies": [ 5002 ],
     
     "Actions":
@@ -106,7 +145,6 @@
      { "Property": "Kid Position X", "Op": "<", "Value":  155 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 5003 ],
     
     "Actions":
@@ -128,65 +166,13 @@
      { "Property": "Kid Position Y", "Op": "==", "Value":  118 }
     ],
     
-    "Dependencies": [ ],
-    "Satisfies": [ 5004 ],
+    "Satisfies": [ ],
     
     "Actions":
     [
      { "Type": "Trigger Win" }
     ]
-   }, 
-   
-   {
-    "Label": 5009,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-     "Label": 5101,
-     "Description": "Reward getting to a forbidden room",
-     "Conditions":
-     [
-      { "Property": "Kid Room", "Op": "<", "Value":  0 }
-     ],
-    
-     "Dependencies": [ ],
-     "Satisfies": [ ],
- 
-     "Actions":
-     [
-      { "Type": "Trigger Win" }
-     ]
-    },
-   
-    {
-    "Label": 5102,
-    "Description": "Reward getting to a forbidden room",
-    "Conditions":
-    [
-     { "Property": "Kid Room", "Op": ">", "Value":  24 }
-    ],
-   
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-
-    "Actions":
-    [
-     { "Type": "Trigger Win" }
-    ]
-   }
+   } 
    
   ]  
 }

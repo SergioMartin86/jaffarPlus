@@ -7,18 +7,18 @@
 
 void Train::run()
 {
-  auto searchTimeBegin = std::chrono::steady_clock::now();      // Profiling
-  auto currentStepTimeBegin = std::chrono::steady_clock::now(); // Profiling
+  auto searchTimeBegin = std::chrono::high_resolution_clock::now();      // Profiling
+  auto currentStepTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
 
   while (_hasFinalized == false)
   {
     // Profiling information
-    auto searchTimeEnd = std::chrono::steady_clock::now();                                                            // Profiling
+    auto searchTimeEnd = std::chrono::high_resolution_clock::now();                                                            // Profiling
     _searchTotalTime = std::chrono::duration_cast<std::chrono::nanoseconds>(searchTimeEnd - searchTimeBegin).count(); // Profiling
 
-    auto currentStepTimeEnd = std::chrono::steady_clock::now();                                                                 // Profiling
+    auto currentStepTimeEnd = std::chrono::high_resolution_clock::now();                                                                 // Profiling
     _currentStepTime = std::chrono::duration_cast<std::chrono::nanoseconds>(currentStepTimeEnd - currentStepTimeBegin).count(); // Profiling
-    currentStepTimeBegin = std::chrono::steady_clock::now();                                                                    // Profiling
+    currentStepTimeBegin = std::chrono::high_resolution_clock::now();                                                                    // Profiling
 
     // Printing search status
     printTrainStatus();
@@ -124,15 +124,15 @@ void Train::computeStates()
   _stateDB[0]->getStateDataFromDifference(currentSourceStateData, _referenceStateData);
 
   // Initializing step timers
-  _stepHashCalculationTime = 0.0;
-  _stepHashCheckingTime = 0.0;
-  _stepStateAdvanceTime = 0.0;
-  _stepStateDeserializationTime = 0.0;
-  _stepStateEncodingTime = 0.0;
-  _stepStateDecodingTime = 0.0;
-  _stepStateCreationTime = 0.0;
-  _stepStateDBSortingTime = 0.0;
-  _stepStateEvaluationTime = 0.0;
+  _stepHashCalculationTime = 0;
+  _stepHashCheckingTime = 0;
+  _stepStateAdvanceTime = 0;
+  _stepStateDeserializationTime = 0;
+  _stepStateEncodingTime = 0;
+  _stepStateDecodingTime = 0;
+  _stepStateCreationTime = 0;
+  _stepStateDBSortingTime = 0;
+  _stepStateEvaluationTime = 0;
 
   // Processing state database in parallel
   #pragma omp parallel
@@ -144,29 +144,29 @@ void Train::computeStates()
     uint8_t baseStateData[_STATE_DATA_SIZE];
 
     // Profiling timers
-    double threadHashCalculationTime = 0.0;
-    double threadHashCheckingTime = 0.0;
-    double threadStateAdvanceTime = 0.0;
-    double threadStateDeserializationTime = 0.0;
-    double threadStateDecodingTime = 0.0;
-    double threadStateEncodingTime = 0.0;
-    double threadStateCreationTime = 0.0;
-    double threadStateEvaluationTime = 0.0;
+    ssize_t threadHashCalculationTime = 0;
+    ssize_t threadHashCheckingTime = 0;
+    ssize_t threadStateAdvanceTime = 0;
+    ssize_t threadStateDeserializationTime = 0;
+    ssize_t threadStateDecodingTime = 0;
+    ssize_t threadStateEncodingTime = 0;
+    ssize_t threadStateCreationTime = 0;
+    ssize_t threadStateEvaluationTime = 0;
 
     // Computing always the last state while resizing the database to reduce memory footprint
     #pragma omp for schedule(dynamic, 1024)
     for (auto& baseState : _stateDB)
     {
-      auto t0 = std::chrono::steady_clock::now(); // Profiling
+      auto t0 = std::chrono::high_resolution_clock::now(); // Profiling
       baseState->getStateDataFromDifference(currentSourceStateData, baseStateData);
-      auto tf = std::chrono::steady_clock::now();
+      auto tf = std::chrono::high_resolution_clock::now();
       threadStateDecodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
       // Getting possible moves for the current state
-      t0 = std::chrono::steady_clock::now(); // Profiling
+      t0 = std::chrono::high_resolution_clock::now(); // Profiling
       _gameInstances[threadId]->pushState(baseStateData);
       std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves();
-      tf = std::chrono::steady_clock::now();
+      tf = std::chrono::high_resolution_clock::now();
       threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
       // Running possible moves
@@ -182,35 +182,35 @@ void Train::computeStates()
         // If this comes after the first move, we need to reload the base state
         if (idx > 0)
         {
-         t0 = std::chrono::steady_clock::now(); // Profiling
+         t0 = std::chrono::high_resolution_clock::now(); // Profiling
          _gameInstances[threadId]->pushState(baseStateData);
-         tf = std::chrono::steady_clock::now();
+         tf = std::chrono::high_resolution_clock::now();
          threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
         }
 
         // Perform the selected move
-        t0 = std::chrono::steady_clock::now(); // Profiling
+        t0 = std::chrono::high_resolution_clock::now(); // Profiling
         _gameInstances[threadId]->advanceState(moveId);
-        tf = std::chrono::steady_clock::now();
+        tf = std::chrono::high_resolution_clock::now();
         threadStateAdvanceTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
         // Compute hash value
-        t0 = std::chrono::steady_clock::now(); // Profiling
+        t0 = std::chrono::high_resolution_clock::now(); // Profiling
         auto hash = _gameInstances[threadId]->computeHash();
-        tf = std::chrono::steady_clock::now();
+        tf = std::chrono::high_resolution_clock::now();
         threadHashCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
         // Checking for the existence of the hash in the hash database
-        t0 = std::chrono::steady_clock::now(); // Profiling
+        t0 = std::chrono::high_resolution_clock::now(); // Profiling
         bool collisionDetected = !_hashDB.insert({hash, _currentStep}).second;
-        tf = std::chrono::steady_clock::now();
+        tf = std::chrono::high_resolution_clock::now();
         threadHashCheckingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
         // If collision detected, discard this state
         if (collisionDetected) { _newCollisionCounter++; continue; }
 
         // Storing the state data
-        t0 = std::chrono::steady_clock::now(); // Profiling
+        t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
         // Allocating new state, checking free state queue if there's a storage we can reuse
         State* newState = new State;
@@ -224,14 +224,14 @@ void Train::computeStates()
         // Getting state type
         stateType type = _gameInstances[threadId]->getStateType(newState->rulesStatus);
 
-        tf = std::chrono::steady_clock::now(); // Profiling
+        tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
         // If state type is failed, continue to the next possible move
         if (type == f_fail) { delete newState; continue; }
 
         // Storing the state data
-        t0 = std::chrono::steady_clock::now(); // Profiling
+        t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
         // Copying move list and adding new move
         if (_storeMoveList)
@@ -243,17 +243,17 @@ void Train::computeStates()
         // Calculating current reward
         newState->reward = _gameInstances[threadId]->getStateReward(newState->rulesStatus);
 
-        tf = std::chrono::steady_clock::now(); // Profiling
+        tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateCreationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
         // Encoding the state data
-        t0 = std::chrono::steady_clock::now(); // Profiling
+        t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
         uint8_t gameState[_STATE_DATA_SIZE];
         _gameInstances[threadId]->popState(gameState);
         newState->computeStateDifference(_referenceStateData, gameState);
 
-        tf = std::chrono::steady_clock::now(); // Profiling
+        tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
         // If state has succeded or is a regular state, adding it in the corresponding database
@@ -277,7 +277,7 @@ void Train::computeStates()
          // If new state db exceeds upper bound, limit it back to lower bound
          if (statesInUse > _maxDatabaseSizeUpperBound)
          {
-          auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
+          auto DBSortingTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
 
           // Checking if limiting will help at all
           if (newStates.size() < _maxDatabaseSizeLowerBound)
@@ -286,7 +286,7 @@ void Train::computeStates()
           // Limiting new states DB to lower bound size and recycling its states
           limitStateDatabase(newStates, _maxDatabaseSizeLowerBound);
 
-          auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                      // Profiling
+          auto DBSortingTimeEnd = std::chrono::high_resolution_clock::now();                                                                      // Profiling
           _stepStateDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
          }
         }
@@ -328,7 +328,7 @@ void Train::computeStates()
   _stepNewStateRatio = (double)newStatesCounter / (double)_stateDB.size();
 
   // Sorting local DB states by reward
-  auto DBSortingTimeBegin = std::chrono::steady_clock::now(); // Profiling
+  auto DBSortingTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
 
   // Clearing all old states
   _stateDB.clear();
@@ -354,11 +354,11 @@ void Train::computeStates()
   // Summing state processing counters
   _totalStatesProcessedCounter += _stepNewStatesProcessedCounter;
 
-  auto DBSortingTimeEnd = std::chrono::steady_clock::now();                                                                           // Profiling
+  auto DBSortingTimeEnd = std::chrono::high_resolution_clock::now();                                                                           // Profiling
   _stepStateDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
 
   // Filtering old hashes if we reach the upper bound
-  auto hashFilteringTimeBegin = std::chrono::steady_clock::now(); // Profiling
+  auto hashFilteringTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
 
   // Calculating and storing new entries created in this step and calculating size in mb to evaluate filtering
   auto getHashSizeFromEntries = [](const ssize_t entries) { return ( ( (double)sizeof(std::pair<const uint16_t, uint64_t>) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0); };
@@ -380,7 +380,7 @@ void Train::computeStates()
    for (auto& hashEntry : _hashDB) _hashDB.erase_if(hashEntry.first, [this](const auto& age){return age < _hashStepThreshold;});
   }
 
-  auto hashFilteringTimeEnd = std::chrono::steady_clock::now();                                                                           // Profiling
+  auto hashFilteringTimeEnd = std::chrono::high_resolution_clock::now();                                                                           // Profiling
   _stepHashFilteringTime = std::chrono::duration_cast<std::chrono::nanoseconds>(hashFilteringTimeEnd - hashFilteringTimeBegin).count(); // Profiling
 
   // Hash Statistics
@@ -393,6 +393,9 @@ void Train::computeStates()
 
 void Train::printTrainStatus()
 {
+
+  ssize_t totalStepTime = _stepHashCalculationTime + _stepHashCheckingTime + _stepHashFilteringTime + _stepStateAdvanceTime + _stepStateDeserializationTime + _stepStateEncodingTime + _stepStateDecodingTime + _stepStateEvaluationTime + _stepStateCreationTime + _stepStateDBSortingTime;
+
   printf("[Jaffar] ----------------------------------------------------------------\n");
   printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _maxMoveCount);
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
@@ -402,16 +405,16 @@ void Train::printTrainStatus()
   printf("[Jaffar] States Processed: (Step/Total): %lu / %lu\n", _stepNewStatesProcessedCounter, _totalStatesProcessedCounter);
   printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * _stateSize) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * _stateSize) / (1024.0 * 1024.0));
   printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
-  printf("[Jaffar]   + Hash Calculation:        %3.3fs\n", _stepHashCalculationTime / 1.0e+9);
-  printf("[Jaffar]   + Hash Checking:           %3.3fs\n",  _stepHashCheckingTime / 1.0e+9);
-  printf("[Jaffar]   + Hash Filtering:          %3.3fs\n", _stepHashFilteringTime / 1.0e+9);
-  printf("[Jaffar]   + State Advance:           %3.3fs\n", _stepStateAdvanceTime / 1.0e+9);
-  printf("[Jaffar]   + State Deserialization:   %3.3fs\n", _stepStateDeserializationTime / 1.0e+9);
-  printf("[Jaffar]   + State Encoding:          %3.3fs\n", _stepStateEncodingTime / 1.0e+9);
-  printf("[Jaffar]   + State Decoding:          %3.3fs\n", _stepStateDecodingTime / 1.0e+9);
-  printf("[Jaffar]   + State Evaluation:        %3.3fs\n", _stepStateEvaluationTime / 1.0e+9);
-  printf("[Jaffar]   + State Creation:          %3.3fs\n", _stepStateCreationTime / 1.0e+9);
-  printf("[Jaffar]   + State Sorting            %3.3fs\n", _stepStateDBSortingTime / 1.0e+9);
+  printf("[Jaffar]   + Hash Calculation:        %5.2f%% (%lu)\n", ((double)_stepHashCalculationTime / (double)totalStepTime) * 100.0f, _stepHashCalculationTime);
+  printf("[Jaffar]   + Hash Checking:           %5.2f%% (%lu)\n", ((double)_stepHashCheckingTime / (double)totalStepTime) * 100.0f, _stepHashCheckingTime);
+  printf("[Jaffar]   + Hash Filtering:          %5.2f%% (%lu)\n", ((double)_stepHashFilteringTime / (double)totalStepTime) * 100.0f, _stepHashFilteringTime);
+  printf("[Jaffar]   + State Advance:           %5.2f%% (%lu)\n", ((double)_stepStateAdvanceTime / (double)totalStepTime) * 100.0f, _stepStateAdvanceTime);
+  printf("[Jaffar]   + State Deserialization:   %5.2f%% (%lu)\n", ((double)_stepStateDeserializationTime / (double)totalStepTime) * 100.0f, _stepStateDeserializationTime);
+  printf("[Jaffar]   + State Encoding:          %5.2f%% (%lu)\n", ((double)_stepStateEncodingTime / (double)totalStepTime) * 100.0f, _stepStateEncodingTime);
+  printf("[Jaffar]   + State Decoding:          %5.2f%% (%lu)\n", ((double)_stepStateDecodingTime / (double)totalStepTime) * 100.0f, _stepStateDecodingTime);
+  printf("[Jaffar]   + State Evaluation:        %5.2f%% (%lu)\n", ((double)_stepStateEvaluationTime / (double)totalStepTime) * 100.0f, _stepStateEvaluationTime);
+  printf("[Jaffar]   + State Creation:          %5.2f%% (%lu)\n", ((double)_stepStateCreationTime / (double)totalStepTime) * 100.0f, _stepStateCreationTime);
+  printf("[Jaffar]   + State Sorting            %5.2f%% (%lu)\n", ((double)_stepStateDBSortingTime / (double)totalStepTime) * 100.0f, _stepStateDBSortingTime);
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
   printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * _stateSize) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * _stateSize) / (1024.0 * 1024.0));
   printf("[Jaffar] Max State State Difference: %u / %u\n", _maxStateDiff, _maxDifferenceCount);
@@ -613,7 +616,7 @@ void *Train::showThreadFunction(void *trainPtr)
 void Train::showSavingLoop()
 {
   // Timer for saving states
-  auto bestStateSaveTimer = std::chrono::steady_clock::now();
+  auto bestStateSaveTimer = std::chrono::high_resolution_clock::now();
 
   while (_hasFinalized == false)
   {
@@ -623,7 +626,7 @@ void Train::showSavingLoop()
     // Checking if we need to save best state
     if (_outputSaveFrequency > 0.0 && _currentStep > 1)
     {
-      double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - bestStateSaveTimer).count();
+      double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - bestStateSaveTimer).count();
       if (bestStateTimerElapsed / 1.0e+9 > _outputSaveFrequency)
       {
        // Storing best and worst states
@@ -643,7 +646,7 @@ void Train::showSavingLoop()
         }
 
         // Resetting timer
-        bestStateSaveTimer = std::chrono::steady_clock::now();
+        bestStateSaveTimer = std::chrono::high_resolution_clock::now();
       }
     }
   }

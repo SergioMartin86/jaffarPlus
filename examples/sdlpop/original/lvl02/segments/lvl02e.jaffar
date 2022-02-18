@@ -76,7 +76,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 21 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
     
     "Actions":

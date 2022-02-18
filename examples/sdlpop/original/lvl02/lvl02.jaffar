@@ -223,7 +223,6 @@
     "Description": "Make kid keep going up and then left.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
      { "Property": "Kid Room", "Op": "==", "Value":  22 }
     ],
     
@@ -242,7 +241,6 @@
     "Description": "Meet guard and go left.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
      { "Property": "Kid Room", "Op": "==", "Value":  11 }
     ],
     

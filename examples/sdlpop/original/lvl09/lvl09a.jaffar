@@ -1,6 +1,80 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 9.",
   
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl09d.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 110,
+    "Max Move Count": 1400,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types":
+   [
+   { "Room": 16, "Tile": 5, "Comment": "Loose Tile -> Empty" },
+   { "Room": 16, "Tile": 6, "Comment": "Loose Tile -> Empty" },
+   { "Room": 16, "Tile": 7, "Comment": "Loose Tile -> Empty" },
+   { "Room": 17, "Tile": 17, "Comment": "Loose Tile -> Empty" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Room": 9, "Tile": 13, "Type": "Full", "Comment": "Chomper" },
+     { "Room": 4, "Tile": 20, "Type": "Full", "Comment": "Gate" },
+     { "Room": 13, "Tile": 24, "Type": "Full", "Comment": "Chomper" },
+     { "Room": 12, "Tile": 20, "Type": "Full", "Comment": "Gate" },
+     { "Room": 18, "Tile": 13, "Type": "Full", "Comment": "Gate" },
+     { "Room": 10, "Tile": 30, "Type": "Full", "Comment": "Gate" },
+     { "Room": 1, "Tile": 17, "Type": "Full", "Comment": "Chomper" },
+     { "Room": 1, "Tile": 12, "Type": "Full", "Comment": "Gate" },
+     { "Room": 1, "Tile": 6, "Type": "Full", "Comment": "Gate" },
+     { "Room": 23, "Tile": 6, "Type": "Full", "Comment": "Chomper" },
+     { "Room": 5, "Tile": 24, "Type": "Full", "Comment": "Exit Door" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 350,
+     "Max Size Upper Bound (Mb)": 200000
+    },
+    
+    "Hash Database":
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
+  
   "Rules":
   [
    {
@@ -8,11 +82,9 @@
     "Description": "Setting magnet to make kid go to the left on the first screen",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  11 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -28,11 +100,9 @@
     "Description": "Keep going to the left on room 9.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  9 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9000 ],
 
     "Actions":
@@ -49,11 +119,9 @@
     "Description": "Go up on room 4.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  4 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9001 ],
 
     "Actions":
@@ -71,11 +139,9 @@
     "Description": "[Checkpoint] Go right on room 2",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  2 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9002 ],
 
     "Actions":
@@ -93,11 +159,9 @@
     "Description": "Go right on room 5 initially",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  5 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9003 ],
 
     "Actions":
@@ -115,11 +179,9 @@
     "Description": "Go right on room 13",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  13 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9004 ],
 
     "Actions":
@@ -136,11 +198,9 @@
     "Description": "Go up on room 15",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  15 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9005 ],
 
     "Actions":
@@ -158,12 +218,10 @@
     "Description": "[Checkpoint] Climbed room 15",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  15 },
      { "Property": "Kid Position Y", "Op": "==", "Value":  118 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9006 ],
 
     "Actions":
@@ -177,11 +235,9 @@
     "Description": "Go up on room 16",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  16 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9106 ],
 
     "Actions":
@@ -198,12 +254,10 @@
     "Description": "Once up in room 16, go to the right",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  16 },
      { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9007 ],
 
     "Actions":
@@ -220,12 +274,10 @@
     "Description": "On room 20, run towards the door open tile",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  20 },
      { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9008 ],
 
     "Actions":
@@ -242,13 +294,10 @@
     "Description": "Once tile is pressed, go to the left",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  20 },
-     { "Property": "Kid Position Y", "Op": "<=", "Value":  55 },
-     { "Property": "Kid Position X", "Op": ">", "Value":  170 }
+     { "Property": "Tile BG State", "Room": 12, "Tile": 20, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9009 ],
 
     "Actions":
@@ -263,11 +312,10 @@
     "Description": "Keep going to the left",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
-     { "Property": "Kid Room", "Op": "==", "Value":  16 }
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Tile BG State", "Room": 12, "Tile": 20, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
     ],
    
-    "Dependencies": [ 9010 ],
     "Satisfies": [ 9010 ],
 
     "Actions":
@@ -284,11 +332,9 @@
     "Description": "Past the door, go to the left and keep going up",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  12 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9011 ],
 
     "Actions":
@@ -305,11 +351,9 @@
     "Description": "[Checkpoint] Reward arriving to the next screen",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  18 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9012 ],
 
     "Actions":
@@ -317,49 +361,45 @@
      { "Type": "Add Reward", "Value": 1000 },
      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 12, "Value": 0.0 },
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 12, "Value": 0.0 },
-     { "Type": "Set Kid Horizontal Magnet Position", "Room": 18, "Value": 160.0 },
-     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 1.0 },
      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 18, "Value": 1.0 }
     ]
    },
    
    {
     "Label": 9014,
-    "Description": "Once kid reached the opening door frame, reward",
+    "Description": "[Checkpoint] Reward arriving to the next screen",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  18 },
-     { "Property": "Kid Position X", "Op": "==", "Value":  146},
-     { "Property": "Kid Frame", "Op": "==", "Value":  15}
+     { "Property": "Kid Position Y", "Op": "==", "Value": 118  }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9013 ],
 
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 1000 }
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 18, "Value": 200.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 1.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 18, "Value": 0.0 }
     ]
    },
    
    {
     "Label": 9015,
-    "Description": "Once kid reached the opening door frame,",
+    "Description": "Once kid reached the opening door frame, go left",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
-     { "Property": "Kid Room", "Op": "==", "Value":  18 }
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Tile BG State", "Room": 18, "Tile": 13, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
     ],
    
-    "Dependencies": [ 9014 ],
     "Satisfies": [ 9014 ],
 
     "Actions":
     [
      { "Type": "Set Kid Horizontal Magnet Position", "Room": 18, "Value": 55.0 },
-     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 1.0 },
-     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 18, "Value": 0.0 }
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 18, "Value": 1.0 }
     ]
    },
    
@@ -368,11 +408,9 @@
     "Description": "Once kid reached the 3rd guard, keep going left",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  17 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9015 ],
 
     "Actions":
@@ -389,11 +427,9 @@
     "Description": "After the guard, keep going to the left",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  19 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9016 ],
 
     "Actions":
@@ -411,12 +447,10 @@
     "Description": "If arrived in the next screen on top, reward and keep going.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  22 },
      { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9017 ],
 
     "Actions":
@@ -430,20 +464,38 @@
    },
    
    {
-    "Label": 9019,
+    "Label": 9118,
     "Description": "If arrived in the next screen on top, reward and keep going.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
-     { "Property": "Kid Room", "Op": "==", "Value":  10 }
+     { "Property": "Tile BG State", "Room": 10, "Tile": 30, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9018 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 22, "Value": -1.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 22, "Value": 55.0 }
+    ]
+   },
+   
+   {
+    "Label": 9019,
+    "Description": "If arrived in the next screen on top, reward and keep going.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  10 }
+    ],
+   
+    "Satisfies": [ 9118 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 22, "Value": 0.0 },
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 22, "Value": 0.0 },
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 10, "Value": 1.0 },
      { "Type": "Set Kid Horizontal Magnet Position", "Room": 10, "Value": 110.0 },
@@ -456,11 +508,9 @@
     "Description": "If arrived in the next screen on top, reward and keep going.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  24 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9019 ],
 
     "Actions":
@@ -479,11 +529,9 @@
     "Description": "If arrived in the chomper screen, go open door",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  1 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9020 ],
 
     "Actions":
@@ -492,7 +540,7 @@
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 0.0 },
      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 24, "Value": 0.0 },
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 },
-     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 180.0 }
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 200.0 }
     ]
    },
      
@@ -501,12 +549,9 @@
     "Description": "If door open, then go left to open the other door",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
-     { "Property": "Kid Room", "Op": "==", "Value":  1 },
-     { "Property": "Kid Position X", "Op": ">", "Value":  163 }
+     { "Property": "Tile BG State", "Room": 1, "Tile": 12, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9021 ],
 
     "Actions":
@@ -521,12 +566,9 @@
     "Description": "If door open, go right and exit room",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
-     { "Property": "Kid Room", "Op": "==", "Value":  1 },
-     { "Property": "Kid Position X", "Op": "<", "Value":  74 }
+     { "Property": "Tile BG State", "Room": 1, "Tile": 6, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9022 ],
 
     "Actions":
@@ -542,13 +584,11 @@
     "Description": "If trying to get through the chomper again, fail",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  1 },
      { "Property": "Kid Position X", "Op": ">", "Value":  140 },
      { "Property": "Kid Position Y", "Op": "==", "Value":  118 }
     ],
    
-    "Dependencies": [ 9023 ],
     "Satisfies": [ ],
 
     "Actions":
@@ -562,11 +602,9 @@
     "Description": "[Checkpoint] On next room, keep advancing to right",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  23 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -584,12 +622,10 @@
     "Description": "On last guard's room, keep advancing",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  2 },
      { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 9026 ],
 
     "Actions":
@@ -606,12 +642,10 @@
     "Description": "On last room, go to the right",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
      { "Property": "Kid Room", "Op": "==", "Value":  5 },
      { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
     ],
    
-    "Dependencies": [ 9027 ],
     "Satisfies": [ 9027 ],
 
     "Actions":
@@ -628,35 +662,15 @@
     "Description": "If kid advances to next level, trigger win.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": ">", "Value":  9 },
-     { "Property": "Current Level", "Op": "!=", "Value":  15 }
+     { "Property": "Current Level", "Op": ">", "Value":  9 }
     ],
     
-    "Dependencies": [ ],
-    "Satisfies": [ 9028 ],
+    "Satisfies": [ ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000 },
      { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 9030,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  9 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
     ]
    }
    

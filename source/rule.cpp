@@ -57,12 +57,16 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
 
     if (conditionJs["Value"].is_string())
     {
+     // Hack: fooling property parser with value
+     nlohmann::json newCondition;
+     newCondition["Property"] = conditionJs["Value"];
+
      // Creating new property
-     datatype_t valueType = getPropertyType(conditionJs["Value"].get<std::string>());
+     datatype_t valueType = getPropertyType(newCondition);
      if (valueType != dtype) EXIT_WITH_ERROR("[ERROR] Rule %lu, property (%s) and value (%s) types must coincide.\n", _label, conditionJs["Property"].get<std::string>(), conditionJs["Value"].get<std::string>());
 
      // Getting value pointer
-     auto valuePtr = getPropertyPointer(conditionJs["Value"].get<std::string>(), (GameInstance*)gameInstance);
+     auto valuePtr = getPropertyPointer(newCondition, (GameInstance*)gameInstance);
 
      // Adding condition to the list
      Condition *condition;

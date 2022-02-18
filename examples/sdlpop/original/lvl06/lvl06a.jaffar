@@ -1,7 +1,21 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 6",  
   
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl06a.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 55,
+    "Max Move Count": 110,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
    "Static Tile Hash Types": [  ],
@@ -15,6 +29,35 @@
    ]
   },
   
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 150,
+     "Max Size Upper Bound (Mb)": 220
+    },
+    
+    "Hash Database":
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
+  
   "Rules":
   [
    {
@@ -22,11 +65,9 @@
     "Description": "Setting magnet to make kid go to the left on the first screen",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  6 },
      { "Property": "Kid Room", "Op": "==", "Value":  24 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -41,11 +82,9 @@
     "Description": "Setting magnet to make kid go advancing to the left screen",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  6 },
      { "Property": "Kid Room", "Op": "==", "Value":  2 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 6000 ],
 
     "Actions":
@@ -62,11 +101,9 @@
     "Description": "Setting magnet to make kid go advancing to the left screen",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  6 },
      { "Property": "Kid Room", "Op": "==", "Value":  15 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 6001 ],
 
     "Actions":
@@ -83,36 +120,16 @@
     "Description": "If Kid passes the chasm, win.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  6 },
      { "Property": "Kid Room", "Op": "==", "Value":  15 },
      { "Property": "Kid Position X", "Op": "==", "Value":  108 },
      { "Property": "Kid Frame", "Op": "==", "Value":  33 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 6002 ],
     
     "Actions":
     [
      { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 6006,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  6 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
     ]
    }
   ]  

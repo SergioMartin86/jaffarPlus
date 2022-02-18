@@ -1,7 +1,21 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 8",
   
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl08a.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 60,
+    "Max Move Count": 450,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
    "Static Tile Hash Types": [ ],
@@ -12,7 +26,37 @@
    
    "Active Objects Hash Types":
    [
+     { "Room": 3, "Tile": 22, "Type": "Full", "Comment": "Exit Level Door" } 
    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 150,
+     "Max Size Upper Bound (Mb)": 220
+    },
+    
+    "Hash Database":
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
@@ -22,11 +66,9 @@
     "Description": "Setting magnet to make kid go to the left on the first screen",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Kid Room", "Op": "==", "Value":  1 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -41,11 +83,9 @@
     "Description": "Setting magnet to make kid advance to the left screen while luring the guard.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Kid Room", "Op": "==", "Value":  5 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 8000 ],
 
     "Actions":
@@ -64,12 +104,10 @@
     "Description": "Setting magnet to make kid go back to the starting screen with the guard.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Kid Room", "Op": "==", "Value":  1 },
      { "Property": "Guard Room", "Op": "==", "Value":  1 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 8001 ],
 
     "Actions":
@@ -84,17 +122,15 @@
     ]
    },
    
- {
+   {
     "Label": 8003,
     "Description": "Setting magnet to make kid go back to the potion room with the guard.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Kid Room", "Op": "==", "Value":  2 },
      { "Property": "Guard Room", "Op": "==", "Value":  2 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 8002 ],
 
     "Actions":
@@ -115,11 +151,9 @@
     "Description": "Reward achieving the clip.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Kid Room", "Op": "==", "Value":  4 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 8003 ],
 
     "Actions":
@@ -137,13 +171,11 @@
     "Description": "Get into the exit door open room.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Kid Room", "Op": "==", "Value":  3 },
      { "Property": "Kid Position Y", "Op": "<=", "Value":  55 },
      { "Property": "Kid Position X", "Op": ">", "Value":  180 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 8004 ],
 
     "Actions":
@@ -160,12 +192,10 @@
     "Description": "Open door and go immediately to the right",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Kid Room", "Op": "==", "Value":  3 },
-     { "Property": "Exit Door Open", "Op": "==", "Value":  1 }
+     { "Property": "Tile BG State", "Room": 3, "Tile": 22, "Op": ">", "Value": 0, "Comment": "Exit Door" }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 8005 ],
 
     "Actions":
@@ -181,12 +211,10 @@
     "Description": "Keep going right",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Kid Room", "Op": "==", "Value":  4 },
-     { "Property": "Exit Door Open", "Op": "==", "Value":  1 }
+     { "Property": "Tile BG State", "Room": 3, "Tile": 22, "Op": ">", "Value": 0, "Comment": "Exit Door" }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 8006 ],
 
     "Actions":
@@ -203,12 +231,10 @@
     "Description": "Wait for the mouse",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Kid Room", "Op": "==", "Value":  16 },
      { "Property": "Exit Door Timer", "Op": ">", "Value":  1 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 8007 ],
 
     "Actions":
@@ -218,34 +244,14 @@
    },
    
    {
-    "Label": 8013,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
     "Label": 8014,
     "Description": "If Guard dies, then fail.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  8 },
      { "Property": "Guard Current HP", "Op": "==", "Value":  0 },
      { "Property": "Guard Room", "Op": "==", "Value":  "Kid Room" }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
     
     "Actions":
