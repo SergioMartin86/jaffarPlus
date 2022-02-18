@@ -156,4 +156,9 @@ class EmuInstance : public EmuInstanceBase
   _nes->emulate_frame(move,0);
  }
 
+ virtual void reset()
+ {
+  _nes->reset(true, true);
+ }
+
 };

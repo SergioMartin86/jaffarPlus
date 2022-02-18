@@ -145,6 +145,7 @@ void Train::computeStates()
   _stepStateCreationTime = 0;
   _stepStateDBSortingTime = 0;
   _stepStateEvaluationTime = 0;
+  _stepHashFilteringTime = 0;
 
   // Processing state database in parallel
   #pragma omp parallel
@@ -484,6 +485,18 @@ Train::Train(int argc, char *argv[])
   _stepNewStateRatio = 0.0;
   _maxNewStateRatio = 0.0;
   _maxNewStateRatioStep = 0;
+
+  // Initializing step timers
+  _stepHashCalculationTime = 0;
+  _stepHashCheckingTime = 0;
+  _stepStateAdvanceTime = 0;
+  _stepStateDeserializationTime = 0;
+  _stepStateEncodingTime = 0;
+  _stepStateDecodingTime = 0;
+  _stepStateCreationTime = 0;
+  _stepStateDBSortingTime = 0;
+  _stepStateEvaluationTime = 0;
+  _stepHashFilteringTime = 0;
 
   // Setting starting step
   _currentStep = 0;
