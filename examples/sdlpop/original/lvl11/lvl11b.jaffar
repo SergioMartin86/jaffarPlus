@@ -1,10 +1,54 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 11",
   
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl11b.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 150,
+    "Max Move Count": 300,
+    "Store Move List": true    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
-   "Static Tile Hash Types": [ 30, 43, 44, 45, 46, 112, 420, 421, 424, 425, 427, 428, 429 ],
+   "Static Tile Hash Types":
+    [
+     { "Room": 14, "Tile": 21, "Type": "Full"},
+     { "Room": 14, "Tile": 22, "Type": "Full"},
+     { "Room": 14, "Tile": 25, "Type": "Full"},
+     { "Room": 14, "Tile": 26, "Type": "Full"},
+     { "Room": 14, "Tile": 27, "Type": "Full"},
+     { "Room": 14, "Tile": 28, "Type": "Full"},
+     { "Room": 14, "Tile": 29, "Type": "Full"},
+     { "Room": 14, "Tile": 30, "Type": "Full"},
+     { "Room": 7, "Tile": 21, "Type": "Full"},
+     { "Room": 7, "Tile": 23, "Type": "Full"},
+     { "Room": 7, "Tile": 24, "Type": "Full"},
+     { "Room": 7, "Tile": 25, "Type": "Full"},
+     { "Room": 7, "Tile": 26, "Type": "Full"},
+     { "Room": 7, "Tile": 27, "Type": "Full"},
+     { "Room": 15, "Tile": 1, "Type": "Full"},
+     { "Room": 15, "Tile": 2, "Type": "Full"},
+     { "Room": 15, "Tile": 5, "Type": "Full"},
+     { "Room": 15, "Tile": 6, "Type": "Full"},
+     { "Room": 15, "Tile": 7, "Type": "Full"},
+     { "Room": 15, "Tile": 8, "Type": "Full"},
+     { "Room": 15, "Tile": 9, "Type": "Full"},
+     { "Room": 15, "Tile": 10, "Type": "Full"},
+     { "Room": 2, "Tile": 1, "Type": "Full"},
+     { "Room": 4, "Tile": 23, "Type": "Full"},
+     { "Room": 2, "Tile": 14, "Type": "Full"},
+     { "Room": 2, "Tile": 15, "Type": "Full"},
+     { "Room": 2, "Tile": 16, "Type": "Full"},
+     { "Room": 2, "Tile": 17, "Type": "Full"}
+   ],
    
    "Falling Tiles Hash Types": 
    [
@@ -39,23 +83,53 @@
    
    "Active Objects Hash Types":
    [
-     { "Index": 47, "Type": "Full", "Description": "Gate" },
-     { "Index": 558, "Type": "Full", "Description": "Gate" },
-     { "Index": 410, "Type": "Full", "Description": "Loose Tile on Top L1" },
-     { "Index": 411, "Type": "Full", "Description": "Loose Tile on Top R1" },
-     { "Index": 414, "Type": "Full", "Description": "Loose Tile on Top R2" },
-     { "Index": 415, "Type": "Full", "Description": "Loose Tile on Top R3" },
-     { "Index": 416, "Type": "Full", "Description": "Loose Tile on Top R4" },
-     { "Index": 417, "Type": "Full", "Description": "Loose Tile on Top R5" },
-     { "Index": 418, "Type": "Full", "Description": "Loose Tile on Top R6" },
-     { "Index": 419, "Type": "Full", "Description": "Loose Tile on Top R7" },
-     { "Index": 200, "Type": "Full", "Description": "Loose Tile on Top R8" },
-     { "Index": 202, "Type": "Full", "Description": "Loose Tile on Top R9" },
-     { "Index": 203, "Type": "Full", "Description": "Loose Tile on Top R10" },
-     { "Index": 204, "Type": "Full", "Description": "Loose Tile on Top R11" },
-     { "Index": 205, "Type": "Full", "Description": "Loose Tile on Top R12" },
-     { "Index": 206, "Type": "Full", "Description": "Loose Tile on Top R13" }
+     { "Room": 2, "Tile": 18, "Type": "Full", "Description": "Gate" },
+     { "Room": 19, "Tile": 19, "Type": "Full", "Description": "Gate" },
+     { "Room": 15, "Tile": 4, "Type": "Full", "Description": "Chomper" },
+     { "Room": 14, "Tile": 21, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 14, "Tile": 22, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 14, "Tile": 25, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 14, "Tile": 26, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 14, "Tile": 27, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 14, "Tile": 28, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 14, "Tile": 29, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 14, "Tile": 30, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 7, "Tile": 21, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 7, "Tile": 23, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 7, "Tile": 24, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 7, "Tile": 25, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 7, "Tile": 26, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 7, "Tile": 27, "Type": "Full", "Description": "Loose Tile" }
    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 1550,
+     "Max Size Upper Bound (Mb)": 200000
+    },
+    
+    "Hash Database": 
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
@@ -65,11 +139,9 @@
     "Description": "Continue going through the next screen.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
      { "Property": "Kid Room", "Op": "==", "Value": 1 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -84,11 +156,9 @@
     "Description": "Have Kid go up.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
      { "Property": "Kid Room", "Op": "==", "Value": 15 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 11020 ],
 
     "Actions":
@@ -108,11 +178,9 @@
     "Description": "Reward Kid for arriving in the ceiling, and keep going right.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
      { "Property": "Kid Room", "Op": "==", "Value": 14 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 11001 ],
 
     "Actions":
@@ -130,11 +198,9 @@
     "Description": "Reward Kid for arriving in the ceiling, and keep going right.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
      { "Property": "Kid Room", "Op": "==", "Value": 7 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 11002 ],
 
     "Actions":
@@ -151,12 +217,10 @@
     "Description": "Reward Kid for taking down two key tiles and coming back.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
-     { "Property": "Tile FG State", "Index": 43, "Op": "==", "Value": 14 },
-     { "Property": "Tile FG State", "Index": 46, "Op": "==", "Value": 14 }
+     { "Property": "Tile FG State", "Room": 2, "Tile": 14, "Op": "==", "Value": 14 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 17, "Op": "==", "Value": 14 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 11003 ],
 
     "Actions":
@@ -173,13 +237,11 @@
     "Description": "If the kid has opened the door, have him exit the room.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
      { "Property": "Kid Room", "Op": "==", "Value": 2 },
      { "Property": "Kid Position X", "Op": "<", "Value": 70 },
      { "Property": "Kid Position Y", "Op": "==", "Value": 118 }
     ],
     
-    "Dependencies": [ 11104 ],
     "Satisfies": [ ],
 
     "Actions":
@@ -195,11 +257,9 @@
     "Description": "Keep going to the right.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
      { "Property": "Kid Room", "Op": "==", "Value": 19 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 11005, 11104 ],
 
     "Actions":
@@ -216,11 +276,9 @@
     "Description": "Keep going to the right.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
      { "Property": "Kid Room", "Op": "==", "Value": 22 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 11006 ],
 
     "Actions":
@@ -238,35 +296,15 @@
     "Description": "Keep going to the right.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
      { "Property": "Kid Room", "Op": "==", "Value": 22 },
      { "Property": "Kid Position Y", "Op": "==", "Value": 55 }
     ],
     
-    "Dependencies": [ ],
-    "Satisfies": [ 11007 ],
+    "Satisfies": [ ],
 
     "Actions":
     [
      { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 11019,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  11 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
     ]
    }
   ]  

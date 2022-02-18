@@ -20,7 +20,8 @@
    "Property Hash Types": [ "Kid Current HP" ],
    "Static Tile Hash Types":
    [ 
-    { "Room": 1, "Tile": 21, "Comment": "Loose Tile on Top" }
+    { "Room": 1, "Tile": 21, "Comment": "Loose Tile on Top" },
+    { "Room": 5, "Tile": 1, "Comment": "Debris" }
    ],
    
    "Falling Tiles Hash Types": 
