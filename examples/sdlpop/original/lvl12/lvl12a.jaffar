@@ -10,8 +10,8 @@
   
   "State Configuration": 
   {
-    "Max Difference Count": 80,
-    "Max Move Count": 610,
+    "Max Difference Count": 100,
+    "Max Move Count": 910,
     "Store Move List": true    
   },
   
@@ -59,8 +59,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 3000
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database": 
@@ -233,7 +233,7 @@
      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 24, "Value": 1.0 }
     ]
    },
-   
+    
    {
     "Label": 12007,
     "Description": "Keep climbing and then to the left.",
@@ -242,7 +242,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 14 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 12006 ],
 
     "Actions":
@@ -264,7 +263,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 12 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 12007 ],
 
     "Actions":
@@ -286,9 +284,121 @@
      { "Property": "Kid Room", "Op": "==", "Value": 19 }
     ],
     
-    "Dependencies": [ ],
+    "Satisfies": [ 12008 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 12, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 12, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 19, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 19, "Value": 0 }
+    ]
+   },
+   
+   {
+    "Label": 12011,
+    "Description": "Reach overflow, go up and left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 15 }
+    ],
+    
+    "Satisfies": [ 12009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 19, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 15, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 15, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 12012,
+    "Description": "Pick up sword.",
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value": 229 }
+    ],
+    
+    "Satisfies": [ 12011 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 15, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 12050,
+    "Description": "Reward uniting with shadow.",
+    "Conditions":
+    [
+     { "Property": "United With Shadow", "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 12011 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+   
+   {
+    "Label": 12013,
+    "Description": "Reach left screen and keep going left -- the bot will find out how.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 2 }
+    ],
+    
     "Satisfies": [ ],
 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 15, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 15, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 12014,
+    "Description": "Keep going left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 13 }
+    ],
+    
+    "Satisfies": [ 12013, 12050 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 13, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 12016,
+    "Description": "If Kid advances to the next level then win.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": ">", "Value":  12 }
+    ],
+    
+    "Satisfies": [ ],
+    
     "Actions":
     [
      { "Type": "Trigger Win" }

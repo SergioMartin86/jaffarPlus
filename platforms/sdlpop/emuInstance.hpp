@@ -298,7 +298,7 @@ class EmuInstance : public EmuInstanceBase
 
  static std::string loadSdlPopState(const std::string& sdlPopStateData)
  {
-  if (sdlPopStateData.size() != sizeof(sdlPopState_t)) EXIT_WITH_ERROR("Error reading sdlpop save state. Expected %lu bytes, read: %lu\n", sdlPopStateData.size(), sizeof(sdlPopState_t));
+  if (sdlPopStateData.size() != sizeof(sdlPopState_t)) EXIT_WITH_ERROR("Error reading or save state not found. Expected %lu bytes, read: %lu\n", sizeof(sdlPopState_t), sdlPopStateData.size());
 
   sdlPopState_t sdlPopState;
   memcpy(&sdlPopState, sdlPopStateData.data(), sizeof(sdlPopState_t));
