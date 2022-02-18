@@ -125,6 +125,9 @@ int main(int argc, char *argv[])
   GameInstance gameInstance(emuInstance, config["Game Configuration"]);
   gameInstance.parseRules(config["Rules"]);
 
+  // Storing rule count
+  _ruleCount = gameInstance._rules.size();
+
   // Initializing playback instance
   printw("[Jaffar] Opening Game window...\n");
   PlaybackInstance playbackInstance(&gameInstance, config["Playback Configuration"]);
