@@ -1,10 +1,35 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 12.",
   
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl12a.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 80,
+    "Max Move Count": 610,
+    "Store Move List": true    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
-   "Static Tile Hash Types": [ 702 ],
+   "Static Tile Hash Types": 
+   [
+     { "Room": 1, "Tile": 10, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 9, "Tile": 1, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 9, "Tile": 2, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 8, "Tile": 13, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 8, "Tile": 16, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 14, "Tile": 23, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 15, "Tile": 6, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 15, "Tile": 7, "Type": "Full", "Description": "Loose Tile" },
+    { "Room": 24, "Tile": 13, "Type": "Full", "Description": "Debris" }
+   ],
    
    "Falling Tiles Hash Types": 
    [
@@ -19,15 +44,45 @@
    
    "Active Objects Hash Types":
    [
-     { "Index": 412, "Type": "Full", "Description": "Loose Tile on Top L1" },
-     { "Index": 241, "Type": "Full", "Description": "Loose Tile on Top L1" },
-     { "Index": 242, "Type": "Full", "Description": "Loose Tile on Top L1" },
-     { "Index": 240, "Type": "Full", "Description": "Loose Tile on Top L1" },
-     { "Index": 222, "Type": "Full", "Description": "Loose Tile on Top L1" },
-     { "Index": 225, "Type": "Full", "Description": "Loose Tile on Top L1" }
+     { "Room": 1, "Tile": 10, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 9, "Tile": 1, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 9, "Tile": 2, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 8, "Tile": 13, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 8, "Tile": 16, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 14, "Tile": 23, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 15, "Tile": 6, "Type": "Full", "Description": "Loose Tile" },
+     { "Room": 15, "Tile": 7, "Type": "Full", "Description": "Loose Tile" }
    ]
   },
   
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Hash Database": 
+    { 
+     "Max Size Lower Bound (Mb)": 3000,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
   
   "Rules":
   [
@@ -36,7 +91,6 @@
     "Description": "Going right initially.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 3 }
     ],
     
@@ -55,7 +109,6 @@
     "Description": "Continue going through the next screen.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 4 }
     ],
     
@@ -77,7 +130,6 @@
     "Description": "[Checkpoint] Have Kid go up and then left.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 9 }
     ],
     
@@ -100,7 +152,6 @@
     "Description": "Reward Kid for arriving in the ceiling, and keep going right.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 1 }
     ],
     
@@ -123,7 +174,6 @@
     "Description": "Reward Kid for climbing, and then go right.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 7 }
     ],
     
@@ -146,7 +196,6 @@
     "Description": "Reward Kid for going to the right screen",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 8 }
     ],
     
@@ -168,7 +217,6 @@
     "Description": "Climb on the skeleton room.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 24 }
     ],
     
@@ -191,7 +239,6 @@
     "Description": "Keep climbing and then to the left.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 14 }
     ],
     
@@ -214,7 +261,6 @@
     "Description": "Jump to the left and climb.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 12 }
     ],
     
@@ -237,35 +283,15 @@
     "Description": "Jump to the left and start activating overflow.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
      { "Property": "Kid Room", "Op": "==", "Value": 19 }
     ],
     
     "Dependencies": [ ],
-    "Satisfies": [ 12008 ],
+    "Satisfies": [ ],
 
     "Actions":
     [
      { "Type": "Trigger Win" }
-    ]
-   },
-   
-   
-   {
-    "Label": 12998,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  12 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
     ]
    }
   ]  
