@@ -1,10 +1,27 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 10.",
 
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl10c.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 60,
+    "Max Move Count": 200,
+    "Store Move List": true    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ "Kid Current HP" ],
-   "Static Tile Hash Types": [ 120 ],
+   "Static Tile Hash Types":
+   [ 
+    { "Room": 1, "Tile": 21, "Comment": "Loose Tile on Top" }
+   ],
    
    "Falling Tiles Hash Types": 
    [
@@ -13,8 +30,38 @@
    
    "Active Objects Hash Types":
    [
-     { "Index": 320, "Type": "Full", "Description": "Loose Tile on Top" }
+     { "Room": 1, "Tile": 21, "Type": "Full", "Comment": "Loose Tile on Top" },
+     { "Room": 8, "Tile": 24, "Type": "Full", "Comment": "Exit Level Door" }
    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 1550,
+     "Max Size Upper Bound (Mb)": 200000
+    },
+    
+    "Hash Database": 
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
@@ -24,7 +71,6 @@
     "Description": "Continue going through guard screen.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value": 1 }
     ],
     
@@ -44,7 +90,6 @@
     "Description": "Continue going through guard screen.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value": 5 },
      { "Property": "Kid Position Y", "Op": "<=", "Value": 55 }
     ],
@@ -66,7 +111,6 @@
     "Description": "Continue going through exit screen.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value": 8 },
      { "Property": "Kid Position Y", "Op": "<=", "Value": 55 }
     ],
@@ -88,10 +132,9 @@
     "Description": "Once down and with the door open, exit room.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value": 8 },
      { "Property": "Kid Position Y", "Op": ">", "Value": 55 },
-     { "Property": "Exit Door Open", "Op": "==", "Value": 1 }
+     { "Property": "Tile BG State", "Room": 8, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Door" }
     ],
     
     "Dependencies": [ ],
@@ -109,8 +152,7 @@
     "Description": "If kid advances to next level, trigger win.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": ">", "Value":  10 },
-     { "Property": "Current Level", "Op": "!=", "Value":  15 }
+     { "Property": "Current Level", "Op": ">", "Value":  10 }
     ],
     
     "Dependencies": [ ],
@@ -120,24 +162,6 @@
     [
      { "Type": "Add Reward", "Value": 1000 },
      { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 10012,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
     ]
    }
   ]  

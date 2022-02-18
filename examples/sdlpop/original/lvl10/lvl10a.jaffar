@@ -1,7 +1,21 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 10.",
 
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl10a.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 60,
+    "Max Move Count": 200,
+    "Store Move List": true    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
    "Static Tile Hash Types": [ ],
@@ -18,6 +32,35 @@
    ]
   },
   
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 1550,
+     "Max Size Upper Bound (Mb)": 200000
+    },
+    
+    "Hash Database": 
+    { 
+     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
+  
   "Rules":
   [
    {
@@ -25,12 +68,10 @@
     "Description": "At beginning, go left and climb down.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value":  1 },
      { "Property": "Kid Position Y", "Op": "==", "Value":  118 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -46,12 +87,10 @@
     "Description": "Once down go right.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value":  1 },
      { "Property": "Kid Position Y", "Op": "==", "Value":  181 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 10000 ],
 
     "Actions":
@@ -66,11 +105,9 @@
     "Description": "At the next screen, pass the guard to the right",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value":  2 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 10001 ],
 
     "Actions":
@@ -87,12 +124,10 @@
     "Description": "Once in the next screen, go right for the clip setup.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value":  7 },
      { "Property": "Kid Position Y", "Op": ">", "Value":  55 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 10002 ],
 
     "Actions":
@@ -109,13 +144,11 @@
     "Description": "Once in the right position, go left to execute clip.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value":  7 },
      { "Property": "Kid Position Y", "Op": ">", "Value":  55 },
      { "Property": "Kid Position X", "Op": ">", "Value":  134 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 10003 ],
 
     "Actions":
@@ -133,11 +166,9 @@
     "Description": "[Checkpoint] Executing clip.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value": 13 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 10004 ],
 
     "Actions":
@@ -151,35 +182,15 @@
     "Description": "Going left after the clip.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
      { "Property": "Kid Room", "Op": "==", "Value": 2 },
      { "Property": "Kid Position Y", "Op": "==", "Value": 55 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 10100 ],
 
     "Actions":
     [
      { "Type": "Trigger Win" }
-    ]
-   },
-    
-   {
-    "Label": 10012,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  10 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
     ]
    }
   ]  
