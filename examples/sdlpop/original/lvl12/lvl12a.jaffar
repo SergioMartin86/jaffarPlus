@@ -94,7 +94,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 3 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -112,7 +111,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 4 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -133,7 +131,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 9 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -155,7 +152,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 1 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -177,7 +173,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 7 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -199,7 +194,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 8 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -220,7 +214,6 @@
      { "Property": "Kid Room", "Op": "==", "Value": 24 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 12005, 12004, 12003, 12002, 12001, 12000 ],
 
     "Actions":

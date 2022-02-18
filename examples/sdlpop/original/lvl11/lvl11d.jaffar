@@ -46,8 +46,8 @@
     
     "Hash Database": 
     { 
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
     },
     
     "Save Intermediate Results":

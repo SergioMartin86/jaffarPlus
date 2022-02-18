@@ -1,10 +1,26 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 13",
   
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl13a.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 100,
+    "Max Move Count": 200,
+    "Store Move List": true    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
-   "Static Tile Hash Types": [ ],
+   "Static Tile Hash Types": 
+   [
+   ],
    
    "Falling Tiles Hash Types": 
    [
@@ -15,6 +31,35 @@
    ]
   },
   
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Hash Database": 
+    { 
+     "Max Size Lower Bound (Mb)": 3000,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
+  
   "Rules":
   [
    {
@@ -22,16 +67,13 @@
     "Description": "Go left, trying to avoid falling tiles .",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
      { "Property": "Kid Room", "Op": "==", "Value": 23 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 1000 },
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 23, "Value": 1.0 },
      { "Type": "Set Kid Horizontal Magnet Position", "Room": 23, "Value": 55.0 }
     ]
@@ -42,11 +84,9 @@
     "Description": "Keep going left, trying to avoid falling tiles .",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
      { "Property": "Kid Room", "Op": "==", "Value": 16 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 13000 ],
 
     "Actions":
@@ -63,11 +103,9 @@
     "Description": "Go up now.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
      { "Property": "Kid Room", "Op": "==", "Value": 4 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 13001 ],
 
     "Actions":
@@ -83,11 +121,9 @@
     "Description": "[Checkpoint] Keep going up and into jaffar's room.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
      { "Property": "Kid Room", "Op": "==", "Value": 3 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 13002 ],
 
     "Actions":
@@ -103,35 +139,15 @@
     "Description": "Keep going up and into jaffar's room.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
      { "Property": "Kid Room", "Op": "==", "Value": 3 },
      { "Property": "Kid Position Y", "Op": "==", "Value": 118 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [  ],
 
     "Actions":
     [
      { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 13998,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
     ]
    }
   ]  

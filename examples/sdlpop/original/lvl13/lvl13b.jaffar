@@ -1,10 +1,28 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 13",
   
-  "State Configuration":
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl13b.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 45,
+    "Max Move Count": 140,
+    "Store Move List": true    
+  },
+  
+  "Game Configuration": 
   {
    "Property Hash Types": [ ],
-   "Static Tile Hash Types": [ ],
+   "Static Tile Hash Types":
+   [
+     { "Room": 1, "Tile": 3, "Type": "Full", "Description": "Loose Tile on Top" },
+     { "Room": 16, "Tile": 13, "Type": "Full", "Description": "Loose Tile on Top" }
+   ],
    
    "Falling Tiles Hash Types": 
    [
@@ -14,8 +32,37 @@
    
    "Active Objects Hash Types":
    [
-     { "Index": 2, "Type": "Full", "Description": "Loose Tile on Top" }
+     { "Room": 1, "Tile": 3, "Type": "Full", "Description": "Loose Tile on Top" }
    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Hash Database": 
+    { 
+     "Max Size Lower Bound (Mb)": 3000,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  }, 
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
@@ -26,11 +73,9 @@
     "Description": "[Checkpoint] Keep going up and into jaffar's room.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
      { "Property": "Kid Room", "Op": "==", "Value": 3 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
 
     "Actions":
@@ -46,11 +91,9 @@
     "Description": "Reward entering Jaffar's room.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
      { "Property": "Kid Room", "Op": "==", "Value": 3 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ 13003 ],
 
     "Actions":
@@ -65,36 +108,16 @@
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 }
     ]
    },
-      
-   {
-    "Label": 13998,
-    "Description": "If Kid dies, then fail.",
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
-     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
-    ],
-    
-    "Dependencies": [ ],
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
    
    {
     "Label": 13999,
     "Description": "If Jaffar dies, then win.",
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  13 },
      { "Property": "Guard Room", "Op": "==", "Value": "Kid Room" },
      { "Property": "Guard Current HP", "Op": "==", "Value":  0 }
     ],
     
-    "Dependencies": [ ],
     "Satisfies": [ ],
     
     "Actions":

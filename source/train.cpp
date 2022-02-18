@@ -103,6 +103,18 @@ void Train::limitStateDatabase(std::vector<State*>& stateDB, size_t limit)
  stateDB.resize(limit);
 }
 
+size_t Train::hashGetTotalCount() const
+{
+ size_t totalCount = _hashCurDB->size();
+ for (const auto& hashDB : _hashPastDBs) totalCount += hashDB->size();
+ return totalCount;
+}
+
+double Train::hashSizeFromEntries(const ssize_t entries) const
+{
+   return (((double)sizeof(uint64_t) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0);
+};
+
 void Train::computeStates()
 {
   // Initializing counters
@@ -111,7 +123,7 @@ void Train::computeStates()
   _newCollisionCounter = 0;
   _stepMaxStatesInMemory = 0;
   size_t newStatesCounter = 0;
-  size_t startHashEntryCount = _hashDB.size();
+  size_t startHashEntryCount = hashGetTotalCount();
 
   // Creating shared database for new states
   std::vector<State*> newStates;
@@ -202,7 +214,18 @@ void Train::computeStates()
 
         // Checking for the existence of the hash in the hash database
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
-        bool collisionDetected = !_hashDB.insert({hash, _currentStep}).second;
+        bool collisionDetected = false;
+
+        // Checking for past hash DBs
+        for (const auto& hashDB : _hashPastDBs)
+        {
+         collisionDetected |= hashDB->contains(hash);
+         if (collisionDetected == true) break;
+        }
+
+        // If not found in the past, check the present db
+        if (collisionDetected == false) collisionDetected = !_hashCurDB->insert(hash).second;
+
         tf = std::chrono::high_resolution_clock::now();
         threadHashCheckingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -361,23 +384,23 @@ void Train::computeStates()
   auto hashFilteringTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
 
   // Calculating and storing new entries created in this step and calculating size in mb to evaluate filtering
-  auto getHashSizeFromEntries = [](const ssize_t entries) { return ( ( (double)sizeof(std::pair<const uint16_t, uint64_t>) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0); };
-  auto getHashEntriesFromSize = [](const double size) { return (ssize_t)((size * 1024.0 * 1024.0) / ( (double)sizeof(std::pair<const uint16_t, uint64_t>) + (double)sizeof(void*) )); };
+  _hashStepNewEntries.push_back(hashGetTotalCount() - startHashEntryCount);
+  double hashSizeCurrentDB = hashSizeFromEntries(_hashCurDB->size());
 
-  _hashStepNewEntries.push_back(_hashDB.size() - startHashEntryCount);
-  _hashSizeCurrent = getHashSizeFromEntries(_hashDB.size());
-
-  if (_hashSizeCurrent > _hashSizeUpperBound)
+  if (hashSizeCurrentDB > _hashSizeUpperBound)
   {
-   // Calculating how many old hash entries we need to delete to reach the lower bound
-   size_t targetDeletedHashEntries = getHashEntriesFromSize(_hashSizeCurrent - _hashSizeLowerBound);
+   // Discard one past DB
+   _hashPastDBs.pop_front();
 
-   // Calculate how many old steps we need to forget to reach the number of entries calculated before
-   size_t curDeletedHashEntries = 0;
-   while(curDeletedHashEntries < targetDeletedHashEntries && _hashStepThreshold < _currentStep-1) curDeletedHashEntries += _hashStepNewEntries[_hashStepThreshold++];
+   // Push current one
+   _hashPastDBs.push_back(std::move(_hashCurDB));
 
-   // Erasing older hashes according to the new threshold
-   for (auto& hashEntry : _hashDB) _hashDB.erase_if(hashEntry.first, [this](const auto& age){return age < _hashStepThreshold;});
+   // Create new current one
+   _hashCurDB = std::make_unique<hashSet_t>();
+
+   // Updating age
+   _hashDBAges.pop_front();
+   _hashDBAges.push_back(_currentStep);
   }
 
   auto hashFilteringTimeEnd = std::chrono::high_resolution_clock::now();                                                                           // Profiling
@@ -385,10 +408,10 @@ void Train::computeStates()
 
   // Hash Statistics
   _hashCollisions += _newCollisionCounter;
-  _hashEntriesStep = _hashDB.size() - startHashEntryCount;
-  _hashSizeStep = getHashSizeFromEntries(_hashEntriesStep);
-  _hashSizeCurrent = getHashSizeFromEntries(_hashDB.size());
-  _hashEntriesTotal = _hashDB.size();
+  _hashEntriesStep = hashGetTotalCount() - startHashEntryCount;
+  _hashSizeStep = hashSizeFromEntries(_hashEntriesStep);
+  _hashSizeCurrent = hashSizeFromEntries(hashGetTotalCount());
+  _hashEntriesTotal = hashGetTotalCount();
 }
 
 void Train::printTrainStatus()
@@ -420,8 +443,9 @@ void Train::printTrainStatus()
   printf("[Jaffar] Max State State Difference: %u / %u\n", _maxStateDiff, _maxDifferenceCount);
   printf("[Jaffar] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
   printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
-  printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, <%.0f,%.0f>mb\n", _hashSizeStep, _hashSizeCurrent, _hashSizeLowerBound, _hashSizeUpperBound);
-  printf("[Jaffar] Hash DB Step Threshold: %u\n", _hashStepThreshold);
+  printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, %.0fmb (%lu x %.0fmb)\n", _hashSizeStep, _hashSizeCurrent, _hashSizeUpperBound * _hashDBCount, _hashDBCount, _hashSizeUpperBound);
+  for (ssize_t i = 0; i < _hashDBCount-1; i++) printf("[Jaffar]   + Hash DB %lu Size / Step: %.3fmb / %u\n", i, hashSizeFromEntries(_hashPastDBs[i]->size()), _hashDBAges[i]);
+  printf("[Jaffar]   + Hash DB %lu Size / Step: %.3fmb / %u\n", _hashDBCount-1, hashSizeFromEntries(_hashCurDB->size()), _currentStep);
   printf("[Jaffar] Best State Information:\n");
 
   uint8_t bestStateData[_STATE_DATA_SIZE];
@@ -456,7 +480,6 @@ Train::Train(int argc, char *argv[])
   _totalMaxStatesInMemory = 0;
   _newCollisionCounter = 0;
   _hashEntriesTotal = 0;
-  _hashStepThreshold = 0;
   _hashEntriesStep = 0;
   _stepNewStateRatio = 0.0;
   _maxNewStateRatio = 0.0;
@@ -499,10 +522,11 @@ Train::Train(int argc, char *argv[])
   _maxDBSizeMbUpperBound = config["Jaffar Configuration"]["State Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
 
   if (isDefined(config["Jaffar Configuration"], "Hash Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["Hash Database"], "Max Size Lower Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Max Size Lower Bound (Mb)' key.\n");
   if (isDefined(config["Jaffar Configuration"]["Hash Database"], "Max Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Max Size Upper Bound (Mb)' key.\n");
-  _hashSizeLowerBound = config["Jaffar Configuration"]["Hash Database"]["Max Size Lower Bound (Mb)"].get<size_t>();
   _hashSizeUpperBound = config["Jaffar Configuration"]["Hash Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
+
+  if (isDefined(config["Jaffar Configuration"]["Hash Database"], "Database Count") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Database Count' key.\n");
+  _hashDBCount = config["Jaffar Configuration"]["Hash Database"]["Database Count"].get<size_t>();
 
   // Parsing file output frequency
   if (isDefined(config["Jaffar Configuration"], "Save Intermediate Results") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results' key.\n");
@@ -582,8 +606,14 @@ Train::Train(int argc, char *argv[])
   // Evaluating Score on initial state
   initialState->reward = _gameInstances[0]->getStateReward(initialState->rulesStatus);
 
-  // Registering hash for initial state
-  _hashDB[0] = hash;
+  // Creating hash databases and registering hash for initial state
+  _hashCurDB = std::make_unique<hashSet_t>();
+  for (ssize_t i = 0; i < _hashDBCount-1; i++)
+  {
+   _hashPastDBs.push_back(std::make_unique<hashSet_t>());
+   _hashDBAges.push_back(0);
+  }
+  _hashCurDB->insert(hash);
 
   // Creating storage for win, best and worst states
   _winState = new State;

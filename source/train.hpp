@@ -11,14 +11,15 @@
 #include <random>
 #include <string>
 #include <vector>
-#include <queue>
+#include <memory>
+#include <deque>
 #include <mutex>
 
-// Configuration for parallel hash maps
-#define MAPNAME phmap::parallel_flat_hash_map
-#define MAPEXTRAARGS , phmap::priv::hash_default_hash<K>, phmap::priv::hash_default_eq<K>, std::allocator<std::pair<const K, V>>, 4, std::mutex
-template <class K, class V> using HashMapT = MAPNAME<K, V MAPEXTRAARGS>;
-using hashMap_t = HashMapT<uint64_t, uint16_t>;
+// Configuration for parallel hash sets
+#define SETNAME phmap::parallel_flat_hash_set
+#define SETEXTRAARGS , phmap::priv::hash_default_hash<V>, phmap::priv::hash_default_eq<V>, std::allocator<V>, 4, std::mutex
+template <class V> using HashSetT = SETNAME<V SETEXTRAARGS>;
+using hashSet_t = HashSetT<uint64_t>;
 
 class Train
 {
@@ -71,15 +72,17 @@ class Train
   float _worstStateReward;
 
   // Hash information
-  hashMap_t _hashDB;
+  ssize_t _hashDBCount;
+  std::unique_ptr<hashSet_t> _hashCurDB;
+  std::deque<std::unique_ptr<hashSet_t>> _hashPastDBs;
+  std::deque<uint16_t> _hashDBAges;
+
   size_t _hashEntriesTotal;
   ssize_t _hashEntriesStep;
   double _hashSizeStep;
   double _hashSizeCurrent;
-  double _hashSizeLowerBound;
   double _hashSizeUpperBound;
   std::vector<size_t> _hashStepNewEntries;
-  uint16_t _hashStepThreshold;
   size_t _hashCollisions;
   size_t _hashAgeThreshold;
 
@@ -99,6 +102,9 @@ class Train
   // Printing stats
   void printTrainStatus();
 
+  // Computes total hash count
+  size_t hashGetTotalCount() const;
+
   // Each worker processes their own unique base states to produce new states
   void computeStates();
 
@@ -107,6 +113,9 @@ class Train
 
   // Function to limit the size of a state database and recycle its states
   void limitStateDatabase(std::vector<State*>& stateDB, size_t limit);
+
+  // Calculates hash db size from its entries
+  double hashSizeFromEntries (const ssize_t entries) const;
 
   // Function for the show thread (saves states from time to time to display progress)
   static void *showThreadFunction(void *trainPtr);
