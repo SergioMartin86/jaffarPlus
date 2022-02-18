@@ -5,14 +5,14 @@
   {
     "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
-    "State File": "lvl09d.sav"
+    "State File": "lvl09a.sav"
   },
   
   "State Configuration": 
   {
     "Max Difference Count": 110,
     "Max Move Count": 1400,
-    "Store Move List": false    
+    "Store Move List": true    
   },
   
   "Game Configuration": 
@@ -50,7 +50,7 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 350,
+     "Max Size Lower Bound (Mb)": 1550,
      "Max Size Upper Bound (Mb)": 200000
     },
     
@@ -526,7 +526,7 @@
    
    {
     "Label": 9021,
-    "Description": "If arrived in the chomper screen, go open door",
+    "Description": "If arrived in the chomper screen, go down",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  1 }
@@ -539,8 +539,29 @@
      { "Type": "Add Reward", "Value": 1000 },
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 0.0 },
      { "Type": "Set Kid Vertical Magnet Intensity", "Room": 24, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 1, "Value": -1.0 }
+    ]
+   },
+
+   {
+    "Label": 9121,
+    "Description": "If arrived in the chomper screen and down, go open door",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 }
+    ],
+   
+    "Satisfies": [ 9021 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 24, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 24, "Value": 0.0 },
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 },
-     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 200.0 }
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 200.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 1, "Value": 0.0 }
     ]
    },
      
@@ -549,10 +570,11 @@
     "Description": "If door open, then go left to open the other door",
     "Conditions":
     [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
      { "Property": "Tile BG State", "Room": 1, "Tile": 12, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
     ],
    
-    "Satisfies": [ 9021 ],
+    "Satisfies": [ 9121 ],
 
     "Actions":
     [
@@ -566,6 +588,7 @@
     "Description": "If door open, go right and exit room",
     "Conditions":
     [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
      { "Property": "Tile BG State", "Room": 1, "Tile": 6, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
     ],
    
@@ -574,26 +597,26 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000 },
-     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 220 },
-     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 }
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 132 }
     ]
    },
    
    {
     "Label": 9024,
-    "Description": "If trying to get through the chomper again, fail",
+    "Description": "If door open, go right and exit room",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  1 },
-     { "Property": "Kid Position X", "Op": ">", "Value":  140 },
-     { "Property": "Kid Position Y", "Op": "==", "Value":  118 }
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
+     { "Property": "Tile BG State", "Room": 1, "Tile": 6, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
     ],
    
-    "Satisfies": [ ],
+    "Satisfies": [ 9023 ],
 
     "Actions":
     [
-     { "Type": "Trigger Fail" }
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 220 }
     ]
    },
    
@@ -605,7 +628,7 @@
      { "Property": "Kid Room", "Op": "==", "Value":  23 }
     ],
    
-    "Satisfies": [ ],
+    "Satisfies": [ 9024 ],
 
     "Actions":
     [
@@ -623,7 +646,8 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  2 },
-     { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
+     { "Property": "Kid Position Y", "Op": "<=", "Value":  55 },
+     { "Property": "Kid Position X", "Op": "<=", "Value":  100 }
     ],
    
     "Satisfies": [ 9026 ],
@@ -643,7 +667,8 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  5 },
-     { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
+     { "Property": "Kid Position Y", "Op": "<=", "Value":  55 },
+     { "Property": "Kid Position X", "Op": "<=", "Value":  100 }
     ],
    
     "Satisfies": [ 9027 ],
