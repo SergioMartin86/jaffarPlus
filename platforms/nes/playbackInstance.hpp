@@ -20,7 +20,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  public:
 
   // Initializes the playback module instance
- PlaybackInstance(GameInstance* game) : PlaybackInstanceBase(game, const nlohmann::json& config)
+ PlaybackInstance(GameInstance* game, const nlohmann::json& config) : PlaybackInstanceBase(game, config)
  {
   // Loading Emulator instance HQN
   _hqnState.m_emu = _game->_emu->_nes;
@@ -40,7 +40,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  }
 
  // Function to render frame
- void renderFrame() override
+ void renderFrame(const uint16_t currentStep, const std::string& move) override
  {
   // Sleeping for 1/60th of a second
   usleep(16667);

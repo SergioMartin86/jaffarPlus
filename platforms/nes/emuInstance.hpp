@@ -8,7 +8,9 @@
 #include <vector>
 #include <utils.hpp>
 
-#define _STATE_DATA_SIZE 12792
+#define _STATE_FIXED_SIZE 0
+#define _STATE_DIFFERENTIAL_SIZE 12792
+#define _STATE_DATA_SIZE (_STATE_DIFFERENTIAL_SIZE + _STATE_FIXED_SIZE)
 
 class EmuInstance : public EmuInstanceBase
 {

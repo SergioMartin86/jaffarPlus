@@ -1,1 +1,1 @@
-option('game', type : 'combo', choices : ['nes/smb', 'sdlpop'], description: 'Selects the game to run Jaffar with')
+option('game', type : 'combo', choices : ['nes/smb', 'nes/castlevania', 'sdlpop'], description: 'Selects the game to run Jaffar with')
