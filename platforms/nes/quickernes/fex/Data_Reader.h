@@ -26,13 +26,13 @@ public:
 
 	// Reads exactly n bytes, or returns error if they couldn't ALL be read.
 	// Reading past end of file results in blargg_err_file_eof.
-	blargg_err_t read( void* p, uint64_t n );
+	blargg_err_t read( void* p, int n );
 
 	// Number of bytes remaining until end of file
 	BOOST::uint64_t remain() const                              { return remain_; }
 
 	// Reads and discards n bytes. Skipping past end of file results in blargg_err_file_eof.
-	blargg_err_t skip( uint64_t n );
+	blargg_err_t skip( int n );
 	
 	virtual ~Data_Reader() { }
 

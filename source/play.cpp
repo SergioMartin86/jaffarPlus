@@ -117,7 +117,6 @@ int main(int argc, char *argv[])
 
   refresh();
 
-
   // Initializing emulator
   auto emuInstance = new EmuInstance(config["Emulator Configuration"]);
 
