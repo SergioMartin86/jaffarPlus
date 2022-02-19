@@ -9,8 +9,32 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   // Setting relevant SMB pointers
 
   // Thanks to https://datacrystal.romhacking.net/wiki/Super_Simon_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperSimonBros for helping me find some of these items
-  simonAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
-  simonState           = (uint8_t*)  &_emu->_baseMem[0x000E];
+
+  RNGState               = (uint8_t*)   &_emu->_baseMem[0x0004];
+  gameMode               = (uint8_t*)   &_emu->_baseMem[0x0018];
+  gameSubMode            = (uint8_t*)   &_emu->_baseMem[0x0019];
+  stageTimer             = (uint16_t*)  &_emu->_baseMem[0x001A];
+  currentStage           = (uint8_t*)   &_emu->_baseMem[0x0028];
+  currentSubStage        = (uint8_t*)   &_emu->_baseMem[0x0046];
+  simonLives             = (uint8_t*)   &_emu->_baseMem[0x002A];
+  screenOffset           = (uint16_t*)  &_emu->_baseMem[0x002E];
+  simonStairMode         = (uint8_t*)   &_emu->_baseMem[0x003E];
+  simonPosY              = (uint8_t*)   &_emu->_baseMem[0x003F];
+  simonPosX              = (uint16_t*)  &_emu->_baseMem[0x0040];
+  simonLifeMeter         = (uint8_t*)   &_emu->_baseMem[0x0045];
+  simonInvulnerability   = (uint8_t*)   &_emu->_baseMem[0x005B];
+  simonKneelingMode      = (uint8_t*)   &_emu->_baseMem[0x005F];
+  subweaponShotCount     = (uint8_t*)   &_emu->_baseMem[0x0064];
+  whipLength             = (uint8_t*)   &_emu->_baseMem[0x0070];
+  simonHeartCount        = (uint8_t*)   &_emu->_baseMem[0x0071];
+  simonImage             = (uint8_t*)   &_emu->_baseMem[0x0159];
+  subweaponNumber        = (uint8_t*)   &_emu->_baseMem[0x015B];
+  simonFacingDirection   = (uint8_t*)   &_emu->_baseMem[0x0450];
+  simonState             = (uint8_t*)   &_emu->_baseMem[0x046C];
+  simonSubState          = (uint8_t*)   &_emu->_baseMem[0x0584];
+  simonVerticalSpeed     = (uint8_t*)   &_emu->_baseMem[0x04DC];
+  simonVerticalDirection = (uint8_t*)   &_emu->_baseMem[0x0514];
+
 }
 
 // This function computes the hash for the current state
@@ -20,8 +44,29 @@ uint64_t GameInstance::computeHash() const
   MetroHash64 hash;
 
   // Adding fixed hash elements
-  hash.Update(*simonAnimation);
+  hash.Update(*gameMode);
+  hash.Update(*gameSubMode);
+  hash.Update(*stageTimer);
+  hash.Update(*currentStage);
+  hash.Update(*currentSubStage);
+  hash.Update(*simonLives);
+  hash.Update(*screenOffset);
+  hash.Update(*simonStairMode);
+  hash.Update(*simonPosY);
+  hash.Update(*simonPosX);
+  hash.Update(*simonLifeMeter);
+  hash.Update(*simonInvulnerability);
+  hash.Update(*simonKneelingMode);
+  hash.Update(*subweaponShotCount);
+  hash.Update(*whipLength);
+  hash.Update(*simonHeartCount);
+  hash.Update(*simonImage);
+  hash.Update(*subweaponNumber);
+  hash.Update(*simonFacingDirection);
   hash.Update(*simonState);
+  hash.Update(*simonSubState);
+  hash.Update(*simonVerticalSpeed);
+  hash.Update(*simonVerticalDirection);
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -32,14 +77,13 @@ uint64_t GameInstance::computeHash() const
 void GameInstance::updateDerivedValues()
 {
  // Recalculating derived values
-// simonPosX = (uint16_t)*simonBasePosX * 256 + (uint16_t)*simonRelPosX;
 }
 
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves() const
 {
  // On the floor, try all possible combinations, prioritize jumping and right direction
- return { ".", "R", "L", "A", "B", "RA", "RB", "RU", "LA", "LB", "RL", "D", "DB", "U", "UB", "LDU", "RLB", "RLA", "LS", "S"  };
+ return { ".", "R", "RA", "DR", "RB", "LR", "UR", "URB", "B", "L", "LB", "D", "LA", "ULB", "UL", "DL", "UDLB", "UB", "A" };
 }
 
 // Function to get magnet information
@@ -54,7 +98,7 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
  magnets.simonVerticalMagnet.intensity = 0.0f;
  magnets.simonVerticalMagnet.max = 0.0f;
 
- for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++) if (rulesStatus[ruleId] == true) magnets = _rules[ruleId]->_magnets;
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++) if (rulesStatus[ruleId] == true) magnets = _rules[ruleId]->_magnets;
 
  return magnets;
 }
@@ -74,17 +118,17 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Container for bounding calculations
   float boundedValue = 0.0;
 
-//  // Evaluating simon magnet's reward on position X
-//  boundedValue = (float)simonPosX;
-//  boundedValue = std::min(boundedValue, magnets.simonHorizontalMagnet.max);
-//  boundedValue = std::max(boundedValue, magnets.simonHorizontalMagnet.min);
-//  reward += magnets.simonHorizontalMagnet.intensity * boundedValue;
-//
-//  // Evaluating simon magnet's reward on position Y
-//  boundedValue = (float)*simonPosY;
-//  boundedValue = std::min(boundedValue, magnets.simonVerticalMagnet.max);
-//  boundedValue = std::max(boundedValue, magnets.simonVerticalMagnet.min);
-//  reward += magnets.simonHorizontalMagnet.intensity * boundedValue;
+  // Evaluating simon magnet's reward on position X
+  boundedValue = (float)*simonPosX;
+  boundedValue = std::min(boundedValue, magnets.simonHorizontalMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.simonHorizontalMagnet.min);
+  reward += magnets.simonHorizontalMagnet.intensity * boundedValue;
+
+  // Evaluating simon magnet's reward on position Y
+  boundedValue = (float)*simonPosY;
+  boundedValue = std::min(boundedValue, magnets.simonVerticalMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.simonVerticalMagnet.min);
+  reward += magnets.simonHorizontalMagnet.intensity * boundedValue;
 
   // Returning reward
   return reward;
@@ -92,14 +136,36 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
+  LOG("[Jaffar]  + Current Stage:          %02u-%02u\n", *currentStage, *currentSubStage);
+  LOG("[Jaffar]  + Timer:                  %u\n", *stageTimer);
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
+  LOG("[Jaffar]  + RNG State:              0x%X\n", *RNGState);
+  LOG("[Jaffar]  + Game Mode:              %02u-%02u\n", *gameMode, *gameSubMode);
+  LOG("[Jaffar]  + Screen Offset:          %04u\n", *screenOffset);
+  LOG("[Jaffar]  + Simon State:            %02u-%02u\n", *simonState, *simonSubState);
+  LOG("[Jaffar]  + Simon Heart Count:      %02u\n", *simonHeartCount);
+  LOG("[Jaffar]  + Simon Image:            %02u\n", *simonImage);
+  LOG("[Jaffar]  + Simon Facing Direction: %02u\n", *simonFacingDirection);
+  LOG("[Jaffar]  + Simon Vertical Speed:   %02u-%02u\n", *simonVerticalSpeed, *simonVerticalDirection);
+  LOG("[Jaffar]  + Simon Lives:            %3u\n", *simonLives);
+  LOG("[Jaffar]  + Simon Stair Mode:       %3u\n", *simonStairMode);
+  LOG("[Jaffar]  + Simon Life Meter:       %u\n", *simonLifeMeter);
+  LOG("[Jaffar]  + Simon Pos X:            %04u\n", *simonPosX);
+  LOG("[Jaffar]  + Simon Pos Y:            %04u\n", *simonPosY);
+  LOG("[Jaffar]  + Simon Invulnerability:  %02u\n", *simonInvulnerability);
+  LOG("[Jaffar]  + Simon Kneeling Mode:    %02u\n", *simonKneelingMode);
+  LOG("[Jaffar]  + Subweapon Number:       %02u\n", *subweaponNumber);
+  LOG("[Jaffar]  + Subweapon Shot Count:   %02u\n", *subweaponShotCount);
+  LOG("[Jaffar]  + Whip Length:            %02u\n", *whipLength);
 
   LOG("[Jaffar]  + Rule Status: ");
-  for (size_t i = 0; i < _ruleCount; i++) LOG("%d", rulesStatus[i] ? 1 : 0);
+  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
   LOG("\n");
 
   auto magnets = getMagnetValues(rulesStatus);
   LOG("[Jaffar]  + Simon Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.simonHorizontalMagnet.intensity, magnets.simonHorizontalMagnet.max);
   LOG("[Jaffar]  + Simon Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.simonVerticalMagnet.intensity, magnets.simonVerticalMagnet.max);
+
+
 }

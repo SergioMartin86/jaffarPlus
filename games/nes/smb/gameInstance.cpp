@@ -226,7 +226,7 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
  magnets.marioVerticalMagnet.intensity = 0.0f;
  magnets.marioVerticalMagnet.max = 0.0f;
 
- for (size_t ruleId = 0; ruleId < _ruleCount; ruleId++) if (rulesStatus[ruleId] == true) magnets = _rules[ruleId]->_magnets;
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++) if (rulesStatus[ruleId] == true) magnets = _rules[ruleId]->_magnets;
 
  return magnets;
 }
@@ -300,7 +300,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *animationTimer, *jumpSwimTimer, *runningTimer, *blockBounceTimer, *sideCollisionTimer, *jumpspringTimer, *gameControlTimer, *climbSideTimer, *enemyFrameTimer, *frenzyEnemyTimer, *bowserFireTimer, *stompTimer, *airBubbleTimer, *multiCoinBlockTimer, *invincibleTimer, *starTimer);
 
   LOG("[Jaffar]  + Rule Status: ");
-  for (size_t i = 0; i < _ruleCount; i++) LOG("%d", rulesStatus[i] ? 1 : 0);
+  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
   LOG("\n");
 
   auto magnets = getMagnetValues(rulesStatus);

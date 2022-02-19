@@ -21,13 +21,30 @@ class GameInstance : public GameInstanceBase
  public:
 
   // Container for game-specific values
-  uint8_t* simonAnimation;
+  uint8_t* RNGState;
+  uint8_t* gameMode;
+  uint8_t* gameSubMode;
+  uint16_t* stageTimer;
+  uint8_t* currentStage;
+  uint8_t* currentSubStage;
+  uint8_t* simonLives;
+  uint16_t* screenOffset;
+  uint8_t* simonStairMode;
+  uint8_t* simonPosY;
+  uint16_t* simonPosX;
+  uint8_t* simonLifeMeter;
+  uint8_t* simonInvulnerability;
+  uint8_t* simonKneelingMode;
+  uint8_t* subweaponShotCount;
+  uint8_t* whipLength;
+  uint8_t* simonHeartCount;
+  uint8_t* simonImage;
+  uint8_t* subweaponNumber;
+  uint8_t* simonFacingDirection;
   uint8_t* simonState;
-
-  // Derivative values
-  uint16_t simonPosX;
-  uint16_t screenPosX;
-  uint8_t currentStage;
+  uint8_t* simonSubState;
+  uint8_t* simonVerticalSpeed;
+  uint8_t* simonVerticalDirection;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

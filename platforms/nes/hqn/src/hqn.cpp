@@ -47,7 +47,6 @@ HQNState::HQNState()
     m_romData = nullptr;
     m_romSize = 0;
 
-	m_emu->set_tracecb(nullptr);
 	m_emu->set_sample_rate(44100);
 
     m_prevFrame = 0;
