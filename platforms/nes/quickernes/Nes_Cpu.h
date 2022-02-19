@@ -24,7 +24,6 @@ public:
 	enum { page_count = 0x10000 >> page_bits };
 	enum { page_size = 1L << page_bits };
 	void map_code( nes_addr_t start, unsigned size, void const* code );
-	bool map_code_set = false;
 	
 	// Access memory as the emulated CPU does.
 	int  read( nes_addr_t );
@@ -36,12 +35,12 @@ public:
 	
 	// NES 6502 registers. *Not* kept updated during a call to run().
 	struct registers_t {
-		uint16_t pc;
-		uint8_t a;
-		uint8_t x;
-		uint8_t y;
-		uint8_t status;
-		uint16_t sp;
+		long pc; // more than 16 bits to allow overflow detection
+		BOOST::uint8_t a;
+		BOOST::uint8_t x;
+		BOOST::uint8_t y;
+		BOOST::uint8_t status;
+		BOOST::uint8_t sp;
 	};
 	//registers_t r;
 	
@@ -70,8 +69,7 @@ public:
 	void set_tracecb(void (*cb)(unsigned int *dest));
 	
 private:
-	uint8_t* code_map [page_count + 1];
-	uint8_t flat_code_map [(page_count + 1) * page_size];
+	uint8_t const* code_map [page_count + 1];
 	nes_time_t clock_limit;
 	nes_time_t clock_count;
 	nes_time_t irq_time_;
@@ -79,7 +77,7 @@ private:
 	unsigned long error_count_;
 	
 	enum { irq_inhibit = 0x04 };
-	void set_code_page( int, uint8_t* );
+	void set_code_page( int, uint8_t const* );
 	void update_clock_limit();
 
 	void (*tracecb)(unsigned int *dest);

@@ -5,6 +5,7 @@
 #include <hqn_gui_controller.h>
 #include <utils.hpp>
 #include <string>
+#include <ncurses.h>
 #include <playbackInstanceBase.hpp>
 
 class PlaybackInstance : public PlaybackInstanceBase
@@ -44,6 +45,11 @@ class PlaybackInstance : public PlaybackInstanceBase
  {
   // Sleeping for 1/60th of a second
   usleep(16667);
+
+  // If using a new game and it doesn't seem to load, then get its savestate size here
+  //  size_t size;
+  //  _hqnState.saveStateSize(&size);
+  //  printw("%lu\n", size);
 
   // Storing current game state
   uint8_t emuState[_STATE_DATA_SIZE];
