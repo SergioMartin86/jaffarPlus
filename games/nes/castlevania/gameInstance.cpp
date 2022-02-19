@@ -8,7 +8,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   // Setting relevant SMB pointers
 
-  // Thanks to https://datacrystal.romhacking.net/wiki/Super_Simon_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperSimonBros for helping me find some of these items
+  // Thanks to https://datacrystal.romhacking.net/wiki/Castlevania:RAM_map for helping me find some of these items
 
   RNGState               = (uint8_t*)   &_emu->_baseMem[0x0004];
   gameMode               = (uint8_t*)   &_emu->_baseMem[0x0018];
@@ -46,7 +46,6 @@ uint64_t GameInstance::computeHash() const
   // Adding fixed hash elements
   hash.Update(*gameMode);
   hash.Update(*gameSubMode);
-  hash.Update(*stageTimer);
   hash.Update(*currentStage);
   hash.Update(*currentSubStage);
   hash.Update(*simonLives);
@@ -67,6 +66,10 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*simonSubState);
   hash.Update(*simonVerticalSpeed);
   hash.Update(*simonVerticalDirection);
+
+  // If we are in an animation, add timer to hash
+  if (*gameMode == 0x08 || *gameMode == 0x0A) hash.Update(*stageTimer);
+  if (*gameMode == 0x05 && *gameSubMode == 0x02) hash.Update(*stageTimer);
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -148,9 +151,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Simon Image:            %02u\n", *simonImage);
   LOG("[Jaffar]  + Simon Facing Direction: %02u\n", *simonFacingDirection);
   LOG("[Jaffar]  + Simon Vertical Speed:   %02u-%02u\n", *simonVerticalSpeed, *simonVerticalDirection);
-  LOG("[Jaffar]  + Simon Lives:            %3u\n", *simonLives);
-  LOG("[Jaffar]  + Simon Stair Mode:       %3u\n", *simonStairMode);
-  LOG("[Jaffar]  + Simon Life Meter:       %u\n", *simonLifeMeter);
+  LOG("[Jaffar]  + Simon Lives:            %02u\n", *simonLives);
+  LOG("[Jaffar]  + Simon Stair Mode:       %02u\n", *simonStairMode);
+  LOG("[Jaffar]  + Simon Life Meter:       %02u\n", *simonLifeMeter);
   LOG("[Jaffar]  + Simon Pos X:            %04u\n", *simonPosX);
   LOG("[Jaffar]  + Simon Pos Y:            %04u\n", *simonPosY);
   LOG("[Jaffar]  + Simon Invulnerability:  %02u\n", *simonInvulnerability);

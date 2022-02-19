@@ -167,7 +167,7 @@ void Train::computeStates()
     ssize_t threadStateEvaluationTime = 0;
 
     // Computing always the last state while resizing the database to reduce memory footprint
-    #pragma omp for schedule(dynamic, 1024)
+    #pragma omp for
     for (auto& baseState : _stateDB)
     {
       auto t0 = std::chrono::high_resolution_clock::now(); // Profiling
@@ -442,7 +442,7 @@ void Train::printTrainStatus()
   printf("[Jaffar]   + State Sorting            %5.2f%% (%lu)\n", ((double)_stepStateDBSortingTime / (double)totalStepTime) * 100.0f, _stepStateDBSortingTime);
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
   printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * _stateSize) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * _stateSize) / (1024.0 * 1024.0));
-  printf("[Jaffar] Max State State Difference: %u / %u\n", _maxStateDiff, _maxDifferenceCount);
+  printf("[Jaffar] Max State Difference: %u / %u\n", _maxStateDiff, _maxDifferenceCount);
   printf("[Jaffar] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
   printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
   printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, %.0fmb (%lu x %.0fmb)\n", _hashSizeStep, _hashSizeCurrent, _hashSizeUpperBound * _hashDBCount, _hashDBCount, _hashSizeUpperBound);
