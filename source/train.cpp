@@ -401,7 +401,8 @@ void Train::computeStates()
 
    // Updating age
    _hashDBAges.pop_front();
-   _hashDBAges.push_back(_currentStep);
+   _hashDBAges.push_back(_hashCurAge);
+   _hashCurAge = _currentStep;
   }
 
   auto hashFilteringTimeEnd = std::chrono::high_resolution_clock::now();                                                                           // Profiling
@@ -446,7 +447,7 @@ void Train::printTrainStatus()
   printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
   printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, %.0fmb (%lu x %.0fmb)\n", _hashSizeStep, _hashSizeCurrent, _hashSizeUpperBound * _hashDBCount, _hashDBCount, _hashSizeUpperBound);
   for (ssize_t i = 0; i < _hashDBCount-1; i++) printf("[Jaffar]   + Hash DB %lu Size / Step: %.3fmb / %u\n", i, hashSizeFromEntries(_hashPastDBs[i]->size()), _hashDBAges[i]);
-  printf("[Jaffar]   + Hash DB %lu Size / Step: %.3fmb / %u\n", _hashDBCount-1, hashSizeFromEntries(_hashCurDB->size()), _currentStep);
+  printf("[Jaffar]   + Hash DB %lu Size / Step: %.3fmb / %u\n", _hashDBCount-1, hashSizeFromEntries(_hashCurDB->size()), _hashCurAge);
   printf("[Jaffar] Best State Information:\n");
 
   uint8_t bestStateData[_STATE_DATA_SIZE];
@@ -482,6 +483,7 @@ Train::Train(int argc, char *argv[])
   _newCollisionCounter = 0;
   _hashEntriesTotal = 0;
   _hashEntriesStep = 0;
+  _hashCurAge = 0;
   _stepNewStateRatio = 0.0;
   _maxNewStateRatio = 0.0;
   _maxNewStateRatioStep = 0;

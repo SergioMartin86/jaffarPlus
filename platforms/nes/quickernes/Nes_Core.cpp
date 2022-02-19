@@ -113,7 +113,7 @@ void Nes_Core::save_state( Nes_State_* out ) const
 	
 	memcpy( out->ram, cpu::low_mem, out->ram_size );
 	out->ram_valid = true;
-	
+
 	out->sram_size = 0;
 	if ( sram_present )
 	{

@@ -73,6 +73,7 @@ class Train
 
   // Hash information
   ssize_t _hashDBCount;
+  uint16_t _hashCurAge;
   std::unique_ptr<hashSet_t> _hashCurDB;
   std::deque<std::unique_ptr<hashSet_t>> _hashPastDBs;
   std::deque<uint16_t> _hashDBAges;

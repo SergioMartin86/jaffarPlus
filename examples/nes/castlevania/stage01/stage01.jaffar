@@ -9,7 +9,7 @@
   
   "State Configuration": 
   {
-    "Max Difference Count": 750,
+    "Max Difference Count": 1000,
     "Max Move Count": 800,
     "Store Move List": true    
   },
