@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
      printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
      printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
-     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | s: quicksave | p: play | q: quit\n");
+     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | g: set RNG | s: quicksave | p: play | q: quit\n");
      refresh();
    }
 
@@ -234,6 +234,22 @@ int main(int argc, char *argv[])
 
      // Do no show frame info again after this action
      showFrameInfo = false;
+   }
+
+   // RNG setting command
+   if (command == 'g')
+   {
+     // Obtaining RNG state
+     printw("Enter new RNG state: ");
+
+     // Setting input as new rng
+     char str[80];
+     getstr(str);
+     auto newRNG = std::stol(str);
+     gameInstance.setRNGState(newRNG);
+
+     // Replacing current sequence
+     gameInstance.popState(stateSequence[currentStep]);
    }
 
    // Start playback from current point

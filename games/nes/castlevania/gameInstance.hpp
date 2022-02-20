@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameInstanceBase.hpp"
+#include <set>
 
 // Datatype to describe a magnet
 struct magnet_t {
@@ -32,7 +33,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* simonStairMode;
   uint8_t* simonPosY;
   uint16_t* simonPosX;
-  uint8_t* simonLifeMeter;
+  uint8_t* simonHealth;
   uint8_t* simonInvulnerability;
   uint8_t* simonKneelingMode;
   uint8_t* subweaponShotCount;
@@ -45,6 +46,17 @@ class GameInstance : public GameInstanceBase
   uint8_t* simonSubState;
   uint8_t* simonVerticalSpeed;
   uint8_t* simonVerticalDirection;
+  uint8_t* bossHealth;
+  uint8_t* bossPosX;
+  uint8_t* bossPosY;
+  uint8_t* bossIsActive;
+  uint8_t* grabItemTimer;
+  uint8_t* enemy1PosX;
+  uint8_t* enemy2PosX;
+  uint8_t* enemy3PosX;
+
+  // Hash-specific configuration
+  std::set<std::string> hashIncludes;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;
@@ -53,4 +65,5 @@ class GameInstance : public GameInstanceBase
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
+  void setRNGState(const uint64_t RNGState) override;
 };
