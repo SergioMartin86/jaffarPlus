@@ -128,17 +128,17 @@ class Lock
   pthread_mutex_destroy(&_lock);
  }
 
- void lock()
+ inline void lock()
  {
   pthread_mutex_lock(&_lock);
  }
 
- void unlock()
+ inline void unlock()
  {
   pthread_mutex_unlock(&_lock);
  }
 
- bool trylock()
+ inline bool trylock()
  {
   return pthread_mutex_trylock(&_lock) == 0;
  }

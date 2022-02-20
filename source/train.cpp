@@ -95,7 +95,9 @@ void Train::limitStateDatabase(std::vector<State*>& stateDB, size_t limit)
  std::nth_element(stateDB.begin(), stateDB.begin() + _maxDatabaseSizeLowerBound, stateDB.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
 
  // Recycle excess states
- for (size_t i = limit; i < stateDB.size(); i++) delete stateDB[i];
+ _freeStateQueueLock.lock();
+ for (size_t i = limit; i < stateDB.size(); i++) _freeStateQueue.push(stateDB[i]);
+ _freeStateQueueLock.unlock();
 
  // Resizing new states database to lower bound
  stateDB.resize(limit);
@@ -234,11 +236,15 @@ void Train::computeStates()
         // Storing the state data
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
-        // Allocating new state, checking free state queue if there's a storage we can reuse
-        State* newState = new State;
+        // Grabbing storage from free state queue
+        _freeStateQueueLock.lock();
+        if (_freeStateQueue.empty()) EXIT_WITH_ERROR("[ERROR] Ran out of free states. Increase 'State Database', 'Max Size Lower Bound (Mb)'\n");
+        State* newState = _freeStateQueue.front();
+        _freeStateQueue.pop();
+        _freeStateQueueLock.unlock();
 
         // Getting rule status from the base state
-        memcpy(newState->rulesStatus, baseState->rulesStatus, sizeof(bool) * _ruleCount);
+        memcpy(newState, baseState, sizeof(State));
 
         // Evaluating rules on the new state
         _gameInstances[threadId]->evaluateRules(newState->rulesStatus);
@@ -257,7 +263,6 @@ void Train::computeStates()
 
         // Copying move list and adding new move
         #ifndef JAFFAR_DISABLE_MOVE_HISTORY
-         newState->setMoveHistory(baseState->moveHistory);
          newState->moveHistory[_currentStep] = moveId;
         #endif
 
@@ -314,7 +319,9 @@ void Train::computeStates()
       }
 
       // Adding used base state back into free state queue
-      delete baseState;
+      _freeStateQueueLock.lock();
+      _freeStateQueue.push(baseState);
+      _freeStateQueueLock.unlock();
 
       // Increasing counter for base states processed
       #pragma omp atomic
@@ -559,6 +566,8 @@ Train::Train(int argc, char *argv[])
   // Checking whether it contains the Game configuration field
   if (isDefined(config, "Game Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Game Configuration' key.\n");
 
+  printf("[Jaffar] Initializing Game...\n");
+
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
 
@@ -584,11 +593,14 @@ Train::Train(int argc, char *argv[])
   // Parsing state configuration
   State::parseConfiguration(config);
 
+  printf("[Jaffar] Allocating Storage...\n");
+
   // Calculating max DB size bounds
   _maxDatabaseSizeLowerBound = floor(((double)_maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
   _maxDatabaseSizeUpperBound = floor(((double)_maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
 
-  printf("[Jaffar] Game initialized.\n");
+  // Pre-allocating and touching State containers
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push((State*)calloc(1, sizeof(State)));
 
   // Setting initial values
   _hasFinalized = false;

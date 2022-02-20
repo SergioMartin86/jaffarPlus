@@ -85,11 +85,6 @@ class State
   // Stores the entire move history of the frame
   uint8_t moveHistory[_MAX_MOVELIST_SIZE];
 
-  inline void setMoveHistory(const uint8_t* sourceMoveHistory)
-  {
-   memcpy(moveHistory, sourceMoveHistory, sizeof(uint8_t) * _MAX_MOVELIST_SIZE);
-  }
-
   // Move r/w operations
   inline void setMove(const size_t idx, const uint8_t move)
   {

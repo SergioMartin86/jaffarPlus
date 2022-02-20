@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <deque>
+#include <queue>
 #include <mutex>
 
 // Configuration for parallel hash sets
@@ -64,6 +64,11 @@ class Train
   size_t _maxDatabaseSizeLowerBound;
   size_t _maxDatabaseSizeUpperBound;
   std::vector<State*> _stateDB;
+
+  // Queue for free states
+  uint8_t* _stateStorage;
+  std::queue<State*> _freeStateQueue;
+  Lock _freeStateQueueLock;
 
   // Storage for the win, best and worst state
   State* _bestState;
