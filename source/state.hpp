@@ -1,7 +1,7 @@
 #pragma once
 
 #define _MAX_DIFFERENCE_COUNT 4100
-#define _RULE_COUNT 8
+#define _RULE_COUNT 9
 #define _MAX_MOVELIST_SIZE 3500
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 

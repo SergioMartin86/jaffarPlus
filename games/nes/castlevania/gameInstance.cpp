@@ -172,7 +172,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   boundedValue = (float)*simonPosY;
   boundedValue = std::min(boundedValue, magnets.simonVerticalMagnet.max);
   boundedValue = std::max(boundedValue, magnets.simonVerticalMagnet.min);
-  reward += magnets.simonHorizontalMagnet.intensity * boundedValue;
+  reward += magnets.simonVerticalMagnet.intensity * boundedValue;
 
   // Favor accumulating hearts
   reward += 10.0f * *simonHeartCount;
@@ -231,8 +231,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("\n");
 
   auto magnets = getMagnetValues(rulesStatus);
-  LOG("[Jaffar]  + Simon Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.simonHorizontalMagnet.intensity, magnets.simonHorizontalMagnet.max);
-  LOG("[Jaffar]  + Simon Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.simonVerticalMagnet.intensity, magnets.simonVerticalMagnet.max);
+  LOG("[Jaffar]  + Simon Horizontal Magnet    - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonHorizontalMagnet.intensity, magnets.simonHorizontalMagnet.min, magnets.simonHorizontalMagnet.max);
+  LOG("[Jaffar]  + Simon Vertical Magnet      - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonVerticalMagnet.intensity, magnets.simonVerticalMagnet.min, magnets.simonVerticalMagnet.max);
 
 
 }

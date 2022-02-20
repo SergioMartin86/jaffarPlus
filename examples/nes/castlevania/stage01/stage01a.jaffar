@@ -22,8 +22,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 500
     },
     
     "Hash Database":
@@ -101,9 +101,27 @@
     "Description": "Reward getting into stairs at the end of stage 1",
     "Conditions":
     [
-      { "Property": "Current Stage", "Op": "==", "Value":  2 },
-      { "Property": "Simon Position X", "Op": ">", "Value":  1250 },
-      { "Property": "Simon Stair Mode", "Op": "==", "Value":  0 }
+      { "Property": "Current Stage", "Op": "==", "Value":  1 },
+      { "Property": "Simon Position X", "Op": ">", "Value":  1250 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max":  6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": -10.0, "Min": 96, "Max":  255 } 
+    ]
+   },
+   
+   {
+    "Label": 1014,
+    "Description": "Reward Opening Door",
+    "Conditions":
+    [
+      { "Property": "Game Mode", "Op": "==", "Value":  8 },
+      { "Property": "Current Stage", "Op": "==", "Value":  1 }
     ],
     
     "Satisfies": 
@@ -123,11 +141,13 @@
       { "Property": "Current Stage", "Op": "==", "Value":  2 }
     ],
     
-    "Satisfies": [ 1004 ],
+    "Satisfies": [ 1014 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 50000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max":  6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max":  255 },
      { "Type": "Trigger Win" }
     ]
    },

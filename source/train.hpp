@@ -122,6 +122,7 @@ class Train
 
   // Calculates hash db size from its entries
   double hashSizeFromEntries (const ssize_t entries) const;
+  size_t hashEntriesFromSize(const double size) const;
 
   // Function for the show thread (saves states from time to time to display progress)
   static void *showThreadFunction(void *trainPtr);

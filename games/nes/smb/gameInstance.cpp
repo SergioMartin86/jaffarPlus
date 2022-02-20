@@ -262,7 +262,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   boundedValue = (float)*marioPosY;
   boundedValue = std::min(boundedValue, magnets.marioVerticalMagnet.max);
   boundedValue = std::max(boundedValue, magnets.marioVerticalMagnet.min);
-  reward += magnets.marioHorizontalMagnet.intensity * boundedValue;
+  reward += magnets.marioVerticalMagnet.intensity * boundedValue;
 
   // Returning reward
   return reward;
@@ -305,6 +305,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
   auto magnets = getMagnetValues(rulesStatus);
   LOG("[Jaffar]  + Mario Screen Offset Magnet - Intensity: %.1f, Max: %f\n", magnets.marioScreenOffsetMagnet.intensity, magnets.marioScreenOffsetMagnet.max);
-  LOG("[Jaffar]  + Mario Horizontal Magnet    - Intensity: %.1f, Max: %f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.max);
-  LOG("[Jaffar]  + Mario Vertical Magnet      - Intensity: %.1f, Max: %f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.max);
+  LOG("[Jaffar]  + Mario Horizontal Magnet    - Intensity: %.1f, Min: %f, Max: %f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.min, magnets.marioHorizontalMagnet.max);
+  LOG("[Jaffar]  + Mario Vertical Magnet      - Intensity: %.1f, Min: %f, Max: %f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.min, magnets.marioVerticalMagnet.max);
 }

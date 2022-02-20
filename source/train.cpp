@@ -95,9 +95,7 @@ void Train::limitStateDatabase(std::vector<State*>& stateDB, size_t limit)
  std::nth_element(stateDB.begin(), stateDB.begin() + _maxDatabaseSizeLowerBound, stateDB.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
 
  // Recycle excess states
- _freeStateQueueLock.lock();
  for (size_t i = limit; i < stateDB.size(); i++) _freeStateQueue.push(stateDB[i]);
- _freeStateQueueLock.unlock();
 
  // Resizing new states database to lower bound
  stateDB.resize(limit);
@@ -112,7 +110,12 @@ size_t Train::hashGetTotalCount() const
 
 double Train::hashSizeFromEntries(const ssize_t entries) const
 {
-   return (((double)sizeof(uint64_t) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0);
+ return (((double)sizeof(uint64_t) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0);
+};
+
+size_t Train::hashEntriesFromSize(const double size) const
+{
+  return (size_t)((size * (1024.0 * 1024.0)) / ((double)sizeof(uint64_t) + (double)sizeof(void*)));
 };
 
 void Train::computeStates()
@@ -236,11 +239,28 @@ void Train::computeStates()
         // Storing the state data
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
-        // Grabbing storage from free state queue
+        // Grabbing lock from free state queue
         _freeStateQueueLock.lock();
-        if (_freeStateQueue.empty()) EXIT_WITH_ERROR("[ERROR] Ran out of free states. Increase 'State Database', 'Max Size Lower Bound (Mb)'\n");
+
+        // If we ran out of free states, gotta check if we can free up the worst states from the next state db
+        if (_freeStateQueue.empty())
+        {
+         // Trying to limit new states DB to lower bound size and recycling its states
+         #pragma omp critical(newFrameDB)
+         {
+          auto DBSortingTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
+          if (newStates.size() > _maxDatabaseSizeLowerBound) limitStateDatabase(newStates, _maxDatabaseSizeLowerBound);
+          else EXIT_WITH_ERROR("[ERROR] Ran out of free states. Increase 'State Database', 'Max Size Upper Bound (Mb)'\n");
+          auto DBSortingTimeEnd = std::chrono::high_resolution_clock::now();                                                                      // Profiling
+          _stepStateDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
+         }
+        }
+
+        // Obtaining free state from queue
         State* newState = _freeStateQueue.front();
         _freeStateQueue.pop();
+
+        // Releasing lock from free state queue
         _freeStateQueueLock.unlock();
 
         // Getting rule status from the base state
@@ -283,7 +303,7 @@ void Train::computeStates()
         threadStateEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
         // If state has succeded or is a regular state, adding it in the corresponding database
-        #pragma omp critical(insertState)
+        #pragma omp critical(newFrameDB)
         {
          // Storing new winning state
          if (type == f_win) { _winStateFound = true; memcpy(_winState, newState, sizeof(State)); };
@@ -299,22 +319,6 @@ void Train::computeStates()
 
          // Increasing maximum states in use if needed
          if (statesInUse > _stepMaxStatesInMemory) _stepMaxStatesInMemory = statesInUse;
-
-         // If new state db exceeds upper bound, limit it back to lower bound
-         if (statesInUse > _maxDatabaseSizeUpperBound)
-         {
-          auto DBSortingTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
-
-          // Checking if limiting will help at all
-          if (newStates.size() < _maxDatabaseSizeLowerBound)
-           EXIT_WITH_ERROR("[ERROR] New states database (%lu) is smaller than lower bound (%lu) and will not bring the total states (%lu - %lu + %lu = %lu) under the upper bound (%lu).\n", newStates.size(), _maxDatabaseSizeLowerBound, _stateDB.size(), _stepBaseStatesProcessedCounter, newStates.size(), statesInUse, _maxDatabaseSizeUpperBound);
-
-          // Limiting new states DB to lower bound size and recycling its states
-          limitStateDatabase(newStates, _maxDatabaseSizeLowerBound);
-
-          auto DBSortingTimeEnd = std::chrono::high_resolution_clock::now();                                                                      // Profiling
-          _stepStateDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
-         }
         }
       }
 
@@ -402,6 +406,7 @@ void Train::computeStates()
 
    // Create new current one
    _hashCurDB = std::make_unique<hashSet_t>();
+   _hashCurDB->reserve(hashEntriesFromSize(_hashSizeUpperBound));
 
    // Updating age
    _hashDBAges.pop_front();
@@ -631,6 +636,7 @@ Train::Train(int argc, char *argv[])
 
   // Creating hash databases and registering hash for initial state
   _hashCurDB = std::make_unique<hashSet_t>();
+  _hashCurDB->reserve(hashEntriesFromSize(_hashSizeUpperBound));
   for (ssize_t i = 0; i < _hashDBCount-1; i++)
   {
    _hashPastDBs.push_back(std::make_unique<hashSet_t>());
