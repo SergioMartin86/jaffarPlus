@@ -10,8 +10,7 @@
   "State Configuration": 
   {
     "Max Difference Count": 4100,
-    "Max Move Count": 3500,
-    "Store Move List": true    
+    "Max Move Count": 3500
   },
   
   "Game Configuration": 
@@ -82,6 +81,23 @@
    
    {
     "Label": 1003,
+    "Description": "Reward Weapon Ammo Extenson",
+    "Conditions":
+    [
+      { "Property": "Subweapon Shot Count", "Op": ">", "Value":  0 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 5000 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
     "Description": "Reward getting into stairs at the end of stage 1",
     "Conditions":
     [
@@ -100,23 +116,6 @@
    },
    
    {
-    "Label": 1004,
-    "Description": "Reward Weapon Ammo Extenson",
-    "Conditions":
-    [
-      { "Property": "Subweapon Shot Count", "Op": ">", "Value":  0 }
-    ],
-    
-    "Satisfies": 
-    [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 5000 }
-    ]
-   },
-   
-   {
     "Label": 1005,
     "Description": "Reward getting to next stage",
     "Conditions":
@@ -124,7 +123,7 @@
       { "Property": "Current Stage", "Op": "==", "Value":  2 }
     ],
     
-    "Satisfies": [ 1003 ],
+    "Satisfies": [ 1004 ],
     
     "Actions":
     [

@@ -52,7 +52,7 @@ void Train::run()
     }
 
     // Terminate if maximum number of states was reached
-    if (_currentStep >= _maxMoveCount)
+    if (_currentStep >= _MAX_MOVELIST_SIZE)
     {
       printf("[Jaffar] Maximum state number reached, finishing...\n");
       printf("[Jaffar] To run Jaffar for more steps, increase 'Max Move Count' in the .jaffar file.\n");
@@ -63,13 +63,12 @@ void Train::run()
   // Print winning state if found
   if (_winStateFound == true)
   {
-    if (_storeMoveList)
-    {
+    #ifndef JAFFAR_DISABLE_MOVE_HISTORY
      printf("[Jaffar]  + Win Move List: ");
      for (uint16_t i = 0; i < _currentStep; i++)
       printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState->moveHistory[i])).c_str());
      printf("\n");
-    }
+    #endif
   }
 
   // Stopping show thread
@@ -81,13 +80,12 @@ void Train::run()
    auto lastState = _winStateFound ? _winState : _bestState;
 
    // Storing the solution sequence
-   if (_storeMoveList)
-   {
+   #ifndef JAFFAR_DISABLE_MOVE_HISTORY
     std::string solutionString;
     solutionString += EmuInstance::moveCodeToString(lastState->moveHistory[0]);
     for (size_t i = 1; i < _currentStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->moveHistory[i]);
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
-   }
+   #endif
   }
 }
 
@@ -258,11 +256,10 @@ void Train::computeStates()
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
         // Copying move list and adding new move
-        if (_storeMoveList)
-        {
+        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
          newState->setMoveHistory(baseState->moveHistory);
          newState->moveHistory[_currentStep] = moveId;
-        }
+        #endif
 
         // Calculating current reward
         newState->reward = _gameInstances[threadId]->getStateReward(newState->rulesStatus);
@@ -284,7 +281,7 @@ void Train::computeStates()
         #pragma omp critical(insertState)
         {
          // Storing new winning state
-         if (type == f_win) { _winStateFound = true; _winState->copy(newState); };
+         if (type == f_win) { _winStateFound = true; memcpy(_winState, newState, sizeof(State)); };
 
          // Adding state to the new state database
          newStates.push_back(newState);
@@ -368,8 +365,8 @@ void Train::computeStates()
   _worstStateReward = std::numeric_limits<float>::infinity();
   for (const auto& state : newStates)
   {
-   if (state->reward > _bestStateReward) { _bestState->copy(state); _bestStateReward = _bestState->reward; }
-   if (state->reward < _worstStateReward) { _worstState->copy(state); _worstStateReward = _worstState->reward; }
+   if (state->reward > _bestStateReward) {  memcpy(_bestState, state, sizeof(State)); _bestStateReward = _bestState->reward; }
+   if (state->reward < _worstStateReward) { memcpy(_worstState, state, sizeof(State)); _worstStateReward = _worstState->reward; }
   }
 
   // Setting new states to be current states for the next step
@@ -422,13 +419,13 @@ void Train::printTrainStatus()
   ssize_t totalStepTime = _stepHashCalculationTime + _stepHashCheckingTime + _stepHashFilteringTime + _stepStateAdvanceTime + _stepStateDeserializationTime + _stepStateEncodingTime + _stepStateDecodingTime + _stepStateEvaluationTime + _stepStateCreationTime + _stepStateDBSortingTime;
 
   printf("[Jaffar] ----------------------------------------------------------------\n");
-  printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _maxMoveCount);
+  printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _MAX_MOVELIST_SIZE);
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
   printf("[Jaffar] Base States Performance: %.3f States/s\n", (double)_stepBaseStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
-  printf("[Jaffar] State size: %lu bytes\n", _stateSize);
+  printf("[Jaffar] State size: %lu bytes\n", sizeof(State));
   printf("[Jaffar] States Processed: (Step/Total): %lu / %lu\n", _stepNewStatesProcessedCounter, _totalStatesProcessedCounter);
-  printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * _stateSize) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * _stateSize) / (1024.0 * 1024.0));
+  printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(State)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(State)) / (1024.0 * 1024.0));
   printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
   printf("[Jaffar]   + Hash Calculation:        %5.2f%% (%lu)\n", ((double)_stepHashCalculationTime / (double)totalStepTime) * 100.0f, _stepHashCalculationTime);
   printf("[Jaffar]   + Hash Checking:           %5.2f%% (%lu)\n", ((double)_stepHashCheckingTime / (double)totalStepTime) * 100.0f, _stepHashCheckingTime);
@@ -441,8 +438,8 @@ void Train::printTrainStatus()
   printf("[Jaffar]   + State Creation:          %5.2f%% (%lu)\n", ((double)_stepStateCreationTime / (double)totalStepTime) * 100.0f, _stepStateCreationTime);
   printf("[Jaffar]   + State Sorting            %5.2f%% (%lu)\n", ((double)_stepStateDBSortingTime / (double)totalStepTime) * 100.0f, _stepStateDBSortingTime);
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
-  printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * _stateSize) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * _stateSize) / (1024.0 * 1024.0));
-  printf("[Jaffar] Max State Difference: %u / %u\n", _maxStateDiff, _maxDifferenceCount);
+  printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0));
+  printf("[Jaffar] Max State Difference: %lu / %u\n", _maxStateDiff, (uint16_t)_MAX_DIFFERENCE_COUNT);
   printf("[Jaffar] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
   printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
   printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, %.0fmb (%lu x %.0fmb)\n", _hashSizeStep, _hashSizeCurrent, _hashSizeUpperBound * _hashDBCount, _hashDBCount, _hashSizeUpperBound);
@@ -456,13 +453,12 @@ void Train::printTrainStatus()
   _gameInstances[0]->printStateInfo(_bestState->rulesStatus);
 
   // Print Move History
-  if (_storeMoveList)
-  {
+  #ifndef JAFFAR_DISABLE_MOVE_HISTORY
    printf("[Jaffar]  + Move List: ");
    for (size_t i = 0; i < _currentStep; i++)
      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_bestState->moveHistory[i])).c_str());
    printf("\n");
-  }
+  #endif
 }
 
 Train::Train(int argc, char *argv[])
@@ -589,8 +585,8 @@ Train::Train(int argc, char *argv[])
   State::parseConfiguration(config);
 
   // Calculating max DB size bounds
-  _maxDatabaseSizeLowerBound = floor(((double)_maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)_stateSize));
-  _maxDatabaseSizeUpperBound = floor(((double)_maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)_stateSize));
+  _maxDatabaseSizeLowerBound = floor(((double)_maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
+  _maxDatabaseSizeUpperBound = floor(((double)_maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
 
   printf("[Jaffar] Game initialized.\n");
 
@@ -636,10 +632,8 @@ Train::Train(int argc, char *argv[])
   _worstState = new State;
 
   // Copying initial state into the best/worst state
-  _bestState->copy(initialState);
-  _worstState->copy(initialState);
-  _bestStateReward = initialState->reward;
-  _worstStateReward = initialState->reward;
+  memcpy(_bestState, initialState, sizeof(State));
+  memcpy(_worstState, initialState, sizeof(State));
 
   // Adding state to the initial database
   _databaseSize = 1;
@@ -677,8 +671,7 @@ void Train::showSavingLoop()
        // Storing best and worst states
 
        // Storing the best and worst solution sequences
-        if (_storeMoveList)
-        {
+       #ifndef JAFFAR_DISABLE_MOVE_HISTORY
          std::string bestSolutionString;
          bestSolutionString += EmuInstance::moveCodeToString(_bestState->moveHistory[0]);
          for (size_t i = 1; i < _currentStep; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState->moveHistory[i]);
@@ -688,7 +681,7 @@ void Train::showSavingLoop()
          worstSolutionString += EmuInstance::moveCodeToString(_worstState->moveHistory[0]);
          for (size_t i = 1; i < _currentStep; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState->moveHistory[i]);
          saveStringToFile(worstSolutionString, _outputSolutionWorstPath.c_str());
-        }
+       #endif
 
         // Resetting timer
         bestStateSaveTimer = std::chrono::high_resolution_clock::now();

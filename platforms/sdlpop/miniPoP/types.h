@@ -1428,6 +1428,22 @@ typedef struct directory_listing_type directory_listing_type;
 #pragma pack(push,1)
 struct miniPopState_t {
 
+ // Differential Frame Info
+ level_type level;
+ mob_type mobs[14];
+ trob_type trobs[30];
+ word checkpoint;
+ word current_level;
+ word next_level;
+ word hitp_beg_lev;
+ word hitp_max;
+ word have_sword;
+ word is_feather_fall;
+ word need_level1_music;
+ short united_with_shadow;
+ word demo_index;
+ short demo_time;
+
  // Fixed Frame Info
  word drawn_room;
  short mobs_count;
@@ -1467,22 +1483,6 @@ struct miniPopState_t {
  word exit_room_timer;
  word is_guard_notice;
  short can_guard_see_kid;
-
- // Differential Frame Info
- level_type level;
- mob_type mobs[14];
- trob_type trobs[30];
- word checkpoint;
- word current_level;
- word next_level;
- word hitp_beg_lev;
- word hitp_max;
- word have_sword;
- word is_feather_fall;
- word need_level1_music;
- short united_with_shadow;
- word demo_index;
- short demo_time;
 };
 #pragma pack(pop)
 

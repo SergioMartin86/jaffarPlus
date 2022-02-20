@@ -1,17 +1,11 @@
 #pragma once
 
+#define _MAX_DIFFERENCE_COUNT 4100
+#define _RULE_COUNT 8
+#define _MAX_MOVELIST_SIZE 3500
+//#define JAFFAR_DISABLE_MOVE_HISTORY
+
 #include <emuInstance.hpp>
-#include "utils.hpp"
-
-static uint16_t _maxDifferenceCount;
-static uint16_t _maxMoveCount;
-static uint16_t _ruleCount;
-static bool _storeMoveList;
-
-static size_t _stateFixedSize;
-static size_t _stateVariableSize;
-static size_t _stateSize;
-static uint16_t _maxStateDiff;
 
 enum stateType
 {
@@ -20,66 +14,51 @@ enum stateType
   f_fail
 };
 
+static size_t _maxStateDiff;
+static size_t _ruleCount;
+
 class State
 {
-  private:
-
-  uint8_t* _basePointer;
-
-  // Prevent direct copies
-  State& operator=(const State&) = delete;
-
   public:
 
+  // Positions of the difference with respect to a base frame
+  uint16_t frameDiffPositions[_MAX_DIFFERENCE_COUNT];
+  uint8_t frameDiffValues[_MAX_DIFFERENCE_COUNT];
+
   // Fixed state data
-  char fixedStateData[_STATE_FIXED_SIZE];
-
-  // Positions of the difference with respect to a base state
-  uint16_t* stateDiffPositions;
-  uint8_t* stateDiffValues;
-  uint16_t stateDiffCount;
-
-  // Stores the entire move history of the state
-  uint8_t* moveHistory;
-
-  // The score calculated for this state
-  float reward;
+  uint8_t fixedStateData[_STATE_FIXED_SIZE];
 
   // Rule status vector
-  bool* rulesStatus;
+  bool rulesStatus[_RULE_COUNT];
 
-  State()
+  // Differentiation functions
+  inline void computeStateDifference(const uint8_t* __restrict__ baseStateData, const uint8_t* __restrict__ newStateData)
   {
-   // Initializing difference count to zero
-   stateDiffCount = 0;
-
-   // Creating new storage for variable statesize
-   _basePointer = new uint8_t[_stateVariableSize];
-
-   size_t curPos = 0;
-   stateDiffPositions = (uint16_t*)&_basePointer[curPos];
-   curPos += _maxDifferenceCount * sizeof(uint16_t);
-   stateDiffValues = &_basePointer[curPos];
-   curPos += _maxDifferenceCount * sizeof(uint8_t);
-
-   if (_storeMoveList)
+   frameDiffCount = 0;
+   #pragma GCC unroll 32
+   #pragma GCC ivdep
+   for (uint16_t i = 0; i < _STATE_DIFFERENTIAL_SIZE; i++) if (baseStateData[i] != newStateData[i])
    {
-    moveHistory = (uint8_t*)&_basePointer[curPos];
-    curPos += _maxMoveCount * sizeof(uint8_t);
+    frameDiffPositions[frameDiffCount] = i;
+    frameDiffValues[frameDiffCount] = (uint8_t)newStateData[i];
+    frameDiffCount++;
    }
 
-   rulesStatus = (bool*)&_basePointer[curPos];
-   curPos += _ruleCount * sizeof(bool);
+   if (frameDiffCount > _maxStateDiff)
+   {
+    _maxStateDiff = frameDiffCount;
+     if (frameDiffCount > _MAX_DIFFERENCE_COUNT) EXIT_WITH_ERROR("[Error] Exceeded maximum frame difference: %d > %d. Increase this maximum in the state.hpp source file and rebuild.\n", frameDiffCount, _MAX_DIFFERENCE_COUNT);
+   }
+   memcpy(fixedStateData, &newStateData[_STATE_DIFFERENTIAL_SIZE], _STATE_FIXED_SIZE);
   }
 
-  ~State() { delete _basePointer; }
-
-  void copy(const State* state)
+  inline void getStateDataFromDifference(const uint8_t* __restrict__ baseStateData, uint8_t* __restrict__ stateData) const
   {
-   memcpy(fixedStateData, state->fixedStateData, _STATE_FIXED_SIZE);
-   memcpy(_basePointer, state->_basePointer, _stateVariableSize);
-   reward = state->reward;
-   stateDiffCount = state->stateDiffCount;
+    memcpy(stateData, baseStateData, _STATE_DIFFERENTIAL_SIZE);
+    #pragma GCC unroll 32
+    #pragma GCC ivdep
+    for (uint16_t i = 0; i < frameDiffCount; i++) stateData[frameDiffPositions[i]] = frameDiffValues[i];
+    memcpy(&stateData[_STATE_DIFFERENTIAL_SIZE], fixedStateData, _STATE_FIXED_SIZE);
   }
 
   // Parsing configuration
@@ -90,64 +69,25 @@ class State
 
    // Checking whether it contains the emulator configuration field
    if (isDefined(config["State Configuration"], "Max Difference Count") == false) EXIT_WITH_ERROR("[ERROR] State Configuration missing 'Max Difference Count' key.\n");
-   _maxDifferenceCount = config["State Configuration"]["Max Difference Count"].get<uint16_t>();
+   uint16_t maxDifferenceCount = config["State Configuration"]["Max Difference Count"].get<uint16_t>();
 
    if (isDefined(config["State Configuration"], "Max Move Count") == false) EXIT_WITH_ERROR("[ERROR] State Configuration missing 'Max Move Count' key.\n");
-   _maxMoveCount = config["State Configuration"]["Max Move Count"].get<uint16_t>();
+   uint16_t maxMoveCount = config["State Configuration"]["Max Move Count"].get<uint16_t>();
 
-   if (isDefined(config["State Configuration"], "Store Move List") == false) EXIT_WITH_ERROR("[ERROR] State Configuration missing 'Store Move List' key.\n");
-   _storeMoveList = config["State Configuration"]["Store Move List"].get<bool>();
+   if (maxDifferenceCount != (uint16_t)_MAX_DIFFERENCE_COUNT) EXIT_WITH_ERROR("[Error] Configured 'Max Difference Count' (%u) does not concide with _MAX_DIFFERENCE_COUNT (%u) in state.hpp source file. Adjust the value in either place and rebuild.\n", maxDifferenceCount, (uint16_t)_MAX_DIFFERENCE_COUNT);
+   if (_ruleCount != (uint16_t)_RULE_COUNT) EXIT_WITH_ERROR("[Error] Jaffar script contains %u rules, which does not concide with _RULE_COUNT (%u) in state.hpp source file. Adjust the value in either place and rebuild.\n", _ruleCount, (uint16_t)_RULE_COUNT);
+   if (maxMoveCount != (uint16_t)_MAX_MOVELIST_SIZE) EXIT_WITH_ERROR("[Error] Configured 'Max Move Count' (%u) does not concide with _MAX_MOVELIST_SIZE (%u) in state.hpp source file. Adjust the value in either place and rebuild.\n", maxMoveCount, (uint16_t)_MAX_MOVELIST_SIZE);
 
-   // Calculating fixed size of a state
-   _stateFixedSize = sizeof(State);
-
-   // Calculating variable size of a state
-   _stateVariableSize = 0;
-   _stateVariableSize += _maxDifferenceCount * sizeof(uint16_t);
-   _stateVariableSize += _maxDifferenceCount * sizeof(uint8_t);
-   if (_storeMoveList) _stateVariableSize += _maxMoveCount * sizeof(uint8_t);
-   _stateVariableSize += _ruleCount * sizeof(bool);
-
-   // Calculating state size(s)
-   _stateSize = _stateFixedSize + _stateVariableSize;
   }
 
-  // Differentiation functions
-  inline void computeStateDifference(const uint8_t* __restrict__ baseStateData, const uint8_t* __restrict__ newStateData)
-  {
-   // Copying fixed state data first
-   memcpy(fixedStateData, newStateData, _STATE_FIXED_SIZE);
+#ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
-   stateDiffCount = 0;
-   #pragma GCC unroll 32
-   #pragma GCC ivdep
-   for (uint16_t i = 0; i < _STATE_DIFFERENTIAL_SIZE; i++) if (baseStateData[_STATE_FIXED_SIZE + i] != newStateData[_STATE_FIXED_SIZE + i])
-   {
-    stateDiffPositions[stateDiffCount] = _STATE_FIXED_SIZE + i;
-    stateDiffValues[stateDiffCount] = newStateData[_STATE_FIXED_SIZE + i];
-    stateDiffCount++;
-   }
-
-   if (stateDiffCount > _maxStateDiff)
-   {
-    _maxStateDiff = stateDiffCount;
-     if (stateDiffCount > _maxDifferenceCount) EXIT_WITH_ERROR("[Error] Exceeded maximum state difference: %u > %u. Increase 'Max Difference Count' in the Jaffar script file..\n", stateDiffCount, _maxDifferenceCount);
-   }
-  }
-
-  inline void getStateDataFromDifference(const uint8_t* __restrict__ baseStateData, uint8_t* __restrict__ stateData) const
-  {
-    memcpy(stateData, fixedStateData, _STATE_FIXED_SIZE);
-    memcpy(&stateData[_STATE_FIXED_SIZE], &baseStateData[_STATE_FIXED_SIZE], _STATE_DIFFERENTIAL_SIZE);
-
-    #pragma GCC unroll 32
-    #pragma GCC ivdep
-    for (uint16_t i = 0; i < stateDiffCount; i++) stateData[stateDiffPositions[i]] = stateDiffValues[i];
-  }
+  // Stores the entire move history of the frame
+  uint8_t moveHistory[_MAX_MOVELIST_SIZE];
 
   inline void setMoveHistory(const uint8_t* sourceMoveHistory)
   {
-   memcpy(moveHistory, sourceMoveHistory, sizeof(uint8_t) * _maxMoveCount);
+   memcpy(moveHistory, sourceMoveHistory, sizeof(uint8_t) * _MAX_MOVELIST_SIZE);
   }
 
   // Move r/w operations
@@ -160,4 +100,12 @@ class State
   {
    return moveHistory[idx];
   }
+
+#endif
+
+  // The score calculated for this frame
+  float reward;
+
+  // Positions of the difference with respect to a base frame
+  uint16_t frameDiffCount;
 };

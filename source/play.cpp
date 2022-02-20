@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
   gameInstance.parseRules(config["Rules"]);
 
   // Storing rule count
-  _ruleCount = gameInstance._rules.size();
+  size_t ruleCount = gameInstance._rules.size();
 
   // Initializing playback instance
   printw("[Jaffar] Opening Game window...\n");
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
   stateSequence.push_back(state);
 
   // Saving initial rule status
-  bool* rulesStatus = (bool*) calloc(_ruleCount, sizeof(bool));
+  bool* rulesStatus = (bool*) calloc(ruleCount, sizeof(bool));
   gameInstance.evaluateRules(rulesStatus);
   ruleStatusSequence.push_back(rulesStatus);
 
@@ -157,8 +157,8 @@ int main(int argc, char *argv[])
    stateSequence.push_back(state);
 
    // Storing new rules
-   rulesStatus = (bool*) malloc(_ruleCount * sizeof(bool));
-   memcpy(rulesStatus, ruleStatusSequence[i], _ruleCount * sizeof(bool));
+   rulesStatus = (bool*) malloc(ruleCount * sizeof(bool));
+   memcpy(rulesStatus, ruleStatusSequence[i], ruleCount * sizeof(bool));
    gameInstance.evaluateRules(rulesStatus);
    ruleStatusSequence.push_back(rulesStatus);
   }
