@@ -9,21 +9,21 @@
   
   "State Configuration": 
   {
-    "Max Difference Count": 3000,
+    "Max Difference Count": 1200,
     "Max Move Count": 1700
   },
   
   "Game Configuration": 
   {
-   "Hash Includes": [ "Subweapon Number", "Candelabra States" ]
+   "Hash Includes": [ "Subweapon Number", "Enemy 1 Pos X", "Enemy 2 Pos X", "Enemy 3 Pos X" ]
   },
   
   "Jaffar Configuration": 
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 500,
+     "Max Size Upper Bound (Mb)": 4000
     },
     
     "Hash Database":
@@ -58,7 +58,11 @@
     
     "Actions":
     [
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max":  6000 }
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 1295 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity":  0.0, "Min": 0, "Max":  255 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 100.0, "Mode": 1 },
+     { "Type": "Set Simon Weapon Magnet", "Reward": 200.0, "Weapon": 15 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 10.0, "Min": 0, "Max": 10 }
     ]
    },
    
@@ -75,33 +79,23 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 }
-    ]
-   },
-   
-   {
-    "Label": 1003,
-    "Description": "Reward getting freeze-time subweapon",
-    "Conditions":
-    [
-      { "Property": "Subweapon Number", "Op": "==", "Value":  15 }
-    ],
-    
-    "Satisfies": 
-    [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 }
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 1295 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity":  0.0, "Min": 0, "Max":  255 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 100.0, "Mode": 1 },
+     { "Type": "Set Simon Weapon Magnet", "Reward": 200.0, "Weapon": 15 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 10.0, "Min": 0, "Max": 10 }
     ]
    },
    
    {
     "Label": 1004,
-    "Description": "Reward Weapon Ammo Extenson",
+    "Description": "Reward getting into stairs at the end of stage 1",
     "Conditions":
     [
-      { "Property": "Subweapon Shot Count", "Op": ">", "Value":  0 }
+      { "Property": "Simon Position X", "Op": ">", "Value":  1290 },
+      { "Property": "Subweapon Number", "Op": "==", "Value":  15 },
+      { "Property": "Whip Length", "Op": ">", "Value":  0 }
     ],
     
     "Satisfies": 
@@ -109,17 +103,21 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 5000 }
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": -10.0, "Min": 0, "Max":  255 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 1000.0, "Mode": 0 },
+     { "Type": "Set Simon Weapon Magnet", "Reward": 200.0, "Weapon": 15 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 10.0, "Min": 0, "Max": 10 }
     ]
    },
    
    {
     "Label": 1005,
-    "Description": "Reward getting into stairs at the end of stage 1",
+    "Description": "Reward getting upstairs",
     "Conditions":
     [
-      { "Property": "Current Stage", "Op": "==", "Value":  1 },
-      { "Property": "Simon Position X", "Op": ">", "Value":  1250 },
+      { "Property": "Simon Position Y", "Op": "==", "Value":  96 },
       { "Property": "Subweapon Number", "Op": "==", "Value":  15 },
       { "Property": "Whip Length", "Op": ">", "Value":  0 }
     ],
@@ -131,7 +129,10 @@
     [
      { "Type": "Add Reward", "Value": 10000 },
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max":  6000 },
-     { "Type": "Set Simon Vertical Magnet", "Intensity": -10.0, "Min": 96, "Max":  255 } 
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0, "Min": 96, "Max":  255 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 0.0, "Mode": 0 },
+     { "Type": "Set Simon Weapon Magnet", "Reward": 200.0, "Weapon": 15 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 10.0, "Min": 0, "Max": 10 }
     ]
    },
    
@@ -153,5 +154,6 @@
       { "Type": "Trigger Win" }
     ]
    }
+   
   ]  
 }

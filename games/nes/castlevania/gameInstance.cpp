@@ -146,15 +146,8 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
  // Storage for magnet information
  magnetSet_t magnets;
 
- magnets.simonHorizontalMagnet.intensity = 0.0f;
- magnets.simonHorizontalMagnet.max = 0.0f;
-
- magnets.simonVerticalMagnet.intensity = 0.0f;
- magnets.simonVerticalMagnet.max = 0.0f;
-
  for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   if (rulesStatus[ruleId] == true)
-   if (_rules[ruleId]->_containsMagnets == true)
     magnets = _rules[ruleId]->_magnets;
 
  return magnets;
@@ -187,8 +180,17 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   boundedValue = std::max(boundedValue, magnets.simonVerticalMagnet.min);
   reward += magnets.simonVerticalMagnet.intensity * boundedValue;
 
-  // Favor accumulating hearts
-  reward += 10.0f * *simonHeartCount;
+  // Evaluating simon magnet's reward on hearts
+  boundedValue = (float)*simonHeartCount;
+  boundedValue = std::min(boundedValue, magnets.simonHeartMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.simonHeartMagnet.min);
+  reward += magnets.simonHeartMagnet.intensity * boundedValue;
+
+  // Evaluating simon's stairs magnet
+  if (magnets.simonStairMagnet.mode == *simonStairMode) reward += magnets.simonStairMagnet.reward;
+
+  // Evaluating simon's weapon magnet
+  if (magnets.simonWeaponMagnet.weapon == *subweaponNumber) reward += magnets.simonWeaponMagnet.reward;
 
   // Punish boss health
   reward -= 50.0f * *bossHealth;
@@ -251,6 +253,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   auto magnets = getMagnetValues(rulesStatus);
   LOG("[Jaffar]  + Simon Horizontal Magnet    - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonHorizontalMagnet.intensity, magnets.simonHorizontalMagnet.min, magnets.simonHorizontalMagnet.max);
   LOG("[Jaffar]  + Simon Vertical Magnet      - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonVerticalMagnet.intensity, magnets.simonVerticalMagnet.min, magnets.simonVerticalMagnet.max);
-
-
+  LOG("[Jaffar]  + Simon Heart Magnet         - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonHeartMagnet.intensity, magnets.simonHeartMagnet.min, magnets.simonHeartMagnet.max);
+  LOG("[Jaffar]  + Simon Stairs Magnet        - Reward:    %.1f, Mode: %u\n", magnets.simonStairMagnet.reward, magnets.simonStairMagnet.mode);
+  LOG("[Jaffar]  + Simon Weapon Magnet        - Reward:    %.1f, Weapon: %u\n", magnets.simonWeaponMagnet.reward, magnets.simonWeaponMagnet.weapon);
 }

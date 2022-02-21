@@ -2,9 +2,11 @@
 
 GameRule::GameRule() : Rule()
 {
- _magnets.simonHorizontalMagnet = magnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
- _magnets.simonVerticalMagnet = magnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
- _containsMagnets = false;
+ _magnets.simonHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
+ _magnets.simonVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
+ _magnets.simonHeartMagnet = genericMagnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
+ _magnets.simonStairMagnet = stairMagnet_t { .reward = 0.0f, .mode = 0};
+ _magnets.simonWeaponMagnet = weaponMagnet_t { .reward = 0.0f, .weapon = 0};
 }
 
 bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
@@ -17,9 +19,8 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
    if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-   _magnets.simonHorizontalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+   _magnets.simonHorizontalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
     recognizedActionType = true;
-    _containsMagnets = true;
   }
 
   if (actionType == "Set Simon Vertical Magnet")
@@ -27,9 +28,33 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
    if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-   _magnets.simonVerticalMagnet = magnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
-    recognizedActionType = true;
-    _containsMagnets = true;
+   _magnets.simonVerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Simon Heart Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+   _magnets.simonHeartMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Simon Stair Mode Magnet")
+  {
+   if (isDefined(actionJs, "Reward") == false) EXIT_WITH_ERROR("[ERROR] Stairs Magnet in Rule %lu Action %lu missing 'Reward' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Mode") == false) EXIT_WITH_ERROR("[ERROR] Stairs Magnet in Rule %lu Action %lu missing 'Mode' key.\n", _label, actionId);
+   _magnets.simonStairMagnet = stairMagnet_t { .reward = actionJs["Reward"].get<float>(), .mode = actionJs["Mode"].get<uint8_t>()};
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Simon Weapon Magnet")
+  {
+   if (isDefined(actionJs, "Reward") == false) EXIT_WITH_ERROR("[ERROR] Weapon Magnet in Rule %lu Action %lu missing 'Reward' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Weapon") == false) EXIT_WITH_ERROR("[ERROR] Weapon Magnet in Rule %lu Action %lu missing 'Weapon' key.\n", _label, actionId);
+   _magnets.simonWeaponMagnet = weaponMagnet_t { .reward = actionJs["Reward"].get<float>(), .weapon = actionJs["Weapon"].get<uint8_t>()};
+   recognizedActionType = true;
   }
 
   return recognizedActionType;

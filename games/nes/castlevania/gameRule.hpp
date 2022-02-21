@@ -8,7 +8,6 @@ class GameRule : public Rule
  public:
 
  magnetSet_t _magnets;
- bool _containsMagnets;
 
  GameRule();
  ~GameRule() = default;

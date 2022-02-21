@@ -3,18 +3,33 @@
 #include "gameInstanceBase.hpp"
 #include <set>
 
-// Datatype to describe a magnet
-struct magnet_t {
+// Datatype to describe a generic magnet
+struct genericMagnet_t {
  float intensity; // How strong the magnet is
  float min;  // What is the minimum input value to the calculation.
  float max;  // What is the maximum input value to the calculation.
 };
 
 // Datatype to describe a magnet
+struct stairMagnet_t {
+ float reward; // How strong the magnet is
+ uint8_t mode;  // Specifies the use mode of the stairs
+};
+
+// Datatype to describe a magnet
+struct weaponMagnet_t {
+ float reward; // How strong the magnet is
+ uint8_t weapon;  // Specifies the weapon number
+};
+
+// Datatype to describe a magnet
 struct magnetSet_t {
  // Relevant simon magnets
- magnet_t simonHorizontalMagnet;
- magnet_t simonVerticalMagnet;
+ genericMagnet_t simonHorizontalMagnet;
+ genericMagnet_t simonVerticalMagnet;
+ genericMagnet_t simonHeartMagnet;
+ stairMagnet_t simonStairMagnet;
+ weaponMagnet_t simonWeaponMagnet;
 };
 
 class GameInstance : public GameInstanceBase

@@ -1,7 +1,6 @@
 #pragma once
 
-#define _MAX_DIFFERENCE_COUNT 3000
-#define _RULE_COUNT 6
+#define _MAX_DIFFERENCE_COUNT 1200
 #define _MAX_MOVELIST_SIZE 1700
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
@@ -29,7 +28,7 @@ class State
   uint8_t fixedStateData[_STATE_FIXED_SIZE];
 
   // Rule status vector
-  bool rulesStatus[_RULE_COUNT];
+  bool rulesStatus[_MAX_RULE_COUNT];
 
   // Differentiation functions
   inline void computeStateDifference(const uint8_t* __restrict__ baseStateData, const uint8_t* __restrict__ newStateData)
@@ -75,7 +74,7 @@ class State
    uint16_t maxMoveCount = config["State Configuration"]["Max Move Count"].get<uint16_t>();
 
    if (maxDifferenceCount != (uint16_t)_MAX_DIFFERENCE_COUNT) EXIT_WITH_ERROR("[Error] Configured 'Max Difference Count' (%u) does not concide with _MAX_DIFFERENCE_COUNT (%u) in state.hpp source file. Adjust the value in either place and rebuild.\n", maxDifferenceCount, (uint16_t)_MAX_DIFFERENCE_COUNT);
-   if (_ruleCount != (uint16_t)_RULE_COUNT) EXIT_WITH_ERROR("[Error] Jaffar script contains %u rules, which does not concide with _RULE_COUNT (%u) in state.hpp source file. Adjust the value in either place and rebuild.\n", _ruleCount, (uint16_t)_RULE_COUNT);
+   if (_ruleCount > (uint16_t)_MAX_RULE_COUNT) EXIT_WITH_ERROR("[Error] Jaffar script contains %u rules, which is more than what the emulator with _MAX_RULE_COUNT (%u) was configured. Adjust the value in either place and rebuild.\n", _ruleCount, (uint16_t)_MAX_RULE_COUNT);
    if (maxMoveCount != (uint16_t)_MAX_MOVELIST_SIZE) EXIT_WITH_ERROR("[Error] Configured 'Max Move Count' (%u) does not concide with _MAX_MOVELIST_SIZE (%u) in state.hpp source file. Adjust the value in either place and rebuild.\n", maxMoveCount, (uint16_t)_MAX_MOVELIST_SIZE);
 
   }
