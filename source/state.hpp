@@ -1,8 +1,8 @@
 #pragma once
 
-#define _MAX_DIFFERENCE_COUNT 4100
-#define _RULE_COUNT 9
-#define _MAX_MOVELIST_SIZE 3500
+#define _MAX_DIFFERENCE_COUNT 3000
+#define _RULE_COUNT 6
+#define _MAX_MOVELIST_SIZE 1700
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
 #include <emuInstance.hpp>

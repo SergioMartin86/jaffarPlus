@@ -42,6 +42,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   enemy1PosX             = (uint8_t*)   &_emu->_baseMem[0x0390];
   enemy2PosX             = (uint8_t*)   &_emu->_baseMem[0x0391];
   enemy3PosX             = (uint8_t*)   &_emu->_baseMem[0x0392];
+  batMedusa1PosX         = (uint8_t*)   &_emu->_baseMem[0x0395];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -64,7 +65,6 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*simonStairMode);
   hash.Update(*simonPosY);
   hash.Update(*simonPosX);
-  hash.Update(*simonInvulnerability);
   hash.Update(*simonKneelingMode);
   hash.Update(*subweaponShotCount);
   hash.Update(*whipLength);
@@ -77,9 +77,9 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*bossHealth);
   hash.Update(*bossIsActive);
   hash.Update(*grabItemTimer);
-  hash.Update(*enemy1PosX);
-  hash.Update(*enemy2PosX);
-  hash.Update(*enemy3PosX);
+
+  // Making invulnerability a boolean
+  hash.Update(*simonInvulnerability > 0 ? 1 : 0);
 
   // Counting health below a certain point is not important
   uint8_t limitedSimonHealth = std::min(*simonHealth, (uint8_t)30);
@@ -91,6 +91,16 @@ uint64_t GameInstance::computeHash() const
 
   // Conditional hashes
   if (hashIncludes.contains("Subweapon Number")) hash.Update(*subweaponNumber);
+  if (hashIncludes.contains("Enemy 1 Pos X")) hash.Update(*enemy1PosX);
+  if (hashIncludes.contains("Enemy 2 Pos X")) hash.Update(*enemy2PosX);
+  if (hashIncludes.contains("Enemy 3 Pos X")) hash.Update(*enemy3PosX);
+  if (hashIncludes.contains("Bat / Medusa 1 Pos X")) hash.Update(*batMedusa1PosX);
+
+  // Candelabra states go from 0x191 to 0x1A8
+  if (hashIncludes.contains("Candelabra States")) for (size_t i = 0x0191; i < 0x1A8; i++) hash.Update(_emu->_baseMem[i]);
+
+  // Special case hashes
+  if (*currentStage == 2 && *currentSubStage == 1) hash.Update(*batMedusa1PosX);
 
   // Only hash boss position if active
   if (*bossIsActive > 0)
@@ -101,6 +111,9 @@ uint64_t GameInstance::computeHash() const
 
   // Unused hashes
   //hash.Update(*simonLives);
+
+  // If simon is getting knocked back or paralyzed, use timer
+  if (*simonState == 0x05 || *simonState == 0x09) hash.Update(*stageTimer);
 
   // If we are in an animation, add timer to hash
   if (*gameMode == 0x08 || *gameMode == 0x0A) hash.Update(*stageTimer);
@@ -224,7 +237,12 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Boss Pos Y:             %02u\n", *bossPosY);
   LOG("[Jaffar]  + Boss Is Active:         %02u\n", *bossIsActive);
   LOG("[Jaffar]  + Enemy Pos X:            %02u, %02u, %02u\n", *enemy1PosX, *enemy2PosX, *enemy3PosX);
+  LOG("[Jaffar]  + Bat / Medusa Pos X:     %02u\n", *batMedusa1PosX);
   LOG("[Jaffar]  + Grab Item Timer:        %02u\n", *grabItemTimer);
+
+  LOG("[Jaffar]  + Candelabra States: ");
+    for (size_t i = 0x0191; i < 0x1A8; i++) LOG("%d", _emu->_baseMem[i] > 0 ? 1 : 0);
+  LOG("\n");
 
   LOG("[Jaffar]  + Rule Status: ");
   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

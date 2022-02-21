@@ -265,8 +265,17 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
  loop:
 
  uint8_t const* page = code_map [l.pc >> page_bits];
- instruction = *((instr_t*)(&page[l.pc++]));
- if ( clock_count >= clock_limit ) goto stop;
+ instruction = *((instr_t*)(&page[l.pc]));
+ if ( clock_count >= clock_limit ) goto end;
+
+ if (instruction.opcode != 0x4C) goto not_jmp; // JMP abs
+ clock_count += 3;
+ l.pc = GET_OPERAND16( l.pc+1 );
+ goto loop;
+
+ not_jmp:
+
+ l.pc++;
  clock_count += clock_table [instruction.opcode];
  data = instruction.operand;
 
@@ -290,11 +299,6 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    WRITE_LOW( 0x100 | (l.sp - 1), temp >> 8 );
    l.sp = (l.sp - 2) | 0x100;
    WRITE_LOW( l.sp, temp );
-   goto loop;
-
-
-  case 0x4C: // JMP abs
-   l.pc = GET_OPERAND16( l.pc );
    goto loop;
 
   case 0xE8: INC_DEC_XY( l.x, 1 )  // INX
@@ -1638,12 +1642,8 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
    error_count_++;
    goto loop;
 
-   //result = result_badop; // TODO: re-enable
-   goto stop;
  }
 
-stop:
- l.pc--;
 end:
 
  {

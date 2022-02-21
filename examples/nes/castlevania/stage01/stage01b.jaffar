@@ -15,7 +15,7 @@
   
   "Game Configuration": 
   {
-   "Hash Includes": [ "Subweapon Number", "Candelabra States" ]
+   "Hash Includes": [ "Subweapon Number" ]
   },
   
   "Jaffar Configuration": 
@@ -80,7 +80,7 @@
    },
    
    {
-    "Label": 1003,
+    "Label": 1012,
     "Description": "Reward getting freeze-time subweapon",
     "Conditions":
     [
@@ -97,7 +97,7 @@
    },
    
    {
-    "Label": 1004,
+    "Label": 1003,
     "Description": "Reward Weapon Ammo Extenson",
     "Conditions":
     [
@@ -114,14 +114,12 @@
    },
    
    {
-    "Label": 1005,
+    "Label": 1004,
     "Description": "Reward getting into stairs at the end of stage 1",
     "Conditions":
     [
       { "Property": "Current Stage", "Op": "==", "Value":  1 },
-      { "Property": "Simon Position X", "Op": ">", "Value":  1250 },
-      { "Property": "Subweapon Number", "Op": "==", "Value":  15 },
-      { "Property": "Whip Length", "Op": ">", "Value":  0 }
+      { "Property": "Simon Position X", "Op": ">", "Value":  1250 }
     ],
     
     "Satisfies": 
@@ -136,21 +134,91 @@
    },
    
    {
-    "Label": 1006,
+    "Label": 1014,
     "Description": "Reward Opening Door",
     "Conditions":
     [
       { "Property": "Game Mode", "Op": "==", "Value":  8 },
-      { "Property": "Subweapon Number", "Op": "==", "Value":  15 },
-      { "Property": "Whip Length", "Op": ">", "Value":  0 }
+      { "Property": "Current Stage", "Op": "==", "Value":  1 }
     ],
     
     "Satisfies": 
-    [ ],
+    [ 1004 ],
     
     "Actions":
     [
-      { "Type": "Trigger Win" }
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "Reward getting to next stage",
+    "Conditions":
+    [
+      { "Property": "Current Stage", "Op": "==", "Value":  2 },
+      { "Property": "Subweapon Number", "Op": "==", "Value":  15 }
+    ],
+    
+    "Satisfies": [ 1014, 1012 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 50000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max":  6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max":  255 },
+     { "Type": "Trigger Win" }
+     
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Description": "Reward getting to next stage",
+    "Conditions":
+    [
+      { "Property": "Current Stage", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ 1005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 50000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max":  712 }
+    ]
+   },
+   
+   {
+    "Label": 1007,
+    "Description": "Reward Killing the bat",
+    "Conditions":
+    [
+      { "Property": "Boss Health", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ 1006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 50000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max":  640 }
+    ]
+   },
+   
+   {
+    "Label": 1108,
+    "Description": "Win on grabbing crystal ball",
+    "Conditions":
+    [
+      { "Property": "Game Mode", "Op": "==", "Value":  12 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
     ]
    }
   ]  

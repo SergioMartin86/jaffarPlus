@@ -54,7 +54,7 @@ void Train::run()
     // Terminate if maximum number of states was reached
     if (_currentStep >= _MAX_MOVELIST_SIZE)
     {
-      printf("[Jaffar] Maximum state number reached, finishing...\n");
+      printf("[Jaffar] Maximum step reached, finishing...\n");
       printf("[Jaffar] To run Jaffar for more steps, increase 'Max Move Count' in the .jaffar file.\n");
       _hasFinalized = true;
     }
@@ -110,11 +110,13 @@ size_t Train::hashGetTotalCount() const
 
 double Train::hashSizeFromEntries(const ssize_t entries) const
 {
+ // Just an approximation of how much the hash table requires
  return (((double)sizeof(uint64_t) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0);
 };
 
 size_t Train::hashEntriesFromSize(const double size) const
 {
+  // Just an approximation of how much the hash table requires
   return (size_t)((size * (1024.0 * 1024.0)) / ((double)sizeof(uint64_t) + (double)sizeof(void*)));
 };
 
@@ -437,7 +439,8 @@ void Train::printTrainStatus()
   printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] State size: %lu bytes\n", sizeof(State));
   printf("[Jaffar] States Processed: (Step/Total): %lu / %lu\n", _stepNewStatesProcessedCounter, _totalStatesProcessedCounter);
-  printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(State)) / (1024.0 * 1024.0), _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(State)) / (1024.0 * 1024.0));
+  printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(State)) / (1024.0 * 1024.0));
+  printf("[Jaffar] State DB Lower / Upper Bounds:  %lu (%.3fmb) / %lu (%.3fmb)\n", _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(State)) / (1024.0 * 1024.0), _maxDatabaseSizeUpperBound, (double)(_maxDatabaseSizeUpperBound * sizeof(State)) / (1024.0 * 1024.0));
   printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
   printf("[Jaffar]   + Hash Calculation:        %5.2f%% (%lu)\n", ((double)_stepHashCalculationTime / (double)totalStepTime) * 100.0f, _stepHashCalculationTime);
   printf("[Jaffar]   + Hash Checking:           %5.2f%% (%lu)\n", ((double)_stepHashCheckingTime / (double)totalStepTime) * 100.0f, _stepHashCheckingTime);

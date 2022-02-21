@@ -48,7 +48,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Simon Stair Mode") return dt_uint8;
   if (propertyName == "Simon Position Y") return dt_uint8;
   if (propertyName == "Simon Position X") return dt_uint16;
-  if (propertyName == "Simon Life Meter") return dt_uint8;
+  if (propertyName == "Simon Health") return dt_uint8;
   if (propertyName == "Simon Invulnerability") return dt_uint8;
   if (propertyName == "Simon Kneeling Mode") return dt_uint8;
   if (propertyName == "Subweapon Shot Count") return dt_uint8;
@@ -83,7 +83,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Simon Stair Mode") return gameInstance->simonStairMode;
   if (propertyName == "Simon Position Y") return gameInstance->simonPosY;
   if (propertyName == "Simon Position X") return gameInstance->simonPosX;
-  if (propertyName == "Simon Life Meter") return gameInstance->simonHealth;
+  if (propertyName == "Simon Health") return gameInstance->simonHealth;
   if (propertyName == "Simon Invulnerability") return gameInstance->simonInvulnerability;
   if (propertyName == "Simon Kneeling Mode") return gameInstance->simonKneelingMode;
   if (propertyName == "Subweapon Shot Count") return gameInstance->subweaponShotCount;
