@@ -42,7 +42,13 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   enemy1PosX             = (uint8_t*)   &_emu->_baseMem[0x0390];
   enemy2PosX             = (uint8_t*)   &_emu->_baseMem[0x0391];
   enemy3PosX             = (uint8_t*)   &_emu->_baseMem[0x0392];
+  enemy1State            = (uint8_t*)   &_emu->_baseMem[0x0438];
+  enemy2State            = (uint8_t*)   &_emu->_baseMem[0x0439];
+  enemy3State            = (uint8_t*)   &_emu->_baseMem[0x043A];
+  freezeTimeTimer        = (uint8_t*)   &_emu->_baseMem[0x057C];
   batMedusa1PosX         = (uint8_t*)   &_emu->_baseMem[0x0395];
+  batMedusa1PosY         = (uint8_t*)   &_emu->_baseMem[0x035D];
+  itemDropCounter        = (uint8_t*)   &_emu->_baseMem[0x007B];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -77,30 +83,32 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*bossHealth);
   hash.Update(*bossIsActive);
   hash.Update(*grabItemTimer);
-
-  // Making invulnerability a boolean
-  hash.Update(*simonInvulnerability > 0 ? 1 : 0);
-
-  // Counting health below a certain point is not important
-  uint8_t limitedSimonHealth = std::min(*simonHealth, (uint8_t)30);
-  hash.Update(limitedSimonHealth);
-
-  // Counting heart counts beyond a certain amount is not important
-  uint8_t limitedSimonHeartCount = std::max(*simonHeartCount, (uint8_t)15);
-  hash.Update(limitedSimonHeartCount);
+  hash.Update(*simonHealth);
+  hash.Update(*simonHeartCount);
+  hash.Update(*simonInvulnerability);
+  hash.Update(*itemDropCounter);
 
   // Conditional hashes
   if (hashIncludes.contains("Subweapon Number")) hash.Update(*subweaponNumber);
   if (hashIncludes.contains("Enemy 1 Pos X")) hash.Update(*enemy1PosX);
   if (hashIncludes.contains("Enemy 2 Pos X")) hash.Update(*enemy2PosX);
   if (hashIncludes.contains("Enemy 3 Pos X")) hash.Update(*enemy3PosX);
+  if (hashIncludes.contains("Enemy 1 State")) hash.Update(*enemy1State);
+  if (hashIncludes.contains("Enemy 2 State")) hash.Update(*enemy2State);
+  if (hashIncludes.contains("Enemy 3 State")) hash.Update(*enemy3State);
   if (hashIncludes.contains("Bat / Medusa 1 Pos X")) hash.Update(*batMedusa1PosX);
+  if (hashIncludes.contains("Bat / Medusa 1 Pos Y")) hash.Update(*batMedusa1PosY);
+
+  // Freeze timer is around 180 frames. To reduce exploration space, we only take either 0 or a few possibilities for positive.
+  if (hashIncludes.contains("Freeze Time Timer"))
+  {
+   uint8_t value = *freezeTimeTimer;
+   if (value > 0) value = (value % 30) + 1;
+   hash.Update(value);
+  }
 
   // Candelabra states go from 0x191 to 0x1A8
   if (hashIncludes.contains("Candelabra States")) for (size_t i = 0x0191; i < 0x1A8; i++) hash.Update(_emu->_baseMem[i]);
-
-  // Special case hashes
-  if (*currentStage == 2 && *currentSubStage == 1) hash.Update(*batMedusa1PosX);
 
   // Only hash boss position if active
   if (*bossIsActive > 0)
@@ -111,9 +119,13 @@ uint64_t GameInstance::computeHash() const
 
   // Unused hashes
   //hash.Update(*simonLives);
+  //hash.Update(*freezeTimeTimer);
 
   // If simon is getting knocked back or paralyzed, use timer
   if (*simonState == 0x05 || *simonState == 0x09) hash.Update(*stageTimer);
+
+  // If simon is standing-attacking, use timer
+  if (*simonState == 0x02) hash.Update(*stageTimer);
 
   // If we are in an animation, add timer to hash
   if (*gameMode == 0x08 || *gameMode == 0x0A) hash.Update(*stageTimer);
@@ -145,6 +157,7 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 {
  // Storage for magnet information
  magnetSet_t magnets;
+ memset(&magnets, 0, sizeof(magnets));
 
  for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   if (rulesStatus[ruleId] == true)
@@ -180,11 +193,26 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   boundedValue = std::max(boundedValue, magnets.simonVerticalMagnet.min);
   reward += magnets.simonVerticalMagnet.intensity * boundedValue;
 
+  // Evaluating bat/medusa horizontal magnet
+  boundedValue = (float)*batMedusa1PosX;
+  boundedValue = std::min(boundedValue, magnets.batMedusaHorizontalMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.batMedusaHorizontalMagnet.min);
+  reward += magnets.batMedusaHorizontalMagnet.intensity * boundedValue;
+
+  // Evaluating bat/medusa vertical magnet
+  boundedValue = (float)*batMedusa1PosY;
+  boundedValue = std::min(boundedValue, magnets.batMedusaVerticalMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.batMedusaVerticalMagnet.min);
+  reward += magnets.batMedusaVerticalMagnet.intensity * boundedValue;
+
   // Evaluating simon magnet's reward on hearts
   boundedValue = (float)*simonHeartCount;
   boundedValue = std::min(boundedValue, magnets.simonHeartMagnet.max);
   boundedValue = std::max(boundedValue, magnets.simonHeartMagnet.min);
   reward += magnets.simonHeartMagnet.intensity * boundedValue;
+
+  // Evaluating freeze time magnet
+  reward += magnets.freezeTimeMagnet * *freezeTimeTimer;
 
   // Evaluating simon's stairs magnet
   if (magnets.simonStairMagnet.mode == *simonStairMode) reward += magnets.simonStairMagnet.reward;
@@ -238,9 +266,13 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Boss Pos X:             %04u\n", *bossPosX);
   LOG("[Jaffar]  + Boss Pos Y:             %02u\n", *bossPosY);
   LOG("[Jaffar]  + Boss Is Active:         %02u\n", *bossIsActive);
+  LOG("[Jaffar]  + Enemy State:            %02u, %02u, %02u\n", *enemy1State, *enemy2State, *enemy3State);
   LOG("[Jaffar]  + Enemy Pos X:            %02u, %02u, %02u\n", *enemy1PosX, *enemy2PosX, *enemy3PosX);
   LOG("[Jaffar]  + Bat / Medusa Pos X:     %02u\n", *batMedusa1PosX);
+  LOG("[Jaffar]  + Bat / Medusa Pos Y:     %02u\n", *batMedusa1PosY);
   LOG("[Jaffar]  + Grab Item Timer:        %02u\n", *grabItemTimer);
+  LOG("[Jaffar]  + Freeze Time Timer:      %02u\n", *freezeTimeTimer);
+  LOG("[Jaffar]  + Item Drop Counter:      %02u\n", *itemDropCounter);
 
   LOG("[Jaffar]  + Candelabra States: ");
     for (size_t i = 0x0191; i < 0x1A8; i++) LOG("%d", _emu->_baseMem[i] > 0 ? 1 : 0);
@@ -251,9 +283,12 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("\n");
 
   auto magnets = getMagnetValues(rulesStatus);
-  LOG("[Jaffar]  + Simon Horizontal Magnet    - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonHorizontalMagnet.intensity, magnets.simonHorizontalMagnet.min, magnets.simonHorizontalMagnet.max);
-  LOG("[Jaffar]  + Simon Vertical Magnet      - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonVerticalMagnet.intensity, magnets.simonVerticalMagnet.min, magnets.simonVerticalMagnet.max);
-  LOG("[Jaffar]  + Simon Heart Magnet         - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonHeartMagnet.intensity, magnets.simonHeartMagnet.min, magnets.simonHeartMagnet.max);
-  LOG("[Jaffar]  + Simon Stairs Magnet        - Reward:    %.1f, Mode: %u\n", magnets.simonStairMagnet.reward, magnets.simonStairMagnet.mode);
-  LOG("[Jaffar]  + Simon Weapon Magnet        - Reward:    %.1f, Weapon: %u\n", magnets.simonWeaponMagnet.reward, magnets.simonWeaponMagnet.weapon);
+  LOG("[Jaffar]  + Simon Horizontal Magnet        - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonHorizontalMagnet.intensity, magnets.simonHorizontalMagnet.min, magnets.simonHorizontalMagnet.max);
+  LOG("[Jaffar]  + Simon Vertical Magnet          - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonVerticalMagnet.intensity, magnets.simonVerticalMagnet.min, magnets.simonVerticalMagnet.max);
+  LOG("[Jaffar]  + Simon Heart Magnet             - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.simonHeartMagnet.intensity, magnets.simonHeartMagnet.min, magnets.simonHeartMagnet.max);
+  LOG("[Jaffar]  + Bat / Medusa Horizontal Magnet - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.batMedusaHorizontalMagnet.intensity, magnets.batMedusaHorizontalMagnet.min, magnets.batMedusaHorizontalMagnet.max);
+  LOG("[Jaffar]  + Bat / Medusa Vertical Magnet   - Intensity: %.1f, Min: %3.3f, Max: %3.3f\n", magnets.batMedusaVerticalMagnet.intensity, magnets.batMedusaVerticalMagnet.min, magnets.batMedusaVerticalMagnet.max);
+  LOG("[Jaffar]  + Freeze Time Magnet             - Intensity: %.1f\n", magnets.freezeTimeMagnet);
+  LOG("[Jaffar]  + Simon Stairs Magnet            - Reward:    %.1f, Mode: %u\n", magnets.simonStairMagnet.reward, magnets.simonStairMagnet.mode);
+  LOG("[Jaffar]  + Simon Weapon Magnet            - Reward:    %.1f, Weapon: %u\n", magnets.simonWeaponMagnet.reward, magnets.simonWeaponMagnet.weapon);
 }

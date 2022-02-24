@@ -5,8 +5,11 @@ GameRule::GameRule() : Rule()
  _magnets.simonHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.simonVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.simonHeartMagnet = genericMagnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
+ _magnets.batMedusaHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
+ _magnets.batMedusaVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.simonStairMagnet = stairMagnet_t { .reward = 0.0f, .mode = 0};
  _magnets.simonWeaponMagnet = weaponMagnet_t { .reward = 0.0f, .weapon = 0};
+ _magnets.freezeTimeMagnet = 0.0f;
 }
 
 bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
@@ -41,6 +44,24 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Bat / Medusa Horizontal Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+   _magnets.batMedusaHorizontalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Bat / Medusa Vertical Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+   _magnets.batMedusaVerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+   recognizedActionType = true;
+  }
+
   if (actionType == "Set Simon Stair Mode Magnet")
   {
    if (isDefined(actionJs, "Reward") == false) EXIT_WITH_ERROR("[ERROR] Stairs Magnet in Rule %lu Action %lu missing 'Reward' key.\n", _label, actionId);
@@ -54,6 +75,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    if (isDefined(actionJs, "Reward") == false) EXIT_WITH_ERROR("[ERROR] Weapon Magnet in Rule %lu Action %lu missing 'Reward' key.\n", _label, actionId);
    if (isDefined(actionJs, "Weapon") == false) EXIT_WITH_ERROR("[ERROR] Weapon Magnet in Rule %lu Action %lu missing 'Weapon' key.\n", _label, actionId);
    _magnets.simonWeaponMagnet = weaponMagnet_t { .reward = actionJs["Reward"].get<float>(), .weapon = actionJs["Weapon"].get<uint8_t>()};
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Freeze Timer Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Weapon Magnet in Rule %lu Action %lu missing 'Reward' key.\n", _label, actionId);
+   _magnets.freezeTimeMagnet = actionJs["Intensity"].get<float>();
    recognizedActionType = true;
   }
 
@@ -89,6 +117,9 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Boss Health") return dt_uint8;
   if (propertyName == "Boss Position X") return dt_uint8;
   if (propertyName == "Boss Position Y") return dt_uint8;
+  if (propertyName == "Freeze Time Timer") return dt_uint8;
+  if (propertyName == "Bat / Medusa 1 Position Y") return dt_uint8;
+  if (propertyName == "Bat / Medusa 1 Position X") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -124,6 +155,9 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Boss Health") return gameInstance->bossHealth;
   if (propertyName == "Boss Position X") return gameInstance->bossPosX;
   if (propertyName == "Boss Position Y") return gameInstance->bossPosY;
+  if (propertyName == "Freeze Time Timer") return gameInstance->freezeTimeTimer;
+  if (propertyName == "Bat / Medusa 1 Position Y") return gameInstance->batMedusa1PosY;
+  if (propertyName == "Bat / Medusa 1 Position X") return gameInstance->batMedusa1PosX;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

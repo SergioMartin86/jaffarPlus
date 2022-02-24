@@ -27,7 +27,10 @@ struct magnetSet_t {
  // Relevant simon magnets
  genericMagnet_t simonHorizontalMagnet;
  genericMagnet_t simonVerticalMagnet;
+ genericMagnet_t batMedusaHorizontalMagnet;
+ genericMagnet_t batMedusaVerticalMagnet;
  genericMagnet_t simonHeartMagnet;
+ float freezeTimeMagnet;
  stairMagnet_t simonStairMagnet;
  weaponMagnet_t simonWeaponMagnet;
 };
@@ -69,7 +72,13 @@ class GameInstance : public GameInstanceBase
   uint8_t* enemy1PosX;
   uint8_t* enemy2PosX;
   uint8_t* enemy3PosX;
+  uint8_t* enemy1State;
+  uint8_t* enemy2State;
+  uint8_t* enemy3State;
   uint8_t* batMedusa1PosX;
+  uint8_t* batMedusa1PosY;
+  uint8_t* freezeTimeTimer;
+  uint8_t* itemDropCounter;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;

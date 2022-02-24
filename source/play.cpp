@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <set>
 #include "argparse.hpp"
 #include "playbackInstance.hpp"
 #include "gameInstance.hpp"
@@ -104,6 +105,11 @@ int main(int argc, char *argv[])
   nodelay(stdscr, TRUE);
   scrollok(stdscr, TRUE);
 
+  // This storage will indicate whether a repeated hash was found
+  std::set<uint64_t> hashSet;
+  bool hashCollisionFound = false;
+  uint16_t hashCollisionStep = 0;
+
   // Getting move list
   const auto moveList = split(moveSequence, ' ');
 
@@ -135,6 +141,10 @@ int main(int argc, char *argv[])
   std::vector<uint8_t*> stateSequence;
   std::vector<bool*> ruleStatusSequence;
 
+  // Flag to indicate whether a fail condition was met
+  bool failConditionFound = false;
+  uint16_t failConditionStep = 0;
+
   // Saving initial frame
   uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE);
   gameInstance.popState(state);
@@ -145,11 +155,32 @@ int main(int argc, char *argv[])
   gameInstance.evaluateRules(rulesStatus);
   ruleStatusSequence.push_back(rulesStatus);
 
+  // Checking if fail condition was met
+  auto stateType = gameInstance.getStateType(rulesStatus);
+  if (failConditionFound == false && stateType == f_fail)
+  {
+   failConditionFound = true;
+   failConditionStep = 0;
+  }
+
+  // Adding current hash to the set
+  uint64_t curHash = gameInstance.computeHash();
+  hashSet.insert(curHash);
+
   // Iterating move list in the sequence
   for (int i = 0; i < sequenceLength; i++)
   {
    // Advancing state
    gameInstance.advanceState(moveList[i]);
+
+   // Adding current hash to the set
+   uint64_t curHash = gameInstance.computeHash();
+   if (hashCollisionFound == false && hashSet.contains(curHash))
+   {
+    hashCollisionStep = i;
+    hashCollisionFound = true;
+   }
+   hashSet.insert(curHash);
 
    // Storing new state
    state = (uint8_t*) malloc(_STATE_DATA_SIZE);
@@ -161,6 +192,15 @@ int main(int argc, char *argv[])
    memcpy(rulesStatus, ruleStatusSequence[i], ruleCount * sizeof(bool));
    gameInstance.evaluateRules(rulesStatus);
    ruleStatusSequence.push_back(rulesStatus);
+
+   // Checking if fail condition was met
+   auto stateType = gameInstance.getStateType(rulesStatus);
+   if (failConditionFound == false && stateType == f_fail)
+   {
+    failConditionFound = true;
+    failConditionStep = i;
+   }
+
   }
 
   // Variable for current step in view
@@ -189,6 +229,8 @@ int main(int argc, char *argv[])
      printw("[Jaffar] ----------------------------------------------------------------\n");
      printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
      printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
+     printw("[Jaffar]  + Hash Collision Found:   %s (%u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep);
+     printw("[Jaffar]  + Fail State  Found:      %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep);
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
      printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | g: set RNG | s: quicksave | p: play | q: quit\n");
      refresh();
