@@ -1,0 +1,99 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../castlevania.nes",
+    "State File": "stage03.state"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 1000,
+    "Max Move Count": 530
+  },
+  
+  "Game Configuration": 
+  {
+   "Hash Includes": [  ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 50000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1006,
+    "Description": "Reward getting to next stage",
+    "Conditions":
+    [
+      { "Property": "Current Stage", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max":  712 }
+    ]
+   },
+   
+   {
+    "Label": 1007,
+    "Description": "Reward Killing the bat",
+    "Conditions":
+    [
+      { "Property": "Boss Health", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ 1006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max":  640 }
+    ]
+   },
+   
+   {
+    "Label": 1108,
+    "Description": "Win on grabbing crystal ball",
+    "Conditions":
+    [
+      { "Property": "Game Mode", "Op": "==", "Value":  12 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}
