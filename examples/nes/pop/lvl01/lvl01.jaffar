@@ -1,0 +1,52 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../pop.nes",
+    "State File": "lvl01.state"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 2048,
+    "Max Move Count": 800
+  },
+  
+  "Game Configuration": 
+  {
+   "Hash Includes": [  ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 500,
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+  },
+  
+  "Rules":
+  [
+  ]  
+}
