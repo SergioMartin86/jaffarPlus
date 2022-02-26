@@ -38,6 +38,7 @@ class GameInstance : public GameInstanceBase
   uint64_t computeHash() const override;
   void updateDerivedValues() override;
   std::vector<std::string> getPossibleMoves() const override;
-  float getStateReward(const bool* rulesStatus) override;
+  float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
+  void setRNGState(const uint64_t RNGState) override;
 };

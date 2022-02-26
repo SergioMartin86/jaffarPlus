@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
   const auto moveList = split(moveSequence, ' ');
 
   // Getting sequence size
-  const int sequenceLength = moveList.size()-1;
+  const int sequenceLength = moveList.size();
 
   // Printing info
   printw("[Jaffar] Playing sequence file: %s\n", solutionFile.c_str());

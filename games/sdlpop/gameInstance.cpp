@@ -402,6 +402,8 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
   LOG("[Jaffar]  + Current/Next Level: %2d / %2d\n", gameState.current_level, gameState.next_level);
+  LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
+  LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
   LOG("[Jaffar]  + [Kid]   Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.hitp_curr), int(gameState.hitp_max));
   LOG("[Jaffar]  + [Guard] Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.guardhp_curr), int(gameState.guardhp_max));
   LOG("[Jaffar]  + Exit Room Timer: %d\n", gameState.exit_room_timer);
@@ -430,5 +432,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
   LOG("[Jaffar]  + Guard Horizontal Magnet Intensity / Position: %.1f / %.0f\n", guardMagnet.intensityX, guardMagnet.positionX);
   LOG("[Jaffar]  + Guard Vertical Magnet Intensity: %.1f\n", guardMagnet.intensityY);
+}
 
+void GameInstance::setRNGState(const uint64_t RNGState)
+{
+ gameState.random_seed = (uint8_t) RNGState;
 }

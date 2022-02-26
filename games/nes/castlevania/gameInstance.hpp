@@ -6,6 +6,7 @@
 // Datatype to describe a generic magnet
 struct genericMagnet_t {
  float intensity; // How strong the magnet is
+ float center;  // What is the central point of attraction
  float min;  // What is the minimum input value to the calculation.
  float max;  // What is the maximum input value to the calculation.
 };
@@ -27,6 +28,8 @@ struct magnetSet_t {
  // Relevant simon magnets
  genericMagnet_t simonHorizontalMagnet;
  genericMagnet_t simonVerticalMagnet;
+ genericMagnet_t bossHorizontalMagnet;
+ genericMagnet_t bossVerticalMagnet;
  genericMagnet_t batMedusaHorizontalMagnet;
  genericMagnet_t batMedusaVerticalMagnet;
  genericMagnet_t simonHeartMagnet;
@@ -68,6 +71,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* bossPosX;
   uint8_t* bossPosY;
   uint8_t* bossIsActive;
+  uint8_t* bossImage;
+  uint8_t* bossState;
   uint8_t* grabItemTimer;
   uint8_t* enemy1PosX;
   uint8_t* enemy2PosX;

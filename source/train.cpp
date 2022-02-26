@@ -161,6 +161,10 @@ void Train::computeStates()
     // Storage for base states
     uint8_t baseStateData[_STATE_DATA_SIZE];
 
+    // Storage for copies and pointer to the base state
+    State baseStateContent;
+    State* baseFramePointer;
+
     // Profiling timers
     ssize_t threadHashCalculationTime = 0;
     ssize_t threadHashCheckingTime = 0;
@@ -182,8 +186,14 @@ void Train::computeStates()
 
       // Getting possible moves for the current state
       t0 = std::chrono::high_resolution_clock::now(); // Profiling
+
       _gameInstances[threadId]->pushState(baseStateData);
       std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves();
+
+      // Making copy of base state data and pointer
+      memcpy(&baseStateContent, baseState, sizeof(State));
+      baseFramePointer = baseState;
+
       tf = std::chrono::high_resolution_clock::now();
       threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -241,32 +251,45 @@ void Train::computeStates()
         // Storing the state data
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
-        // Grabbing lock from free state queue
-        _freeStateQueueLock.lock();
 
-        // If we ran out of free states, gotta check if we can free up the worst states from the next state db
-        if (_freeStateQueue.empty())
+
+        // Obtaining free state from the base pointer and, if not from the queue
+        State* newState;
+        if (baseFramePointer != NULL)
         {
-         // Trying to limit new states DB to lower bound size and recycling its states
-         #pragma omp critical(newFrameDB)
+         newState = baseFramePointer;
+         baseFramePointer = NULL;
+        }
+        else
+        {
+         // Grabbing lock from free state queue
+         _freeStateQueueLock.lock();
+
+         // If we ran out of free states, gotta check if we can free up the worst states from the next state db
+         if (_freeStateQueue.empty())
          {
-          auto DBSortingTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
-          if (newStates.size() > _maxDatabaseSizeLowerBound) limitStateDatabase(newStates, _maxDatabaseSizeLowerBound);
-          else EXIT_WITH_ERROR("[ERROR] Ran out of free states. Increase 'State Database', 'Max Size Upper Bound (Mb)'\n");
-          auto DBSortingTimeEnd = std::chrono::high_resolution_clock::now();                                                                      // Profiling
-          _stepStateDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
+
+          // Trying to limit new states DB to lower bound size and recycling its states
+          #pragma omp critical(newFrameDB)
+          {
+           auto DBSortingTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
+           if (newStates.size() > _maxDatabaseSizeLowerBound) limitStateDatabase(newStates, _maxDatabaseSizeLowerBound);
+           else EXIT_WITH_ERROR("[ERROR] Ran out of free states. Increase 'State Database', 'Max Size Upper Bound (Mb)'\n");
+           auto DBSortingTimeEnd = std::chrono::high_resolution_clock::now();                                                                      // Profiling
+           _stepStateDBSortingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(DBSortingTimeEnd - DBSortingTimeBegin).count(); // Profiling
+          }
          }
+
+         // Taking free state pointer
+          newState = _freeStateQueue.front();
+         _freeStateQueue.pop();
+
+         // Releasing lock
+         _freeStateQueueLock.unlock();
         }
 
-        // Obtaining free state from queue
-        State* newState = _freeStateQueue.front();
-        _freeStateQueue.pop();
-
-        // Releasing lock from free state queue
-        _freeStateQueueLock.unlock();
-
         // Getting rule status from the base state
-        memcpy(newState, baseState, sizeof(State));
+        memcpy(newState, &baseStateContent, sizeof(State));
 
         // Evaluating rules on the new state
         _gameInstances[threadId]->evaluateRules(newState->rulesStatus);
@@ -324,10 +347,13 @@ void Train::computeStates()
         }
       }
 
-      // Adding used base state back into free state queue
-      _freeStateQueueLock.lock();
-      _freeStateQueue.push(baseState);
-      _freeStateQueueLock.unlock();
+      // Adding used base state back into free state queue, if it wasn't recycled locally
+      if (baseFramePointer != NULL)
+      {
+       _freeStateQueueLock.lock();
+       _freeStateQueue.push(baseState);
+       _freeStateQueueLock.unlock();
+      }
 
       // Increasing counter for base states processed
       #pragma omp atomic

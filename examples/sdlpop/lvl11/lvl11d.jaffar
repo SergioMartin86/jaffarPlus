@@ -10,9 +10,31 @@
   
   "State Configuration": 
   {
-    "Max Difference Count": 50,
-    "Max Move Count": 250,
-    "Store Move List": false    
+    "Max Difference Count": 42,
+    "Max Move Count": 250
+  },
+  
+ "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 140000,
+     "Max Size Upper Bound (Mb)": 180000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 12000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
   },
   
   "Game Configuration": 
@@ -35,29 +57,6 @@
      { "Room": 24, "Tile": 17, "Type": "Full", "Description": "Exit Door" }
    ]
   },
-  
-  "Jaffar Configuration": 
-  {
-    "State Database":
-    {
-     "Max Size Lower Bound (Mb)": 2,
-     "Max Size Upper Bound (Mb)": 5
-    },
-    
-    "Hash Database": 
-    { 
-     "Database Count": 2,
-     "Max Size Upper Bound (Mb)": 1
-    },
-    
-    "Save Intermediate Results":
-    {
-     "Enabled": true,
-     "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol"
-    }
-  }, 
   
   "Playback Configuration": 
   {

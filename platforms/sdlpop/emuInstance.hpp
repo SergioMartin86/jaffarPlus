@@ -10,6 +10,7 @@
 #define _STATE_FIXED_SIZE 148
 #define _STATE_DIFFERENTIAL_SIZE 2501
 #define _STATE_DATA_SIZE (_STATE_DIFFERENTIAL_SIZE + _STATE_FIXED_SIZE)
+#define _MAX_RULE_COUNT 24
 
 class EmuInstance : public EmuInstanceBase
 {
