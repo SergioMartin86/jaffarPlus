@@ -48,5 +48,19 @@
   
   "Rules":
   [
+   {
+    "Label": 1001,
+    "Description": "Setting magnet to make Kid go to the right",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Center": 400, "Min": 0, "Max": 400 }
+    ]
+   }
   ]  
 }

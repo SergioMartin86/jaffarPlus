@@ -37,6 +37,15 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Kid Position X") return dt_uint8;
+  if (propertyName == "Kid Position Y") return dt_uint8;
+  if (propertyName == "Kid Frame") return dt_uint8;
+  if (propertyName == "Kid Movement") return dt_uint8;
+  if (propertyName == "Kid HP") return dt_uint8;
+  if (propertyName == "Kid Room") return dt_uint8;
+  if (propertyName == "Guard Pos X") return dt_uint8;
+  if (propertyName == "Guard HP") return dt_uint8;
+
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
   return dt_uint8;
@@ -45,6 +54,15 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance* gameInstance)
 {
   std::string propertyName = condition["Property"].get<std::string>();
+
+  if (propertyName == "Kid Position X") return gameInstance->kidPosX;
+  if (propertyName == "Kid Position Y") return gameInstance->kidPosY;
+  if (propertyName == "Kid Frame") return gameInstance->kidFrame;
+  if (propertyName == "Kid Movement") return gameInstance->kidMovement;
+  if (propertyName == "Kid HP") return gameInstance->kidHP;
+  if (propertyName == "Kid Room") return gameInstance->kidRoom;
+  if (propertyName == "Guard Pos X") return gameInstance->guardPosX;
+  if (propertyName == "Guard HP") return gameInstance->guardHP;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

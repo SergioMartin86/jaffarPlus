@@ -24,6 +24,16 @@ class GameInstance : public GameInstanceBase
 
   // Container for game-specific values
   uint8_t* RNGState;
+  uint8_t* framePhase;
+  uint16_t* kidPosX;
+  uint8_t* kidPosY;
+  uint8_t* kidFrame;
+  uint8_t* kidMovement;
+  uint8_t* kidHP;
+  uint8_t* kidRoom;
+  uint8_t* guardPosX;
+  uint8_t* guardHP;
+  uint8_t* drawnRoom;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;
