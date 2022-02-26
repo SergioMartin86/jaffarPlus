@@ -233,6 +233,7 @@ int main(int argc, char *argv[])
      printw("[Jaffar]  + Fail State  Found:      %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep);
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
      printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | g: set RNG | s: quicksave | p: play | q: quit\n");
+     playbackInstance.printPlaybackCommands();
      refresh();
    }
 
@@ -253,6 +254,9 @@ int main(int argc, char *argv[])
 
    // Get command
    command = getKeyPress();
+
+   // Parsing command
+   showFrameInfo = playbackInstance.parseCommand(command, stateSequence[currentStep]);
 
    // Advance/Rewind commands
    if (command == 'n') currentStep = currentStep - 1;

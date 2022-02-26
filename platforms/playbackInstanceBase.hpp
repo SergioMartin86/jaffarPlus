@@ -18,4 +18,8 @@ class PlaybackInstanceBase
 
  // Function to render frame
  virtual void renderFrame(const uint16_t currentStep, const std::string& move) = 0;
+
+ // Emu-specific playback commands
+ virtual void printPlaybackCommands() const = 0;
+ virtual bool parseCommand(const char command, uint8_t* state) = 0;
 };

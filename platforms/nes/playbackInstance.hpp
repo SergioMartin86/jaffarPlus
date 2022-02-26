@@ -64,4 +64,37 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Reload game state
   _game->_emu->deserializeState(emuState);
  }
+
+ // Function to render frame
+ void printPlaybackCommands() const override
+ {
+  printw("[Jaffar] Commands: o: load low mem file\n");
+ }
+
+ // Function to render frame
+ bool parseCommand(const char command, uint8_t* state) override
+ {
+  if (command == 'o')
+  {
+   // Obtaining RNG state
+   printw("Enter low memory file: ");
+
+   // Setting input as new rng
+   char str[80]; getstr(str);
+
+   printw("Loading low memory file '%s'...\n", str);
+   std::string lowMemData;
+   bool status = loadStringFromFile(lowMemData, str);
+   if (status == false) { printw("Could not read from file.\n", str); return false; }
+   memcpy(_game->_emu->_baseMem, (uint8_t*) lowMemData.data(), 2048);
+
+   // Replacing current sequence
+   _game->popState(state);
+
+   return false;
+  }
+
+  return true;
+ }
+
 };

@@ -281,7 +281,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Simon Lives:            %02u\n", *simonLives);
   LOG("[Jaffar]  + Simon Stair Mode:       %02u\n", *simonStairMode);
   LOG("[Jaffar]  + Simon Health:           %02u\n", *simonHealth);
-  LOG("[Jaffar]  + Simon Pos X:            %04u\n", *simonPosX);
+  LOG("[Jaffar]  + Simon Pos X:            %04u (%02u %02u)\n", *simonPosX, *((uint8_t*)simonPosX), *(((uint8_t*)simonPosX)+1));
   LOG("[Jaffar]  + Simon Pos Y:            %04u\n", *simonPosY);
   LOG("[Jaffar]  + Simon Invulnerability:  %02u\n", *simonInvulnerability);
   LOG("[Jaffar]  + Simon Kneeling Mode:    %02u\n", *simonKneelingMode);

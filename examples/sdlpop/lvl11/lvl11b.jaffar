@@ -3,7 +3,7 @@
   
   "Emulator Configuration": 
   {
-    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "lvl11b.sav"
   },
@@ -11,8 +11,30 @@
   "State Configuration": 
   {
     "Max Difference Count": 150,
-    "Max Move Count": 300,
-    "Store Move List": true    
+    "Max Move Count": 300
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 150000,
+     "Max Size Upper Bound (Mb)": 190000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 5,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
   },
   
   "Game Configuration": 
@@ -103,33 +125,10 @@
    ]
   },
   
-  "Jaffar Configuration": 
-  {
-    "State Database":
-    {
-     "Max Size Lower Bound (Mb)": 1550,
-     "Max Size Upper Bound (Mb)": 200000
-    },
-    
-    "Hash Database": 
-    { 
-     "Max Size Lower Bound (Mb)": 12000,
-     "Max Size Upper Bound (Mb)": 20000
-    },
-    
-    "Save Intermediate Results":
-    {
-     "Enabled": true,
-     "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol"
-    }
-  }, 
-  
   "Playback Configuration": 
   {
-    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
   },
   
   "Rules":

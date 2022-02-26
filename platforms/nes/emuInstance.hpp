@@ -45,8 +45,8 @@ class EmuInstance : public EmuInstanceBase
   // Setting emulator
   setEmulator(emu);
 
-  // Loading state file
-  loadStateFile(stateFilePath);
+  // Loading state file, if specified
+  if (stateFilePath != "") loadStateFile(stateFilePath);
  }
 
  void setEmulator(Nes_Emu* emulator)

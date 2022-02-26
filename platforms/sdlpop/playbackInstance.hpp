@@ -960,4 +960,16 @@ class PlaybackInstance : public PlaybackInstanceBase
    return dest;
  }
 
+ // Function to render frame
+ void printPlaybackCommands() const override
+ {
+ }
+
+ // Function to render frame
+ bool parseCommand(const char command, uint8_t* state) override
+ {
+
+  return true;
+ }
+
 };
