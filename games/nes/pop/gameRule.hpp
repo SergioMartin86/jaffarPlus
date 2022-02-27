@@ -7,7 +7,7 @@ class GameRule : public Rule
 {
  public:
 
- magnetSet_t _magnets;
+ magnetSet_t _magnets[ROOM_COUNT];
 
  GameRule();
  ~GameRule() = default;

@@ -1,10 +1,14 @@
 #pragma once
 
-#define _MAX_DIFFERENCE_COUNT 150
-#define _MAX_MOVELIST_SIZE 300
-#define JAFFAR_DISABLE_MOVE_HISTORY
+#include <stdlib.h>
+#include <stdint.h>
+#include <utils.hpp>
 
-#include <emuInstance.hpp>
+#define _MAX_DIFFERENCE_COUNT 0
+#define _MAX_MOVELIST_SIZE 1500
+//#define JAFFAR_DISABLE_MOVE_HISTORY
+
+#define _STATE_DATA_SIZE (_STATE_DIFFERENTIAL_SIZE + _STATE_FIXED_SIZE)
 
 enum stateType
 {

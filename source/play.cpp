@@ -1,7 +1,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <set>
+#include <map>
 #include "argparse.hpp"
 #include "playbackInstance.hpp"
 #include "gameInstance.hpp"
@@ -106,9 +106,10 @@ int main(int argc, char *argv[])
   scrollok(stdscr, TRUE);
 
   // This storage will indicate whether a repeated hash was found
-  std::set<uint64_t> hashSet;
+  std::map<uint64_t, uint16_t> hashMap;
   bool hashCollisionFound = false;
   uint16_t hashCollisionStep = 0;
+  uint16_t hashCollisionPrev = 0;
 
   // Getting move list
   const auto moveList = split(moveSequence, ' ');
@@ -165,7 +166,7 @@ int main(int argc, char *argv[])
 
   // Adding current hash to the set
   uint64_t curHash = gameInstance.computeHash();
-  hashSet.insert(curHash);
+  hashMap[curHash] = 0;
 
   // Iterating move list in the sequence
   for (int i = 0; i < sequenceLength; i++)
@@ -175,12 +176,13 @@ int main(int argc, char *argv[])
 
    // Adding current hash to the set
    uint64_t curHash = gameInstance.computeHash();
-   if (hashCollisionFound == false && hashSet.contains(curHash))
+   if (hashCollisionFound == false && hashMap.contains(curHash))
    {
     hashCollisionStep = i;
+    hashCollisionPrev = hashMap[curHash];
     hashCollisionFound = true;
    }
-   hashSet.insert(curHash);
+   hashMap[curHash] = i;
 
    // Storing new state
    state = (uint8_t*) malloc(_STATE_DATA_SIZE);
@@ -229,8 +231,8 @@ int main(int argc, char *argv[])
      printw("[Jaffar] ----------------------------------------------------------------\n");
      printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
      printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
-     printw("[Jaffar]  + Hash Collision Found:   %s (%u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep);
-     printw("[Jaffar]  + Fail State  Found:      %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep);
+     printw("[Jaffar]  + Hash Collision Found:   %s (%u -> %u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep, hashCollisionPrev);
+     printw("[Jaffar]  + Fail State Found:       %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep);
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
      printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | g: set RNG | s: quicksave | p: play | q: quit\n");
      playbackInstance.printPlaybackCommands();

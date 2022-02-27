@@ -43,7 +43,7 @@ executable('jaffar',
   dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
   link_with: [ platformTrainLibs ],
   link_args: [ platformTrainLFlags ],
-  cpp_args: [ jaffarCFlags, platformTrainCFlags ]
+  cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags ]
 )
 
 # Building playback/validation tool
@@ -54,7 +54,7 @@ executable('jaffar-play',
   dependencies: [ platformPlayDependencies ],
   link_with: [ platformPlayLibs ],
   link_args: [ platformPlayLFlags, '-lncurses' ],
-  cpp_args: [ jaffarCFlags, platformPlayCFlags, '-DNCURSES' ] 
+  cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES' ] 
 )
     
     

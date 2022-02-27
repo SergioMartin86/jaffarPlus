@@ -12,11 +12,19 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   kidPosY                = (uint8_t*)   &_emu->_baseMem[0x0611];
   kidFrame               = (uint8_t*)   &_emu->_baseMem[0x0617];
   kidMovement            = (uint8_t*)   &_emu->_baseMem[0x0613];
+  kidFallWait            = (uint8_t*)   &_emu->_baseMem[0x06E4];
   kidHP                  = (uint8_t*)   &_emu->_baseMem[0x06CF];
   kidRoom                = (uint8_t*)   &_emu->_baseMem[0x04DE];
   guardPosX              = (uint8_t*)   &_emu->_baseMem[0x061D];
   guardHP                = (uint8_t*)   &_emu->_baseMem[0x06D0];
+  guardNotice            = (uint8_t*)   &_emu->_baseMem[0x0601];
+  guardFrame             = (uint8_t*)   &_emu->_baseMem[0x0621];
+  guardMovement          = (uint8_t*)   &_emu->_baseMem[0x0625];
   drawnRoom              = (uint8_t*)   &_emu->_baseMem[0x0051];
+  screenTransition       = (uint8_t*)   &_emu->_baseMem[0x04AC];
+  globalTimer            = (uint8_t*)   &_emu->_baseMem[0x0791];
+  screenDrawn            = (uint8_t*)   &_emu->_baseMem[0x0732];
+  isPaused               = (uint8_t*)   &_emu->_baseMem[0x06D1];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -35,11 +43,22 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*kidPosY);
   hash.Update(*kidFrame);
   hash.Update(*kidMovement);
+  hash.Update(*kidFallWait);
   hash.Update(*kidHP);
   hash.Update(*kidRoom);
   hash.Update(*guardPosX);
   hash.Update(*guardHP);
+  hash.Update(*guardNotice);
+  hash.Update(*guardFrame);
+  hash.Update(*guardMovement);
   hash.Update(*drawnRoom);
+  hash.Update(*screenTransition);
+  hash.Update(*screenDrawn);
+  hash.Update(*isPaused);
+  hash.Update(*globalTimer);
+
+  // If in screen transition, take the global timer for hash
+  if (*screenTransition == 255) hash.Update(*globalTimer);
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -57,6 +76,15 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 {
  // On the floor, try all possible combinations, prioritize jumping and right direction
  return { ".", "L", "R", "U", "LA", "A", "RA", "D", "B", "UD", "UB", "DRA", "DLA" };
+
+ // Try all possible combinations
+// std::vector<std::string> moves;
+// for (uint8_t i = 0; i < 255; i++)
+// {
+//  if (i & 0b00000100) continue;
+//  moves.push_back(EmuInstance::moveCodeToString(i));
+// }
+// return moves;
 }
 
 // Function to get magnet information
@@ -68,7 +96,7 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 
  for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   if (rulesStatus[ruleId] == true)
-    magnets = _rules[ruleId]->_magnets;
+    magnets = _rules[ruleId]->_magnets[*kidRoom];
 
  return magnets;
 }
@@ -118,16 +146,23 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
   LOG("[Jaffar]  + RNG State:              0x%X\n", *RNGState);
   LOG("[Jaffar]  + Frame Phase:            %02u\n", *framePhase);
+  LOG("[Jaffar]  + Global Timer:           %02u\n", *globalTimer);
+  LOG("[Jaffar]  + Is Paused:              %02u\n", *isPaused);
+  LOG("[Jaffar]  + Screen Trans / Drawn:   %02u / %02u\n", *screenTransition, *screenDrawn);
 
   LOG("[Jaffar]  + Kid Room:               %02u\n", *kidRoom);
   LOG("[Jaffar]  + Kid Pos X:              %04u\n", *kidPosX);
   LOG("[Jaffar]  + Kid Pos Y:              %02u\n", *kidPosY);
   LOG("[Jaffar]  + Kid Frame:              %02u\n", *kidFrame);
   LOG("[Jaffar]  + Kid Movement:           %02u\n", *kidMovement);
+  LOG("[Jaffar]  + Kid Fall Wait:          %02u\n", *kidFallWait);
   LOG("[Jaffar]  + Kid HP:                 %02u\n", *kidHP);
 
   LOG("[Jaffar]  + Guard Pos X:            %02u\n", *guardPosX);
-  LOG("[Jaffar]  + Guard HP:               %02u\n", *guardPosX);
+  LOG("[Jaffar]  + Guard HP:               %02u\n", *guardHP);
+  LOG("[Jaffar]  + Guard Notice:           %02u\n", *guardNotice);
+  LOG("[Jaffar]  + Guard Frame:            %02u\n", *guardFrame);
+  LOG("[Jaffar]  + Guard Movement          %02u\n", *guardMovement);
 
   LOG("[Jaffar]  + Rule Status: ");
   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

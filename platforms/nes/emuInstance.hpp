@@ -7,11 +7,7 @@
 #include <string>
 #include <vector>
 #include <utils.hpp>
-
-#define _STATE_FIXED_SIZE 0
-#define _STATE_DIFFERENTIAL_SIZE 20993
-#define _STATE_DATA_SIZE (_STATE_DIFFERENTIAL_SIZE + _STATE_FIXED_SIZE)
-#define _MAX_RULE_COUNT 16
+#include <state.hpp>
 
 class EmuInstance : public EmuInstanceBase
 {
