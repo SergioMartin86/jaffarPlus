@@ -6,9 +6,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   // Setting emulator
   _emu = emu;
 
+  gameHashState          = (uint8_t*)   &_emu->_baseMem[0x060E];
+
   RNGState               = (uint8_t*)   &_emu->_baseMem[0x0060];
   framePhase             = (uint8_t*)   &_emu->_baseMem[0x002C];
-  kidPosX                = (uint16_t*)  &_emu->_baseMem[0x060F];
+  kidPosX                = (int16_t*)   &_emu->_baseMem[0x060F];
   kidPosY                = (uint8_t*)   &_emu->_baseMem[0x0611];
   kidFrame               = (uint8_t*)   &_emu->_baseMem[0x0617];
   kidMovement            = (uint8_t*)   &_emu->_baseMem[0x0613];
@@ -25,6 +27,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   globalTimer            = (uint8_t*)   &_emu->_baseMem[0x0791];
   screenDrawn            = (uint8_t*)   &_emu->_baseMem[0x0732];
   isPaused               = (uint8_t*)   &_emu->_baseMem[0x06D1];
+  bufferedCommand        = (uint16_t*)  &_emu->_baseMem[0x04C9];
+
+  // Level-specific tiles
+  lvl1FirstTileBG          = (uint8_t*)   &_emu->_baseMem[0x06A4];
+  lvl1FirstTileFG          = (uint8_t*)   &_emu->_baseMem[0x06B0];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -38,7 +45,10 @@ uint64_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash64 hash;
 
+  for (size_t i = 0; i < 0x80; i++) hash.Update(*(gameHashState+i));
+
   hash.Update(*framePhase);
+
   hash.Update(*kidPosX);
   hash.Update(*kidPosY);
   hash.Update(*kidFrame);
@@ -46,6 +56,9 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*kidFallWait);
   hash.Update(*kidHP);
   hash.Update(*kidRoom);
+
+  hash.Update(*bufferedCommand);
+
   hash.Update(*guardPosX);
   hash.Update(*guardHP);
   hash.Update(*guardNotice);
@@ -55,7 +68,10 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*screenTransition);
   hash.Update(*screenDrawn);
   hash.Update(*isPaused);
-  hash.Update(*globalTimer);
+
+  // Level-specific tiles
+  hash.Update(*lvl1FirstTileBG);
+  hash.Update(*lvl1FirstTileFG);
 
   // If in screen transition, take the global timer for hash
   if (*screenTransition == 255) hash.Update(*globalTimer);
@@ -74,8 +90,11 @@ void GameInstance::updateDerivedValues()
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves() const
 {
- // On the floor, try all possible combinations, prioritize jumping and right direction
- return { ".", "L", "R", "U", "LA", "A", "RA", "D", "B", "UD", "UB", "DRA", "DLA" };
+ // If on correct frame phase, try all possible combinations
+ if (*framePhase == 2)
+  return { ".", "L", "R", "U", "LA", "A", "RA", "D", "B", "UD", "UB", "DRA", "DLA" };
+
+ return { "." };
 
  // Try all possible combinations
 // std::vector<std::string> moves;
@@ -94,9 +113,12 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
  magnetSet_t magnets;
  memset(&magnets, 0, sizeof(magnets));
 
+ // If kid room and drawn room don't agree, no magnet effect
+ if (*kidRoom != *drawnRoom) return magnets;
+
  for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   if (rulesStatus[ruleId] == true)
-    magnets = _rules[ruleId]->_magnets[*kidRoom];
+    magnets = _rules[ruleId]->_magnets[*drawnRoom];
 
  return magnets;
 }
@@ -121,14 +143,14 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   boundedValue = (float)*kidPosX;
   boundedValue = std::min(boundedValue, magnets.kidHorizontalMagnet.max);
   boundedValue = std::max(boundedValue, magnets.kidHorizontalMagnet.min);
-  diff = std::abs(magnets.kidHorizontalMagnet.center - boundedValue);
+  diff = -358.0f + std::abs(magnets.kidHorizontalMagnet.center - boundedValue);
   reward += magnets.kidHorizontalMagnet.intensity * -diff;
 
   // Evaluating kid magnet's reward on position Y
   boundedValue = (float)*kidPosY;
   boundedValue = std::min(boundedValue, magnets.kidVerticalMagnet.max);
   boundedValue = std::max(boundedValue, magnets.kidVerticalMagnet.min);
-  diff = std::abs(magnets.kidVerticalMagnet.center - boundedValue);
+  diff = -255.0f + std::abs(magnets.kidVerticalMagnet.center - boundedValue);
   reward += magnets.kidVerticalMagnet.intensity * -diff;
 
   // Returning reward
@@ -150,8 +172,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Is Paused:              %02u\n", *isPaused);
   LOG("[Jaffar]  + Screen Trans / Drawn:   %02u / %02u\n", *screenTransition, *screenDrawn);
 
+  LOG("[Jaffar]  + Drawn Room:             %02u\n", *drawnRoom);
   LOG("[Jaffar]  + Kid Room:               %02u\n", *kidRoom);
-  LOG("[Jaffar]  + Kid Pos X:              %04u\n", *kidPosX);
+  LOG("[Jaffar]  + Kid Pos X:              %04d\n", *kidPosX);
   LOG("[Jaffar]  + Kid Pos Y:              %02u\n", *kidPosY);
   LOG("[Jaffar]  + Kid Frame:              %02u\n", *kidFrame);
   LOG("[Jaffar]  + Kid Movement:           %02u\n", *kidMovement);
@@ -163,6 +186,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Guard Notice:           %02u\n", *guardNotice);
   LOG("[Jaffar]  + Guard Frame:            %02u\n", *guardFrame);
   LOG("[Jaffar]  + Guard Movement          %02u\n", *guardMovement);
+
+  LOG("[Jaffar]  + Level-Specific Tiles: ");
+  LOG("[Jaffar]  + Level 1 - First Tile:   %02u / %02u\n", *lvl1FirstTileBG, *lvl1FirstTileFG);
 
   LOG("[Jaffar]  + Rule Status: ");
   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

@@ -25,10 +25,13 @@ class GameInstance : public GameInstanceBase
 {
  public:
 
+  // Big state for hashing
+  uint8_t* gameHashState;
+
   // Container for game-specific values
   uint8_t* RNGState;
   uint8_t* framePhase;
-  uint16_t* kidPosX;
+  int16_t* kidPosX;
   uint8_t* kidPosY;
   uint8_t* kidFrame;
   uint8_t* kidMovement;
@@ -45,6 +48,12 @@ class GameInstance : public GameInstanceBase
   uint8_t* globalTimer;
   uint8_t* screenDrawn;
   uint8_t* isPaused;
+
+  uint16_t* bufferedCommand;
+
+  // Level-Specific Tiles
+  uint8_t* lvl1FirstTileBG;
+  uint8_t* lvl1FirstTileFG;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;

@@ -43,7 +43,6 @@ class GameInstance : public GameInstanceBase
  public:
 
   // Container for game-specific values
-  uint8_t* RNGState;
   uint8_t* gameMode;
   uint8_t* gameSubMode;
   uint16_t* stageTimer;
@@ -84,6 +83,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* batMedusa1PosY;
   uint8_t* freezeTimeTimer;
   uint8_t* itemDropCounter;
+  uint8_t* RNGState;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;

@@ -47,9 +47,11 @@ class PlaybackInstance : public PlaybackInstanceBase
   usleep(16667);
 
   // If using a new game and it doesn't seem to load, then get its savestate size here
-  //  size_t size;
-  //  _hqnState.saveStateSize(&size);
-  //  printw("%lu\n", size);
+//    size_t size;
+//    _hqnState.saveStateSize(&size);
+//    printw("%lu\n", size);
+//    refresh();
+//    while(1);
 
   // Storing current game state
   uint8_t emuState[_STATE_DATA_SIZE];

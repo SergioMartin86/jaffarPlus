@@ -10,7 +10,6 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   // Thanks to https://datacrystal.romhacking.net/wiki/Castlevania:RAM_map for helping me find some of these items
 
-  RNGState               = (uint8_t*)   &_emu->_baseMem[0x0004];
   gameMode               = (uint8_t*)   &_emu->_baseMem[0x0018];
   gameSubMode            = (uint8_t*)   &_emu->_baseMem[0x0019];
   stageTimer             = (uint16_t*)  &_emu->_baseMem[0x001A];
@@ -51,6 +50,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   batMedusa1PosX         = (uint8_t*)   &_emu->_baseMem[0x0395];
   batMedusa1PosY         = (uint8_t*)   &_emu->_baseMem[0x035D];
   itemDropCounter        = (uint8_t*)   &_emu->_baseMem[0x007B];
+  RNGState               = (uint8_t*)   &_emu->_baseMem[0x006F];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
