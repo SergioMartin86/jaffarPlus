@@ -17,6 +17,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   kidFallWait            = (uint8_t*)   &_emu->_baseMem[0x06E4];
   kidHP                  = (uint8_t*)   &_emu->_baseMem[0x06CF];
   kidRoom                = (uint8_t*)   &_emu->_baseMem[0x04DE];
+  kidJumpingState        = (uint8_t*)   &_emu->_baseMem[0x0616];
+  kidFightMode           = (uint8_t*)   &_emu->_baseMem[0x06EE];
   guardPosX              = (uint8_t*)   &_emu->_baseMem[0x061D];
   guardHP                = (uint8_t*)   &_emu->_baseMem[0x06D0];
   guardNotice            = (uint8_t*)   &_emu->_baseMem[0x0601];
@@ -24,7 +26,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   guardMovement          = (uint8_t*)   &_emu->_baseMem[0x0625];
   drawnRoom              = (uint8_t*)   &_emu->_baseMem[0x0051];
   screenTransition       = (uint8_t*)   &_emu->_baseMem[0x04AC];
-  globalTimer            = (uint8_t*)   &_emu->_baseMem[0x0791];
+
   screenDrawn            = (uint8_t*)   &_emu->_baseMem[0x0732];
   isPaused               = (uint8_t*)   &_emu->_baseMem[0x06D1];
   bufferedCommand        = (uint16_t*)  &_emu->_baseMem[0x04C9];
@@ -32,6 +34,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   // Level-specific tiles
   lvl1FirstTileBG          = (uint8_t*)   &_emu->_baseMem[0x06A4];
   lvl1FirstTileFG          = (uint8_t*)   &_emu->_baseMem[0x06B0];
+  lvl1ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x0400];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -56,6 +59,7 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*kidFallWait);
   hash.Update(*kidHP);
   hash.Update(*kidRoom);
+  hash.Update(*kidFightMode);
 
   hash.Update(*bufferedCommand);
 
@@ -72,9 +76,7 @@ uint64_t GameInstance::computeHash() const
   // Level-specific tiles
   hash.Update(*lvl1FirstTileBG);
   hash.Update(*lvl1FirstTileFG);
-
-  // If in screen transition, take the global timer for hash
-  if (*screenTransition == 255) hash.Update(*globalTimer);
+  hash.Update(*lvl1ExitDoorState);
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -84,26 +86,19 @@ uint64_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
- // Recalculating derived values
+ // Advancing useless frames
+ while (*screenTransition == 255) _emu->advanceState(0);
+ if (*kidJumpingState == 28 && *framePhase == 4) return; // Allows for ending level
+ if (*kidFightMode < 2) if (*isPaused == 2) if(*framePhase != 2) _emu->advanceState(0);
+ if (*kidFightMode == 2) if (*isPaused == 2) if(*framePhase != 3) _emu->advanceState(0);
 }
 
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves() const
 {
- // If on correct frame phase, try all possible combinations
- if (*framePhase == 2)
-  return { ".", "L", "R", "U", "LA", "A", "RA", "D", "B", "UD", "UB", "DRA", "DLA" };
-
- return { "." };
-
  // Try all possible combinations
-// std::vector<std::string> moves;
-// for (uint8_t i = 0; i < 255; i++)
-// {
-//  if (i & 0b00000100) continue;
-//  moves.push_back(EmuInstance::moveCodeToString(i));
-// }
-// return moves;
+ return { ".", "L", "R", "U", "LA", "A", "RA", "D", "B", "UD", "UB", "DRA", "DLA" };
+
 }
 
 // Function to get magnet information
@@ -168,7 +163,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
   LOG("[Jaffar]  + RNG State:              0x%X\n", *RNGState);
   LOG("[Jaffar]  + Frame Phase:            %02u\n", *framePhase);
-  LOG("[Jaffar]  + Global Timer:           %02u\n", *globalTimer);
   LOG("[Jaffar]  + Is Paused:              %02u\n", *isPaused);
   LOG("[Jaffar]  + Screen Trans / Drawn:   %02u / %02u\n", *screenTransition, *screenDrawn);
 
@@ -180,6 +174,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Kid Movement:           %02u\n", *kidMovement);
   LOG("[Jaffar]  + Kid Fall Wait:          %02u\n", *kidFallWait);
   LOG("[Jaffar]  + Kid HP:                 %02u\n", *kidHP);
+  LOG("[Jaffar]  + Kid Fight Mode:         %02u\n", *kidFightMode);
 
   LOG("[Jaffar]  + Guard Pos X:            %02u\n", *guardPosX);
   LOG("[Jaffar]  + Guard HP:               %02u\n", *guardHP);
@@ -187,8 +182,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Guard Frame:            %02u\n", *guardFrame);
   LOG("[Jaffar]  + Guard Movement          %02u\n", *guardMovement);
 
-  LOG("[Jaffar]  + Level-Specific Tiles: ");
-  LOG("[Jaffar]  + Level 1 - First Tile:   %02u / %02u\n", *lvl1FirstTileBG, *lvl1FirstTileFG);
+  LOG("[Jaffar]  + Level-Specific Tiles: \n");
+  LOG("[Jaffar]  + Level 1 First Tile:     %02u / %02u\n", *lvl1FirstTileBG, *lvl1FirstTileFG);
+  LOG("[Jaffar]  + Level 1 ExitDoor State: %02u\n", *lvl1ExitDoorState);
 
   LOG("[Jaffar]  + Rule Status: ");
   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

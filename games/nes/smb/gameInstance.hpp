@@ -1,5 +1,7 @@
 #pragma once
 
+#define _INVERSE_FRAME_RATE 16667
+
 #include "gameInstanceBase.hpp"
 
 // Datatype to describe a magnet

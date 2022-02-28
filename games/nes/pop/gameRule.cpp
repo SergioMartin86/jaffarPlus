@@ -51,9 +51,11 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Kid Movement") return dt_uint8;
   if (propertyName == "Kid HP") return dt_uint8;
   if (propertyName == "Kid Room") return dt_uint8;
+  if (propertyName == "Kid Fight Mode") return dt_uint8;
   if (propertyName == "Drawn Room") return dt_uint8;
   if (propertyName == "Guard Pos X") return dt_uint8;
   if (propertyName == "Guard HP") return dt_uint8;
+  if (propertyName == "Level 1 Exit Door State") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -70,9 +72,11 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Kid Movement") return gameInstance->kidMovement;
   if (propertyName == "Kid HP") return gameInstance->kidHP;
   if (propertyName == "Kid Room") return gameInstance->kidRoom;
+  if (propertyName == "Kid Fight Mode") return gameInstance->kidFightMode;
   if (propertyName == "Drawn Room") return gameInstance->drawnRoom;
   if (propertyName == "Guard Pos X") return gameInstance->guardPosX;
   if (propertyName == "Guard HP") return gameInstance->guardHP;
+  if (propertyName == "Level 1 Exit Door State") return gameInstance->lvl1ExitDoorState;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

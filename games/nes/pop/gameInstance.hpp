@@ -4,6 +4,7 @@
 #include <set>
 
 #define ROOM_COUNT 24
+#define _INVERSE_FRAME_RATE 33333
 
 // Datatype to describe a generic magnet
 struct genericMagnet_t {
@@ -38,6 +39,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* kidFallWait;
   uint8_t* kidHP;
   uint8_t* kidRoom;
+  uint8_t* kidFightMode;
+  uint8_t* kidJumpingState;
   uint8_t* guardPosX;
   uint8_t* guardHP;
   uint8_t* guardNotice;
@@ -45,7 +48,6 @@ class GameInstance : public GameInstanceBase
   uint8_t* guardMovement;
   uint8_t* drawnRoom;
   uint8_t* screenTransition;
-  uint8_t* globalTimer;
   uint8_t* screenDrawn;
   uint8_t* isPaused;
 
@@ -54,6 +56,7 @@ class GameInstance : public GameInstanceBase
   // Level-Specific Tiles
   uint8_t* lvl1FirstTileBG;
   uint8_t* lvl1FirstTileFG;
+  uint8_t* lvl1ExitDoorState;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;

@@ -148,6 +148,7 @@ int main(int argc, char *argv[])
 
   // Saving initial frame
   uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE);
+  gameInstance.updateDerivedValues();
   gameInstance.popState(state);
   stateSequence.push_back(state);
 
@@ -173,6 +174,7 @@ int main(int argc, char *argv[])
   {
    // Advancing state
    gameInstance.advanceState(moveList[i]);
+   gameInstance.updateDerivedValues();
 
    // Adding current hash to the set
    uint64_t curHash = gameInstance.computeHash();
@@ -231,8 +233,8 @@ int main(int argc, char *argv[])
      printw("[Jaffar] ----------------------------------------------------------------\n");
      printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
      printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
-     printw("[Jaffar]  + Hash Collision Found:   %s (%u -> %u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep, hashCollisionPrev);
-     printw("[Jaffar]  + Fail State Found:       %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep);
+     printw("[Jaffar]  + Hash Collision Found:   %s (%u -> %u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep+1, hashCollisionPrev+1);
+     printw("[Jaffar]  + Fail State Found:       %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep+1);
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
      printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | g: set RNG | s: quicksave | p: play | q: quit\n");
      playbackInstance.printPlaybackCommands();

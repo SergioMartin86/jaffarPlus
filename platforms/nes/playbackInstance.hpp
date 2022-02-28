@@ -43,8 +43,8 @@ class PlaybackInstance : public PlaybackInstanceBase
  // Function to render frame
  void renderFrame(const uint16_t currentStep, const std::string& move) override
  {
-  // Sleeping for 1/60th of a second
-  usleep(16667);
+  // Sleeping for the inverse frame rate
+  usleep(_INVERSE_FRAME_RATE);
 
   // If using a new game and it doesn't seem to load, then get its savestate size here
 //    size_t size;
