@@ -480,7 +480,7 @@ nes_time_t Nes_Core::emulate_frame_()
 		// Add DMC wait-states to CPU time
 		if ( wait_states_enabled )
 		{
-			impl->apu.run_until( cpu_time() );
+			//impl->apu.run_until( cpu_time() );
 			clock_ = cpu_time_offset;
 		}
 		
@@ -568,23 +568,24 @@ nes_time_t Nes_Core::emulate_frame()
 	clock_ = cpu_time_offset;
 	
 	check( cpu_time() == (int) nes.timestamp / ppu_overclock );
-	check( 1 && impl->apu.last_time == cpu_time() );
+	//check( 1 && impl->apu.last_time == cpu_time() );
 	
 	// TODO: clean this fucking mess up
-	impl->apu.run_until_( emulate_frame_() );
+	emulate_frame_();
+	//impl->apu.run_until_( );
 	clock_ = cpu_time_offset;
-	impl->apu.run_until_( cpu_time() );
+	//impl->apu.run_until_( cpu_time() );
 	check( 2 && clock_ == cpu_time_offset );
-	check( 3 && impl->apu.last_time == cpu_time() );
+	//check( 3 && impl->apu.last_time == cpu_time() );
 	
 	nes_time_t ppu_frame_length = ppu.frame_length();
 	nes_time_t length = cpu_time();
 	nes.timestamp = ppu.end_frame( length );
 	mapper->end_frame( length );
-	impl->apu.end_frame( ppu_frame_length );
+	//impl->apu.end_frame( ppu_frame_length );
 	check( 4 && cpu_time() == length );
 	
-	check( 5 && impl->apu.last_time == length - ppu_frame_length );
+	//check( 5 && impl->apu.last_time == length - ppu_frame_length );
 	
 	disable_rendering();
 	nes.frame_count++;

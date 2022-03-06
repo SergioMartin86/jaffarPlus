@@ -55,7 +55,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Drawn Room") return dt_uint8;
   if (propertyName == "Guard Pos X") return dt_uint8;
   if (propertyName == "Guard HP") return dt_uint8;
-  if (propertyName == "Level 1 Exit Door State") return dt_uint8;
+  if (propertyName == "Exit Door State") return dt_uint8;
+  if (propertyName == "Level 2 Exit Door State") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -76,7 +77,8 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Drawn Room") return gameInstance->drawnRoom;
   if (propertyName == "Guard Pos X") return gameInstance->guardPosX;
   if (propertyName == "Guard HP") return gameInstance->guardHP;
-  if (propertyName == "Level 1 Exit Door State") return gameInstance->lvl1ExitDoorState;
+  if (propertyName == "Exit Door State") return gameInstance->exitDoorState;
+  if (propertyName == "Level 2 Exit Door State") return gameInstance->lvl2ExitDoorState;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

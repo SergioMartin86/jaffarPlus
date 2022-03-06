@@ -133,7 +133,8 @@ void Nes_Apu::irq_changed()
 
 void Nes_Apu::run_until( nes_time_t end_time )
 {
-	require( end_time >= last_dmc_time );
+	if ( end_time <= last_time )return;
+
 	if ( end_time > next_dmc_read_time() )
 	{
 		nes_time_t start = last_dmc_time;
@@ -144,10 +145,7 @@ void Nes_Apu::run_until( nes_time_t end_time )
 
 void Nes_Apu::run_until_( nes_time_t end_time )
 {
-	require( end_time >= last_time );
-
-	if ( end_time == last_time )
-		return;
+	if ( end_time <= last_time )return;
 
 	if ( last_dmc_time < end_time )
 	{

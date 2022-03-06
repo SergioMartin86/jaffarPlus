@@ -226,6 +226,9 @@ int main(int argc, char *argv[])
    // Updating display
    playbackInstance.renderFrame(currentStep, moveList[currentStep]);
 
+   // Getting possible moves
+   auto possibleMoves = gameInstance.getPossibleMoves();
+
    // Showing frame information
    if (showFrameInfo)
    {
@@ -233,6 +236,7 @@ int main(int argc, char *argv[])
      printw("[Jaffar] ----------------------------------------------------------------\n");
      printw("[Jaffar] Current Step #: %d / %d\n", currentStep, sequenceLength);
      printw("[Jaffar]  + Move: %s\n", moveList[currentStep].c_str());
+     printw("[Jaffar]  + Possible Moves: '%s'", possibleMoves[0].c_str()); for (size_t i = 1; i < possibleMoves.size(); i++) printw(", '%s'", possibleMoves[i].c_str()); printw("\n");
      printw("[Jaffar]  + Hash Collision Found:   %s (%u -> %u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep+1, hashCollisionPrev+1);
      printw("[Jaffar]  + Fail State Found:       %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep+1);
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);

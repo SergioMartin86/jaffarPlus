@@ -3,8 +3,8 @@
 #include "gameInstanceBase.hpp"
 #include <set>
 
-#define ROOM_COUNT 24
-#define _INVERSE_FRAME_RATE 33333
+#define ROOM_COUNT 255
+#define _INVERSE_FRAME_RATE 16667
 
 // Datatype to describe a generic magnet
 struct genericMagnet_t {
@@ -26,11 +26,9 @@ class GameInstance : public GameInstanceBase
 {
  public:
 
-  // Big state for hashing
-  uint8_t* gameHashState;
-
   // Container for game-specific values
   uint8_t* RNGState;
+  uint8_t* currentLevelRaw;
   uint8_t* framePhase;
   int16_t* kidPosX;
   uint8_t* kidPosY;
@@ -51,15 +49,27 @@ class GameInstance : public GameInstanceBase
   uint8_t* screenDrawn;
   uint8_t* isPaused;
 
+  uint8_t* guardPresent;
+  uint8_t* guardDisappearMode;
+
+  uint8_t* doorOpeningTimer;
+  uint8_t* currentDoorState;
+
   uint16_t* bufferedCommand;
 
   // Level-Specific Tiles
   uint8_t* lvl1FirstTileBG;
   uint8_t* lvl1FirstTileFG;
-  uint8_t* lvl1ExitDoorState;
+  uint8_t* exitDoorState;
+  uint8_t* lvl1Room19DoorState;
+  uint8_t* lvl2LastTileFG;
+  uint8_t* lvl2ExitDoorState;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;
+
+  // Derivative values
+  uint8_t currentLevel;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

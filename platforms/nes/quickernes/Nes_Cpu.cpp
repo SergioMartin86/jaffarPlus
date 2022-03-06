@@ -141,6 +141,8 @@ static const unsigned char clock_table [256] = {
 
 Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 {
+ if (end <= 0) return result_cycles;
+
 	set_end_time_( end );
 	clock_count = 0;
 	
