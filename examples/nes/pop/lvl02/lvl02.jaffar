@@ -99,8 +99,30 @@
     [
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 400 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 80, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 10.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 }
+    ]
+   },
+   
+   {
+    "Label": 1013,
+    "Description": "Got to the next room",
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  5 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  65 }
+    ],
+    
+    "Satisfies": [ 1003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Trigger Win" },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 }
     ]
    },
    
@@ -115,13 +137,12 @@
      { "Property": "Kid Position Y", "Op": "<", "Value":  100 }
     ],
     
-    "Satisfies": [ 1003 ],
+    "Satisfies": [ 1013 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
-     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 10.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 }
     ]
