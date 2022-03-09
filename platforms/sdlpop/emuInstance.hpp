@@ -2,6 +2,7 @@
 
 #include <emuInstanceBase.hpp>
 #include "miniPoP.hpp"
+#include <state.hpp>
 #include <utils.hpp>
 #include <string>
 #include <vector>
@@ -205,13 +206,13 @@ class EmuInstance : public EmuInstanceBase
 
   for (size_t i = 0; i < move.size(); i++) switch(move[i])
   {
-    case 'L': moveCode |= 0b10000000; break;
-    case 'R': moveCode |= 0b01000000; break;
-    case 'U': moveCode |= 0b00100000; break;
-    case 'D': moveCode |= 0b00010000; break;
-    case 'S': moveCode |= 0b00001000; break;
-    case 'C': moveCode |= 0b00000100; break;
-    case 'A': moveCode |= 0b00000010; break;
+    case 'C': moveCode |= 0b01000000; break;
+    case 'A': moveCode |= 0b00100000; break;
+    case 'L': moveCode |= 0b00010000; break;
+    case 'R': moveCode |= 0b00001000; break;
+    case 'U': moveCode |= 0b00000100; break;
+    case 'D': moveCode |= 0b00000010; break;
+    case 'S': moveCode |= 0b00000001; break;
     case '.': break;
     default: EXIT_WITH_ERROR("Move provided cannot be parsed: '%s', unrecognized character: '%c'\n", move.c_str(), move[i]);
   }
@@ -223,13 +224,13 @@ class EmuInstance : public EmuInstanceBase
  {
   std::string moveString;
 
-  if (move & 0b10000000) moveString += 'L'; else moveString += '.';
-  if (move & 0b01000000) moveString += 'R'; else moveString += '.';
-  if (move & 0b00100000) moveString += 'U'; else moveString += '.';
-  if (move & 0b00010000) moveString += 'D'; else moveString += '.';
-  if (move & 0b00001000) moveString += 'S'; else moveString += '.';
-  if (move & 0b00000100) moveString += 'C'; else moveString += '.';
-  if (move & 0b00000010) moveString += 'A'; else moveString += '.';
+  if (move & 0b01000000) moveString += 'C'; else moveString += '.';
+  if (move & 0b00100000) moveString += 'A'; else moveString += '.';
+  if (move & 0b00010000) moveString += 'L'; else moveString += '.';
+  if (move & 0b00001000) moveString += 'R'; else moveString += '.';
+  if (move & 0b00000100) moveString += 'U'; else moveString += '.';
+  if (move & 0b00000010) moveString += 'D'; else moveString += '.';
+  if (move & 0b00000001) moveString += 'S'; else moveString += '.';
 
   return moveString;
  }
@@ -247,12 +248,13 @@ class EmuInstance : public EmuInstanceBase
   key_states[SDL_SCANCODE_RIGHT] = 0;
   key_states[SDL_SCANCODE_RSHIFT] = 0;
 
-  if (move & 0b10000000) key_states[SDL_SCANCODE_LEFT] = 1;
-  if (move & 0b01000000) key_states[SDL_SCANCODE_RIGHT] = 1;
-  if (move & 0b00100000) key_states[SDL_SCANCODE_UP] = 1;
-  if (move & 0b00010000) key_states[SDL_SCANCODE_DOWN] = 1;
-  if (move & 0b00001000) key_states[SDL_SCANCODE_RSHIFT] = 1;
-  if (move & 0b00000100 && move & 0b00000010) is_restart_level = 1;
+  if (move & 0b01000000 && move & 0b00100000) is_restart_level = 1;
+  if (move & 0b00010000) key_states[SDL_SCANCODE_LEFT] = 1;
+  if (move & 0b00001000) key_states[SDL_SCANCODE_RIGHT] = 1;
+  if (move & 0b00000100) key_states[SDL_SCANCODE_UP] = 1;
+  if (move & 0b00000010) key_states[SDL_SCANCODE_DOWN] = 1;
+  if (move & 0b00000001) key_states[SDL_SCANCODE_RSHIFT] = 1;
+
 
   guardhp_delta = 0;
   hitp_delta = 0;

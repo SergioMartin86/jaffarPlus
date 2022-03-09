@@ -4,6 +4,7 @@
 #include <omp.h>
 #include <unistd.h>
 #include <algorithm>
+#include <set>
 
 void Train::run()
 {
@@ -120,6 +121,8 @@ size_t Train::hashEntriesFromSize(const double size) const
   return (size_t)((size * (1024.0 * 1024.0)) / ((double)sizeof(uint64_t) + (double)sizeof(void*)));
 };
 
+#define _DETECT_POSSIBLE_MOVES
+
 void Train::computeStates()
 {
   // Initializing counters
@@ -188,7 +191,31 @@ void Train::computeStates()
       t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
       _gameInstances[threadId]->pushState(baseStateData);
+
       std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves();
+
+      #ifdef _DETECT_POSSIBLE_MOVES
+
+       std::set<uint8_t> possibleMoveSet;
+       std::vector<std::string> fullMoves;
+       std::set<uint8_t> fullMoveSet;
+
+       for (const auto& actualMove : possibleMoves)
+       {
+        possibleMoveSet.insert(EmuInstance::moveStringToCode(actualMove));
+        fullMoves.push_back(actualMove);
+       }
+
+       for (uint8_t i = 0; i < 32; i++) if (possibleMoveSet.contains(i) == false)
+       {
+        fullMoveSet.insert(i);
+        fullMoves.push_back(EmuInstance::moveCodeToString(i));
+       }
+
+       auto possibleMoveCopy = possibleMoves;
+       possibleMoves = fullMoves;
+
+      #endif // _DETECT_POSSIBLE_MOVES
 
       // Making copy of base state data and pointer
       memcpy(&baseStateContent, baseState, sizeof(State));
@@ -251,8 +278,6 @@ void Train::computeStates()
         // Storing the state data
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
-
-
         // Obtaining free state from the base pointer and, if not from the queue
         State* newState;
         if (baseFramePointer != NULL)
@@ -296,6 +321,32 @@ void Train::computeStates()
 
         // Getting state type
         stateType type = _gameInstances[threadId]->getStateType(newState->rulesStatus);
+
+        #ifdef _DETECT_POSSIBLE_MOVES
+
+         // Checking if move is not there in actual moves
+         if (fullMoveSet.contains(EmuInstance::moveStringToCode(fullMoves[idx])))
+         {
+          printf("Possible move not found! '%s'\n", fullMoves[idx].c_str());
+          printf("[Jaffar]  + Idx: %lu\n", idx);
+          printf("[Jaffar]  + Full Set Moves:\n  - '%s'", fullMoves[0].c_str()); for (size_t i = 1; i < fullMoves.size(); i++) printf("\n   - '%s'", fullMoves[i].c_str()); printf("\n");
+          printf("[Jaffar]  + Actual Possible Moves: '%s'", possibleMoveCopy[0].c_str()); for (size_t i = 1; i < possibleMoveCopy.size(); i++) printf(", '%s'", possibleMoveCopy[i].c_str()); printf("\n");
+          _gameInstances[threadId]->printStateInfo(newState->rulesStatus);
+
+          // Storing save file
+          std::string saveFileName = "_newMove.state";
+          _gameInstances[threadId]->saveStateFile(saveFileName);
+          printf("[Jaffar] New movement state to %s\n", saveFileName.c_str());
+
+          saveFileName = "_base.state";
+          _gameInstances[threadId]->pushState(baseStateData);
+          _gameInstances[threadId]->saveStateFile(saveFileName);
+          printf("[Jaffar] Base state to %s\n", saveFileName.c_str());
+
+          exit(0);
+         }
+
+        #endif // _DETECT_POSSIBLE_MOVES
 
         tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling

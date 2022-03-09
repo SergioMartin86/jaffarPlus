@@ -168,29 +168,25 @@ void GameInstance::updateDerivedValues()
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves() const
 {
- // If dead, do nothing
- if (gameState.Kid.alive >= 0)
-   return {"."};
-
  // For level 1, if kid touches ground and music plays, try restarting level
  if (gameState.Kid.frame == 109 && gameState.need_level1_music == 33)
    return {".", "CA"};
 
  // If bumped, nothing to do
  if (gameState.Kid.action == actions_5_bumped)
-   return {"."};
+   return {".", "S"};
 
  // If in mid air or free fall, hope to grab on to something
  if (gameState.Kid.action == actions_3_in_midair || gameState.Kid.action == actions_4_in_freefall)
-   return {".", "S"};
+   return {".", "S", "U" };
 
  // Move, sheath, attack, parry
  if (gameState.Kid.sword == sword_2_drawn)
-   return {".", "S", "U", "L", "R", "D"};
+   return {".", "S", "U", "L", "R", "D", "US", "DS" };
 
  // Kid is standing or finishing a turn, try all possibilities
  if (gameState.Kid.frame == frame_15_stand || (gameState.Kid.frame >= frame_50_turn && gameState.Kid.frame < 53))
-   return {".", "S", "U", "L", "R", "D", "LU", "LD", "RU", "RD", "SR", "SL"};
+   return {".", "S", "U", "L", "R", "D", "LU", "LD", "RU", "RD", "SR", "SL", "DS", "US", "RUS", "LUS"};
 
  // Turning frame, try all possibilities
  if (gameState.Kid.frame == frame_48_turn)
@@ -217,7 +213,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
    return {".", "S", "L", "R", "D", "LD", "RD", "SD"};
 
  // Default, do nothing
- return {"."};
+ return {".", "S"};
 }
 
 // Function to get magnet information
@@ -404,8 +400,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Current/Next Level: %2d / %2d\n", gameState.current_level, gameState.next_level);
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
-  LOG("[Jaffar]  + [Kid]   Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.hitp_curr), int(gameState.hitp_max));
-  LOG("[Jaffar]  + [Guard] Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.guardhp_curr), int(gameState.guardhp_max));
+  LOG("[Jaffar]  + [Kid]   Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.hitp_curr), int(gameState.hitp_max));
+  LOG("[Jaffar]  + [Guard] Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.guardhp_curr), int(gameState.guardhp_max));
   LOG("[Jaffar]  + Exit Room Timer: %d\n", gameState.exit_room_timer);
   LOG("[Jaffar]  + Reached Checkpoint: %s\n", gameState.checkpoint ? "Yes" : "No");
   LOG("[Jaffar]  + Feather Fall: %d\n", gameState.is_feather_fall);

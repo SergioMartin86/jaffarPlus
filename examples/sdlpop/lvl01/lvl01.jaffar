@@ -3,14 +3,14 @@
  
   "Emulator Configuration": 
   {
-    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "lvl01.sav"
   },
   
   "State Configuration": 
   {
-    "Max Difference Count": 40,
+    "Max Difference Count": 42,
     "Max Move Count": 250,
     "Store Move List": false    
   },
@@ -39,14 +39,14 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 150000,
-     "Max Size Upper Bound (Mb)": 220000
+     "Max Size Lower Bound (Mb)": 1500,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
     { 
-     "Max Size Lower Bound (Mb)": 12000,
-     "Max Size Upper Bound (Mb)": 20000
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 12000
     },
     
     "Save Intermediate Results":
@@ -60,8 +60,8 @@
   
   "Playback Configuration": 
   {
-    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
   }, 
  
   "Rules":
@@ -163,7 +163,7 @@
    },
    
    {
-    "Label": 1999,
+    "Label": 1998,
     "Description": "If we reach next level, win.",
     "Conditions":
     [
@@ -175,6 +175,22 @@
     "Actions":
     [
      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Description": "If kid dies, fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
   ]  

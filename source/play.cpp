@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
 
    // Correct current step if requested more than possible
    if (currentStep < 0) currentStep = 0;
-   if (currentStep > sequenceLength) currentStep = sequenceLength;
+   if (currentStep >= sequenceLength) currentStep = sequenceLength-1;
 
    // Quicksave creation command
    if (command == 's')

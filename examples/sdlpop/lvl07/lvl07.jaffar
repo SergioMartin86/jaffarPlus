@@ -3,7 +3,7 @@
   
   "Emulator Configuration": 
   {
-    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "lvl07.sav"
   },
@@ -11,13 +11,12 @@
   "State Configuration": 
   {
     "Max Difference Count": 60,
-    "Max Move Count": 500,
-    "Store Move List": false    
+    "Max Move Count": 500
   },
   
   "Game Configuration": 
   {
-   "Property Hash Types": [ ],
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
    "Static Tile Hash Types": 
    [
     { "Room": 7, "Tile": 5, "Comment": "Loose Tile" },
@@ -43,13 +42,13 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 150,
-     "Max Size Upper Bound (Mb)": 220
+     "Max Size Lower Bound (Mb)": 3000,
+     "Max Size Upper Bound (Mb)": 10000
     },
     
     "Hash Database":
     { 
-     "Max Size Lower Bound (Mb)": 12000,
+     "Database Count": 4,
      "Max Size Upper Bound (Mb)": 20000
     },
     
@@ -60,12 +59,12 @@
      "Best Solution Path": "/tmp/jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol"
     }
-  }, 
+  },
   
   "Playback Configuration": 
   {
-    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
@@ -78,7 +77,6 @@
      { "Property": "Kid Room", "Op": "==", "Value":  1 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ ],
    
     "Actions":
@@ -96,7 +94,6 @@
      { "Property": "Kid Room", "Op": "==", "Value":  2 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 7000 ],
     
     "Actions":
@@ -120,7 +117,6 @@
      { "Property": "Guard Position X", "Op": ">", "Value":  220 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 7001 ],
     
     "Actions":
@@ -142,7 +138,6 @@
      { "Property": "Guard Frame", "Op": "==", "Value": 102 } 
     ],
 
-    "Dependencies": [ ],
     "Satisfies": [ 7002 ],
 
     "Actions":
@@ -161,7 +156,6 @@
      { "Property": "Guard Current HP", "Op": ">", "Value":  0 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 7003 ],
     
     "Actions":
@@ -188,7 +182,6 @@
      { "Property": "Guard Current HP", "Op": ">", "Value":  0 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 7004 ],
     
     "Actions":
@@ -210,7 +203,6 @@
      { "Property": "Kid Position Y", "Op": ">", "Value":  120 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 7005 ],
     
     "Actions":
@@ -231,7 +223,6 @@
       { "Property": "Kid Position Y", "Op": "==", "Value":  181 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 7006 ],
     
     "Actions":
@@ -253,7 +244,6 @@
      { "Property": "Is Feather Fall", "Op": ">", "Value":  0 }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 7006 ],
     
     "Actions":
@@ -274,7 +264,6 @@
      { "Property": "Tile BG State", "Room": 3, "Tile": 27, "Op": ">", "Value": 0, "Comment": "Pre-Exit Gate" }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 7008 ],
     
     "Actions":
@@ -294,7 +283,6 @@
      { "Property": "Tile BG State", "Room": 3, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Door" }
     ],
    
-    "Dependencies": [ ],
     "Satisfies": [ 7009 ],
     
     "Actions":
@@ -319,6 +307,22 @@
     [
      { "Type": "Trigger Win" }
     ]
-   }   
+   },
+   
+   {
+    "Label": 7998,
+    "Description": "If Kid exits to the next level, then win.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }  
   ]  
 }

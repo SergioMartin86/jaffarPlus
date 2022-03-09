@@ -3,7 +3,7 @@
   
   "Emulator Configuration": 
   {
-    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "lvl09a.sav"
   },
@@ -50,14 +50,14 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 3550,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 20000
     },
     
     "Hash Database":
     { 
-     "Max Size Lower Bound (Mb)": 12000,
-     "Max Size Upper Bound (Mb)": 20000
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 12000
     },
     
     "Save Intermediate Results":
@@ -71,8 +71,8 @@
   
   "Playback Configuration": 
   {
-    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
@@ -696,6 +696,22 @@
     [
      { "Type": "Add Reward", "Value": 1000 },
      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 9999,
+    "Description": "If kid dies, fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
    
