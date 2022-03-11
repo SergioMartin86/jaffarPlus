@@ -3,7 +3,7 @@
 #include "gameInstanceBase.hpp"
 #include <set>
 
-#define ROOM_COUNT 255
+#define ROOM_COUNT 256
 #define _INVERSE_FRAME_RATE 16667
 
 // Datatype to describe a generic magnet

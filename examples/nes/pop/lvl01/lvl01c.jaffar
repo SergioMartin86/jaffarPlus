@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl01a.state"
+    "State File": "jaffar.state"
   },
   
   "State Configuration": 
@@ -23,8 +23,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 170000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 20000
     },
     
     "Hash Database":
@@ -400,7 +400,7 @@
     [
      { "Property": "Kid Room", "Op": "==", "Value":  8 },
      { "Property": "Drawn Room", "Op": "==", "Value":  8 },
-     { "Property": "Level 1 Exit Door State", "Op": "<", "Value":  35 }
+     { "Property": "Exit Door State", "Op": "<", "Value":  35 }
     ],
     
     "Satisfies": [ 1018 ],

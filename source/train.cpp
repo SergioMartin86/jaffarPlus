@@ -64,6 +64,13 @@ void Train::run()
   // Print winning state if found
   if (_winStateFound == true)
   {
+   printf("[Jaffar]  + Winning Frame Info:");
+
+   uint8_t winStateData[_STATE_DATA_SIZE];
+   _winState->getStateDataFromDifference(_referenceStateData, winStateData);
+   _gameInstances[0]->pushState(winStateData);
+   _gameInstances[0]->printStateInfo(_winState->rulesStatus);
+
     #ifndef JAFFAR_DISABLE_MOVE_HISTORY
      printf("[Jaffar]  + Win Move List: ");
      for (uint16_t i = 0; i < _currentStep; i++)
@@ -121,7 +128,7 @@ size_t Train::hashEntriesFromSize(const double size) const
   return (size_t)((size * (1024.0 * 1024.0)) / ((double)sizeof(uint64_t) + (double)sizeof(void*)));
 };
 
-#define _DETECT_POSSIBLE_MOVES
+//#define _DETECT_POSSIBLE_MOVES
 
 void Train::computeStates()
 {
@@ -198,7 +205,7 @@ void Train::computeStates()
 
        std::set<uint8_t> possibleMoveSet;
        std::vector<std::string> fullMoves;
-       std::set<uint8_t> fullMoveSet;
+       std::set<uint8_t> alternativeMoveSet;
 
        for (const auto& actualMove : possibleMoves)
        {
@@ -206,10 +213,11 @@ void Train::computeStates()
         fullMoves.push_back(actualMove);
        }
 
-       for (uint8_t i = 0; i < 32; i++) if (possibleMoveSet.contains(i) == false)
+      for (uint16_t i = 0; i < 256; i++) if (possibleMoveSet.contains((uint8_t)i) == false)
+       if (((uint8_t)i & 0b00001000) == 0) if (((uint8_t)i & 0b00000100) == 0)
        {
-        fullMoveSet.insert(i);
-        fullMoves.push_back(EmuInstance::moveCodeToString(i));
+        alternativeMoveSet.insert((uint8_t)i);
+        fullMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
        }
 
        auto possibleMoveCopy = possibleMoves;
@@ -325,13 +333,13 @@ void Train::computeStates()
         #ifdef _DETECT_POSSIBLE_MOVES
 
          // Checking if move is not there in actual moves
-         if (fullMoveSet.contains(EmuInstance::moveStringToCode(fullMoves[idx])))
+         #pragma omp critical
+         if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          printf("Possible move not found! '%s'\n", fullMoves[idx].c_str());
+          printf("Possible move not found! '%s'\n", possibleMoves[idx].c_str());
           printf("[Jaffar]  + Idx: %lu\n", idx);
-          printf("[Jaffar]  + Full Set Moves:\n  - '%s'", fullMoves[0].c_str()); for (size_t i = 1; i < fullMoves.size(); i++) printf("\n   - '%s'", fullMoves[i].c_str()); printf("\n");
+          // printf("[Jaffar]  + Full Set Moves:\n  - '%s'", possibleMoves[0].c_str()); for (size_t i = 1; i < possibleMoves.size(); i++) printf("\n   - '%s'", possibleMoves[i].c_str()); printf("\n");
           printf("[Jaffar]  + Actual Possible Moves: '%s'", possibleMoveCopy[0].c_str()); for (size_t i = 1; i < possibleMoveCopy.size(); i++) printf(", '%s'", possibleMoveCopy[i].c_str()); printf("\n");
-          _gameInstances[threadId]->printStateInfo(newState->rulesStatus);
 
           // Storing save file
           std::string saveFileName = "_newMove.state";
@@ -342,8 +350,10 @@ void Train::computeStates()
           _gameInstances[threadId]->pushState(baseStateData);
           _gameInstances[threadId]->saveStateFile(saveFileName);
           printf("[Jaffar] Base state to %s\n", saveFileName.c_str());
+          _gameInstances[threadId]->printStateInfo(newState->rulesStatus);
 
-          exit(0);
+          getchar();
+          printf("[Jaffar] Continuing...\n");
          }
 
         #endif // _DETECT_POSSIBLE_MOVES

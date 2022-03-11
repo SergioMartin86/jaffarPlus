@@ -130,49 +130,72 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  // Allows for ending level
  if (*kidJumpingState == 28 && *framePhase == 4) return { ".", "U" };
 
+ if (*kidFrame == 0)  return { ".", "A", "D", "LD", "RD", "RDUA", "LDUA", "DUA", "RL", "B", "RLDUB", "LUB", "RLB", "RLDB", "U", "UB", "RLDB", "LDA", "RDA", "LUB", "RUB", "UA", "UBA", "LB", "RB", "DBA", "RLDBA", "RLDU", "RDUBA", "RLA", "DB", "DUB", "RDBA", "LDBA", "R", "L", "RDUB", "LDUB", "RLUB", "RUA", "LUA", "RLU", "RL", "LU", "RU", "LDB", "RDB", "BA", "DU", "LA", "RA", "LDU", "RDU", "RLBA", "RLD", "RLDUBA", "DUBA", "RLDA", "RUBA", "LUBA", "RLUA", "RBA", "LBA", "RLDUA", "DA", "LDUBA", "RDUBA", "RLUBA" }; // Running
+
+ if (*kidFrame == 1)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 2)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 3)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 4)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 5)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 6)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 7)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB" }; // Running
+ if (*kidFrame == 8)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 9)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 10) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 11) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 12) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 13) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
+ if (*kidFrame == 14) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB"}; // Running
+ if (*kidFrame == 15) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LD", "RDBA", "UBA", "DUBA", "DUB", "UA", "RL" }; // Normal Standing
+
  if (*kidFrame == 16) return { "." }; // Standing Jump
  if (*kidFrame == 17) return { "." }; // Standing Jump
  if (*kidFrame == 18) return { "." }; // Standing Jump
  if (*kidFrame == 19) return { "." }; // Standing Jump
- if (*kidFrame == 20) return { "." }; // Standing Jump
- if (*kidFrame == 21) return { "." }; // Standing Jump
+ if (*kidFrame == 20) return { ".", "DB", "B", "DA", "LA", "RA", "RDA", "LDA" }; // Standing Jump
+ if (*kidFrame == 21) return { ".", "LA", "RA", "A", "DA", "DB", "B" }; // Standing Jump
  if (*kidFrame == 22) return { "." }; // Standing Jump
- if (*kidFrame == 23) return { "." }; // Standing Jump
- if (*kidFrame == 24) return { "." }; // Standing Jump
- if (*kidFrame == 25) return { "." }; // Standing Jump
- if (*kidFrame == 26) return { "." }; // Standing Jump
- if (*kidFrame == 27) return { "." }; // Standing Jump
- if (*kidFrame == 28) return { "." }; // Standing Jump
+ if (*kidFrame == 23) return { ".", "LA", "RA", "DB", "DA", "RDA", "LDA", "A", "B" }; // Standing Jump
+ if (*kidFrame == 24) return { ".", "RA", "LA", "A", "RDA", "LDA", "DB", "DA", "B" }; // Standing Jump
+ if (*kidFrame == 25) return { ".", "RA", "LA", "B"}; // Standing Jump
+ if (*kidFrame == 26) return { ".", "A", "R", "L" }; // Standing Jump
+ if (*kidFrame == 27) return { ".", "DB", "RDA", "LDA" }; // Standing Jump
+ if (*kidFrame == 28) return { ".", "A", "UA", "L", "RBA"}; // Standing Jump
  if (*kidFrame == 29) return { "." }; // Standing Jump
  if (*kidFrame == 30) return { "." }; // Standing Jump
  if (*kidFrame == 31) return { "." }; // Standing Jump
  if (*kidFrame == 32) return { "." }; // Standing Jump
  if (*kidFrame == 33) return { "." }; // Standing Jump
 
- if (*kidFrame == 34) return { "." }; // Jumping Animation
+ if (*kidFrame == 34) return { ".", "A", "B", "DA", "LA", "RA", "DB", "RDA", "RDB", "LDA", "LDB" }; // Jumping Animation
  if (*kidFrame == 35) return { "." }; // Jumping Animation
- if (*kidFrame == 37) return { "." }; // Jumping Animation
+ if (*kidFrame == 37) return { ".", "DB", "A", "B", "LA", "RA", "DA", "RDA", "LDA" }; // Jumping Animation
  if (*kidFrame == 38) return { "." }; // Jumping Animation
- if (*kidFrame == 39) return { "." }; // Jumping Animation
- if (*kidFrame == 40) return { "." }; // Jumping Animation
- if (*kidFrame == 41) return { "." }; // Jumping Animation
- if (*kidFrame == 42) return { "." }; // Jumping Animation
- if (*kidFrame == 43) return { "." }; // Jumping Animation
- if (*kidFrame == 44) return { "." }; // Jumping Animation
+ if (*kidFrame == 39) return { ".", "DA", "B", "LA", "RA", "DB", "A", "RDA", "LDA" }; // Jumping Animation
+ if (*kidFrame == 40) return { ".", "A", "B", "RDA", "LDA", "DB", "DA", "LA", "RA" }; // Jumping Animation
+ if (*kidFrame == 41) return { ".", "DA", "RDA", "B", "LDA", "RA", "LA", "A", "DB" }; // Jumping Animation
+ if (*kidFrame == 42) return { ".", "A", "B", "LA", "RA", "DA", "RDA", "LDA" }; // Jumping Animation
+ if (*kidFrame == 43) return { ".", "A", "R", "L", "DA", "RA", "LA" }; // Jumping Animation
+ if (*kidFrame == 44) return { ".", "A", "RDA", "LDA" }; // Jumping Animation
 
- if (*kidFrame == 45) return { "." }; // Turning Animation
- if (*kidFrame == 46) return { "." }; // Turning Animation
+ if (*kidFrame == 45) return { ".", "A", "RB", "RA", "LB", "LA", "DB", "R", "L" }; // Turning Animation
+ if (*kidFrame == 46) return { ".", "B", "A", "RB", "R", "L", "LB", "DB", "LA", "RA" }; // Turning Animation
  if (*kidFrame == 47) return { "." }; // Turning Animation
  if (*kidFrame == 48) return { "." }; // Turning Animation
 
- if (*kidFrame == 49) return { "." }; // Slowing Down from Running
+ if (*kidFrame == 49) return { ".", "RDA", "LDA", "RA", "LA" }; // Slowing Down from Running
  if (*kidFrame == 50) return { "." }; // Slowing Down from Running
  if (*kidFrame == 51) return { "." }; // Slowing Down from Running
  if (*kidFrame == 52) return { "." }; // Slowing Down from Running
- if (*kidFrame == 53) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "UD", "DRA", "DLA" }; // Slowing Down from Running
+ if (*kidFrame == 53) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "UD", "DRA", "DLA", "DB", "DA", "LB", "RB", "LUB", "RUB", "LDU", "RDU", "RDUB", "LDUB", "RL", "RLA", "RLB", "LUA", "RUA" }; // Slowing Down from Running
  if (*kidFrame == 54) return { "." }; // Slowing Down from Running
- if (*kidFrame == 55) return { "." }; // Slowing Down from Running
- if (*kidFrame == 56) return { "." }; // Slowing Down from Running
+ if (*kidFrame == 55) return { ".", "B", "DA", "A", "RDA", "LDA", "LA", "RA", "DB" }; // Slowing Down from Running
+ if (*kidFrame == 56) return { ".", "A", "LA", "RA", "DA", "DB", "RDA", "B" }; // Slowing Down from Running
+ if (*kidFrame == 57) return { ".", "DB", "B", "DA", "RDA", "LDA", "A", "LA", "RA" }; // Slowing Down from Running
+ if (*kidFrame == 59) return { ".", "DB", "DA", "LA", "RA", "B", "A" }; // Slowing Down from Running
+ if (*kidFrame == 60) return { ".", "DB", "DA", "B", "RA", "LA", "A", "RDA", "LDA" }; // Slowing Down from Running
+
+ if (*kidFrame == 65) return { ".", "A", "B", "LA", "RA", "DA", "LDA", "DB" }; // Running / Turning
 
  if (*kidFrame == 67) return { "." }; // Climbing/Getting Down
  if (*kidFrame == 68) return { "." }; // Climbing/Getting Down
@@ -182,14 +205,30 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 72) return { "." }; // Climbing/Getting Down
  if (*kidFrame == 73) return { "." }; // Climbing/Getting Down
  if (*kidFrame == 74) return { "." }; // Climbing/Getting Down
- if (*kidFrame == 75) return { "." }; // Climbing/Getting Down
+ if (*kidFrame == 75) return { ".", "A", "RA", "LA", "RDA", "LDA", "DB" }; // Climbing/Getting Down
  if (*kidFrame == 76) return { "." }; // Climbing/Getting Down
  if (*kidFrame == 77) return { "." }; // Climbing/Getting Down
  if (*kidFrame == 78) return { ".", "U", "A", "UA" }; // Climbing/Getting Down
+ if (*kidFrame == 79) return { ".", "A", "U" }; // Climbing/Getting down
+ if (*kidFrame == 80) return { ".", "A", "U" }; // Climbing/Getting down
 
- if (*kidFrame == 83) return { "." }; // Climbing/Getting Down Cancel
- if (*kidFrame == 84) return { "." }; // Climbing/Getting Down Cancel
- if (*kidFrame == 85) return { "." }; // Climbing/Getting Down Cancel
+ if (*kidFrame == 83) return { ".", "L", "R" }; // Climbing/Getting Down Cancel
+ if (*kidFrame == 84) return { ".", "L", "R" }; // Climbing/Getting Down Cancel
+ if (*kidFrame == 85) return { ".", "L", "R" }; // Climbing/Getting Down Cancel
+
+ if (*kidFrame == 87) return { ".", "A", "U" }; // Climbing/Hanging
+ if (*kidFrame == 88) return { ".", "A", "U" }; // Climbing/Hanging
+ if (*kidFrame == 89) return { ".", "A", "U" }; // Climbing/Hanging
+ if (*kidFrame == 90) return { ".", "L", "A", "U", "R" }; // Climbing/Hanging
+ if (*kidFrame == 91) return { ".", "L", "A", "U", "R" }; // Climbing/Hanging
+ if (*kidFrame == 92) return { ".", "A", "U" }; // Climbing/Hanging
+ if (*kidFrame == 93) return { ".", "L", "A", "U", "R" }; // Climbing/Hanging
+ if (*kidFrame == 94) return { ".", "A", "U" }; // Climbing/Hanging
+ if (*kidFrame == 95) return { ".", "A", "U" }; // Climbing/Hanging
+ if (*kidFrame == 96) return { ".", "A", "U" }; // Climbing/Hanging
+ if (*kidFrame == 97) return { ".", "A", "U" }; // Climbing/Hanging
+ if (*kidFrame == 98) return { ".", "A", "U" }; // Climbing/Hanging
+ if (*kidFrame == 99) return { ".", "A", "U" }; // Climbing/Hanging
 
  if (*kidFrame == 102) return { ".", "A" }; // Falling Animation
  if (*kidFrame == 103) return { ".", "A" }; // Falling Animation
@@ -198,29 +237,29 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 
  if (*kidFrame == 106) return { ".", "U", "A", "UA" }; // Clinging From Wall
 
- if (*kidFrame == 107) return { ".", "L", "R" }; // Fall landing -- Can accelerate run
- if (*kidFrame == 108) return { "." }; // Crouching/Falling
- if (*kidFrame == 109) return { "." }; // Crouching/Falling
- if (*kidFrame == 110) return { "." }; // Crouching/Falling
- if (*kidFrame == 111) return { "." }; // Getting up
- if (*kidFrame == 112) return { "." }; // Getting up
- if (*kidFrame == 113) return { "." }; // Getting up
- if (*kidFrame == 114) return { "." }; // Getting up
- if (*kidFrame == 115) return { "." }; // Getting up
- if (*kidFrame == 116) return { "." }; // Getting up
- if (*kidFrame == 117) return { "." }; // Getting up
- if (*kidFrame == 118) return { "." }; // Getting up
- if (*kidFrame == 119) return { "." }; // Getting up
+ if (*kidFrame == 107) return { ".", "L", "R", "LA", "RA", "A", "LDA", "RDA", "DA" }; // Fall landing -- Can accelerate run
+ if (*kidFrame == 108) return { ".", "L", "R" }; // Crouching/Falling
+ if (*kidFrame == 109) return { ".", "D", "LD", "RD", "A", "DB", "RA", "LA", "RDA", "LDA" }; // Crouching/Falling
+ if (*kidFrame == 110) return { ".", "L", "R" }; // Crouching/Falling
+ if (*kidFrame == 111) return { ".", "L", "R" }; // Getting up
+ if (*kidFrame == 112) return { ".", "L", "R" }; // Getting up
+ if (*kidFrame == 113) return { ".", "L", "R" }; // Getting up
+ if (*kidFrame == 114) return { ".", "L", "R" }; // Getting up
+ if (*kidFrame == 115) return { ".", "L", "R" }; // Getting up
+ if (*kidFrame == 116) return { ".", "L", "R" }; // Getting up
+ if (*kidFrame == 117) return { ".", "L", "R" }; // Getting up
+ if (*kidFrame == 118) return { ".", "L", "R" }; // Getting up
+ if (*kidFrame == 119) return { ".", "L", "R" }; // Getting up
 
  if (*kidFrame == 121) return { "." }; // Careful Step
- if (*kidFrame == 122) return { "." }; // Careful Step
- if (*kidFrame == 123) return { "." }; // Careful Step
- if (*kidFrame == 124) return { "." }; // Careful Step
+ if (*kidFrame == 122) return { ".", "A", "DB", "DA", "RDA", "LDA", "B", "RA", "LA" }; // Careful Step
+ if (*kidFrame == 123) return { ".", "RDA", "A", "B", "RA", "LDA", "RDA", "LA", "DB" }; // Careful Step
+ if (*kidFrame == 124) return { ".", "DA", "LA", "RA", "A", "DB", "RDA", "LDA" }; // Careful Step
  if (*kidFrame == 125) return { "." }; // Careful Step
  if (*kidFrame == 126) return { "." }; // Careful Step
  if (*kidFrame == 127) return { "." }; // Careful Step
  if (*kidFrame == 128) return { "." }; // Careful Step
- if (*kidFrame == 129) return { "." }; // Careful Step
+ if (*kidFrame == 129) return { ".", "DA" }; // Careful Step
  if (*kidFrame == 130) return { "." }; // Careful Step
  if (*kidFrame == 131) return { "." }; // Careful Step
 
@@ -240,10 +279,15 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 148) return { "." }; // Climbing/Getting Down
  if (*kidFrame == 149) return { "." }; // Climbing/Getting Down
 
+ if (*kidFrame == 156) return { ".", "B" }; // Climbing/Getting Down
+
+
  if (*kidFrame == 229) return {"."}; // Grabbing Sword
 
- // Try all possible combinations
- return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "UD", "DRA", "DLA", "UB" };
+ if (*kidFrame == 255) return {".", "L", "R", "A", "B", "U", "UB", "D", "LUB", "RUB", "LD", "RD", "RDUA", "LDUA", "RL", "RLDB", "UA", "RLDUB", "DUA", "LDA", "RDA", "RB", "LB", "DB", "RUA", "LUA", "RLB", "RLDUA", "DUB", "LUBA", "RUBA", "LDU", "RDU", "RDUBA", "UBA", "RDUB", "LDUB", "DA", "RLDBA", "RLDU", "RDUB", "LDUB", "RLUB", "RLA", "RDB", "LDB", "RLDUBA", "DU", "LU", "RU", "RLU", "RLUA", "RLDA", "LDUBA", "LDBA", "RDBA", "RLD", "BA", "RA", "RLBA" }; // Unknown
+
+ // Nothing to do
+ return { "." };
 }
 
 // Function to get magnet information
@@ -353,6 +397,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("\n");
 
   auto magnets = getMagnetValues(rulesStatus);
-  LOG("[Jaffar]  + Kid Horizontal Magnet        - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center, magnets.kidHorizontalMagnet.min, magnets.kidHorizontalMagnet.max);
-  LOG("[Jaffar]  + Kid Vertical Magnet          - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center, magnets.kidVerticalMagnet.min, magnets.kidVerticalMagnet.max);
+  LOG("[Jaffar]  + Kid Horizontal Magnet - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center, magnets.kidHorizontalMagnet.min, magnets.kidHorizontalMagnet.max);
+  LOG("[Jaffar]  + Kid Vertical Magnet   - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center, magnets.kidVerticalMagnet.min, magnets.kidVerticalMagnet.max);
 }

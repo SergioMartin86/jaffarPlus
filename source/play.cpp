@@ -62,6 +62,11 @@ int main(int argc, char *argv[])
     .default_value(false)
     .implicit_value(true);
 
+  program.add_argument("--disableRender")
+    .help("Do not render game window.")
+    .default_value(false)
+    .implicit_value(true);
+
   // Try to parse arguments
   try { program.parse_args(argc, argv);  }
   catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
@@ -97,6 +102,9 @@ int main(int argc, char *argv[])
   // Getting reproduce flag
   bool isReproduce = program.get<bool>("--reproduce");
   bool exitOnFinish = isReproduce;
+
+  // Getting reproduce flag
+  bool disableRender = program.get<bool>("--disableRender");
 
   // Initializing ncurses screen
   initscr();
@@ -224,7 +232,7 @@ int main(int argc, char *argv[])
    gameInstance.pushState(stateSequence[currentStep]);
 
    // Updating display
-   playbackInstance.renderFrame(currentStep, moveList[currentStep]);
+   if (disableRender == false) playbackInstance.renderFrame(currentStep, moveList[currentStep]);
 
    // Getting possible moves
    auto possibleMoves = gameInstance.getPossibleMoves();
