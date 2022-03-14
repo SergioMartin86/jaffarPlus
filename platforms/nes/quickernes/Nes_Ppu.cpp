@@ -186,7 +186,7 @@ void Nes_Ppu::run_sprite_max_( nes_time_t cpu_time )
 	// 577.0 / 0x10000 ~= 1.0 / 113.581, close enough to accurately calculate which scanline it is
 	int start_scanline = next_sprite_max_scanline;
 	next_sprite_max_scanline = unsigned ((cpu_time - sprite_max_cpu_offset) * 577) / 0x10000u;
-	assert( next_sprite_max_scanline >= 0 && next_sprite_max_scanline <= last_sprite_max_scanline );
+	if( next_sprite_max_scanline < 0 || next_sprite_max_scanline > last_sprite_max_scanline ) { isCorrectRender = false; return; }
 	
 	if ( !sprite_max_set_time )
 	{

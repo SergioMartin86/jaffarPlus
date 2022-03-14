@@ -203,7 +203,7 @@ void Nes_Ppu_Rendering::draw_background_( int remain )
 		if ( height == 8 )
 		{
 			// unclipped
-			assert( (addr >> 12) == 0 );
+			if ( (addr >> 12) != 0 ) { isCorrectRender = false; return; };
 			addr &= 0x03ff;
 			int const fine_y = 0;
 			int const clipped = false;

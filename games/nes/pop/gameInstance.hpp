@@ -13,6 +13,7 @@ struct genericMagnet_t {
  float center;  // What is the central point of attraction
  float min;  // What is the minimum input value to the calculation.
  float max;  // What is the maximum input value to the calculation.
+ bool active; // Indicates whether the value for this magnet has specified
 };
 
 // Datatype to describe a magnet
@@ -27,8 +28,9 @@ class GameInstance : public GameInstanceBase
  public:
 
   // Container for game-specific values
+  uint8_t* globalTimer;
   uint8_t* RNGState;
-  uint8_t* currentLevelRaw;
+  uint8_t* currentLevel;
   uint8_t* framePhase;
   int16_t* kidPosX;
   uint8_t* kidPosY;
@@ -60,6 +62,7 @@ class GameInstance : public GameInstanceBase
   // Level-Specific Tiles
   uint8_t* lvl1FirstTileBG;
   uint8_t* lvl1FirstTileFG;
+  uint8_t* lvl1Room19DoorTimer;
   uint8_t* exitDoorState;
   uint8_t* lvl1Room19DoorState;
   uint8_t* lvl2LastTileFG;
@@ -69,7 +72,7 @@ class GameInstance : public GameInstanceBase
   std::set<std::string> hashIncludes;
 
   // Derivative values
-  uint8_t currentLevel;
+  uint8_t isCorrectRender;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

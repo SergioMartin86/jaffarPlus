@@ -127,6 +127,7 @@ void Nes_Emu::set_palette_range( int begin, int end )
 
 blargg_err_t Nes_Emu::emulate_frame( const uint32_t joypad1, const uint32_t joypad2 )
 {
+ emu.ppu.isCorrectRender = true;
 	emu.current_joypad [0] = joypad1;
 	emu.current_joypad [1] = joypad2;
 	

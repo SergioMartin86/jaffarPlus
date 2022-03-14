@@ -12,9 +12,9 @@ class Nes_Ppu_Rendering : public Nes_Ppu_Impl {
 	typedef Nes_Ppu_Impl base;
 public:
 	Nes_Ppu_Rendering();
-	
+
+	bool isCorrectRender;
 	int sprite_limit;
-	
 	byte* host_pixels;
 	long host_row_bytes;
 	
@@ -51,6 +51,7 @@ inline Nes_Ppu_Rendering::Nes_Ppu_Rendering()
 {
 	sprite_limit = 8;
 	host_pixels = NULL;
+	isCorrectRender = true;
 }
 
 inline void Nes_Ppu_Rendering::draw_sprites( int start, int count )

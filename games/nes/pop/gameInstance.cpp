@@ -6,7 +6,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   // Setting emulator
   _emu = emu;
 
-  currentLevelRaw        = (uint8_t*)   &_emu->_baseMem[0x0070];
+  globalTimer            = (uint8_t*)   &_emu->_baseMem[0x0791];
+  currentLevel           = (uint8_t*)   &_emu->_baseMem[0x0070];
   RNGState               = (uint8_t*)   &_emu->_baseMem[0x0060];
   framePhase             = (uint8_t*)   &_emu->_baseMem[0x002C];
   kidPosX                = (int16_t*)   &_emu->_baseMem[0x060F];
@@ -39,6 +40,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   // Level-specific tiles
   lvl1FirstTileBG          = (uint8_t*)   &_emu->_baseMem[0x06A4];
   lvl1FirstTileFG          = (uint8_t*)   &_emu->_baseMem[0x06B0];
+  lvl1Room19DoorTimer      = (uint8_t*)   &_emu->_baseMem[0x05E9];
   lvl2LastTileFG           = (uint8_t*)   &_emu->_baseMem[0x0665];
   lvl2ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x0708];
 
@@ -46,6 +48,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
    for (const auto& entry : config["Hash Includes"])
     hashIncludes.insert(entry.get<std::string>());
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Hash Includes' was not defined\n");
+
+  updateDerivedValues();
 }
 
 // This function computes the hash for the current state
@@ -54,6 +58,7 @@ uint64_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash64 hash;
 
+  hash.Update(*currentLevel);
   hash.Update(*framePhase);
   hash.Update(*doorOpeningTimer);
   hash.Update(*currentDoorState);
@@ -85,13 +90,13 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*guardDisappearMode);
 
   // Level-specific tiles
-  if (currentLevel == 1)
+  if (*currentLevel == 0)
   {
    hash.Update(*lvl1FirstTileBG);
    hash.Update(*lvl1FirstTileFG);
   }
 
-  if (currentLevel == 2)
+  if (*currentLevel == 1)
   {
    hash.Update(*lvl2LastTileFG);
    hash.Update(*lvl2ExitDoorState);
@@ -105,8 +110,8 @@ uint64_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
- // Updating derived values
- currentLevel = *currentLevelRaw + 1;
+ isCorrectRender = 1;
+ if (_emu->_nes->emu.ppu.isCorrectRender == false) isCorrectRender = 0;
 
  // Advancing useless frames
  uint16_t advanceCounter = 0;
@@ -115,8 +120,8 @@ void GameInstance::updateDerivedValues()
  uint16_t framesPerState = 4;
  if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
 
-  while (*screenTransition == 255 && advanceCounter < 64) { _emu->advanceState(0); advanceCounter++; }
-  while ( (advanceCounter < 64) && (*isPaused != 2) && (*isPaused != 5) ) { _emu->advanceState(0); advanceCounter++; }
+  while (*screenTransition == 255 && advanceCounter < 32) { _emu->advanceState(0); advanceCounter++; }
+  while ( (advanceCounter < 32) && (*isPaused != 2) ) { _emu->advanceState(0); advanceCounter++; }
   if (*kidJumpingState == 28 && *framePhase == 4) return; // Allows for ending level
 
   while ( (advanceCounter < 64) && (framesPerState == 4) && (*framePhase != 2) ) { _emu->advanceState(0); advanceCounter++; }
@@ -126,27 +131,24 @@ void GameInstance::updateDerivedValues()
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves() const
 {
-
  // Allows for ending level
  if (*kidJumpingState == 28 && *framePhase == 4) return { ".", "U" };
 
- if (*kidFrame == 0)  return { ".", "A", "D", "LD", "RD", "RDUA", "LDUA", "DUA", "RL", "B", "RLDUB", "LUB", "RLB", "RLDB", "U", "UB", "RLDB", "LDA", "RDA", "LUB", "RUB", "UA", "UBA", "LB", "RB", "DBA", "RLDBA", "RLDU", "RDUBA", "RLA", "DB", "DUB", "RDBA", "LDBA", "R", "L", "RDUB", "LDUB", "RLUB", "RUA", "LUA", "RLU", "RL", "LU", "RU", "LDB", "RDB", "BA", "DU", "LA", "RA", "LDU", "RDU", "RLBA", "RLD", "RLDUBA", "DUBA", "RLDA", "RUBA", "LUBA", "RLUA", "RBA", "LBA", "RLDUA", "DA", "LDUBA", "RDUBA", "RLUBA" }; // Running
-
- if (*kidFrame == 1)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 2)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 3)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 4)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 5)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 6)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 7)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB" }; // Running
- if (*kidFrame == 8)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 9)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 10) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 11) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 12) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 13) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB" }; // Running
- if (*kidFrame == 14) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LDB", "RDB", "UA", "LU", "RU", "LUA", "RUA", "LD", "RD", "RDUB", "RL", "RLA", "RLDB", "RLDUB", "LUB", "RUB", "RDUA", "RLDBA", "DUA", "RLB", "UBA", "DUB", "LDUA", "RDUA", "RDU", "LDU", "LDUB", "RLDU", "BA", "LDBA", "RLD", "RLU", "RLUA", "RLDUBA", "RLDA", "DBA", "RDBA", "LDBA", "LUBA", "RUBA", "DBA", "DUBA", "RLUBA", "LBA", "RBA", "RLBA", "RDUBA", "LDUBA", "RLUB"}; // Running
- if (*kidFrame == 15) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LD", "RDBA", "UBA", "DUBA", "DUB", "UA", "RL" }; // Normal Standing
+ if (*kidFrame == 1)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 2)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 3)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 4)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 5)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 6)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 7)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 8)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA", "LDB", "RDB", "LB", "RB" }; // Running
+ if (*kidFrame == 9)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 10) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 11) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA", "LDB", "RDB", "LB", "RB" }; // Running
+ if (*kidFrame == 12) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 13) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 14) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+ if (*kidFrame == 15) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LD", "DUBA", "DUB", "UA", "RL", "DUR", "DUL", "DURL", "DURLA", "DURLB", "DURLAB", "DUBL", "DUBR", "DUBRA", "DUBLA", "DUS" }; // Normal Standing
 
  if (*kidFrame == 16) return { "." }; // Standing Jump
  if (*kidFrame == 17) return { "." }; // Standing Jump
@@ -187,14 +189,18 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 50) return { "." }; // Slowing Down from Running
  if (*kidFrame == 51) return { "." }; // Slowing Down from Running
  if (*kidFrame == 52) return { "." }; // Slowing Down from Running
- if (*kidFrame == 53) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "UD", "DRA", "DLA", "DB", "DA", "LB", "RB", "LUB", "RUB", "LDU", "RDU", "RDUB", "LDUB", "RL", "RLA", "RLB", "LUA", "RUA" }; // Slowing Down from Running
+ if (*kidFrame == 53) return { ".", "A", "B", "DB", "DA", "RA", "LA" }; // Slowing Down from Running
  if (*kidFrame == 54) return { "." }; // Slowing Down from Running
  if (*kidFrame == 55) return { ".", "B", "DA", "A", "RDA", "LDA", "LA", "RA", "DB" }; // Slowing Down from Running
  if (*kidFrame == 56) return { ".", "A", "LA", "RA", "DA", "DB", "RDA", "B" }; // Slowing Down from Running
  if (*kidFrame == 57) return { ".", "DB", "B", "DA", "RDA", "LDA", "A", "LA", "RA" }; // Slowing Down from Running
+ if (*kidFrame == 58) return { ".", "DB", "B", "DA", "RDA", "LDA", "A", "LA", "RA" }; // Slowing Down from Running
  if (*kidFrame == 59) return { ".", "DB", "DA", "LA", "RA", "B", "A" }; // Slowing Down from Running
  if (*kidFrame == 60) return { ".", "DB", "DA", "B", "RA", "LA", "A", "RDA", "LDA" }; // Slowing Down from Running
-
+ if (*kidFrame == 61) return { "." }; // Slowing Down from Running
+ if (*kidFrame == 62) return { "." }; // Slowing Down from Running
+ if (*kidFrame == 63) return { "." }; // Slowing Down from Running
+ if (*kidFrame == 64) return { "." }; // Slowing Down from Running
  if (*kidFrame == 65) return { ".", "A", "B", "LA", "RA", "DA", "LDA", "DB" }; // Running / Turning
 
  if (*kidFrame == 67) return { "." }; // Climbing/Getting Down
@@ -279,12 +285,41 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 148) return { "." }; // Climbing/Getting Down
  if (*kidFrame == 149) return { "." }; // Climbing/Getting Down
 
- if (*kidFrame == 156) return { ".", "B" }; // Climbing/Getting Down
+ if (*kidFrame == 150) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 151) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 152) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 153) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 154) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 155) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 156) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 157) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 158) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 159) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 160) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 161) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 162) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 163) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 164) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 165) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 170) return { ".", "A", "B", "BA", "L", "R" }; // Combat
+ if (*kidFrame == 171) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 172) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 173) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 174) return { ".", "A", "B", "L", "R" }; // Combat
+ if (*kidFrame == 216) return { ".", "A", "B", "BA", "L", "R" }; // Combat
 
+ // if (*kidFrame == 255 || *kidFrame == 0)
+ // {
+ //  std::vector<std::string> allMoves;
+ //  for (uint16_t i = 0; i < 256; i++) if (((uint8_t)i & 0b00001000) == 0) if (((uint8_t)i & 0b00000100) == 0)
+ //    allMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
+ //  return allMoves;
+ // }
 
- if (*kidFrame == 229) return {"."}; // Grabbing Sword
-
- if (*kidFrame == 255) return {".", "L", "R", "A", "B", "U", "UB", "D", "LUB", "RUB", "LD", "RD", "RDUA", "LDUA", "RL", "RLDB", "UA", "RLDUB", "DUA", "LDA", "RDA", "RB", "LB", "DB", "RUA", "LUA", "RLB", "RLDUA", "DUB", "LUBA", "RUBA", "LDU", "RDU", "RDUBA", "UBA", "RDUB", "LDUB", "DA", "RLDBA", "RLDU", "RDUB", "LDUB", "RLUB", "RLA", "RDB", "LDB", "RLDUBA", "DU", "LU", "RU", "RLU", "RLUA", "RLDA", "LDUBA", "LDBA", "RDBA", "RLD", "BA", "RA", "RLBA" }; // Unknown
+ // std::vector<std::string> allMoves;
+ // for (uint16_t i = 0; i < 256; i++) if (((uint8_t)i & 0b00001000) == 0) if (((uint8_t)i & 0b00000100) == 0)
+ //   allMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
+ // return allMoves;
 
  // Nothing to do
  return { "." };
@@ -302,7 +337,10 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 
  for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   if (rulesStatus[ruleId] == true)
-    magnets = _rules[ruleId]->_magnets[*drawnRoom];
+  {
+    if (_rules[ruleId]->_magnets[*drawnRoom].kidHorizontalMagnet.active == true) magnets.kidHorizontalMagnet = _rules[ruleId]->_magnets[*drawnRoom].kidHorizontalMagnet;
+    if (_rules[ruleId]->_magnets[*drawnRoom].kidVerticalMagnet.active == true) magnets.kidVerticalMagnet = _rules[ruleId]->_magnets[*drawnRoom].kidVerticalMagnet;
+  }
 
  return magnets;
 }
@@ -337,6 +375,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   diff = -255.0f + std::abs(magnets.kidVerticalMagnet.center - boundedValue);
   reward += magnets.kidVerticalMagnet.intensity * -diff;
 
+  // Rewarding level skipping
+  //if (*currentLevel <= 12 && *isPaused == 2) reward += *currentLevel * 500000.0f;
+
   // Returning reward
   return reward;
 }
@@ -349,9 +390,11 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
-  LOG("[Jaffar]  + Current Level:          %u\n", currentLevel);
+  LOG("[Jaffar]  + Current Level:          %u\n", *currentLevel);
   LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
   LOG("[Jaffar]  + RNG State:              0x%X\n", *RNGState);
+  LOG("[Jaffar]  + Global Timer:           %02u\n", *globalTimer);
+  LOG("[Jaffar]  + Kid Frame:              %02u\n", *kidFrame);
   LOG("[Jaffar]  + Frame Phase:            %02u\n", *framePhase);
   LOG("[Jaffar]  + Is Paused:              %02u\n", *isPaused);
   LOG("[Jaffar]  + Screen Trans / Drawn:   %02u / %02u\n", *screenTransition, *screenDrawn);
@@ -364,7 +407,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Kid Room:               %02u\n", *kidRoom);
   LOG("[Jaffar]  + Kid Pos X:              %04d\n", *kidPosX);
   LOG("[Jaffar]  + Kid Pos Y:              %02u\n", *kidPosY);
-  LOG("[Jaffar]  + Kid Frame:              %02u\n", *kidFrame);
   LOG("[Jaffar]  + Kid Movement:           %02u\n", *kidMovement);
   LOG("[Jaffar]  + Kid Fall Wait:          %02u\n", *kidFallWait);
   LOG("[Jaffar]  + Kid HP:                 %02u\n", *kidHP);
@@ -378,15 +420,15 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Guard Movement:         %02u\n", *guardMovement);
   LOG("[Jaffar]  + Guard Present:          %02u / %02u\n", *guardPresent, *guardDisappearMode);
 
-  LOG("[Jaffar]  + Level %02u Specific Values: \n", currentLevel);
+  LOG("[Jaffar]  + Level %02u Specific Values: \n", *currentLevel);
 
-  if (currentLevel == 1)
+  if (*currentLevel == 0)
   {
-   LOG("[Jaffar]    + First Tile:     %02u / %02u\n", *lvl1FirstTileBG, *lvl1FirstTileFG);
-
+   LOG("[Jaffar]    + Room 19 Door Timer:  %02u\n", *lvl1Room19DoorTimer);
+   LOG("[Jaffar]    + First Tile:          %02u / %02u\n", *lvl1FirstTileBG, *lvl1FirstTileFG);
   }
 
-  if (currentLevel == 2)
+  if (*currentLevel == 1)
   {
    LOG("[Jaffar]    + Last Tile:       %02u\n", *lvl2LastTileFG);
    LOG("[Jaffar]    + Exit Door State: %02u\n", *lvl2ExitDoorState);

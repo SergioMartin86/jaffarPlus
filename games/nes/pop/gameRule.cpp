@@ -4,8 +4,8 @@ GameRule::GameRule() : Rule()
 {
  for(size_t i = 0; i < ROOM_COUNT; i++)
  {
-  _magnets[i].kidHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
-  _magnets[i].kidVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
+  _magnets[i].kidHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f, .active = false };
+  _magnets[i].kidVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f, .active = false };
  }
 }
 
@@ -22,7 +22,7 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
    uint8_t room = actionJs["Room"].get<uint8_t>();
-   _magnets[room].kidHorizontalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+   _magnets[room].kidHorizontalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>(), .active = true };
     recognizedActionType = true;
   }
 
@@ -34,7 +34,7 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
    uint8_t room = actionJs["Room"].get<uint8_t>();
-   _magnets[room].kidVerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+   _magnets[room].kidVerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>(), .active = true };
    recognizedActionType = true;
   }
 
@@ -45,6 +45,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Is Correct Render") return dt_uint8;
+  if (propertyName == "Is Paused") return dt_uint8;
   if (propertyName == "Current Level") return dt_uint8;
   if (propertyName == "Kid Position X") return dt_int16;
   if (propertyName == "Kid Position Y") return dt_uint8;
@@ -68,7 +70,9 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
-  if (propertyName == "Current Level") return gameInstance->currentLevelRaw;
+  if (propertyName == "Is Correct Render") return &gameInstance->isCorrectRender;
+  if (propertyName == "Is Paused") return gameInstance->isPaused;
+  if (propertyName == "Current Level") return gameInstance->currentLevel;
   if (propertyName == "Kid Position X") return gameInstance->kidPosX;
   if (propertyName == "Kid Position Y") return gameInstance->kidPosY;
   if (propertyName == "Kid Frame") return gameInstance->kidFrame;
