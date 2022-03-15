@@ -124,7 +124,7 @@ void GameInstance::updateDerivedValues()
   while ( (advanceCounter < 32) && (*isPaused != 2) ) { _emu->advanceState(0); advanceCounter++; }
   if (*kidJumpingState == 28 && *framePhase == 4) return; // Allows for ending level
 
-  while ( (advanceCounter < 64) && (framesPerState == 4) && (*framePhase != 2) && (*framePhase != 3)) { _emu->advanceState(0); advanceCounter++; }
+  while ( (advanceCounter < 64) && (framesPerState == 4) && (*framePhase != 2) ) { _emu->advanceState(0); advanceCounter++; }
   while ( (advanceCounter < 64) && (framesPerState == 5) && (*framePhase != 3) ) { _emu->advanceState(0); advanceCounter++; }
 }
 
@@ -376,7 +376,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.kidVerticalMagnet.intensity * -diff;
 
   // Rewarding level skipping
-  //if (*currentLevel <= 12 && *isPaused == 2) reward += *currentLevel * 500000.0f;
+  if (*currentLevel <= 12 && *isPaused == 2) reward += *currentLevel * 500000.0f;
 
   // Returning reward
   return reward;

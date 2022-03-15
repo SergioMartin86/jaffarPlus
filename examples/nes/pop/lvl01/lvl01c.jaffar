@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "start871.state"
+    "State File": "start2230.state"
   },
   
   "State Configuration": 
@@ -23,8 +23,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 15000,
-     "Max Size Upper Bound (Mb)": 20000
+     "Max Size Lower Bound (Mb)": 150000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -437,25 +437,6 @@
       { "Property": "Drawn Room", "Op": "==", "Value":  8 },
       { "Property": "Is Paused", "Op": "==", "Value":  2 },
       { "Property": "Kid Frame", "Op": "==", "Value":  220 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 1999,
-    "Description": "Win on Exiting Level",
-    
-    "Conditions":
-    [
-      { "Property": "Is Paused", "Op": "==", "Value":  2 },
-      { "Property": "Current Level", "Op": ">", "Value":  1 },
-      { "Property": "Current Level", "Op": "<", "Value":  13 }
     ],
     
     "Satisfies": [ ],
