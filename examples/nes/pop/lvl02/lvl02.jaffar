@@ -465,6 +465,40 @@
     [
      { "Type": "Trigger Fail" }
     ]
+   },
+   
+   {
+    "Label": 1121,
+    "Description": "Fail on bad render",
+    
+    "Conditions":
+    [
+     { "Property": "Is Correct Render", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1122,
+    "Description": "Fail on bad pause frame",
+    
+    "Conditions":
+    [
+     { "Property": "Is Paused", "Op": "!=", "Value":  2 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
    }
    
   ]  
