@@ -11,7 +11,7 @@
   "State Configuration": 
   {
     "Max Difference Count": 0,
-    "Max Move Count": 1150
+    "Max Move Count": 600
   },
   
   "Game Configuration": 
@@ -23,8 +23,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 17000,
-     "Max Size Upper Bound (Mb)": 40000
+     "Max Size Lower Bound (Mb)": 100000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -120,7 +120,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Win" },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 }
     ]
@@ -440,6 +439,25 @@
     "Conditions":
     [
      { "Property": "Kid Frame", "Op": "==", "Value":  220 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1021,
+    "Description": "Win on next Level",
+    
+    "Conditions":
+    [
+     { "Property": "Game State", "Op": "==", "Value":  8 },
+     { "Property": "Current Level", "Op": ">", "Value":  3 },
+     { "Property": "Current Level", "Op": "<=", "Value":  12 }
     ],
     
     "Satisfies": [ ],

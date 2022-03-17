@@ -10,6 +10,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   currentLevel           = (uint8_t*)   &_emu->_baseMem[0x0070];
   RNGState               = (uint8_t*)   &_emu->_baseMem[0x0060];
   framePhase             = (uint8_t*)   &_emu->_baseMem[0x002C];
+  bottomTextTimer        = (uint8_t*)   &_emu->_baseMem[0x06E5];
+  gameState              = (uint8_t*)   &_emu->_baseMem[0x001C];
+
   kidPosX                = (int16_t*)   &_emu->_baseMem[0x060F];
   kidPosY                = (uint8_t*)   &_emu->_baseMem[0x0611];
   kidFrame               = (uint8_t*)   &_emu->_baseMem[0x0617];
@@ -63,6 +66,8 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*doorOpeningTimer);
   hash.Update(*currentDoorState);
   hash.Update(*exitDoorState);
+  hash.Update(*bottomTextTimer);
+  hash.Update(*gameState);
 
   hash.Update(*kidPosX);
   hash.Update(*kidPosY);
@@ -134,7 +139,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  // Allows for ending level
  if (*kidJumpingState == 28 && *framePhase == 4) return { ".", "U" };
 
- if (*kidFrame == 1)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+  if (*kidFrame == 1)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 2)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 3)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 4)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
@@ -146,20 +151,20 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   if (*kidFrame == 10) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 11) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA", "LDB", "RDB", "LB", "RB" }; // Running
   if (*kidFrame == 12) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 13) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
+  if (*kidFrame == 13) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA", "LB", "RB" }; // Running
   if (*kidFrame == 14) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 15) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LD", "DUBA", "DUB", "UA", "RL", "DUR", "DUL", "DURL", "DURLA", "DURLB", "DURLAB", "DUBL", "DUBR", "DUBRA", "DUBLA", "UBA"}; // Normal Standing
 
-  if (*kidFrame == 16) return { "." }; // Standing Jump
+  if (*kidFrame == 16) return { ".", "A", "L", "R" }; // Standing Jump
   if (*kidFrame == 17) return { "." }; // Standing Jump
   if (*kidFrame == 18) return { "." }; // Standing Jump
   if (*kidFrame == 19) return { "." }; // Standing Jump
-  if (*kidFrame == 20) return { ".", "DB", "B", "DA", "LA", "RA", "RDA", "LDA" }; // Standing Jump
-  if (*kidFrame == 21) return { ".", "LA", "RA", "A", "DA", "DB", "B" }; // Standing Jump
+  if (*kidFrame == 20) return { ".", "DB", "B", "DA", "LA", "RA", "RDA", "LDA", "L", "R" }; // Standing Jump
+  if (*kidFrame == 21) return { ".", "LA", "RA", "A", "DA", "DB", "B", "RDA", "LDA" }; // Standing Jump
   if (*kidFrame == 22) return { "." }; // Standing Jump
-  if (*kidFrame == 23) return { ".", "LA", "RA", "DB", "DA", "RDA", "LDA", "A", "B" }; // Standing Jump
-  if (*kidFrame == 24) return { ".", "RA", "LA", "A", "RDA", "LDA", "DB", "DA", "B" }; // Standing Jump
-  if (*kidFrame == 25) return { ".", "RA", "LA", "B"}; // Standing Jump
+  if (*kidFrame == 23) return { ".", "LA", "RA", "DB", "DA", "RDA", "LDA", "A", "B", "L", "R" }; // Standing Jump
+  if (*kidFrame == 24) return { ".", "RA", "LA", "A", "RDA", "LDA", "DB", "DA", "B", "L", "R" }; // Standing Jump
+  if (*kidFrame == 25) return { ".", "RA", "LA", "B", "L", "R" }; // Standing Jump
   if (*kidFrame == 26) return { ".", "A", "R", "L" }; // Standing Jump
   if (*kidFrame == 27) return { ".", "DB", "RDA", "LDA" }; // Standing Jump
   if (*kidFrame == 28) return { ".", "A", "UA", "L", "RBA"}; // Standing Jump
@@ -171,14 +176,14 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 
   if (*kidFrame == 34) return { ".", "A", "B", "DA", "LA", "RA", "DB", "RDA", "RDB", "LDA", "LDB" }; // Jumping Animation
   if (*kidFrame == 35) return { "." }; // Jumping Animation
-  if (*kidFrame == 37) return { ".", "DB", "A", "B", "LA", "RA", "DA", "RDA", "LDA" }; // Jumping Animation
-  if (*kidFrame == 38) return { "." }; // Jumping Animation
-  if (*kidFrame == 39) return { ".", "DA", "B", "LA", "RA", "DB", "A", "RDA", "LDA" }; // Jumping Animation
-  if (*kidFrame == 40) return { ".", "A", "B", "RDA", "LDA", "DB", "DA", "LA", "RA" }; // Jumping Animation
-  if (*kidFrame == 41) return { ".", "DA", "RDA", "B", "LDA", "RA", "LA", "A", "DB" }; // Jumping Animation
-  if (*kidFrame == 42) return { ".", "A", "B", "LA", "RA", "DA", "RDA", "LDA" }; // Jumping Animation
+  if (*kidFrame == 37) return { ".", "DB", "A", "B", "LA", "RA", "DA", "RDA", "LDA", "L", "R" }; // Jumping Animation
+  if (*kidFrame == 38) return { ".", "A", "L", "R" }; // Jumping Animation
+  if (*kidFrame == 39) return { ".", "DA", "B", "LA", "RA", "DB", "A", "RDA", "LDA", "L", "R" }; // Jumping Animation
+  if (*kidFrame == 40) return { ".", "A", "B", "RDA", "LDA", "DB", "DA", "LA", "RA", "L", "R" }; // Jumping Animation
+  if (*kidFrame == 41) return { ".", "DA", "RDA", "B", "LDA", "RA", "LA", "A", "DB", "L", "R" }; // Jumping Animation
+  if (*kidFrame == 42) return { ".", "A", "B", "LA", "RA", "DA", "RDA", "LDA", "L", "R" }; // Jumping Animation
   if (*kidFrame == 43) return { ".", "A", "R", "L", "DA", "RA", "LA" }; // Jumping Animation
-  if (*kidFrame == 44) return { ".", "A", "RDA", "LDA" }; // Jumping Animation
+  if (*kidFrame == 44) return { ".", "A", "RDA", "LDA", "L", "R", "LA", "RA" }; // Jumping Animation
 
   if (*kidFrame == 45) return { ".", "A", "RB", "RA", "LB", "LA", "DB", "R", "L" }; // Turning Animation
   if (*kidFrame == 46) return { ".", "B", "A", "RB", "R", "L", "LB", "DB", "LA", "RA" }; // Turning Animation
@@ -189,15 +194,15 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   if (*kidFrame == 50) return { "." }; // Slowing Down from Running
   if (*kidFrame == 51) return { "." }; // Slowing Down from Running
   if (*kidFrame == 52) return { "." }; // Slowing Down from Running
-  if (*kidFrame == 53) return { ".", "A", "B", "DB", "DA", "RA", "LA" }; // Slowing Down from Running
+  if (*kidFrame == 53) return { ".", "A", "B", "DB", "DA", "RA", "LA", "LDA", "RDA", "L", "R" }; // Slowing Down from Running
   if (*kidFrame == 54) return { "." }; // Slowing Down from Running
-  if (*kidFrame == 55) return { ".", "B", "DA", "A", "RDA", "LDA", "LA", "RA", "DB" }; // Slowing Down from Running
+  if (*kidFrame == 55) return { ".", "B", "DA", "A", "RDA", "LDA", "LA", "RA", "DB", "L", "R" }; // Slowing Down from Running
   if (*kidFrame == 56) return { ".", "A", "LA", "RA", "DA", "DB", "RDA", "B" }; // Slowing Down from Running
-  if (*kidFrame == 57) return { ".", "DB", "B", "DA", "RDA", "LDA", "A", "LA", "RA" }; // Slowing Down from Running
-  if (*kidFrame == 58) return { ".", "DB", "B", "DA", "RDA", "LDA", "A", "LA", "RA" }; // Slowing Down from Running
+  if (*kidFrame == 57) return { ".", "DB", "B", "DA", "RDA", "LDA", "A", "LA", "RA", "L", "R" }; // Slowing Down from Running
+  if (*kidFrame == 58) return { ".", "DB", "B", "DA", "RDA", "LDA", "A", "LA", "RA", "L", "R" }; // Slowing Down from Running
   if (*kidFrame == 59) return { ".", "DB", "DA", "LA", "RA", "B", "A" }; // Slowing Down from Running
   if (*kidFrame == 60) return { ".", "DB", "DA", "B", "RA", "LA", "A", "RDA", "LDA" }; // Slowing Down from Running
-  if (*kidFrame == 61) return { "." }; // Slowing Down from Running
+  if (*kidFrame == 61) return { ".", "A", "L", "R" }; // Slowing Down from Running
   if (*kidFrame == 62) return { "." }; // Slowing Down from Running
   if (*kidFrame == 63) return { "." }; // Slowing Down from Running
   if (*kidFrame == 64) return { "." }; // Slowing Down from Running
@@ -239,7 +244,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   if (*kidFrame == 102) return { ".", "A" }; // Falling Animation
   if (*kidFrame == 103) return { ".", "A" }; // Falling Animation
   if (*kidFrame == 104) return { ".", "A" }; // Falling Animation
-  if (*kidFrame == 105) return { ".", "A" }; // Falling Animation
+  if (*kidFrame == 105) return { ".", "A", "LD", "RD", "LA", "RA" }; // Falling Animation
 
   if (*kidFrame == 106) return { ".", "U", "A", "UA" }; // Clinging From Wall
 
@@ -261,7 +266,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   if (*kidFrame == 122) return { ".", "A", "DB", "DA", "RDA", "LDA", "B", "RA", "LA" }; // Careful Step
   if (*kidFrame == 123) return { ".", "RDA", "A", "B", "RA", "LDA", "RDA", "LA", "DB" }; // Careful Step
   if (*kidFrame == 124) return { ".", "DA", "LA", "RA", "A", "DB", "RDA", "LDA" }; // Careful Step
-  if (*kidFrame == 125) return { "." }; // Careful Step
+  if (*kidFrame == 125) return { ".", "A", "L", "R" }; // Careful Step
   if (*kidFrame == 126) return { "." }; // Careful Step
   if (*kidFrame == 127) return { "." }; // Careful Step
   if (*kidFrame == 128) return { "." }; // Careful Step
@@ -376,7 +381,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.kidVerticalMagnet.intensity * -diff;
 
   // Rewarding level skipping
-  if (*currentLevel <= 12 && *isPaused == 2) reward += *currentLevel * 500000.0f;
+  if (*currentLevel <= 12 && *isPaused == 2 && *gameState == 1 && *framePhase == 2) reward += *currentLevel * 500000.0f;
 
   // Returning reward
   return reward;
@@ -398,6 +403,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Frame Phase:            %02u\n", *framePhase);
   LOG("[Jaffar]  + Is Paused:              %02u\n", *isPaused);
   LOG("[Jaffar]  + Screen Trans / Drawn:   %02u / %02u\n", *screenTransition, *screenDrawn);
+  LOG("[Jaffar]  + Bottom Text Timer:      %02u\n", *bottomTextTimer);
+  LOG("[Jaffar]  + Game State:             %02u\n", *gameState);
 
   LOG("[Jaffar]  + Current Door State:     %02u\n", *currentDoorState);
   LOG("[Jaffar]  + Door Opening Timer:     %02u\n", *doorOpeningTimer);

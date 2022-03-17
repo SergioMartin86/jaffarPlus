@@ -32,6 +32,9 @@ class GameInstance : public GameInstanceBase
   uint8_t* RNGState;
   uint8_t* currentLevel;
   uint8_t* framePhase;
+  uint8_t* bottomTextTimer;
+  uint8_t* gameState;
+
   int16_t* kidPosX;
   uint8_t* kidPosY;
   uint8_t* kidFrame;
