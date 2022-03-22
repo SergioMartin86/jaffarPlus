@@ -150,6 +150,9 @@ void Train::computeStates()
   // Updating reference data with the first entry of the latest states, for encoding
   _stateDB[0]->getStateDataFromDifference(currentSourceStateData, _referenceStateData);
 
+  // Counting levels
+  std::map<uint8_t, size_t> levelCounts;
+
   // Initializing step timers
   _stepHashCalculationTime = 0;
   _stepHashCheckingTime = 0;
@@ -198,6 +201,8 @@ void Train::computeStates()
       t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
       _gameInstances[threadId]->pushState(baseStateData);
+      auto currentLevel = *_gameInstances[threadId]->currentLevel;
+      auto currentKidRoom = *_gameInstances[threadId]->kidRoom;
 
       std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves();
 
@@ -388,11 +393,50 @@ void Train::computeStates()
         tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
+//        // If type is win, validate
+//        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
+//        auto newLevel = *_gameInstances[threadId]->currentLevel;
+//        if (newLevel != currentLevel)
+//        {
+//          uint64_t newHash;
+//          bool isCorrect = true;
+//
+//          for (size_t i = 0; i < 3 && isCorrect == true; i++)
+//          {
+//           // Creating game and emulator instances, and parsing rules
+//           EmuInstance emu(_config["Emulator Configuration"]);
+//           GameInstance game(&emu, _config["Game Configuration"]);
+//           game.parseRules(_config["Rules"]);
+//
+//           for (size_t i = 0; i <= _currentStep; i++)
+//           {
+//            game.advanceState(newState->moveHistory[i]);
+//            // if (type == f_win) printf("0x%lX\n", game.computeHash());
+//           }
+//
+//           newHash = game.computeHash();
+//           printf("0x%lX - %u\n", hash, *game.currentLevel);
+//           if (newHash != hash) isCorrect = false;
+//          }
+//
+//          if (isCorrect == true)  printf("Yes Level %d -> %d - hash: 0x%lX, newHash: 0x%lX\n", currentLevel, newLevel,  hash, newHash);
+//          if (isCorrect == false) printf("No Level %d -> %d - hash: 0x%lX, newHash: 0x%lX\n", currentLevel, newLevel, hash, newHash);
+////          _gameInstances[threadId]->evaluateRules(newState->rulesStatus);
+////          _gameInstances[threadId]->printStateInfo(newState->rulesStatus);
+//          //if (hash != newHash) continue;
+//          if (isCorrect == false) continue;
+//        }
+//        #endif
+
+
         // If state has succeded or is a regular state, adding it in the corresponding database
         #pragma omp critical(newFrameDB)
         {
          // Storing new winning state
          if (type == f_win) { _winStateFound = true; memcpy(_winState, newState, sizeof(State)); };
+
+         // Increasing level counter
+         levelCounts[*_gameInstances[threadId]->currentLevel]++;
 
          // Adding state to the new state database
          newStates.push_back(newState);
@@ -502,6 +546,9 @@ void Train::computeStates()
    _hashDBAges.push_back(_hashCurAge);
    _hashCurAge = _currentStep;
   }
+
+  // Printing level counters
+  for (const auto& level : levelCounts) printf("Level %u: %lu\n", level.first, level.second);
 
   auto hashFilteringTimeEnd = std::chrono::high_resolution_clock::now();                                                                           // Profiling
   _stepHashFilteringTime = std::chrono::duration_cast<std::chrono::nanoseconds>(hashFilteringTimeEnd - hashFilteringTimeBegin).count(); // Profiling
@@ -615,51 +662,50 @@ Train::Train(int argc, char *argv[])
   try { program.parse_args(argc, argv);  }
   catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
 
-  // Parsing config file
+  // Parsing _config file
   std::string configFile = program.get<std::string>("configFile");
   std::string configFileString;
   auto status = loadStringFromFile(configFileString, configFile.c_str());
-  if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
-  nlohmann::json config;
-  try { config = nlohmann::json::parse(configFileString); }
+  if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar _config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
+  try { _config = nlohmann::json::parse(configFileString); }
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
   // Parsing Jaffar configuration
-  if (isDefined(config, "Jaffar Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Jaffar Configuration' key.\n");
+  if (isDefined(_config, "Jaffar Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Jaffar Configuration' key.\n");
 
   // Parsing database sizes
-  if (isDefined(config["Jaffar Configuration"], "State Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["State Database"], "Max Size Lower Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database', 'Max Size Lower Bound (Mb)' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["State Database"], "Max Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database', 'Max Size Upper Bound (Mb)' key.\n");
-  _maxDBSizeMbLowerBound = config["Jaffar Configuration"]["State Database"]["Max Size Lower Bound (Mb)"].get<size_t>();
-  _maxDBSizeMbUpperBound = config["Jaffar Configuration"]["State Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
+  if (isDefined(_config["Jaffar Configuration"], "State Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["State Database"], "Max Size Lower Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database', 'Max Size Lower Bound (Mb)' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["State Database"], "Max Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database', 'Max Size Upper Bound (Mb)' key.\n");
+  _maxDBSizeMbLowerBound = _config["Jaffar Configuration"]["State Database"]["Max Size Lower Bound (Mb)"].get<size_t>();
+  _maxDBSizeMbUpperBound = _config["Jaffar Configuration"]["State Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
 
-  if (isDefined(config["Jaffar Configuration"], "Hash Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["Hash Database"], "Max Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Max Size Upper Bound (Mb)' key.\n");
-  _hashSizeUpperBound = config["Jaffar Configuration"]["Hash Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
+  if (isDefined(_config["Jaffar Configuration"], "Hash Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["Hash Database"], "Max Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Max Size Upper Bound (Mb)' key.\n");
+  _hashSizeUpperBound = _config["Jaffar Configuration"]["Hash Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
 
-  if (isDefined(config["Jaffar Configuration"]["Hash Database"], "Database Count") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Database Count' key.\n");
-  _hashDBCount = config["Jaffar Configuration"]["Hash Database"]["Database Count"].get<size_t>();
+  if (isDefined(_config["Jaffar Configuration"]["Hash Database"], "Database Count") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Database Count' key.\n");
+  _hashDBCount = _config["Jaffar Configuration"]["Hash Database"]["Database Count"].get<size_t>();
 
   // Parsing file output frequency
-  if (isDefined(config["Jaffar Configuration"], "Save Intermediate Results") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Enabled") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Enabled' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Frequency (s)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Frequency (s)' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Best Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best Solution Path' key.\n");
-  if (isDefined(config["Jaffar Configuration"]["Save Intermediate Results"], "Worst Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst Solution Path' key.\n");
-  _outputEnabled = config["Jaffar Configuration"]["Save Intermediate Results"]["Enabled"].get<bool>();
-  _outputSaveFrequency = config["Jaffar Configuration"]["Save Intermediate Results"]["Frequency (s)"].get<float>();
-  _outputSolutionBestPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Best Solution Path"].get<std::string>();
-  _outputSolutionWorstPath = config["Jaffar Configuration"]["Save Intermediate Results"]["Worst Solution Path"].get<std::string>();
+  if (isDefined(_config["Jaffar Configuration"], "Save Intermediate Results") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Enabled") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Enabled' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Frequency (s)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Frequency (s)' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Best Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best Solution Path' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Worst Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst Solution Path' key.\n");
+  _outputEnabled = _config["Jaffar Configuration"]["Save Intermediate Results"]["Enabled"].get<bool>();
+  _outputSaveFrequency = _config["Jaffar Configuration"]["Save Intermediate Results"]["Frequency (s)"].get<float>();
+  _outputSolutionBestPath = _config["Jaffar Configuration"]["Save Intermediate Results"]["Best Solution Path"].get<std::string>();
+  _outputSolutionWorstPath = _config["Jaffar Configuration"]["Save Intermediate Results"]["Worst Solution Path"].get<std::string>();
 
   // Checking whether it contains the rules field
-  if (isDefined(config, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rules' key.\n");
+  if (isDefined(_config, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rules' key.\n");
 
   // Checking whether it contains the emulator configuration field
-  if (isDefined(config, "Emulator Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Emulator Configuration' key.\n");
+  if (isDefined(_config, "Emulator Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Emulator Configuration' key.\n");
 
   // Checking whether it contains the Game configuration field
-  if (isDefined(config, "Game Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Game Configuration' key.\n");
+  if (isDefined(_config, "Game Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Game Configuration' key.\n");
 
   printf("[Jaffar] Initializing Game...\n");
 
@@ -676,9 +722,9 @@ Train::Train(int argc, char *argv[])
    #pragma omp critical
    {
     // Creating game and emulator instances, and parsing rules
-    auto emuInstance = new EmuInstance(config["Emulator Configuration"]);
-    _gameInstances[threadId] = new GameInstance(emuInstance, config["Game Configuration"]);
-    _gameInstances[threadId]->parseRules(config["Rules"]);
+    auto emuInstance = new EmuInstance(_config["Emulator Configuration"]);
+    _gameInstances[threadId] = new GameInstance(emuInstance, _config["Game Configuration"]);
+    _gameInstances[threadId]->parseRules(_config["Rules"]);
    }
   }
 
@@ -686,7 +732,7 @@ Train::Train(int argc, char *argv[])
   _ruleCount = _gameInstances[0]->_rules.size();
 
   // Parsing state configuration
-  State::parseConfiguration(config);
+  State::parseConfiguration(_config);
 
   printf("[Jaffar] Allocating Storage...\n");
 
@@ -707,22 +753,24 @@ Train::Train(int argc, char *argv[])
   // Computing initial hash
   const auto hash = _gameInstances[0]->computeHash();
 
-  auto initialState = new State;
+  auto firstState = new State;
+
   uint8_t gameState[_STATE_DATA_SIZE];
   _gameInstances[0]->popState(gameState);
 
   // Storing initial state as base for differential comparison
+  memcpy(_initialStateData, gameState, _STATE_DATA_SIZE);
   memcpy(_referenceStateData, gameState, _STATE_DATA_SIZE);
-  initialState->computeStateDifference(_referenceStateData, gameState);
+  firstState->computeStateDifference(_referenceStateData, gameState);
 
   // Storing initial state difference
-  for (size_t i = 0; i < _ruleCount; i++) initialState->rulesStatus[i] = false;
+  for (size_t i = 0; i < _ruleCount; i++) firstState->rulesStatus[i] = false;
 
   // Evaluating Rules on initial state
-  _gameInstances[0]->evaluateRules(initialState->rulesStatus);
+  _gameInstances[0]->evaluateRules(firstState->rulesStatus);
 
   // Evaluating Score on initial state
-  initialState->reward = _gameInstances[0]->getStateReward(initialState->rulesStatus);
+  firstState->reward = _gameInstances[0]->getStateReward(firstState->rulesStatus);
 
   // Creating hash databases and registering hash for initial state
   _hashCurDB = std::make_unique<hashSet_t>();
@@ -740,12 +788,12 @@ Train::Train(int argc, char *argv[])
   _worstState = new State;
 
   // Copying initial state into the best/worst state
-  memcpy(_bestState, initialState, sizeof(State));
-  memcpy(_worstState, initialState, sizeof(State));
+  memcpy(_bestState, firstState, sizeof(State));
+  memcpy(_worstState, firstState, sizeof(State));
 
   // Adding state to the initial database
   _databaseSize = 1;
-  _stateDB.push_back(initialState);
+  _stateDB.push_back(firstState);
 
   // Initializing show thread
   if (_outputEnabled)

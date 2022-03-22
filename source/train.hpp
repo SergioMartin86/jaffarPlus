@@ -29,6 +29,9 @@ class Train
 
   private:
 
+  // Configuration
+  nlohmann::json _config;
+
   // Storage for current step
   uint16_t _currentStep;
 
@@ -56,6 +59,7 @@ class Train
 
   // Storage for source state data for differential load/save
   uint8_t _referenceStateData[_STATE_DATA_SIZE];
+  uint8_t _initialStateData[_STATE_DATA_SIZE];
 
   // State databases
   size_t _databaseSize;

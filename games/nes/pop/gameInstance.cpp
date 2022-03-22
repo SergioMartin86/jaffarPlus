@@ -46,6 +46,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lvl1Room19DoorTimer      = (uint8_t*)   &_emu->_baseMem[0x05E9];
   lvl2LastTileFG           = (uint8_t*)   &_emu->_baseMem[0x0665];
   lvl2ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x0708];
+  lvl3PreCheckpointGateTimer = (uint8_t*)   &_emu->_baseMem[0x05E9];
+  lvl3ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x0400];
+  lvl4ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x06F7];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -107,6 +110,17 @@ uint64_t GameInstance::computeHash() const
    hash.Update(*lvl2ExitDoorState);
   }
 
+  if (*currentLevel == 2)
+  {
+   hash.Update(*lvl3PreCheckpointGateTimer);
+   hash.Update(*lvl3ExitDoorState);
+  }
+
+  if (*currentLevel == 2)
+  {
+   hash.Update(*lvl4ExitDoorState);
+  }
+
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
@@ -125,8 +139,8 @@ void GameInstance::updateDerivedValues()
  uint16_t framesPerState = 4;
  if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
 
-  while (*screenTransition == 255 && advanceCounter < 32) { _emu->advanceState(0); advanceCounter++; }
-  while ( (advanceCounter < 32) && (*isPaused != 2) ) { _emu->advanceState(0); advanceCounter++; }
+  while (*screenTransition == 255 && advanceCounter < 64) { _emu->advanceState(0); advanceCounter++; }
+  while ( (advanceCounter < 64) && (*isPaused != 2) ) { _emu->advanceState(0); advanceCounter++; }
   if (*kidJumpingState == 28 && *framePhase == 4) return; // Allows for ending level
 
   while ( (advanceCounter < 64) && (framesPerState == 4) && (*framePhase != 2) ) { _emu->advanceState(0); advanceCounter++; }
@@ -381,7 +395,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.kidVerticalMagnet.intensity * -diff;
 
   // Rewarding level skipping
-  if (*currentLevel <= 12 && *isPaused == 2 && *gameState == 1 && *framePhase == 2) reward += *currentLevel * 500000.0f;
+  if (*currentLevel <= 12 && *isPaused == 2) reward += *currentLevel * 500000.0f;
 
   // Returning reward
   return reward;
@@ -439,6 +453,17 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   {
    LOG("[Jaffar]    + Last Tile:       %02u\n", *lvl2LastTileFG);
    LOG("[Jaffar]    + Exit Door State: %02u\n", *lvl2ExitDoorState);
+  }
+
+  if (*currentLevel == 2)
+  {
+   LOG("[Jaffar]    + Pre Checkpoint Gate Timer:  %02u\n", *lvl3PreCheckpointGateTimer);
+   LOG("[Jaffar]    + Exit Door State: %02u\n", *lvl3ExitDoorState);
+  }
+
+  if (*currentLevel == 3)
+  {
+   LOG("[Jaffar]    + Exit Door State: %02u\n", *lvl4ExitDoorState);
   }
 
   LOG("[Jaffar]  + Rule Status: ");

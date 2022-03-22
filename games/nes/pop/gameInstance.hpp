@@ -44,6 +44,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* kidRoom;
   uint8_t* kidFightMode;
   uint8_t* kidJumpingState;
+  uint8_t* guardAlive;
   uint8_t* guardPosX;
   uint8_t* guardHP;
   uint8_t* guardNotice;
@@ -70,6 +71,9 @@ class GameInstance : public GameInstanceBase
   uint8_t* lvl1Room19DoorState;
   uint8_t* lvl2LastTileFG;
   uint8_t* lvl2ExitDoorState;
+  uint8_t* lvl3PreCheckpointGateTimer;
+  uint8_t* lvl3ExitDoorState;
+  uint8_t* lvl4ExitDoorState;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;

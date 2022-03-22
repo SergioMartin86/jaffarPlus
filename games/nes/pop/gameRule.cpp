@@ -48,6 +48,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Game State") return dt_uint8;
   if (propertyName == "Is Correct Render") return dt_uint8;
   if (propertyName == "Is Paused") return dt_uint8;
+  if (propertyName == "Frame Phase") return dt_uint8;
   if (propertyName == "Current Level") return dt_uint8;
   if (propertyName == "Kid Position X") return dt_int16;
   if (propertyName == "Kid Position Y") return dt_uint8;
@@ -61,6 +62,9 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Guard HP") return dt_uint8;
   if (propertyName == "Exit Door State") return dt_uint8;
   if (propertyName == "Level 2 Exit Door State") return dt_uint8;
+  if (propertyName == "Level 3 Checkpoint Gate Timer") return dt_uint8;
+  if (propertyName == "Level 3 Exit Door State") return dt_uint8;
+  if (propertyName == "Level 4 Exit Door State") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -74,6 +78,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Game State") return gameInstance->gameState;
   if (propertyName == "Is Correct Render") return &gameInstance->isCorrectRender;
   if (propertyName == "Is Paused") return gameInstance->isPaused;
+  if (propertyName == "Frame Phase") return gameInstance->framePhase;
   if (propertyName == "Current Level") return gameInstance->currentLevel;
   if (propertyName == "Kid Position X") return gameInstance->kidPosX;
   if (propertyName == "Kid Position Y") return gameInstance->kidPosY;
@@ -87,6 +92,9 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Guard HP") return gameInstance->guardHP;
   if (propertyName == "Exit Door State") return gameInstance->exitDoorState;
   if (propertyName == "Level 2 Exit Door State") return gameInstance->lvl2ExitDoorState;
+  if (propertyName == "Level 3 Checkpoint Gate Timer") return gameInstance->lvl3PreCheckpointGateTimer;
+  if (propertyName == "Level 3 Exit Door State") return gameInstance->lvl3ExitDoorState;
+  if (propertyName == "Level 4 Exit Door State") return gameInstance->lvl4ExitDoorState;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

@@ -1,0 +1,190 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../pop.nes",
+    "State File": "lvl02.state"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 0,
+    "Max Move Count": 1200
+  },
+  
+  "Game Configuration": 
+  {
+   "Hash Includes": [  ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 100000,
+     "Max Size Upper Bound (Mb)": 200000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1001,
+    "Description": "Setting magnet to make Kid go to the right",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 0, "Min": 0, "Max": 400 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Description": "Got to the next room",
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 4, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 0, "Min": 0, "Max": 400 }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    "Description": "Got to the next room",
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  5 }
+    ],
+    
+    "Satisfies": [ 1002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 80, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 10.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 }
+    ]
+   },
+   
+   {
+    "Label": 1013,
+    "Description": "Got to the next room",
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  5 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  65 }
+    ],
+    
+    "Satisfies": [ 1003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    "Description": "Got to the next room",
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  0 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  0 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  100 }
+    ],
+    
+    "Satisfies": [ 1013 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 10.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 }
+    ]
+   },
+
+   {
+    "Label": 1005,
+    "Description": "Got to skip position",
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 0 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  0 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  100 },
+     { "Property": "Kid Position X", "Op": "<", "Value":  250 }
+    ],
+    
+    "Satisfies": [ 1004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 }
+    ]
+   },  
+   
+   {
+    "Label": 1121,
+    "Description": "Fail on bad render",
+    
+    "Conditions":
+    [
+     { "Property": "Is Correct Render", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}
