@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl04a.state"
+    "State File": "lvl04b.state"
   },
   
   "State Configuration": 
@@ -23,8 +23,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Lower Bound (Mb)": 50000,
+     "Max Size Upper Bound (Mb)": 150000
     },
     
     "Hash Database":
@@ -294,7 +294,7 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Add Reward", "Value": 20000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 6, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 6, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 400, "Min": 0, "Max": 400 },
@@ -440,7 +440,7 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Add Reward", "Value": 30000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 10, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 10, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 0, "Min": 0, "Max": 400 },
@@ -454,14 +454,14 @@
     [
      { "Property": "Kid Room", "Op": "==", "Value": 6 },
      { "Property": "Drawn Room", "Op": "==", "Value":  6 },
-     { "Property": "Kid Position Y", "Op": "==", "Value":  65 }
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
     "Satisfies": [ 1019 ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Add Reward", "Value": 30000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 6, "Center": 0, "Min": 0, "Max": 400 },
@@ -475,14 +475,14 @@
     [
      { "Property": "Kid Room", "Op": "==", "Value": 23 },
      { "Property": "Drawn Room", "Op": "==", "Value":  23 },
-     { "Property": "Kid Position Y", "Op": "==", "Value":  65 }
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
     "Satisfies": [ 1020 ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Add Reward", "Value": 30000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 6, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 6, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 23, "Center": 130, "Min": 0, "Max": 400 },
