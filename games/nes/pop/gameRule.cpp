@@ -67,6 +67,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Level 4 Exit Door State") return dt_uint8;
   if (propertyName == "Door Opening Timer") return dt_uint8;
   if (propertyName == "Level 5 Gate Timer") return dt_uint8;
+  if (propertyName == "Level 7 Slow Fall Potion State") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -99,6 +100,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Level 4 Exit Door State") return gameInstance->lvl4ExitDoorState;
   if (propertyName == "Door Opening Timer") return gameInstance->doorOpeningTimer;
   if (propertyName == "Level 5 Gate Timer") return gameInstance->lvl5GateTimer;
+  if (propertyName == "Level 7 Slow Fall Potion State") return gameInstance->lvl7SlowFallPotionState;
 
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());

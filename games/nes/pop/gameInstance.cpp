@@ -12,6 +12,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   framePhase             = (uint8_t*)   &_emu->_baseMem[0x002C];
   bottomTextTimer        = (uint8_t*)   &_emu->_baseMem[0x06E5];
   gameState              = (uint8_t*)   &_emu->_baseMem[0x001C];
+  passwordTimer          = (uint8_t*)   &_emu->_baseMem[0x007D];
 
   kidPosX                = (int16_t*)   &_emu->_baseMem[0x060F];
   kidPosY                = (uint8_t*)   &_emu->_baseMem[0x0611];
@@ -47,10 +48,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lvl1Room19DoorTimer      = (uint8_t*)   &_emu->_baseMem[0x05E9];
   lvl2LastTileFG           = (uint8_t*)   &_emu->_baseMem[0x0665];
   lvl2ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x0708];
-  lvl3PreCheckpointGateTimer = (uint8_t*)   &_emu->_baseMem[0x05E9];
+  lvl3PreCheckpointGateTimer = (uint8_t*) &_emu->_baseMem[0x05E9];
   lvl3ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x0400];
   lvl4ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x06F7];
   lvl5GateTimer            = (uint8_t*)   &_emu->_baseMem[0x0538];
+  lvl7SlowFallPotionState  = (uint8_t*)   &_emu->_baseMem[0x0708];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -101,6 +103,10 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*guardDisappearMode);
   hash.Update(*lvl4ExitDoorState);
 
+  if (*gameState == 8) hash.Update(*passwordTimer);
+  if (*gameState == 8 && *passwordTimer == 0) hash.Update(*globalTimer);
+  if (*gameState == 1 && *kidFrame == 0 && *kidMovement == 91) hash.Update(*globalTimer);
+
   // Level-specific tiles
   if (*currentLevel == 0)
   {
@@ -124,6 +130,12 @@ uint64_t GameInstance::computeHash() const
   {
    hash.Update(*lvl5GateTimer);
   }
+
+  if (*currentLevel == 6)
+  {
+   hash.Update(*lvl7SlowFallPotionState);
+  }
+
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -154,8 +166,13 @@ void GameInstance::updateDerivedValues()
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves() const
 {
- // Allows for ending level
- if (*kidJumpingState == 28 && *framePhase == 4) return { ".", "U" };
+  // If end level try everything
+  if (*gameState == 8 && *passwordTimer == 0) return { ".", "A", "S" };
+  if (*gameState == 8) return { "." };
+  if (*gameState == 1 && *kidFrame == 0 && *kidMovement == 91) return { ".", "A", "S" };
+
+  // Allows for ending level
+  if (*kidJumpingState == 28 && *framePhase == 4) return { ".", "U" };
 
   if (*kidFrame == 1)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 2)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
@@ -421,7 +438,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Frame Phase:            %02u\n", *framePhase);
   LOG("[Jaffar]  + Is Paused:              %02u\n", *isPaused);
   LOG("[Jaffar]  + Screen Trans / Drawn:   %02u / %02u\n", *screenTransition, *screenDrawn);
-  LOG("[Jaffar]  + Bottom Text Timer:      %02u\n", *bottomTextTimer);
+  LOG("[Jaffar]  + Bottom / Pass Timer:    %02u, %02u\n", *bottomTextTimer, *passwordTimer);
   LOG("[Jaffar]  + Game State:             %02u\n", *gameState);
 
   LOG("[Jaffar]  + Current Door State:     %02u\n", *currentDoorState);
@@ -468,6 +485,11 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   if (*currentLevel == 4)
   {
    LOG("[Jaffar]    + Gate Timer:  %02u\n", *lvl5GateTimer);
+  }
+
+  if (*currentLevel == 6)
+  {
+    LOG("[Jaffar]    + Slowfall Potion State:  %02u\n", *lvl7SlowFallPotionState);
   }
 
   LOG("[Jaffar]    + Exit Door State: %02u\n", *lvl4ExitDoorState);
