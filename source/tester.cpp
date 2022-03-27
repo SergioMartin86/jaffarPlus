@@ -86,11 +86,11 @@ int main(int argc, char *argv[])
    {
     gameInstance.advanceState(levels[i].moveList[j]);
     printf("Step %u:%u - Level %u - Move: '%s' - RNG: 0x%08X\n", j, currentStep, gameState.current_level, levels[i].moveList[j].c_str(), gameState.random_seed);
-    if (levels[i].levelId == 15)
-    {
-     gameInstance.printStateInfo(0);
-     getchar();
-    }
+//    if (levels[i].levelId == 15)
+//    {
+//     gameInstance.printStateInfo(0);
+//     getchar();
+//    }
     currentStep++;
    }
   }
