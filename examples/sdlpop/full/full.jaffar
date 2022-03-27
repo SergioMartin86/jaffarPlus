@@ -1,0 +1,44 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 1",  
+ 
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl01.sav"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 42,
+    "Max Move Count": 250,
+    "Store Move List": false    
+  },
+  
+  "Game Configuration": 
+  {
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": [ ],
+   "Falling Tiles Hash Types": [ ],
+   "Active Objects Hash Types": [ ]
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
+  }, 
+  
+  "Tester Configuration": 
+  {
+    "Level Data":
+    [
+     { "Level Id": 1,  "State File": "lvl01.sav", "Solution File": "lvl01.sol" },
+     { "Level Id": 15, "State File": "lvl15.sav", "Solution File": "lvl15.sol" }
+    ]
+  }, 
+ 
+  "Rules":
+  [
+  ]  
+}

@@ -57,5 +57,14 @@ executable('jaffar-play',
   cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES' ] 
 )
     
-    
+# Building tester tool
+executable('jaffar-tester',
+  'source/tester.cpp',
+  jaffarSrc + platformTrainSrc + gameInstanceSrc,
+  include_directories: [ jaffarIncludes, platformTrainIncludes, gameInstanceIncludes ],
+  dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
+  link_with: [ platformTrainLibs ],
+  link_args: [ platformTrainLFlags ],
+  cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags ]
+)
     
