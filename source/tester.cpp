@@ -15,6 +15,7 @@ struct level_t
  uint16_t sequenceLength;
  std::string stateFile;
  uint8_t stateData[_STATE_DATA_SIZE];
+ uint8_t RNGOffset;
 };
 
 int main(int argc, char *argv[])
@@ -74,24 +75,57 @@ int main(int argc, char *argv[])
    lvlStruct.stateFile = level["State File"].get<std::string>();
    emuInstance->loadStateFile(lvlStruct.stateFile);
    gameInstance.popState(lvlStruct.stateData);
+   lvlStruct.RNGOffset = level["RNG Offset"].get<uint8_t>();
    levels.push_back(lvlStruct);
   }
 
-  // Iterating move list in the sequence
-  uint16_t currentStep = 0;
-  for (size_t i = 0; i < levels.size(); i++)
-  {
-   gameInstance.pushState(levels[i].stateData);
-   for (int j = 0; j < levels[i].sequenceLength; j++)
+  const uint8_t posCopyProt = 4;
+  seed_was_init = 1;
+  uint32_t successCounter = 0;
+  uint32_t maxRNG = 2000;
+
+//  for (uint32_t rngState = 0; rngState < maxRNG; rngState++)
+//  {
+//   gameState.random_seed = rngState;
+//   init_copyprot();
+//   if (copyprot_plac == posCopyProt) successCounter++;
+//   //printf("RNG: 0x%08X - > 0x%08X - CopyProtPlace: %u\n", rngState, gameState.random_seed, copyprot_plac);
+//  }
+//  printf("Success Counter: %u/%u (%.2f%%)\n", successCounter, maxRNG, ((double)successCounter / (double)maxRNG)*100.0);
+//  exit(0);
+
+//  for (uint32_t rngState = 0; rngState < maxRNG; rngState++)
+//  {
+   // Iterating move list in the sequence
+   uint16_t currentStep = 0;
+//   gameState.random_seed = rngState;
+//   init_copyprot();
+
+   for (uint32_t initialRngState = 0; initialRngState < maxRNG; initialRngState++)
    {
-    gameInstance.advanceState(levels[i].moveList[j]);
-    printf("Step %u:%u - Level %u - Move: '%s' - RNG: 0x%08X\n", j, currentStep, gameState.current_level, levels[i].moveList[j].c_str(), gameState.random_seed);
-//    if (levels[i].levelId == 15)
-//    {
-//     gameInstance.printStateInfo(0);
-//     getchar();
-//    }
-    currentStep++;
+    auto currentRNG = initialRngState;
+    auto currentLastLooseSound = 0;
+
+    for (size_t i = 0; i < levels.size(); i++)
+    {
+     gameInstance.pushState(levels[i].stateData);
+     gameState.random_seed = currentRNG;
+     gameState.last_loose_sound = currentLastLooseSound;
+
+     if (gameState.current_level != levels[i].levelId) break;
+     for (uint8_t k = 0; k < levels[i].RNGOffset; k++) gameState.random_seed = emuInstance->advanceRNGState(gameState.random_seed);
+
+     for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
+     {
+      gameInstance.advanceState(levels[i].moveList[j]);
+      //printf("Step %u:%u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, currentStep, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
+      currentStep++;
+     }
+
+     currentRNG = gameState.random_seed;
+     currentLastLooseSound = gameState.last_loose_sound;
+    }
+
+    printf("Current Level: %u\n", gameState.current_level);
    }
-  }
 }

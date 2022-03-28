@@ -509,7 +509,7 @@ void  clear_kbd_buf()
 }
 
 // seg009:040A
-word  prandom(word max)
+word prandom(word max)
 {
   if (!seed_was_init)
   {
