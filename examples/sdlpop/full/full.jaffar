@@ -33,8 +33,8 @@
   {
     "Level Data":
     [
-     { "Level Id":  1, "State File": "lvl01.sav", "Solution File": "lvl01.sol", "RNG Offset": 0 },
-     { "Level Id": 15, "State File": "lvl15.sav", "Solution File": "lvl15.sol", "RNG Offset": 4 },
+     { "Level Id":  1, "State File": "lvl01.sav", "Solution File": "lvl01.sol", "RNG Offset": 0, "Cutscene RNG Rate": 0 },
+     { "Level Id": 15, "State File": "lvl15.sav", "Solution File": "lvl15.sol", "RNG Offset": 4, "Cutscene RNG Rate": 0 },
      { "Level Id":  2, "State File": "lvl02.sav", "Solution File": "lvl02.sol", "RNG Offset": 5 },
      { "Level Id":  3, "State File": "lvl03.sav", "Solution File": "lvl03.sol", "RNG Offset": 1 },
      { "Level Id":  4, "State File": "lvl04.sav", "Solution File": "lvl04.sol", "RNG Offset": 6 },

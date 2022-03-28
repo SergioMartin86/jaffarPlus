@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
   const uint8_t posCopyProt = 4;
   seed_was_init = 1;
   uint32_t successCounter = 0;
-  uint32_t maxRNG = 2000;
+  uint32_t maxRNG = 10000;
 
 //  for (uint32_t rngState = 0; rngState < maxRNG; rngState++)
 //  {
@@ -101,31 +101,33 @@ int main(int argc, char *argv[])
 //   gameState.random_seed = rngState;
 //   init_copyprot();
 
-   for (uint32_t initialRngState = 0; initialRngState < maxRNG; initialRngState++)
+  uint8_t maxLevel = 0;
+
+  for (uint32_t initialRngState = 0; initialRngState < maxRNG; initialRngState++)
+  {
+   auto currentRNG = initialRngState;
+   auto currentLastLooseSound = 0;
+
+   for (size_t i = 0; i < levels.size(); i++)
    {
-    auto currentRNG = initialRngState;
-    auto currentLastLooseSound = 0;
+    gameInstance.pushState(levels[i].stateData);
+    gameState.random_seed = currentRNG;
+    gameState.last_loose_sound = currentLastLooseSound;
 
-    for (size_t i = 0; i < levels.size(); i++)
+    for (uint8_t k = 0; k < levels[i].RNGOffset; k++) gameState.random_seed = emuInstance->advanceRNGState(gameState.random_seed);
+
+    for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
     {
-     gameInstance.pushState(levels[i].stateData);
-     gameState.random_seed = currentRNG;
-     gameState.last_loose_sound = currentLastLooseSound;
-
-     if (gameState.current_level != levels[i].levelId) break;
-     for (uint8_t k = 0; k < levels[i].RNGOffset; k++) gameState.random_seed = emuInstance->advanceRNGState(gameState.random_seed);
-
-     for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
-     {
-      gameInstance.advanceState(levels[i].moveList[j]);
-      //printf("Step %u:%u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, currentStep, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
-      currentStep++;
-     }
-
-     currentRNG = gameState.random_seed;
-     currentLastLooseSound = gameState.last_loose_sound;
+     gameInstance.advanceState(levels[i].moveList[j]);
+     //printf("Step %u:%u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, currentStep, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
+     currentStep++;
     }
 
-    printf("Current Level: %u\n", gameState.current_level);
+    currentRNG = gameState.random_seed;
+    currentLastLooseSound = gameState.last_loose_sound;
+    if (gameState.current_level == levels[i].levelId) { if (i > maxLevel) maxLevel = i; break; }
    }
+  }
+
+  printf("Max Level: %u\n", levels[maxLevel].levelId);
 }
