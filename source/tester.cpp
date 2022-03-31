@@ -6,6 +6,7 @@
 #include "emuInstance.hpp"
 #include "utils.hpp"
 #include <parallel_hashmap/phmap.h>
+#include <omp.h>
 
 // Configuration for parallel hash sets
 #define SETNAME phmap::parallel_flat_hash_set
@@ -61,11 +62,27 @@ int main(int argc, char *argv[])
   // Checking whether it contains the Tester configuration field
   if (isDefined(config, "Tester Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Tester Configuration' key.\n");
 
-  // Initializing emulator
-  auto emuInstance = new EmuInstance(config["Emulator Configuration"]);
+  // Getting number of openMP threads
+  auto _threadCount = omp_get_max_threads();
 
-  // Initializing game state
-  GameInstance gameInstance(emuInstance, config["Game Configuration"]);
+  // Creating game instances, one per openMP thread
+  std::vector<GameInstance*> _gameInstances(_threadCount);
+  std::vector<EmuInstance*> _emuInstances(_threadCount);
+
+  // Initializing thread-specific instances
+  #pragma omp parallel
+  {
+   // Getting thread id
+   int threadId = omp_get_thread_num();
+
+   // Doing this as a critical section so not all threads try to access files at the same time
+   #pragma omp critical
+   {
+    // Creating game and emulator instances, and parsing rules
+    _emuInstances[threadId] = new EmuInstance(config["Emulator Configuration"]);
+    _gameInstances[threadId] = new GameInstance(_emuInstances[threadId], config["Game Configuration"]);
+   }
+  }
 
   // Level solution storage
   std::vector<level_t> levels;
@@ -81,8 +98,8 @@ int main(int argc, char *argv[])
    lvlStruct.moveList = split(lvlStruct.moveSequence, ' ');
    lvlStruct.sequenceLength = lvlStruct.moveList.size();
    lvlStruct.stateFile = level["State File"].get<std::string>();
-   emuInstance->loadStateFile(lvlStruct.stateFile);
-   gameInstance.popState(lvlStruct.stateData);
+   _emuInstances[0]->loadStateFile(lvlStruct.stateFile);
+   _gameInstances[0]->popState(lvlStruct.stateData);
    lvlStruct.RNGOffset = level["RNG Offset"].get<uint8_t>();
    lvlStruct.cutsceneRNGRate = level["Cutscene RNG Rate"].get<uint8_t>();
    levels.push_back(lvlStruct);
@@ -104,14 +121,14 @@ int main(int argc, char *argv[])
   hashSet_t goodRNGSet;
   uint8_t maxLevel = 0;
 
+  #pragma omp parallel for
   for (uint32_t rngState = 0; rngState < maxRNG; rngState++)
   {
    gameState.random_seed = rngState;
    init_copyprot();
    if (copyprot_plac == posCopyProt) goodRNGSet.insert(rngState);
   }
-  printf("Success Counter: %lu/%u (%.2f%%)\n", goodRNGSet.size(), maxRNG, ((double)goodRNGSet.size() / (double)maxRNG)*100.0);
-
+  printf("Copyright Success Rate: %lu/%u (%.2f%%)\n", goodRNGSet.size(), maxRNG, ((double)goodRNGSet.size() / (double)maxRNG)*100.0);
 
   for (size_t i = 0; i < levels.size(); i++)
   {
@@ -124,7 +141,7 @@ int main(int argc, char *argv[])
      gameState.random_seed = rng;
      for (size_t q = 0; q < 23; q++) // 2 seconds of cutscenes
      {
-      for (uint8_t k = 0; k < levels[i].cutsceneRNGRate; k++) gameState.random_seed = emuInstance->advanceRNGState(gameState.random_seed);
+      for (uint8_t k = 0; k < levels[i].cutsceneRNGRate; k++) gameState.random_seed = _emuInstances[0]->advanceRNGState(gameState.random_seed);
       tmpRNGSet.insert(gameState.random_seed);
      }
     }
@@ -134,25 +151,37 @@ int main(int argc, char *argv[])
 
    hashSet_t tmpRNGSet;
 
-   for (const uint32_t currentRNG : goodRNGSet)
+//   goodRNGSet.clear();
+//   goodRNGSet.insert(0x92AEBFFF);
+
+   std::vector<uint32_t> currentSet(goodRNGSet.begin(), goodRNGSet.end());
+
+   #pragma omp parallel
    {
-    gameInstance.pushState(levels[i].stateData);
-    gameState.random_seed = currentRNG;
-    gameState.last_loose_sound = currentLastLooseSound;
+    // Getting thread id
+    int threadId = omp_get_thread_num();
 
-    for (uint8_t k = 0; k < levels[i].RNGOffset; k++) gameState.random_seed = emuInstance->advanceRNGState(gameState.random_seed);
-
-    for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
+    #pragma omp for
+    for (size_t rngIdx = 0; rngIdx < currentSet.size(); rngIdx++)
     {
-     gameInstance.advanceState(levels[i].moveList[j]);
-     printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
-    }
+     _gameInstances[threadId]->pushState(levels[i].stateData);
+     gameState.random_seed = currentSet[rngIdx];
+     gameState.last_loose_sound = currentLastLooseSound;
 
-    if (gameState.current_level == levels[i].levelId || gameState.current_level == 13) if (i > maxLevel) { maxLevel = i; break; }
-    if (gameState.current_level != levels[i].levelId) tmpRNGSet.insert(gameState.random_seed);
+     for (uint8_t k = 0; k < levels[i].RNGOffset; k++) gameState.random_seed = _emuInstances[threadId]->advanceRNGState(gameState.random_seed);
+
+     for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
+     {
+      _gameInstances[threadId]->advanceState(levels[i].moveList[j]);
+      //printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
+     }
+
+     if (gameState.current_level != levels[i].levelId) tmpRNGSet.insert(gameState.random_seed);
+    }
    }
 
-   printf("Level %u, Success Counter: %lu/%lu (%.2f%%)\n", levels[i].levelId, tmpRNGSet.size(), goodRNGSet.size(), ((double)tmpRNGSet.size() / (double)goodRNGSet.size())*100.0);
+   maxLevel = i;
+   printf("Level %u, Success Rate: %lu/%lu (%.2f%%)\n", levels[i].levelId, tmpRNGSet.size(), goodRNGSet.size(), ((double)tmpRNGSet.size() / (double)goodRNGSet.size())*100.0);
    if (tmpRNGSet.size() == 0) break;
    goodRNGSet = tmpRNGSet;
    currentLastLooseSound = gameState.last_loose_sound;
