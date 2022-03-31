@@ -16,6 +16,7 @@ struct level_t
  std::string stateFile;
  uint8_t stateData[_STATE_DATA_SIZE];
  uint8_t RNGOffset;
+ uint8_t cutsceneRNGRate;
 };
 
 int main(int argc, char *argv[])
@@ -76,6 +77,7 @@ int main(int argc, char *argv[])
    emuInstance->loadStateFile(lvlStruct.stateFile);
    gameInstance.popState(lvlStruct.stateData);
    lvlStruct.RNGOffset = level["RNG Offset"].get<uint8_t>();
+   lvlStruct.cutsceneRNGRate = level["Cutscene RNG Rate"].get<uint8_t>();
    levels.push_back(lvlStruct);
   }
 
@@ -101,10 +103,21 @@ int main(int argc, char *argv[])
 //   gameState.random_seed = rngState;
 //   init_copyprot();
 
+//   uint32_t rng = 0xA9E34D37;
+//  for (size_t i = 0; i < 32; i++)
+//  {
+//   printf("rng: 0x%08X\n", rng);
+//   rng = emuInstance->advanceRNGState(rng);
+//  }
+//  exit(0);
+
   uint8_t maxLevel = 0;
 
-  for (uint32_t initialRngState = 0; initialRngState < maxRNG; initialRngState++)
-  {
+  gameInstance.pushState(levels[0].stateData);
+  uint32_t initialRngState = gameState.random_seed;
+
+//  for (uint32_t initialRngState = 0; initialRngState < maxRNG; initialRngState++)
+//  {
    auto currentRNG = initialRngState;
    auto currentLastLooseSound = 0;
 
@@ -127,7 +140,7 @@ int main(int argc, char *argv[])
     currentLastLooseSound = gameState.last_loose_sound;
     if (gameState.current_level == levels[i].levelId) { if (i > maxLevel) maxLevel = i; break; }
    }
-  }
+//  }
 
   printf("Max Level: %u\n", levels[maxLevel].levelId);
 }
