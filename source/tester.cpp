@@ -57,6 +57,16 @@ int main(int argc, char *argv[])
   // Initializing emulator
   auto emuInstance = new EmuInstance(config["Emulator Configuration"]);
 
+//  for (int i = 1; i <= 15; i++)
+//  {
+//   emuInstance->startLevel(i);
+//   draw_level_first();
+//   char levelFilename[255];
+//   sprintf(levelFilename, "lvl%02u.sav", i);
+//   emuInstance->saveStateFile(levelFilename);
+//  }
+//  exit(0);
+
   // Initializing game state
   GameInstance gameInstance(emuInstance, config["Game Configuration"]);
 
@@ -127,18 +137,19 @@ int main(int argc, char *argv[])
     gameState.random_seed = currentRNG;
     gameState.last_loose_sound = currentLastLooseSound;
 
+    for (uint8_t k = 0; k < levels[i].cutsceneRNGRate; k++) gameState.random_seed = emuInstance->advanceRNGState(gameState.random_seed);
     for (uint8_t k = 0; k < levels[i].RNGOffset; k++) gameState.random_seed = emuInstance->advanceRNGState(gameState.random_seed);
 
     for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
     {
      gameInstance.advanceState(levels[i].moveList[j]);
-     //printf("Step %u:%u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, currentStep, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
+     printf("Step %u:%u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, currentStep, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
      currentStep++;
     }
 
     currentRNG = gameState.random_seed;
     currentLastLooseSound = gameState.last_loose_sound;
-    if (gameState.current_level == levels[i].levelId) { if (i > maxLevel) maxLevel = i; break; }
+    if (gameState.current_level == levels[i].levelId || gameState.current_level == 13) { if (i > maxLevel) maxLevel = i; break; }
    }
 //  }
 
