@@ -35,17 +35,17 @@
     [
      { "Level Id":  1, "State File": "lvl01.sav", "Solution File": "lvl01.sol", "RNG Offset": 0, "Cutscene RNG Rate": 0 },
      { "Level Id": 15, "State File": "lvl15.sav", "Solution File": "lvl15.sol", "RNG Offset": 4, "Cutscene RNG Rate": 0 },
-     { "Level Id":  2, "State File": "lvl02.sav", "Solution File": "lvl02.sol", "RNG Offset": 5, "Cutscene RNG Rate": 3 },
+     { "Level Id":  2, "State File": "lvl02.sav", "Solution File": "lvl02.sol", "RNG Offset": 2, "Cutscene RNG Rate": 3 },
      { "Level Id":  3, "State File": "lvl03.sav", "Solution File": "lvl03.sol", "RNG Offset": 1, "Cutscene RNG Rate": 0 },
-     { "Level Id":  4, "State File": "lvl04.sav", "Solution File": "lvl04.sol", "RNG Offset": 6, "Cutscene RNG Rate": 3 },
+     { "Level Id":  4, "State File": "lvl04.sav", "Solution File": "lvl04.sol", "RNG Offset": 3, "Cutscene RNG Rate": 3 },
      { "Level Id":  5, "State File": "lvl05.sav", "Solution File": "lvl05.sol", "RNG Offset": 3, "Cutscene RNG Rate": 0 },
-     { "Level Id":  6, "State File": "lvl06.sav", "Solution File": "lvl06.sol", "RNG Offset": 5, "Cutscene RNG Rate": 3 },
+     { "Level Id":  6, "State File": "lvl06.sav", "Solution File": "lvl06.sol", "RNG Offset": 2, "Cutscene RNG Rate": 3 },
      { "Level Id":  7, "State File": "lvl07.sav", "Solution File": "lvl07.sol", "RNG Offset": 2, "Cutscene RNG Rate": 0 },
-     { "Level Id":  8, "State File": "lvl08.sav", "Solution File": "lvl08.sol", "RNG Offset": 5, "Cutscene RNG Rate": 3 },
-     { "Level Id":  9, "State File": "lvl09.sav", "Solution File": "lvl09.sol", "RNG Offset": 3, "Cutscene RNG Rate": 3 },
+     { "Level Id":  8, "State File": "lvl08.sav", "Solution File": "lvl08.sol", "RNG Offset": 2, "Cutscene RNG Rate": 3 },
+     { "Level Id":  9, "State File": "lvl09.sav", "Solution File": "lvl09.sol", "RNG Offset": 0, "Cutscene RNG Rate": 3 },
      { "Level Id": 10, "State File": "lvl10.sav", "Solution File": "lvl10.sol", "RNG Offset": 2, "Cutscene RNG Rate": 0 },
      { "Level Id": 11, "State File": "lvl11.sav", "Solution File": "lvl11.sol", "RNG Offset": 2, "Cutscene RNG Rate": 0 },
-     { "Level Id": 12, "State File": "lvl12.sav", "Solution File": "lvl12.sol", "RNG Offset": 5, "Cutscene RNG Rate": 3 }
+     { "Level Id": 12, "State File": "lvl12.sav", "Solution File": "lvl12.sol", "RNG Offset": 2, "Cutscene RNG Rate": 3 }
     ]
   }, 
  

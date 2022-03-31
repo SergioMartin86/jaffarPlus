@@ -127,6 +127,7 @@ int main(int argc, char *argv[])
     gameState.random_seed = currentRNG;
     gameState.last_loose_sound = currentLastLooseSound;
 
+    for (uint8_t k = 0; k < levels[i].cutsceneRNGRate; k++) gameState.random_seed = emuInstance->advanceRNGState(gameState.random_seed);
     for (uint8_t k = 0; k < levels[i].RNGOffset; k++) gameState.random_seed = emuInstance->advanceRNGState(gameState.random_seed);
 
     for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
@@ -138,7 +139,7 @@ int main(int argc, char *argv[])
 
     currentRNG = gameState.random_seed;
     currentLastLooseSound = gameState.last_loose_sound;
-    if (gameState.current_level == levels[i].levelId) { if (i > maxLevel) maxLevel = i; break; }
+    if (gameState.current_level == levels[i].levelId || gameState.current_level == 13) { if (i > maxLevel) maxLevel = i; break; }
    }
 //  }
 
