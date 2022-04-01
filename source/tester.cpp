@@ -8,11 +8,15 @@
 #include <parallel_hashmap/phmap.h>
 #include <omp.h>
 
-// Configuration for parallel hash sets
-#define SETNAME phmap::parallel_flat_hash_set
-#define SETEXTRAARGS , phmap::priv::hash_default_hash<V>, phmap::priv::hash_default_eq<V>, std::allocator<V>, 4, std::mutex
-template <class V> using HashSetT = SETNAME<V SETEXTRAARGS>;
-using hashSet_t = HashSetT<uint32_t>;
+// Configuration for parallel hash maps
+#define MAPNAME phmap::parallel_flat_hash_map
+#define MAPEXTRAARGS , phmap::priv::hash_default_hash<K>, phmap::priv::hash_default_eq<K>, std::allocator<std::pair<const K, V>>, 4, std::mutex
+template <class K, class V> using HashMapT = MAPNAME<K, V MAPEXTRAARGS>;
+using hashMap_t = HashMapT<uint32_t, uint32_t>;
+
+uint64_t processedRNGs;
+uint64_t targetRNGs;
+uint64_t successRNGs;
 
 struct level_t
 {
@@ -26,6 +30,17 @@ struct level_t
  uint8_t RNGOffset;
  uint8_t cutsceneRNGRate;
 };
+
+// Functions for the show thread
+void* progressThreadFunction(void *ptr)
+{
+ while(true)
+ {
+  sleep(1);
+  printf("[Progress] Success %lu - Total %lu/%lu (%.2f%%)\n", successRNGs, processedRNGs, targetRNGs, ((double)processedRNGs/(double)targetRNGs)*100.0);
+ }
+ return NULL;
+}
 
 int main(int argc, char *argv[])
 {
@@ -61,6 +76,14 @@ int main(int argc, char *argv[])
 
   // Checking whether it contains the Tester configuration field
   if (isDefined(config, "Tester Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Tester Configuration' key.\n");
+
+  // Progress variables
+  processedRNGs = 0;
+  targetRNGs = 0;
+  successRNGs = 0;
+
+  pthread_t progressThread;
+  if (pthread_create(&progressThread, NULL, progressThreadFunction, NULL) != 0) EXIT_WITH_ERROR("[ERROR] Could not create show thread.\n");
 
   // Getting number of openMP threads
   auto _threadCount = omp_get_max_threads();
@@ -116,9 +139,10 @@ int main(int argc, char *argv[])
 
   const uint8_t posCopyProt = 4;
   seed_was_init = 1;
-  uint32_t maxRNG = 100000;
+//  uint32_t maxRNG = 0xFFFFFFFF;
+  uint32_t maxRNG = 0x000FFFFF;
   auto currentLastLooseSound = 0;
-  hashSet_t goodRNGSet;
+  hashMap_t goodRNGSet;
   uint8_t maxLevel = 0;
 
   #pragma omp parallel for
@@ -126,7 +150,7 @@ int main(int argc, char *argv[])
   {
    gameState.random_seed = rngState;
    init_copyprot();
-   if (copyprot_plac == posCopyProt) goodRNGSet.insert(rngState);
+   if (copyprot_plac == posCopyProt) goodRNGSet[gameState.random_seed] = rngState;
   }
   printf("Copyright Success Rate: %lu/%u (%.2f%%)\n", goodRNGSet.size(), maxRNG, ((double)goodRNGSet.size() / (double)maxRNG)*100.0);
 
@@ -135,26 +159,31 @@ int main(int argc, char *argv[])
    // Adding cutscene rng states
    if (levels[i].cutsceneRNGRate > 0)
    {
-    hashSet_t tmpRNGSet;
-    for (const uint32_t rng : goodRNGSet)
+    hashMap_t tmpRNGSet;
+    for (const auto& rng : goodRNGSet)
     {
-     gameState.random_seed = rng;
+     gameState.random_seed = rng.first;
      for (size_t q = 0; q < 23; q++) // 2 seconds of cutscenes
      {
       for (uint8_t k = 0; k < levels[i].cutsceneRNGRate; k++) gameState.random_seed = _emuInstances[0]->advanceRNGState(gameState.random_seed);
-      tmpRNGSet.insert(gameState.random_seed);
+      tmpRNGSet[gameState.random_seed] = rng.second;
      }
     }
 
     goodRNGSet = tmpRNGSet;
    }
 
-   hashSet_t tmpRNGSet;
+   hashMap_t tmpRNGSet;
 
 //   goodRNGSet.clear();
 //   goodRNGSet.insert(0x92AEBFFF);
 
-   std::vector<uint32_t> currentSet(goodRNGSet.begin(), goodRNGSet.end());
+   std::vector<std::pair<uint32_t, uint32_t>> currentSet;
+   for (const auto& rng : goodRNGSet) currentSet.push_back(std::make_pair(rng.first, rng.second));
+   processedRNGs = 0;
+   successRNGs = 0;
+   targetRNGs = currentSet.size();
+   uint8_t curMaxLevel = 0;
 
    #pragma omp parallel
    {
@@ -165,7 +194,7 @@ int main(int argc, char *argv[])
     for (size_t rngIdx = 0; rngIdx < currentSet.size(); rngIdx++)
     {
      _gameInstances[threadId]->pushState(levels[i].stateData);
-     gameState.random_seed = currentSet[rngIdx];
+     gameState.random_seed = currentSet[rngIdx].first;
      gameState.last_loose_sound = currentLastLooseSound;
 
      for (uint8_t k = 0; k < levels[i].RNGOffset; k++) gameState.random_seed = _emuInstances[threadId]->advanceRNGState(gameState.random_seed);
@@ -176,7 +205,21 @@ int main(int argc, char *argv[])
       //printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
      }
 
-     if (gameState.current_level != levels[i].levelId) tmpRNGSet.insert(gameState.random_seed);
+     if (gameState.current_level != levels[i].levelId)
+     {
+
+      if (i > curMaxLevel)
+      {
+       curMaxLevel = i;
+       printf("Current Best RNG: 0x%08X\n", currentSet[rngIdx].second);
+      }
+
+      tmpRNGSet[gameState.random_seed] = currentSet[rngIdx].second;
+      successRNGs = tmpRNGSet.size();
+     }
+
+     #pragma omp atomic
+     processedRNGs++;
     }
    }
 
