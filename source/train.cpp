@@ -833,6 +833,9 @@ void Train::showSavingLoop()
          for (size_t i = 1; i < _currentStep; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState->moveHistory[i]);
          saveStringToFile(bestSolutionString, _outputSolutionBestPath.c_str());
 
+         std::string solWithStep = _outputSolutionBestPath + std::string(".") + std::to_string(_currentStep);
+         saveStringToFile(bestSolutionString, solWithStep.c_str());
+
          std::string worstSolutionString;
          worstSolutionString += EmuInstance::moveCodeToString(_worstState->moveHistory[0]);
          for (size_t i = 1; i < _currentStep; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState->moveHistory[i]);

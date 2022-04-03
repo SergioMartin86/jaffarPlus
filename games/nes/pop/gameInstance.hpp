@@ -78,6 +78,9 @@ class GameInstance : public GameInstanceBase
   uint8_t* lvl4ExitDoorState;
   uint8_t* lvl5GateTimer;
   uint8_t* lvl7SlowFallPotionState;
+  uint8_t* lvl9Room15DoorState;
+  uint8_t* lvl10Room0DoorState;
+  uint8_t* lvl10Room4DoorState;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;

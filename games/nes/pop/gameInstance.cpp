@@ -53,6 +53,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lvl4ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x06F7];
   lvl5GateTimer            = (uint8_t*)   &_emu->_baseMem[0x0538];
   lvl7SlowFallPotionState  = (uint8_t*)   &_emu->_baseMem[0x0708];
+  lvl9Room15DoorState      = (uint8_t*)   &_emu->_baseMem[0x05E9];
+  lvl10Room0DoorState      = (uint8_t*)   &_emu->_baseMem[0x04B8];
+  lvl10Room4DoorState      = (uint8_t*)   &_emu->_baseMem[0x0541];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -136,6 +139,16 @@ uint64_t GameInstance::computeHash() const
    hash.Update(*lvl7SlowFallPotionState);
   }
 
+  if (*currentLevel == 7)
+  {
+   hash.Update(*lvl9Room15DoorState);
+  }
+
+  if (*currentLevel == 9)
+  {
+   hash.Update(*lvl10Room0DoorState);
+   hash.Update(*lvl10Room4DoorState);
+  }
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -151,16 +164,42 @@ void GameInstance::updateDerivedValues()
  // Advancing useless frames
  uint16_t advanceCounter = 0;
 
- // Number of frames per state
- uint16_t framesPerState = 4;
- if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
-
-  while (*screenTransition == 255 && advanceCounter < 64) { _emu->advanceState(0); advanceCounter++; }
   while ( (advanceCounter < 64) && (*isPaused != 2) ) { _emu->advanceState(0); advanceCounter++; }
   if (*kidJumpingState == 28 && *framePhase == 4) return; // Allows for ending level
 
-  while ( (advanceCounter < 64) && (framesPerState == 4) && (*framePhase != 2) ) { _emu->advanceState(0); advanceCounter++; }
-  while ( (advanceCounter < 64) && (framesPerState == 5) && (*framePhase != 3) ) { _emu->advanceState(0); advanceCounter++; }
+  // Number of frames per state
+  uint16_t framesPerState = 4;
+  if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
+
+  while ( (advanceCounter < 64) && (framesPerState == 4) && (*framePhase != 2) )
+  {
+   _emu->advanceState(0); advanceCounter++;
+   framesPerState = 4;
+   if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
+  }
+
+  while ( (advanceCounter < 64) && (framesPerState == 5) && (*framePhase != 3) )
+  {
+   _emu->advanceState(0); advanceCounter++;
+
+   framesPerState = 4;
+   if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
+  }
+
+  while ( (advanceCounter < 64) && (framesPerState == 4) && (*framePhase != 2) )
+  {
+   _emu->advanceState(0); advanceCounter++;
+   framesPerState = 4;
+   if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
+  }
+
+  while ( (advanceCounter < 64) && (framesPerState == 5) && (*framePhase != 3) )
+  {
+   _emu->advanceState(0); advanceCounter++;
+
+   framesPerState = 4;
+   if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
+  }
 }
 
 // Function to determine the current possible moves
@@ -416,7 +455,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.kidVerticalMagnet.intensity * -diff;
 
   // Rewarding level skipping
-  if (*currentLevel <= 12 && *isPaused == 2) reward += *currentLevel * 500000.0f;
+  if (*currentLevel == 12 && *isPaused == 2) reward += *currentLevel * 5000000.0f;
 
   // Returning reward
   return reward;
@@ -491,6 +530,18 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   {
     LOG("[Jaffar]    + Slowfall Potion State:  %02u\n", *lvl7SlowFallPotionState);
   }
+
+  if (*currentLevel == 8)
+  {
+    LOG("[Jaffar]    + Room 15 Door State:  %02u\n", *lvl9Room15DoorState);
+  }
+
+  if (*currentLevel == 9)
+  {
+    LOG("[Jaffar]    + Room 0 Door State:  %02u\n", *lvl10Room0DoorState);
+    LOG("[Jaffar]    + Room 4 Door State:  %02u\n", *lvl10Room4DoorState);
+  }
+
 
   LOG("[Jaffar]    + Exit Door State: %02u\n", *lvl4ExitDoorState);
 

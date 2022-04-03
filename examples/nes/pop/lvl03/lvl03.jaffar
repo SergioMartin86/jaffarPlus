@@ -5,13 +5,13 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl03e.state"
+    "State File": "lvl03a.state"
   },
   
   "State Configuration": 
   {
     "Max Difference Count": 0,
-    "Max Move Count": 1200
+    "Max Move Count": 1500
   },
   
   "Game Configuration": 
@@ -23,8 +23,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 90000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 90000
     },
     
     "Hash Database":
@@ -137,8 +137,7 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  13 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  13 },
-     { "Property": "Level 3 Checkpoint Gate Timer", "Op": "<", "Value":  255 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  13 }
     ],
     
     "Satisfies": [ 1213 ],
@@ -157,8 +156,7 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  10 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  10 },
-     { "Property": "Level 3 Checkpoint Gate Timer", "Op": "<", "Value":  255 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  10 }
     ],
     
     "Satisfies": [ 1004 ],
@@ -180,8 +178,7 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  9 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  9 },
-     { "Property": "Level 3 Checkpoint Gate Timer", "Op": "<", "Value":  255 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  9 }
     ],
     
     "Satisfies": [ 1005 ],
@@ -203,14 +200,14 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  6 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  6 },
-     { "Property": "Level 3 Checkpoint Gate Timer", "Op": "<", "Value":  255 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  6 }
     ],
     
     "Satisfies": [ 1006 ],
     
     "Actions":
     [
+     { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 9, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 9, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 6, "Center": 0, "Min": 0, "Max": 400 },
@@ -282,8 +279,53 @@
      { "Type": "Add Reward", "Value": 50000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 255, "Min": 0, "Max": 400 },
-     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 4, "Center": 255, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 4, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1509,
+    "Description": "Get Sword",
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  5 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  80 }
+    ],
+    
+    "Satisfies": [ 1010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 50000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 4, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 4, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 400, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1510,
+    "Description": "Get Sword",
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  5 },
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  80 }
+    ],
+    
+    "Satisfies": [ 1509 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 50000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -295,18 +337,42 @@
     [
      { "Property": "Kid Room", "Op": "==", "Value":  4 },
      { "Property": "Drawn Room", "Op": "==", "Value":  4 },
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
      { "Property": "Kid Position Y", "Op": "<", "Value":  80 }
     ],
     
-    "Satisfies": [ 1010 ],
+    "Satisfies": [ 1510 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 50000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 400, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 4, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1555,
+    "Description": "Get Sword",
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  0 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  0 },
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
+    ],
+    
+    "Satisfies": [ 1510 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 50000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 4, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 4, "Center": 0, "Min": 0, "Max": 400 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 0, "Center": 255, "Min": 0, "Max": 400 },
-     { "Type": "Set Kid Vertical Magnet", "Intensity": 3.0, "Room": 0, "Center": 255, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 0, "Center": 300, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 5.0, "Room": 0, "Center": 255, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -317,10 +383,11 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  2 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  2 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  2 },
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
-    "Satisfies": [ 1011 ],
+    "Satisfies": [ 1555 ],
     
     "Actions":
     [
@@ -333,23 +400,6 @@
    },
    
    {
-    "Label": 1111,
-    "Description": "Get Sword",
-    
-    "Conditions":
-    [
-     { "Property": "Level 3 Exit Door State", "Op": "==", "Value":  34 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 150000.0 }
-    ]
-   },
-      
-   {
     "Label": 1013,
     "Description": "Get Sword and meet guard",
     
@@ -357,6 +407,7 @@
     [
      { "Property": "Kid Room", "Op": "==", "Value":  5 },
      { "Property": "Drawn Room", "Op": "==", "Value":  5 },
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
      { "Property": "Kid Position Y", "Op": ">", "Value":  80 }
     ],
     
@@ -372,16 +423,14 @@
     ]
    },
    
-   {
-    "Label": 1020,
-    "Description": "Win on Exiting Level",
-    
+  {
+    "Label": 1099,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  5 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  5 },
-     { "Property": "Kid Position Y", "Op": ">", "Value":  80 },
-     { "Property": "Kid Frame", "Op": "==", "Value":  220 }
+     { "Property": "Game State", "Op": "==", "Value":  8 },
+     { "Property": "Current Level", "Op": "==", "Value": 3  },
+     { "Property": "Is Paused", "Op": "==", "Value":  2 },
+     { "Property": "Frame Phase", "Op": "==", "Value":  2 }
     ],
     
     "Satisfies": [ ],
@@ -393,9 +442,40 @@
    },
    
    {
-    "Label": 1120,
-    "Description": "Fail on kid dead",
+    "Label": 1199,
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value":  220 },
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Drawn Room", "Op": "==", "Value": 5 }
+    ],
     
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 1198,
+    "Conditions":
+    [
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 }
+    ]
+   },
+   
+   {
+    "Label": 1120,
     "Conditions":
     [
      { "Property": "Kid HP", "Op": "==", "Value":  0 }
@@ -411,8 +491,6 @@
    
    {
     "Label": 1121,
-    "Description": "Fail on bad render",
-    
     "Conditions":
     [
      { "Property": "Is Correct Render", "Op": "==", "Value":  0 }
@@ -428,8 +506,6 @@
 
    {
     "Label": 1122,
-    "Description": "Fail on bad pause frame",
-    
     "Conditions":
     [
      { "Property": "Is Paused", "Op": "!=", "Value":  2 }
@@ -443,28 +519,8 @@
     ]
    },
    
-    {
-    "Label": 1132,
-    "Description": "Fail on bad game state frame",
-    
-    "Conditions":
-    [
-     { "Property": "Game State", "Op": "!=", "Value":  1 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-     
-
    {
     "Label": 1123,
-    "Description": "Fail on bad level",
-    
     "Conditions":
     [
      { "Property": "Current Level", "Op": "<", "Value":  2 }
@@ -480,11 +536,9 @@
    
    {
     "Label": 1124,
-    "Description": "Fail on bad level",
-    
     "Conditions":
     [
-     { "Property": "Current Level", "Op": ">", "Value":  2 }
+     { "Property": "Current Level", "Op": ">", "Value":  3 }
     ],
     
     "Satisfies": [ ],

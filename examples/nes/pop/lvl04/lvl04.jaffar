@@ -5,13 +5,13 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl04b.state"
+    "State File": "lvl04a.state"
   },
   
   "State Configuration": 
   {
     "Max Difference Count": 0,
-    "Max Move Count": 1200
+    "Max Move Count": 1500
   },
   
   "Game Configuration": 
@@ -24,7 +24,7 @@
     "State Database":
     {
      "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 150000
+     "Max Size Upper Bound (Mb)": 120000
     },
     
     "Hash Database":
@@ -491,10 +491,13 @@
    },
    
    {
-    "Label": 1022,
+    "Label": 1099,
     "Conditions":
     [
-     { "Property": "Kid Frame", "Op": "==", "Value":  220 }
+     { "Property": "Game State", "Op": "==", "Value":  8 },
+     { "Property": "Current Level", "Op": "==", "Value": 4  },
+     { "Property": "Is Paused", "Op": "==", "Value":  2 },
+     { "Property": "Frame Phase", "Op": "==", "Value":  2 }
     ],
     
     "Satisfies": [ ],
@@ -506,7 +509,25 @@
    },
    
    {
-    "Label": 1023,
+    "Label": 1199,
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value":  220 },
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
+     { "Property": "Kid Room", "Op": "==", "Value":  23 },
+     { "Property": "Drawn Room", "Op": "==", "Value": 23 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 1198,
     "Conditions":
     [
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
@@ -516,10 +537,10 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 500000.0 }
+     { "Type": "Add Reward", "Value": 1000000.0 }
     ]
    },
-      
+   
    {
     "Label": 1120,
     "Conditions":
@@ -566,10 +587,25 @@
    },
    
    {
-    "Label": 1132,
+    "Label": 1123,
     "Conditions":
     [
-     { "Property": "Game State", "Op": "!=", "Value":  1 }
+     { "Property": "Current Level", "Op": "<", "Value":  3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1124,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": ">", "Value":  4 }
     ],
     
     "Satisfies": [ ],

@@ -11,7 +11,7 @@
   "State Configuration": 
   {
     "Max Difference Count": 0,
-    "Max Move Count": 1200
+    "Max Move Count": 1500
   },
   
   "Game Configuration": 
@@ -433,12 +433,13 @@
    },
    
    {
-    "Label": 1020,
-    "Description": "Win on Exiting Level",
-    
+    "Label": 1099,
     "Conditions":
     [
-     { "Property": "Kid Frame", "Op": "==", "Value":  220 }
+     { "Property": "Game State", "Op": "==", "Value":  8 },
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Is Paused", "Op": "==", "Value":  2 },
+     { "Property": "Frame Phase", "Op": "==", "Value":  2 }
     ],
     
     "Satisfies": [ ],
@@ -450,12 +451,13 @@
    },
    
    {
-    "Label": 1021,
-    "Description": "Win on next Level",
-    
+    "Label": 1199,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": ">", "Value":  1 }
+     { "Property": "Kid Frame", "Op": "==", "Value":  220 },
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
+     { "Property": "Kid Room", "Op": "==", "Value":  22 },
+     { "Property": "Drawn Room", "Op": "==", "Value": 22 }
     ],
     
     "Satisfies": [ ],
@@ -463,13 +465,26 @@
     "Actions":
     [
      { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 1198,
+    "Conditions":
+    [
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 }
     ]
    },
    
    {
     "Label": 1120,
-    "Description": "Fail on Kid's death",
-    
     "Conditions":
     [
      { "Property": "Kid HP", "Op": "==", "Value":  0 }
@@ -485,8 +500,6 @@
    
    {
     "Label": 1121,
-    "Description": "Fail on bad render",
-    
     "Conditions":
     [
      { "Property": "Is Correct Render", "Op": "==", "Value":  0 }
@@ -499,14 +512,42 @@
      { "Type": "Trigger Fail" }
     ]
    },
-   
+
    {
     "Label": 1122,
-    "Description": "Fail on bad pause frame",
-    
     "Conditions":
     [
      { "Property": "Is Paused", "Op": "!=", "Value":  2 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1123,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "<", "Value":  1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1124,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": ">", "Value":  2 }
     ],
     
     "Satisfies": [ ],
