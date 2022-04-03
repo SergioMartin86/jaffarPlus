@@ -9,6 +9,9 @@ build
 tools/llvm/
 tools/run-clang-format/
 *.p1r
+*.log
+*.state
+*.sol
 
 # Prerequisites
 *.d
