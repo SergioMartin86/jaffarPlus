@@ -128,31 +128,75 @@ int main(int argc, char *argv[])
    levels.push_back(lvlStruct);
   }
 
-//  uint32_t curRNG = 0x602D5760;
-//  printf("0x%08X\n", curRNG);
-//  for (size_t i = 0; i < 4; i++)
+//  seed_was_init = 1;
+//  uint32_t curRNG = 0;
+////  printf("00: 0x%08X\n", curRNG);
+//  gameState.random_seed = 0xCEFF44D6;
+//  printf("PreCopy: 0x%08X\n", gameState.random_seed);
+////  gameState.random_seed = _emuInstances[0]->advanceRNGState(gameState.random_seed);
+//  printf("PreCopy2: 0x%08X\n", gameState.random_seed);
+//  init_copyprot();
+//  printf("PostCopy: 0x%08X\n", gameState.random_seed);
+////  gameState.random_seed = _emuInstances[0]->advanceRNGState(gameState.random_seed);
+//  printf("PostCopy2: 0x%08X\n", gameState.random_seed);
+//  init_copyprot();
+//  printf("PostCopy3: 0x%08X\n", gameState.random_seed);
+//  exit(0);
+//  for (size_t i = 0; i < 100; i++)
 //  {
-//   curRNG = emuInstance->reverseRNGState(curRNG);
-//   printf("0x%08X\n", curRNG);
+////   curRNG = _emuInstances[0]->reverseRNGState(curRNG);
+//   gameState.random_seed = _emuInstances[0]->advanceRNGState(gameState.random_seed);
+//   printf("%02lu: 0x%08X\n", i+1, gameState.random_seed);
 //  }
 //  exit(0);
+
+//  uint32_t curRNG = 0x0033AEB7;
+//  size_t step = 0;
+//  while(curRNG != 0x00000009)
+//  {
+//   curRNG += 0x3AC7CA;
+//   step++;
+//  }
+//  printf("step: %lu\n", step);
+
+  std::set<uint64_t> initialSet;
+
+  uint32_t curRNG = 0x0033AEB7;
+  for (size_t i = 0; i < 86400; i++)
+  {
+   if (i > 0 && i % 5 == 0) curRNG += 0x343FD;
+   if (i > 0 && i % 4500 == 0) curRNG -= 0x343FD;
+   if (i > 0 && i % 45000 == 0) curRNG -= 0x343FD;
+   if (i > 0 && i % 70000 == 0) curRNG -= 0x343FD;
+
+   if (curRNG == 0x33E0B642) { printf("%lu\n", i); exit(0); }
+   //if (i > 85000) printf("%lu: 0x%08X\n", i*1000,  curRNG);
+   initialSet.insert(curRNG);
+   curRNG += 0x3AC7CA;
+   if (i > 0 && i % 150 == 0) curRNG += 0x343FD;
+   if (i > 0 && i % 15000 == 0) curRNG += 0x343FD;
+  }
+  printf("Initial Set Size: %lu\n", initialSet.size());
 
   const uint8_t posCopyProt = 4;
   seed_was_init = 1;
 //  uint32_t maxRNG = 0xFFFFFFFF;
-  uint32_t maxRNG = 0x000FFFFF;
+//  uint32_t maxRNG = 0x000FFFFF;
   auto currentLastLooseSound = 0;
   hashMap_t goodRNGSet;
   uint8_t maxLevel = 0;
 
-  #pragma omp parallel for
-  for (uint32_t rngState = 0; rngState < maxRNG; rngState++)
+  for (const auto& rngState : initialSet)
   {
    gameState.random_seed = rngState;
    init_copyprot();
-   if (copyprot_plac == posCopyProt) goodRNGSet[gameState.random_seed] = rngState;
+   init_copyprot();
+   if (copyprot_plac == posCopyProt)  goodRNGSet[gameState.random_seed] = rngState;
   }
-  printf("Copyright Success Rate: %lu/%u (%.2f%%)\n", goodRNGSet.size(), maxRNG, ((double)goodRNGSet.size() / (double)maxRNG)*100.0);
+  printf("Copyright Success Rate: %lu/%lu (%.2f%%)\n", goodRNGSet.size(), initialSet.size(), ((double)goodRNGSet.size() / (double)initialSet.size())*100.0);
+
+//  for (const auto& rng : goodRNGSet) printf("0x%08X\n", rng.second);
+//  exit(0);
 
   for (size_t i = 0; i < levels.size(); i++)
   {
@@ -163,7 +207,7 @@ int main(int argc, char *argv[])
     for (const auto& rng : goodRNGSet)
     {
      gameState.random_seed = rng.first;
-     for (size_t q = 0; q < 23; q++) // 2 seconds of cutscenes
+     for (size_t q = 0; q < 48; q++) // 2 seconds of cutscenes
      {
       for (uint8_t k = 0; k < levels[i].cutsceneRNGRate; k++) gameState.random_seed = _emuInstances[0]->advanceRNGState(gameState.random_seed);
       tmpRNGSet[gameState.random_seed] = rng.second;
@@ -174,9 +218,6 @@ int main(int argc, char *argv[])
    }
 
    hashMap_t tmpRNGSet;
-
-//   goodRNGSet.clear();
-//   goodRNGSet.insert(0x92AEBFFF);
 
    std::vector<std::pair<uint32_t, uint32_t>> currentSet;
    for (const auto& rng : goodRNGSet) currentSet.push_back(std::make_pair(rng.first, rng.second));
@@ -208,12 +249,7 @@ int main(int argc, char *argv[])
      if (gameState.current_level != levels[i].levelId)
      {
 
-      if (i > curMaxLevel)
-      {
-       curMaxLevel = i;
-       printf("Current Best RNG: 0x%08X\n", currentSet[rngIdx].second);
-      }
-
+      if (i > curMaxLevel) curMaxLevel = i;
       tmpRNGSet[gameState.random_seed] = currentSet[rngIdx].second;
       successRNGs = tmpRNGSet.size();
      }
@@ -230,5 +266,6 @@ int main(int argc, char *argv[])
    currentLastLooseSound = gameState.last_loose_sound;
   }
 
+  for (const auto& rng : goodRNGSet) printf("0x%08X\n", rng.second);
   printf("Max Level: %u\n", levels[maxLevel].levelId);
 }
