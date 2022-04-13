@@ -432,5 +432,5 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
 void GameInstance::setRNGState(const uint64_t RNGState)
 {
- gameState.random_seed = (uint8_t) RNGState;
+ gameState.random_seed = (uint64_t) RNGState;
 }

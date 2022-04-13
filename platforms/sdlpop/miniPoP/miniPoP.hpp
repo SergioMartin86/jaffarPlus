@@ -330,3 +330,4 @@ extern "C" start_game_minipop_t start_game;
 extern "C" display_minipop_text_bottom_minipop_t display_minipop_text_bottom;
 extern "C" redraw_screen_minipop_t redraw_screen;
 extern "C" anim_minipop_tile_modif_minipop_t anim_minipop_tile_modif;
+extern "C" void gen_palace_wall_colors_randomizer();

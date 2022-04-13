@@ -2675,7 +2675,7 @@ static const frame_type frame_tbl_cuts[] = {
 };
 
 static const rect_type screen_rect = {0, 0, 200, 320};
-static const char copyprot_letter[] = {'A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'H', 'H', 'I', 'I', 'J', 'J', 'K', 'L', 'L', 'M', 'M', 'N', 'O', 'O', 'P', 'P', 'R', 'R', 'S', 'S', 'T', 'T', 'U', 'U', 'V', 'Y', 'W'};
+static const char copyprot_letter[] = {'A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'H', 'H', 'I', 'I', 'J', 'J', 'K', 'L', 'L', 'M', 'M', 'N', 'O', 'O', 'P', 'P', 'R', 'R', 'S', 'S', 'T', 'T', 'U', 'U', 'V', 'Y', 'W', 'Y'};
 static const word tbl_line[] = {0, 10, 20};
 static const byte chtab_flip_clip[10] = {1, 0, 1, 1, 1, 1, 0, 0, 0, 0};
 static const byte chtab_shift[10] = {0, 1, 0, 0, 0, 0, 1, 1, 1, 0};

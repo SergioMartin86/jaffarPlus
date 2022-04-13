@@ -199,11 +199,7 @@ void Train::computeStates()
 
       // Getting possible moves for the current state
       t0 = std::chrono::high_resolution_clock::now(); // Profiling
-
       _gameInstances[threadId]->pushState(baseStateData);
-      auto currentLevel = *_gameInstances[threadId]->currentLevel;
-      auto currentKidRoom = *_gameInstances[threadId]->kidRoom;
-
       std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves();
 
       #ifdef _DETECT_POSSIBLE_MOVES
@@ -393,50 +389,11 @@ void Train::computeStates()
         tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
-        // If type is win, validate
-        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
-        auto newLevel = *_gameInstances[threadId]->currentLevel;
-        if (possibleMoves[idx] == "UB" || possibleMoves[idx] == "DUB" || possibleMoves[idx] == "DUBA")
-        {
-          uint64_t newHash;
-          bool isCorrect = true;
-
-          for (size_t i = 0; i < 3 && isCorrect == true; i++)
-          {
-           // Creating game and emulator instances, and parsing rules
-           EmuInstance emu(_config["Emulator Configuration"]);
-           GameInstance game(&emu, _config["Game Configuration"]);
-           game.parseRules(_config["Rules"]);
-
-           for (size_t i = 0; i <= _currentStep; i++)
-           {
-            game.advanceState(newState->moveHistory[i]);
-            // if (type == f_win) printf("0x%lX\n", game.computeHash());
-           }
-
-           newHash = game.computeHash();
-           printf("0x%lX - %u\n", hash, *game.currentLevel);
-           if (newHash != hash) isCorrect = false;
-          }
-
-          if (isCorrect == true)  printf("Yes Level %d -> %d - hash: 0x%lX, newHash: 0x%lX\n", currentLevel, newLevel,  hash, newHash);
-          if (isCorrect == false) printf("No Level %d -> %d - hash: 0x%lX, newHash: 0x%lX\n", currentLevel, newLevel, hash, newHash);
-//          _gameInstances[threadId]->evaluateRules(newState->rulesStatus);
-//          _gameInstances[threadId]->printStateInfo(newState->rulesStatus);
-          //if (hash != newHash) continue;
-          if (isCorrect == false) continue;
-        }
-        #endif
-
-
         // If state has succeded or is a regular state, adding it in the corresponding database
         #pragma omp critical(newFrameDB)
         {
          // Storing new winning state
          if (type == f_win) { _winStateFound = true; memcpy(_winState, newState, sizeof(State)); };
-
-         // Increasing level counter
-         levelCounts[*_gameInstances[threadId]->currentLevel]++;
 
          // Adding state to the new state database
          newStates.push_back(newState);
@@ -546,9 +503,6 @@ void Train::computeStates()
    _hashDBAges.push_back(_hashCurAge);
    _hashCurAge = _currentStep;
   }
-
-  // Printing level counters
-  for (const auto& level : levelCounts) printf("Level %u: %lu\n", level.first, level.second);
 
   auto hashFilteringTimeEnd = std::chrono::high_resolution_clock::now();                                                                           // Profiling
   _stepHashFilteringTime = std::chrono::duration_cast<std::chrono::nanoseconds>(hashFilteringTimeEnd - hashFilteringTimeBegin).count(); // Profiling

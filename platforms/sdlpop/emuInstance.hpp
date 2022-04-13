@@ -49,9 +49,6 @@ class EmuInstance : public EmuInstanceBase
   is_validate_mode = true;
   g_argc = 1;
 
-  // Fix feather fall problem when quickload/quicksaving
-  init_copyprot();
-
   // Fix bug: with start_in_blind_mode enabled, moving objects are not displayed
   // until blind mode is toggled off+on??
   need_drects = 1;

@@ -509,7 +509,7 @@ void  clear_kbd_buf()
 }
 
 // seg009:040A
-word  prandom(word max)
+word prandom(word max)
 {
   if (!seed_was_init)
   {
@@ -837,7 +837,7 @@ void  init_copyprot()
   word which_entry;
   word pos;
   word entry_used[40];
-  byte letts_used[26];
+  byte letts_used[27];
 
   copyprot_plac = prandom(13);
   memset(&entry_used, 0, sizeof(entry_used));

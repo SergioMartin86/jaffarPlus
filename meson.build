@@ -56,6 +56,17 @@ executable('jaffar-play',
   link_args: [ platformPlayLFlags, '-lncurses' ],
   cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES' ] 
 )
-    
-    
-    
+
+# Building any necessary game-specific tools
+foreach g : gameTools
+  executable('jaffar-' + g['name'],
+    g['mainSrc'],
+    jaffarSrc + platformTrainSrc + gameInstanceSrc,
+    include_directories: [ jaffarIncludes, platformTrainIncludes, gameInstanceIncludes ],
+    dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
+    link_with: [ platformTrainLibs ],
+    link_args: [ platformTrainLFlags ],
+    cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags ]
+  )
+endforeach
+

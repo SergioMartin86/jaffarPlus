@@ -307,7 +307,7 @@ int main(int argc, char *argv[])
      // Setting input as new rng
      char str[80];
      getstr(str);
-     auto newRNG = std::stol(str);
+     auto newRNG = std::stoull(str);
      gameInstance.setRNGState(newRNG);
 
      // Replacing current sequence
