@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl09a.state"
+    "State File": "jaffar.state" 
   },
   
   "State Configuration": 
@@ -24,7 +24,7 @@
     "State Database":
     {
      "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 40000
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
@@ -648,36 +648,6 @@
     "Conditions":
     [
      { "Property": "Is Paused", "Op": "!=", "Value":  2 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1123,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "<", "Value":  8 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1124,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": ">", "Value":  9 }
     ],
     
     "Satisfies": [ ],

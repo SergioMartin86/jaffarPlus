@@ -1,11 +1,8 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
- 
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl03a.state"
+    "State File": "jaffar.state"
   },
   
   "State Configuration": 
@@ -23,8 +20,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 90000
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 110000
     },
     
     "Hash Database":
@@ -48,7 +45,7 @@
   
   "Rules":
   [
-   {
+     {
     "Label": 1001,
     "Description": "Setting magnet to make Kid go to the right",
     "Conditions":
@@ -137,7 +134,8 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  13 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  13 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  13 },
+     { "Property": "Level 3 Checkpoint Gate Timer", "Op": "<", "Value":  255 }
     ],
     
     "Satisfies": [ 1213 ],
@@ -156,7 +154,8 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  10 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  10 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  10 },
+     { "Property": "Level 3 Checkpoint Gate Timer", "Op": "<", "Value":  255 }
     ],
     
     "Satisfies": [ 1004 ],
@@ -178,7 +177,8 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  9 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  9 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  9 },
+     { "Property": "Level 3 Checkpoint Gate Timer", "Op": "<", "Value":  255 }
     ],
     
     "Satisfies": [ 1005 ],
@@ -200,14 +200,15 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  6 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  6 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  6 },
+     { "Property": "Level 3 Checkpoint Gate Timer", "Op": "<", "Value":  255 }
     ],
     
     "Satisfies": [ 1006 ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Add Reward", "Value": 40000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 9, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 9, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 6, "Center": 0, "Min": 0, "Max": 400 },
@@ -217,7 +218,6 @@
    
    {
     "Label": 1008,
-    "Description": "Got to the next room",
     
     "Conditions":
     [
@@ -240,7 +240,6 @@
    
    {
     "Label": 1009,
-    "Description": "Get Sword",
     
     "Conditions":
     [
@@ -262,8 +261,44 @@
    },
    
    {
+    "Label": 1755,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  0 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  0 },
+     { "Property": "Level 4 Exit Door State", "Op": "!=", "Value":  34 },
+     { "Property": "Level 3 Skeleton Loose Tile", "Op": "!=", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1756,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  1 },
+     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
     "Label": 1010,
-    "Description": "Get Sword",
     
     "Conditions":
     [
@@ -286,7 +321,6 @@
    
    {
     "Label": 1509,
-    "Description": "Get Sword",
     
     "Conditions":
     [
@@ -309,7 +343,6 @@
    
    {
     "Label": 1510,
-    "Description": "Get Sword",
     
     "Conditions":
     [
@@ -331,14 +364,13 @@
    
    {
     "Label": 1011,
-    "Description": "Get Sword",
     
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  4 },
      { "Property": "Drawn Room", "Op": "==", "Value":  4 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
-     { "Property": "Kid Position Y", "Op": "<", "Value":  80 }
+     { "Property": "Kid Position Y", "Op": ">", "Value":  80 }
     ],
     
     "Satisfies": [ 1510 ],
@@ -355,7 +387,6 @@
    
    {
     "Label": 1555,
-    "Description": "Get Sword",
     
     "Conditions":
     [
@@ -378,7 +409,6 @@
    
    {
     "Label": 1012,
-    "Description": "Get Sword",
     
     "Conditions":
     [
@@ -401,7 +431,6 @@
    
    {
     "Label": 1013,
-    "Description": "Get Sword and meet guard",
     
     "Conditions":
     [
@@ -517,36 +546,7 @@
     [
      { "Type": "Trigger Fail" }
     ]
-   },
-   
-   {
-    "Label": 1123,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "<", "Value":  2 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1124,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": ">", "Value":  3 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
    }
+   
   ]  
 }

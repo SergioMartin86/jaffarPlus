@@ -50,6 +50,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lvl2ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x0708];
   lvl3PreCheckpointGateTimer = (uint8_t*) &_emu->_baseMem[0x05E9];
   lvl3ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x0400];
+  lvl3SkeletonLooseTile    = (uint8_t*)   &_emu->_baseMem[0x0502];
   lvl4ExitDoorState        = (uint8_t*)   &_emu->_baseMem[0x06F7];
   lvl5GateTimer            = (uint8_t*)   &_emu->_baseMem[0x0538];
   lvl7SlowFallPotionState  = (uint8_t*)   &_emu->_baseMem[0x0708];
@@ -127,6 +128,7 @@ uint64_t GameInstance::computeHash() const
   {
    hash.Update(*lvl3PreCheckpointGateTimer);
    hash.Update(*lvl3ExitDoorState);
+   hash.Update(*lvl3SkeletonLooseTile);
   }
 
   if (*currentLevel == 4)
@@ -160,6 +162,7 @@ void GameInstance::updateDerivedValues()
 {
  isCorrectRender = 1;
  if (_emu->_nes->emu.ppu.isCorrectRender == false) isCorrectRender = 0;
+ if (_emu->_nes->emu.isCorrectExecution == false) isCorrectRender = 0;
 
  // Advancing useless frames
  uint16_t advanceCounter = 0;
@@ -227,7 +230,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   if (*kidFrame == 12) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 13) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA", "LB", "RB" }; // Running
   if (*kidFrame == 14) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 15) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "LD", "DUBA", "DUB", "UA", "RL", "DUR", "DUL", "DURL", "DURLA", "DURLB", "DURLAB", "DUBL", "DUBR", "DUBRA", "DUBLA", "UBA"}; // Normal Standing
+  if (*kidFrame == 15) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "RD", "LD", "DUB", "DUBA", "UBA"}; // Normal Standing
 
   if (*kidFrame == 16) return { ".", "A", "L", "R" }; // Standing Jump
   if (*kidFrame == 17) return { "." }; // Standing Jump
@@ -387,18 +390,6 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   if (*kidFrame == 174) return { ".", "A", "B", "L", "R" }; // Combat
   if (*kidFrame == 216) return { ".", "A", "B", "BA", "L", "R" }; // Combat
 
- // if (*kidFrame == 255 || *kidFrame == 0)
- // {
- //  std::vector<std::string> allMoves;
- //  for (uint16_t i = 0; i < 256; i++) if (((uint8_t)i & 0b00001000) == 0) if (((uint8_t)i & 0b00000100) == 0)
- //    allMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
- //  return allMoves;
- // }
-
- // std::vector<std::string> allMoves;
- // for (uint16_t i = 0; i < 256; i++) if (((uint8_t)i & 0b00001000) == 0) if (((uint8_t)i & 0b00000100) == 0)
- //   allMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
- // return allMoves;
 
  // Nothing to do
  return { "." };
@@ -463,7 +454,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 
 void GameInstance::setRNGState(const uint64_t RNGState)
 {
- *this->RNGState = (uint8_t) RNGState;
+ *this->globalTimer = (uint8_t) RNGState;
 }
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
@@ -519,6 +510,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   {
    LOG("[Jaffar]    + Pre Checkpoint Gate Timer:  %02u\n", *lvl3PreCheckpointGateTimer);
    LOG("[Jaffar]    + Exit Door State: %02u\n", *lvl3ExitDoorState);
+   LOG("[Jaffar]    + Skeleton Loose Tile: %02u\n", *lvl3SkeletonLooseTile);
   }
 
   if (*currentLevel == 4)

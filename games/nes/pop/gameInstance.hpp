@@ -75,6 +75,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* lvl2ExitDoorState;
   uint8_t* lvl3PreCheckpointGateTimer;
   uint8_t* lvl3ExitDoorState;
+  uint8_t* lvl3SkeletonLooseTile;
   uint8_t* lvl4ExitDoorState;
   uint8_t* lvl5GateTimer;
   uint8_t* lvl7SlowFallPotionState;

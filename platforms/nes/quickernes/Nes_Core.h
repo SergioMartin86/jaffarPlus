@@ -14,7 +14,7 @@ class Nes_Mapper;
 class Nes_Cart;
 class Nes_State;
 
-class Nes_Core : private Nes_Cpu {
+class Nes_Core : public Nes_Cpu {
 	typedef Nes_Cpu cpu;
 public:
 	Nes_Core();

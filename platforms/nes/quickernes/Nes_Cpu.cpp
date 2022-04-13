@@ -54,6 +54,7 @@ void Nes_Cpu::reset( void const* unmapped_page )
 	clock_limit = 0;
 	irq_time_ = LONG_MAX / 2 + 1;
 	end_time_ = LONG_MAX / 2 + 1;
+	isCorrectExecution = true;
 	
 	assert( page_size == 0x800 ); // assumes this
 	set_code_page( 0, low_mem );
@@ -141,6 +142,7 @@ static const unsigned char clock_table [256] = {
 
 Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 {
+ isCorrectExecution = true;
  if (end <= 0) return result_cycles;
 
 	set_end_time_( end );
@@ -1203,16 +1205,13 @@ imm##op:                                \
 		goto loop;
 	}
 
+	// KIL (JAM) [HLT]
+	case 0x02: case 0x12: case 0x22: case 0x32: case 0x42: case 0x52: case 0x62: case 0x72: case 0x92: case 0xB2: case 0xD2: case 0xF2:
+ isCorrectExecution = false;
+	goto stop;
+
 // Unimplemented
 	
-	case page_wrap_opcode: // HLT
-		if ( pc > 0x10000 )
-		{
-			// handle wrap-around (assumes caller has put page of HLT at 0x10000)
-			pc = (pc - 1) & 0xFFFF;
-			clock_count -= 2;
-			goto loop;
-		}
 		// fall through
 	default:
 		// skip over proper number of bytes

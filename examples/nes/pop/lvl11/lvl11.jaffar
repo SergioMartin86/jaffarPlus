@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl11b.state"
+    "State File": "jaffar.state"
   },
   
   "State Configuration": 
@@ -443,22 +443,9 @@
     "Label": 1123,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "<", "Value":  10 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1124,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": ">", "Value":  11 }
+     { "Property": "Kid Room", "Op": "==", "Value":  14 },
+     { "Property": "Drawn Room", "Op": "==", "Value":  14 },
+     { "Property": "Kid Position X", "Op": ">", "Value":  145 }
     ],
     
     "Satisfies": [ ],

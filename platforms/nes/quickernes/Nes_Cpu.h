@@ -84,6 +84,7 @@ private:
 	
 public:
 	registers_t r;
+	bool isCorrectExecution = true;
 	
 	// low_mem is a full page size so it can be mapped with code_map
 	uint8_t low_mem [page_size > 0x800 ? page_size : 0x800];

@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl12a.state"
+    "State File": "jaffar.state"
   },
   
   "State Configuration": 
@@ -474,36 +474,6 @@
     "Conditions":
     [
      { "Property": "Is Paused", "Op": "!=", "Value":  2 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1123,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": ">", "Value":  13 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1124,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "<", "Value":  11 }
     ],
     
     "Satisfies": [ ],

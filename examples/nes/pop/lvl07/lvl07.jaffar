@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl07a.state"
+    "State File": "jaffar.state"
   },
   
   "State Configuration": 
@@ -23,8 +23,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 110000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 160000
     },
     
     "Hash Database":
@@ -484,21 +484,6 @@
      { "Type": "Trigger Win" }
     ]
    },
-
-   {
-    "Label": 1198,
-    "Conditions":
-    [
-     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 1000000.0 }
-    ]
-   },
    
    {
     "Label": 1120,
@@ -549,22 +534,8 @@
     "Label": 1123,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "<", "Value":  6 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1124,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": ">", "Value":  7 }
+     { "Property": "Drawn Room", "Op": "==", "Value":  8 },
+     { "Property": "Kid Room", "Op": "==", "Value":  8 }
     ],
     
     "Satisfies": [ ],
@@ -574,5 +545,6 @@
      { "Type": "Trigger Fail" }
     ]
    }
+   
   ]  
 }

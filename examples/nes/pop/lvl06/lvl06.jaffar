@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl06a.state"
+    "State File": "jaffar.state"
   },
   
   "State Configuration": 
