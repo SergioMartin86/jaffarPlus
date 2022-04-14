@@ -3,13 +3,13 @@
  
   "Emulator Configuration": 
   {
-    "Rom File": "../castlevania.nes",
+    "Rom File": "../castlevania_prg1.nes",
     "State File": "stage01.state"
   },
   
   "State Configuration": 
   {
-    "Max Difference Count": 2000,
+    "Max Difference Count": 2048,
     "Max Move Count": 1700
   },
   
@@ -22,8 +22,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 300,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
@@ -47,7 +47,7 @@
   
   "Rules":
   [
-   {
+    {
     "Label": 1001,
     "Description": "Setting magnet to make Simon go to the right",
     "Conditions":
@@ -61,7 +61,7 @@
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 1295, "Min": 0, "Max": 6000 },
      { "Type": "Set Simon Stair Mode Magnet", "Reward": 0.0, "Mode": 0 },
      { "Type": "Set Simon Weapon Magnet", "Reward": 10.0, "Weapon": 15 },
-     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Min": 0, "Max": 10 }
+     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Min": 0, "Max": 10, "Center": 5 }
     ]
    },
    
@@ -82,7 +82,7 @@
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 1295, "Min": 0, "Max": 6000 },
      { "Type": "Set Simon Stair Mode Magnet", "Reward": 0.0, "Mode": 0 },
      { "Type": "Set Simon Weapon Magnet", "Reward": 10.0, "Weapon": 15 },
-     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 10, "Min": 0, "Max": 10 }
+     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 10, "Min": 0, "Max": 10, "Center": 5 }
     ]
    },
    
@@ -107,7 +107,7 @@
      { "Type": "Set Simon Vertical Magnet", "Intensity": -10.0, "Center": 0, "Min": 0, "Max":  255 },
      { "Type": "Set Simon Stair Mode Magnet", "Reward": 1000.0, "Mode": 0 },
      { "Type": "Set Simon Weapon Magnet", "Reward": 20.0, "Weapon": 15 },
-     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 10, "Min": 0, "Max": 10 }
+     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 10, "Min": 0, "Max": 10, "Center": 5}
     ]
    },
    
@@ -131,7 +131,7 @@
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
      { "Type": "Set Simon Stair Mode Magnet", "Reward": 0.0, "Mode": 0 },
      { "Type": "Set Simon Weapon Magnet", "Reward": 20.0, "Weapon": 15 },
-     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 10, "Min": 0, "Max": 10 }
+     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 10, "Min": 0, "Max": 10, "Center": 5 }
     ]
    },
    
@@ -153,6 +153,5 @@
       { "Type": "Trigger Win" }
     ]
    }
-   
   ]  
 }

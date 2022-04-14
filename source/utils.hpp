@@ -143,3 +143,17 @@ class Lock
   return pthread_mutex_trylock(&_lock) == 0;
  }
 };
+
+inline size_t countButtonsPressedString(const std::string& input) { size_t count = 0; for (size_t i = 0; i < input.size(); i++) if (input[i] != '.') count++; return count; };
+inline uint8_t countButtonsPressedNumber(const uint8_t& input) {
+ uint8_t count = 0;
+ if (input & 0b00000001) count++;
+ if (input & 0b00000010) count++;
+ if (input & 0b00000100) count++;
+ if (input & 0b00001000) count++;
+ if (input & 0b00010000) count++;
+ if (input & 0b00100000) count++;
+ if (input & 0b01000000) count++;
+ if (input & 0b10000000) count++;
+ return count;
+};

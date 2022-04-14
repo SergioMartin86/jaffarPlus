@@ -6,6 +6,14 @@
 #include <algorithm>
 #include <set>
 
+//#define _DETECT_POSSIBLE_MOVES
+
+#ifdef _DETECT_POSSIBLE_MOVES
+ #include <tuple>
+ #define moveKeyTemplate std::tuple<uint8_t, uint8_t>
+ std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
+#endif
+
 void Train::run()
 {
   auto searchTimeBegin = std::chrono::high_resolution_clock::now();      // Profiling
@@ -59,6 +67,25 @@ void Train::run()
       printf("[Jaffar] To run Jaffar for more steps, increase 'Max Move Count' in the .jaffar file.\n");
       _hasFinalized = true;
     }
+
+    // If detecting new moves, save new file
+    #ifdef _DETECT_POSSIBLE_MOVES
+
+    printf("Possible Move List: \n");
+
+    for (const auto& key : newMoveKeySet)
+    {
+     auto itr = key.second.begin();
+     printf("if (*simonState == 0x%02X && *simonSubState == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", get<0>(key.first), get<1>(key.first), itr->c_str());
+     itr++;
+     for (; itr != key.second.end(); itr++)
+     {
+       printf(", \"%s\"", itr->c_str());
+     }
+     printf("});\n");
+    }
+
+    #endif // _DETECT_POSSIBLE_MOVES
   }
 
   // Print winning state if found
@@ -127,8 +154,6 @@ size_t Train::hashEntriesFromSize(const double size) const
   // Just an approximation of how much the hash table requires
   return (size_t)((size * (1024.0 * 1024.0)) / ((double)sizeof(uint64_t) + (double)sizeof(void*)));
 };
-
-//#define _DETECT_POSSIBLE_MOVES
 
 void Train::computeStates()
 {
@@ -204,9 +229,12 @@ void Train::computeStates()
 
       #ifdef _DETECT_POSSIBLE_MOVES
 
-       std::set<uint8_t> possibleMoveSet;
+       auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
+       auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
+
+       std::set<uint8_t, decltype(moveCountComparerNumber)> possibleMoveSet;
        std::vector<std::string> fullMoves;
-       std::set<uint8_t> alternativeMoveSet;
+       std::set<uint8_t, decltype(moveCountComparerNumber)> alternativeMoveSet;
 
        for (const auto& actualMove : possibleMoves)
        {
@@ -214,15 +242,22 @@ void Train::computeStates()
         fullMoves.push_back(actualMove);
        }
 
-      for (uint16_t i = 0; i < 256; i++) if (possibleMoveSet.contains((uint8_t)i) == false)
-       if (((uint8_t)i & 0b00001000) == 0) if (((uint8_t)i & 0b00000100) == 0)
-       {
-        alternativeMoveSet.insert((uint8_t)i);
-        fullMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
-       }
+       for (uint16_t i = 0; i < 256; i++)
+        if (possibleMoveSet.contains((uint8_t)i) == false)
+        if (((uint8_t)i & 0b00001000) == 0)
+        if (((uint8_t)i & 0b00000100) == 0)
+        {
+         alternativeMoveSet.insert((uint8_t)i);
+         fullMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
+        }
 
+       std::sort(fullMoves.begin(), fullMoves.end(), moveCountComparerString);
        auto possibleMoveCopy = possibleMoves;
        possibleMoves = fullMoves;
+
+       // Store key values
+       uint8_t currentSimonState = *_gameInstances[threadId]->simonState;
+       uint8_t currentSimonSubState = *_gameInstances[threadId]->simonSubState;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -337,24 +372,31 @@ void Train::computeStates()
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          printf("Possible move not found! '%s'\n", possibleMoves[idx].c_str());
-          printf("[Jaffar]  + Idx: %lu\n", idx);
-          // printf("[Jaffar]  + Full Set Moves:\n  - '%s'", possibleMoves[0].c_str()); for (size_t i = 1; i < possibleMoves.size(); i++) printf("\n   - '%s'", possibleMoves[i].c_str()); printf("\n");
-          printf("[Jaffar]  + Actual Possible Moves: '%s'", possibleMoveCopy[0].c_str()); for (size_t i = 1; i < possibleMoveCopy.size(); i++) printf(", '%s'", possibleMoveCopy[i].c_str()); printf("\n");
+          auto moveKey = std::make_tuple(currentSimonState, currentSimonSubState);
+          if (newMoveKeySet[moveKey].contains(possibleMoves[idx]) == false)
+          {
+           //printf("Possible move not found! '%s'\n", possibleMoves[idx].c_str());
+           //printf("[Jaffar]  + Idx: %lu\n", idx);
+           // printf("[Jaffar]  + Full Set Moves:\n  - '%s'", possibleMoves[0].c_str()); for (size_t i = 1; i < possibleMoves.size(); i++) printf("\n   - '%s'", possibleMoves[i].c_str()); printf("\n");
+           //printf("[Jaffar]  + Actual Possible Moves: '%s'", possibleMoveCopy[0].c_str()); for (size_t i = 1; i < possibleMoveCopy.size(); i++) printf(", '%s'", possibleMoveCopy[i].c_str()); printf("\n");
 
-          // Storing save file
-          std::string saveFileName = "_newMove.state";
-          _gameInstances[threadId]->saveStateFile(saveFileName);
-          printf("[Jaffar] New movement state to %s\n", saveFileName.c_str());
+           // Storing save file
+           //std::string saveFileName = "_newMove.state";
+           //_gameInstances[threadId]->saveStateFile(saveFileName);
+           //printf("[Jaffar] New movement state to %s\n", saveFileName.c_str());
 
-          saveFileName = "_base.state";
-          _gameInstances[threadId]->pushState(baseStateData);
-          _gameInstances[threadId]->saveStateFile(saveFileName);
-          printf("[Jaffar] Base state to %s\n", saveFileName.c_str());
-          _gameInstances[threadId]->printStateInfo(newState->rulesStatus);
+           //saveFileName = "_base.state";
+           //_gameInstances[threadId]->pushState(baseStateData);
+           //_gameInstances[threadId]->saveStateFile(saveFileName);
+           // printf("[Jaffar] Base state to %s\n", saveFileName.c_str());
+           //_gameInstances[threadId]->printStateInfo(newState->rulesStatus);
 
-          getchar();
-          printf("[Jaffar] Continuing...\n");
+           // Storing new move
+           newMoveKeySet[std::make_tuple(currentSimonState, currentSimonSubState)].insert(possibleMoves[idx]);
+
+           //getchar();
+           //printf("[Jaffar] Continuing...\n");
+          }
          }
 
         #endif // _DETECT_POSSIBLE_MOVES
