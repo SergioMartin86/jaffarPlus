@@ -6,69 +6,68 @@
 #ifndef APU_STATE_H
 #define APU_STATE_H
 
+#include <stdint.h>
 #include "blargg_common.h"
 
 struct apu_state_t
 {
-	typedef BOOST::uint8_t byte;
-	
-	typedef byte env_t [3];
+	typedef uint8_t env_t [3];
 	/*struct env_t {
-		byte delay;
-		byte env;
-		byte written;
+		uint8_t delay;
+		uint8_t env;
+		uint8_t written;
 	};*/
 	
 	struct apu_t {
-		byte w40xx [0x14]; // $4000-$4013
-		byte w4015; // enables
-		byte w4017; // mode
-		BOOST::uint16_t frame_delay;
-		byte frame_step;
-		byte irq_flag;
+		uint8_t w40xx [0x14]; // $4000-$4013
+		uint8_t w4015; // enables
+		uint8_t w4017; // mode
+		uint16_t frame_delay;
+		uint8_t frame_step;
+		uint8_t irq_flag;
 	} apu;
 	
 	struct square_t {
-		BOOST::uint16_t delay;
+		uint16_t delay;
 		env_t env;
-		byte length_counter;
-		byte phase;
-		byte swp_delay;
-		byte swp_reset;
-		byte unused2 [1];
+		uint8_t length_counter;
+		uint8_t phase;
+		uint8_t swp_delay;
+		uint8_t swp_reset;
+		uint8_t unused2 [1];
 	};
 	
 	square_t square1;
 	square_t square2;
 	
 	struct triangle_t {
-		BOOST::uint16_t delay;
-		byte length_counter;
-		byte phase;
-		byte linear_counter;
-		byte linear_mode;
+		uint16_t delay;
+		uint8_t length_counter;
+		uint8_t phase;
+		uint8_t linear_counter;
+		uint8_t linear_mode;
 	} triangle;
 	
 	struct noise_t {
-		BOOST::uint16_t delay;
+		uint16_t delay;
 		env_t env;
-		byte length_counter;
-		BOOST::uint16_t shift_reg;
+		uint8_t length_counter;
+		uint16_t shift_reg;
 	} noise;
 	
 	struct dmc_t {
-		BOOST::uint16_t delay;
-		BOOST::uint16_t remain;
-		BOOST::uint16_t addr;
-		byte buf;
-		byte bits_remain;
-		byte bits;
-		byte buf_full;
-		byte silence;
-		byte irq_flag;
+		uint16_t delay;
+		uint16_t remain;
+		uint16_t addr;
+		uint8_t buf;
+		uint8_t bits_remain;
+		uint8_t bits;
+		uint8_t buf_full;
+		uint8_t silence;
+		uint8_t irq_flag;
 	} dmc;
 	
-	//byte length_counters [4];
+	//uint8_t length_counters [4];
 	
 	enum { tag = 0x41505552 }; // 'APUR'
 	void swap();
@@ -76,4 +75,3 @@ struct apu_state_t
 BOOST_STATIC_ASSERT( sizeof (apu_state_t) == 72 );
 
 #endif
-

@@ -62,8 +62,6 @@ void Nes_Mapper::reset()
 
 void mapper_state_t::write( const void* p, unsigned long s )
 {
-	require( s <= max_mapper_state_size );
-	require( !size );
 	size = s;
 	memcpy( data, p, s );
 }
@@ -113,7 +111,7 @@ bool Nes_Mapper::ppu_enabled() const { return emu().ppu.w2001 & 0x08; }
 
 int Nes_Mapper::channel_count() const { return 0; }
 
-void Nes_Mapper::set_channel_buf( int, Blip_Buffer* ) { require( false ); }
+void Nes_Mapper::set_channel_buf( int, Blip_Buffer* ) { }
 
 void Nes_Mapper::set_treble( blip_eq_t const& ) { }
 
@@ -121,20 +119,14 @@ void Nes_Mapper::set_treble( blip_eq_t const& ) { }
 
 void Nes_Mapper::set_prg_bank( nes_addr_t addr, bank_size_t bs, int bank )
 {
-	require( addr >= 0x2000 ); // can't remap low-memory
-	
 	int bank_size = 1 << bs;
-	require( addr % bank_size == 0 ); // must be aligned
 	
 	int bank_count = cart_->prg_size() >> bs;
 	if ( bank < 0 )
 		bank += bank_count;
 	
 	if ( bank >= bank_count )
-	{
-		check( !(cart_->prg_size() & (cart_->prg_size() - 1)) ); // ensure PRG size is power of 2
 		bank %= bank_count;
-	}
 	
 	emu().map_code( addr, bank_size, cart_->prg() + (bank << bs) );
 	
@@ -163,15 +155,13 @@ void Nes_Mapper::mirror_manual( int page0, int page1, int page2, int page3 )
 #ifndef NDEBUG
 int Nes_Mapper::handle_bus_conflict( nes_addr_t addr, int data )
 {
-	if ( emu().Nes_Cpu::get_code( addr ) [0] != data )
-		dprintf( "Mapper write had bus conflict\n" );
 	return data;
 }
 #endif
 
 // Mapper registration
 
-int const max_mappers = 32;
+int const max_mappers = 64;
 Nes_Mapper::mapping_t Nes_Mapper::mappers [max_mappers] =
 {
 	{ 0, Nes_Mapper::make_nrom },
@@ -195,10 +185,6 @@ Nes_Mapper::creator_func_t Nes_Mapper::get_mapper_creator( int code )
 
 void Nes_Mapper::register_mapper( int code, creator_func_t func )
 {
-	// Catch attempted registration of a different creation function for same mapper code
-	require( !get_mapper_creator( code ) || get_mapper_creator( code ) == func );
-	require( mapper_count < max_mappers ); // fixed liming on number of registered mappers
-	
 	mapping_t& m = mappers [mapper_count++];
 	m.code = code;
 	m.func = func;
@@ -219,4 +205,3 @@ Nes_Mapper* Nes_Mapper::create( Nes_Cart const* cart, Nes_Core* emu )
 	}
 	return mapper;
 }
-

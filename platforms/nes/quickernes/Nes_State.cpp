@@ -68,30 +68,30 @@ void Nes_State_::clear()
 
 // write
 
-blargg_err_t Nes_State_Writer::end( Nes_Emu const& emu )
+const char * Nes_State_Writer::end( Nes_Emu const& emu )
 {
 	Nes_State* state = BLARGG_NEW Nes_State;
 	CHECK_ALLOC( state );
 	emu.save_state( state );
-	blargg_err_t err = end( *state );
+	const char * err = end( *state );
 	delete state;
 	return err;
 }
 
-blargg_err_t Nes_State_Writer::end( Nes_State const& ss )
+const char * Nes_State_Writer::end( Nes_State const& ss )
 {
 	RETURN_ERR( ss.write_blocks( *this ) );
 	return Nes_File_Writer::end();
 }
 
-blargg_err_t Nes_State::write( Auto_File_Writer out ) const
+const char * Nes_State::write( Auto_File_Writer out ) const
 {
 	Nes_State_Writer writer;
 	RETURN_ERR( writer.begin( out ) );
 	return writer.end( *this );
 }
 
-blargg_err_t Nes_State_::write_blocks( Nes_File_Writer& out ) const
+const char * Nes_State_::write_blocks( Nes_File_Writer& out ) const
 {
 	if ( nes_valid )
 	{
@@ -142,7 +142,6 @@ blargg_err_t Nes_State_::write_blocks( Nes_File_Writer& out ) const
 	
 	if ( nametable_size )
 	{
-		check( nametable_size == 0x800 || nametable_size == 0x1000 );
 		RETURN_ERR( out.write_block_header( FOUR_CHAR('NTAB'), nametable_size ) );
 		RETURN_ERR( out.write( nametable, 0x800 ) );
 		if ( nametable_size > 0x800 )
@@ -152,14 +151,8 @@ blargg_err_t Nes_State_::write_blocks( Nes_File_Writer& out ) const
 	if ( chr_size )
 		RETURN_ERR( out.write_block( FOUR_CHAR('CHRR'), chr, chr_size ) );
 	
-#ifdef __LIBRETRO__ // Maintain constant save state size.
 	if ( sram_size )
 		RETURN_ERR( out.write_block( FOUR_CHAR('SRAM'), sram, sram_size ) );
-#else
-	// only save sram if it's been modified
-	if ( sram_size && mem_differs( sram, 0xff, sram_size ) )
-		RETURN_ERR( out.write_block( FOUR_CHAR('SRAM'), sram, sram_size ) );
-#endif
 	
 	return 0;
 }
@@ -170,7 +163,7 @@ Nes_State_Reader::Nes_State_Reader() { state_ = 0; owned = 0; }
 
 Nes_State_Reader::~Nes_State_Reader() { delete owned; }
 
-blargg_err_t Nes_State_Reader::begin( Auto_File_Reader dr, Nes_State* out )
+const char * Nes_State_Reader::begin( Auto_File_Reader dr, Nes_State* out )
 {
 	state_ = out;
 	if ( !out )
@@ -182,7 +175,7 @@ blargg_err_t Nes_State_Reader::begin( Auto_File_Reader dr, Nes_State* out )
 	return 0;
 }
 
-blargg_err_t Nes_State::read( Auto_File_Reader in )
+const char * Nes_State::read( Auto_File_Reader in )
 {
 	Nes_State_Reader reader;
 	RETURN_ERR( reader.begin( in, this ) );
@@ -192,7 +185,7 @@ blargg_err_t Nes_State::read( Auto_File_Reader in )
 	return 0;
 }
 
-blargg_err_t Nes_State_Reader::next_block()
+const char * Nes_State_Reader::next_block()
 {
 	if ( depth() != 0 )
 		return Nes_File_Reader::next_block();
@@ -206,7 +199,7 @@ void Nes_State_::set_nes_state( nes_state_t const& s )
 	nes_valid = true;
 }
 
-blargg_err_t Nes_State_::read_blocks( Nes_File_Reader& in )
+const char * Nes_State_::read_blocks( Nes_File_Reader& in )
 {
 	while ( true )
 	{
@@ -264,7 +257,6 @@ blargg_err_t Nes_State_::read_blocks( Nes_File_Reader& in )
 			
 		case FOUR_CHAR('NTAB'):
 			nametable_size = in.remain();
-			check( nametable_size == 0x800 || nametable_size == 0x1000 );
 			RETURN_ERR( in.read( nametable, 0x800 ) );
 			if ( nametable_size > 0x800 )
 				RETURN_ERR( in.read( chr, 0x800 ) );
@@ -290,4 +282,3 @@ blargg_err_t Nes_State_::read_blocks( Nes_File_Reader& in )
 		}
 	}
 }
-

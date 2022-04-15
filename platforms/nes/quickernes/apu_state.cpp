@@ -44,6 +44,7 @@ struct apu_reflection
 		REFLECT( state.delay,           osc.delay );
 		REFLECT( state.length_counter,  osc.length_counter );
 		REFLECT( state.linear_counter,  osc.linear_counter );
+		REFLECT( state.phase,           osc.phase );
 		REFLECT( state.linear_mode,     osc.reg_written [3] );
 	}
 	
@@ -128,5 +129,11 @@ void Nes_Apu::load_state( apu_state_t const& state )
 	refl::reflect_noise   ( st.noise,       noise );
 	refl::reflect_dmc     ( st.dmc,         dmc );
 	dmc.recalc_irq();
-}
 
+	//force channels to have correct last_amp levels after load state
+	square1.run(last_time, last_time);
+	square2.run(last_time, last_time);
+	triangle.run(last_time, last_time);
+	noise.run(last_time, last_time);
+	dmc.run(last_time, last_time);
+}

@@ -86,7 +86,7 @@ Effects_Buffer::~Effects_Buffer()
 	delete [] reverb_buf;
 }
 
-blargg_err_t Effects_Buffer::set_sample_rate( long rate, int msec )
+const char *Effects_Buffer::set_sample_rate( long rate, int msec )
 {
 	if ( !echo_buf )
 	{
@@ -245,8 +245,6 @@ long Effects_Buffer::samples_avail() const
 
 long Effects_Buffer::read_samples( blip_sample_t* out, long total_samples )
 {
-	require( total_samples % 2 == 0 ); // count must be even
-	
 	long remain = bufs [0].samples_avail();
 	if ( remain > (total_samples >> 1) )
 		remain = (total_samples >> 1);
@@ -320,13 +318,13 @@ void Effects_Buffer::mix_mono( blip_sample_t* out, long count )
 		long cs1 = c.read();
 		c.next( shift );
 		
-		if ( (BOOST::int16_t) cs0 != cs0 )
+		if ( (int16_t) cs0 != cs0 )
 			cs0 = 0x7FFF - (cs0 >> 24);
-		((BOOST::uint32_t*) out) [0] = ((BOOST::uint16_t) cs0) | (cs0 << 16);
+		((uint32_t*) out) [0] = ((uint16_t) cs0) | (cs0 << 16);
 		
-		if ( (BOOST::int16_t) cs1 != cs1 )
+		if ( (int16_t) cs1 != cs1 )
 			cs1 = 0x7FFF - (cs1 >> 24);
-		((BOOST::uint32_t*) out) [1] = ((BOOST::uint16_t) cs1) | (cs1 << 16);
+		((uint32_t*) out) [1] = ((uint16_t) cs1) | (cs1 << 16);
 		out += 4;
 	}
 	
@@ -336,7 +334,7 @@ void Effects_Buffer::mix_mono( blip_sample_t* out, long count )
 		c.next( shift );
 		out [0] = s;
 		out [1] = s;
-		if ( (BOOST::int16_t) s != s )
+		if ( (int16_t) s != s )
 		{
 			s = 0x7FFF - (s >> 24);
 			out [0] = s;
@@ -363,7 +361,7 @@ void Effects_Buffer::mix_stereo( blip_sample_t* out, long count )
 		l.next( shift );
 		r.next( shift );
 		
-		if ( (BOOST::int16_t) left != left )
+		if ( (int16_t) left != left )
 			left = 0x7FFF - (left >> 24);
 		
 		out [0] = left;
@@ -371,7 +369,7 @@ void Effects_Buffer::mix_stereo( blip_sample_t* out, long count )
 		
 		out += 2;
 		
-		if ( (BOOST::int16_t) right != right )
+		if ( (int16_t) right != right )
 			out [-1] = 0x7FFF - (right >> 24);
 	}
 	
@@ -422,7 +420,7 @@ void Effects_Buffer::mix_mono_enhanced( blip_sample_t* out, long count )
 		echo_buf [echo_pos] = sum3_s;
 		echo_pos = (echo_pos + 1) & echo_mask;
 		
-		if ( (BOOST::int16_t) left != left )
+		if ( (int16_t) left != left )
 			left = 0x7FFF - (left >> 24);
 		
 		out [0] = left;
@@ -430,7 +428,7 @@ void Effects_Buffer::mix_mono_enhanced( blip_sample_t* out, long count )
 		
 		out += 2;
 		
-		if ( (BOOST::int16_t) right != right )
+		if ( (int16_t) right != right )
 			out [-1] = 0x7FFF - (right >> 24);
 	}
 	this->reverb_pos = reverb_pos;
@@ -493,7 +491,7 @@ void Effects_Buffer::mix_enhanced( blip_sample_t* out, long count )
 		echo_buf [echo_pos] = sum3_s;
 		echo_pos = (echo_pos + 1) & echo_mask;
 		
-		if ( (BOOST::int16_t) left != left )
+		if ( (int16_t) left != left )
 			left = 0x7FFF - (left >> 24);
 		
 		out [0] = left;
@@ -501,7 +499,7 @@ void Effects_Buffer::mix_enhanced( blip_sample_t* out, long count )
 		
 		out += 2;
 		
-		if ( (BOOST::int16_t) right != right )
+		if ( (int16_t) right != right )
 			out [-1] = 0x7FFF - (right >> 24);
 	}
 	this->reverb_pos = reverb_pos;
@@ -515,4 +513,3 @@ void Effects_Buffer::mix_enhanced( blip_sample_t* out, long count )
 	l2.end( bufs [5] );
 	r2.end( bufs [6] );
 }
-

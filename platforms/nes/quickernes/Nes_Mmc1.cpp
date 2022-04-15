@@ -120,4 +120,3 @@ Nes_Mapper* Nes_Mapper::make_mmc1()
 {
 	return BLARGG_NEW Mapper_Mmc1;
 }
-

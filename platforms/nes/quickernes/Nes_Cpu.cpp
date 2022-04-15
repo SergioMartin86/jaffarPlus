@@ -54,28 +54,17 @@ void Nes_Cpu::reset( void const* unmapped_page )
 	clock_limit = 0;
 	irq_time_ = LONG_MAX / 2 + 1;
 	end_time_ = LONG_MAX / 2 + 1;
-	isCorrectExecution = true;
 	
-	assert( page_size == 0x800 ); // assumes this
 	set_code_page( 0, low_mem );
 	set_code_page( 1, low_mem );
 	set_code_page( 2, low_mem );
 	set_code_page( 3, low_mem );
 	for ( int i = 4; i < page_count + 1; i++ )
 		set_code_page( i, (uint8_t*) unmapped_page );
-	
-	#ifndef NDEBUG
-		blargg_verify_byte_order();
-	#endif
 }
 
 void Nes_Cpu::map_code( nes_addr_t start, unsigned size, const void* data )
 {
-	// address range must begin and end on page boundaries
-	require( start % page_size == 0 );
-	require( size % page_size == 0 );
-	require( start + size <= 0x10000 );
-	
 	unsigned first_page = start / page_size;
 	for ( unsigned i = size / page_size; i--; )
 		set_code_page( first_page + i, (uint8_t*) data + i * page_size );
@@ -114,10 +103,6 @@ void Nes_Cpu::write( nes_addr_t addr, int value )
 	WRITE( addr, value );
 }
 
-void Nes_Cpu::set_tracecb(void (*cb)(unsigned int *data))
-{
-}
-
 #ifndef NES_CPU_GLUE_ONLY
 
 static const unsigned char clock_table [256] = {
@@ -142,9 +127,6 @@ static const unsigned char clock_table [256] = {
 
 Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 {
- isCorrectExecution = true;
- if (end <= 0) return result_cycles;
-
 	set_end_time_( end );
 	clock_count = 0;
 	
@@ -203,18 +185,13 @@ dec_clock_loop:
 	clock_count--;
 loop:
 	
-	assert( (unsigned) GET_SP() < 0x100 );
-	assert( (unsigned) a < 0x100 );
-	assert( (unsigned) x < 0x100 );
-	assert( (unsigned) y < 0x100 );
-
 	uint8_t const* page = code_map [pc >> page_bits];
 	unsigned opcode = page [pc];
 	pc++;
 	
 	if ( clock_count >= clock_limit )
 		goto stop;
-
+	
 	clock_count += clock_table [opcode];
 	unsigned data;
 	data = page [pc];
@@ -311,11 +288,11 @@ imm##op:                                \
 #define BRANCH( cond )      \
 {                           \
 	pc++;                   \
-	int offset = (BOOST::int8_t) data;  \
+	int offset = (int8_t) data;  \
 	int extra_clock = (pc & 0xFF) + offset; \
 	if ( !(cond) ) goto dec_clock_loop; \
 	pc += offset;       \
-	pc = BOOST::uint16_t( pc ); \
+	pc = uint16_t( pc ); \
 	clock_count += (extra_clock >> 8) & 1;  \
 	goto loop;          \
 }
@@ -457,7 +434,7 @@ imm##op:                                \
 		HANDLE_PAGE_CROSSING( data );
 		int temp = data;
 		data += msb * 0x100;
-		a = nz = READ_PROG( BOOST::uint16_t( data ) );
+		a = nz = READ_PROG( uint16_t( data ) );
 		if ( (unsigned) (data - 0x2000) >= 0x6000 )
 			goto loop;
 		if ( temp & 0x100 )
@@ -474,7 +451,7 @@ imm##op:                                \
 		HANDLE_PAGE_CROSSING( data );
 		int temp = data;
 		data += msb * 0x100;
-		a = nz = READ_PROG( BOOST::uint16_t( data ) );
+		a = nz = READ_PROG( uint16_t( data ) );
 		if ( (unsigned) (data - 0x2000) >= 0x6000 )
 			goto loop;
 		if ( temp & 0x100 )
@@ -677,7 +654,7 @@ imm##op:                                \
 	ARITH_ADDR_MODES( 0x65 ) // ADC
 	adc_imm: {
 		int carry = (c >> 8) & 1;
-		int ov = (a ^ 0x80) + carry + (BOOST::int8_t) data; // sign-extend
+		int ov = (a ^ 0x80) + carry + (int8_t) data; // sign-extend
 		status &= ~st_v;
 		status |= (ov >> 2) & 0x40;
 		c = nz = a + data + carry;
@@ -959,7 +936,6 @@ imm##op:                                \
 		this->r.status = status; // update externally-visible I flag
 		if ( clock_count < end_time_ )
 		{
-			assert( clock_limit == end_time_ );
 			if ( end_time_ <= irq_time_ )
 				goto loop; // irq is later
 			if ( clock_count >= irq_time_ )
@@ -1205,13 +1181,16 @@ imm##op:                                \
 		goto loop;
 	}
 
-	// KIL (JAM) [HLT]
-	case 0x02: case 0x12: case 0x22: case 0x32: case 0x42: case 0x52: case 0x62: case 0x72: case 0x92: case 0xB2: case 0xD2: case 0xF2:
- isCorrectExecution = false;
-	goto stop;
-
 // Unimplemented
 	
+	case page_wrap_opcode: // HLT
+		if ( pc > 0x10000 )
+		{
+			// handle wrap-around (assumes caller has put page of HLT at 0x10000)
+			pc = (pc - 1) & 0xFFFF;
+			clock_count -= 2;
+			goto loop;
+		}
 		// fall through
 	default:
 		// skip over proper number of bytes
@@ -1226,9 +1205,6 @@ imm##op:                                \
 		//result = result_badop; // TODO: re-enable
 		goto stop;
 	}
-	
-	// If this fails then the case above is missing an opcode
-	assert( false );
 	
 stop:
 	pc--;
@@ -1252,4 +1228,3 @@ end:
 }
 
 #endif
-

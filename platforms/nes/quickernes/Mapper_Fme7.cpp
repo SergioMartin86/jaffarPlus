@@ -25,12 +25,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 struct fme7_state_t
 {
 	// first 16 bytes in register order
-	BOOST::uint8_t regs [13];
-	BOOST::uint8_t irq_mode;
-	BOOST::uint16_t irq_count;
+	uint8_t regs [13];
+	uint8_t irq_mode;
+	uint16_t irq_count;
 	
-	BOOST::uint8_t command;
-	BOOST::uint8_t irq_pending;
+	uint8_t command;
+	uint8_t irq_pending;
 	fme7_apu_state_t sound_state; // only used when saving/restoring state
 	
 	void swap();
@@ -45,8 +45,6 @@ void fme7_state_t::swap()
 }
 
 class Mapper_Fme7 : public Nes_Mapper, fme7_state_t {
-	nes_time_t last_time;
-	Nes_Fme7_Apu sound;
 public:
 	Mapper_Fme7()
 	{
@@ -120,7 +118,6 @@ public:
 			run_until( end_time );
 		
 		last_time -= end_time;
-		assert( last_time >= 0 );
 		
 		sound.end_frame( end_time );
 	}
@@ -151,6 +148,9 @@ public:
 			break;
 		}
 	}
+
+	nes_time_t last_time;
+	Nes_Fme7_Apu sound;
 };
 
 void Mapper_Fme7::write_irq( nes_time_t time, int index, int data )
@@ -172,7 +172,6 @@ void Mapper_Fme7::write_irq( nes_time_t time, int index, int data )
 		irq_count = data << 8 | (irq_count & 0xFF);
 		break;
 	}
-	
 }
 
 void Mapper_Fme7::write_register( int index, int data )
@@ -195,7 +194,6 @@ void Mapper_Fme7::write_register( int index, int data )
 	}
 	else
 	{
-		assert( index == 0x0C );
 		if ( data & 2 )
 			mirror_single( data & 1 );
 		else if ( data & 1 )
@@ -210,4 +208,3 @@ void register_fme7_mapper()
 {
 	register_mapper<Mapper_Fme7>( 69 );
 }
-

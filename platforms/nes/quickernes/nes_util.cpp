@@ -21,64 +21,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 #include "blargg_source.h"
 
-// Joypad_Filter
-
-Joypad_Filter::Joypad_Filter()
-{
-	prev = 0;
-	mask = ~0x50;
-	times [0] = 0;
-	times [1] = 0;
-	set_a_rate( 0.75 );
-	set_b_rate( 0.75 );
-}
-
-void Joypad_Filter::enable_filtering( bool b )
-{
-	bool enabled = (mask + 0x10) >> 5 & 1;
-	if ( enabled != b )
-		mask = b ? ~0x50 : ~0;
-}
-
-int Joypad_Filter::process( int joypad )
-{
-	// prevent left+right and up+down (prefer most recent one pressed)
-	int changed = prev ^ joypad;
-	int hidden = joypad & ~mask;
-	prev = joypad;
-	
-	int const x_axis = 0xC0;
-	int const y_axis = 0x30;
-	
-	if ( changed & x_axis && hidden & x_axis )
-		mask ^= x_axis;
-	
-	if ( changed & y_axis && hidden & y_axis )
-		mask ^= y_axis;
-	
-	// reset turbo if button just pressed, to avoid delaying button press
-	if ( changed & 0x100 ) times [0] = 0;
-	if ( changed & 0x200 ) times [1] = 0;
-	mask |= changed & 0x300 & joypad;
-	
-	// mask and combine turbo bits
-	joypad &= mask;
-	return (joypad >> 8 & 3) | (joypad & ~0x300);
-}
-
-void Joypad_Filter::clock_turbo()
-{
-	for ( int i = 0; i < 2; i++ )
-	{
-		int t = times [i] + rates [i];
-		mask ^= (t & 0x100) << i;
-		times [i] = t & 0xFF;
-	}
-}
-
 // game_genie_patch_t
 
-blargg_err_t game_genie_patch_t::decode( const char* in )
+const char *game_genie_patch_t::decode( const char* in )
 {
 	int const code_len = 8;
 	unsigned char result [code_len] = { 0 };
@@ -135,7 +80,7 @@ int game_genie_patch_t::apply( Nes_Cart& cart ) const
 	// patch each bank (not very good, since it might patch banks that never occupy
 	// that address)
 	int mask = (compare_with >= 0 ? ~0 : 0);
-	BOOST::uint8_t* p = cart.prg() + addr % bank_size;
+	uint8_t* p = cart.prg() + addr % bank_size;
 	int count = 0;
 	for ( int n = cart.prg_size() / bank_size; n--; p += bank_size )
 	{
@@ -165,7 +110,7 @@ void Cheat_Value_Finder::start( Nes_Emu* new_emu )
 
 void Cheat_Value_Finder::rescan()
 {
-	byte const* low_mem = emu->low_mem();
+	uint8_t const* low_mem = emu->low_mem();
 	for ( int i = 0; i < low_mem_size; i++ )
 		changed [i] |= original [i] ^ low_mem [i];
 	memcpy( original, emu->low_mem(), low_mem_size );
@@ -173,7 +118,6 @@ void Cheat_Value_Finder::rescan()
 
 void Cheat_Value_Finder::search( int new_original, int new_changed )
 {
-	require( new_original != new_changed );
 	original_value = new_original;
 	changed_value = new_changed;
 	pos = -1;
@@ -181,7 +125,7 @@ void Cheat_Value_Finder::search( int new_original, int new_changed )
 
 int Cheat_Value_Finder::next_match( int* addr )
 {
-	byte const* low_mem = emu->low_mem();
+	uint8_t const* low_mem = emu->low_mem();
 	while ( ++pos < low_mem_size )
 	{
 		if ( !changed [pos] )
@@ -203,9 +147,7 @@ int Cheat_Value_Finder::next_match( int* addr )
 
 int Cheat_Value_Finder::change_value( int new_value )
 {
-	require( (unsigned) pos < low_mem_size );
 	int result = emu->low_mem() [pos];
 	emu->low_mem() [pos] = new_value;
 	return result;
 }
-

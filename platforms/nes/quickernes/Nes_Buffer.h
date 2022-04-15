@@ -13,11 +13,13 @@ class Nes_Nonlinearizer {
 private:
 	enum { table_bits = 11 };
 	enum { table_size = 1 << table_bits };
-	BOOST::int16_t table [table_size];
+	int16_t table [table_size];
 	Nes_Apu* apu;
 	long accum;
 	long prev;
 	
+	long extra_accum;
+	long extra_prev;
 public:
 	Nes_Nonlinearizer();
 	bool enabled;
@@ -25,6 +27,8 @@ public:
 	void set_apu( Nes_Apu* a ) { apu = a; }
 	Nes_Apu* enable( bool, Blip_Buffer* tnd );
 	long make_nonlinear( Blip_Buffer& buf, long count );
+	void SaveAudioBufferState();
+	void RestoreAudioBufferState();
 };
 
 class Nes_Buffer : public Multi_Buffer {
@@ -43,11 +47,7 @@ public:
 	Blip_Buffer* buffer() { return &buf; }
 	
 	// See Multi_Buffer.h
-	blargg_err_t set_sample_rate( long rate, int msec = blip_default_length );
-
-#if 0 // What is this?
-	Multi_Buffer::sample_rate;
-#endif
+	const char *set_sample_rate( long rate, int msec = blip_default_length );
 
 	void clock_rate( long );
 	void bass_freq( int );
@@ -62,7 +62,9 @@ private:
 	Blip_Buffer tnd;
 	Nes_Nonlinearizer nonlin;
 	friend Multi_Buffer* set_apu( Nes_Buffer*, Nes_Apu* );
+public:
+	virtual void SaveAudioBufferState();
+	virtual void RestoreAudioBufferState();
 };
 
 #endif
-

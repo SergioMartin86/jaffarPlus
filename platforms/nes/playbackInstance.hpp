@@ -26,6 +26,8 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Loading Emulator instance HQN
   _hqnState.m_emu = _game->_emu->_nes;
   _hqnState.m_emu->_doRendering = true;
+  static uint8_t video_buffer[Nes_Emu::image_width * Nes_Emu::image_height];
+  _hqnState.m_emu->set_pixels(video_buffer, Nes_Emu::image_width);
 
   // Opening rendering window
   SDL_SetMainReady();

@@ -133,8 +133,6 @@ void Nes_Apu::irq_changed()
 
 void Nes_Apu::run_until( nes_time_t end_time )
 {
-	if ( end_time <= last_time )return;
-
 	if ( end_time > next_dmc_read_time() )
 	{
 		nes_time_t start = last_dmc_time;
@@ -145,15 +143,16 @@ void Nes_Apu::run_until( nes_time_t end_time )
 
 void Nes_Apu::run_until_( nes_time_t end_time )
 {
-	if ( end_time <= last_time )return;
-
+	if ( end_time == last_time )
+		return;
+	
 	if ( last_dmc_time < end_time )
 	{
 		nes_time_t start = last_dmc_time;
 		last_dmc_time = end_time;
 		dmc.run( start, end_time );
 	}
-
+	
 	while ( true )
 	{
 		// earlier of next frame time or end time
@@ -161,17 +160,17 @@ void Nes_Apu::run_until_( nes_time_t end_time )
 		if ( time > end_time )
 			time = end_time;
 		frame_delay -= time - last_time;
-
+		
 		// run oscs to present
 		square1.run( last_time, time );
 		square2.run( last_time, time );
 		triangle.run( last_time, time );
 		noise.run( last_time, time );
 		last_time = time;
-
+		
 		if ( time == end_time )
 			break; // no more frames to run
-
+		
 		// take frame-specific actions
 		frame_delay = frame_period;
 		switch ( frame++ )
@@ -188,25 +187,25 @@ void Nes_Apu::run_until_( nes_time_t end_time )
 				square2.clock_length( 0x20 );
 				noise.clock_length( 0x20 );
 				triangle.clock_length( 0x80 ); // different bit for halt flag on triangle
-
+				
 				square1.clock_sweep( -1 );
 				square2.clock_sweep( 0 );
 		 		break;
-
+		 	
 			case 1:
 				// frame 1 is slightly shorter
 				frame_delay -= 2;
 				break;
-
+			
 		 	case 3:
 		 		frame = 0;
-
+		 		
 		 		// frame 3 is almost twice as long in mode 1
 		 		if ( frame_mode & 0x80 )
 					frame_delay += frame_period - 6;
 				break;
 		}
-
+		
 		// clock envelopes and linear counter every frame
 		triangle.clock_linear_counter();
 		square1.clock_envelope();
@@ -241,18 +240,13 @@ void Nes_Apu::end_frame( nes_time_t end_time )
 	
 	// make times relative to new frame
 	last_time -= end_time;
-	require( last_time >= 0 );
-	
 	last_dmc_time -= end_time;
-	require( last_dmc_time >= 0 );
 	
 	if ( next_irq != no_irq ) {
 		next_irq -= end_time;
-		assert( next_irq >= 0 );
 	}
 	if ( dmc.next_irq != no_irq ) {
 		dmc.next_irq -= end_time;
-		assert( dmc.next_irq >= 0 );
 	}
 	if ( earliest_irq_ != no_irq ) {
 		earliest_irq_ -= end_time;
@@ -272,9 +266,6 @@ static const unsigned char length_table [0x20] = {
 
 void Nes_Apu::write_register( nes_time_t time, nes_addr_t addr, int data )
 {
-	require( addr > 0x20 ); // addr must be actual address (i.e. 0x40xx)
-	require( (unsigned) data <= 0xff );
-	
 	// Ignore addresses outside range
 	if ( addr < start_addr || end_addr < addr )
 		return;
@@ -375,4 +366,3 @@ int Nes_Apu::read_status( nes_time_t time )
 	
 	return result;
 }
-

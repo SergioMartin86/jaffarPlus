@@ -14,14 +14,14 @@ class Nes_Mapper;
 class Nes_Cart;
 class Nes_State;
 
-class Nes_Core : public Nes_Cpu {
+class Nes_Core : private Nes_Cpu {
 	typedef Nes_Cpu cpu;
 public:
 	Nes_Core();
 	~Nes_Core();
 	
-	blargg_err_t init();
-	blargg_err_t open( Nes_Cart const* );
+	const char * init();
+	const char * open( Nes_Cart const* );
 	void reset( bool full_reset = true, bool erase_battery_ram = false );
 	blip_time_t emulate_frame();
 	void close();
@@ -29,31 +29,28 @@ public:
 	void save_state( Nes_State* ) const;
 	void save_state( Nes_State_* ) const;
 	void load_state( Nes_State_ const& );
-	void serialize(uint8_t* buf) const;
-	void deserialize(const uint8_t* buf);
 	
 	void irq_changed();
 	void event_changed();
 	
-
 public: private: friend class Nes_Emu;
 	
 	struct impl_t
 	{
 		enum { sram_size = 0x2000 };
-		BOOST::uint8_t sram [sram_size];
+		uint8_t sram [sram_size];
 		Nes_Apu apu;
 		
 		// extra byte allows CPU to always read operand of instruction, which
 		// might go past end of data
-		BOOST::uint8_t unmapped_page [::Nes_Cpu::page_size + 1];
+		uint8_t unmapped_page [::Nes_Cpu::page_size + 1];
 	};
 	impl_t* impl; // keep large arrays separate
 	unsigned long error_count;
 	bool sram_present;
 
 public:
-	uint32_t current_joypad [2];
+	unsigned long current_joypad [2];
 	int joypad_read_count;
 	Nes_Cart const* cart;
 	Nes_Mapper* mapper;
@@ -117,4 +114,3 @@ private:
 int mem_differs( void const* p, int cmp, unsigned long s );
 
 #endif
-

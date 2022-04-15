@@ -27,9 +27,12 @@ int const sound_fade_size = 384;
 BOOST_STATIC_ASSERT( Nes_Emu::image_width  == 0 + Nes_Ppu::image_width );
 BOOST_STATIC_ASSERT( Nes_Emu::image_height == 0 + Nes_Ppu::image_height );
 
-Nes_Emu::equalizer_t const Nes_Emu::nes_eq     = {  -1.0,  80 };
-Nes_Emu::equalizer_t const Nes_Emu::famicom_eq = { -15.0,  80 };
-Nes_Emu::equalizer_t const Nes_Emu::tv_eq      = { -12.0, 180 };
+Nes_Emu::equalizer_t const Nes_Emu::nes_eq     = {  -1.0,   80 };
+Nes_Emu::equalizer_t const Nes_Emu::famicom_eq = { -15.0,   80 };
+Nes_Emu::equalizer_t const Nes_Emu::tv_eq      = { -12.0,  180 };
+Nes_Emu::equalizer_t const Nes_Emu::flat_eq    = {   0.0,    1 };
+Nes_Emu::equalizer_t const Nes_Emu::crisp_eq   = {   5.0,    1 };
+Nes_Emu::equalizer_t const Nes_Emu::tinny_eq   = { -47.0, 2000 };
 
 Nes_Emu::Nes_Emu()
 {
@@ -48,22 +51,23 @@ Nes_Emu::Nes_Emu()
 	init_called = false;
 	set_palette_range( 0 );
 	memset( single_frame.palette, 0, sizeof single_frame.palette );
-	host_pixel_buff = new char[buffer_width * buffer_height()];
-	set_pixels(host_pixel_buff, buffer_width);
+
+	extra_fade_sound_in = false;
+	extra_fade_sound_out = false;
+	extra_sound_buf_changed_count = 0;
 }
 
 Nes_Emu::~Nes_Emu()
 {
 	delete default_sound_buf;
-	delete[] host_pixel_buff;
 }
 
-blargg_err_t Nes_Emu::init_()
+const char * Nes_Emu::init_()
 {
 	return emu.init();
 }
 
-inline blargg_err_t Nes_Emu::auto_init()
+inline const char * Nes_Emu::auto_init()
 {
 	if ( !init_called )
 	{
@@ -91,26 +95,24 @@ void Nes_Emu::close()
 	}
 }
 
-blargg_err_t Nes_Emu::set_cart( Nes_Cart const* new_cart )
+const char * Nes_Emu::set_cart( Nes_Cart const* new_cart )
 {
 	close();
 	RETURN_ERR( auto_init() );
 	RETURN_ERR( emu.open( new_cart ) );
-	
+
 	channel_count_ = Nes_Apu::osc_count + emu.mapper->channel_count();
 	RETURN_ERR( sound_buf->set_channel_count( channel_count() ) );
 	set_equalizer( equalizer_ );
 	enable_sound( true );
-	
+
 	reset();
-	
+
 	return 0;
 }
 
 void Nes_Emu::reset( bool full_reset, bool erase_battery_ram )
 {
-	require( cart() );
-	
 	clear_sound_buf();
 	set_timestamp( 0 );
 	emu.reset( full_reset, erase_battery_ram );
@@ -118,23 +120,29 @@ void Nes_Emu::reset( bool full_reset, bool erase_battery_ram )
 
 void Nes_Emu::set_palette_range( int begin, int end )
 {
-	require( (unsigned) end <= 0x100 );
 	// round up to alignment
-	emu.ppu.palette_begin = (begin + palette_alignment - 1) & ~(palette_alignment - 1); 
+	emu.ppu.palette_begin = (begin + palette_alignment - 1) & ~(palette_alignment - 1);
 	host_palette_size = end - emu.ppu.palette_begin;
-	require( host_palette_size >= palette_alignment );
 }
 
-blargg_err_t Nes_Emu::emulate_frame( const uint32_t joypad1, const uint32_t joypad2 )
+const char * Nes_Emu::emulate_skip_frame( int joypad1, int joypad2 )
 {
- emu.ppu.isCorrectRender = true;
-	emu.current_joypad [0] = joypad1;
-	emu.current_joypad [1] = joypad2;
-	
+	char *old_host_pixels = host_pixels;
+	host_pixels = NULL;
+	const char *result = emulate_frame(joypad1, joypad2);
+	host_pixels = old_host_pixels;
+	return result;
+}
+
+const char * Nes_Emu::emulate_frame( int joypad1, int joypad2 )
+{
+	emu.current_joypad [0] = (joypad1 |= ~0xFF);
+	emu.current_joypad [1] = (joypad2 |= ~0xFF);
+
 	emu.ppu.host_pixels = NULL;
 
-	if (_doRendering == true)
-	{
+ if (_doRendering == true)
+ {
   unsigned changed_count = sound_buf->channels_changed_count();
   bool new_enabled = (frame_ != NULL);
   if ( sound_buf_changed_count != changed_count || sound_enabled != new_enabled )
@@ -155,7 +163,8 @@ blargg_err_t Nes_Emu::emulate_frame( const uint32_t joypad1, const uint32_t joyp
    f->palette [254] = 0x30;
    f->palette [255] = 0x0F;
    if ( host_pixels )
-    emu.ppu.host_pixels = (BOOST::uint8_t*) host_pixels +		emu.ppu.host_row_bytes * f->top;
+    emu.ppu.host_pixels = (uint8_t*) host_pixels +
+      emu.ppu.host_row_bytes * f->top;
 
    if ( sound_buf->samples_avail() )
     clear_sound_buf();
@@ -178,32 +187,33 @@ blargg_err_t Nes_Emu::emulate_frame( const uint32_t joypad1, const uint32_t joyp
    emu.ppu.max_palette_size = 0;
    emu.emulate_frame();
   }
-	}
-	else
-	{
+
+ }
+ else
+ {
   emu.ppu.max_palette_size = 0;
   emu.emulate_frame();
-	}
+ }
 
 	return 0;
 }
 
 // Extras
 
-blargg_err_t Nes_Emu::load_ines( Auto_File_Reader in )
+const char * Nes_Emu::load_ines( Auto_File_Reader in )
 {
 	close();
 	RETURN_ERR( private_cart.load_ines( in ) );
 	return set_cart( &private_cart );
 }
 
-blargg_err_t Nes_Emu::save_battery_ram( Auto_File_Writer out )
+const char * Nes_Emu::save_battery_ram( Auto_File_Writer out )
 {
 	RETURN_ERR( out.open() );
 	return out->write( emu.impl->sram, emu.impl->sram_size );
 }
 
-blargg_err_t Nes_Emu::load_battery_ram( Auto_File_Reader in )
+const char * Nes_Emu::load_battery_ram( Auto_File_Reader in )
 {
 	RETURN_ERR( in.open() );
 	emu.sram_present = true;
@@ -222,54 +232,43 @@ void Nes_Emu::load_state( Nes_State const& in )
 	load_state( STATIC_CAST(Nes_State_ const&,in) );
 }
 
-blargg_err_t Nes_Emu::load_state( Auto_File_Reader in )
+const char * Nes_Emu::load_state( Auto_File_Reader in )
 {
 	Nes_State* state = BLARGG_NEW Nes_State;
+	state->clear();  //initialize it
 	CHECK_ALLOC( state );
-	blargg_err_t err = state->read( in );
+	const char * err = state->read( in );
 	if ( !err )
 		load_state( *state );
 	delete state;
 	return err;
 }
 
-blargg_err_t Nes_Emu::save_state( Auto_File_Writer out ) const
+const char * Nes_Emu::save_state( Auto_File_Writer out ) const
 {
 	Nes_State* state = BLARGG_NEW Nes_State;
 	CHECK_ALLOC( state );
 	save_state( state );
-	blargg_err_t err = state->write( out );
+	const char * err = state->write( out );
 	delete state;
 	return err;
 }
 
-void Nes_Emu::serialize(uint8_t* buf) const
-{
- emu.serialize(buf);
-}
-
-void Nes_Emu::deserialize(const uint8_t* buf)
-{
- emu.deserialize(buf);
-}
-
 void Nes_Emu::write_chr( void const* p, long count, long offset )
 {
-	require( (unsigned long) offset <= (unsigned long) chr_size() );
 	long end = offset + count;
-	require( (unsigned long) end <= (unsigned long) chr_size() );
-	memcpy( (byte*) chr_mem() + offset, p, count );
+	memcpy( (uint8_t*) chr_mem() + offset, p, count );
 	emu.ppu.rebuild_chr( offset, end );
 }
 
-blargg_err_t Nes_Emu::set_sample_rate( long rate, class Nes_Buffer* buf )
+const char * Nes_Emu::set_sample_rate( long rate, class Nes_Buffer* buf )
 {
 	extern Multi_Buffer* set_apu( class Nes_Buffer*, Nes_Apu* );
 	RETURN_ERR( auto_init() );
 	return set_sample_rate( rate, set_apu( buf, &emu.impl->apu ) );
 }
 
-blargg_err_t Nes_Emu::set_sample_rate( long rate, class Nes_Effects_Buffer* buf )
+const char * Nes_Emu::set_sample_rate( long rate, class Nes_Effects_Buffer* buf )
 {
 	extern Multi_Buffer* set_apu( class Nes_Effects_Buffer*, Nes_Apu* );
 	RETURN_ERR( auto_init() );
@@ -283,9 +282,8 @@ void Nes_Emu::set_frame_rate( double rate )
 	sound_buf->clock_rate( (long) (1789773 / 60.0 * rate) );
 }
 
-blargg_err_t Nes_Emu::set_sample_rate( long rate, Multi_Buffer* new_buf )
+const char * Nes_Emu::set_sample_rate( long rate, Multi_Buffer* new_buf )
 {
-	require( new_buf );
 	RETURN_ERR( auto_init() );
 	emu.impl->apu.volume( 1.0 ); // cancel any previous non-linearity
 	RETURN_ERR( new_buf->set_sample_rate( rate, 1200 / frame_rate ) );
@@ -300,7 +298,7 @@ blargg_err_t Nes_Emu::set_sample_rate( long rate, Multi_Buffer* new_buf )
 	return 0;
 }
 
-blargg_err_t Nes_Emu::set_sample_rate( long rate )
+const char * Nes_Emu::set_sample_rate( long rate )
 {
 	if ( !default_sound_buf )
 		CHECK_ALLOC( default_sound_buf = BLARGG_NEW Mono_Buffer );
@@ -347,11 +345,11 @@ void Nes_Emu::fade_samples( blip_sample_t* p, int size, int step )
 	{
 		if ( step < 0 )
 			p += size - sound_fade_size;
-		
+
 		int const shift = 15;
 		int mul = (1 - step) << (shift - 1);
 		step *= (1 << shift) / sound_fade_size;
-		
+
 		for ( int n = sound_fade_size; n--; )
 		{
 			*p = (*p * mul) >> 15;
@@ -363,19 +361,20 @@ void Nes_Emu::fade_samples( blip_sample_t* p, int size, int step )
 
 long Nes_Emu::read_samples( short* out, long out_size )
 {
-	require( out_size >= sound_buf->samples_avail() );
 	long count = sound_buf->read_samples( out, out_size );
 	if ( fade_sound_in )
 	{
 		fade_sound_in = false;
-		fade_samples( out, count, 1 );
+		if (out != NULL)
+			fade_samples( out, count, 1 );
 	}
-	
+
 	if ( fade_sound_out )
 	{
 		fade_sound_out = false;
 		fade_sound_in = true; // next buffer should be faded in
-		fade_samples( out, count, -1 );
+		if (out != NULL)
+			fade_samples( out, count, -1 );
 	}
 	return count;
 }
@@ -399,7 +398,7 @@ Nes_Emu::rgb_t const Nes_Emu::nes_colors [color_table_size] =
 	{251,195,254},{254,197,235},{254,205,198},{247,217,166},
 	{229,230,149},{208,240,151},{190,245,171},{180,243,205},
 	{181,236,243},{184,184,184},{  0,  0,  0},{  0,  0,  0},
-	
+
 	{114, 83, 79},{  0, 23,113},{ 32,  0,145},{ 71,  0,141},
 	{104,  0,103},{122,  0, 41},{120,  0,  0},{ 99, 10,  0},
 	{ 64, 34,  0},{ 24, 54,  0},{  0, 63,  0},{  0, 60,  0},
@@ -514,12 +513,17 @@ Nes_Emu::rgb_t const Nes_Emu::nes_colors [color_table_size] =
 	{136,190,197},{184,184,184},{  0,  0,  0},{  0,  0,  0}
 };
 
-void Nes_Emu::get_regs(unsigned int *dest) const
+void Nes_Emu::SaveAudioBufferState()
 {
-	dest[0] = emu.r.a;
-	dest[1] = emu.r.x;
-	dest[2] = emu.r.y;
-	dest[3] = emu.r.sp;
-	dest[4] = emu.r.pc;
-	dest[5] = emu.r.status;
+	extra_fade_sound_in = fade_sound_in;
+	extra_fade_sound_out = fade_sound_out;
+	extra_sound_buf_changed_count = sound_buf_changed_count;
+	sound_buf->SaveAudioBufferState();
+}
+void Nes_Emu::RestoreAudioBufferState()
+{
+	fade_sound_in = extra_fade_sound_in;
+	fade_sound_out = extra_fade_sound_out;
+	sound_buf_changed_count = extra_sound_buf_changed_count;
+	sound_buf->RestoreAudioBufferState();
 }

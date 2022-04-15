@@ -21,11 +21,22 @@ Multi_Buffer::Multi_Buffer( int spf ) : samples_per_frame_( spf )
 	length_ = 0;
 	sample_rate_ = 0;
 	channels_changed_count_ = 1;
+	channels_changed_count_save_ = 1;
 }
 
-blargg_err_t Multi_Buffer::set_channel_count( int )
+const char * Multi_Buffer::set_channel_count( int )
 {
 	return 0;
+}
+
+void Multi_Buffer::SaveAudioBufferStatePrivate()
+{
+	channels_changed_count_save_ = channels_changed_count_;
+}
+
+void Multi_Buffer::RestoreAudioBufferStatePrivate()
+{
+	channels_changed_count_ = channels_changed_count_save_;
 }
 
 Mono_Buffer::Mono_Buffer() : Multi_Buffer( 1 )
@@ -36,10 +47,22 @@ Mono_Buffer::~Mono_Buffer()
 {
 }
 
-blargg_err_t Mono_Buffer::set_sample_rate( long rate, int msec )
+const char * Mono_Buffer::set_sample_rate( long rate, int msec )
 {
 	RETURN_ERR( buf.set_sample_rate( rate, msec ) );
 	return Multi_Buffer::set_sample_rate( buf.sample_rate(), buf.length() );
+}
+
+void Mono_Buffer::SaveAudioBufferState()
+{
+	SaveAudioBufferStatePrivate();
+	center()->SaveAudioBufferState();
+}
+
+void Mono_Buffer::RestoreAudioBufferState()
+{
+	RestoreAudioBufferStatePrivate();
+	center()->RestoreAudioBufferState();
 }
 
 // Silent_Buffer
@@ -49,6 +72,16 @@ Silent_Buffer::Silent_Buffer() : Multi_Buffer( 1 ) // 0 channels would probably 
 	chan.left   = NULL;
 	chan.center = NULL;
 	chan.right  = NULL;
+}
+
+void Silent_Buffer::SaveAudioBufferState()
+{
+	SaveAudioBufferStatePrivate();
+}
+
+void Silent_Buffer::RestoreAudioBufferState()
+{
+	RestoreAudioBufferStatePrivate();
 }
 
 // Mono_Buffer
@@ -80,7 +113,7 @@ Stereo_Buffer::~Stereo_Buffer()
 {
 }
 
-blargg_err_t Stereo_Buffer::set_sample_rate( long rate, int msec )
+const char * Stereo_Buffer::set_sample_rate( long rate, int msec )
 {
 	for ( int i = 0; i < buf_count; i++ )
 		RETURN_ERR( bufs [i].set_sample_rate( rate, msec ) );
@@ -117,7 +150,6 @@ void Stereo_Buffer::end_frame( blip_time_t clock_count, bool stereo )
 
 long Stereo_Buffer::read_samples( blip_sample_t* out, long count )
 {
-	require( !(count & 1) ); // count must be even
 	count = (unsigned) count / 2;
 	
 	long avail = bufs [0].samples_avail();
@@ -163,24 +195,37 @@ void Stereo_Buffer::mix_stereo( blip_sample_t* out, long count )
 	right.begin( bufs [2] );
 	int bass = center.begin( bufs [0] );
 	
-	while ( count-- )
+	if (out != NULL)
 	{
-		int c = center.read();
-		long l = c + left.read();
-		long r = c + right.read();
-		center.next( bass );
-		out [0] = l;
-		out [1] = r;
-		out += 2;
+		while ( count-- )
+		{
+			int c = center.read();
+			long l = c + left.read();
+			long r = c + right.read();
+			center.next( bass );
+			out [0] = l;
+			out [1] = r;
+			out += 2;
 		
-		if ( (BOOST::int16_t) l != l )
-			out [-2] = 0x7FFF - (l >> 24);
+			if ( (int16_t) l != l )
+				out [-2] = 0x7FFF - (l >> 24);
 		
-		left.next( bass );
-		right.next( bass );
+			left.next( bass );
+			right.next( bass );
 		
-		if ( (BOOST::int16_t) r != r )
-			out [-1] = 0x7FFF - (r >> 24);
+			if ( (int16_t) r != r )
+				out [-1] = 0x7FFF - (r >> 24);
+		}
+	}
+	else
+	{
+		//only run accumulators, do not output any audio
+		while (count--)
+		{
+			center.next(bass);
+			left.next(bass);
+			right.next(bass);
+		}
 	}
 	
 	center.end( bufs [0] );
@@ -193,21 +238,45 @@ void Stereo_Buffer::mix_mono( blip_sample_t* out, long count )
 	Blip_Reader in;
 	int bass = in.begin( bufs [0] );
 	
-	while ( count-- )
+	if (out != NULL)
 	{
-		long s = in.read();
-		in.next( bass );
-		out [0] = s;
-		out [1] = s;
-		out += 2;
+		while ( count-- )
+		{
+			long s = in.read();
+			in.next( bass );
+			out [0] = s;
+			out [1] = s;
+			out += 2;
 		
-		if ( (BOOST::int16_t) s != s ) {
-			s = 0x7FFF - (s >> 24);
-			out [-2] = s;
-			out [-1] = s;
+			if ( (int16_t) s != s ) {
+				s = 0x7FFF - (s >> 24);
+				out [-2] = s;
+				out [-1] = s;
+			}
+		}
+	}
+	else
+	{
+		while (count--)
+		{
+			in.next(bass);
 		}
 	}
 	
 	in.end( bufs [0] );
 }
 
+void Stereo_Buffer::SaveAudioBufferState()
+{
+	SaveAudioBufferStatePrivate();
+	left()->SaveAudioBufferState();
+	center()->SaveAudioBufferState();
+	right()->SaveAudioBufferState();
+}
+void Stereo_Buffer::RestoreAudioBufferState()
+{
+	RestoreAudioBufferStatePrivate();
+	left()->RestoreAudioBufferState();
+	center()->RestoreAudioBufferState();
+	right()->RestoreAudioBufferState();
+}

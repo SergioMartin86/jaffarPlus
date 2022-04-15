@@ -17,31 +17,31 @@ public:
 	~Nes_File_Writer();
 	
 	// Begin writing file with specified signature tag
-	blargg_err_t begin( Auto_File_Writer, nes_tag_t );
+	const char * begin( Auto_File_Writer, nes_tag_t );
 	
 	// Begin tagged group
-	blargg_err_t begin_group( nes_tag_t );
+	const char * begin_group( nes_tag_t );
 	
 	// Write tagged block
-	blargg_err_t write_block( nes_tag_t, void const*, long size );
+	const char * write_block( nes_tag_t, void const*, long size );
 	
 	// Write tagged block header. 'Size' bytes must be written before next block.
-	blargg_err_t write_block_header( nes_tag_t, long size );
+	const char * write_block_header( nes_tag_t, long size );
 	
 	// Write data to current block
-	error_t write( void const*, long );
+	const char *write( void const*, long );
 	
 	// End tagged group
-	blargg_err_t end_group();
+	const char * end_group();
 	
 	// End file
-	blargg_err_t end();
+	const char * end();
 	
 private:
 	Auto_File_Writer out;
 	long write_remain;
 	int depth_;
-	blargg_err_t write_header( nes_tag_t tag, long size );
+	const char * write_header( nes_tag_t tag, long size );
 };
 
 // Reads a structured file
@@ -54,10 +54,10 @@ public:
 	void enable_checksums( bool = true );
 	
 	// Begin reading file. Until next_block() is called, block_tag() yields tag for file.
-	blargg_err_t begin( Auto_File_Reader );
+	const char * begin( Auto_File_Reader );
 	
 	// Read header of next block in current group
-	blargg_err_t next_block();
+	const char * next_block();
 	
 	// Type of current block
 	enum block_type_t {
@@ -72,19 +72,19 @@ public:
 	nes_tag_t block_tag() const { return h.tag; }
 	
 	// Read at most s bytes from block and skip any remaining bytes
-	blargg_err_t read_block_data( void*, long s );
+	const char * read_block_data( void*, long s );
 	
 	// Read at most 's' bytes from current block and return number of bytes actually read
-	virtual blargg_err_t read_v( void*, int n );
+	virtual const char * read_v( void*, int n );
 	
 	// Skip 's' bytes in current block
-	virtual blargg_err_t skip_v( int s );
+	virtual const char * skip_v( int s );
 	
 	// Read first sub-block of current group block
-	blargg_err_t enter_group();
+	const char * enter_group();
 	
 	// Skip past current group
-	blargg_err_t exit_group();
+	const char * exit_group();
 	
 	// Current depth, where 0 is top-level in file and higher is deeper
 	int depth() const { return depth_; }
@@ -96,28 +96,28 @@ private:
 	nes_block_t h;
 	block_type_t block_type_;
 	int depth_;
-	blargg_err_t read_header();
+	const char * read_header();
 };
 
 template<class T>
-inline blargg_err_t read_nes_state( Nes_File_Reader& in, T* out )
+inline const char * read_nes_state( Nes_File_Reader& in, T* out )
 {
-	blargg_err_t err = in.read_block_data( out, sizeof *out );
+	const char * err = in.read_block_data( out, sizeof *out );
 	out->swap();
 	return err;
 }
 
 template<class T>
-inline blargg_err_t write_nes_state( Nes_File_Writer& out, T& in )
+inline const char * write_nes_state( Nes_File_Writer& out, T& in )
 {
 	in.swap();
-	blargg_err_t err = out.write_block( in.tag, &in, sizeof in );
+	const char * err = out.write_block( in.tag, &in, sizeof in );
 	in.swap();
 	return err;
 }
 
 template<class T>
-inline blargg_err_t write_nes_state( Nes_File_Writer& out, const T& in )
+inline const char * write_nes_state( Nes_File_Writer& out, const T& in )
 {
 	T copy = in;
 	copy.swap();
@@ -125,4 +125,3 @@ inline blargg_err_t write_nes_state( Nes_File_Writer& out, const T& in )
 }
 
 #endif
-

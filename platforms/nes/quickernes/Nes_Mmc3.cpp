@@ -26,8 +26,6 @@ nes_time_t const first_scanline = 20 * Nes_Ppu::scanline_len + irq_fine_tune;
 nes_time_t const last_scanline = first_scanline + 240 * Nes_Ppu::scanline_len;
 
 class Mapper_Mmc3 : public Nes_Mapper, mmc3_state_t {
-	nes_time_t next_time;
-	int counter_just_clocked; // used only for debugging
 public:
 	Mapper_Mmc3()
 	{
@@ -42,11 +40,10 @@ public:
 		counter_just_clocked = 0;
 		next_time = 0;
 		mirror = 1;
+
+		/* Cart specified vertical mirroring */
 		if ( cart().mirroring() & 1 )
-		{
 			mirror = 0;
-			//dprintf( "cart specified vertical mirroring\n" );
-		}
 	}
 	
 	void update_chr_banks();
@@ -118,14 +115,15 @@ public:
 		if ( remain < 0 )
 			remain = irq_latch;
 		
-		assert( remain >= 0 );
-		
 		long time = remain * 341L + next_time;
 		if ( time > last_scanline )
 			return no_irq;
 		
 		return time / ppu_overclock + 1;
 	}
+
+	nes_time_t next_time;
+	int counter_just_clocked; // used only for debugging
 };
 
 void Mapper_Mmc3::run_until( nes_time_t end_time )
@@ -169,8 +167,8 @@ void Mapper_Mmc3::write_irq( nes_addr_t addr, int data )
 		break;
 	
 	case 0xC001:
-		if ( counter_just_clocked == 1 )
-			dprintf( "MMC3 IRQ counter pathological behavior triggered\n" );
+		/* MMC3 IRQ counter pathological behavior triggered if
+		 * counter_just_clocked is 1 */
 		counter_just_clocked = 2;
 		irq_ctr = 0;
 		break;
@@ -190,9 +188,6 @@ void Mapper_Mmc3::write_irq( nes_addr_t addr, int data )
 
 void Mapper_Mmc3::write( nes_time_t time, nes_addr_t addr, int data )
 {
-	check( !(addr & ~0xe001) ); // writes to mirrored registers are rare
-	//dprintf( "%6d %02X->%04X\n", time, data, addr );
-	
 	switch ( addr & 0xE001 )
 	{
 	case 0x8000: {
@@ -249,4 +244,3 @@ Nes_Mapper* Nes_Mapper::make_mmc3()
 {
 	return BLARGG_NEW Mapper_Mmc3;
 }
-

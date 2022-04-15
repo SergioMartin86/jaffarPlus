@@ -59,7 +59,7 @@ void Nes_Effects_Buffer::config( const config_t& in )
 	Effects_Buffer::config( c );
 }
 
-blargg_err_t Nes_Effects_Buffer::set_sample_rate( long rate, int msec )
+const char * Nes_Effects_Buffer::set_sample_rate( long rate, int msec )
 {
 	enable_nonlinearity( nonlin.enabled ); // reapply
 	return Effects_Buffer::set_sample_rate( rate, msec );
@@ -82,3 +82,10 @@ long Nes_Effects_Buffer::read_samples( blip_sample_t* out, long count )
 	return Effects_Buffer::read_samples( out, count );
 }
 
+void Nes_Effects_Buffer::SaveAudioBufferState()
+{
+}
+
+void Nes_Effects_Buffer::RestoreAudioBufferState()
+{
+}

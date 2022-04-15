@@ -6,6 +6,7 @@
 #ifndef EFFECTS_BUFFER_H
 #define EFFECTS_BUFFER_H
 
+#include <stdint.h>
 #include "Multi_Buffer.h"
 
 // Effects_Buffer uses several buffers and outputs stereo sample pairs.
@@ -42,7 +43,7 @@ public:
 	
 public:
 	~Effects_Buffer();
-	blargg_err_t set_sample_rate( long samples_per_sec, int msec = blip_default_length );
+	const char *set_sample_rate( long samples_per_sec, int msec = blip_default_length );
 	void clock_rate( long );
 	void bass_freq( int );
 	void clear();
@@ -90,4 +91,3 @@ private:
 	}
 	
 #endif
-

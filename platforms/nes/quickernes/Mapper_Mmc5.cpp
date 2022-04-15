@@ -24,14 +24,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 struct mmc5_state_t
 {
 	enum { reg_count = 0x30 };
-	byte regs [0x30];
-	byte irq_enabled;
+	uint8_t regs [0x30];
+	uint8_t irq_enabled;
 };
 // to do: finalize state format
 BOOST_STATIC_ASSERT( sizeof (mmc5_state_t) == 0x31 );
 
 class Mapper_Mmc5 : public Nes_Mapper, mmc5_state_t {
-	nes_time_t irq_time;
 public:
 	Mapper_Mmc5()
 	{
@@ -104,8 +103,6 @@ public:
 				set_chr_bank( ((reg >> 1 & 4) + (reg & 3)) * 0x400, bank_1k, data );
 				break;
 			}
-			check( (regs [0x00] & 3) == 2 );
-			check( (regs [0x01] & 3) == 3 );
 		}
 		else if ( addr == 0x5203 )
 		{
@@ -132,6 +129,7 @@ public:
 	}
 	
 	virtual void write( nes_time_t, nes_addr_t, int ) { }
+	nes_time_t irq_time;
 };
 
 void Mapper_Mmc5::apply_mapping()
@@ -152,4 +150,3 @@ void register_mmc5_mapper()
 {
 	register_mapper<Mapper_Mmc5>( 5 );
 }
-

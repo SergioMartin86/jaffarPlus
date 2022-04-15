@@ -40,7 +40,7 @@ Nes_Core::Nes_Core() : ppu( this )
 	memset( &joypad, 0, sizeof joypad );
 }
 
-blargg_err_t Nes_Core::init()
+const char * Nes_Core::init()
 {
 	if ( !impl )
 	{
@@ -54,12 +54,6 @@ blargg_err_t Nes_Core::init()
 
 void Nes_Core::close()
 {
-	// check that nothing modified unmapped page
-	#ifndef NDEBUG
-		//if ( cart && mem_differs( impl->unmapped_page, unmapped_fill, sizeof impl->unmapped_page ) )
-		//  dprintf( "Unmapped code page was written to\n" );
-	#endif
-	
 	cart = NULL;
 	delete mapper;
 	mapper = NULL;
@@ -69,7 +63,7 @@ void Nes_Core::close()
 	disable_rendering();
 }
 
-blargg_err_t Nes_Core::open( Nes_Cart const* new_cart )
+const char * Nes_Core::open( Nes_Cart const* new_cart )
 {
 	close();
 	
@@ -78,12 +72,13 @@ blargg_err_t Nes_Core::open( Nes_Cart const* new_cart )
 	mapper = Nes_Mapper::create( new_cart, this );
 	if ( !mapper ) 
 		return unsupported_mapper;
-	
+
 	RETURN_ERR( ppu.open_chr( new_cart->chr(), new_cart->chr_size() ) );
 	
 	cart = new_cart;
 	memset( impl->unmapped_page, unmapped_fill, sizeof impl->unmapped_page );
 	reset( true, true );
+
 	return 0;
 }
 
@@ -113,14 +108,14 @@ void Nes_Core::save_state( Nes_State_* out ) const
 	
 	memcpy( out->ram, cpu::low_mem, out->ram_size );
 	out->ram_valid = true;
-
+	
 	out->sram_size = 0;
 	if ( sram_present )
 	{
 		out->sram_size = sizeof impl->sram;
 		memcpy( out->sram, impl->sram, out->sram_size );
 	}
-
+	
 	out->mapper->size = 0;
 	mapper->save_state( *out->mapper );
 	out->mapper_valid = true;
@@ -133,26 +128,24 @@ void Nes_Core::save_state( Nes_State* out ) const
 
 void Nes_Core::load_state( Nes_State_ const& in )
 {
-	require( cart );
-
 	disable_rendering();
 	error_count = 0;
-
+	
 	if ( in.nes_valid )
 		nes = in.nes;
-
+	
 	// always use frame count
 	ppu.burst_phase = 0; // avoids shimmer when seeking to same time over and over
 	nes.frame_count = in.nes.frame_count;
 	if ( (frame_count_t) nes.frame_count == invalid_frame_count )
 		nes.frame_count = 0;
-
+	
 	if ( in.cpu_valid )
 		cpu::r = *in.cpu;
-
+	
 	if ( in.joypad_valid )
 		joypad = *in.joypad;
-
+	
 	if ( in.apu_valid )
 	{
 		impl->apu.load_state( *in.apu );
@@ -163,12 +156,12 @@ void Nes_Core::load_state( Nes_State_ const& in )
 	{
 		impl->apu.reset();
 	}
-
+	
 	ppu.load_state( in );
-
+	
 	if ( in.ram_valid )
 		memcpy( cpu::low_mem, in.ram, in.ram_size );
-
+	
 	sram_present = false;
 	if ( in.sram_size )
 	{
@@ -176,43 +169,9 @@ void Nes_Core::load_state( Nes_State_ const& in )
 		memcpy( impl->sram, in.sram, min( (int) in.sram_size, (int) sizeof impl->sram ) );
 		enable_sram( true ); // mapper can override (read-only, unmapped, etc.)
 	}
-
+	
 	if ( in.mapper_valid ) // restore last since it might reconfigure things
 		mapper->load_state( *in.mapper );
-}
-
-void Nes_Core::serialize(uint8_t* buf) const
-{
- size_t pos = 0;
-
- memcpy(&buf[pos], &(cpu::r), sizeof(cpu::r));
- pos += sizeof(cpu::r);
-
- memcpy(&buf[pos], &joypad, sizeof(joypad));
- pos += sizeof(joypad);
-
- memcpy(&buf[pos], &ppu, sizeof(ppu));
- pos += sizeof(ppu);
-
- memcpy(&buf[pos], cpu::low_mem, sizeof(cpu::low_mem));
- pos += sizeof(cpu::low_mem);
-}
-
-void Nes_Core::deserialize(const uint8_t* buf)
-{
- size_t pos = 0;
-
- memcpy(&(cpu::r), &buf[pos], sizeof(cpu::r));
- pos += sizeof(cpu::r);
-
- memcpy(&joypad, &buf[pos], sizeof(joypad));
- pos += sizeof(joypad);
-
- memcpy(&ppu, &buf[pos], sizeof(ppu));
- pos += sizeof(ppu);
-
- memcpy(cpu::low_mem, &buf[pos], sizeof(cpu::low_mem));
- pos += sizeof(cpu::low_mem);
 }
 
 void Nes_Core::enable_prg_6000()
@@ -247,22 +206,12 @@ void Nes_Core::enable_sram( bool b, bool read_only )
 
 // Unmapped memory
 
-#if !defined (NDEBUG) && 0
+#ifndef NDEBUG
 static nes_addr_t last_unmapped_addr;
 #endif
 
 void Nes_Core::log_unmapped( nes_addr_t addr, int data )
 {
-	#if !defined (NDEBUG) && 0
-		if ( last_unmapped_addr != addr )
-		{
-			last_unmapped_addr = addr;
-			if ( data < 0 )
-				dprintf( "Read unmapped %04X\n", addr );
-			else
-				dprintf( "Write unmapped %04X <- %02X\n", addr, data );
-		}
-	#endif
 }
 
 inline void Nes_Core::cpu_adjust_time( int n )
@@ -339,9 +288,9 @@ int Nes_Core::read_io( nes_addr_t addr )
 		// to do: to aid with recording, doesn't emulate transparent latch,
 		// so a game that held strobe at 1 and read $4016 or $4017 would not get
 		// the current A status as occurs on a NES
-		int32_t result = joypad.joypad_latches [addr & 1];
+		unsigned long result = joypad.joypad_latches [addr & 1];
 		if ( !(joypad.w4016 & 1) )
-			joypad.joypad_latches [addr & 1] = result >> 1; // ASR is intentional
+			joypad.joypad_latches [addr & 1] = (result >> 1) | 0x80000000;
 		return result & 1;
 	}
 	
@@ -361,14 +310,12 @@ const int irq_inhibit_mask = 0x04;
 
 nes_addr_t Nes_Core::read_vector( nes_addr_t addr )
 {
-	byte const* p = cpu::get_code( addr );
+	uint8_t const* p = cpu::get_code( addr );
 	return p [1] * 0x100 + p [0];
 }
 
 void Nes_Core::reset( bool full_reset, bool erase_battery_ram )
 {
-	require( cart );
-	
 	if ( full_reset )
 	{
 		cpu::reset( impl->unmapped_page );
@@ -480,7 +427,7 @@ nes_time_t Nes_Core::emulate_frame_()
 		// Add DMC wait-states to CPU time
 		if ( wait_states_enabled )
 		{
-			//impl->apu.run_until( cpu_time() );
+			impl->apu.run_until( cpu_time() );
 			clock_ = cpu_time_offset;
 		}
 		
@@ -495,7 +442,7 @@ nes_time_t Nes_Core::emulate_frame_()
 				
 				if ( !(ppu.w2000 & 0x80 & ppu.r2002) )
 				{
-					dprintf( "vectored NMI at end of frame\n" );
+					/* vectored NMI at end of frame */
 					vector_interrupt( 0xFFFA );
 					present += 7;
 				}
@@ -504,8 +451,6 @@ nes_time_t Nes_Core::emulate_frame_()
 			
 			if ( extra_instructions > 2 )
 			{
-				check( last_result != cpu::result_sei && last_result != cpu::result_cli );
-				check( ppu.nmi_time() >= 0x10000 || (ppu.w2000 & 0x80 & ppu.r2002) );
 				return present;
 			}
 			
@@ -513,7 +458,7 @@ nes_time_t Nes_Core::emulate_frame_()
 					(ppu.nmi_time() >= 0x10000 || (ppu.w2000 & 0x80 & ppu.r2002)) )
 				return present;
 			
-			dprintf( "Executing extra instructions for frame\n" );
+			/* Executing extra instructions for frame */
 			extra_instructions++; // execute one more instruction
 		}
 		
@@ -533,7 +478,7 @@ nes_time_t Nes_Core::emulate_frame_()
 		{
 			if ( last_result != cpu::result_cli )
 			{
-				//dprintf( "%6d IRQ vectored\n", present );
+				/* IRQ vectored */
 				mapper->run_until( present );
 				vector_interrupt( 0xFFFE );
 			}
@@ -541,7 +486,6 @@ nes_time_t Nes_Core::emulate_frame_()
 			{
 				// CLI delays IRQ
 				cpu_set_irq_time( present + 1 );
-				check( false ); // rare event
 			}
 		}
 		
@@ -559,33 +503,22 @@ nes_time_t Nes_Core::emulate_frame_()
 
 nes_time_t Nes_Core::emulate_frame()
 {
-	require( cart );
-	
 	joypad_read_count = 0;
 	
 	cpu_time_offset = ppu.begin_frame( nes.timestamp ) - 1;
 	ppu_2002_time = 0;
 	clock_ = cpu_time_offset;
 	
-	check( cpu_time() == (int) nes.timestamp / ppu_overclock );
-	//check( 1 && impl->apu.last_time == cpu_time() );
-	
 	// TODO: clean this fucking mess up
-	emulate_frame_();
-	//impl->apu.run_until_( );
+	impl->apu.run_until_( emulate_frame_() );
 	clock_ = cpu_time_offset;
-	//impl->apu.run_until_( cpu_time() );
-	check( 2 && clock_ == cpu_time_offset );
-	//check( 3 && impl->apu.last_time == cpu_time() );
+	impl->apu.run_until_( cpu_time() );
 	
 	nes_time_t ppu_frame_length = ppu.frame_length();
 	nes_time_t length = cpu_time();
 	nes.timestamp = ppu.end_frame( length );
 	mapper->end_frame( length );
-	//impl->apu.end_frame( ppu_frame_length );
-	check( 4 && cpu_time() == length );
-	
-	//check( 5 && impl->apu.last_time == length - ppu_frame_length );
+	impl->apu.end_frame( ppu_frame_length );
 	
 	disable_rendering();
 	nes.frame_count++;
@@ -595,8 +528,6 @@ nes_time_t Nes_Core::emulate_frame()
 
 void Nes_Core::add_mapper_intercept( nes_addr_t addr, unsigned size, bool read, bool write )
 {
-	require( addr >= 0x4000 );
-	require( addr + size <= 0x10000 );
 	int end = (addr + size + (page_size - 1)) >> page_bits;
 	for ( int page = addr >> page_bits; page < end; page++ )
 	{
@@ -604,4 +535,3 @@ void Nes_Core::add_mapper_intercept( nes_addr_t addr, unsigned size, bool read, 
 		data_writer_mapped [page] |= write;
 	}
 }
-

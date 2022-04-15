@@ -17,7 +17,7 @@ public:
 	virtual ~Multi_Buffer() { }
 	
 	// Set the number of channels available
-	virtual blargg_err_t set_channel_count( int );
+	virtual const char* set_channel_count( int );
 	
 	// Get indexed channel, from 0 to channel count - 1
 	struct channel_t {
@@ -28,7 +28,7 @@ public:
 	virtual channel_t channel( int index ) = 0;
 	
 	// See Blip_Buffer.h
-	virtual blargg_err_t set_sample_rate( long rate, int msec = blip_default_length ) = 0;
+	virtual const char* set_sample_rate( long rate, int msec = blip_default_length ) = 0;
 	virtual void clock_rate( long ) = 0;
 	virtual void bass_freq( int ) = 0;
 	virtual void clear() = 0;
@@ -64,6 +64,13 @@ private:
 	long sample_rate_;
 	int length_;
 	int const samples_per_frame_;
+	unsigned channels_changed_count_save_;
+protected:
+	void SaveAudioBufferStatePrivate();
+	void RestoreAudioBufferStatePrivate();
+public:
+	virtual void SaveAudioBufferState() = 0;
+	virtual void RestoreAudioBufferState() = 0;
 };
 
 // Uses a single buffer and outputs mono samples.
@@ -77,7 +84,7 @@ public:
 	Blip_Buffer* center() { return &buf; }
 	
 	// See Multi_Buffer
-	blargg_err_t set_sample_rate( long rate, int msec = blip_default_length );
+	const char* set_sample_rate( long rate, int msec = blip_default_length );
 	void clock_rate( long );
 	void bass_freq( int );
 	void clear();
@@ -85,6 +92,9 @@ public:
 	void end_frame( blip_time_t, bool unused = true );
 	long samples_avail() const;
 	long read_samples( blip_sample_t*, long );
+
+	virtual void SaveAudioBufferState();
+	virtual void RestoreAudioBufferState();
 };
 
 // Uses three buffers (one for center) and outputs stereo sample pairs.
@@ -99,7 +109,7 @@ public:
 	Blip_Buffer* right()        { return &bufs [2]; }
 	
 	// See Multi_Buffer
-	blargg_err_t set_sample_rate( long, int msec = blip_default_length );
+	const char* set_sample_rate( long, int msec = blip_default_length );
 	void clock_rate( long );
 	void bass_freq( int );
 	void clear();
@@ -118,6 +128,9 @@ private:
 	
 	void mix_stereo( blip_sample_t*, long );
 	void mix_mono( blip_sample_t*, long );
+
+	virtual void SaveAudioBufferState();
+	virtual void RestoreAudioBufferState();
 };
 
 // Silent_Buffer generates no samples, useful where no sound is wanted
@@ -126,7 +139,7 @@ class Silent_Buffer : public Multi_Buffer {
 public:
 	Silent_Buffer();
 	
-	blargg_err_t set_sample_rate( long rate, int msec = blip_default_length );
+	const char* set_sample_rate( long rate, int msec = blip_default_length );
 	void clock_rate( long ) { }
 	void bass_freq( int ) { }
 	void clear() { }
@@ -134,19 +147,22 @@ public:
 	void end_frame( blip_time_t, bool unused = true ) { }
 	long samples_avail() const { return 0; }
 	long read_samples( blip_sample_t*, long ) { return 0; }
+
+	virtual void SaveAudioBufferState();
+	virtual void RestoreAudioBufferState();
 };
 
 
 // End of public interface
 
-inline blargg_err_t Multi_Buffer::set_sample_rate( long rate, int msec )
+inline const char* Multi_Buffer::set_sample_rate( long rate, int msec )
 {
 	sample_rate_ = rate;
 	length_ = msec;
 	return 0;
 }
 
-inline blargg_err_t Silent_Buffer::set_sample_rate( long rate, int msec )
+inline const char* Silent_Buffer::set_sample_rate( long rate, int msec )
 {
 	return Multi_Buffer::set_sample_rate( rate, msec );
 }
@@ -172,4 +188,3 @@ inline long Mono_Buffer::read_samples( blip_sample_t* p, long s ) { return buf.r
 inline long Mono_Buffer::samples_avail() const { return buf.samples_avail(); }
 
 #endif
-

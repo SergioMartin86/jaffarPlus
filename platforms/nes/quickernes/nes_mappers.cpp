@@ -37,7 +37,7 @@ Nes_Mapper* Nes_Mapper::make_nrom() { return new Mapper_Nrom; }
 // UNROM
 
 class Mapper_Unrom : public Nes_Mapper {
-	byte bank;
+	uint8_t bank;
 public:
 	Mapper_Unrom()
 	{
@@ -62,7 +62,7 @@ Nes_Mapper* Nes_Mapper::make_unrom() { return new Mapper_Unrom; }
 // AOROM
 
 class Mapper_Aorom : public Nes_Mapper {
-	byte bank;
+	uint8_t bank;
 public:
 	Mapper_Aorom()
 	{
@@ -94,7 +94,7 @@ Nes_Mapper* Nes_Mapper::make_aorom() { return new Mapper_Aorom; }
 // CNROM
 
 class Mapper_Cnrom : public Nes_Mapper {
-	byte bank;
+	uint8_t bank;
 public:
 	Mapper_Cnrom()
 	{
@@ -114,4 +114,3 @@ public:
 };
 
 Nes_Mapper* Nes_Mapper::make_cnrom() { return new Mapper_Cnrom; }
-

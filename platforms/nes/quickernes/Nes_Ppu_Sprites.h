@@ -3,12 +3,12 @@ int sprite_2 = sprite [2];
 
 // pixels
 ptrdiff_t next_row = this->scanline_row_bytes;
-byte* out = this->scanline_pixels + sprite [3] +
+uint8_t* out = this->scanline_pixels + sprite [3] +
 		(top_minus_one + skip - begin_minus_one) * next_row;
 cache_t const* lines = get_sprite_tile( sprite );
 
 int dir = 1;
-byte* scanlines = this->sprite_scanlines + 1 + top_minus_one + skip;
+uint8_t* scanlines = this->sprite_scanlines + 1 + top_minus_one + skip;
 
 if ( sprite_2 & 0x80 )
 {
@@ -21,7 +21,6 @@ if ( sprite_2 & 0x80 )
 	#if CLIPPED
 		int height = this->sprite_height();
 		skip = height - skip - visible;
-		assert( skip + visible <= height );
 	#endif
 }
 
@@ -33,11 +32,11 @@ unsigned long const maskgen = 0x80808080 + zero;
 
 #define DRAW_PAIR( shift ) {                    \
 	int sprite_count = *scanlines;              \
-	CALC_FOUR( ((uint32_t*) out) [0], (line >> (shift + 4)), out0 ) \
-	CALC_FOUR( ((uint32_t*) out) [1], (line >> shift), out1 )       \
+	CALC_FOUR( ((unaligned_uint32_t*) out) [0].val, (line >> (shift + 4)), out0 ) \
+	CALC_FOUR( ((unaligned_uint32_t*) out) [1].val, (line >> shift), out1 )       \
 	if ( sprite_count < this->max_sprites ) {   \
-		((uint32_t*) out) [0] = out0;           \
-		((uint32_t*) out) [1] = out1;           \
+		((unaligned_uint32_t*) out) [0].val = out0;           \
+		((unaligned_uint32_t*) out) [1].val = out1;           \
 	}                                           \
 	if ( CLIPPED ) visible--;                   \
 	out += next_row;                            \

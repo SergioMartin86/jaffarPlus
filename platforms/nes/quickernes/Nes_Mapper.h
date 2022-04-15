@@ -121,7 +121,7 @@ protected:
 	
 	// Map 'size' bytes from 'CHR + bank * size' to PPU address space starting at 'addr'
 	void set_chr_bank( nes_addr_t addr, bank_size_t size, int bank );
-	void set_chr_bank_ex( nes_addr_t addr, bank_size_t size, int bank ); // mmc24 only
+	void set_chr_bank_ex( nes_addr_t addr, bank_size_t size, int bank );
 	
 	// Set PPU mirroring. All mappings implemented using mirror_manual().
 	void mirror_manual( int page0, int page1, int page2, int page3 );
@@ -207,7 +207,6 @@ inline void Nes_Mapper::mirror_full()          { mirror_manual( 0, 1, 2, 3 ); }
 
 inline void Nes_Mapper::register_state( void* p, unsigned s )
 {
-	assert( s <= max_mapper_state_size );
 	state = p;
 	state_size = s;
 }
@@ -232,4 +231,3 @@ inline void Nes_Mapper::enable_sram( bool enabled, bool read_only )
 }
 
 #endif
-

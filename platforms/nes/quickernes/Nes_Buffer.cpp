@@ -44,7 +44,7 @@ void Nes_Buffer::enable_nonlinearity( bool b )
 	apu->osc_output( 1, &buf );
 }
 
-blargg_err_t Nes_Buffer::set_sample_rate( long rate, int msec )
+const char * Nes_Buffer::set_sample_rate( long rate, int msec )
 {
 	enable_nonlinearity( nonlin.enabled ); // reapply
 	RETURN_ERR( buf.set_sample_rate( rate, msec ) );
@@ -104,15 +104,27 @@ long Nes_Buffer::read_samples( blip_sample_t* out, long count )
 		int lin_bass = lin.begin( buf );
 		int nonlin_bass = nonlin.begin( tnd );
 		
-		for ( int n = count; n--; )
+		if (out != NULL)
 		{
-			int s = lin.read() + nonlin.read();
-			lin.next( lin_bass );
-			nonlin.next( nonlin_bass );
-			*out++ = s;
-			
-			if ( (BOOST::int16_t) s != s )
-				out [-1] = 0x7FFF - (s >> 24);
+			for ( int n = count; n--; )
+			{
+				int s = lin.read() + nonlin.read();
+				lin.next( lin_bass );
+				nonlin.next( nonlin_bass );
+				*out++ = s;
+
+				if ( (int16_t) s != s )
+					out [-1] = 0x7FFF - (s >> 24);
+			}
+		}
+		else
+		{
+			//only run accumulators, do not output audio
+			for (int n = count; n--; )
+			{
+				lin.next(lin_bass);
+				nonlin.next(nonlin_bass);
+			}
 		}
 		
 		lin.end( buf );
@@ -123,6 +135,22 @@ long Nes_Buffer::read_samples( blip_sample_t* out, long count )
 	}
 	
 	return count;
+}
+
+void Nes_Buffer::SaveAudioBufferState()
+{
+	SaveAudioBufferStatePrivate();
+	nonlin.SaveAudioBufferState();
+	buf.SaveAudioBufferState();
+	tnd.SaveAudioBufferState();
+}
+
+void Nes_Buffer::RestoreAudioBufferState()
+{
+	RestoreAudioBufferStatePrivate();
+	nonlin.RestoreAudioBufferState();
+	buf.RestoreAudioBufferState();
+	tnd.RestoreAudioBufferState();
 }
 
 // Nes_Nonlinearizer
@@ -140,17 +168,19 @@ Nes_Nonlinearizer::Nes_Nonlinearizer()
 		int const offset = table_size - range;
 		int j = i - offset;
 		float n = 202.0f / (range - 1) * j;
-		float d = gain * 163.67f / (24329.0f / n + 100.0f);
+		float d = 0;
+		// Prevent division by zero
+		if ( n )
+			d = gain * 163.67f / (24329.0f / n + 100.0f);
 		int out = (int) d;
-//out = j << (15 - table_bits); // make table linear for testing
-		assert( out < 0x8000 );
 		table [j & (table_size - 1)] = out;
 	}
+	extra_accum = 0;
+	extra_prev = 0;
 }
 
 Nes_Apu* Nes_Nonlinearizer::enable( bool b, Blip_Buffer* buf )
 {
-	require( apu );
 	apu->osc_output( 2, buf );
 	apu->osc_output( 3, buf );
 	apu->osc_output( 4, buf );
@@ -166,7 +196,6 @@ Nes_Apu* Nes_Nonlinearizer::enable( bool b, Blip_Buffer* buf )
 
 long Nes_Nonlinearizer::make_nonlinear( Blip_Buffer& buf, long count )
 {
-	require( apu );
 	long avail = buf.samples_avail();
 	if ( count > avail )
 		count = avail;
@@ -179,7 +208,6 @@ long Nes_Nonlinearizer::make_nonlinear( Blip_Buffer& buf, long count )
 		for ( unsigned n = count; n; --n )
 		{
 			long entry = ENTRY( accum );
-			check( (entry >= 0) == (accum >= 0) );
 			accum += *p;
 			*p++ = (entry - prev) << (blip_sample_bits - 16);
 			prev = entry;
@@ -199,3 +227,14 @@ void Nes_Nonlinearizer::clear()
 	// TODO: still results in slight clicks and thumps
 }
 
+void Nes_Nonlinearizer::SaveAudioBufferState()
+{
+	extra_accum = accum;
+	extra_prev = prev;
+}
+
+void Nes_Nonlinearizer::RestoreAudioBufferState()
+{
+	accum = extra_accum;
+	prev = extra_prev;
+}

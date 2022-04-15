@@ -119,8 +119,6 @@ void Nes_Ppu::render_bg_until_( nes_time_t cpu_time )
 		run_hblank( 1 );
 		next_ppu_time = scanline_time; // scanline will run next
 	}
-	assert( time <= hblank_time );
-	
 	// either hblank or scanline comes next
 	next_bg_time = nes_time( next_ppu_time );
 }
@@ -186,7 +184,6 @@ void Nes_Ppu::run_sprite_max_( nes_time_t cpu_time )
 	// 577.0 / 0x10000 ~= 1.0 / 113.581, close enough to accurately calculate which scanline it is
 	int start_scanline = next_sprite_max_scanline;
 	next_sprite_max_scanline = unsigned ((cpu_time - sprite_max_cpu_offset) * 577) / 0x10000u;
-	if( next_sprite_max_scanline < 0 || next_sprite_max_scanline > last_sprite_max_scanline ) { isCorrectRender = false; return; }
 	
 	if ( !sprite_max_set_time )
 	{
@@ -226,10 +223,10 @@ inline void Nes_Ppu::invalidate_sprite_max( nes_time_t t )
 
 // Sprite 0 hit
 
-inline int Nes_Ppu_Impl::first_opaque_sprite_line() /*const*/
+inline int Nes_Ppu_Impl::first_opaque_sprite_line()
 {
 	// advance earliest time if sprite has blank lines at beginning
-	byte const* p = map_chr( sprite_tile_index( spr_ram ) * 16 );
+	uint8_t const* p = map_chr( sprite_tile_index( spr_ram ) * 16 );
 	int twice = w2000 >> 5 & 1; // loop twice if double height is set
 	int line = 0;
 	do
@@ -382,8 +379,6 @@ void Nes_Ppu::dma_sprites( nes_time_t time, void const* in )
 	render_until( time );
 	
 	invalidate_sprite_max( time );
-	// catch anything trying to dma while rendering is enabled
-	check( time + 513 <= vbl_end_time || !(w2001 & 0x18) );
 	
 	memcpy( spr_ram + w2003, in, 0x100 - w2003 );
 	memcpy( spr_ram, (char*) in + 0x100 - w2003, w2003 );
@@ -411,9 +406,6 @@ inline int Nes_Ppu_Impl::read_2007( int addr )
 
 int Nes_Ppu::read( unsigned addr, nes_time_t time )
 {
-	if ( addr & ~0x2007 )
-		dprintf( "Read from mirrored PPU register 0x%04X\n", addr );
-	
 	switch ( addr & 7 )
 	{
 		// status
@@ -446,7 +438,7 @@ int Nes_Ppu::read( unsigned addr, nes_time_t time )
 		}
 		
 		default:
-			dprintf( "Read from unimplemented PPU register 0x%04X\n", addr );
+			/* Read from unimplemented PPU register */
 			break;
 	}
 
@@ -459,9 +451,6 @@ int Nes_Ppu::read( unsigned addr, nes_time_t time )
 
 void Nes_Ppu::write( nes_time_t time, unsigned addr, int data )
 {
-	if ( addr & ~0x2007 )
-		dprintf( "Wrote to mirrored PPU register 0x%04X\n", addr );
-	
 	switch ( addr & 7 )
 	{
 		case 0:{// control
@@ -573,7 +562,7 @@ void Nes_Ppu::write( nes_time_t time, unsigned addr, int data )
 			break;
 		
 		default:
-			dprintf( "Wrote to unimplemented PPU register 0x%04X\n", addr );
+			/* Wrote to unimplemented PPU register */
 			break;
 	}
 
@@ -592,7 +581,6 @@ nes_time_t Nes_Ppu::begin_frame( ppu_time_t timestamp )
 	ppu_time_t const frame_end = max_frame_length - 1 - extra_clocks;
 	frame_length_ = (frame_end + (ppu_overclock - 1)) / ppu_overclock;
 	frame_length_extra = frame_length_ * ppu_overclock - frame_end;
-	assert( (unsigned) frame_length_extra < 3 );
 	
 	// nmi
 	nmi_time_ = indefinite_time;
@@ -663,7 +651,7 @@ void Nes_Ppu::poke_open_bus( nes_time_t time, int data, int mask )
 	if ( mask & 0xE0 ) decay_high = time + scanline_len * 100 / ppu_overclock;
 }
 
-const nes_time_t Nes_Ppu::earliest_open_bus_decay() const
+nes_time_t Nes_Ppu::earliest_open_bus_decay()
 {
 	return ( decay_low < decay_high ) ? decay_low : decay_high;
 }

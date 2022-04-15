@@ -6,6 +6,7 @@
 #ifndef NES_CPU_H
 #define NES_CPU_H
 
+#include <stdint.h>
 #include "blargg_common.h"
 
 typedef long     nes_time_t; // clock cycle count
@@ -13,8 +14,6 @@ typedef unsigned nes_addr_t; // 16-bit address
 
 class Nes_Cpu {
 public:
-	typedef BOOST::uint8_t uint8_t;
-	
 	// Clear registers, unmap memory, and map code pages to unmapped_page.
 	void reset( void const* unmapped_page = 0 );
 	
@@ -36,11 +35,11 @@ public:
 	// NES 6502 registers. *Not* kept updated during a call to run().
 	struct registers_t {
 		long pc; // more than 16 bits to allow overflow detection
-		BOOST::uint8_t a;
-		BOOST::uint8_t x;
-		BOOST::uint8_t y;
-		BOOST::uint8_t status;
-		BOOST::uint8_t sp;
+		uint8_t a;
+		uint8_t x;
+		uint8_t y;
+		uint8_t status;
+		uint8_t sp;
 	};
 	//registers_t r;
 	
@@ -65,8 +64,6 @@ public:
 	
 	// One of the many opcodes that are undefined and stop CPU emulation.
 	enum { bad_opcode = 0xD2 };
-
-	void set_tracecb(void (*cb)(unsigned int *dest));
 	
 private:
 	uint8_t const* code_map [page_count + 1];
@@ -79,18 +76,15 @@ private:
 	enum { irq_inhibit = 0x04 };
 	void set_code_page( int, uint8_t const* );
 	void update_clock_limit();
-
-	void (*tracecb)(unsigned int *dest);
 	
 public:
 	registers_t r;
-	bool isCorrectExecution = true;
 	
 	// low_mem is a full page size so it can be mapped with code_map
 	uint8_t low_mem [page_size > 0x800 ? page_size : 0x800];
 };
 
-inline BOOST::uint8_t* Nes_Cpu::get_code( nes_addr_t addr )
+inline uint8_t* Nes_Cpu::get_code( nes_addr_t addr )
 {
 	return (uint8_t*) code_map [addr >> page_bits] + addr;
 }
@@ -130,4 +124,3 @@ inline void Nes_Cpu::push_byte( int data )
 }
 
 #endif
-

@@ -147,4 +147,3 @@ struct Nes_Dmc : Nes_Osc
 };
 
 #endif
-

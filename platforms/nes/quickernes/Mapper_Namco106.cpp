@@ -5,6 +5,7 @@
 
 #include "Nes_Mapper.h"
 
+#include "blargg_endian.h"
 #include "Nes_Namco_Apu.h"
 
 /* Copyright (C) 2004-2006 Shay Green. This module is free software; you
@@ -24,29 +25,34 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 struct namco106_state_t
 {
-	BOOST::uint8_t regs [16];
-	BOOST::uint16_t irq_ctr;
-	BOOST::uint8_t irq_pending;
-	BOOST::uint8_t unused1 [1]; 
+	uint8_t regs [16];
+	uint16_t irq_ctr;
+	uint8_t irq_pending;
+	uint8_t unused1 [1];
+	namco_state_t sound_state;
+	void swap();
 };
-BOOST_STATIC_ASSERT( sizeof (namco106_state_t) == 20 );
+
+BOOST_STATIC_ASSERT( sizeof (namco106_state_t) == 20 + sizeof (namco_state_t) );
 
 class Mapper_Namco106 : public Nes_Mapper, namco106_state_t {
-	Nes_Namco_Apu sound;
-	nes_time_t last_time;
 public:
 	Mapper_Namco106()
 	{
 		namco106_state_t* state = this;
 		register_state( state, sizeof *state );
 	}
-	
+
 	virtual int channel_count() const { return sound.osc_count; }
-	
+
 	virtual void set_channel_buf( int i, Blip_Buffer* b ) { sound.osc_output( i, b ); }
-	
+
 	virtual void set_treble( blip_eq_t const& eq ) { sound.treble_eq( eq ); }
-	
+
+	virtual void save_state( mapper_state_t& out );
+
+	virtual void read_state( mapper_state_t const& in );
+
 	void reset_state()
 	{
 		regs [12] = 0;
@@ -54,32 +60,32 @@ public:
 		regs [14] = last_bank - 1;
 		sound.reset();
 	}
-	
+
 	virtual void apply_mapping()
 	{
 		last_time = 0;
 		enable_sram();
 		intercept_writes( 0x4800, 1 );
 		intercept_reads ( 0x4800, 1 );
-		
+
 		intercept_writes( 0x5000, 0x1000 );
 		intercept_reads ( 0x5000, 0x1000 );
-		
+
 		for ( int i = 0; i < (int) sizeof regs; i++ )
 			write( 0, 0x8000 + i * 0x800, regs [i] );
 	}
-	
+
 	virtual nes_time_t next_irq( nes_time_t time )
 	{
 		if ( irq_pending )
 			return time;
-		
+
 		if ( !(irq_ctr & 0x8000) )
 			return no_irq;
-		
+
 		return 0x10000 - irq_ctr + last_time;
 	}
-	
+
 	virtual void run_until( nes_time_t end_time )
 	{
 		long count = irq_ctr + (end_time - last_time);
@@ -95,43 +101,42 @@ public:
 		{
 			count = 0x7fff;
 		}
-		
+
 		irq_ctr = count;
 		last_time = end_time;
 	}
-	
+
 	virtual void end_frame( nes_time_t end_time )
 	{
 		if ( end_time > last_time )
 			run_until( end_time );
 		last_time -= end_time;
-		assert( last_time >= 0 );
 		sound.end_frame( end_time );
 	}
-	
+
 	void write_bank( nes_addr_t, int data );
 	void write_irq( nes_time_t, nes_addr_t, int data );
-	
+
 	virtual int read( nes_time_t time, nes_addr_t addr )
 	{
 		if ( addr == 0x4800 )
 			return sound.read_data();
-		
+
 		if ( addr == 0x5000 )
 		{
 			irq_pending = false;
 			return irq_ctr & 0xff;
 		}
-		
+
 		if ( addr == 0x5800 )
 		{
 			irq_pending = false;
 			return irq_ctr >> 8;
 		}
-		
+
 		return Nes_Mapper::read( time, addr );
 	}
-	
+
 	virtual bool write_intercepted( nes_time_t time, nes_addr_t addr, int data )
 	{
 		if ( addr == 0x4800 )
@@ -154,15 +159,15 @@ public:
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	virtual void write( nes_time_t, nes_addr_t addr, int data )
 	{
 		int reg = addr >> 11 & 0x0F;
 		regs [reg] = data;
-		
+
 		int prg_bank = reg - 0x0c;
 		if ( (unsigned) prg_bank < 3 )
 		{
@@ -183,7 +188,32 @@ public:
 			sound.write_addr( data );
 		}
 	}
+
+	Nes_Namco_Apu sound;
+	nes_time_t last_time;
 };
+
+void namco106_state_t::swap()
+{
+	set_le16( &irq_ctr, irq_ctr );
+	for ( unsigned i = 0; i < sizeof sound_state.delays / sizeof sound_state.delays [0]; i++ )
+		set_le16( &sound_state.delays [i], sound_state.delays [i] );
+}
+
+void Mapper_Namco106::save_state( mapper_state_t& out )
+{
+	sound.save_state( &sound_state );
+	namco106_state_t::swap();
+	Nes_Mapper::save_state( out );
+	namco106_state_t::swap();
+}
+
+void Mapper_Namco106::read_state( mapper_state_t const& in )
+{
+	Nes_Mapper::read_state( in );
+	namco106_state_t::swap();
+	sound.load_state( sound_state );
+}
 
 void register_namco106_mapper();
 void register_namco106_mapper()
@@ -197,20 +227,43 @@ void register_optional_mappers()
 {
 	extern void register_misc_mappers();
 	register_misc_mappers();
-	
+
+	extern void register_more_mappers();
+	register_more_mappers();
+
+	extern void register_unrom512_mapper();
+	register_unrom512_mapper();
+
 	extern void register_vrc6_mapper();
 	register_vrc6_mapper();
-	
-	//extern void register_mmc5_mapper();
-	//register_mmc5_mapper();
-	
+
+	extern void register_mmc5_mapper();
+	register_mmc5_mapper();
+
 	extern void register_fme7_mapper();
 	register_fme7_mapper();
-	
+
 	extern void register_namco106_mapper();
 	register_namco106_mapper();
 
 	extern void register_mmc24();
 	register_mmc24();
-}
 
+	extern void register_vrc1_mapper();
+	register_vrc1_mapper();
+
+	extern void register_vrc3_mapper();
+	register_vrc3_mapper();
+
+	extern void register_vrc2_4_mapper();
+	register_vrc2_4_mapper();
+
+	extern void register_vrc7_mapper();
+	register_vrc7_mapper();
+
+	extern void register_mapper_15();
+	register_mapper_15();
+
+	extern void register_mapper_60();
+	register_mapper_60();
+}

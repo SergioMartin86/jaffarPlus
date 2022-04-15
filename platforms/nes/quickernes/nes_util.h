@@ -6,35 +6,11 @@
 #ifndef NES_UTIL_H
 #define NES_UTIL_H
 
+#include <stdint.h>
 #include "blargg_common.h"
+
 class Nes_Emu;
 class Nes_Cart;
-
-class Joypad_Filter {
-public:
-	Joypad_Filter();
-	
-	// Control filtering of simultaneous directions. Enabled by default.
-	void enable_filtering( bool = true );
-	
-	// Prevents simultaneous left+right and up+down to avoid problems in some games.
-	// Also turns bits 8 and 9 into turbo A and B.
-	int process( int joypad );
-	
-	// Set A and B turbo rates, where 1.0 is maximum and 0.0 disables them
-	void set_a_rate( double r ) { rates [0] = (int) (r * 0x100); }
-	void set_b_rate( double r ) { rates [1] = (int) (r * 0x100); }
-	
-	// Call after each emulated frame for which Nes_Emu::frame().joypad_read_count
-	// is non-zero.
-	void clock_turbo();
-	
-private:
-	int prev;
-	int mask;
-	int times [2];
-	int rates [2];
-};
 
 struct game_genie_patch_t
 {
@@ -43,7 +19,7 @@ struct game_genie_patch_t
 	int compare_with; // if -1, always change byte
 	
 	// Decode Game Genie code
-	blargg_err_t decode( const char* in );
+	const char *decode( const char* in );
 	
 	// Apply patch to cartridge data. Might not work for some codes, since this really
 	// requires emulator support. Returns number of bytes changed, where 0
@@ -76,15 +52,13 @@ public:
 	int change_value( int new_value );
 	
 private:
-	typedef BOOST::uint8_t byte;
 	Nes_Emu* emu;
 	int original_value;
 	int changed_value;
 	int pos;
 	enum { low_mem_size = 0x800 };
-	byte original [low_mem_size];
-	byte changed  [low_mem_size];
+	uint8_t original [low_mem_size];
+	uint8_t changed  [low_mem_size];
 };
 
 #endif
-

@@ -25,20 +25,20 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 struct vrc6_state_t
 {
 	// written registers
-	byte prg_16k_bank;
+	uint8_t prg_16k_bank;
 	// could move sound regs int and out of vrc6_apu_state_t for state saving,
 	// allowing them to be stored here
-	byte old_sound_regs [3] [3]; // to do: eliminate this duplicate
-	byte mirroring;
-	byte prg_8k_bank;
-	byte chr_banks [8];
-	byte irq_reload;
-	byte irq_mode;
+	uint8_t old_sound_regs [3] [3]; // to do: eliminate this duplicate
+	uint8_t mirroring;
+	uint8_t prg_8k_bank;
+	uint8_t chr_banks [8];
+	uint8_t irq_reload;
+	uint8_t irq_mode;
 	
 	// internal state
-	BOOST::uint16_t next_time;
-	byte irq_pending;
-	byte unused;
+	uint16_t next_time;
+	uint8_t irq_pending;
+	uint8_t unused;
 	
 	vrc6_apu_state_t sound_state;
 	
@@ -54,9 +54,6 @@ void vrc6_state_t::swap()
 }
 
 class Mapper_Vrc6 : public Nes_Mapper, vrc6_state_t {
-	int swap_mask;
-	Nes_Vrc6_Apu sound;
-	enum { timer_period = 113 * 4 + 3 };
 public:
 	Mapper_Vrc6( int sm )
 	{
@@ -156,6 +153,9 @@ public:
 		else
 			write_irq( time, addr, data );
 	}
+	int swap_mask;
+	Nes_Vrc6_Apu sound;
+	enum { timer_period = 113 * 4 + 3 };
 };
 
 void Mapper_Vrc6::read_state( mapper_state_t const& in )
@@ -168,7 +168,7 @@ void Mapper_Vrc6::read_state( mapper_state_t const& in )
 	static char zero [sizeof old_sound_regs] = { 0 };
 	if ( 0 != memcmp( old_sound_regs, zero, sizeof zero ) )
 	{
-		dprintf( "Using old VRC6 sound register format\n" );
+		/* Using old VRC6 sound register format */
 		memcpy( sound_state.regs, old_sound_regs, sizeof sound_state.regs );
 		memset( old_sound_regs, 0, sizeof old_sound_regs );
 	}
@@ -259,4 +259,3 @@ void register_vrc6_mapper()
 	Nes_Mapper::register_mapper( 24, make_vrc6a );
 	Nes_Mapper::register_mapper( 26, make_vrc6b );
 }
-

@@ -8,9 +8,9 @@
 
 class MMC2: public Nes_Mapper
 {
-	byte regs[6]; // A,B,C,D,E,F
+	uint8_t regs[6]; // A,B,C,D,E,F
 
-	void mirror(byte val)
+	void mirror(uint8_t val)
 	{
 		if (val & 1)
 			mirror_horiz();
@@ -60,9 +60,9 @@ public:
 
 class MMC4: public Nes_Mapper
 {
-	byte regs[6]; // A,B,C,D,E,F
+	uint8_t regs[6]; // A,B,C,D,E,F
 
-	void mirror(byte val)
+	void mirror(uint8_t val)
 	{
 		if (val & 1)
 			mirror_horiz();

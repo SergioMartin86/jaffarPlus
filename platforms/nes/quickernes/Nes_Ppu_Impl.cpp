@@ -37,14 +37,13 @@ Nes_Ppu_Impl::Nes_Ppu_Impl()
 	mmc24_enabled = false;
 	mmc24_latched[0] = 0;
 	mmc24_latched[1] = 0;
-	
-	#ifndef NDEBUG
+
+	#if !defined(NDEBUG) && !defined(PSP) && !defined(PS2)
 		// verify that unaligned accesses work
 		static unsigned char b  [19] = { 0 };
 		static unsigned char b2 [19] = { 1,2,3,4,0,5,6,7,8,0,9,0,1,2,0,3,4,5,6 };
 		for ( int i = 0; i < 19; i += 5 )
-			*(volatile BOOST::uint32_t*) &b [i] = *(volatile BOOST::uint32_t*) &b2 [i];
-		assert( !memcmp( b, b2, 19 ) );
+			*(volatile uint32_t*) &b [i] = *(volatile uint32_t*) &b2 [i];
 	#endif
 }
 
@@ -54,23 +53,13 @@ Nes_Ppu_Impl::~Nes_Ppu_Impl()
 	delete impl;
 }
 
-int Nes_Ppu_Impl::peekaddr(int addr)
-{
-	if (addr < 0x2000)
-		return chr_data[map_chr_addr_peek(addr)];
-	else
-		return get_nametable(addr)[addr & 0x3ff];
-}
-
-
-
 void Nes_Ppu_Impl::all_tiles_modified()
 {
 	any_tiles_modified = true;
 	memset( modified_tiles, ~0, sizeof modified_tiles );
 }
 
-blargg_err_t Nes_Ppu_Impl::open_chr( byte const* new_chr, long chr_data_size )
+const char *Nes_Ppu_Impl::open_chr( uint8_t const* new_chr, long chr_data_size )
 {
 	close_chr();
 	
@@ -94,9 +83,8 @@ blargg_err_t Nes_Ppu_Impl::open_chr( byte const* new_chr, long chr_data_size )
 	}
 	
 	// allocate aligned memory for cache
-	assert( chr_size % chr_addr_size == 0 );
 	long tile_count = chr_size / bytes_per_tile;
-	tile_cache_mem = BLARGG_NEW byte [tile_count * sizeof (cached_tile_t) * 2 + cache_line_size];
+	tile_cache_mem = BLARGG_NEW uint8_t [tile_count * sizeof (cached_tile_t) * 2 + cache_line_size];
 	CHECK_ALLOC( tile_cache_mem );
 	tile_cache = (cached_tile_t*) (tile_cache_mem + cache_line_size -
 			(uintptr_t) tile_cache_mem % cache_line_size);
@@ -121,15 +109,10 @@ void Nes_Ppu_Impl::close_chr()
 
 void Nes_Ppu_Impl::set_chr_bank( int addr, int size, long data )
 {
-	check( !chr_is_writable || addr == data ); // to do: is CHR RAM ever bank-switched?
-	//dprintf( "Tried to set CHR RAM bank at %04X to CHR+%04X\n", addr, data );
-	
 	if ( data + size > chr_size )
 		data %= chr_size;
 	
 	int count = (unsigned) size / chr_page_size;
-	assert( chr_page_size * count == size );
-	assert( addr + size <= chr_addr_size );
 	
 	int page = (unsigned) addr / chr_page_size;
 	while ( count-- )
@@ -144,15 +127,15 @@ void Nes_Ppu_Impl::set_chr_bank_ex( int addr, int size, long data )
 {
 	mmc24_enabled = true;
 
-	check( !chr_is_writable || addr == data ); // to do: is CHR RAM ever bank-switched?
+	//check( !chr_is_writable || addr == data ); // to do: is CHR RAM ever bank-switched?
 	//dprintf( "Tried to set CHR RAM bank at %04X to CHR+%04X\n", addr, data );
 	
 	if ( data + size > chr_size )
 		data %= chr_size;
 	
 	int count = (unsigned) size / chr_page_size;
-	assert( chr_page_size * count == size );
-	assert( addr + size <= chr_addr_size );
+	//assert( chr_page_size * count == size );
+	//assert( addr + size <= chr_addr_size );
 	
 	int page = (unsigned) addr / chr_page_size;
 	while ( count-- )
@@ -184,9 +167,6 @@ void Nes_Ppu_Impl::save_state( Nes_State_* out ) const
 	if ( chr_is_writable )
 	{
 		out->chr_size = chr_size;
-		check( out->nametable_size <= 0x800 );
-		assert( out->nametable_size <= 0x800 );
-		assert( out->chr_size <= out->chr_max );
 		memcpy( out->chr, impl->chr_ram, out->chr_size );
 	}
 }
@@ -198,27 +178,25 @@ void Nes_Ppu_Impl::load_state( Nes_State_ const& in )
 	
 	if ( in.ppu_valid )
 		STATIC_CAST(ppu_state_t&,*this) = *in.ppu;
-
+	
 	if ( in.spr_ram_valid )
 		memcpy( spr_ram, in.spr_ram, sizeof spr_ram );
-
-	assert( in.nametable_size <= (int) sizeof impl->nt_ram );
+	
 	if ( in.nametable_size >= 0x800 )
 	{
 		if ( in.nametable_size > 0x800 )
 			memcpy( &impl->nt_ram [0x800], in.chr, 0x800 );
 		memcpy( impl->nt_ram, in.nametable, 0x800 );
 	}
-
+	
 	if ( chr_is_writable && in.chr_size )
 	{
-		assert( in.chr_size <= (int) sizeof impl->chr_ram );
 		memcpy( impl->chr_ram, in.chr, in.chr_size );
 		all_tiles_modified();
 	}
 }
 
-static BOOST::uint8_t const initial_palette [0x20] =
+static uint8_t const initial_palette [0x20] =
 {
 	0x0f,0x01,0x00,0x01,0x00,0x02,0x02,0x0D,0x08,0x10,0x08,0x24,0x00,0x00,0x04,0x2C,
 	0x00,0x01,0x34,0x03,0x00,0x04,0x00,0x14,0x00,0x3A,0x00,0x02,0x00,0x20,0x2C,0x08
@@ -281,8 +259,6 @@ void Nes_Ppu_Impl::capture_palette()
 
 void Nes_Ppu_Impl::run_hblank( int count )
 {
-	require( count >= 0 );
-	
 	long addr = (vram_addr & 0x7be0) + (vram_temp & 0x41f) + (count * 0x1000);
 	if ( w2001 & 0x08 )
 	{
@@ -315,9 +291,9 @@ inline unsigned long reorder( unsigned long n )
 
 inline void Nes_Ppu_Impl::update_tile( int index )
 {
-	const byte* in = chr_data + (index) * bytes_per_tile;
-	byte* out = (byte*) tile_cache [index];
-	byte* flipped_out = (byte*) flipped_tiles [index];
+	const uint8_t* in = chr_data + (index) * bytes_per_tile;
+	uint8_t* out = (uint8_t*) tile_cache [index];
+	uint8_t* flipped_out = (uint8_t*) flipped_tiles [index];
 	
 	unsigned long bit_mask = 0x11111111 + zero;
 	
@@ -398,10 +374,8 @@ void Nes_Ppu_Impl::update_tiles( int first_tile )
 template<int height>
 struct calc_sprite_max_scanlines
 {
-	static unsigned long func( byte const* sprites, byte* scanlines, int begin )
+	static unsigned long func( uint8_t const* sprites, uint8_t* scanlines, int begin )
 	{
-		typedef BOOST::uint32_t uint32_t;
-		
 		unsigned long any_hits = 0;
 		unsigned long const offset = 0x01010101 + zero;
 		unsigned limit = 239 + height - begin;
@@ -409,22 +383,22 @@ struct calc_sprite_max_scanlines
 		{
 			int top = *sprites;
 			sprites += 4;
-			byte* p = scanlines + top;
+			uint8_t* p = scanlines + top;
 			if ( (unsigned) (239 - top) < limit )
 			{
-				unsigned long p0 = (uint32_t&) p [0] + offset;
-				unsigned long p4 = (uint32_t&) p [4] + offset;
-				(uint32_t&) p [0] = p0;
+				unsigned long p0 = ((unaligned_uint32_t*)p) [0].val + offset;
+				unsigned long p4 = ((unaligned_uint32_t*)p) [1].val + offset;
+				((unaligned_uint32_t*)p) [0].val = p0;
 				any_hits |= p0;
-				(uint32_t&) p [4] = p4;
+				((unaligned_uint32_t*)p) [1].val = p4;
 				any_hits |= p4;
 				if ( height > 8 )
 				{
-					unsigned long p0 = (uint32_t&) p [ 8] + offset;
-					unsigned long p4 = (uint32_t&) p [12] + offset;
-					(uint32_t&) p [ 8] = p0;
+					unsigned long p0 = ((unaligned_uint32_t*)p) [2].val + offset;
+					unsigned long p4 = ((unaligned_uint32_t*)p) [3].val + offset;
+					((unaligned_uint32_t*)p) [2].val = p0;
 					any_hits |= p0;
-					(uint32_t&) p [12] = p4;
+					((unaligned_uint32_t*)p) [3].val = p4;
 					any_hits |= p4;
 				}
 			}
@@ -438,7 +412,7 @@ long Nes_Ppu_Impl::recalc_sprite_max( int scanline )
 {
 	int const max_scanline_count = image_height;
 	
-	byte sprite_max_scanlines [256 + 16];
+	uint8_t sprite_max_scanlines [256 + 16];
 	
 	// recalculate sprites per scanline
 	memset( sprite_max_scanlines + scanline, 0x78, last_sprite_max_scanline - scanline );
@@ -462,17 +436,17 @@ long Nes_Ppu_Impl::recalc_sprite_max( int scanline )
 		unsigned long const mask = 0x80808080 + zero;
 		
 		// check four at a time
-		byte* pos = &sprite_max_scanlines [scanline];
-		unsigned long n = (uint32_t&) *pos;
+		uint8_t* pos = &sprite_max_scanlines [scanline];
+		unsigned long n = ((unaligned_uint32_t*)pos)->val;
 		while ( 1 )
 		{
 			unsigned long x = n & mask;
 			pos += 4;
-			n = (uint32_t&) *pos;
+			n = ((unaligned_uint32_t*)pos)->val;
 			if ( x )
 				break;
 		}
-		
+
 		int height = sprite_height();
 		int remain = 8;
 		int i = 0;
@@ -481,7 +455,6 @@ long Nes_Ppu_Impl::recalc_sprite_max( int scanline )
 		pos -= 3 + (pos [-4] >> 7 & 1);
 		pos += 1 - (*pos >> 7 & 1);
 		pos += 1 - (*pos >> 7 & 1);
-		assert( *pos & 0x80 );
 		
 		scanline = pos - sprite_max_scanlines;
 		if ( scanline >= max_scanline_count )
@@ -517,4 +490,3 @@ long Nes_Ppu_Impl::recalc_sprite_max( int scanline )
 	
 	return 0;
 }
-

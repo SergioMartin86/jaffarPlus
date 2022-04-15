@@ -15,12 +15,10 @@ enum { blip_sample_max = 32767 };
 
 class Blip_Buffer {
 public:
-	typedef const char* blargg_err_t;
-	
 	// Set output sample rate and buffer length in milliseconds (1/1000 sec, defaults
 	// to 1/4 second), then clear buffer. Returns NULL on success, otherwise if there
 	// isn't enough memory, returns error without affecting current buffer setup.
-	blargg_err_t set_sample_rate( long samples_per_sec, int msec_length = 1000 / 4 );
+	const char *set_sample_rate( long samples_per_sec, int msec_length = 1000 / 4 );
 	
 	// Set number of source time units per second
 	void clock_rate( long );
@@ -88,8 +86,8 @@ public:
 	
 	// Deprecated
 	typedef blip_resampled_time_t resampled_time_t;
-	blargg_err_t sample_rate( long r ) { return set_sample_rate( r ); }
-	blargg_err_t sample_rate( long r, int msec ) { return set_sample_rate( r, msec ); }
+	const char *sample_rate( long r ) { return set_sample_rate( r ); }
+	const char *sample_rate( long r, int msec ) { return set_sample_rate( r, msec ); }
 private:
 	// noncopyable
 	Blip_Buffer( const Blip_Buffer& );
@@ -108,6 +106,16 @@ private:
 	int bass_freq_;
 	int length_;
 	friend class Blip_Reader;
+
+private:
+	//extra information necessary to load state to an exact sample
+	buf_t_ extra_buffer[32];
+	int extra_length;
+	long extra_reader_accum;
+	blip_resampled_time_t extra_offset;
+public:
+	void SaveAudioBufferState();
+	void RestoreAudioBufferState();
 };
 
 #ifdef HAVE_CONFIG_H
@@ -252,8 +260,6 @@ private:
 // End of public interface
 
 
-#include <assert.h>
-
 // Compatibility with older version
 const long blip_unscaled = 65535;
 const int blip_low_quality  = blip_med_quality;
@@ -279,7 +285,6 @@ inline void Blip_Synth<quality,range>::offset_resampled( blip_resampled_time_t t
 {
 	// Fails if time is beyond end of Blip_Buffer, due to a bug in caller code or the
 	// need for a longer buffer as set by set_sample_rate().
-	assert( (long) (time >> BLIP_BUFFER_ACCURACY) < blip_buf->buffer_size_ );
 	delta *= impl.delta_factor;
 	int phase = (int) (time >> (BLIP_BUFFER_ACCURACY - BLIP_PHASE_BITS) & (blip_res - 1));
 	imp_t const* imp = impulses + blip_res - phase;
@@ -351,4 +356,3 @@ int const blip_max_length = 0;
 int const blip_default_length = 250;
 
 #endif
-

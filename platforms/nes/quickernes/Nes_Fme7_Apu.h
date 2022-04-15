@@ -6,16 +6,17 @@
 #ifndef NES_FME7_APU_H
 #define NES_FME7_APU_H
 
+#include <stdint.h>
 #include "blargg_common.h"
 #include "Blip_Buffer.h"
 
 struct fme7_apu_state_t
 {
 	enum { reg_count = 14 };
-	BOOST::uint8_t regs [reg_count];
-	BOOST::uint8_t phases [3]; // 0 or 1
-	BOOST::uint8_t latch;
-	BOOST::uint16_t delays [3]; // a, b, c
+	uint8_t regs [reg_count];
+	uint8_t phases [3]; // 0 or 1
+	uint8_t latch;
+	uint16_t delays [3]; // a, b, c
 };
 BOOST_STATIC_ASSERT( sizeof (fme7_apu_state_t) == 24 );
 
@@ -77,7 +78,6 @@ inline void Nes_Fme7_Apu::treble_eq( blip_eq_t const& eq )
 
 inline void Nes_Fme7_Apu::osc_output( int i, Blip_Buffer* buf )
 {
-	assert( (unsigned) i < osc_count );
 	oscs [i].output = buf;
 }
 
@@ -115,7 +115,6 @@ inline void Nes_Fme7_Apu::end_frame( blip_time_t time )
 	if ( time > last_time )
 		run_until( time );
 	
-	assert( last_time >= time );
 	last_time -= time;
 }
 
@@ -129,7 +128,9 @@ inline void Nes_Fme7_Apu::load_state( fme7_apu_state_t const& in )
 	reset();
 	fme7_apu_state_t* state = this;
 	*state = in;
+
+	//Run sound channels for 0 cycles for clean audio after loading state
+	run_until(last_time);
 }
 
 #endif
-
