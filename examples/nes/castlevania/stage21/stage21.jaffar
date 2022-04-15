@@ -3,14 +3,14 @@
  
   "Emulator Configuration": 
   {
-    "Rom File": "../castlevania.nes",
-    "State File": "stage02.state"
+    "Rom File": "../castlevania_prg1.nes",
+    "State File": "stage21.state"
   },
   
   "State Configuration": 
   {
-    "Max Difference Count": 1100,
-    "Max Move Count": 530
+    "Max Difference Count": 2048,
+    "Max Move Count": 1700
   },
   
   "Game Configuration": 
@@ -22,8 +22,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Lower Bound (Mb)": 3000,
+     "Max Size Upper Bound (Mb)": 30000
     },
     
     "Hash Database":
@@ -52,6 +52,8 @@
     "Description": "Reward getting freeze time right away",
     "Conditions":
     [
+      { "Property": "Current Stage", "Op": "==", "Value": 2 },
+      { "Property": "Current SubStage", "Op": "==", "Value": 1 },
       { "Property": "Freeze Time Timer", "Op": ">", "Value":  0 }
     ],
     
@@ -59,10 +61,12 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 5000 },
+     { "Type": "Add Reward", "Value": 50000 },
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 5.0, "Min": 0, "Max": 255, "Center": 178 },
-     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max": 255, "Center": 0 }
-     { "Type": "Set Freeze Timer Magnet", "Intensity": -10.0}
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max": 255, "Center": 0 },
+     { "Type": "Set Bat / Medusa Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 249 },
+     { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 116 },
+     { "Type": "Set Freeze Timer Magnet", "Intensity": -10.0 }
     ]
    },
    
@@ -71,6 +75,8 @@
     "Description": "Reward freeze time ending",
     "Conditions":
     [
+      { "Property": "Current Stage", "Op": "==", "Value": 2 },
+      { "Property": "Current SubStage", "Op": "==", "Value": 1 },
       { "Property": "Freeze Time Timer", "Op": "==", "Value":  1 }
     ],
     
@@ -81,8 +87,8 @@
      { "Type": "Add Reward", "Value": 10000 },
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 5.0, "Min": 0, "Max": 6000, "Center": 6000 },
      { "Type": "Set Simon Vertical Magnet", "Intensity": 5.0, "Min": 0, "Max": 255, "Center": 116 },
-     { "Type": "Set Bat / Medusa Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 0 },
-     { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 135 },
+     { "Type": "Set Bat / Medusa Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 126 },
+     { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 132 },
      { "Type": "Set Freeze Timer Magnet", "Intensity": 0.0}
     ]
    },
@@ -92,6 +98,8 @@
     "Description": "Reward achieving skip",
     "Conditions":
     [
+      { "Property": "Current Stage", "Op": "==", "Value": 2 },
+      { "Property": "Current SubStage", "Op": "==", "Value": 1 },
       { "Property": "Simon Position X", "Op": ">", "Value":  260 },
       { "Property": "Simon Position Y", "Op": "<", "Value":  120 }
     ],
@@ -102,10 +110,10 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 10.0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max": 255 },
-     { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max": 255 },
-     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Min": 0, "Max": 10 }
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 10.0, "Min": 0, "Max": 6000, "Center": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 0 },
+     { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max": 255, "Center": 0 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Min": 0, "Max": 10, "Center": 10 }
     ]
    },
    
@@ -114,6 +122,8 @@
     "Description": "Win on Opening Door",
     "Conditions":
     [
+      { "Property": "Current Stage", "Op": "==", "Value": 2 },
+      { "Property": "Current SubStage", "Op": "==", "Value": 1 },
       { "Property": "Game Mode", "Op": "==", "Value":  8 }
     ],
     
@@ -145,10 +155,11 @@
    
    {
     "Label": 1901,
-    "Description": "Fail if going too far down",
+    "Description": "Fail if going to substage 0",
     "Conditions":
     [
-      { "Property": "Simon Position Y", "Op": ">", "Value": 140 }
+      { "Property": "Current Stage", "Op": "==", "Value": 2 },
+      { "Property": "Current SubStage", "Op": "==", "Value": 0 }
     ],
     
     "Satisfies": [ ],

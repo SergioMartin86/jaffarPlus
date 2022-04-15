@@ -4,7 +4,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../castlevania.nes",
-    "State File": "stage03.state"
+    "State File": "stage30.state"
   },
   
   "State Configuration": 

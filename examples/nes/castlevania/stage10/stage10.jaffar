@@ -4,7 +4,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../castlevania_prg1.nes",
-    "State File": "stage01.state"
+    "State File": "stage10.state"
   },
   
   "State Configuration": 
