@@ -13,6 +13,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   gameMode               = (uint8_t*)   &_emu->_baseMem[0x0018];
   gameSubMode            = (uint8_t*)   &_emu->_baseMem[0x0019];
   stageTimer             = (uint16_t*)  &_emu->_baseMem[0x001A];
+  isLagFrame             = (uint8_t*)  &_emu->_baseMem[0x001B];
   currentStage           = (uint8_t*)   &_emu->_baseMem[0x0028];
   currentSubStage        = (uint8_t*)   &_emu->_baseMem[0x0046];
   simonLives             = (uint8_t*)   &_emu->_baseMem[0x002A];
@@ -65,6 +66,7 @@ uint64_t GameInstance::computeHash() const
   MetroHash64 hash;
 
   // Adding fixed hash elements
+  hash.Update(*isLagFrame);
   hash.Update(*gameMode);
   hash.Update(*gameSubMode);
   hash.Update(*currentStage);

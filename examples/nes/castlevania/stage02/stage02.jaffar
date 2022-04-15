@@ -4,7 +4,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../castlevania.nes",
-    "State File": "jaffar.state"
+    "State File": "stage02.state"
   },
   
   "State Configuration": 
@@ -22,8 +22,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 100000,
-     "Max Size Upper Bound (Mb)": 180000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
@@ -60,11 +60,8 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 5000 },
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 5.0, "Min": 0, "Max": 178 },
-     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max": 255 },
-     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Min": 0, "Max": 10 },
-     { "Type": "Set Bat / Medusa Horizontal Magnet", "Intensity": 0.0, "Min": 0, "Max": 255 },
-     { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max": 135 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 5.0, "Min": 0, "Max": 255, "Center": 178 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max": 255, "Center": 0 }
      { "Type": "Set Freeze Timer Magnet", "Intensity": -10.0}
     ]
    },
@@ -82,11 +79,10 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 10.0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Simon Vertical Magnet", "Intensity": -10.0, "Min": 116, "Max": 255 },
-     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Min": 0, "Max": 10 },
-     { "Type": "Set Bat / Medusa Horizontal Magnet", "Intensity": -1.0, "Min": 0, "Max": 255 },
-     { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": -1.0, "Min": 0, "Max": 135 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 5.0, "Min": 0, "Max": 6000, "Center": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 5.0, "Min": 0, "Max": 255, "Center": 116 },
+     { "Type": "Set Bat / Medusa Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 0 },
+     { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 135 },
      { "Type": "Set Freeze Timer Magnet", "Intensity": 0.0}
     ]
    },

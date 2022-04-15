@@ -48,6 +48,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* gameMode;
   uint8_t* gameSubMode;
   uint16_t* stageTimer;
+  uint8_t* isLagFrame;
   uint8_t* currentStage;
   uint8_t* currentSubStage;
   uint8_t* simonLives;
