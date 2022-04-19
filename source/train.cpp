@@ -9,8 +9,7 @@
 //#define _DETECT_POSSIBLE_MOVES
 
 #ifdef _DETECT_POSSIBLE_MOVES
- #include <tuple>
- #define moveKeyTemplate std::tuple<uint8_t, uint8_t>
+ #define moveKeyTemplate uint8_t
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -76,7 +75,7 @@ void Train::run()
     for (const auto& key : newMoveKeySet)
     {
      auto itr = key.second.begin();
-     printf("if (*simonState == 0x%02X && *simonSubState == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", get<0>(key.first), get<1>(key.first), itr->c_str());
+     printf("if (*simonState == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
      itr++;
      for (; itr != key.second.end(); itr++)
      {
@@ -245,7 +244,6 @@ void Train::computeStates()
        for (uint16_t i = 0; i < 256; i++)
         if (possibleMoveSet.contains((uint8_t)i) == false)
         if (((uint8_t)i & 0b00001000) == 0)
-        if (((uint8_t)i & 0b00000100) == 0)
         {
          alternativeMoveSet.insert((uint8_t)i);
          fullMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
@@ -257,7 +255,6 @@ void Train::computeStates()
 
        // Store key values
        uint8_t currentSimonState = *_gameInstances[threadId]->simonState;
-       uint8_t currentSimonSubState = *_gameInstances[threadId]->simonSubState;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -372,7 +369,7 @@ void Train::computeStates()
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          auto moveKey = std::make_tuple(currentSimonState, currentSimonSubState);
+          auto moveKey = currentSimonState;
           if (newMoveKeySet[moveKey].contains(possibleMoves[idx]) == false)
           {
            //printf("Possible move not found! '%s'\n", possibleMoves[idx].c_str());
@@ -392,7 +389,7 @@ void Train::computeStates()
            //_gameInstances[threadId]->printStateInfo(newState->rulesStatus);
 
            // Storing new move
-           newMoveKeySet[std::make_tuple(currentSimonState, currentSimonSubState)].insert(possibleMoves[idx]);
+           newMoveKeySet[currentSimonState].insert(possibleMoves[idx]);
 
            //getchar();
            //printf("[Jaffar] Continuing...\n");

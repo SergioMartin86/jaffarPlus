@@ -9,8 +9,8 @@
   
   "State Configuration": 
   {
-    "Max Difference Count": 2048,
-    "Max Move Count": 1700
+    "Max Difference Count": 1200,
+    "Max Move Count": 600
   },
   
   "Game Configuration": 
@@ -22,8 +22,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 3000,
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Lower Bound (Mb)": 130000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -43,6 +43,7 @@
   
   "Playback Configuration": 
   {
+   "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
@@ -84,9 +85,9 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 5.0, "Min": 0, "Max": 6000, "Center": 6000 },
-     { "Type": "Set Simon Vertical Magnet", "Intensity": 5.0, "Min": 0, "Max": 255, "Center": 116 },
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 2.0, "Min": 0, "Max": 6000, "Center": 260 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 5.0, "Min": 0, "Max": 255, "Center": 117 },
      { "Type": "Set Bat / Medusa Horizontal Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 126 },
      { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 132 },
      { "Type": "Set Freeze Timer Magnet", "Intensity": 0.0}
@@ -109,7 +110,7 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Add Reward", "Value": 100000 },
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 10.0, "Min": 0, "Max": 6000, "Center": 6000 },
      { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Min": 0, "Max": 255, "Center": 0 },
      { "Type": "Set Bat / Medusa Vertical Magnet", "Intensity": 0.0, "Min": 0, "Max": 255, "Center": 0 },

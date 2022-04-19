@@ -11,6 +11,7 @@ GameRule::GameRule() : Rule()
  _magnets.batMedusaVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.simonStairMagnet = stairMagnet_t { .reward = 0.0f, .mode = 0};
  _magnets.simonWeaponMagnet = weaponMagnet_t { .reward = 0.0f, .weapon = 0};
+ _magnets.bossStateTimerMagnet = 0.0f;
  _magnets.freezeTimeMagnet = 0.0f;
 }
 
@@ -102,8 +103,15 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
 
   if (actionType == "Set Freeze Timer Magnet")
   {
-   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Weapon Magnet in Rule %lu Action %lu missing 'Reward' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Freeze Timer Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
    _magnets.freezeTimeMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Boss State Timer Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Boss State Timer Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.bossStateTimerMagnet = actionJs["Intensity"].get<float>();
    recognizedActionType = true;
   }
 
@@ -172,7 +180,6 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Subweapon Number") return gameInstance->subweaponNumber;
   if (propertyName == "Simon Facing Direction") return gameInstance->simonFacingDirection;
   if (propertyName == "Simon State") return gameInstance->simonState;
-  if (propertyName == "Simon SubState") return gameInstance->simonSubState;
   if (propertyName == "Simon Vertical Speed") return gameInstance->simonVerticalSpeed;
   if (propertyName == "Simon Vertical Direction") return gameInstance->simonVerticalDirection;
   if (propertyName == "Boss Health") return gameInstance->bossHealth;

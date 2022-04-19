@@ -22,8 +22,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 60000
+     "Max Size Lower Bound (Mb)": 3000,
+     "Max Size Upper Bound (Mb)": 12000
     },
     
     "Hash Database":
@@ -148,7 +148,7 @@
     "Satisfies": 
     [ ],
     
-    "Actions":
+    "Actions": 
     [
       { "Type": "Trigger Win" }
     ]

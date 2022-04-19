@@ -3,14 +3,14 @@
  
   "Emulator Configuration": 
   {
-    "Rom File": "../castlevania.nes",
-    "State File": "stage30.state"
+    "Rom File": "../castlevania_prg1.nes",
+    "State File": "stage30b.state"
   },
   
   "State Configuration": 
   {
-    "Max Difference Count": 1200,
-    "Max Move Count": 1200
+    "Max Difference Count": 1100,
+    "Max Move Count": 300
   },
   
   "Game Configuration": 
@@ -22,8 +22,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 2000,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Lower Bound (Mb)": 150000,
+     "Max Size Upper Bound (Mb)": 210000
     },
     
     "Hash Database":
@@ -60,8 +60,7 @@
     "Actions":
     [
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 712, "Min": 0, "Max":  1000 },
-     { "Type": "Set Simon Weapon Magnet", "Reward": 10.0, "Weapon": 11 },
-     { "Type": "Set Simon Heart Magnet", "Intensity": 10.0, "Center": 0, "Min": 0, "Max": 10 }
+     { "Type": "Set Simon Weapon Magnet", "Reward": 10.0, "Weapon": 11 }
     ]
    },
    
@@ -77,13 +76,13 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Add Reward", "Value": 50000 },
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 712, "Min": 0, "Max": 1000 },
      { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Center": 136, "Min": 0, "Max":  255 },
      { "Type": "Set Simon Stair Mode Magnet", "Reward": 5000.0, "Mode": 0 },
      { "Type": "Set Boss Horizontal Magnet", "Intensity": 5.0, "Center": 180, "Min": 0, "Max": 255 },
      { "Type": "Set Boss Vertical Magnet", "Intensity": 5.0, "Center": 117, "Min": 0, "Max":  255 },
-     { "Type": "Set Simon Heart Magnet", "Intensity": 10.0, "Center": 0, "Min": 0, "Max": 10 }
+     { "Type": "Set Boss State Timer Magnet", "Intensity": -100.0 }
     ]
    },
    
@@ -103,38 +102,6 @@
      { "Type": "Add Reward", "Value": 10000 },
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 640, "Min": 0, "Max":  1000 },
      { "Type": "Set Simon Heart Magnet", "Intensity": 10.0, "Center": 0, "Min": 0, "Max": 10 }
-    ]
-   },
-   
-   {
-    "Label": 1109,
-    "Description": "Win on grabbing crystal ball",
-    "Conditions":
-    [
-      { "Property": "Game Mode", "Op": "==", "Value":  12 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 1900,
-    "Description": "Lose if getting hit",
-    "Conditions":
-    [
-      { "Property": "Simon Health", "Op": "<", "Value":  56 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
     ]
    }
   ]  

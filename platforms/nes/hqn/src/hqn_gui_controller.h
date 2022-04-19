@@ -99,7 +99,7 @@ public:
      */
     void setCloseOperation(CloseOperation ops);
     CloseOperation getCloseOperation() const;
-    void update_blit(int32_t* blit);
+    void update_blit(int32_t* blit, SDL_Surface* base, SDL_Surface* button_a, SDL_Surface* button_b, SDL_Surface* button_select, SDL_Surface* button_start, SDL_Surface* button_up, SDL_Surface* button_down, SDL_Surface* button_left, SDL_Surface* button_right);
 
     // Methods overriden from superclass.
     virtual void onLoadROM(HQNState *state, const char *filename);

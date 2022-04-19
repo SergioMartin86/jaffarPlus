@@ -61,6 +61,8 @@ void Nes_Cpu::reset( void const* unmapped_page )
 	set_code_page( 3, low_mem );
 	for ( int i = 4; i < page_count + 1; i++ )
 		set_code_page( i, (uint8_t*) unmapped_page );
+
+	isCorrectExecution = true;
 }
 
 void Nes_Cpu::map_code( nes_addr_t start, unsigned size, const void* data )
@@ -129,7 +131,8 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 {
 	set_end_time_( end );
 	clock_count = 0;
-	
+ isCorrectExecution = true;
+
 	volatile result_t result = result_cycles;
 	
 #if !BLARGG_CPU_CISC
@@ -1181,26 +1184,32 @@ imm##op:                                \
 		goto loop;
 	}
 
+ // KIL (JAM) [HLT]
+ default:
+ case 0x02: case 0x12: case 0x22: case 0x32: case 0x42: case 0x52: case 0x62: case 0x72: case 0x92: case 0xB2: case 0xD2: case 0xF2:
+ isCorrectExecution = false;
+ goto stop;
+
 // Unimplemented
 	
-	case page_wrap_opcode: // HLT
-		if ( pc > 0x10000 )
-		{
-			// handle wrap-around (assumes caller has put page of HLT at 0x10000)
-			pc = (pc - 1) & 0xFFFF;
-			clock_count -= 2;
-			goto loop;
-		}
+//	case page_wrap_opcode: // HLT
+//		if ( pc > 0x10000 )
+//		{
+//			// handle wrap-around (assumes caller has put page of HLT at 0x10000)
+//			pc = (pc - 1) & 0xFFFF;
+//			clock_count -= 2;
+//			goto loop;
+//		}
 		// fall through
-	default:
-		// skip over proper number of bytes
-		static unsigned char const row [8] = { 0x95, 0x95, 0x95, 0xd5, 0x95, 0x95, 0xd5, 0xf5 };
-		int len = row [opcode >> 2 & 7] >> (opcode << 1 & 6) & 3;
-		if ( opcode == 0x9C )
-			len = 3;
-		pc += len - 1;
-		error_count_++;
-		goto loop;
+//	default:
+//		// skip over proper number of bytes
+//		static unsigned char const row [8] = { 0x95, 0x95, 0x95, 0xd5, 0x95, 0x95, 0xd5, 0xf5 };
+//		int len = row [opcode >> 2 & 7] >> (opcode << 1 & 6) & 3;
+//		if ( opcode == 0x9C )
+//			len = 3;
+//		pc += len - 1;
+//		error_count_++;
+//		goto loop;
 		
 		//result = result_badop; // TODO: re-enable
 		goto stop;

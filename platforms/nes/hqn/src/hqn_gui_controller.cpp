@@ -201,7 +201,7 @@ void GUIController::update(bool readNES)
     processEvents();
 }
 
-void GUIController::update_blit(int32_t* blit)
+void GUIController::update_blit(int32_t* blit, SDL_Surface* base, SDL_Surface* button_a, SDL_Surface* button_b, SDL_Surface* button_select, SDL_Surface* button_start, SDL_Surface* button_up, SDL_Surface* button_down, SDL_Surface* button_left, SDL_Surface* button_right)
 {
     void *nesPixels = nullptr;
     int pitch = 0;
@@ -211,10 +211,75 @@ void GUIController::update_blit(int32_t* blit)
     memcpy(nesPixels, blit, sizeof(int32_t) * BLIT_SIZE);
     SDL_UnlockTexture(m_tex);
 
+    const SDL_Rect OVERLAY_BLIT_RECT_SRC = { 0, 0, 169, 53 };
+    const SDL_Rect OVERLAY_BLIT_RECT_DST = { 343, 425, 169, 53 };
+
     // render to screen
     SDL_RenderClear(m_renderer);
     SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, &m_nesDest);
+
+    auto overlayTex = SDL_CreateTextureFromSurface(m_renderer, base);
+    SDL_RenderCopy(m_renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+    SDL_DestroyTexture(overlayTex);
+
+    if (button_a != NULL)
+    {
+     auto overlayTex = SDL_CreateTextureFromSurface(m_renderer, button_a);
+     SDL_RenderCopy(m_renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+     SDL_DestroyTexture(overlayTex);
+    }
+
+    if (button_b != NULL)
+    {
+     auto overlayTex = SDL_CreateTextureFromSurface(m_renderer, button_b);
+     SDL_RenderCopy(m_renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+     SDL_DestroyTexture(overlayTex);
+    }
+
+    if (button_select != NULL)
+    {
+     auto overlayTex = SDL_CreateTextureFromSurface(m_renderer, button_select);
+     SDL_RenderCopy(m_renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+     SDL_DestroyTexture(overlayTex);
+    }
+
+    if (button_start != NULL)
+    {
+     auto overlayTex = SDL_CreateTextureFromSurface(m_renderer, button_start);
+     SDL_RenderCopy(m_renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+     SDL_DestroyTexture(overlayTex);
+    }
+
+    if (button_up != NULL)
+    {
+     auto overlayTex = SDL_CreateTextureFromSurface(m_renderer, button_up);
+     SDL_RenderCopy(m_renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+     SDL_DestroyTexture(overlayTex);
+    }
+
+    if (button_down != NULL)
+    {
+     auto overlayTex = SDL_CreateTextureFromSurface(m_renderer, button_down);
+     SDL_RenderCopy(m_renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+     SDL_DestroyTexture(overlayTex);
+    }
+
+    if (button_left != NULL)
+    {
+     auto overlayTex = SDL_CreateTextureFromSurface(m_renderer, button_left);
+     SDL_RenderCopy(m_renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+     SDL_DestroyTexture(overlayTex);
+    }
+
+    if (button_right != NULL)
+    {
+     auto overlayTex = SDL_CreateTextureFromSurface(m_renderer, button_right);
+     SDL_RenderCopy(m_renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+     SDL_DestroyTexture(overlayTex);
+    }
+
     SDL_RenderPresent(m_renderer);
+
     // Process any outstanding events
     processEvents();
 }
