@@ -3,7 +3,7 @@
  
   "Emulator Configuration": 
   {
-    "Rom File": "../castlevania_prg1.nes",
+    "Rom File": "../castlevania_prg0.nes",
     "State File": "stage10.state"
   },
   
@@ -22,8 +22,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 3000,
-     "Max Size Upper Bound (Mb)": 12000
+     "Max Size Lower Bound (Mb)": 7000,
+     "Max Size Upper Bound (Mb)": 22000
     },
     
     "Hash Database":
@@ -43,6 +43,7 @@
   
   "Playback Configuration": 
   {
+    "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":

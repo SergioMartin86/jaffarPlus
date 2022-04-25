@@ -7,22 +7,29 @@
 
 // Datatype to describe a generic magnet
 struct genericMagnet_t {
- float intensity; // How strong the magnet is
- float center;  // What is the central point of attraction
- float min;  // What is the minimum input value to the calculation.
- float max;  // What is the maximum input value to the calculation.
+ float intensity = 0.0; // How strong the magnet is
+ float center = 0.0;  // What is the central point of attraction
+ float min = 0.0;  // What is the minimum input value to the calculation.
+ float max = 0.0;  // What is the maximum input value to the calculation.
 };
 
 // Datatype to describe a magnet
 struct stairMagnet_t {
- float reward; // How strong the magnet is
- uint8_t mode;  // Specifies the use mode of the stairs
+ float reward = 0.0; // How strong the magnet is
+ uint8_t mode = 0;  // Specifies the use mode of the stairs
 };
 
 // Datatype to describe a magnet
 struct weaponMagnet_t {
- float reward; // How strong the magnet is
- uint8_t weapon;  // Specifies the weapon number
+ float reward = 0.0; // How strong the magnet is
+ uint8_t weapon = 0;  // Specifies the weapon number
+};
+
+// Nametable Tile Magnet
+struct nametableTileMagnet_t {
+ float reward = 0.0;
+ uint16_t pos = 0;
+ uint8_t value = 0;
 };
 
 // Datatype to describe a magnet
@@ -34,11 +41,13 @@ struct magnetSet_t {
  genericMagnet_t bossVerticalMagnet;
  genericMagnet_t batMedusaHorizontalMagnet;
  genericMagnet_t batMedusaVerticalMagnet;
- genericMagnet_t simonHeartMagnet;
- float freezeTimeMagnet;
- float bossStateTimerMagnet;
+ float simonHeartMagnet = 0.0;
+ float freezeTimeMagnet = 0.0;
+ float bossStateTimerMagnet = 0.0;
+ float bossHealthMagnet = 0.0;
  stairMagnet_t simonStairMagnet;
  weaponMagnet_t simonWeaponMagnet;
+ std::vector<nametableTileMagnet_t> scrollTileMagnets;
 };
 
 class GameInstance : public GameInstanceBase
@@ -82,6 +91,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* enemy1State;
   uint8_t* enemy2State;
   uint8_t* enemy3State;
+  uint8_t* batMedusa1State;
   uint8_t* batMedusa1PosX;
   uint8_t* batMedusa1PosY;
   uint8_t* freezeTimeTimer;
@@ -91,6 +101,12 @@ class GameInstance : public GameInstanceBase
   uint8_t* bossStateTimer;
   uint8_t* simonScreenOffsetX;
   uint8_t* levelTransitionTimer;
+  uint8_t* enemy1HolyWaterLockState;
+  uint8_t* holyWaterFire1Timer;
+
+  // PPU Stage-Specific values
+  uint8_t* stage51ScrollTile1;
+  uint8_t* stage51ScrollTile2;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;

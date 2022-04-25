@@ -41,7 +41,7 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
     if (conditionJs["Value"].is_number())
     {
      // Creating new condition object
-     Condition *condition;
+     Condition *condition = NULL;
      if (dtype == dt_uint8) condition = new _vCondition<uint8_t>(operation, property, NULL, conditionJs["Value"].get<uint8_t>());
      if (dtype == dt_uint16) condition = new _vCondition<uint16_t>(operation, property, NULL, conditionJs["Value"].get<uint16_t>());
      if (dtype == dt_uint32) condition = new _vCondition<uint32_t>(operation, property, NULL, conditionJs["Value"].get<uint32_t>());
@@ -69,7 +69,7 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
      auto valuePtr = getPropertyPointer(newCondition, (GameInstance*)gameInstance);
 
      // Adding condition to the list
-     Condition *condition;
+     Condition *condition = NULL;
      if (dtype == dt_uint8) condition = new _vCondition<uint8_t>(operation, property, valuePtr, 0);
      if (dtype == dt_uint16) condition = new _vCondition<uint16_t>(operation, property, valuePtr, 0);
      if (dtype == dt_uint32) condition = new _vCondition<uint32_t>(operation, property, valuePtr, 0);

@@ -4,15 +4,17 @@ GameRule::GameRule() : Rule()
 {
  _magnets.simonHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.simonVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
- _magnets.simonHeartMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.bossHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.bossVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.batMedusaHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.batMedusaVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.simonStairMagnet = stairMagnet_t { .reward = 0.0f, .mode = 0};
  _magnets.simonWeaponMagnet = weaponMagnet_t { .reward = 0.0f, .weapon = 0};
+ _magnets.simonHeartMagnet = 0.0f;
+ _magnets.bossHealthMagnet = 0.0f;
  _magnets.bossStateTimerMagnet = 0.0f;
  _magnets.freezeTimeMagnet = 0.0f;
+ _magnets.scrollTileMagnets.clear();
 }
 
 bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
@@ -36,15 +38,6 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
    _magnets.simonVerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
-   recognizedActionType = true;
-  }
-
-  if (actionType == "Set Simon Heart Magnet")
-  {
-   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
-   if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
-   if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
-   _magnets.simonHeartMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
    recognizedActionType = true;
   }
 
@@ -101,6 +94,26 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Scroll Tile Magnets")
+  {
+   for (const auto& tileMagnet : actionJs)
+   {
+    if (isDefined(tileMagnet, "Position") == false) EXIT_WITH_ERROR("[ERROR] Scroll Tile in Rule %lu Action %lu missing 'Position' key.\n", _label, actionId);
+    if (isDefined(tileMagnet, "Reward") == false) EXIT_WITH_ERROR("[ERROR] Scroll Tile in Rule %lu Action %lu missing 'Reward' key.\n", _label, actionId);
+    if (isDefined(tileMagnet, "Value") == false) EXIT_WITH_ERROR("[ERROR] Scroll Tile in Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
+    _magnets.scrollTileMagnets.push_back(nametableTileMagnet_t { .reward = tileMagnet["Reward"].get<float>(), .pos = tileMagnet["Position"].get<uint8_t>(), .value = tileMagnet["Value"].get<uint8_t>()});
+    recognizedActionType = true;
+   }
+  }
+
+  if (actionType == "Set Simon Heart Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Simon Heart Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.simonHeartMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+
   if (actionType == "Set Freeze Timer Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Freeze Timer Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -114,6 +127,14 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    _magnets.bossStateTimerMagnet = actionJs["Intensity"].get<float>();
    recognizedActionType = true;
   }
+
+  if (actionType == "Set Boss Health Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Boss Health Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.bossHealthMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
 
   return recognizedActionType;
 }
@@ -148,9 +169,14 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Boss Is Active") return dt_uint8;
   if (propertyName == "Boss Position X") return dt_uint8;
   if (propertyName == "Boss Position Y") return dt_uint8;
+  if (propertyName == "Boss State Timer") return dt_uint8;
   if (propertyName == "Freeze Time Timer") return dt_uint8;
+  if (propertyName == "Bat / Medusa 1 State") return dt_uint8;
   if (propertyName == "Bat / Medusa 1 Position Y") return dt_uint8;
   if (propertyName == "Bat / Medusa 1 Position X") return dt_uint8;
+  if (propertyName == "Enemy 1 Holy Water Lock State") return dt_uint8;
+  if (propertyName == "Stage 5-1 Scroll Tile 1") return dt_uint8;
+  if (propertyName == "Stage 5-1 Scroll Tile 2") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -186,9 +212,14 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Boss Is Active") return gameInstance->bossIsActive;
   if (propertyName == "Boss Position X") return gameInstance->bossPosX;
   if (propertyName == "Boss Position Y") return gameInstance->bossPosY;
+  if (propertyName == "Boss State Timer") return gameInstance->bossStateTimer;
   if (propertyName == "Freeze Time Timer") return gameInstance->freezeTimeTimer;
+  if (propertyName == "Bat / Medusa 1 State") return gameInstance->batMedusa1State;
   if (propertyName == "Bat / Medusa 1 Position Y") return gameInstance->batMedusa1PosY;
   if (propertyName == "Bat / Medusa 1 Position X") return gameInstance->batMedusa1PosX;
+  if (propertyName == "Enemy 1 Holy Water Lock State") return gameInstance->enemy1HolyWaterLockState;
+  if (propertyName == "Stage 5-1 Scroll Tile 1") return gameInstance->stage51ScrollTile1;
+  if (propertyName == "Stage 5-1 Scroll Tile 2") return gameInstance->stage51ScrollTile2;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

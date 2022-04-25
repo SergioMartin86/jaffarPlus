@@ -22,7 +22,7 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 130000,
+     "Max Size Lower Bound (Mb)": 60000,
      "Max Size Upper Bound (Mb)": 200000
     },
     
@@ -46,7 +46,7 @@
    "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
-  "Rules":
+  "Rules": 
   [
    {
     "Label": 1001,

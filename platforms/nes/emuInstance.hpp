@@ -18,6 +18,7 @@ class EmuInstance : public EmuInstanceBase
 
  // Base low-memory pointer
  uint8_t* _baseMem;
+ uint8_t* _ppuNameTableMem;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
@@ -51,6 +52,7 @@ class EmuInstance : public EmuInstanceBase
 
   // Setting base memory pointer
   _baseMem = _nes->low_mem();
+  _ppuNameTableMem = _nes->nametable_mem();
  }
 
  void loadStateFile(const std::string& stateFilePath) override
@@ -71,11 +73,10 @@ class EmuInstance : public EmuInstanceBase
 
  void saveStateFile(const std::string& stateFilePath) const override
  {
-  // Saving state
-  Nes_State state;
-  _nes->save_state(&state);
-  Auto_File_Writer stateWriter(stateFilePath.c_str());
-  state.write(stateWriter);
+  std::string stateData;
+  stateData.resize(_STATE_DATA_SIZE);
+  serializeState((uint8_t*)stateData.data());
+  saveStringToFile(stateData, stateFilePath.c_str());
  }
 
  void serializeState(uint8_t* state) const override
