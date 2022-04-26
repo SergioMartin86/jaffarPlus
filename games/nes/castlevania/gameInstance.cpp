@@ -56,6 +56,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   stairAnimationFrame    = (uint8_t*)   &_emu->_baseMem[0x0370];
   bossStateTimer         = (uint8_t*)   &_emu->_baseMem[0x0553];
   simonScreenOffsetX     = (uint8_t*)   &_emu->_baseMem[0x038C];
+  screenMotionX          = (uint8_t*)   &_emu->_baseMem[0x0030];
 
   enemy1HolyWaterLockState = (uint8_t*)   &_emu->_baseMem[0x056C];
   holyWaterFire1Timer      = (uint8_t*)   &_emu->_baseMem[0x057C];
@@ -98,9 +99,10 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*bossImage);
   hash.Update(*bossState);
   hash.Update(*stairAnimationFrame);
-  hash.Update(*bossStateTimer % 4);
+  hash.Update(*bossStateTimer % 24);
   hash.Update(*simonScreenOffsetX);
   hash.Update(*levelTransitionTimer);
+  hash.Update(*screenMotionX);
 
   // Conditional hashes
   if (hashIncludes.contains("Subweapon Number")) hash.Update(*subweaponNumber);
@@ -137,10 +139,6 @@ uint64_t GameInstance::computeHash() const
    hash.Update(*bossPosY);
   }
 
-  // Unused hashes
-  //hash.Update(*simonLives);
-  //hash.Update(*freezeTimeTimer);
-
   // If simon is getting knocked back or paralyzed, use timer
   if (*simonState == 0x05 || *simonState == 0x09) hash.Update(*stageTimer);
 
@@ -162,6 +160,12 @@ uint64_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
+ int simonPosXInt = (uint8_t)*simonPosX;
+ int simonPosYInt = *simonPosY;
+ int bossPosXInt = *bossPosX;
+ int bossPosYInt = *bossPosY;
+ bossSimonDistance = std::abs(simonPosXInt - bossPosXInt) + std::abs(simonPosYInt - bossPosYInt);
+
  // Advancing useless frames
  uint16_t advanceCounter = 0;
 
@@ -276,6 +280,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating boss health magnet
   reward += magnets.bossHealthMagnet * *bossHealth;
 
+  // Evaluating boss health magnet
+  reward += magnets.bossSimonDistanceMagnet * bossSimonDistance;
+
   // Evaluating simon's stairs magnet
   if (magnets.simonStairMagnet.mode == *simonStairMode) reward += magnets.simonStairMagnet.reward;
 
@@ -284,35 +291,6 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 
   // Evaluating tile magnets
   for (const auto& tileMagnet : magnets.scrollTileMagnets) if (_emu->_ppuNameTableMem[tileMagnet.pos] == tileMagnet.value) reward += tileMagnet.reward;
-
-  // Bat fight-specific tiles
-  if (*currentStage == 3 && *currentSubStage == 0)
-  {
-   if (_emu->_ppuNameTableMem[0x0250] == 106) reward += 1000;
-   if (_emu->_ppuNameTableMem[0x0251] == 107) reward += 1000;
-   if (_emu->_ppuNameTableMem[0x0252] == 106) reward += 1000;
-   if (_emu->_ppuNameTableMem[0x0253] == 107) reward += 1000;
-  }
-
-  // Medusa fight-specific tiles
-  if (*currentStage == 6 && *currentSubStage == 1)
-  {
-   if (_emu->_ppuNameTableMem[0x02A1] == 105) reward += 10;
-   if (_emu->_ppuNameTableMem[0x02A2] == 104) reward += 10;
-   if (_emu->_ppuNameTableMem[0x02A3] == 105) reward += 10;
-   if (_emu->_ppuNameTableMem[0x02A4] == 104) reward += 100;
-   if (_emu->_ppuNameTableMem[0x02A5] == 105) reward += 100;
-   if (_emu->_ppuNameTableMem[0x02A6] == 104) reward += 100;
-   if (_emu->_ppuNameTableMem[0x02A7] == 105) reward += 100;
-   if (_emu->_ppuNameTableMem[0x02A8] == 104) reward += 20;
-   if (_emu->_ppuNameTableMem[0x02A9] == 105) reward += 20;
-   if (_emu->_ppuNameTableMem[0x02AA] == 104) reward += 20;
-   if (_emu->_ppuNameTableMem[0x02AB] == 105) reward += 20;
-   if (_emu->_ppuNameTableMem[0x02AC] == 104) reward += 10;
-   if (_emu->_ppuNameTableMem[0x02AD] == 105) reward += 10;
-   if (_emu->_ppuNameTableMem[0x02AE] == 104) reward += 10;
-   if (_emu->_ppuNameTableMem[0x02AF] == 105) reward += 10;
-  }
 
   // Reward boss active
   reward += *bossIsActive;
@@ -347,7 +325,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Simon Health:           %02u\n", *simonHealth);
   LOG("[Jaffar]  + Simon Pos X:            %04u (%02u %02u)\n", *simonPosX, *((uint8_t*)simonPosX), *(((uint8_t*)simonPosX)+1));
   LOG("[Jaffar]  + Simon Pos Y:            %04u\n", *simonPosY);
-  LOG("[Jaffar]  + Simon Screen Offset:    %02u\n", *simonScreenOffsetX);
+  LOG("[Jaffar]  + Simon Screen Offset:    %02u %02u\n", *simonScreenOffsetX, *screenMotionX);
   LOG("[Jaffar]  + Simon Invulnerability:  %02u\n", *simonInvulnerability);
   LOG("[Jaffar]  + Simon Kneeling Mode:    %02u\n", *simonKneelingMode);
   LOG("[Jaffar]  + Subweapon Number:       %02u\n", *subweaponNumber);
@@ -356,6 +334,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Boss Health:            %02u\n", *bossHealth);
   LOG("[Jaffar]  + Boss Pos X:             %04u\n", *bossPosX);
   LOG("[Jaffar]  + Boss Pos Y:             %02u\n", *bossPosY);
+  LOG("[Jaffar]  + Boss / Simon Distance:  %04u\n", bossSimonDistance);
   LOG("[Jaffar]  + Boss Image / State:     %02u / %02u\n", *bossImage, *bossState);
   LOG("[Jaffar]  + Boss Is Active:         %02u (%02u)\n", *bossIsActive, *bossStateTimer);
   LOG("[Jaffar]  + Enemy State:            %02u, %02u, %02u\n", *enemy1State, *enemy2State, *enemy3State);
@@ -367,43 +346,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Freeze Time Timer:      %02u\n", *freezeTimeTimer);
   LOG("[Jaffar]  + Item Drop Counter:      %02u\n", *itemDropCounter);
   LOG("[Jaffar]  + Holy Water:             %02u, %02u\n", *enemy1HolyWaterLockState, *holyWaterFire1Timer);
-
-  // Level Specific stuff
-  if ((*currentStage == 5 && *currentSubStage == 1) || (*currentStage == 6 && *currentSubStage == 0))
-  {
-   LOG("[Jaffar]  + Stage 5-1 Scroll Tile 1:  %02u\n", *stage51ScrollTile1);
-   LOG("[Jaffar]  + Stage 5-1 Scroll Tile 2:  %02u\n", *stage51ScrollTile2);
-  }
-
-  // Level Specific stuff
-  if ((*currentStage == 6 && *currentSubStage == 1))
-  {
-   LOG("[Jaffar]  + Stage 6-1 Scroll Tiles:  %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n",
-     _emu->_ppuNameTableMem[0x02A1],
-     _emu->_ppuNameTableMem[0x02A2],
-     _emu->_ppuNameTableMem[0x02A3],
-     _emu->_ppuNameTableMem[0x02A4],
-     _emu->_ppuNameTableMem[0x02A5],
-     _emu->_ppuNameTableMem[0x02A6],
-     _emu->_ppuNameTableMem[0x02A7],
-     _emu->_ppuNameTableMem[0x02A8],
-     _emu->_ppuNameTableMem[0x02A9],
-     _emu->_ppuNameTableMem[0x02AA],
-     _emu->_ppuNameTableMem[0x02AB],
-     _emu->_ppuNameTableMem[0x02AC],
-     _emu->_ppuNameTableMem[0x02AD],
-     _emu->_ppuNameTableMem[0x02AE],
-     _emu->_ppuNameTableMem[0x02AF]);
-  }
-
-  if ((*currentStage == 3 && *currentSubStage == 0))
-  {
-   LOG("[Jaffar]  + Stage 3-0 Scroll Tiles:  %02u %02u %02u %02u\n",
-     _emu->_ppuNameTableMem[0x0250],
-     _emu->_ppuNameTableMem[0x0251],
-     _emu->_ppuNameTableMem[0x0252],
-     _emu->_ppuNameTableMem[0x0253]);
-  }
 
   LOG("[Jaffar]  + Candelabra States: ");
     for (size_t i = 0x0191; i < 0x1A8; i++) LOG("%d", _emu->_baseMem[i] > 0 ? 1 : 0);
@@ -423,9 +365,10 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Simon Heart Magnet             - Intensity: %.1f\n", magnets.simonHeartMagnet);
   LOG("[Jaffar]  + Freeze Time Magnet             - Intensity: %.1f\n", magnets.freezeTimeMagnet);
   LOG("[Jaffar]  + Boss Health Magnet             - Intensity: %.1f\n", magnets.bossHealthMagnet);
+  LOG("[Jaffar]  + Boss/Simon Distance Magnet     - Intensity: %.1f\n", magnets.bossSimonDistanceMagnet);
   LOG("[Jaffar]  + Boss State Timer Magnet        - Intensity: %.1f\n", magnets.bossStateTimerMagnet);
   LOG("[Jaffar]  + Simon Stairs Magnet            - Reward:    %.1f, Mode: %u\n", magnets.simonStairMagnet.reward, magnets.simonStairMagnet.mode);
   LOG("[Jaffar]  + Simon Weapon Magnet            - Reward:    %.1f, Weapon: %u\n", magnets.simonWeaponMagnet.reward, magnets.simonWeaponMagnet.weapon);
-  LOG("[Jaffar]  + Tile Magnets:  ");
-  for (const auto& tileMagnet : magnets.scrollTileMagnets) LOG("0x%4X=%2u->%4.2f ", tileMagnet.pos, tileMagnet.value, tileMagnet.reward);
+  LOG("[Jaffar]  + Tile Magnets:  \n");
+  for (const auto& tileMagnet : magnets.scrollTileMagnets) LOG("[Jaffar]    + [0x%04X]=%02u (%02u->%4.2f), %s\n", tileMagnet.pos, _emu->_ppuNameTableMem[tileMagnet.pos], tileMagnet.value, tileMagnet.reward, _emu->_ppuNameTableMem[tileMagnet.pos] == tileMagnet.value ? "True" : "False");
 }

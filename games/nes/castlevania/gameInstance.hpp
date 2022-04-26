@@ -45,6 +45,7 @@ struct magnetSet_t {
  float freezeTimeMagnet = 0.0;
  float bossStateTimerMagnet = 0.0;
  float bossHealthMagnet = 0.0;
+ float bossSimonDistanceMagnet = 0.0;
  stairMagnet_t simonStairMagnet;
  weaponMagnet_t simonWeaponMagnet;
  std::vector<nametableTileMagnet_t> scrollTileMagnets;
@@ -103,13 +104,13 @@ class GameInstance : public GameInstanceBase
   uint8_t* levelTransitionTimer;
   uint8_t* enemy1HolyWaterLockState;
   uint8_t* holyWaterFire1Timer;
-
-  // PPU Stage-Specific values
-  uint8_t* stage51ScrollTile1;
-  uint8_t* stage51ScrollTile2;
+  uint8_t* screenMotionX;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;
+
+  // Derivative values
+  uint16_t bossSimonDistance;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

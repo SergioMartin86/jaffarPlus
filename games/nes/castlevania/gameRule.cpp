@@ -96,12 +96,12 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
 
   if (actionType == "Set Scroll Tile Magnets")
   {
-   for (const auto& tileMagnet : actionJs)
+   for (const auto& tileMagnet : actionJs["Magnets"])
    {
     if (isDefined(tileMagnet, "Position") == false) EXIT_WITH_ERROR("[ERROR] Scroll Tile in Rule %lu Action %lu missing 'Position' key.\n", _label, actionId);
     if (isDefined(tileMagnet, "Reward") == false) EXIT_WITH_ERROR("[ERROR] Scroll Tile in Rule %lu Action %lu missing 'Reward' key.\n", _label, actionId);
     if (isDefined(tileMagnet, "Value") == false) EXIT_WITH_ERROR("[ERROR] Scroll Tile in Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-    _magnets.scrollTileMagnets.push_back(nametableTileMagnet_t { .reward = tileMagnet["Reward"].get<float>(), .pos = tileMagnet["Position"].get<uint8_t>(), .value = tileMagnet["Value"].get<uint8_t>()});
+    _magnets.scrollTileMagnets.push_back(nametableTileMagnet_t { .reward = tileMagnet["Reward"].get<float>(), .pos = (uint16_t)std::stoul(tileMagnet["Position"].get<std::string>(), 0, 16), .value = tileMagnet["Value"].get<uint8_t>()});
     recognizedActionType = true;
    }
   }
@@ -110,6 +110,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Simon Heart Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
    _magnets.simonHeartMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Boss/Simon Distance Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Boss/Simon Distance Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.bossSimonDistanceMagnet = actionJs["Intensity"].get<float>();
    recognizedActionType = true;
   }
 
@@ -175,8 +182,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Bat / Medusa 1 Position Y") return dt_uint8;
   if (propertyName == "Bat / Medusa 1 Position X") return dt_uint8;
   if (propertyName == "Enemy 1 Holy Water Lock State") return dt_uint8;
-  if (propertyName == "Stage 5-1 Scroll Tile 1") return dt_uint8;
-  if (propertyName == "Stage 5-1 Scroll Tile 2") return dt_uint8;
+  if (propertyName == "Enemy 1 Holy Water Lock State") return dt_uint8;
+  if (propertyName == "Tile State") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -218,8 +225,12 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Bat / Medusa 1 Position Y") return gameInstance->batMedusa1PosY;
   if (propertyName == "Bat / Medusa 1 Position X") return gameInstance->batMedusa1PosX;
   if (propertyName == "Enemy 1 Holy Water Lock State") return gameInstance->enemy1HolyWaterLockState;
-  if (propertyName == "Stage 5-1 Scroll Tile 1") return gameInstance->stage51ScrollTile1;
-  if (propertyName == "Stage 5-1 Scroll Tile 2") return gameInstance->stage51ScrollTile2;
+
+  if (propertyName == "Tile State")
+  {
+   if (isDefined(condition, "Position") == false) EXIT_WITH_ERROR("[ERROR] Tile State property missing 'Position' key.\n");
+   return &gameInstance->_emu->_ppuNameTableMem[(uint16_t)std::stoul(condition["Position"].get<std::string>(), 0, 16)];
+  }
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
