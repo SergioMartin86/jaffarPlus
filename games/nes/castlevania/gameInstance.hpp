@@ -41,11 +41,15 @@ struct magnetSet_t {
  genericMagnet_t bossVerticalMagnet;
  genericMagnet_t batMedusaHorizontalMagnet;
  genericMagnet_t batMedusaVerticalMagnet;
+ genericMagnet_t skeletonHorizontalMagnet;
+ genericMagnet_t subweaponHitCountMagnet;
  float simonHeartMagnet = 0.0;
  float freezeTimeMagnet = 0.0;
  float bossStateTimerMagnet = 0.0;
  float bossHealthMagnet = 0.0;
  float bossSimonDistanceMagnet = 0.0;
+ float bossWeaponDistanceMagnet = 0.0;
+ float mummiesDistanceMagnet = 0.0;
  stairMagnet_t simonStairMagnet;
  weaponMagnet_t simonWeaponMagnet;
  std::vector<nametableTileMagnet_t> scrollTileMagnets;
@@ -58,7 +62,7 @@ class GameInstance : public GameInstanceBase
   // Container for game-specific values
   uint8_t* gameMode;
   uint8_t* gameSubMode;
-  uint16_t* stageTimer;
+  uint8_t* stageTimer;
   uint8_t* isLagFrame;
   uint8_t* currentStage;
   uint8_t* currentSubStage;
@@ -67,10 +71,12 @@ class GameInstance : public GameInstanceBase
   uint8_t* simonStairMode;
   uint8_t* simonPosY;
   uint16_t* simonPosX;
+  uint8_t simonRelativePosX;
   uint8_t* simonHealth;
   uint8_t* simonInvulnerability;
   uint8_t* simonKneelingMode;
   uint8_t* subweaponShotCount;
+  uint8_t* subweaponHitCount;
   uint8_t* whipLength;
   uint8_t* simonHeartCount;
   uint8_t* simonImage;
@@ -95,6 +101,12 @@ class GameInstance : public GameInstanceBase
   uint8_t* batMedusa1State;
   uint8_t* batMedusa1PosX;
   uint8_t* batMedusa1PosY;
+  uint8_t* batMedusa2State;
+  uint8_t* batMedusa2PosX;
+  uint8_t* batMedusa2PosY;
+  uint8_t* batMedusa3State;
+  uint8_t* batMedusa3PosX;
+  uint8_t* batMedusa3PosY;
   uint8_t* freezeTimeTimer;
   uint8_t* itemDropCounter;
   uint8_t* RNGState;
@@ -105,12 +117,41 @@ class GameInstance : public GameInstanceBase
   uint8_t* enemy1HolyWaterLockState;
   uint8_t* holyWaterFire1Timer;
   uint8_t* screenMotionX;
+  uint8_t* skeletonPosX;
+  uint8_t* skeletonBone1PosY;
+  uint8_t* skeletonBone2PosY;
+  uint8_t* skeletonBone3PosY;
+  uint8_t* subweapon1PosX;
+  uint8_t* subweapon2PosX;
+  uint8_t* subweapon1PosY;
+  uint8_t* subweapon2PosY;
+  uint8_t* subweapon1State;
+  uint8_t* subweapon2State;
+  uint8_t* subweapon1Bounce;
+  uint8_t* subweapon2Bounce;
+  uint8_t* subweapon1Direction;
+  uint8_t* subweapon2Direction;
+
+  uint8_t* mummy2PosX;
+  uint8_t* jumpingInertia;
+
+  // Mummy distance
+  uint8_t mummiesDistance;
+
+  // Aboslute position of bat 1
+  int16_t batMedusa1AbsolutePosX;
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;
+  std::vector<uint16_t> tileHashIncludes;
+  uint8_t timerTolerance;
 
   // Derivative values
-  uint16_t bossSimonDistance;
+  float bossSimonDistance;
+  float bossWeaponDistance;
+
+  // Setting for allowing hitting start
+  bool enablePause;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

@@ -147,21 +147,23 @@ class PlaybackInstance : public PlaybackInstanceBase
  // Function to render frame
  void printPlaybackCommands() const override
  {
-  printw("[Jaffar] Commands: o: load low mem file\n");
+  LOG("[Jaffar] Commands: o: load low mem file\n");
  }
 
  // Function to render frame
  bool parseCommand(const char command, uint8_t* state) override
  {
+  #ifdef NCURSES
+
   if (command == 'o')
   {
    // Obtaining RNG state
-   printw("Enter low memory file: ");
+   LOG("Enter low memory file: ");
 
    // Setting input as new rng
    char str[80]; getstr(str);
 
-   printw("Loading low memory file '%s'...\n", str);
+   LOG("Loading low memory file '%s'...\n", str);
    std::string lowMemData;
    bool status = loadStringFromFile(lowMemData, str);
    if (status == false) { printw("Could not read from file.\n", str); return false; }
@@ -172,6 +174,8 @@ class PlaybackInstance : public PlaybackInstanceBase
 
    return false;
   }
+
+  #endif
 
   return true;
  }

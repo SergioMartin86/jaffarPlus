@@ -4,26 +4,30 @@
   "Emulator Configuration": 
   {
     "Rom File": "../castlevania_prg1.nes",
-    "State File": "stage30b.state"
+    "State File": "stage30c.state"
   },
   
   "State Configuration": 
   {
-    "Max Difference Count": 900,
-    "Max Move Count": 250
+    "Max Difference Count": 1200,
+    "Max Move Count": 850
   },
   
   "Game Configuration": 
   {
-   "Hash Includes": [  ]
+   "Hash Includes": [ ],
+   "Tile Hash Includes": [ "0x0251" ],
+   "Enable Pause": true,
+   "Timer Tolerance": 4
   },
   
   "Jaffar Configuration": 
   {
+    "Show Winning State Information": false,
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 150000,
-     "Max Size Upper Bound (Mb)": 210000
+     "Max Size Lower Bound (Mb)": 50000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -46,43 +50,107 @@
    "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
-  "Rules":
-  [  
+  "Rules": 
+  [
    {
     "Label": 1007,
-    "Description": "Set boss magnets when it becomes active",
+    "Description": "Start",
     "Conditions":
     [
-      { "Property": "Current Stage", "Op": "==", "Value":  3 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 50000 },
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 712, "Min": 0, "Max": 1000 },
-     { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Center": 136, "Min": 0, "Max":  255 },
-     { "Type": "Set Boss Horizontal Magnet", "Intensity": 5.0, "Center": 180, "Min": 0, "Max": 255 },
-     { "Type": "Set Boss Vertical Magnet", "Intensity": 5.0, "Center": 117, "Min": 0, "Max":  255 },
-     { "Type": "Set Boss State Timer Magnet", "Intensity": -100.0 },
-     { "Type": "Set Boss Health Magnet", "Intensity": -100.0 }
+      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 712, "Min": 0, "Max": 1000 },
+      { "Type": "Set Simon Weapon Magnet", "Reward": 1000.0, "Weapon": 11 },
+      { "Type": "Set Scroll Tile Magnets", "Magnets":
+      [
+        { "Reward": 1500000.0, "Position": "0x0251", "Value": 107 }
+      ] 
+     }
     ]
    },
    
    {
     "Label": 1008,
+    "Description": "Set boss magnets when it becomes active",
+    "Conditions":
+    [
+      { "Property": "Boss State Timer", "Op": ">", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 500000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 712, "Min": 0, "Max": 1000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Center": 136, "Min": 0, "Max":  255 },
+     { "Type": "Set Simon Stair Mode Magnet", "Mode": 0, "Reward": 10000.0 },
+     { "Type": "Set Boss Horizontal Magnet", "Intensity": 20.0, "Center": 180, "Min": 0, "Max": 255 },
+     { "Type": "Set Boss Vertical Magnet", "Intensity": 20.0, "Center": 117, "Min": 0, "Max":  255 },
+     { "Type": "Set Boss State Timer Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Boss Health Magnet", "Intensity": -1.0 },
+     { "Type": "Set Simon Weapon Magnet", "Reward": 1000.0, "Weapon": 11 },
+     { "Type": "Set Scroll Tile Magnets", "Magnets":
+      [
+        { "Reward": 1500000.0, "Position": "0x0251", "Value": 107 }
+      ] 
+     }
+    ]
+   },
+   
+   {
+    "Label": 1009,
     "Description": "Reward Killing the bat",
     "Conditions":
     [
       { "Property": "Boss Health", "Op": "==", "Value":  0 }
     ],
     
-    "Satisfies": [ 1007 ],
+    "Satisfies": [  ],
     
     "Actions":
     [
      { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 1219,
+    "Description": "Fail if bad scroll glitch",
+    "Conditions":
+    [
+      { "Property": "Boss State Timer", "Op": ">", "Value":  0 },
+      { "Property": "Tile State", "Position": "0x0251", "Op": "!=", "Value":  107 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+
+   {
+    "Label": 1119,
+    "Description": "Reward if bat waits at the correct place",
+    "Conditions":
+    [
+      { "Property": "Boss Is Active", "Op": ">", "Value":  0 },
+      { "Property": "Boss State Timer", "Op": ">", "Value":  0 },
+      { "Property": "Boss Position Y", "Op": "==", "Value":  64 },
+      { "Property": "Boss Position X", "Op": "==", "Value":  110 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Add Reward", "Value": 500000 }
     ]
    }
   ]  

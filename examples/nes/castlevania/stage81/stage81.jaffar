@@ -1,0 +1,134 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../castlevania_prg0.nes",
+    "State File": "stage81.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 1500,
+    "Max Move Count": 1500
+  },
+  
+  "Game Configuration": 
+  {
+    "Hash Includes": [ 
+     "Simon Heart Count",
+     "Candelabra States",
+     "Enemy 1 State",
+     "Enemy 2 State",
+     "Enemy 3 State",
+     "Bat / Medusa 1 Pos X",
+     "Bat / Medusa 2 Pos X"
+   ],
+   
+   "Tile Hash Includes": [ ],
+   "Enable Pause": true,
+   "Timer Tolerance": 4
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": false,
+    "Show Hash Information": false,
+    "Show Winning State Information": true,
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 200,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+   "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1001,
+    "Description": "Going right",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 0.2 }
+    ]
+   },
+   {
+    "Label": 1108,
+    "Description": "Win on open door",
+    "Conditions":
+    [
+      { "Property": "Game Mode", "Op": "==", "Value":  8 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1016,
+    "Description": "Fail on trying to come back",
+    "Conditions":
+    [
+      { "Property": "Simon Facing Direction", "Op": "==", "Value":  0 },
+      { "Property": "Simon Position Y", "Op": ">", "Value":  200 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions": 
+    [
+      { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1018,
+    "Description": "Fail on wrong weapon",
+    "Conditions":
+    [
+      { "Property": "Subweapon Number", "Op": "!=", "Value":  9 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions": 
+    [
+      { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

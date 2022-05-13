@@ -1,0 +1,125 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../castlevania_prg0.nes",
+    "State File": "stage10_tile.state"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 1500,
+    "Max Move Count": 700
+  },
+  
+  "Game Configuration": 
+  {
+   "Hash Includes": [ "Subweapon Number", "Enemy 1 State", "Enemy 2 State", "Enemy 3 State" ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 22000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+    "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+    {
+    "Label": 1001,
+    "Description": "Setting magnet to make Simon go to the right",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 2000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Weapon Magnet", "Reward": 10.0, "Weapon": 15 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": -10000.0, "Mode": 0 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Min": 0, "Max": 10, "Center": 5 },
+     { "Type": "Set Scroll Tile Magnets", "Magnets":
+       [
+          { "Reward": 1000.0, "Position": "0x0654", "Value": 106 },
+          { "Reward": 1000.0, "Position": "0x06FF", "Value": 38 }
+        ] 
+     }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "Reward getting upstairs",
+    "Conditions":
+    [
+      { "Property": "Simon Position Y", "Op": "<", "Value":  100 },
+      { "Property": "Simon Position X", "Op": ">", "Value":  1433 },
+      { "Property": "Subweapon Number", "Op": "==", "Value":  15 },
+      { "Property": "Whip Length", "Op": ">", "Value":  0 }
+    ],
+    
+    "Satisfies": 
+    [ 1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": -10000.0, "Mode": 0 },
+     { "Type": "Set Simon Weapon Magnet", "Reward": 20.0, "Weapon": 15 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 10, "Min": 0, "Max": 10, "Center": 5 },
+     { "Type": "Set Scroll Tile Magnets", "Magnets":
+       [
+          { "Reward": 1000.0, "Position": "0x0654", "Value": 106 },
+          { "Reward": 1000.0, "Position": "0x06FF", "Value": 38 }
+        ] 
+     }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Description": "Reward Opening Door",
+    "Conditions":
+    [
+      { "Property": "Game Mode", "Op": "==", "Value":  8 },
+      { "Property": "Subweapon Number", "Op": "==", "Value":  15 },
+      { "Property": "Whip Length", "Op": ">", "Value":  0 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions": 
+    [
+      { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}

@@ -8,6 +8,7 @@ GameRule::GameRule() : Rule()
  _magnets.bossVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.batMedusaHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.batMedusaVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
+ _magnets.skeletonHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .min = 0.0f, .max = 0.0f };
  _magnets.simonStairMagnet = stairMagnet_t { .reward = 0.0f, .mode = 0};
  _magnets.simonWeaponMagnet = weaponMagnet_t { .reward = 0.0f, .weapon = 0};
  _magnets.simonHeartMagnet = 0.0f;
@@ -78,6 +79,15 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Skeleton Horizontal Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+   _magnets.skeletonHorizontalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+    recognizedActionType = true;
+  }
+
   if (actionType == "Set Simon Stair Mode Magnet")
   {
    if (isDefined(actionJs, "Reward") == false) EXIT_WITH_ERROR("[ERROR] Stairs Magnet in Rule %lu Action %lu missing 'Reward' key.\n", _label, actionId);
@@ -120,7 +130,21 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Boss/Weapon Distance Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Boss/Weapon Distance Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.bossWeaponDistanceMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
 
+  if (actionType == "Set Subweapon Hit Count Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+   _magnets.subweaponHitCountMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+   recognizedActionType = true;
+  }
   if (actionType == "Set Freeze Timer Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Freeze Timer Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -159,14 +183,17 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Simon Stair Mode") return dt_uint8;
   if (propertyName == "Simon Position Y") return dt_uint8;
   if (propertyName == "Simon Position X") return dt_uint16;
+  if (propertyName == "Simon Relative Position X") return dt_uint8;
   if (propertyName == "Simon Health") return dt_uint8;
   if (propertyName == "Simon Invulnerability") return dt_uint8;
   if (propertyName == "Simon Kneeling Mode") return dt_uint8;
   if (propertyName == "Subweapon Shot Count") return dt_uint8;
+  if (propertyName == "Subweapon 1 Position Y") return dt_uint8;
   if (propertyName == "Whip Length") return dt_uint8;
   if (propertyName == "Simon Heart Count") return dt_uint8;
   if (propertyName == "Simon Image") return dt_uint8;
   if (propertyName == "Subweapon Number") return dt_uint8;
+  if (propertyName == "Subweapon Hit Count") return dt_uint8;
   if (propertyName == "Simon Facing Direction") return dt_uint8;
   if (propertyName == "Simon State") return dt_uint8;
   if (propertyName == "Simon SubState") return dt_uint8;
@@ -183,7 +210,10 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Bat / Medusa 1 Position X") return dt_uint8;
   if (propertyName == "Enemy 1 Holy Water Lock State") return dt_uint8;
   if (propertyName == "Enemy 1 Holy Water Lock State") return dt_uint8;
+  if (propertyName == "Skeleton Pos X") return dt_uint8;
+  if (propertyName == "Mummies Distance") return dt_uint8;
   if (propertyName == "Tile State") return dt_uint8;
+  if (propertyName == "Candelabrum State") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -203,6 +233,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Simon Stair Mode") return gameInstance->simonStairMode;
   if (propertyName == "Simon Position Y") return gameInstance->simonPosY;
   if (propertyName == "Simon Position X") return gameInstance->simonPosX;
+  if (propertyName == "Simon Relative Position X") return &gameInstance->simonRelativePosX;
   if (propertyName == "Simon Health") return gameInstance->simonHealth;
   if (propertyName == "Simon Invulnerability") return gameInstance->simonInvulnerability;
   if (propertyName == "Simon Kneeling Mode") return gameInstance->simonKneelingMode;
@@ -211,6 +242,8 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Simon Heart Count") return gameInstance->simonHeartCount;
   if (propertyName == "Simon Image") return gameInstance->simonImage;
   if (propertyName == "Subweapon Number") return gameInstance->subweaponNumber;
+  if (propertyName == "Subweapon Hit Count") return gameInstance->subweaponHitCount;
+  if (propertyName == "Subweapon 1 Position Y") return gameInstance->subweapon1PosY;
   if (propertyName == "Simon Facing Direction") return gameInstance->simonFacingDirection;
   if (propertyName == "Simon State") return gameInstance->simonState;
   if (propertyName == "Simon Vertical Speed") return gameInstance->simonVerticalSpeed;
@@ -225,11 +258,19 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Bat / Medusa 1 Position Y") return gameInstance->batMedusa1PosY;
   if (propertyName == "Bat / Medusa 1 Position X") return gameInstance->batMedusa1PosX;
   if (propertyName == "Enemy 1 Holy Water Lock State") return gameInstance->enemy1HolyWaterLockState;
+  if (propertyName == "Mummies Distance") return &gameInstance->mummiesDistance;
+  if (propertyName == "Skeleton Pos X") return gameInstance->skeletonPosX;
 
   if (propertyName == "Tile State")
   {
    if (isDefined(condition, "Position") == false) EXIT_WITH_ERROR("[ERROR] Tile State property missing 'Position' key.\n");
    return &gameInstance->_emu->_ppuNameTableMem[(uint16_t)std::stoul(condition["Position"].get<std::string>(), 0, 16)];
+  }
+
+  if (propertyName == "Candelabrum State")
+  {
+   if (isDefined(condition, "Position") == false) EXIT_WITH_ERROR("[ERROR] Candelabrum State property missing 'Position' key.\n");
+    return &gameInstance->_emu->_baseMem[0x0191 + condition["Position"].get<size_t>()];
   }
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());

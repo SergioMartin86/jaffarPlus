@@ -1,0 +1,87 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../castlevania_prg1.nes",
+    "State File": "stage30b_tile.state"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 800,
+    "Max Move Count": 200
+  },
+  
+  "Game Configuration": 
+  {
+   "Hash Includes": [ "Freeze Time Timer", "Simon Heart Count" ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 4000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+   "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [ 
+   {
+    "Label": 1008,
+    "Description": "Go back and up",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 50000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 690, "Min": 0, "Max": 1000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Center": 145, "Min": 0, "Max":  255 },
+     { "Type": "Set Boss/Simon Distance Magnet", "Intensity": -10.0 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 1000.0, "Mode": 0 },
+     { "Type": "Set Boss Health Magnet", "Intensity": -100.0 }
+    ]
+   },
+   
+   {
+    "Label": 1010,
+    "Description": "Reward Killing the bat",
+    "Conditions":
+    [
+      { "Property": "Boss Health", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}

@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <utils.hpp>
 
-#define _MAX_DIFFERENCE_COUNT 2000
-#define _MAX_MOVELIST_SIZE 800
+#define _MAX_DIFFERENCE_COUNT 700
+#define _MAX_MOVELIST_SIZE 650
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
 #define _STATE_DATA_SIZE (_STATE_DIFFERENTIAL_SIZE + _STATE_FIXED_SIZE)

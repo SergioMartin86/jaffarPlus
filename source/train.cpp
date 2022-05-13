@@ -88,9 +88,9 @@ void Train::run()
   }
 
   // Print winning state if found
-  if (_winStateFound == true)
+  if (_showWinStateInfo == true && _winStateFound == true)
   {
-   printf("[Jaffar]  + Winning Frame Info:");
+   printf("[Jaffar]  + Winning Frame Info:\n");
 
    uint8_t winStateData[_STATE_DATA_SIZE];
    _winState->getStateDataFromDifference(_referenceStateData, winStateData);
@@ -402,7 +402,13 @@ void Train::computeStates()
         threadStateEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
         // If state type is failed, continue to the next possible move
-        if (type == f_fail) { delete newState; continue; }
+        if (type == f_fail)
+        {
+         _freeStateQueueLock.lock();
+         _freeStateQueue.push(newState);
+         _freeStateQueueLock.unlock();
+         continue;
+        }
 
         // Storing the state data
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
@@ -503,11 +509,13 @@ void Train::computeStates()
   // Looking for and storing best/worst state
   _bestStateReward = -std::numeric_limits<float>::infinity();
   _worstStateReward = std::numeric_limits<float>::infinity();
+  _bestStateLock.lock();
   for (const auto& state : newStates)
   {
    if (state->reward > _bestStateReward) {  memcpy(_bestState, state, sizeof(State)); _bestStateReward = _bestState->reward; }
    if (state->reward < _worstStateReward) { memcpy(_worstState, state, sizeof(State)); _worstStateReward = _worstState->reward; }
   }
+  _bestStateLock.unlock();
 
   // Setting new states to be current states for the next step
   std::swap(newStates, _stateDB);
@@ -569,24 +577,34 @@ void Train::printTrainStatus()
   printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(State)) / (1024.0 * 1024.0));
   printf("[Jaffar] State DB Lower / Upper Bounds:  %lu (%.3fmb) / %lu (%.3fmb)\n", _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(State)) / (1024.0 * 1024.0), _maxDatabaseSizeUpperBound, (double)(_maxDatabaseSizeUpperBound * sizeof(State)) / (1024.0 * 1024.0));
   printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
-  printf("[Jaffar]   + Hash Calculation:        %5.2f%% (%lu)\n", ((double)_stepHashCalculationTime / (double)totalStepTime) * 100.0f, _stepHashCalculationTime);
-  printf("[Jaffar]   + Hash Checking:           %5.2f%% (%lu)\n", ((double)_stepHashCheckingTime / (double)totalStepTime) * 100.0f, _stepHashCheckingTime);
-  printf("[Jaffar]   + Hash Filtering:          %5.2f%% (%lu)\n", ((double)_stepHashFilteringTime / (double)totalStepTime) * 100.0f, _stepHashFilteringTime);
-  printf("[Jaffar]   + State Advance:           %5.2f%% (%lu)\n", ((double)_stepStateAdvanceTime / (double)totalStepTime) * 100.0f, _stepStateAdvanceTime);
-  printf("[Jaffar]   + State Deserialization:   %5.2f%% (%lu)\n", ((double)_stepStateDeserializationTime / (double)totalStepTime) * 100.0f, _stepStateDeserializationTime);
-  printf("[Jaffar]   + State Encoding:          %5.2f%% (%lu)\n", ((double)_stepStateEncodingTime / (double)totalStepTime) * 100.0f, _stepStateEncodingTime);
-  printf("[Jaffar]   + State Decoding:          %5.2f%% (%lu)\n", ((double)_stepStateDecodingTime / (double)totalStepTime) * 100.0f, _stepStateDecodingTime);
-  printf("[Jaffar]   + State Evaluation:        %5.2f%% (%lu)\n", ((double)_stepStateEvaluationTime / (double)totalStepTime) * 100.0f, _stepStateEvaluationTime);
-  printf("[Jaffar]   + State Creation:          %5.2f%% (%lu)\n", ((double)_stepStateCreationTime / (double)totalStepTime) * 100.0f, _stepStateCreationTime);
-  printf("[Jaffar]   + State Sorting            %5.2f%% (%lu)\n", ((double)_stepStateDBSortingTime / (double)totalStepTime) * 100.0f, _stepStateDBSortingTime);
+
+  if (_showTimingInfo)
+  {
+   printf("[Jaffar]   + Hash Calculation:        %5.2f%% (%lu)\n", ((double)_stepHashCalculationTime / (double)totalStepTime) * 100.0f, _stepHashCalculationTime);
+   printf("[Jaffar]   + Hash Checking:           %5.2f%% (%lu)\n", ((double)_stepHashCheckingTime / (double)totalStepTime) * 100.0f, _stepHashCheckingTime);
+   printf("[Jaffar]   + Hash Filtering:          %5.2f%% (%lu)\n", ((double)_stepHashFilteringTime / (double)totalStepTime) * 100.0f, _stepHashFilteringTime);
+   printf("[Jaffar]   + State Advance:           %5.2f%% (%lu)\n", ((double)_stepStateAdvanceTime / (double)totalStepTime) * 100.0f, _stepStateAdvanceTime);
+   printf("[Jaffar]   + State Deserialization:   %5.2f%% (%lu)\n", ((double)_stepStateDeserializationTime / (double)totalStepTime) * 100.0f, _stepStateDeserializationTime);
+   printf("[Jaffar]   + State Encoding:          %5.2f%% (%lu)\n", ((double)_stepStateEncodingTime / (double)totalStepTime) * 100.0f, _stepStateEncodingTime);
+   printf("[Jaffar]   + State Decoding:          %5.2f%% (%lu)\n", ((double)_stepStateDecodingTime / (double)totalStepTime) * 100.0f, _stepStateDecodingTime);
+   printf("[Jaffar]   + State Evaluation:        %5.2f%% (%lu)\n", ((double)_stepStateEvaluationTime / (double)totalStepTime) * 100.0f, _stepStateEvaluationTime);
+   printf("[Jaffar]   + State Creation:          %5.2f%% (%lu)\n", ((double)_stepStateCreationTime / (double)totalStepTime) * 100.0f, _stepStateCreationTime);
+   printf("[Jaffar]   + State Sorting            %5.2f%% (%lu)\n", ((double)_stepStateDBSortingTime / (double)totalStepTime) * 100.0f, _stepStateDBSortingTime);
+  }
+
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
   printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0));
   printf("[Jaffar] Max State Difference: %lu / %u\n", _maxStateDiff, (uint16_t)_MAX_DIFFERENCE_COUNT);
-  printf("[Jaffar] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
-  printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
-  printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, %.0fmb (%lu x %.0fmb)\n", _hashSizeStep, _hashSizeCurrent, _hashSizeUpperBound * _hashDBCount, _hashDBCount, _hashSizeUpperBound);
-  for (ssize_t i = 0; i < _hashDBCount-1; i++) printf("[Jaffar]   + Hash DB %lu Size / Step: %.3fmb / %u\n", i, hashSizeFromEntries(_hashPastDBs[i]->size()), _hashDBAges[i]);
-  printf("[Jaffar]   + Hash DB %lu Size / Step: %.3fmb / %u\n", _hashDBCount-1, hashSizeFromEntries(_hashCurDB->size()), _hashCurAge);
+
+  if (_showHashInfo)
+  {
+   printf("[Jaffar] Hash DB Collisions (Step/Total): %lu / %lu\n", _newCollisionCounter, _hashCollisions);
+   printf("[Jaffar] Hash DB Entries (Step/Total): %lu / %lu\n", _currentStep == 0 ? 0 : _hashStepNewEntries[_currentStep-1], _hashEntriesTotal);
+   printf("[Jaffar] Hash DB Size (Step/Total/Max): %.3fmb, %.3fmb, %.0fmb (%lu x %.0fmb)\n", _hashSizeStep, _hashSizeCurrent, _hashSizeUpperBound * _hashDBCount, _hashDBCount, _hashSizeUpperBound);
+   for (ssize_t i = 0; i < _hashDBCount-1; i++) printf("[Jaffar]   + Hash DB %lu Size / Step: %.3fmb / %u\n", i, hashSizeFromEntries(_hashPastDBs[i]->size()), _hashDBAges[i]);
+   printf("[Jaffar]   + Hash DB %lu Size / Step: %.3fmb / %u\n", _hashDBCount-1, hashSizeFromEntries(_hashCurDB->size()), _hashCurAge);
+  }
+
   printf("[Jaffar] Best State Information:\n");
 
   uint8_t bestStateData[_STATE_DATA_SIZE];
@@ -680,16 +698,28 @@ Train::Train(int argc, char *argv[])
   if (isDefined(_config["Jaffar Configuration"]["Hash Database"], "Database Count") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Database Count' key.\n");
   _hashDBCount = _config["Jaffar Configuration"]["Hash Database"]["Database Count"].get<size_t>();
 
+  // Parsing console output config
+  if (isDefined(_config["Jaffar Configuration"], "Show Winning State Information") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Show Winning State Information' key.\n");
+  if (isDefined(_config["Jaffar Configuration"], "Show Hash Information") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Show Winning State Information' key.\n");
+  if (isDefined(_config["Jaffar Configuration"], "Show Timing Information") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Show Winning State Information' key.\n");
+  _showWinStateInfo = _config["Jaffar Configuration"]["Show Winning State Information"].get<bool>();
+  _showHashInfo = _config["Jaffar Configuration"]["Show Hash Information"].get<bool>();
+  _showTimingInfo = _config["Jaffar Configuration"]["Show Timing Information"].get<bool>();
+
   // Parsing file output frequency
   if (isDefined(_config["Jaffar Configuration"], "Save Intermediate Results") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Enabled") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Enabled' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Frequency (s)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Frequency (s)' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Best Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best Solution Path' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Worst Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst Solution Path' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Best State Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best Solution Path' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Worst State Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst Solution Path' key.\n");
   _outputEnabled = _config["Jaffar Configuration"]["Save Intermediate Results"]["Enabled"].get<bool>();
   _outputSaveFrequency = _config["Jaffar Configuration"]["Save Intermediate Results"]["Frequency (s)"].get<float>();
   _outputSolutionBestPath = _config["Jaffar Configuration"]["Save Intermediate Results"]["Best Solution Path"].get<std::string>();
   _outputSolutionWorstPath = _config["Jaffar Configuration"]["Save Intermediate Results"]["Worst Solution Path"].get<std::string>();
+  _outputStateBestPath = _config["Jaffar Configuration"]["Save Intermediate Results"]["Best State Path"].get<std::string>();
+  _outputStateWorstPath = _config["Jaffar Configuration"]["Save Intermediate Results"]["Worst State Path"].get<std::string>();
 
   // Checking whether it contains the rules field
   if (isDefined(_config, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rules' key.\n");
@@ -720,6 +750,11 @@ Train::Train(int argc, char *argv[])
     _gameInstances[threadId]->parseRules(_config["Rules"]);
    }
   }
+
+  // Instanciating show game instance
+  auto showEmuInstance = new EmuInstance(_config["Emulator Configuration"]);
+  _showGameInstance = new GameInstance(showEmuInstance, _config["Game Configuration"]);
+  _showGameInstance->parseRules(_config["Rules"]);
 
   // Storing rule count
   _ruleCount = _gameInstances[0]->_rules.size();
@@ -817,7 +852,19 @@ void Train::showSavingLoop()
       double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - bestStateSaveTimer).count();
       if (bestStateTimerElapsed / 1.0e+9 > _outputSaveFrequency)
       {
+       _bestStateLock.lock();
+
        // Storing best and worst states
+       uint8_t bestStateData[_STATE_DATA_SIZE];
+       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
+       _showGameInstance->pushState(bestStateData);
+       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
+
+       uint8_t worstStateData[_STATE_DATA_SIZE];
+       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
+       _showGameInstance->pushState(worstStateData);
+       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
+       _bestStateLock.unlock();
 
        // Storing the best and worst solution sequences
        #ifndef JAFFAR_DISABLE_MOVE_HISTORY

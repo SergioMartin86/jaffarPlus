@@ -4,13 +4,13 @@
   "Emulator Configuration": 
   {
     "Rom File": "../castlevania_prg0.nes",
-    "State File": "jaffar.state"
+    "State File": "stage51.state"
   },
   
   "State Configuration": 
   {
-    "Max Difference Count": 2500,
-    "Max Move Count": 1000
+    "Max Difference Count": 2000,
+    "Max Move Count": 750
   },
   
   "Game Configuration": 
@@ -26,8 +26,8 @@
   {
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 100,
-     "Max Size Upper Bound (Mb)": 1000
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 22000
     },
     
     "Hash Database":
@@ -64,8 +64,13 @@
     "Actions":
     [
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 260, "Min": 0, "Max": 6000 },
-     { "Type": "Set Stage 5-1 Scroll Tile 1 Magnet", "Reward": -10.0, "Value": 67 },
-     { "Type": "Set Stage 5-1 Scroll Tile 2 Magnet", "Reward": -10.0, "Value": 104 }
+     { "Type": "Set Scroll Tile Magnets", "Magnets":
+      [
+        { "Reward": -1000.0, "Position": "0x015B", "Value": 102 },
+        { "Reward": -1000.0, "Position": "0x0157", "Value": 102 },
+        { "Reward":  1000.0, "Position": "0x01DF", "Value": 102 }
+      ] 
+     }
     ]
    },
    
@@ -74,19 +79,25 @@
     "Description": "Reward making the key tile disappear",
     "Conditions":
     [
-      { "Property": "Stage 5-1 Scroll Tile 1", "Op": "!=", "Value":  67 },
-      { "Property": "Stage 5-1 Scroll Tile 2", "Op": "!=", "Value":  104 }
+      { "Property": "Tile State", "Position": "0x015B", "Op": "!=", "Value":  102 },
+      { "Property": "Tile State", "Position": "0x0157", "Op": "!=", "Value":  102 },
+      { "Property": "Tile State", "Position": "0x01DF", "Op": "==", "Value":  102 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10.0 },
+     { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 226, "Min": 0, "Max": 6000 },
      { "Type": "Set Simon Vertical Magnet", "Intensity": 2.0, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Stage 5-1 Scroll Tile 1 Magnet", "Reward": -10.0, "Value": 67 },
-     { "Type": "Set Stage 5-1 Scroll Tile 2 Magnet", "Reward": -10.0, "Value": 104 }
+     { "Type": "Set Scroll Tile Magnets", "Magnets":
+      [
+        { "Reward": -1000.0, "Position": "0x015B", "Value": 102 },
+        { "Reward": -1000.0, "Position": "0x0157", "Value": 102 },
+        { "Reward":  1000.0, "Position": "0x01DF", "Value": 102 }
+      ] 
+     }
     ]
    },
    
@@ -95,6 +106,9 @@
     "Description": "Reward Going Up",
     "Conditions":
     [
+      { "Property": "Tile State", "Position": "0x015B", "Op": "!=", "Value":  102 },
+      { "Property": "Tile State", "Position": "0x0157", "Op": "!=", "Value":  102 },
+      { "Property": "Tile State", "Position": "0x01DF", "Op": "==", "Value":  102 },
       { "Property": "Simon Position Y", "Op": "<=", "Value":  100 }
     ],
     
@@ -103,10 +117,15 @@
     
     "Actions": 
     [
-      { "Type": "Add Reward", "Value": 1000.0 },
+      { "Type": "Add Reward", "Value": 10000.0 },
       { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
-      { "Type": "Set Stage 5-1 Scroll Tile 1 Magnet", "Reward": -10.0, "Value": 67 },
-      { "Type": "Set Stage 5-1 Scroll Tile 2 Magnet", "Reward": -10.0, "Value": 104 }
+      { "Type": "Set Scroll Tile Magnets", "Magnets":
+      [
+        { "Reward": -1000.0, "Position": "0x015B", "Value": 102 },
+        { "Reward": -1000.0, "Position": "0x0157", "Value": 102 },
+        { "Reward":  1000.0, "Position": "0x01DF", "Value": 102 }
+      ] 
+     }
     ]
    },
    
@@ -115,33 +134,11 @@
     "Description": "Reward Opening Door",
     "Conditions":
     [
-      { "Property": "Current Stage", "Op": "==", "Value":  6 },
-      { "Property": "Current SubStage", "Op": "==", "Value":  0 }
+      { "Property": "Game Mode", "Op": "==", "Value":  8 }
     ],
     
     "Satisfies": 
-    [ 1003 ],
-    
-    "Actions": 
-    [
-      { "Type": "Add Reward", "Value": 50000.0 },
-      { "Type": "Set Simon Vertical Magnet", "Intensity": 2.0, "Center": 49, "Min": 0, "Max": 255 },
-      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 660, "Min": 0, "Max": 6000 },
-      { "Type": "Set Simon Stair Mode Magnet", "Reward": 500.0, "Mode": 0 }
-    ]
-   },
-   
-   {
-    "Label": 1005,
-    "Description": "Reward Opening Door",
-    "Conditions":
-    [
-      { "Property": "Current Stage", "Op": "==", "Value":  6 },
-      { "Property": "Current SubStage", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": 
-    [ ],
+    [  ],
     
     "Actions": 
     [

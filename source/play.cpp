@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
     currentStep++;
     if (currentStep > sequenceLength)
     {
-     if (exitOnFinish) { sleep(1); continueRunning = false; }
+     if (exitOnFinish) { sleep(5); continueRunning = false; }
      currentStep--; isReproduce = false;
     }
     continue;

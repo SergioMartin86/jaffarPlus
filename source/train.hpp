@@ -40,12 +40,15 @@ class Train
   double _outputSaveFrequency;
   std::string _outputSolutionBestPath;
   std::string _outputSolutionWorstPath;
+  std::string _outputStateBestPath;
+  std::string _outputStateWorstPath;
 
   // Store the number of openMP threads in use
   int _threadCount;
 
   // Creating game instances, one per openMP thread
   std::vector<GameInstance*> _gameInstances;
+  GameInstance* _showGameInstance;
 
   // State counter
   size_t _stepBaseStatesProcessedCounter;
@@ -75,6 +78,7 @@ class Train
   Lock _freeStateQueueLock;
 
   // Storage for the win, best and worst state
+  Lock _bestStateLock;
   State* _bestState;
   float _bestStateReward;
   State* _worstState;
@@ -106,11 +110,18 @@ class Train
   // SDLPop instance and Id for the show thread
   pthread_t _showThreadId;
 
+  // Stats flags
+  bool _showHashInfo;
+  bool _showTimingInfo;
+
   // Flag to indicate finalization
   bool _hasFinalized;
 
   // Printing stats
   void printTrainStatus();
+
+  // Flag for printing winning information
+  bool _showWinStateInfo;
 
   // Computes total hash count
   size_t hashGetTotalCount() const;

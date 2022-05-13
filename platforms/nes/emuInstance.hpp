@@ -117,11 +117,12 @@ class EmuInstance : public EmuInstanceBase
     case 'L': moveCode |= 0b01000000; break;
     case 'D': moveCode |= 0b00100000; break;
     case 'U': moveCode |= 0b00010000; break;
-    case 'T': moveCode |= 0b00001000; break;
-    case 'S': moveCode |= 0b00000100; break;
+    case 'S': moveCode |= 0b00001000; break;
+    case 's': moveCode |= 0b00000100; break;
     case 'B': moveCode |= 0b00000010; break;
     case 'A': moveCode |= 0b00000001; break;
     case '.': break;
+    case '|': break;
     default: EXIT_WITH_ERROR("Move provided cannot be parsed: '%s', unrecognized character: '%c'\n", move.c_str(), move[i]);
   }
 
@@ -136,8 +137,8 @@ class EmuInstance : public EmuInstanceBase
   if (move & 0b01000000) moveString += 'L'; else moveString += '.';
   if (move & 0b00100000) moveString += 'D'; else moveString += '.';
   if (move & 0b00010000) moveString += 'U'; else moveString += '.';
-  if (move & 0b00001000) moveString += 'T'; else moveString += '.';
-  if (move & 0b00000100) moveString += 'S'; else moveString += '.';
+  if (move & 0b00001000) moveString += 'S'; else moveString += '.';
+  if (move & 0b00000100) moveString += 's'; else moveString += '.';
   if (move & 0b00000010) moveString += 'B'; else moveString += '.';
   if (move & 0b00000001) moveString += 'A'; else moveString += '.';
 
