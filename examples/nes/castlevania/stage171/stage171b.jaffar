@@ -39,7 +39,7 @@
    
    "Tile Hash Includes": [ "0x0603", "0x019F" ],
    "Enable Pause": false,
-   "Timer Tolerance": 2
+   "Timer Tolerance": 1
   },
   
   "Jaffar Configuration": 
@@ -49,8 +49,8 @@
     "Show Winning State Information": true,
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 700,
-     "Max Size Upper Bound (Mb)": 20000
+     "Max Size Lower Bound (Mb)": 60000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -135,7 +135,7 @@
     "Description": "Punish on coming back",
     "Conditions":
     [
-      { "Property": "Simon Position X", "Op": ">", "Value":  660 }
+      { "Property": "Simon Position X", "Op": ">", "Value":  680 }
     ],
     
     "Satisfies": [ ],
@@ -198,43 +198,10 @@
    
    {
     "Label": 1026,
-    "Description": "Fail on losing subweapon",
+    "Description": "Fail on losing tile",
     "Conditions":
     [
       { "Property": "Subweapon Number", "Op": "!=", "Value": 9 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1210,
-    "Description": "Punish using subweapon",
-    "Conditions":
-    [
-      { "Property": "Simon Heart Count", "Op": "<", "Value":  7 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1211,
-    "Description": "Punish using subweapon before it's actually needed",
-    "Conditions":
-    [
-      { "Property": "Subweapon 1 Position Y", "Op": "!=", "Value":  244 },
-      { "Property": "Subweapon 1 Position Y", "Op": "!=", "Value":  136 }
     ],
     
     "Satisfies": [ ],

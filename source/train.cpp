@@ -75,7 +75,7 @@ void Train::run()
     for (const auto& key : newMoveKeySet)
     {
      auto itr = key.second.begin();
-     printf("if (*simonState == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
+     printf("if (*bikeAirMode == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
      itr++;
      for (; itr != key.second.end(); itr++)
      {
@@ -254,7 +254,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t currentSimonState = *_gameInstances[threadId]->simonState;
+       uint8_t bikeAirMode = *_gameInstances[threadId]->bikeAirMode;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -369,7 +369,7 @@ void Train::computeStates()
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          auto moveKey = currentSimonState;
+          auto moveKey = bikeAirMode;
           if (newMoveKeySet[moveKey].contains(possibleMoves[idx]) == false)
           {
            //printf("Possible move not found! '%s'\n", possibleMoves[idx].c_str());
@@ -389,7 +389,7 @@ void Train::computeStates()
            //_gameInstances[threadId]->printStateInfo(newState->rulesStatus);
 
            // Storing new move
-           newMoveKeySet[currentSimonState].insert(possibleMoves[idx]);
+           newMoveKeySet[bikeAirMode].insert(possibleMoves[idx]);
 
            //getchar();
            //printf("[Jaffar] Continuing...\n");
