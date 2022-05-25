@@ -15,6 +15,7 @@
 #include <string.h>
 #include <limits.h>
 #include "blargg_endian.h"
+#include <stdio.h>
 
 #include "nes_cpu_io.h"
 
@@ -188,6 +189,15 @@ dec_clock_loop:
 	clock_count--;
 loop:
 	
+// if (pc == 0xF5A2 || pc == 0xF5A5)
+// {
+//  if (low_mem[0x4C] & 0b01000000 == false)
+//  {
+//   printf("Found lag frame where 4C.6 is not set\n");
+//   while(1);
+//  }
+// }
+
 	uint8_t const* page = code_map [pc >> page_bits];
 	unsigned opcode = page [pc];
 	pc++;

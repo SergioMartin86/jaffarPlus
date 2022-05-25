@@ -11,7 +11,9 @@ enum operator_t
   op_greater = 2,
   op_greater_or_equal = 3,
   op_less = 4,
-  op_less_or_equal = 5
+  op_less_or_equal = 5,
+  op_bit_true = 6,
+  op_bit_false = 7
 };
 
 enum datatype_t
@@ -21,7 +23,8 @@ enum datatype_t
   dt_uint32 = 2,
   dt_int8 = 3,
   dt_int16 = 4,
-  dt_int32 = 5
+  dt_int32 = 5,
+  dt_double = 6
 };
 
 class GameInstance;
@@ -55,6 +58,8 @@ class _vCondition : public Condition
   static inline bool _opGreaterOrEqual(const T a, const T b) { return a >= b; }
   static inline bool _opLess(const T a, const T b) { return a < b; }
   static inline bool _opLessOrEqual(const T a, const T b) { return a <= b; }
+  static inline bool _opBitTrue(const T a, const T b) { return getBitFlag(a,b); }
+  static inline bool _opBitFalse(const T a, const T b) { return !getBitFlag(a,b); }
 
   bool (*_opFcPtr)(const T, const T);
 
@@ -72,6 +77,8 @@ _vCondition<T>::_vCondition(const operator_t opType, void *property1, void* prop
   if (_opType == op_greater_or_equal) _opFcPtr = _opGreaterOrEqual;
   if (_opType == op_less) _opFcPtr = _opLess;
   if (_opType == op_less_or_equal) _opFcPtr = _opLessOrEqual;
+  if (_opType == op_bit_true) _opFcPtr = _opBitTrue;
+  if (_opType == op_bit_false) _opFcPtr = _opBitFalse;
 
   _property1 = (T *)property1;
   _property2 = (T *)property2;

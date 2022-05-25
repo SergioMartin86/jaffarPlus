@@ -75,7 +75,7 @@ void Train::run()
     for (const auto& key : newMoveKeySet)
     {
      auto itr = key.second.begin();
-     printf("if (*bikeAirMode == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
+     printf("if (*ninjaAnimationType == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
      itr++;
      for (; itr != key.second.end(); itr++)
      {
@@ -244,6 +244,7 @@ void Train::computeStates()
        for (uint16_t i = 0; i < 256; i++)
         if (possibleMoveSet.contains((uint8_t)i) == false)
         if (((uint8_t)i & 0b00001000) == 0)
+        if (((uint8_t)i & 0b00000100) == 0)
         {
          alternativeMoveSet.insert((uint8_t)i);
          fullMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
@@ -254,7 +255,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t bikeAirMode = *_gameInstances[threadId]->bikeAirMode;
+       uint8_t ninjaAnimationType = *_gameInstances[threadId]->ninjaAnimationType;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -369,30 +370,33 @@ void Train::computeStates()
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          auto moveKey = bikeAirMode;
+          auto moveKey = ninjaAnimationType;
           if (newMoveKeySet[moveKey].contains(possibleMoves[idx]) == false)
           {
-           //printf("Possible move not found! '%s'\n", possibleMoves[idx].c_str());
-           //printf("[Jaffar]  + Idx: %lu\n", idx);
-           // printf("[Jaffar]  + Full Set Moves:\n  - '%s'", possibleMoves[0].c_str()); for (size_t i = 1; i < possibleMoves.size(); i++) printf("\n   - '%s'", possibleMoves[i].c_str()); printf("\n");
-           //printf("[Jaffar]  + Actual Possible Moves: '%s'", possibleMoveCopy[0].c_str()); for (size_t i = 1; i < possibleMoveCopy.size(); i++) printf(", '%s'", possibleMoveCopy[i].c_str()); printf("\n");
-
-           // Storing save file
-           //std::string saveFileName = "_newMove.state";
-           //_gameInstances[threadId]->saveStateFile(saveFileName);
-           //printf("[Jaffar] New movement state to %s\n", saveFileName.c_str());
-
-           //saveFileName = "_base.state";
-           //_gameInstances[threadId]->pushState(baseStateData);
-           //_gameInstances[threadId]->saveStateFile(saveFileName);
-           // printf("[Jaffar] Base state to %s\n", saveFileName.c_str());
-           //_gameInstances[threadId]->printStateInfo(newState->rulesStatus);
-
            // Storing new move
-           newMoveKeySet[bikeAirMode].insert(possibleMoves[idx]);
+           newMoveKeySet[ninjaAnimationType].insert(possibleMoves[idx]);
 
-           //getchar();
-           //printf("[Jaffar] Continuing...\n");
+           //           if (possibleMoves[idx].find("s") != std::string::npos)
+           //           {
+           //             printf("Possible move not found! '%s'\n", possibleMoves[idx].c_str());
+           //             printf("[Jaffar]  + Idx: %lu\n", idx);
+           //             printf("[Jaffar]  + Full Set Moves:\n  - '%s'", possibleMoves[0].c_str()); for (size_t i = 1; i < possibleMoves.size(); i++) printf("\n   - '%s'", possibleMoves[i].c_str()); printf("\n");
+           //             printf("[Jaffar]  + Actual Possible Moves: '%s'", possibleMoveCopy[0].c_str()); for (size_t i = 1; i < possibleMoveCopy.size(); i++) printf(", '%s'", possibleMoveCopy[i].c_str()); printf("\n");
+           //
+           //             // Storing save file
+           //             std::string saveFileName = "_newMove.state";
+           //             _gameInstances[threadId]->saveStateFile(saveFileName);
+           //             printf("[Jaffar] New movement state to %s\n", saveFileName.c_str());
+           //
+           //             saveFileName = "_base.state";
+           //             _gameInstances[threadId]->pushState(baseStateData);
+           //             _gameInstances[threadId]->saveStateFile(saveFileName);
+           //              printf("[Jaffar] Base state to %s\n", saveFileName.c_str());
+           //             _gameInstances[threadId]->printStateInfo(newState->rulesStatus);
+           //
+           //             getchar();
+           //             printf("[Jaffar] Continuing...\n");
+           //           }
           }
          }
 
@@ -438,7 +442,11 @@ void Train::computeStates()
         #pragma omp critical(newFrameDB)
         {
          // Storing new winning state
-         if (type == f_win) { _winStateFound = true; memcpy(_winState, newState, sizeof(State)); };
+         if (type == f_win)
+         {
+           if ((_winStateFound == false) || ((_winStateFound == true) && (newState->reward > _winState->reward))) memcpy(_winState, newState, sizeof(State));
+          _winStateFound = true;
+         };
 
          // Adding state to the new state database
          newStates.push_back(newState);

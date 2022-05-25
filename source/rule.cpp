@@ -48,6 +48,7 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
      if (dtype == dt_int8) condition = new _vCondition<int8_t>(operation, property, NULL, conditionJs["Value"].get<int8_t>());
      if (dtype == dt_int16) condition = new _vCondition<int16_t>(operation, property, NULL, conditionJs["Value"].get<int16_t>());
      if (dtype == dt_int32) condition = new _vCondition<int32_t>(operation, property, NULL, conditionJs["Value"].get<int32_t>());
+     if (dtype == dt_double) condition = new _vCondition<double>(operation, property, NULL, conditionJs["Value"].get<double>());
 
      // Adding condition to the list
      _conditions.push_back(condition);
@@ -76,6 +77,7 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
      if (dtype == dt_int8) condition = new _vCondition<int8_t>(operation, property, valuePtr, 0);
      if (dtype == dt_int16) condition = new _vCondition<int16_t>(operation, property, valuePtr, 0);
      if (dtype == dt_int32) condition = new _vCondition<int32_t>(operation, property, valuePtr, 0);
+     if (dtype == dt_double) condition = new _vCondition<double>(operation, property, valuePtr, 0);
      _conditions.push_back(condition);
 
      valueFound = true;
@@ -147,6 +149,8 @@ operator_t Rule::getOperationType(const std::string &operation)
   if (operation == ">=") return op_greater_or_equal;
   if (operation == "<") return op_less;
   if (operation == "<=") return op_less_or_equal;
+  if (operation == "BitTrue") return op_bit_true;
+  if (operation == "BitFalse") return op_bit_false;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized operator: %s\n", _label, operation.c_str());
 
