@@ -39,6 +39,14 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   screenScroll2            = (uint8_t*)   &_emu->_baseMem[0x0051];
   screenScroll3            = (uint8_t*)   &_emu->_baseMem[0x0052];
 
+  ninjaProjectile1PosX     = (uint8_t*)   &_emu->_baseMem[0x04BB];
+  ninjaProjectile2PosX     = (uint8_t*)   &_emu->_baseMem[0x04BC];
+  ninjaProjectile3PosX     = (uint8_t*)   &_emu->_baseMem[0x04BD];
+
+  ninjaProjectile1PosY     = (uint8_t*)   &_emu->_baseMem[0x04BE];
+  ninjaProjectile2PosY     = (uint8_t*)   &_emu->_baseMem[0x04BF];
+  ninjaProjectile3PosY     = (uint8_t*)   &_emu->_baseMem[0x04C0];
+
   enemySlots              = (uint8_t*)   &_emu->_baseMem[0x0073];
   enemyPosX               = (uint8_t*)   &_emu->_baseMem[0x0460];
   enemyPosXFrac           = (uint8_t*)   &_emu->_baseMem[0x0458];
@@ -75,6 +83,9 @@ uint64_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash64 hash;
 
+  // if in transition, take frame counter as hash value
+  if (*gameMode != 0) hash.Update(*frameCounter);
+
   hash.Update(*gameMode);
   hash.Update(*currentStage);
   hash.Update(*currentSubStage);
@@ -106,40 +117,48 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*screenScroll2);
   hash.Update(*screenScroll3);
 
+//  hash.Update(*ninjaProjectile1PosX);
+//  hash.Update(*ninjaProjectile2PosX);
+//  hash.Update(*ninjaProjectile3PosX);
+//
+//  hash.Update(*ninjaProjectile1PosY);
+//  hash.Update(*ninjaProjectile2PosY);
+//  hash.Update(*ninjaProjectile3PosY);
+
   // Using stage timer to allow pauses
 //  hash.Update(*frameCounter % timerTolerance);
 
   // Enemies
-//  hash.Update(*enemyCount);
-//  hash.Update(*enemySlots);
+  hash.Update(*enemyCount);
+  hash.Update(*enemySlots);
 //  hash.Update(*enemyActions);
 //  hash.Update(*enemyLastIdx);
-//
-//  for (uint8_t i = 0; i < ENEMY_COUNT; i++)
-//   if (((i == 7) && (*enemySlots & 0b10000000)) ||
-//       ((i == 6) && (*enemySlots & 0b01000000)) ||
-//       ((i == 5) && (*enemySlots & 0b00100000)) ||
-//       ((i == 4) && (*enemySlots & 0b00010000)) ||
-//       ((i == 3) && (*enemySlots & 0b00001000)) ||
-//       ((i == 2) && (*enemySlots & 0b00000100)) ||
-//       ((i == 1) && (*enemySlots & 0b00000010)) ||
-//       ((i == 0) && (*enemySlots & 0b00000001)))
-//   {
-//    hash.Update(*(enemyType+i));
+
+  for (uint8_t i = 0; i < ENEMY_COUNT; i++)
+   if (((i == 7) && (*enemySlots & 0b10000000)) ||
+       ((i == 6) && (*enemySlots & 0b01000000)) ||
+       ((i == 5) && (*enemySlots & 0b00100000)) ||
+       ((i == 4) && (*enemySlots & 0b00010000)) ||
+       ((i == 3) && (*enemySlots & 0b00001000)) ||
+       ((i == 2) && (*enemySlots & 0b00000100)) ||
+       ((i == 1) && (*enemySlots & 0b00000010)) ||
+       ((i == 0) && (*enemySlots & 0b00000001)))
+   {
+    hash.Update(*(enemyType+i));
 //    hash.Update(*(enemyHP+i));
-//    hash.Update(*(enemyFlags+i));
-//    hash.Update(*(enemyPosX+i));
+    hash.Update(*(enemyFlags+i));
+    hash.Update(*(enemyPosX+i));
 //    hash.Update(*(enemyPosXFrac+i));
 //    hash.Update(*(enemyVelX+i));
 //    hash.Update(*(enemyVelXFrac+i));
-//    hash.Update(*(enemyPosY+i));
+    hash.Update(*(enemyPosY+i));
 //    hash.Update(*(enemyPosYFrac+i));
 //    hash.Update(*(enemyVelY+i));
 //    hash.Update(*(enemyVelYFrac+i));
-//    hash.Update(*(enemyCollision+i));
+    hash.Update(*(enemyCollision+i));
 //    hash.Update(*(enemyAITimer+i));
 //    hash.Update(*(enemyAIStage+i));
-//   }
+   }
 
   hash.Update(*ppuIndicator);
 
@@ -156,6 +175,10 @@ void GameInstance::updateDerivedValues()
  absolutePosX = _screenScroll3 * 256.0 + (_screenScroll2 + (double)*ninjaPosX) + ((double)*screenScroll1 + (double)*ninjaPosXFrac)/ 256.0;
 
  ppuIndicatorBit6 = *ppuIndicator & 0b01000000;
+
+ double _ninjaPosX = 256.0*((double)*ninjaPosX) + (double)*ninjaPosXFrac;
+ double _bossPosX = 256.0*((double)*(enemyPosX+7)) + (double)*(enemyPosXFrac+7);
+ ninjaBossDistance = std::abs(_ninjaPosX - _bossPosX);
 }
 
 // Function to determine the current possible moves
@@ -225,6 +248,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating boss health magnet
   reward += magnets.bossHealthMagnet * *bossHP;
 
+  // Evaluating ninja/boss distance magnet
+  reward += magnets.ninjaBossDistanceMagnet * ninjaBossDistance;
+
   // Returning reward
   return reward;
 }
@@ -255,9 +281,13 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Ninja Collision Flags:             %02u\n", *ninjaCollisionFlags);
  LOG("[Jaffar]  + Ninja Flinch:                      %02u\n", *ninjaFlinchDirection);
  LOG("[Jaffar]  + Ninja Invincibility Timer:         %02u\n", *ninjaInvincibilityTimer);
+ LOG("[Jaffar]  + Ninja Projectiles X:               %02u %02u %02u\n", *ninjaProjectile1PosX, *ninjaProjectile2PosX, *ninjaProjectile3PosX);
+ LOG("[Jaffar]  + Ninja Projectiles Y:               %02u %02u %02u\n", *ninjaProjectile1PosY, *ninjaProjectile2PosY, *ninjaProjectile3PosY);
+
  LOG("[Jaffar]  + General Timer:                     %02u + %02u\n", *timeoutSeconds1, *timeoutSeconds60);
  LOG("[Jaffar]  + Screen Scroll:                     %02u + %02u + %02u\n", *screenScroll3, *screenScroll2, *screenScroll1);
  LOG("[Jaffar]  + Boss HP:                           %02u\n", *bossHP);
+ LOG("[Jaffar]  + Ninja/Boss Distance:               %.3f\n", ninjaBossDistance);
 
  LOG("[Jaffar]  + Enemy Count:                       %02u (%02u)\n", *enemyCount, *enemySlots);
  LOG("[Jaffar]  + Enemy Actions:                     %02u\n", *enemyActions);
@@ -283,6 +313,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.ninjaHorizontalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Ninja Horizontal Magnet        - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.ninjaHorizontalMagnet.intensity, magnets.ninjaHorizontalMagnet.center, magnets.ninjaHorizontalMagnet.min, magnets.ninjaHorizontalMagnet.max);
  if (std::abs(magnets.ninjaVerticalMagnet.intensity) > 0.0f)       LOG("[Jaffar]  + Ninja Vertical Magnet          - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.ninjaVerticalMagnet.intensity, magnets.ninjaVerticalMagnet.center, magnets.ninjaVerticalMagnet.min, magnets.ninjaVerticalMagnet.max);
  if (std::abs(magnets.ninjaPowerMagnet.intensity) > 0.0f)          LOG("[Jaffar]  + Ninja Power Magnet             - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.ninjaPowerMagnet.intensity, magnets.ninjaPowerMagnet.center, magnets.ninjaPowerMagnet.min, magnets.ninjaPowerMagnet.max);
+ if (std::abs(magnets.ninjaBossDistanceMagnet) > 0.0f)             LOG("[Jaffar]  + Ninja/Boss Distance Magnet     - Intensity: %.5f\n", magnets.ninjaBossDistanceMagnet);
  if (std::abs(magnets.ninjaWeaponMagnet.reward) > 0.0f)            LOG("[Jaffar]  + Ninja Weapon Magnet            - Reward:    %.1f, Weapon: %u\n", magnets.ninjaWeaponMagnet.reward, magnets.ninjaWeaponMagnet.weapon);
  if (std::abs(magnets.bossHealthMagnet) > 0.0f)                    LOG("[Jaffar]  + Boss Health Magnet             - Intensity: %.5f\n", magnets.bossHealthMagnet);
 }

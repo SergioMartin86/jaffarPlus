@@ -30,6 +30,7 @@ struct magnetSet_t {
  genericMagnet_t ninjaPowerMagnet;
  weaponMagnet_t ninjaWeaponMagnet;
  float bossHealthMagnet = 0.0;
+ float ninjaBossDistanceMagnet = 0.0;
 };
 
 
@@ -71,6 +72,14 @@ class GameInstance : public GameInstanceBase
   uint8_t*  screenScroll2            ;
   uint8_t*  screenScroll3            ;
 
+  uint8_t*  ninjaProjectile1PosX;
+  uint8_t*  ninjaProjectile2PosX;
+  uint8_t*  ninjaProjectile3PosX;
+
+  uint8_t*  ninjaProjectile1PosY;
+  uint8_t*  ninjaProjectile2PosY;
+  uint8_t*  ninjaProjectile3PosY;
+
   uint8_t*  enemyPosX;
   uint8_t*  enemyPosXFrac;
   uint8_t*  enemyPosY;
@@ -95,6 +104,7 @@ class GameInstance : public GameInstanceBase
 
   // Derivative Values
   double absolutePosX;
+  float ninjaBossDistance;
 
   uint8_t ppuIndicatorBit6;
 

@@ -63,6 +63,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Ninja/Boss Distance Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Ninja/Boss Distance Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    _magnets.ninjaBossDistanceMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
    if (actionType == "Set Boss Health Magnet")
    {
     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Boss Health Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -97,6 +104,15 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Ninja Animation Offset") return dt_uint8;
   if (propertyName == "Ninja Animation Timer") return dt_uint8;
   if (propertyName == "Ninja Animation Frame") return dt_uint8;
+
+  if (propertyName == "Ninja Projectile 1 Pos X") return dt_uint8;
+  if (propertyName == "Ninja Projectile 2 Pos X") return dt_uint8;
+  if (propertyName == "Ninja Projectile 3 Pos X") return dt_uint8;
+
+  if (propertyName == "Ninja Projectile 1 Pos Y") return dt_uint8;
+  if (propertyName == "Ninja Projectile 2 Pos Y") return dt_uint8;
+  if (propertyName == "Ninja Projectile 3 Pos Y") return dt_uint8;
+
   if (propertyName == "Enemy Count") return dt_uint8;
   if (propertyName == "Timeout Seconds") return dt_uint8;
   if (propertyName == "Timeout Fractions") return dt_uint8;
@@ -137,6 +153,15 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Ninja Animation Offset") return gameInstance->ninjaAnimationOffset;
   if (propertyName == "Ninja Animation Timer") return gameInstance->ninjaAnimationTimer;
   if (propertyName == "Ninja Animation Frame") return gameInstance->ninjaAnimationFrame;
+
+  if (propertyName == "Ninja Projectile 1 Pos X") return gameInstance->ninjaProjectile1PosX;
+  if (propertyName == "Ninja Projectile 2 Pos X") return gameInstance->ninjaProjectile2PosX;
+  if (propertyName == "Ninja Projectile 3 Pos X") return gameInstance->ninjaProjectile3PosX;
+
+  if (propertyName == "Ninja Projectile 1 Pos Y") return gameInstance->ninjaProjectile1PosY;
+  if (propertyName == "Ninja Projectile 2 Pos Y") return gameInstance->ninjaProjectile2PosY;
+  if (propertyName == "Ninja Projectile 3 Pos Y") return gameInstance->ninjaProjectile3PosY;
+
   if (propertyName == "Enemy Count") return gameInstance->enemyCount;
   if (propertyName == "Timeout Seconds") return gameInstance->timeoutSeconds1;
   if (propertyName == "Timeout Fractions") return gameInstance->timeoutSeconds60;
