@@ -26,8 +26,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 15000
+     "Max Size Lower Bound (Mb)": 200,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
@@ -94,7 +94,7 @@
     "Description": "Going right",
     "Conditions":
     [
-      { "Property": "Absolute Pos X", "Op": "<", "Value":  170 }
+      { "Property": "Absolute Pos X", "Op": "<", "Value":  600 }
     ],
     
     "Satisfies": [ 1000 ],
@@ -113,7 +113,7 @@
     "Description": "Going right",
     "Conditions":
     [
-       { "Property": "Absolute Pos X", "Op": "<", "Value":  600 }
+       { "Property": "Absolute Pos X", "Op": "<", "Value":  247 }
     ],
     
     "Satisfies": [ 1100 ],

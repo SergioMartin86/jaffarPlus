@@ -18,6 +18,7 @@ jaffarIncludes = include_directories([
  'extern/argparse',
  'extern/json/single_include',
  'extern/phmap',
+ 'extern/xdelta3',
  'source',
  'games',
  'platforms'
@@ -33,17 +34,21 @@ jaffarSrc = [
 
 # Common Jaffar CFlags
 
-jaffarCFlags = [ '-Wfatal-errors', '-Wall' ] 
+jaffarCFlags = [ '-Wfatal-errors', '-Wall' ]
 
 # Building main Jaffar training executable
+xdelta3Src = [ 'extern/xdelta3/xdelta3.c' ]
+xdelta3CFlags = [ '-DXD3_DEBUG=0', '-fno-builtin', '-DNDEBUG=1']
+xdelta3LFlags = [ '-llzma' ]
+
 executable('jaffar',
   'source/train.cpp',
-  jaffarSrc + platformTrainSrc + gameInstanceSrc,
+  jaffarSrc + platformTrainSrc + gameInstanceSrc + xdelta3Src,
   include_directories: [ jaffarIncludes, platformTrainIncludes, gameInstanceIncludes ],
   dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
   link_with: [ platformTrainLibs ],
-  link_args: [ platformTrainLFlags ],
-  cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags ]
+  link_args: [ platformTrainLFlags, xdelta3LFlags ],
+  cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags, xdelta3CFlags ]
 )
 
 # Building playback/validation tool
