@@ -145,6 +145,28 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    _magnets.subweaponHitCountMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
    recognizedActionType = true;
   }
+
+  if (actionType == "Set Subweapon 1 Active Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.subweapon1ActiveMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Subweapon 2 Active Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.subweapon2ActiveMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Subweapon 3 Active Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.subweapon3ActiveMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
   if (actionType == "Set Freeze Timer Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Freeze Timer Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -189,6 +211,9 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Simon Kneeling Mode") return dt_uint8;
   if (propertyName == "Subweapon Shot Count") return dt_uint8;
   if (propertyName == "Subweapon 1 Position Y") return dt_uint8;
+  if (propertyName == "Subweapon 1 Position X") return dt_uint8;
+  if (propertyName == "Subweapon 2 Position X") return dt_uint8;
+  if (propertyName == "Subweapon 3 Position X") return dt_uint8;
   if (propertyName == "Whip Length") return dt_uint8;
   if (propertyName == "Simon Heart Count") return dt_uint8;
   if (propertyName == "Simon Image") return dt_uint8;
@@ -244,6 +269,9 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Subweapon Number") return gameInstance->subweaponNumber;
   if (propertyName == "Subweapon Hit Count") return gameInstance->subweaponHitCount;
   if (propertyName == "Subweapon 1 Position Y") return gameInstance->subweapon1PosY;
+  if (propertyName == "Subweapon 1 Position X") return gameInstance->subweapon1PosX;
+  if (propertyName == "Subweapon 2 Position X") return gameInstance->subweapon2PosX;
+  if (propertyName == "Subweapon 3 Position X") return gameInstance->subweapon3PosX;
   if (propertyName == "Simon Facing Direction") return gameInstance->simonFacingDirection;
   if (propertyName == "Simon State") return gameInstance->simonState;
   if (propertyName == "Simon Vertical Speed") return gameInstance->simonVerticalSpeed;

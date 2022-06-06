@@ -50,6 +50,9 @@ struct magnetSet_t {
  float bossSimonDistanceMagnet = 0.0;
  float bossWeaponDistanceMagnet = 0.0;
  float mummiesDistanceMagnet = 0.0;
+ float subweapon1ActiveMagnet = 0.0;
+ float subweapon2ActiveMagnet = 0.0;
+ float subweapon3ActiveMagnet = 0.0;
  stairMagnet_t simonStairMagnet;
  weaponMagnet_t simonWeaponMagnet;
  std::vector<nametableTileMagnet_t> scrollTileMagnets;
@@ -123,14 +126,19 @@ class GameInstance : public GameInstanceBase
   uint8_t* skeletonBone3PosY;
   uint8_t* subweapon1PosX;
   uint8_t* subweapon2PosX;
+  uint8_t* subweapon3PosX;
   uint8_t* subweapon1PosY;
   uint8_t* subweapon2PosY;
+  uint8_t* subweapon3PosY;
   uint8_t* subweapon1State;
   uint8_t* subweapon2State;
+  uint8_t* subweapon3State;
   uint8_t* subweapon1Bounce;
   uint8_t* subweapon2Bounce;
+  uint8_t* subweapon3Bounce;
   uint8_t* subweapon1Direction;
   uint8_t* subweapon2Direction;
+  uint8_t* subweapon3Direction;
 
   uint8_t* mummy2PosX;
   uint8_t* jumpingInertia;

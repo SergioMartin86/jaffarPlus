@@ -212,6 +212,9 @@ void Train::computeStates()
     ssize_t threadStateCreationTime = 0;
     ssize_t threadStateEvaluationTime = 0;
 
+    // Setting initial win state reward
+    float winStateReward = -std::numeric_limits<float>::infinity();
+
     // Computing always the last state while resizing the database to reduce memory footprint
     #pragma omp for
     for (auto& baseState : _stateDB)
@@ -442,11 +445,12 @@ void Train::computeStates()
         #pragma omp critical(newFrameDB)
         {
          // Storing new winning state
-         if (type == f_win)
+         if (type == f_win && newState->reward > winStateReward)
          {
-           if ((_winStateFound == false) || ((_winStateFound == true) && (newState->reward > _winState->reward))) memcpy(_winState, newState, sizeof(State));
-          _winStateFound = true;
-         };
+           memcpy(_winState, newState, sizeof(State));
+           winStateReward = newState->reward;
+           _winStateFound = true;
+         }
 
          // Adding state to the new state database
          newStates.push_back(newState);

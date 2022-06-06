@@ -44,6 +44,112 @@ int getKeyPress()
   return getch();
 }
 
+
+void loadSolutionFile(
+                      std::map<uint64_t, uint16_t>& hashMap,
+                      bool& hashCollisionFound,
+                      uint16_t& hashCollisionStep,
+                      uint16_t& hashCollisionPrev,
+                      std::vector<uint8_t*>& stateSequence,
+                      std::vector<bool*>& ruleStatusSequence,
+                      bool& failConditionFound,
+                      uint16_t& failConditionStep,
+                      std::string& moveSequence,
+                      std::vector<std::string>& moveList,
+                      int& sequenceLength,
+                      const std::string& solutionFile,
+                      const std::string& stateFile,
+                      GameInstance& gameInstance,
+                      const size_t ruleCount
+                      )
+{
+ // Clearing hash map
+ hashMap.clear();
+ hashCollisionFound = false;
+ hashCollisionStep = 0;
+ hashCollisionPrev = 0;
+
+ // Loading solution file
+ auto statusSolution = loadStringFromFile(moveSequence, solutionFile.c_str());
+ if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n", solutionFile.c_str());
+
+ // Getting move list
+ moveList.clear();
+ moveList = split(moveSequence, ' ');
+
+ // Getting sequence size
+ sequenceLength = moveList.size();
+
+ // Flag to indicate whether a fail condition was met
+ failConditionFound = false;
+ failConditionStep = 0;
+
+ // Saving initial frame
+ uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE);
+ gameInstance.loadStateFile(stateFile);
+ gameInstance.updateDerivedValues();
+ gameInstance.popState(state);
+
+ // Clearing state sequence
+ stateSequence.clear();
+ stateSequence.push_back(state);
+
+ // Saving initial rule status
+ bool* rulesStatus = (bool*) calloc(ruleCount, sizeof(bool));
+ gameInstance.evaluateRules(rulesStatus);
+ ruleStatusSequence.push_back(rulesStatus);
+
+ // Checking if fail condition was met
+ auto stateType = gameInstance.getStateType(rulesStatus);
+ if (failConditionFound == false && stateType == f_fail)
+ {
+  failConditionFound = true;
+  failConditionStep = 0;
+ }
+
+ // Adding current hash to the set
+ uint64_t curHash = gameInstance.computeHash();
+ hashMap[curHash] = 0;
+
+ // Iterating move list in the sequence
+ for (int i = 0; i < sequenceLength; i++)
+ {
+  // Advancing state
+  gameInstance.advanceState(moveList[i]);
+  gameInstance.updateDerivedValues();
+
+  // Adding current hash to the set
+  uint64_t curHash = gameInstance.computeHash();
+  if (hashCollisionFound == false && hashMap.contains(curHash))
+  {
+   hashCollisionStep = i;
+   hashCollisionPrev = hashMap[curHash];
+   hashCollisionFound = true;
+  }
+  hashMap[curHash] = i;
+
+  // Storing new state
+  state = (uint8_t*) malloc(_STATE_DATA_SIZE);
+  gameInstance.popState(state);
+  stateSequence.push_back(state);
+
+  // Storing new rules
+  rulesStatus = (bool*) malloc(ruleCount * sizeof(bool));
+  memcpy(rulesStatus, ruleStatusSequence[i], ruleCount * sizeof(bool));
+  gameInstance.evaluateRules(rulesStatus);
+  ruleStatusSequence.push_back(rulesStatus);
+
+  // Checking if fail condition was met
+  auto stateType = gameInstance.getStateType(rulesStatus);
+  if (failConditionFound == false && stateType == f_fail)
+  {
+   failConditionFound = true;
+   failConditionStep = i;
+  }
+ }
+}
+
+
 int main(int argc, char *argv[])
 {
   // Parsing command line arguments
@@ -82,10 +188,7 @@ int main(int argc, char *argv[])
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
   // If sequence file defined, load it and play it
-  std::string moveSequence;
   std::string solutionFile = program.get<std::string>("solutionFile");
-  auto statusSolution = loadStringFromFile(moveSequence, solutionFile.c_str());
-  if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n%s \n", solutionFile.c_str(), program.help().str().c_str());
 
   // Checking whether it contains the rules field
   if (isDefined(config, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rules' key.\n");
@@ -101,7 +204,7 @@ int main(int argc, char *argv[])
 
   // Getting reproduce flag
   bool isReproduce = program.get<bool>("--reproduce");
-  bool exitOnFinish = isReproduce;
+  bool refreshOnFinish = isReproduce;
 
   // Getting reproduce flag
   bool disableRender = program.get<bool>("--disableRender");
@@ -115,25 +218,19 @@ int main(int argc, char *argv[])
 
   // This storage will indicate whether a repeated hash was found
   std::map<uint64_t, uint16_t> hashMap;
-  bool hashCollisionFound = false;
-  uint16_t hashCollisionStep = 0;
-  uint16_t hashCollisionPrev = 0;
-
-  // Getting move list
-  const auto moveList = split(moveSequence, ' ');
-
-  // Getting sequence size
-  const int sequenceLength = moveList.size();
+  bool hashCollisionFound;
+  uint16_t hashCollisionStep;
+  uint16_t hashCollisionPrev;
 
   // Printing info
   printw("[Jaffar] Playing sequence file: %s\n", solutionFile.c_str());
-  printw("[Jaffar] Sequence Size: %d moves.\n", sequenceLength);
   printw("[Jaffar] Generating frame sequence...\n");
 
   refresh();
 
   // Initializing emulator
   auto emuInstance = new EmuInstance(config["Emulator Configuration"]);
+  std::string stateFile = config["Emulator Configuration"]["State File"].get<std::string>();
 
   // Initializing game state
   GameInstance gameInstance(emuInstance, config["Game Configuration"]);
@@ -151,72 +248,19 @@ int main(int argc, char *argv[])
   std::vector<bool*> ruleStatusSequence;
 
   // Flag to indicate whether a fail condition was met
-  bool failConditionFound = false;
-  uint16_t failConditionStep = 0;
+  bool failConditionFound;
+  uint16_t failConditionStep;
 
-  // Saving initial frame
-  uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE);
-  gameInstance.updateDerivedValues();
-  gameInstance.popState(state);
-  stateSequence.push_back(state);
-
-  // Saving initial rule status
-  bool* rulesStatus = (bool*) calloc(ruleCount, sizeof(bool));
-  gameInstance.evaluateRules(rulesStatus);
-  ruleStatusSequence.push_back(rulesStatus);
-
-  // Checking if fail condition was met
-  auto stateType = gameInstance.getStateType(rulesStatus);
-  if (failConditionFound == false && stateType == f_fail)
-  {
-   failConditionFound = true;
-   failConditionStep = 0;
-  }
-
-  // Adding current hash to the set
-  uint64_t curHash = gameInstance.computeHash();
-  hashMap[curHash] = 0;
-
-  // Iterating move list in the sequence
-  for (int i = 0; i < sequenceLength; i++)
-  {
-   // Advancing state
-   gameInstance.advanceState(moveList[i]);
-   gameInstance.updateDerivedValues();
-
-   // Adding current hash to the set
-   uint64_t curHash = gameInstance.computeHash();
-   if (hashCollisionFound == false && hashMap.contains(curHash))
-   {
-    hashCollisionStep = i;
-    hashCollisionPrev = hashMap[curHash];
-    hashCollisionFound = true;
-   }
-   hashMap[curHash] = i;
-
-   // Storing new state
-   state = (uint8_t*) malloc(_STATE_DATA_SIZE);
-   gameInstance.popState(state);
-   stateSequence.push_back(state);
-
-   // Storing new rules
-   rulesStatus = (bool*) malloc(ruleCount * sizeof(bool));
-   memcpy(rulesStatus, ruleStatusSequence[i], ruleCount * sizeof(bool));
-   gameInstance.evaluateRules(rulesStatus);
-   ruleStatusSequence.push_back(rulesStatus);
-
-   // Checking if fail condition was met
-   auto stateType = gameInstance.getStateType(rulesStatus);
-   if (failConditionFound == false && stateType == f_fail)
-   {
-    failConditionFound = true;
-    failConditionStep = i;
-   }
-
-  }
+  // Move sequence and information
+  std::string moveSequence;
+  std::vector<std::string> moveList;
+  int sequenceLength;
 
   // Variable for current step in view
   int currentStep = 0;
+
+  // Loading solution
+  loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount);
 
   // Flag to continue running playback
   bool continueRunning = true;
@@ -260,11 +304,20 @@ int main(int argc, char *argv[])
    if (isReproduce)
    {
     currentStep++;
-    if (currentStep > sequenceLength)
+    if (currentStep >= sequenceLength)
     {
-     if (exitOnFinish) { sleep(5); continueRunning = false; }
-     currentStep--; isReproduce = false;
+     if (refreshOnFinish)
+     {
+      sleep(5);
+      loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount);
+      currentStep = 0;
+     }
+     else
+     {
+      isReproduce = false;
+     }
     }
+
     continue;
    }
 

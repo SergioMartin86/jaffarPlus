@@ -111,8 +111,8 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*ninjaAnimationTimer);
   hash.Update(*ninjaAnimationFrame);
 
-  hash.Update(*timeoutSeconds1);
-  hash.Update(*timeoutSeconds60);
+//  hash.Update(*timeoutSeconds1);
+//  hash.Update(*timeoutSeconds60);
   hash.Update(*screenScroll1);
   hash.Update(*screenScroll2);
   hash.Update(*screenScroll3);
@@ -147,20 +147,20 @@ uint64_t GameInstance::computeHash() const
     hash.Update(*(enemyType+i));
 //    hash.Update(*(enemyHP+i));
     hash.Update(*(enemyFlags+i));
-    hash.Update(*(enemyPosX+i));
+//    hash.Update(*(enemyPosX+i));
 //    hash.Update(*(enemyPosXFrac+i));
 //    hash.Update(*(enemyVelX+i));
 //    hash.Update(*(enemyVelXFrac+i));
-    hash.Update(*(enemyPosY+i));
+//    hash.Update(*(enemyPosY+i));
 //    hash.Update(*(enemyPosYFrac+i));
 //    hash.Update(*(enemyVelY+i));
 //    hash.Update(*(enemyVelYFrac+i));
-    hash.Update(*(enemyCollision+i));
+//    hash.Update(*(enemyCollision+i));
 //    hash.Update(*(enemyAITimer+i));
 //    hash.Update(*(enemyAIStage+i));
    }
-
-  hash.Update(*ppuIndicator);
+//
+//  hash.Update(*ppuIndicator);
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));

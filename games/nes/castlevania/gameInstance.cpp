@@ -73,15 +73,20 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   subweapon1PosX      = (uint8_t*)   &_emu->_baseMem[0x03A0];
   subweapon2PosX      = (uint8_t*)   &_emu->_baseMem[0x03A1];
+  subweapon3PosX      = (uint8_t*)   &_emu->_baseMem[0x03A2];
   subweapon1PosY      = (uint8_t*)   &_emu->_baseMem[0x0368];
   subweapon2PosY      = (uint8_t*)   &_emu->_baseMem[0x0369];
+  subweapon3PosY      = (uint8_t*)   &_emu->_baseMem[0x036A];
 
   subweapon1State     = (uint8_t*)   &_emu->_baseMem[0x0448];
   subweapon2State     = (uint8_t*)   &_emu->_baseMem[0x0449];
+  subweapon3State     = (uint8_t*)   &_emu->_baseMem[0x044A];
   subweapon1Bounce    = (uint8_t*)   &_emu->_baseMem[0x0464];
   subweapon2Bounce    = (uint8_t*)   &_emu->_baseMem[0x0465];
+  subweapon3Bounce    = (uint8_t*)   &_emu->_baseMem[0x0466];
   subweapon1Direction = (uint8_t*)   &_emu->_baseMem[0x0480];
   subweapon2Direction = (uint8_t*)   &_emu->_baseMem[0x0481];
+  subweapon3Direction = (uint8_t*)   &_emu->_baseMem[0x0482];
 
   enemy1HolyWaterLockState = (uint8_t*)   &_emu->_baseMem[0x056C];
   holyWaterFire1Timer      = (uint8_t*)   &_emu->_baseMem[0x057C];
@@ -183,15 +188,20 @@ uint64_t GameInstance::computeHash() const
   if (hashIncludes.contains("Skeleton Bone 3 Pos Y")) hash.Update(*skeletonBone3PosY);
   if (hashIncludes.contains("Subweapon 1 Position X")) hash.Update(*subweapon1PosX);
   if (hashIncludes.contains("Subweapon 2 Position X")) hash.Update(*subweapon2PosX);
+  if (hashIncludes.contains("Subweapon 3 Position X")) hash.Update(*subweapon3PosX);
   if (hashIncludes.contains("Subweapon 1 Position Y")) hash.Update(*subweapon1PosY);
   if (hashIncludes.contains("Subweapon 2 Position Y")) hash.Update(*subweapon2PosY);
+  if (hashIncludes.contains("Subweapon 3 Position Y")) hash.Update(*subweapon3PosY);
 
   hash.Update(*subweapon1State);
   hash.Update(*subweapon2State);
+  hash.Update(*subweapon3State);
   hash.Update(*subweapon1Bounce);
   hash.Update(*subweapon2Bounce);
+  hash.Update(*subweapon3Bounce);
   hash.Update(*subweapon1Direction);
   hash.Update(*subweapon2Direction);
+  hash.Update(*subweapon3Direction);
 
   // Updating nametable
   if (hashIncludes.contains("Full NES Nametable")) hash.Update(_emu->_ppuNameTableMem, 0x1000);
@@ -213,7 +223,7 @@ uint64_t GameInstance::computeHash() const
   {
    hash.Update(*bossPosX);
    hash.Update(*bossPosY);
-   hash.Update(*mummy2PosX);
+   //hash.Update(*mummy2PosX);
   }
 
   // If simon is getting knocked back or paralyzed, use timer
@@ -400,6 +410,14 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating boss health magnet
   reward += magnets.mummiesDistanceMagnet * mummiesDistance;
 
+  // Evaluating subweapon active states
+  int isSubweapon1Active = *subweapon1State == 23 ? 1 : 0;
+  reward += magnets.subweapon1ActiveMagnet * isSubweapon1Active;
+  int isSubweapon2Active = *subweapon2State == 23 ? 1 : 0;
+  reward += magnets.subweapon2ActiveMagnet * isSubweapon2Active;
+  int isSubweapon3Active = *subweapon3State == 23 ? 1 : 0;
+  reward += magnets.subweapon3ActiveMagnet * isSubweapon3Active;
+
   // Evaluating simon's stairs magnet
   if (magnets.simonStairMagnet.mode == *simonStairMode) reward += magnets.simonStairMagnet.reward;
 
@@ -444,8 +462,10 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Simon Screen Offset:    %02u %02u\n", *simonScreenOffsetX, *screenMotionX);
   LOG("[Jaffar]  + Simon Invulnerability:  %02u\n", *simonInvulnerability);
   LOG("[Jaffar]  + Simon Kneeling Mode:    %02u\n", *simonKneelingMode);
-  LOG("[Jaffar]  + Subweapon (Shots):      %02u (%02u)\n", *subweaponNumber, *subweaponShotCount);
-  LOG("[Jaffar]  + Subweapon Info:         1(S: %02u, X: %02u Y: %02u, B: %02u, D: %02u), 2(S: %02u, X: %02u, Y: %02u, B: %02u, D: %02u), H: %02u, D: %.0f\n", *subweapon1State, *subweapon1PosX, *subweapon1PosY, *subweapon1Bounce, *subweapon1Direction, *subweapon2State, *subweapon2PosX, *subweapon2PosY, *subweapon2Bounce, *subweapon2Direction, *subweaponHitCount, bossWeaponDistance);
+  LOG("[Jaffar]  + Subweapon Info:         %02u (%02u), H: %02u, D: %.0f\n", *subweaponNumber, *subweaponShotCount, *subweaponHitCount, bossWeaponDistance);
+  LOG("[Jaffar]  + Subweapon 1:            S: %02u, X: %02u Y: %02u, B: %02u, D: %02u\n", *subweapon1State, *subweapon1PosX, *subweapon1PosY, *subweapon1Bounce, *subweapon1Direction);
+  LOG("[Jaffar]  + Subweapon 2:            S: %02u, X: %02u Y: %02u, B: %02u, D: %02u\n", *subweapon2State, *subweapon2PosX, *subweapon2PosY, *subweapon2Bounce, *subweapon2Direction);
+  LOG("[Jaffar]  + Subweapon 3:            S: %02u, X: %02u Y: %02u, B: %02u, D: %02u\n", *subweapon3State, *subweapon3PosX, *subweapon3PosY, *subweapon3Bounce, *subweapon3Direction);
   LOG("[Jaffar]  + Whip Length:            %02u\n", *whipLength);
   LOG("[Jaffar]  + Boss H/X/Y/D:           %02u, %02u, %02u, %03.4f\n", *bossHealth, *bossPosX, *bossPosY, bossSimonDistance);
   LOG("[Jaffar]  + Mummies X1/X2/D:        %02u, %02u, %02u\n", *bossPosX, *mummy2PosX, mummiesDistance);
@@ -486,6 +506,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   if (std::abs(magnets.bossWeaponDistanceMagnet) > 0.0f)            LOG("[Jaffar]  + Boss/Weapon Distance Magnet    - Intensity: %.5f\n", magnets.bossWeaponDistanceMagnet);
   if (std::abs(magnets.mummiesDistanceMagnet) > 0.0f)               LOG("[Jaffar]  + Mummies Distance Magnet        - Intensity: %.5f\n", magnets.mummiesDistanceMagnet);
   if (std::abs(magnets.bossStateTimerMagnet) > 0.0f)                LOG("[Jaffar]  + Boss State Timer Magnet        - Intensity: %.5f\n", magnets.bossStateTimerMagnet);
+  if (std::abs(magnets.subweapon1ActiveMagnet) > 0.0f)              LOG("[Jaffar]  + Subweapon 1 Active Magnet      - Intensity: %.5f\n", magnets.subweapon1ActiveMagnet);
+  if (std::abs(magnets.subweapon2ActiveMagnet) > 0.0f)              LOG("[Jaffar]  + Subweapon 2 Active Magnet      - Intensity: %.5f\n", magnets.subweapon2ActiveMagnet);
+  if (std::abs(magnets.subweapon3ActiveMagnet) > 0.0f)              LOG("[Jaffar]  + Subweapon 3 Active Magnet      - Intensity: %.5f\n", magnets.subweapon3ActiveMagnet);
   if (std::abs(magnets.simonStairMagnet.reward) > 0.0f)             LOG("[Jaffar]  + Simon Stairs Magnet            - Reward:    %.1f, Mode: %u\n", magnets.simonStairMagnet.reward, magnets.simonStairMagnet.mode);
   if (std::abs(magnets.simonWeaponMagnet.reward) > 0.0f)            LOG("[Jaffar]  + Simon Weapon Magnet            - Reward:    %.1f, Weapon: %u\n", magnets.simonWeaponMagnet.reward, magnets.simonWeaponMagnet.weapon);
 
