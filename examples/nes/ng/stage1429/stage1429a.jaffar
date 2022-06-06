@@ -9,7 +9,7 @@
   
   "State Configuration": 
   { 
-    "Max Difference Count": 1200,
+    "Max Difference Count": 1600,
     "Max Move Count": 500
   },
   
@@ -26,8 +26,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 200,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 10000
     },
     
     "Hash Database":

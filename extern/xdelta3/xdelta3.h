@@ -24,9 +24,9 @@
 #ifndef _XDELTA3_H_
 #define _XDELTA3_H_
 
-#define _POSIX_SOURCE
-#define _ISOC99_SOURCE
-#define _C99_SOURCE
+//#define _POSIX_SOURCE
+//#define _ISOC99_SOURCE
+//#define _C99_SOURCE
 
 #include "config.h"
 
@@ -223,9 +223,7 @@ typedef uint32_t xoff_t;
 /**********************************************************************/
 
 /* Whether to build the encoder, otherwise only build the decoder. */
-#ifndef XD3_ENCODER
 #define XD3_ENCODER 1
-#endif
 
 /* The code returned when main() fails, also defined in system
    includes. */
@@ -1039,6 +1037,9 @@ struct _xd3_stream
  PUBLIC FUNCTIONS
  **************************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* This function configures an xd3_stream using the provided in-memory
  * input buffer, source buffer, output buffer, and flags.  The output
  * array must be large enough or else ENOSPC will be returned.  This
@@ -1368,6 +1369,10 @@ void xd3_blksize_add (xoff_t *blkno,
 
   XD3_ASSERT (*blkoff < source->blksize);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #define XD3_NOOP 0U
 #define XD3_ADD 1U

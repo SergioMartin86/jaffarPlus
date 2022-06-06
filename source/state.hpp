@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <utils.hpp>
+#include <stdio.h>
+#include <sys/stat.h>
+#include "xdelta3.h"
 
-#define _MAX_DIFFERENCE_COUNT 1200
+#define _MAX_DIFFERENCE_COUNT 1600
 #define _MAX_MOVELIST_SIZE 500
 //#define JAFFAR_DISABLE_MOVE_HISTORY
-
-#define _STATE_DATA_SIZE (_STATE_DIFFERENTIAL_SIZE + _STATE_FIXED_SIZE)
 
 enum stateType
 {
@@ -25,11 +26,8 @@ class State
   public:
 
   // Positions of the difference with respect to a base frame
-  uint16_t frameDiffPositions[_MAX_DIFFERENCE_COUNT];
-  uint8_t frameDiffValues[_MAX_DIFFERENCE_COUNT];
-
-  // Fixed state data
-  uint8_t fixedStateData[_STATE_FIXED_SIZE];
+  uint8_t diffOutput[_MAX_DIFFERENCE_COUNT];
+  usize_t diffSize;
 
   // Rule status vector
   bool rulesStatus[_MAX_RULE_COUNT];
@@ -37,31 +35,17 @@ class State
   // Differentiation functions
   inline void computeStateDifference(const uint8_t* __restrict__ baseStateData, const uint8_t* __restrict__ newStateData)
   {
-   frameDiffCount = 0;
-   #pragma GCC unroll 32
-   #pragma GCC ivdep
-   for (uint16_t i = 0; i < _STATE_DIFFERENTIAL_SIZE; i++) if (baseStateData[i] != newStateData[i])
-   {
-    frameDiffPositions[frameDiffCount] = i;
-    frameDiffValues[frameDiffCount] = (uint8_t)newStateData[i];
-    frameDiffCount++;
-   }
-
-   if (frameDiffCount > _maxStateDiff)
-   {
-    _maxStateDiff = frameDiffCount;
-     if (frameDiffCount > _MAX_DIFFERENCE_COUNT) EXIT_WITH_ERROR("[Error] Exceeded maximum frame difference: %d > %d. Increase this maximum in the state.hpp source file and rebuild.\n", frameDiffCount, _MAX_DIFFERENCE_COUNT);
-   }
-   memcpy(fixedStateData, &newStateData[_STATE_DIFFERENTIAL_SIZE], _STATE_FIXED_SIZE);
+   int ret = xd3_encode_memory(newStateData, _STATE_DATA_SIZE, baseStateData, _STATE_DATA_SIZE, diffOutput, &diffSize, sizeof(diffOutput), 0);
+   if (diffSize > _MAX_DIFFERENCE_COUNT) EXIT_WITH_ERROR("[Error] Exceeded maximum frame difference: %d > %d. Increase this maximum in the state.hpp source file and rebuild.\n", diffSize, _MAX_DIFFERENCE_COUNT);
+   if (ret != 0) EXIT_WITH_ERROR("[Error] State Encode failure: %d: %s\n", ret, xd3_strerror(ret));
+   if (diffSize > _maxStateDiff) _maxStateDiff = diffSize;
   }
 
   inline void getStateDataFromDifference(const uint8_t* __restrict__ baseStateData, uint8_t* __restrict__ stateData) const
   {
-    memcpy(stateData, baseStateData, _STATE_DIFFERENTIAL_SIZE);
-    #pragma GCC unroll 32
-    #pragma GCC ivdep
-    for (uint16_t i = 0; i < frameDiffCount; i++) stateData[frameDiffPositions[i]] = frameDiffValues[i];
-    memcpy(&stateData[_STATE_DIFFERENTIAL_SIZE], fixedStateData, _STATE_FIXED_SIZE);
+   usize_t output_size;
+   int ret = xd3_decode_memory (diffOutput, diffSize, baseStateData, _STATE_DATA_SIZE, stateData, &output_size, _STATE_DATA_SIZE, 0);
+   if (ret != 0) EXIT_WITH_ERROR("[Error] State Decode failure: %d: %s\n", ret, xd3_strerror(ret));
   }
 
   // Parsing configuration

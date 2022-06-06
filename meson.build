@@ -12,6 +12,11 @@ subdir(['games/' + game])
 platform = game.split('/')[0]
 subdir('platforms/' + platform)
 
+# xDelta3 Configuration
+xdelta3Src = [ 'extern/xdelta3/xdelta3.c' ]
+xdelta3CFlags = [ '-DXD3_DEBUG=0', '-fno-builtin', '-DNDEBUG=1']
+xdelta3LFlags = [ '-llzma' ]
+
 # Common Jaffar include dirs
 jaffarIncludes = include_directories([
  'extern/metrohash64',
@@ -37,10 +42,6 @@ jaffarSrc = [
 jaffarCFlags = [ '-Wfatal-errors', '-Wall' ]
 
 # Building main Jaffar training executable
-xdelta3Src = [ 'extern/xdelta3/xdelta3.c' ]
-xdelta3CFlags = [ '-DXD3_DEBUG=0', '-fno-builtin', '-DNDEBUG=1']
-xdelta3LFlags = [ '-llzma' ]
-
 executable('jaffar',
   'source/train.cpp',
   jaffarSrc + platformTrainSrc + gameInstanceSrc + xdelta3Src,
@@ -54,12 +55,12 @@ executable('jaffar',
 # Building playback/validation tool
 executable('jaffar-play',
   'source/play.cpp',
-  jaffarSrc + platformPlaySrc + gameInstanceSrc,
+  jaffarSrc + platformPlaySrc + gameInstanceSrc + xdelta3Src,
   include_directories: [ jaffarIncludes, platformPlayIncludes, gameInstanceIncludes ],
   dependencies: [ platformPlayDependencies ],
   link_with: [ platformPlayLibs ],
-  link_args: [ platformPlayLFlags, '-lncurses' ],
-  cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES' ] 
+  link_args: [ platformPlayLFlags, '-lncurses', xdelta3LFlags ],
+  cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES', xdelta3CFlags ] 
 )
 
 # Building any necessary game-specific tools
