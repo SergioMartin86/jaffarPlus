@@ -4,7 +4,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng.nes",
-    "State File": "stage1429a.state"
+    "State File": "stage1429b.state"
   },
   
   "State Configuration": 
@@ -26,21 +26,21 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Lower Bound (Mb)": 8000,
+     "Max Size Upper Bound (Mb)": 20000
     },
     
     "Hash Database":
     { 
-     "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Database Count": 1,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
@@ -199,7 +199,7 @@
     "Description": "Fail on overusing ninpo",
     "Conditions":
     [
-      { "Property": "Ninja Power", "Op": "<", "Value": 25 }
+      { "Property": "Ninja Power", "Op": "<", "Value": 15 }
     ],
     
     "Satisfies": [ ],

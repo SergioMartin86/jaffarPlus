@@ -4,7 +4,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng.nes",
-    "State File": "stage1429a.state"
+    "State File": "stage1431a.state"
   },
   
   "State Configuration": 
@@ -26,21 +26,21 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Lower Bound (Mb)": 7000,
+     "Max Size Upper Bound (Mb)": 20000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Max Size Upper Bound (Mb)": 2000
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "sol/jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
@@ -55,30 +55,13 @@
   "Rules":
   [
    {
-    "Label": 999,
-    "Description": "Going up",
-    "Conditions":
-    [
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.00, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Ninja Power Magnet", "Intensity": 0.1, "Center": 100, "Min": 0, "Max": 100 }
-    ]
-   },
-   
-   {
     "Label": 1000,
     "Description": "Going right",
     "Conditions":
     [
-      { "Property": "Ninja Position Y", "Op": "<", "Value":  170 }
     ],
     
-    "Satisfies": [ 999 ],
+    "Satisfies": [  ],
     
     "Actions":
     [
@@ -90,52 +73,14 @@
    },
 
    {
-    "Label": 1100,
-    "Description": "Going right",
-    "Conditions":
-    [
-      { "Property": "Absolute Pos X", "Op": "<", "Value":  600 }
-    ],
-    
-    "Satisfies": [ 1000 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 122, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.01, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Ninja Power Magnet", "Intensity": 0.1, "Center": 100, "Min": 0, "Max": 100 }
-    ]
-   },
-      
-   {
-    "Label": 1001,
-    "Description": "Going right",
-    "Conditions":
-    [
-       { "Property": "Absolute Pos X", "Op": "<", "Value":  247 }
-    ],
-    
-    "Satisfies": [ 1100 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 122, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.0, "Center": 128, "Min": 0, "Max": 255 },
-     { "Type": "Set Ninja Power Magnet", "Intensity": 0.1, "Center": 100, "Min": 0, "Max": 100 }
-    ]
-   },
-   
-   {
     "Label": 1002,
     "Description": "Going right",
     "Conditions":
     [
-       { "Property": "Absolute Pos X", "Op": "<", "Value":  153 }
+       { "Property": "Absolute Pos X", "Op": "<", "Value":  190 }
     ],
     
-    "Satisfies": [ 1001 ],
+    "Satisfies": [ ],
     
     "Actions":
     [
@@ -151,7 +96,7 @@
     "Description": "Win on exit",
     "Conditions":
     [
-      { "Property": "Current Substage", "Op": "==", "Value":  30 }
+      { "Property": "Current Substage", "Op": "==", "Value":  32 }
     ],
     
     "Satisfies": [ ],
@@ -167,7 +112,7 @@
     "Description": "Win on exit",
     "Conditions":
     [
-      { "Property": "Current Substage", "Op": "==", "Value":  28 }
+      { "Property": "Current Substage", "Op": "==", "Value":  30 }
     ],
     
     "Satisfies": [ ],
@@ -199,7 +144,7 @@
     "Description": "Fail on overusing ninpo",
     "Conditions":
     [
-      { "Property": "Ninja Power", "Op": "<", "Value": 25 }
+      { "Property": "Ninja Power", "Op": "<", "Value": 10 }
     ],
     
     "Satisfies": [ ],
