@@ -26,8 +26,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Hash Database":
@@ -101,6 +101,7 @@
     
     "Actions":
     [
+     { "Type": "Trigger Win" },
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 122, "Min": 0, "Max": 6000 },
      { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.01, "Center": 0, "Min": 0, "Max": 255 },
@@ -199,7 +200,7 @@
     "Description": "Fail on overusing ninpo",
     "Conditions":
     [
-      { "Property": "Ninja Power", "Op": "<", "Value": 25 }
+      { "Property": "Ninja Power", "Op": "<", "Value": 35 }
     ],
     
     "Satisfies": [ ],

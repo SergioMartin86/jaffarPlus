@@ -70,6 +70,29 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Ninja Speed X Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Ninja Speed X Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    _magnets.ninjaSpeedXMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
+   if (actionType == "Set Ninja Speed Y Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Ninja Speed Y Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    _magnets.ninjaSpeedYMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
+   if (actionType == "Set Enemy HP Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Enemy HP Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Index") == false) EXIT_WITH_ERROR("[ERROR] Enemy HP Magnet in Rule %lu Action %lu missing 'Index' key.\n", _label, actionId);
+    _magnets.enemyHPMagnet.intensity = actionJs["Intensity"].get<float>();
+    _magnets.enemyHPMagnet.index = actionJs["Index"].get<uint8_t>();
+    recognizedActionType = true;
+   }
+
    if (actionType == "Set Boss Health Magnet")
    {
     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Boss Health Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
