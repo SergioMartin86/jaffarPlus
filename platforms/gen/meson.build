@@ -1,5 +1,7 @@
 # Declaring source and include dirs for a Genesis game instance / emulator
 
+inputType = 'uint16_t'
+
 srcDir = meson.current_source_dir()
 emuInstanceSrc = [ 
  srcDir + '/Genplus-gx/core/sound/ym3438.c',

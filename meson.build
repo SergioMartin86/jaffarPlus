@@ -39,7 +39,7 @@ jaffarSrc = [
 
 # Common Jaffar CFlags
 
-jaffarCFlags = [ '-Wfatal-errors', '-Wall' ]
+jaffarCFlags = [ '-Wfatal-errors', '-Wall', '-DINPUT_TYPE=' + inputType ]
 
 # Building main Jaffar training executable
 executable('jaffar',

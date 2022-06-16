@@ -10,6 +10,7 @@
 #include "shared.h"
 #include "sms_ntsc.h"
 #include "md_ntsc.h"
+#include "main.h"
 
 class EmuInstance : public EmuInstanceBase
 {
@@ -73,17 +74,48 @@ class EmuInstance : public EmuInstanceBase
   state_load(state);
  }
 
- static uint8_t moveStringToCode(const std::string& move)
+ static INPUT_TYPE moveStringToCode(const std::string& move)
  {
-  uint8_t moveCode = 0;
+  INPUT_TYPE moveCode = 0;
 
+  for (size_t i = 0; i < move.size(); i++) switch(move[i])
+  {
+    case 'U': moveCode |= INPUT_UP; break;
+    case 'D': moveCode |= INPUT_DOWN; break;
+    case 'L': moveCode |= INPUT_LEFT; break;
+    case 'R': moveCode |= INPUT_RIGHT; break;
+    case 'S': moveCode |= INPUT_START; break;
+    case 'M': moveCode |= INPUT_MODE; break;
+    case 'A': moveCode |= INPUT_A; break;
+    case 'B': moveCode |= INPUT_B; break;
+    case 'C': moveCode |= INPUT_C; break;
+    case 'X': moveCode |= INPUT_X; break;
+    case 'Y': moveCode |= INPUT_Y; break;
+    case 'Z': moveCode |= INPUT_Z; break;
+    case '.': break;
+    case '|': break;
+    default: EXIT_WITH_ERROR("Move provided cannot be parsed: '%s', unrecognized character: '%c'\n", move.c_str(), move[i]);
+  }
 
   return moveCode;
  }
 
- static std::string moveCodeToString(const uint8_t move)
+ static std::string moveCodeToString(const INPUT_TYPE move)
  {
   std::string moveString;
+
+  if (move & INPUT_UP) moveString += 'U'; else moveString += '.';
+  if (move & INPUT_DOWN) moveString += 'D'; else moveString += '.';
+  if (move & INPUT_LEFT) moveString += 'L'; else moveString += '.';
+  if (move & INPUT_RIGHT) moveString += 'R'; else moveString += '.';
+  if (move & INPUT_START) moveString += 'S'; else moveString += '.';
+  if (move & INPUT_MODE) moveString += 'M'; else moveString += '.';
+  if (move & INPUT_A) moveString += 'A'; else moveString += '.';
+  if (move & INPUT_B) moveString += 'B'; else moveString += '.';
+  if (move & INPUT_C) moveString += 'C'; else moveString += '.';
+  if (move & INPUT_X) moveString += 'X'; else moveString += '.';
+  if (move & INPUT_Y) moveString += 'Y'; else moveString += '.';
+  if (move & INPUT_Z) moveString += 'Z'; else moveString += '.';
 
   return moveString;
  }
@@ -93,9 +125,9 @@ class EmuInstance : public EmuInstanceBase
   advanceState(moveStringToCode(move));
  }
 
- void advanceState(const uint8_t move) override
+ void advanceState(const INPUT_TYPE move) override
  {
-  input.pad[0] = move;
+  jaffarInput = move;
   system_frame_gen(1);
  }
 
