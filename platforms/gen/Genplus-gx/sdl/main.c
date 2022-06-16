@@ -1,9 +1,10 @@
-#include "SDL.h"
-#include "SDL_thread.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_thread.h"
 
 #include "shared.h"
 #include "sms_ntsc.h"
 #include "md_ntsc.h"
+#include <ncurses.h>
 
 #define SOUND_FREQUENCY 48000
 #define SOUND_SAMPLES_SIZE  2048
@@ -156,96 +157,84 @@ static int sdl_video_init()
   return 1;
 }
 
-static void sdl_video_update()
+void sdl_video_update()
 {
-  if (system_hw == SYSTEM_MCD)
-  {
-    system_frame_scd(0);
-  }
-  else if ((system_hw & SYSTEM_PBC) == SYSTEM_MD)
-  {
-    system_frame_gen(0);
-  }
-  else	
-  {
-    system_frame_sms(0);
-  }
 
-  /* viewport size changed */
-  if(bitmap.viewport.changed & 1)
-  {
-    bitmap.viewport.changed &= ~1;
+ /* viewport size changed */
+ if(bitmap.viewport.changed & 1)
+ {
+   bitmap.viewport.changed &= ~1;
 
-    /* source bitmap */
-    sdl_video.srect.w = bitmap.viewport.w+2*bitmap.viewport.x;
-    sdl_video.srect.h = bitmap.viewport.h+2*bitmap.viewport.y;
-    sdl_video.srect.x = 0;
-    sdl_video.srect.y = 0;
-    if (sdl_video.srect.w > sdl_video.surf_screen->w)
-    {
-      sdl_video.srect.x = (sdl_video.srect.w - sdl_video.surf_screen->w) / 2;
-      sdl_video.srect.w = sdl_video.surf_screen->w;
-    }
-    if (sdl_video.srect.h > sdl_video.surf_screen->h)
-    {
-      sdl_video.srect.y = (sdl_video.srect.h - sdl_video.surf_screen->h) / 2;
-      sdl_video.srect.h = sdl_video.surf_screen->h;
-    }
+   /* source bitmap */
+   sdl_video.srect.w = bitmap.viewport.w+2*bitmap.viewport.x;
+   sdl_video.srect.h = bitmap.viewport.h+2*bitmap.viewport.y;
+   sdl_video.srect.x = 0;
+   sdl_video.srect.y = 0;
+   if (sdl_video.srect.w > sdl_video.surf_screen->w)
+   {
+     sdl_video.srect.x = (sdl_video.srect.w - sdl_video.surf_screen->w) / 2;
+     sdl_video.srect.w = sdl_video.surf_screen->w;
+   }
+   if (sdl_video.srect.h > sdl_video.surf_screen->h)
+   {
+     sdl_video.srect.y = (sdl_video.srect.h - sdl_video.surf_screen->h) / 2;
+     sdl_video.srect.h = sdl_video.surf_screen->h;
+   }
 
-    /* destination bitmap */
-    sdl_video.drect.w = sdl_video.srect.w;
-    sdl_video.drect.h = sdl_video.srect.h;
-    sdl_video.drect.x = (sdl_video.surf_screen->w - sdl_video.drect.w) / 2;
-    sdl_video.drect.y = (sdl_video.surf_screen->h - sdl_video.drect.h) / 2;
+   /* destination bitmap */
+   sdl_video.drect.w = sdl_video.srect.w;
+   sdl_video.drect.h = sdl_video.srect.h;
+   sdl_video.drect.x = (sdl_video.surf_screen->w - sdl_video.drect.w) / 2;
+   sdl_video.drect.y = (sdl_video.surf_screen->h - sdl_video.drect.h) / 2;
 
-    /* clear destination surface */
-    SDL_FillRect(sdl_video.surf_screen, 0, 0);
+   /* clear destination surface */
+   SDL_FillRect(sdl_video.surf_screen, 0, 0);
 
 #if 0
-    if (config.render && (interlaced || config.ntsc))  rect.h *= 2;
-    if (config.ntsc) rect.w = (reg[12]&1) ? MD_NTSC_OUT_WIDTH(rect.w) : SMS_NTSC_OUT_WIDTH(rect.w);
-    if (config.ntsc)
-    {
-      sms_ntsc = (sms_ntsc_t *)malloc(sizeof(sms_ntsc_t));
-      md_ntsc = (md_ntsc_t *)malloc(sizeof(md_ntsc_t));
+   if (config.render && (interlaced || config.ntsc))  rect.h *= 2;
+   if (config.ntsc) rect.w = (reg[12]&1) ? MD_NTSC_OUT_WIDTH(rect.w) : SMS_NTSC_OUT_WIDTH(rect.w);
+   if (config.ntsc)
+   {
+     sms_ntsc = (sms_ntsc_t *)malloc(sizeof(sms_ntsc_t));
+     md_ntsc = (md_ntsc_t *)malloc(sizeof(md_ntsc_t));
 
-      switch (config.ntsc)
-      {
-        case 1:
-          sms_ntsc_init(sms_ntsc, &sms_ntsc_composite);
-          md_ntsc_init(md_ntsc, &md_ntsc_composite);
-          break;
-        case 2:
-          sms_ntsc_init(sms_ntsc, &sms_ntsc_svideo);
-          md_ntsc_init(md_ntsc, &md_ntsc_svideo);
-          break;
-        case 3:
-          sms_ntsc_init(sms_ntsc, &sms_ntsc_rgb);
-          md_ntsc_init(md_ntsc, &md_ntsc_rgb);
-          break;
-      }
-    }
-    else
-    {
-      if (sms_ntsc)
-      {
-        free(sms_ntsc);
-        sms_ntsc = NULL;
-      }
+     switch (config.ntsc)
+     {
+       case 1:
+         sms_ntsc_init(sms_ntsc, &sms_ntsc_composite);
+         md_ntsc_init(md_ntsc, &md_ntsc_composite);
+         break;
+       case 2:
+         sms_ntsc_init(sms_ntsc, &sms_ntsc_svideo);
+         md_ntsc_init(md_ntsc, &md_ntsc_svideo);
+         break;
+       case 3:
+         sms_ntsc_init(sms_ntsc, &sms_ntsc_rgb);
+         md_ntsc_init(md_ntsc, &md_ntsc_rgb);
+         break;
+     }
+   }
+   else
+   {
+     if (sms_ntsc)
+     {
+       free(sms_ntsc);
+       sms_ntsc = NULL;
+     }
 
-      if (md_ntsc)
-      {
-        free(md_ntsc);
-        md_ntsc = NULL;
-      }
-    }
+     if (md_ntsc)
+     {
+       free(md_ntsc);
+       md_ntsc = NULL;
+     }
+   }
 #endif
-  }
+ }
 
-  SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
-  SDL_UpdateWindowSurface(sdl_video.window);
+ SDL_BlitSurface(sdl_video.surf_bitmap, &sdl_video.srect, sdl_video.surf_screen, &sdl_video.drect);
+ SDL_UpdateWindowSurface(sdl_video.window);
 
-  ++sdl_video.frames_rendered;
+ ++sdl_video.frames_rendered;
 }
 
 static void sdl_video_close()
@@ -700,7 +689,39 @@ int sdl_input_update(void)
 }
 
 
-int main (int argc, char **argv)
+void initSDLWindow()
+{
+  /* initialize SDL */
+  if(SDL_Init(0) < 0)
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "SDL initialization failed", sdl_video.window);
+    return 1;
+  }
+  sdl_video_init();
+  if (use_sound) sdl_sound_init();
+  sdl_sync_init();
+
+  /* initialize Genesis virtual system */
+  SDL_LockSurface(sdl_video.surf_bitmap);
+  memset(&bitmap, 0, sizeof(t_bitmap));
+  bitmap.width        = 720;
+  bitmap.height       = 576;
+#if defined(USE_8BPP_RENDERING)
+  bitmap.pitch        = (bitmap.width * 1);
+#elif defined(USE_15BPP_RENDERING)
+  bitmap.pitch        = (bitmap.width * 2);
+#elif defined(USE_16BPP_RENDERING)
+  bitmap.pitch        = (bitmap.width * 2);
+#elif defined(USE_32BPP_RENDERING)
+  bitmap.pitch        = (bitmap.width * 4);
+#endif
+  bitmap.data         = sdl_video.surf_bitmap->pixels;
+  SDL_UnlockSurface(sdl_video.surf_bitmap);
+  bitmap.viewport.changed = 3;
+
+}
+
+int orig_main (int argc, char **argv)
 {
   FILE *fp;
   int running = 1;

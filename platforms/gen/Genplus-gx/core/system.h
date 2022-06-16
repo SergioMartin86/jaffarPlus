@@ -104,6 +104,10 @@ extern uint8 system_hw;
 extern uint8 system_bios;
 extern uint32 system_clock;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Function prototypes */
 extern int audio_init(int samplerate, double framerate);
 extern void audio_set_rate(int samplerate, double framerate);
@@ -117,5 +121,8 @@ extern void system_frame_gen(int do_skip);
 extern void system_frame_scd(int do_skip);
 extern void system_frame_sms(int do_skip);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* _SYSTEM_H_ */
 

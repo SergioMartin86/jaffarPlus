@@ -38,7 +38,7 @@
 
 #include "shared.h"
 
-int state_load(unsigned char *state)
+int state_load(const unsigned char *state)
 {
   int i, bufferptr = 0;
 

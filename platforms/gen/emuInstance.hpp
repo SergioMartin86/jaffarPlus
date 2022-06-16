@@ -1,58 +1,47 @@
 #pragma once
 
 #include <emuInstanceBase.hpp>
-#include <Nes_Emu.h>
-#include <Nes_State.h>
 #include <utils.hpp>
 #include <string>
 #include <vector>
 #include <utils.hpp>
 #include <state.hpp>
 
+#include "shared.h"
+#include "sms_ntsc.h"
+#include "md_ntsc.h"
+
 class EmuInstance : public EmuInstanceBase
 {
  public:
 
- // Emulator instance
- Nes_Emu* _nes;
-
- // Base low-memory pointer
- uint8_t* _baseMem;
- uint8_t* _ppuNameTableMem;
+ uint8_t* _68KRam;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
+  FILE *fp;
+
+  /* set default config */
+  error_init();
+  set_config_defaults();
+
+  /* mark all BIOS as unloaded */
+  system_bios = 0;
+
   // Checking whether configuration contains the rom file
   if (isDefined(config, "Rom File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rom File' key.\n");
   std::string romFilePath = config["Rom File"].get<std::string>();
+  if(!load_rom(romFilePath.c_str())) EXIT_WITH_ERROR("Could not initialize emulator with rom file: %s\n", romFilePath.c_str());
 
-  // Checking whether configuration contains the state file
-  if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
-  std::string stateFilePath = config["State File"].get<std::string>();
+  /* initialize system hardware */
+  //#define SOUND_FREQUENCY 48000
+  //#define SOUND_SAMPLES_SIZE  2048
+  //audio_init(SOUND_FREQUENCY, 0);
+  system_init();
+  system_reset();
 
-  // Creating new emulator and loading rom
-  auto emu = new Nes_Emu;
-  std::string romData;
-  loadStringFromFile(romData, romFilePath.c_str());
-  Mem_File_Reader romReader(romData.data(), (int)romData.size());
-  Auto_File_Reader romFile(romReader);
-  auto result = emu->load_ines(romFile);
-  if (result != 0) EXIT_WITH_ERROR("Could not initialize emulator with rom file: %s\n", romFilePath.c_str());
-
-  // Setting emulator
-  setEmulator(emu);
-
-  // Loading state file, if specified
-  if (stateFilePath != "") loadStateFile(stateFilePath);
- }
-
- void setEmulator(Nes_Emu* emulator)
- {
-  _nes = emulator;
-
-  // Setting base memory pointer
-  _baseMem = _nes->low_mem();
-  _ppuNameTableMem = _nes->nametable_mem();
+  // Getting pointer to 68K Ram
+  _68KRam = work_ram;
  }
 
  void loadStateFile(const std::string& stateFilePath) override
@@ -60,71 +49,34 @@ class EmuInstance : public EmuInstanceBase
   // Loading state data
   std::string stateData;
   if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: %s\n", stateFilePath.c_str());
-  Mem_File_Reader stateReader(stateData.data(), (int)stateData.size());
-  Auto_File_Reader stateFile(stateReader);
-
-  // Loading state data into state object
-  Nes_State state;
-  state.read(stateFile);
 
   // Loading state object into the emulator
-  _nes->load_state(state);
+  state_load((uint8_t*)stateData.c_str());
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
  {
-  std::string stateData;
-  stateData.resize(_STATE_DATA_SIZE);
-  serializeState((uint8_t*)stateData.data());
-  saveStringToFile(stateData, stateFilePath.c_str());
+  std::string stateBuffer;
+  stateBuffer.resize(STATE_SIZE);
+  size_t stateSize = state_save((uint8_t*)stateBuffer.c_str());
+  stateBuffer.resize(stateSize);
+  saveStringToFile(stateBuffer, stateFilePath.c_str());
  }
 
  void serializeState(uint8_t* state) const override
  {
-  Mem_Writer w(state, _STATE_DATA_SIZE, 0);
-  Auto_File_Writer a(w);
-  _nes->save_state(a);
+  state_save(state);
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  Mem_File_Reader r(state, _STATE_DATA_SIZE);
-  Auto_File_Reader a(r);
-  _nes->load_state(a);
+  state_load(state);
  }
-
- // Controller input bits
- // 0 - A / 1
- // 1 - B / 2
- // 2 - Select / 4
- // 3 - Start / 8
- // 4 - Up / 16
- // 5 - Down / 32
- // 6 - Left / 64
- // 7 - Right / 128
-
- // Move Format:
- // RLDUTSBA
- // ........
 
  static uint8_t moveStringToCode(const std::string& move)
  {
   uint8_t moveCode = 0;
 
-  for (size_t i = 0; i < move.size(); i++) switch(move[i])
-  {
-    case 'R': moveCode |= 0b10000000; break;
-    case 'L': moveCode |= 0b01000000; break;
-    case 'D': moveCode |= 0b00100000; break;
-    case 'U': moveCode |= 0b00010000; break;
-    case 'S': moveCode |= 0b00001000; break;
-    case 's': moveCode |= 0b00000100; break;
-    case 'B': moveCode |= 0b00000010; break;
-    case 'A': moveCode |= 0b00000001; break;
-    case '.': break;
-    case '|': break;
-    default: EXIT_WITH_ERROR("Move provided cannot be parsed: '%s', unrecognized character: '%c'\n", move.c_str(), move[i]);
-  }
 
   return moveCode;
  }
@@ -132,15 +84,6 @@ class EmuInstance : public EmuInstanceBase
  static std::string moveCodeToString(const uint8_t move)
  {
   std::string moveString;
-
-  if (move & 0b10000000) moveString += 'R'; else moveString += '.';
-  if (move & 0b01000000) moveString += 'L'; else moveString += '.';
-  if (move & 0b00100000) moveString += 'D'; else moveString += '.';
-  if (move & 0b00010000) moveString += 'U'; else moveString += '.';
-  if (move & 0b00001000) moveString += 'S'; else moveString += '.';
-  if (move & 0b00000100) moveString += 's'; else moveString += '.';
-  if (move & 0b00000010) moveString += 'B'; else moveString += '.';
-  if (move & 0b00000001) moveString += 'A'; else moveString += '.';
 
   return moveString;
  }
@@ -152,7 +95,8 @@ class EmuInstance : public EmuInstanceBase
 
  void advanceState(const uint8_t move) override
  {
-  _nes->emulate_frame(move,0);
+  input.pad[0] = move;
+  system_frame_gen(1);
  }
 
 };

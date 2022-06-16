@@ -551,7 +551,7 @@ unsigned int ctrl_io_read_word(unsigned int address)
 
             m68k_poll_detect(3 << (index - 0x10));
           }
-          
+
           return scd.regs[index >> 1].w;
         }
       }

@@ -523,7 +523,7 @@ static const uint8 tms_crom[16] =
 };
 
 /* original SG-1000 palette */
-#if defined(USE_8BPP_RENDERING)
+#ifdef USE_8BPP_RENDERING
 static const uint8 tms_palette[16] =
 {
   0x00, 0x00, 0x39, 0x79,
@@ -531,8 +531,9 @@ static const uint8 tms_palette[16] =
   0xE9, 0xED, 0xD5, 0xD9,
   0x35, 0xCE, 0xDA, 0xFF
 };
+#endif
 
-#elif defined(USE_15BPP_RENDERING)
+#ifdef USE_15BPP_RENDERING
 static const uint16 tms_palette[16] =
 {
   0x8000, 0x8000, 0x9308, 0xAF6F,
@@ -540,8 +541,9 @@ static const uint16 tms_palette[16] =
   0xFD4A, 0xFDEF, 0xEB0A, 0xF330,
   0x92A7, 0xE177, 0xE739, 0xFFFF
 };
+#endif
 
-#elif defined(USE_16BPP_RENDERING)
+#ifdef USE_16BPP_RENDERING
 static const uint16 tms_palette[16] =
 {
   0x0000, 0x0000, 0x2648, 0x5ECF,
@@ -549,8 +551,9 @@ static const uint16 tms_palette[16] =
   0xF2AA, 0xFBCF, 0xD60A, 0xE670,
   0x2567, 0xC2F7, 0xCE59, 0xFFFF
 };
+#endif
 
-#elif defined(USE_32BPP_RENDERING)
+#ifdef USE_32BPP_RENDERING
 static const uint32 tms_palette[16] =
 {
   0xFF000000, 0xFF000000, 0xFF21C842, 0xFF5EDC78,
@@ -4106,6 +4109,10 @@ void render_reset(void)
 
 void render_line(int line)
 {
+#ifdef PREVENT_RENDERING
+ return;
+#endif
+
   /* Check display status */
   if (reg[1] & 0x40)
   {
@@ -4173,6 +4180,10 @@ void blank_line(int line, int offset, int width)
 
 void remap_line(int line)
 {
+#ifdef PREVENT_RENDERING
+ return;
+#endif
+
   /* Line width */
   int width = bitmap.viewport.w + 2*bitmap.viewport.x;
 
@@ -4230,4 +4241,9 @@ void remap_line(int line)
     }
  #endif
   }
+
+//  refresh();
+//  usleep(1000);
+//  endwin();
+//  exit(0);
 }

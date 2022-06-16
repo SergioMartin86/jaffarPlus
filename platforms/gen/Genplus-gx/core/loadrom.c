@@ -434,7 +434,7 @@ int load_bios(int system)
             /* default CD hardware */
             cdd.type = CD_TYPE_DEFAULT;
           }
-         
+
 #ifdef LSB_FIRST
           /* Byteswap ROM to optimize 16-bit access */
           int i;
@@ -454,7 +454,7 @@ int load_bios(int system)
 
         return size;
       }
-      
+
       return -1;
     }
 
@@ -545,7 +545,7 @@ int load_bios(int system)
  * Return 0 on error, 1 on success
  *
  ***************************************************************************/
-int load_rom(char *filename)
+int load_rom(const char *filename)
 {
   int i, size;
 

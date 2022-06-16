@@ -66,12 +66,20 @@ extern ROMINFO rominfo;
 extern uint8 romtype;
 
 /* Function prototypes */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int load_bios(int system);
-extern int load_rom(char *filename);
+extern int load_rom(const char *filename);
 extern void get_region(char *romheader);
 extern char *get_company(void);
 extern char *get_peripheral(int index);
 extern void getrominfo(char *romheader);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _LOADROM_H_ */
 

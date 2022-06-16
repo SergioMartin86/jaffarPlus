@@ -56,7 +56,16 @@ typedef struct
 
 /* Global variables */
 extern t_config config;
-extern void set_config_defaults(void);
+
+#ifdef __cplusplus
+extern "C" {
+#else
+extern
+#endif
+void set_config_defaults(void);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _CONFIG_H_ */
 

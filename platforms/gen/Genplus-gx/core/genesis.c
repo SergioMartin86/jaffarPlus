@@ -161,7 +161,7 @@ void gen_init(void)
     {
       /* initialize SUB-CPU */
       s68k_init();
-      s68k.aerr_enabled = config.addr_error; 
+      s68k.aerr_enabled = config.addr_error;
 
       /* initialize CD hardware */
       scd_init();

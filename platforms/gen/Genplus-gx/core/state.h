@@ -50,8 +50,16 @@
   memcpy(&state[bufferptr], param, size); \
   bufferptr+= size;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Function prototypes */
-extern int state_load(unsigned char *state);
+extern int state_load(const unsigned char *state);
 extern int state_save(unsigned char *state);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
