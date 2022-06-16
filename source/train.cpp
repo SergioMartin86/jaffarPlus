@@ -75,7 +75,7 @@ void Train::run()
     for (const auto& key : newMoveKeySet)
     {
      auto itr = key.second.begin();
-     printf("if (*ninjaAnimationType == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
+     printf("if (*winFlag == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
      itr++;
      for (; itr != key.second.end(); itr++)
      {
@@ -246,8 +246,8 @@ void Train::computeStates()
 
        for (uint16_t i = 0; i < 256; i++)
         if (possibleMoveSet.contains((uint8_t)i) == false)
-        if (((uint8_t)i & 0b00001000) == 0)
-        if (((uint8_t)i & 0b00000100) == 0)
+        if (((uint8_t)i & 0b00001000) == 0) // Start
+        //if (((uint8_t)i & 0b00000100) == 0) // Select
         {
          alternativeMoveSet.insert((uint8_t)i);
          fullMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
@@ -258,7 +258,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t ninjaAnimationType = *_gameInstances[threadId]->ninjaAnimationType;
+       uint8_t winFlag = *_gameInstances[threadId]->winFlag;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -373,11 +373,11 @@ void Train::computeStates()
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          auto moveKey = ninjaAnimationType;
+          auto moveKey = winFlag;
           if (newMoveKeySet[moveKey].contains(possibleMoves[idx]) == false)
           {
            // Storing new move
-           newMoveKeySet[ninjaAnimationType].insert(possibleMoves[idx]);
+           newMoveKeySet[winFlag].insert(possibleMoves[idx]);
 
            //           if (possibleMoves[idx].find("s") != std::string::npos)
            //           {

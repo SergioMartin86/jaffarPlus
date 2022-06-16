@@ -15,98 +15,37 @@ struct genericMagnet_t {
 };
 
 // Datatype to describe a magnet
-struct weaponMagnet_t {
- float reward = 0.0; // How strong the magnet is
- uint8_t weapon = 0;  // Specifies the weapon number
-};
-
-// Datatype to describe a magnet
 struct magnetSet_t {
- // Relevant simon magnets
- genericMagnet_t ninjaHorizontalMagnet;
- genericMagnet_t ninjaVerticalMagnet;
- genericMagnet_t bossHorizontalMagnet;
- genericMagnet_t bossVerticalMagnet;
- genericMagnet_t ninjaPowerMagnet;
- weaponMagnet_t ninjaWeaponMagnet;
- float bossHealthMagnet = 0.0;
- float ninjaBossDistanceMagnet = 0.0;
+ genericMagnet_t marbleXMagnet;
+ genericMagnet_t marbleYMagnet;
+ genericMagnet_t marbleZMagnet;
 };
-
 
 class GameInstance : public GameInstanceBase
 {
  public:
 
   // Container for game-specific values
-  uint8_t*  frameCounter             ;
-  uint8_t*  gameTime                 ;
-  uint8_t*  gameMode                 ;
-  uint8_t*  currentStage             ;
-  uint8_t*  currentSubStage          ;
-  uint8_t*  ninjalives               ;
-  uint8_t*  ninjaPower               ;
-  uint8_t*  ninjaHP                  ;
-  uint8_t*  bossHP                   ;
-  uint8_t*  ninjaStateFlags          ;
-  uint8_t*  ninjaIsDead              ;
-  uint8_t*  ninjaPosX                ;
-  uint8_t*  ninjaPosXFrac            ;
-  uint8_t*  ninjaSpeedX              ;
-  uint8_t*  ninjaSpeedXFrac          ;
-  uint8_t*  ninjaPosY                ;
-  uint8_t*  ninjaSpeedY              ;
-  uint8_t*  ninjaSpeedYFrac          ;
-  uint8_t*  ninjaCollisionFlags      ;
-  uint8_t*  ninjaFlinchDirection     ;
-  uint8_t*  ninjaInvincibilityTimer  ;
-  uint8_t*  ninjaWeapon              ;
-  uint8_t*  ninjaAnimationType       ;
-  uint8_t*  ninjaAnimationOffset     ;
-  uint8_t*  ninjaAnimationTimer      ;
-  uint8_t*  ninjaAnimationFrame      ;
-  uint8_t*  enemyCount               ;
-  uint8_t*  timeoutSeconds1          ;
-  uint8_t*  timeoutSeconds60         ;
-  uint8_t*  screenScroll1            ;
-  uint8_t*  screenScroll2            ;
-  uint8_t*  screenScroll3            ;
+  uint8_t*  gameTimer;
+  uint8_t*  gameCycle;
+  uint8_t*  winFlag;
+  uint8_t*  marbleState;
+  uint8_t*  marbleFlags;
+  uint8_t*  marblePosX1;
+  uint8_t*  marblePosX2;
+  uint8_t*  marblePosY1;
+  uint8_t*  marblePosY2;
+  uint8_t*  marblePosZ;
+  uint8_t*  marbleAirtime;
+  int8_t*   marbleVelX;
+  int8_t*   marbleVelY;
+  uint8_t*  marbleDeadFlag;
+  uint8_t*  marbleSurfaceAngle;
 
-  uint8_t*  ninjaProjectile1PosX;
-  uint8_t*  ninjaProjectile2PosX;
-  uint8_t*  ninjaProjectile3PosX;
+  uint16_t  marblePosX;
+  uint16_t  marblePosY;
 
-  uint8_t*  ninjaProjectile1PosY;
-  uint8_t*  ninjaProjectile2PosY;
-  uint8_t*  ninjaProjectile3PosY;
-
-  uint8_t*  enemyPosX;
-  uint8_t*  enemyPosXFrac;
-  uint8_t*  enemyPosY;
-  uint8_t*  enemyPosYFrac;
-  uint8_t*  enemyVelX;
-  uint8_t*  enemyVelXFrac;
-  uint8_t*  enemyVelY;
-  uint8_t*  enemyVelYFrac;
-
-  uint8_t*  enemySlots;
-  uint8_t*  enemyFlags;
-  uint8_t*  enemyType;
-  uint8_t*  enemyAITimer;
-  uint8_t*  enemyAIStage;
-  uint8_t*  enemyHP;
-  uint8_t*  enemyActions;
-  uint8_t*  enemyLastIdx;
-  uint8_t*  enemyCollision;
-
-  uint8_t* ppuIndicator;
-  uint8_t timerTolerance;
-
-  // Derivative Values
-  double absolutePosX;
-  float ninjaBossDistance;
-
-  uint8_t ppuIndicatorBit6;
+  std::set<std::string> hashIncludes;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;
