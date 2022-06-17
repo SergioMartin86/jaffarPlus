@@ -14,10 +14,10 @@
 
 int joynum = 0;
 uint16_t jaffarInput;
-int log_error   = 0;
+int log_error   = 1;
 int debug_on    = 0;
 int turbo_mode  = 0;
-int use_sound   = 1;
+int use_sound   = 0;
 int fullscreen  = 0; /* SDL_WINDOW_FULLSCREEN */
 
 struct {

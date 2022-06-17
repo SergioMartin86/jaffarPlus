@@ -148,7 +148,7 @@ static void (*set_irq_line)(unsigned int level);
 static void (*set_irq_line_delay)(unsigned int level);
 
 /* Vertical counter overflow values (see hvc.h) */
-static const uint16 vc_table[4][2] = 
+static const uint16 vc_table[4][2] =
 {
   /* NTSC, PAL */
   {0xDA , 0xF2},  /* Mode 4 (192 lines) */
@@ -158,13 +158,13 @@ static const uint16 vc_table[4][2] =
 };
 
 /* FIFO access slots timings */
-static const int fifo_timing_h32[16+4] = 
+static const int fifo_timing_h32[16+4] =
 {
   230, 510, 810, 970, 1130, 1450, 1610, 1770, 2090, 2250, 2410, 2730, 2890, 3050, 3350, 3370,
   MCYCLES_PER_LINE + 230, MCYCLES_PER_LINE + 510, MCYCLES_PER_LINE + 810, MCYCLES_PER_LINE + 970, 
 };
 
-static const int fifo_timing_h40[18+4] = 
+static const int fifo_timing_h40[18+4] =
 {
   352, 820, 948, 1076, 1332, 1460, 1588, 1844, 1972, 2100, 2356, 2484, 2612, 2868, 2996, 3124, 3364, 3380,
   MCYCLES_PER_LINE + 352, MCYCLES_PER_LINE + 820, MCYCLES_PER_LINE + 948, MCYCLES_PER_LINE + 1076, 

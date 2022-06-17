@@ -24,6 +24,9 @@ class PlaybackInstance : public PlaybackInstanceBase
  // Function to render frame
  void renderFrame(const uint16_t currentStep, const std::string& move) override
  {
+  // Sleeping for the inverse frame rate
+  usleep(_INVERSE_FRAME_RATE);
+
   system_frame_gen(0);
   sdl_video_update();
  }

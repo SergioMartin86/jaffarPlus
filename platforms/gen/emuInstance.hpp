@@ -12,6 +12,10 @@
 #include "md_ntsc.h"
 #include "main.h"
 
+#define SOUND_FREQUENCY 48000
+#define SOUND_SAMPLES_SIZE  2048
+static short soundframe[SOUND_SAMPLES_SIZE];
+
 class EmuInstance : public EmuInstanceBase
 {
  public:
@@ -28,18 +32,20 @@ class EmuInstance : public EmuInstanceBase
 
   /* mark all BIOS as unloaded */
   system_bios = 0;
-
   // Checking whether configuration contains the rom file
   if (isDefined(config, "Rom File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rom File' key.\n");
   std::string romFilePath = config["Rom File"].get<std::string>();
   if(!load_rom(romFilePath.c_str())) EXIT_WITH_ERROR("Could not initialize emulator with rom file: %s\n", romFilePath.c_str());
 
   /* initialize system hardware */
-  //#define SOUND_FREQUENCY 48000
-  //#define SOUND_SAMPLES_SIZE  2048
-  //audio_init(SOUND_FREQUENCY, 0);
+  audio_init(SOUND_FREQUENCY, 0);
   system_init();
   system_reset();
+
+  // Checking whether configuration contains the state file
+  if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
+  std::string stateFilePath = config["State File"].get<std::string>();
+  loadStateFile(stateFilePath);
 
   // Getting pointer to 68K Ram
   _68KRam = work_ram;
@@ -129,6 +135,7 @@ class EmuInstance : public EmuInstanceBase
  {
   jaffarInput = move;
   system_frame_gen(1);
+  audio_update(soundframe);
  }
 
 };
