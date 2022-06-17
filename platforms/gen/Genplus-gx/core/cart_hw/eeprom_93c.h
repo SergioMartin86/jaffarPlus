@@ -62,7 +62,7 @@ typedef struct
 } T_EEPROM_93C;
 
 /* global variables */
-extern T_EEPROM_93C eeprom_93c;
+extern __thread T_EEPROM_93C eeprom_93c;
 
 /* Function prototypes */
 extern void eeprom_93c_init();

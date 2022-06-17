@@ -283,8 +283,8 @@ typedef struct
 } m68ki_cpu_core;
 
 /* CPU cores */
-extern m68ki_cpu_core m68k;
-extern m68ki_cpu_core s68k;
+extern __thread m68ki_cpu_core m68k;
+extern __thread m68ki_cpu_core s68k;
 
 
 /* ======================================================================== */

@@ -99,7 +99,7 @@
 }
 
 /* Global variables */
-extern uint16 spr_col;
+extern __thread uint16 spr_col;
 
 /* Function prototypes */
 extern void render_init(void);

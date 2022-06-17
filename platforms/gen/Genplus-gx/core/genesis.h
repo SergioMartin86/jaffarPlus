@@ -55,16 +55,16 @@ typedef union
 
 /* Global variables */
 #ifdef USE_DYNAMIC_ALLOC
-extern external_t *ext;
+extern __thread external_t *ext;
 #else
-extern external_t ext;
+extern __thread external_t ext;
 #endif
-extern uint8 boot_rom[0x800];
-extern uint8 work_ram[0x10000];
-extern uint8 zram[0x2000];
-extern uint32 zbank;
-extern uint8 zstate;
-extern uint8 pico_current;
+extern __thread uint8 boot_rom[0x800];
+extern __thread uint8 work_ram[0x10000];
+extern __thread uint8 zram[0x2000];
+extern __thread uint32 zbank;
+extern __thread uint8 zstate;
+extern __thread uint8 pico_current;
 
 /* Function prototypes */
 extern void gen_init(void);

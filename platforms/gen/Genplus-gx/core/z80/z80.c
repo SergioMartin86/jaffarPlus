@@ -204,32 +204,32 @@
 
 #ifdef Z80_OVERCLOCK_SHIFT
 #define USE_CYCLES(A) Z80.cycles += ((A) * z80_cycle_ratio) >> Z80_OVERCLOCK_SHIFT
-UINT32 z80_cycle_ratio;
+__thread UINT32 z80_cycle_ratio;
 #else
 #define USE_CYCLES(A) Z80.cycles += (A)
 #endif
 
-Z80_Regs Z80;
-UINT8 z80_last_fetch;
+ __thread Z80_Regs Z80;
+ __thread UINT8 z80_last_fetch;
 
-unsigned char *z80_readmap[64];
-unsigned char *z80_writemap[64];
+ __thread unsigned char *z80_readmap[64];
+ __thread unsigned char *z80_writemap[64];
 
-void (*z80_writemem)(unsigned int address, unsigned char data);
-unsigned char (*z80_readmem)(unsigned int address);
-void (*z80_writeport)(unsigned int port, unsigned char data);
-unsigned char (*z80_readport)(unsigned int port);
+ __thread void (*z80_writemem)(unsigned int address, unsigned char data);
+ __thread unsigned char (*z80_readmem)(unsigned int address);
+ __thread void (*z80_writeport)(unsigned int port, unsigned char data);
+ __thread unsigned char (*z80_readport)(unsigned int port);
 
-static UINT32 EA;
+__thread UINT32 EA;
 
-static UINT8 SZ[256];       /* zero and sign flags */
-static UINT8 SZ_BIT[256];   /* zero, sign and parity/overflow (=zero) flags for BIT opcode */
-static UINT8 SZP[256];      /* zero, sign and parity flags */
-static UINT8 SZHV_inc[256]; /* zero, sign, half carry and overflow flags INC r8 */
-static UINT8 SZHV_dec[256]; /* zero, sign, half carry and overflow flags DEC r8 */
+__thread UINT8 SZ[256];       /* zero and sign flags */
+__thread UINT8 SZ_BIT[256];   /* zero, sign and parity/overflow (=zero) flags for BIT opcode */
+__thread UINT8 SZP[256];      /* zero, sign and parity flags */
+__thread UINT8 SZHV_inc[256]; /* zero, sign, half carry and overflow flags INC r8 */
+__thread UINT8 SZHV_dec[256]; /* zero, sign, half carry and overflow flags DEC r8 */
 
-static UINT8 SZHVC_add[2*256*256]; /* flags for ADD opcode */
-static UINT8 SZHVC_sub[2*256*256]; /* flags for SUB opcode */
+__thread UINT8 SZHVC_add[2*256*256]; /* flags for ADD opcode */
+__thread UINT8 SZHVC_sub[2*256*256]; /* flags for SUB opcode */
 
 static const UINT16 cc_op[0x100] = {
    4*15,10*15, 7*15, 6*15, 4*15, 4*15, 7*15, 4*15, 4*15,11*15, 7*15, 6*15, 4*15, 4*15, 7*15, 4*15,
@@ -360,7 +360,7 @@ static const UINT16 cc_ex[0x100] = {
  6*15, 0*15, 0*15, 0*15, 7*15, 0*15, 0*15, 2*15, 6*15, 0*15, 0*15, 0*15, 7*15, 0*15, 0*15, 2*15,
  6*15, 0*15, 0*15, 0*15, 7*15, 0*15, 0*15, 2*15, 6*15, 0*15, 0*15, 0*15, 7*15, 0*15, 0*15, 2*15};
 
-static const UINT16 *cc[6];
+__thread const UINT16 *cc[6];
 #define Z80_TABLE_dd  Z80_TABLE_xy
 #define Z80_TABLE_fd  Z80_TABLE_xy
 

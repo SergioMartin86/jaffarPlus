@@ -45,19 +45,19 @@
 
 /* FM output buffer (large enough to hold a whole frame at original chips rate) */
 #if defined(HAVE_YM3438_CORE) || defined(HAVE_OPLL_CORE)
-static int fm_buffer[1080 * 2 * 24];
+__thread int fm_buffer[1080 * 2 * 24];
 #else
-static int fm_buffer[1080 * 2];
+__thread int fm_buffer[1080 * 2];
 #endif
 
-static int fm_last[2];
-static int *fm_ptr;
+__thread int fm_last[2];
+__thread int *fm_ptr;
 
 /* Cycle-accurate FM samples */
-static int fm_cycles_ratio;
-static int fm_cycles_start;
-static int fm_cycles_count;
-static int fm_cycles_busy;
+__thread int fm_cycles_ratio;
+__thread int fm_cycles_start;
+__thread int fm_cycles_count;
+__thread int fm_cycles_busy;
 
 /* YM chip function pointers */
 static void (*YM_Update)(int *buffer, int length);

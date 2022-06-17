@@ -62,8 +62,8 @@ typedef struct
 
 
 /* Global variables */
-extern ROMINFO rominfo;
-extern uint8 romtype;
+extern __thread ROMINFO rominfo;
+extern __thread uint8 romtype;
 
 /* Function prototypes */
 #ifdef __cplusplus

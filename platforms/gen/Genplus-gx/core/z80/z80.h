@@ -49,20 +49,20 @@ typedef struct
 }  Z80_Regs;
 
 
-extern Z80_Regs Z80;
-extern UINT8 z80_last_fetch;
+extern __thread Z80_Regs Z80;
+extern __thread UINT8 z80_last_fetch;
 
 #ifdef Z80_OVERCLOCK_SHIFT
-extern UINT32 z80_cycle_ratio;
+extern __thread UINT32 z80_cycle_ratio;
 #endif
 
-extern unsigned char *z80_readmap[64];
-extern unsigned char *z80_writemap[64];
+extern __thread unsigned char *z80_readmap[64];
+extern __thread unsigned char *z80_writemap[64];
 
-extern void (*z80_writemem)(unsigned int address, unsigned char data);
-extern unsigned char (*z80_readmem)(unsigned int address);
-extern void (*z80_writeport)(unsigned int port, unsigned char data);
-extern unsigned char (*z80_readport)(unsigned int port);
+extern __thread void (*z80_writemem)(unsigned int address, unsigned char data);
+extern __thread unsigned char (*z80_readmem)(unsigned int address);
+extern __thread void (*z80_writeport)(unsigned int port, unsigned char data);
+extern __thread unsigned char (*z80_readport)(unsigned int port);
 
 extern void z80_init(const void *config, int (*irqcallback)(int));
 extern void z80_reset (void);

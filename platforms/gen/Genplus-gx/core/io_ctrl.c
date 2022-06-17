@@ -50,9 +50,9 @@
 #include "sportspad.h"
 #include "graphic_board.h"
 
-uint8 io_reg[0x10];
+__thread uint8 io_reg[0x10];
 
-uint8 region_code = REGION_USA;
+__thread uint8 region_code = REGION_USA;
 
 static struct port_t
 {

@@ -51,8 +51,8 @@
 #define REGION_EUROPE     0xC0
 
 /* Global variables */
-extern uint8 io_reg[0x10];
-extern uint8 region_code;
+extern __thread uint8 io_reg[0x10];
+extern __thread uint8 region_code;
 
 /* Function prototypes */
 extern void io_init(void);

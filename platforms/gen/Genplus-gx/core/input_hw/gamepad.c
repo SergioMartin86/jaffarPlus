@@ -54,7 +54,7 @@ static struct
   uint8 Counter;
 } flipflop[2];
 
-static uint8 latch;
+__thread uint8 latch;
 
 
 void gamepad_reset(int port)

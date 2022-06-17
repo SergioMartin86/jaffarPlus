@@ -43,17 +43,17 @@
 #include "eq.h"
 
 /* Global variables */
-t_bitmap bitmap;
-t_snd snd;
-uint32 mcycles_vdp;
-uint8 system_hw;
-uint8 system_bios;
-uint32 system_clock;
-int16 SVP_cycles = 800; 
+__thread t_bitmap bitmap;
+__thread t_snd snd;
+__thread uint32 mcycles_vdp;
+__thread uint8 system_hw;
+__thread uint8 system_bios;
+__thread uint32 system_clock;
+__thread int16 SVP_cycles = 800;
 
-static uint8 pause_b;
-static EQSTATE eq[2];
-static int16 llp,rrp;
+__thread  uint8 pause_b;
+__thread  EQSTATE eq[2];
+__thread  int16 llp,rrp;
 
 /******************************************************************************************/
 /* Audio subsystem                                                                        */

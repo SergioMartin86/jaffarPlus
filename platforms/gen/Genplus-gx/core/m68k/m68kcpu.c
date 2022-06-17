@@ -27,9 +27,9 @@ extern int vdp_68k_irq_ack(int int_level);
 static unsigned char m68ki_cycles[0x10000];
 #endif
 
-static int irq_latency;
+__thread int irq_latency;
 
-m68ki_cpu_core m68k;
+__thread m68ki_cpu_core m68k;
 
 
 /* ======================================================================== */

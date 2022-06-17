@@ -233,7 +233,7 @@ static const Bit32u fm_algorithm[4][6][8] = {
     }
 };
 
-static Bit32u chip_type = ym3438_mode_readmode;
+__thread Bit32u chip_type = ym3438_mode_readmode;
 
 static void OPN2_DoIO(ym3438_t *chip)
 {

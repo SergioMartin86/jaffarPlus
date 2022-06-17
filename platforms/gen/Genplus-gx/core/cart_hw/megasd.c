@@ -58,7 +58,7 @@ typedef struct
 } T_MEGASD_HW;
 
 /* MegaSD mapper hardware */
-static T_MEGASD_HW megasd_hw;
+__thread T_MEGASD_HW megasd_hw;
 
 /* Internal function prototypes */
 static void megasd_ctrl_write_byte(unsigned int address, unsigned int data);

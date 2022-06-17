@@ -45,7 +45,7 @@
 #define BIT_CS   (2)
 
 
-T_EEPROM_93C eeprom_93c;
+__thread T_EEPROM_93C eeprom_93c;
 
 void eeprom_93c_init()
 {

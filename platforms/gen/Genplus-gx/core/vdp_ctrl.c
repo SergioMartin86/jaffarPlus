@@ -54,43 +54,43 @@
 }
 
 /* VDP context */
-uint8 ALIGNED_(4) sat[0x400];    /* Internal copy of sprite attribute table */
-uint8 ALIGNED_(4) vram[0x10000]; /* Video RAM (64K x 8-bit) */
-uint8 ALIGNED_(4) cram[0x80];    /* On-chip color RAM (64 x 9-bit) */
-uint8 ALIGNED_(4) vsram[0x80];   /* On-chip vertical scroll RAM (40 x 11-bit) */
-uint8 reg[0x20];                 /* Internal VDP registers (23 x 8-bit) */
-uint8 hint_pending;              /* 0= Line interrupt is pending */
-uint8 vint_pending;              /* 1= Frame interrupt is pending */
-uint16 status;                   /* VDP status flags */
-uint32 dma_length;               /* DMA remaining length */
+__thread uint8 ALIGNED_(4) sat[0x400];    /* Internal copy of sprite attribute table */
+__thread uint8 ALIGNED_(4) vram[0x10000]; /* Video RAM (64K x 8-bit) */
+__thread uint8 ALIGNED_(4) cram[0x80];    /* On-chip color RAM (64 x 9-bit) */
+__thread uint8 ALIGNED_(4) vsram[0x80];   /* On-chip vertical scroll RAM (40 x 11-bit) */
+__thread uint8 reg[0x20];                 /* Internal VDP registers (23 x 8-bit) */
+__thread uint8 hint_pending;              /* 0= Line interrupt is pending */
+__thread uint8 vint_pending;              /* 1= Frame interrupt is pending */
+__thread uint16 status;                   /* VDP status flags */
+__thread uint32 dma_length;               /* DMA remaining length */
 
 /* Global variables */
-uint16 ntab;                      /* Name table A base address */
-uint16 ntbb;                      /* Name table B base address */
-uint16 ntwb;                      /* Name table W base address */
-uint16 satb;                      /* Sprite attribute table base address */
-uint16 hscb;                      /* Horizontal scroll table base address */
-uint8 bg_name_dirty[0x800];       /* 1= This pattern is dirty */
-uint16 bg_name_list[0x800];       /* List of modified pattern indices */
-uint16 bg_list_index;             /* # of modified patterns in list */
-uint8 hscroll_mask;               /* Horizontal Scrolling line mask */
-uint8 playfield_shift;            /* Width of planes A, B (in bits) */
-uint8 playfield_col_mask;         /* Playfield column mask */
-uint16 playfield_row_mask;        /* Playfield row mask */
-uint16 vscroll;                   /* Latched vertical scroll value */
-uint8 odd_frame;                  /* 1: odd field, 0: even field */
-uint8 im2_flag;                   /* 1= Interlace mode 2 is being used */
-uint8 interlaced;                 /* 1: Interlaced mode 1 or 2 */
-uint8 vdp_pal;                    /* 1: PAL , 0: NTSC (default) */
-uint8 h_counter;                  /* Horizontal counter */
-uint16 v_counter;                 /* Vertical counter */
-uint16 vc_max;                    /* Vertical counter overflow value */
-uint16 lines_per_frame;           /* PAL: 313 lines, NTSC: 262 lines */
-uint16 max_sprite_pixels;         /* Max. sprites pixels per line (parsing & rendering) */
-int32 fifo_write_cnt;             /* VDP FIFO write count */
-uint32 fifo_slots;                /* VDP FIFO access slot count */
-uint32 hvc_latch;                 /* latched HV counter */
-const uint8 *hctab;               /* pointer to H Counter table */
+__thread uint16 ntab;                      /* Name table A base address */
+__thread uint16 ntbb;                      /* Name table B base address */
+__thread uint16 ntwb;                      /* Name table W base address */
+__thread uint16 satb;                      /* Sprite attribute table base address */
+__thread uint16 hscb;                      /* Horizontal scroll table base address */
+__thread uint8 bg_name_dirty[0x800];       /* 1= This pattern is dirty */
+__thread uint16 bg_name_list[0x800];       /* List of modified pattern indices */
+__thread uint16 bg_list_index;             /* # of modified patterns in list */
+__thread uint8 hscroll_mask;               /* Horizontal Scrolling line mask */
+__thread uint8 playfield_shift;            /* Width of planes A, B (in bits) */
+__thread uint8 playfield_col_mask;         /* Playfield column mask */
+__thread uint16 playfield_row_mask;        /* Playfield row mask */
+__thread uint16 vscroll;                   /* Latched vertical scroll value */
+__thread uint8 odd_frame;                  /* 1: odd field, 0: even field */
+__thread uint8 im2_flag;                   /* 1= Interlace mode 2 is being used */
+__thread uint8 interlaced;                 /* 1: Interlaced mode 1 or 2 */
+__thread uint8 vdp_pal;                    /* 1: PAL , 0: NTSC (default) */
+__thread uint8 h_counter;                  /* Horizontal counter */
+__thread uint16 v_counter;                 /* Vertical counter */
+__thread uint16 vc_max;                    /* Vertical counter overflow value */
+__thread uint16 lines_per_frame;           /* PAL: 313 lines, NTSC: 262 lines */
+__thread uint16 max_sprite_pixels;         /* Max. sprites pixels per line (parsing & rendering) */
+__thread int32 fifo_write_cnt;             /* VDP FIFO write count */
+__thread uint32 fifo_slots;                /* VDP FIFO access slot count */
+__thread uint32 hvc_latch;                 /* latched HV counter */
+__thread const uint8 *hctab;               /* pointer to H Counter table */
 
 /* Function pointers */
 void (*vdp_68k_data_w)(unsigned int data);
@@ -125,23 +125,23 @@ static const uint8 shift_table[]        = { 6, 7, 0, 8 };
 static const uint8 col_mask_table[]     = { 0x0F, 0x1F, 0x0F, 0x3F };
 static const uint16 row_mask_table[]    = { 0x0FF, 0x1FF, 0x2FF, 0x3FF };
 
-static uint8 border;          /* Border color index */
-static uint8 pending;         /* Pending write flag */
-static uint8 code;            /* Code register */
-static uint8 dma_type;        /* DMA mode */
-static uint16 addr;           /* Address register */
-static uint16 addr_latch;     /* Latched A15, A14 of address */
-static uint16 sat_base_mask;  /* Base bits of SAT */
-static uint16 sat_addr_mask;  /* Index bits of SAT */
-static uint16 dma_src;        /* DMA source address */
-static uint32 dma_endCycles;  /* 68k cycles to DMA end */
-static int dmafill;           /* DMA Fill pending flag */
-static int cached_write;      /* 2nd part of 32-bit CTRL port write (Genesis mode) or LSB of CRAM data (Game Gear mode) */
-static uint16 fifo[4];        /* FIFO ring-buffer */
-static int fifo_idx;          /* FIFO write index */
-static int fifo_byte_access;  /* FIFO byte access flag */
-static uint32 fifo_cycles;    /* FIFO next access cycle */
-static int *fifo_timing;      /* FIFO slots timing table */
+__thread  uint8 border;          /* Border color index */
+__thread  uint8 pending;         /* Pending write flag */
+__thread  uint8 code;            /* Code register */
+__thread  uint8 dma_type;        /* DMA mode */
+__thread  uint16 addr;           /* Address register */
+__thread  uint16 addr_latch;     /* Latched A15, A14 of address */
+__thread  uint16 sat_base_mask;  /* Base bits of SAT */
+__thread  uint16 sat_addr_mask;  /* Index bits of SAT */
+__thread  uint16 dma_src;        /* DMA source address */
+__thread  uint32 dma_endCycles;  /* 68k cycles to DMA end */
+__thread  int dmafill;           /* DMA Fill pending flag */
+__thread  int cached_write;      /* 2nd part of 32-bit CTRL port write (Genesis mode) or LSB of CRAM data (Game Gear mode) */
+__thread  uint16 fifo[4];        /* FIFO ring-buffer */
+__thread  int fifo_idx;          /* FIFO write index */
+__thread  int fifo_byte_access;  /* FIFO byte access flag */
+__thread  uint32 fifo_cycles;    /* FIFO next access cycle */
+__thread  int *fifo_timing;      /* FIFO slots timing table */
 
  /* set Z80 or 68k interrupt lines */
 static void (*set_irq_line)(unsigned int level);

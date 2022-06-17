@@ -24,9 +24,9 @@ extern int scd_68k_irq_ack(int level);
 /* ======================================================================== */
 
 #ifdef BUILD_TABLES
-static unsigned char s68ki_cycles[0x10000];
+__thread unsigned char s68ki_cycles[0x10000];
 #endif
-static int irq_latency;
+static __thread int irq_latency;
 
 /* IRQ priority */
 static const uint8 irq_level[0x40] = 
@@ -41,7 +41,7 @@ static const uint8 irq_level[0x40] =
   6, 6, 6, 6, 6, 6, 6, 6
 };
 
-m68ki_cpu_core s68k;
+__thread m68ki_cpu_core s68k;
 
 
 /* ======================================================================== */

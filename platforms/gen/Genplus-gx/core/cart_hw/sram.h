@@ -58,6 +58,6 @@ extern void sram_write_byte(unsigned int address, unsigned int data);
 extern void sram_write_word(unsigned int address, unsigned int data);
 
 /* global variables */
-extern T_SRAM sram;
+extern __thread T_SRAM sram;
 
 #endif

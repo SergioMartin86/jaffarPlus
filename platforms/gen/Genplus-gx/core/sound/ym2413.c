@@ -575,13 +575,13 @@ static unsigned char table[19][8] = {
   {0x05, 0x01, 0x00, 0x00, 0xf8, 0xaa, 0x59, 0x55 }  /* TOM, TOP CYM */
 };
 
-static signed int output[2];
+__thread signed int output[2];
 
-static UINT32  LFO_AM;
-static INT32  LFO_PM;
+__thread UINT32  LFO_AM;
+__thread INT32  LFO_PM;
 
 /* emulated chip */
-static YM2413 ym2413;
+__thread YM2413 ym2413;
 
 /* advance LFO to next sample */
 INLINE void advance_lfo(void)

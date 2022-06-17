@@ -96,13 +96,13 @@ typedef struct
 
 
 /* Global variables */
-extern t_bitmap bitmap;
-extern t_snd snd;
-extern uint32 mcycles_vdp;
-extern int16 SVP_cycles; 
-extern uint8 system_hw;
-extern uint8 system_bios;
-extern uint32 system_clock;
+extern __thread t_bitmap bitmap;
+extern __thread t_snd snd;
+extern __thread uint32 mcycles_vdp;
+extern __thread int16 SVP_cycles;
+extern __thread uint8 system_hw;
+extern __thread uint8 system_bios;
+extern __thread uint32 system_clock;
 
 #ifdef __cplusplus
 extern "C" {

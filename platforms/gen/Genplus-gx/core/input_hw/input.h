@@ -147,8 +147,8 @@ typedef struct
 } t_input;
 
 /* Global variables */
-extern t_input input;
-extern int old_system[2];
+extern __thread t_input input;
+extern __thread int old_system[2];
 
 /* Function prototypes */
 extern void input_init(void);

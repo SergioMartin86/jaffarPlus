@@ -43,43 +43,43 @@
 #define _VDP_H_
 
 /* VDP context */
-extern uint8 reg[0x20];
-extern uint8 sat[0x400];
-extern uint8 vram[0x10000];
-extern uint8 cram[0x80];
-extern uint8 vsram[0x80];
-extern uint8 hint_pending;
-extern uint8 vint_pending;
-extern uint16 status;
-extern uint32 dma_length;
+extern __thread uint8 reg[0x20];
+extern __thread uint8 sat[0x400];
+extern __thread uint8 vram[0x10000];
+extern __thread uint8 cram[0x80];
+extern __thread uint8 vsram[0x80];
+extern __thread uint8 hint_pending;
+extern __thread uint8 vint_pending;
+extern __thread uint16 status;
+extern __thread uint32 dma_length;
 
 /* Global variables */
-extern uint16 ntab;
-extern uint16 ntbb;
-extern uint16 ntwb;
-extern uint16 satb;
-extern uint16 hscb;
-extern uint8 bg_name_dirty[0x800];
-extern uint16 bg_name_list[0x800];
-extern uint16 bg_list_index;
-extern uint8 hscroll_mask;
-extern uint8 playfield_shift;
-extern uint8 playfield_col_mask;
-extern uint16 playfield_row_mask;
-extern uint8 odd_frame;
-extern uint8 im2_flag;
-extern uint8 interlaced;
-extern uint8 vdp_pal;
-extern uint8 h_counter;
-extern uint16 v_counter;
-extern uint16 vc_max;
-extern uint16 vscroll;
-extern uint16 lines_per_frame;
-extern uint16 max_sprite_pixels;
-extern int32 fifo_write_cnt;
-extern uint32 fifo_slots;
-extern uint32 hvc_latch;
-extern const uint8 *hctab;
+extern __thread uint16 ntab;
+extern __thread uint16 ntbb;
+extern __thread uint16 ntwb;
+extern __thread uint16 satb;
+extern __thread uint16 hscb;
+extern __thread uint8 bg_name_dirty[0x800];
+extern __thread uint16 bg_name_list[0x800];
+extern __thread uint16 bg_list_index;
+extern __thread uint8 hscroll_mask;
+extern __thread uint8 playfield_shift;
+extern __thread uint8 playfield_col_mask;
+extern __thread uint16 playfield_row_mask;
+extern __thread uint8 odd_frame;
+extern __thread uint8 im2_flag;
+extern __thread uint8 interlaced;
+extern __thread uint8 vdp_pal;
+extern __thread uint8 h_counter;
+extern __thread uint16 v_counter;
+extern __thread uint16 vc_max;
+extern __thread uint16 vscroll;
+extern __thread uint16 lines_per_frame;
+extern __thread uint16 max_sprite_pixels;
+extern __thread int32 fifo_write_cnt;
+extern __thread uint32 fifo_slots;
+extern __thread uint32 hvc_latch;
+extern __thread const uint8 *hctab;
 
 /* Function pointers */
 extern void (*vdp_68k_data_w)(unsigned int data);

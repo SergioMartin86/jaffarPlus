@@ -397,8 +397,8 @@ static const rominfo_t game_list[] =
 };
 
 /* Cartridge & BIOS ROM hardware */
-static romhw_t cart_rom;
-static romhw_t bios_rom;
+__thread romhw_t cart_rom;
+__thread romhw_t bios_rom;
 
 /* Current slot */
 static struct

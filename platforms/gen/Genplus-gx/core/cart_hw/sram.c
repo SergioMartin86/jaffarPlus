@@ -38,7 +38,7 @@
 
 #include "shared.h"
 
-T_SRAM sram;
+__thread T_SRAM sram;
 
 /****************************************************************************
  * A quick guide to external RAM on the Genesis

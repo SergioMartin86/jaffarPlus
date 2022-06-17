@@ -47,7 +47,7 @@ typedef struct {
    16.16 format 
    returns in m.8 format */
 
-static long ADJUST_SQRT2[2]={8192,5792};
+__thread long ADJUST_SQRT2[2]={8192,5792};
 STIN ogg_int32_t vorbis_invsqlook_i(long a,long e){
   long i=(a&0x7fff)>>(INVSQ_LOOKUP_I_SHIFT-1); 
   long d=a&INVSQ_LOOKUP_I_MASK;                              /*  0.10 */

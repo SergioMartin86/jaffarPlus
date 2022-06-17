@@ -113,7 +113,8 @@ commonCFlags = [
                  '-DFLAC__HAS_OGG=0',
                  '-DHAVE_LROUND',
                  '-DHAVE_STDINT_H',
-                 '-DHAVE_SYS_PARAM_H'
+                 '-DHAVE_SYS_PARAM_H',
+                 '-DUSE_DYNAMIC_ALLOC'
                ]
                         
 

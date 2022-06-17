@@ -49,8 +49,8 @@
 #include "terebi_oekaki.h"
 #include "graphic_board.h"
 
-t_input input;
-int old_system[2] = {-1,-1};
+__thread t_input input;
+__thread int old_system[2] = {-1,-1};
 
 
 void input_init(void)

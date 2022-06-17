@@ -42,18 +42,18 @@
 #include "shared.h"
 
 #ifdef USE_DYNAMIC_ALLOC
-external_t *ext;
+__thread external_t *ext;
 #else                     /* External Hardware (Cartridge, CD unit, ...) */
-external_t ext;
+__thread external_t ext;
 #endif
-uint8 boot_rom[0x800];    /* Genesis BOOT ROM   */
-uint8 work_ram[0x10000];  /* 68K RAM  */
-uint8 zram[0x2000];       /* Z80 RAM  */
-uint32 zbank;             /* Z80 bank window address */
-uint8 zstate;             /* Z80 bus state (d0 = BUSACK, d1 = /RESET) */
-uint8 pico_current;       /* PICO current page */
+__thread uint8 boot_rom[0x800];    /* Genesis BOOT ROM   */
+__thread uint8 work_ram[0x10000];  /* 68K RAM  */
+__thread uint8 zram[0x2000];       /* Z80 RAM  */
+__thread uint32 zbank;             /* Z80 bank window address */
+__thread uint8 zstate;             /* Z80 bus state (d0 = BUSACK, d1 = /RESET) */
+__thread uint8 pico_current;       /* PICO current page */
 
-static uint8 tmss[4];     /* TMSS security register */
+__thread uint8 tmss[4];     /* TMSS security register */
 
 /*--------------------------------------------------------------------------*/
 /* Init, reset, shutdown functions                                          */
