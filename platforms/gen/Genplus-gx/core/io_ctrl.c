@@ -54,11 +54,14 @@ __thread uint8 io_reg[0x10];
 
 __thread uint8 region_code = REGION_USA;
 
-static struct port_t
+struct port_t
 {
   void (*data_w)(unsigned char data, unsigned char mask);
   unsigned char (*data_r)(void);
-} port[3];
+};
+
+typedef struct port_t port_t;
+__thread port_t port[3];
 
 static void dummy_write(unsigned char data, unsigned char mask)
 {

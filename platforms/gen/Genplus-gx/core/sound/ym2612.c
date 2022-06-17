@@ -183,12 +183,12 @@
 *   TL_RES_LEN - sinus resolution (X axis)
 */
 #define TL_TAB_LEN (13*2*TL_RES_LEN)
-static signed int tl_tab[TL_TAB_LEN];
+__thread signed int tl_tab[TL_TAB_LEN];
 
 #define ENV_QUIET    (TL_TAB_LEN>>3)
 
 /* sin waveform table in 'decibel' scale */
-static unsigned int sin_tab[SIN_LEN];
+__thread unsigned int sin_tab[SIN_LEN];
 
 /* sustain level table (3dB per step) */
 /* bit0, bit1, bit2, bit3, bit4, bit5, bit6 */
@@ -625,16 +625,16 @@ typedef struct
 } YM2612;
 
 /* emulated chip */
-static YM2612 ym2612;
+__thread YM2612 ym2612;
 
 /* current chip state */
-static INT32  m2,c1,c2;   /* Phase Modulation input for operators 2,3,4 */
-static INT32  mem;        /* one sample delay memory */
-static INT32  out_fm[6];  /* outputs of working channels */
+__thread INT32  m2,c1,c2;   /* Phase Modulation input for operators 2,3,4 */
+__thread INT32  mem;        /* one sample delay memory */
+__thread INT32  out_fm[6];  /* outputs of working channels */
 
 /* chip type */
-static UINT32 op_mask[8][4];  /* operator output bitmasking (DAC quantization) */
-static int chip_type = YM2612_DISCRETE;
+__thread UINT32 op_mask[8][4];  /* operator output bitmasking (DAC quantization) */
+__thread int chip_type = YM2612_DISCRETE;
 
 
 INLINE void FM_KEYON(FM_CH *CH , int s )

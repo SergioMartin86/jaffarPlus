@@ -156,7 +156,7 @@ static const T_I2C_GAME i2c_database[] =
   {"XXXXXXXX" , 0          , 0xDF39 , mapper_i2c_jcart_init       , NO_EEPROM     }, /* Pete Sampras Tennis 96 (Prototype ?) */
 };
 
-static struct
+struct eeprom_i2c_t
 {
   uint8 sda;              /* current SDA line state */
   uint8 scl;              /* current SCL line state */
@@ -172,8 +172,10 @@ static struct
   uint8 scl_in_bit;       /* SCL (write) bit position */
   uint8 sda_in_bit;       /* SDA (write) bit position */
   uint8 sda_out_bit;      /* SDA (read) bit position */
-} eeprom_i2c;
+} ;
 
+typedef struct eeprom_i2c_t eeprom_i2c_t;
+__thread eeprom_i2c_t eeprom_i2c;
 
 /********************************************************************/
 /* I2C EEPROM mapper initialization                                 */

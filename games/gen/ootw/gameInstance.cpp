@@ -18,7 +18,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  lesterFrame2            = (uint16_t*)   &_emu->_68KRam[0xECAE];
  lesterFrame3            = (uint16_t*)   &_emu->_68KRam[0xECB0];
  lesterFrame4            = (uint8_t*)    &_emu->_68KRam[0xEC9D];
- lesterRoom              = (uint8_t*)    &_emu->_68KRam[0xEB53];
+ lesterRoom              = (uint8_t*)    &_emu->_68KRam[0xEB52];
 
  lesterForceX            = (int16_t*)   &_emu->_68KRam[0xEC7F];
  lesterForceY            = (int16_t*)   &_emu->_68KRam[0xEC4E];

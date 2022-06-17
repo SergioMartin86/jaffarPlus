@@ -394,13 +394,13 @@ static const UINT8 mul_tab[16]= {
 *  TL_RES_LEN - sinus resolution (X axis)
 */
 #define TL_TAB_LEN (11*2*TL_RES_LEN)
-static signed int tl_tab[TL_TAB_LEN];
+__thread signed int tl_tab2[TL_TAB_LEN];
 
 #define ENV_QUIET    (TL_TAB_LEN>>5)
 
 /* sin waveform table in 'decibel' scale */
 /* two waveforms on OPLL type chips */
-static unsigned int sin_tab[SIN_LEN * 2];
+__thread unsigned int sin_tab2[SIN_LEN * 2];
 
 
 /* LFO Amplitude Modulation table (verified on real YM3812)
@@ -839,20 +839,20 @@ INLINE void advance(void)
 
 INLINE signed int op_calc(UINT32 phase, unsigned int env, signed int pm, unsigned int wave_tab)
 {
-  UINT32 p = (env<<5) + sin_tab[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + (pm<<17))) >> FREQ_SH ) & SIN_MASK) ];
+  UINT32 p = (env<<5) + sin_tab2[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + (pm<<17))) >> FREQ_SH ) & SIN_MASK) ];
 
   if (p >= TL_TAB_LEN)
     return 0;
-  return tl_tab[p];
+  return tl_tab2[p];
 }
 
 INLINE signed int op_calc1(UINT32 phase, unsigned int env, signed int pm, unsigned int wave_tab)
 {
-  UINT32 p = (env<<5) + sin_tab[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + pm)) >> FREQ_SH ) & SIN_MASK) ];
+  UINT32 p = (env<<5) + sin_tab2[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + pm)) >> FREQ_SH ) & SIN_MASK) ];
 
   if (p >= TL_TAB_LEN)
     return 0;
-  return tl_tab[p];
+  return tl_tab2[p];
 }
 
 #define volume_calc(OP) ((OP)->TLL + ((UINT32)(OP)->volume) + (LFO_AM & (OP)->AMmask))
@@ -1115,13 +1115,13 @@ static int init_tables(void)
     else
       n = n>>1;
             /* 11 bits here (rounded) */
-    tl_tab[ x*2 + 0 ] = n;
-    tl_tab[ x*2 + 1 ] = -tl_tab[ x*2 + 0 ];
+    tl_tab2[ x*2 + 0 ] = n;
+    tl_tab2[ x*2 + 1 ] = -tl_tab2[ x*2 + 0 ];
 
     for (i=1; i<11; i++)
     {
-      tl_tab[ x*2+0 + i*2*TL_RES_LEN ] =  tl_tab[ x*2+0 ]>>i;
-      tl_tab[ x*2+1 + i*2*TL_RES_LEN ] = -tl_tab[ x*2+0 + i*2*TL_RES_LEN ];
+      tl_tab2[ x*2+0 + i*2*TL_RES_LEN ] =  tl_tab2[ x*2+0 ]>>i;
+      tl_tab2[ x*2+1 + i*2*TL_RES_LEN ] = -tl_tab2[ x*2+0 + i*2*TL_RES_LEN ];
     }
   }
 
@@ -1146,15 +1146,15 @@ static int init_tables(void)
       n = n>>1;
 
     /* waveform 0: standard sinus  */
-    sin_tab[ i ] = n*2 + (m>=0.0? 0: 1 );
+    sin_tab2[ i ] = n*2 + (m>=0.0? 0: 1 );
 
     /* waveform 1:  __      __     */
     /*             /  \____/  \____*/
     /* output only first half of the sinus waveform (positive one) */
     if (i & (1<<(SIN_BITS-1)) )
-      sin_tab[1*SIN_LEN+i] = TL_TAB_LEN;
+      sin_tab2[1*SIN_LEN+i] = TL_TAB_LEN;
     else
-      sin_tab[1*SIN_LEN+i] = sin_tab[i];
+      sin_tab2[1*SIN_LEN+i] = sin_tab2[i];
   }
 
   return 1;

@@ -93,10 +93,10 @@ __thread uint32 hvc_latch;                 /* latched HV counter */
 __thread const uint8 *hctab;               /* pointer to H Counter table */
 
 /* Function pointers */
-void (*vdp_68k_data_w)(unsigned int data);
-void (*vdp_z80_data_w)(unsigned int data);
-unsigned int (*vdp_68k_data_r)(void);
-unsigned int (*vdp_z80_data_r)(void);
+__thread void (*vdp_68k_data_w)(unsigned int data);
+__thread void (*vdp_z80_data_w)(unsigned int data);
+__thread unsigned int (*vdp_68k_data_r)(void);
+__thread unsigned int (*vdp_z80_data_r)(void);
 
 /* Function prototypes */
 static void vdp_68k_data_w_m4(unsigned int data);
@@ -144,8 +144,8 @@ __thread  uint32 fifo_cycles;    /* FIFO next access cycle */
 __thread  int *fifo_timing;      /* FIFO slots timing table */
 
  /* set Z80 or 68k interrupt lines */
-static void (*set_irq_line)(unsigned int level);
-static void (*set_irq_line_delay)(unsigned int level);
+__thread void (*set_irq_line)(unsigned int level);
+__thread void (*set_irq_line_delay)(unsigned int level);
 
 /* Vertical counter overflow values (see hvc.h) */
 static const uint16 vc_table[4][2] =

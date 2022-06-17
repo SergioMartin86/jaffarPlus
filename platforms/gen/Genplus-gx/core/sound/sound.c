@@ -60,24 +60,24 @@ __thread int fm_cycles_count;
 __thread int fm_cycles_busy;
 
 /* YM chip function pointers */
-static void (*YM_Update)(int *buffer, int length);
-void (*fm_reset)(unsigned int cycles);
-void (*fm_write)(unsigned int cycles, unsigned int address, unsigned int data);
-unsigned int (*fm_read)(unsigned int cycles, unsigned int address);
+__thread void (*YM_Update)(int *buffer, int length);
+__thread void (*fm_reset)(unsigned int cycles);
+__thread void (*fm_write)(unsigned int cycles, unsigned int address, unsigned int data);
+__thread unsigned int (*fm_read)(unsigned int cycles, unsigned int address);
 
 #ifdef HAVE_YM3438_CORE
-static ym3438_t ym3438;
-static short ym3438_accm[24][2];
-static int ym3438_sample[2];
-static int ym3438_cycles;
+__thread ym3438_t ym3438;
+__thread short ym3438_accm[24][2];
+__thread int ym3438_sample[2];
+__thread int ym3438_cycles;
 #endif
 
 #ifdef HAVE_OPLL_CORE
-static opll_t opll;
-static int opll_accm[18][2];
-static int opll_sample;
-static int opll_cycles;
-static int opll_status;
+__thread opll_t opll;
+__thread int opll_accm[18][2];
+__thread int opll_sample;
+__thread int opll_cycles;
+__thread int opll_status;
 #endif
 
 /* Run FM chip until required M-cycles */

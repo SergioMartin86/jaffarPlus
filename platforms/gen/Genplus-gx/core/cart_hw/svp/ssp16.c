@@ -339,13 +339,13 @@
 }
 
 
-static ssp1601_t *ssp = NULL;
-static unsigned short *PC;
-static int g_cycles;
+__thread ssp1601_t *ssp = NULL;
+__thread unsigned short *PC;
+__thread int g_cycles;
 
 #ifdef USE_DEBUGGER
-static int running = 0;
-static int last_iram = 0;
+__thread int running = 0;
+__thread int last_iram = 0;
 #endif
 
 /* ----------------------------------------------------- */

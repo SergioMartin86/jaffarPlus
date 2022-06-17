@@ -47,7 +47,7 @@ static uint8 brm_format[0x40] =
 };
 
 
-static short soundframe[SOUND_SAMPLES_SIZE];
+__thread short soundframe2[SOUND_SAMPLES_SIZE];
 
 static void sdl_sound_callback(void *userdata, Uint8 *stream, int len)
 {
@@ -102,7 +102,7 @@ static int sdl_sound_init()
 
 static void sdl_sound_update(int enabled)
 {
-  int size = audio_update(soundframe) * 2;
+  int size = audio_update(soundframe2) * 2;
 
   if (enabled)
   {
@@ -113,7 +113,7 @@ static void sdl_sound_update(int enabled)
     out = (short*)sdl_sound.current_pos;
     for(i = 0; i < size; i++)
     {
-      *out++ = soundframe[i];
+      *out++ = soundframe2[i];
     }
     sdl_sound.current_pos = (char*)out;
     sdl_sound.current_emulated_samples += size * sizeof(short);

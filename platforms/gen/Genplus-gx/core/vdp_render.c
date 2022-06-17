@@ -493,12 +493,15 @@ INLINE void WRITE_LONG(void *address, uint32 data)
 #endif
 
 /* Window & Plane A clipping */
-static __thread struct clip_t
+struct clip_t
 {
   uint8 left;
   uint8 right;
   uint8 enable;
 } clip[2];
+
+typedef struct clip_t clip_t;
+__thread clip_t port2[2];
 
 /* Pattern attribute (priority + palette bits) expansion table */
 static const uint32 atex_table[] =

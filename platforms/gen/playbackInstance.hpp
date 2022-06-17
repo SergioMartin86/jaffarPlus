@@ -27,8 +27,13 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Sleeping for the inverse frame rate
   usleep(_INVERSE_FRAME_RATE);
 
+  uint8_t state[_STATE_DATA_SIZE];
+  _game->_emu->serializeState(state);
+
   system_frame_gen(0);
   sdl_video_update();
+
+  _game->_emu->deserializeState(state);
  }
 
  // Function to render frame

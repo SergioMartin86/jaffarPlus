@@ -401,13 +401,16 @@ __thread romhw_t cart_rom;
 __thread romhw_t bios_rom;
 
 /* Current slot */
-static struct
+struct slot_t
 {
   uint8 *rom;
   uint8 *fcr;
   uint8 mapper;
   uint16 pages;
-} slot;
+};
+
+typedef struct slot_t slot_t;
+__thread slot_t slot;
 
 /* Function prototypes */
 static void mapper_reset(void);

@@ -14,7 +14,7 @@
 
 #define SOUND_FREQUENCY 48000
 #define SOUND_SAMPLES_SIZE  2048
-static short soundframe[SOUND_SAMPLES_SIZE];
+static __thread short soundframe[SOUND_SAMPLES_SIZE];
 
 class EmuInstance : public EmuInstanceBase
 {
@@ -90,14 +90,14 @@ class EmuInstance : public EmuInstanceBase
     case 'D': moveCode |= INPUT_DOWN; break;
     case 'L': moveCode |= INPUT_LEFT; break;
     case 'R': moveCode |= INPUT_RIGHT; break;
-    case 'S': moveCode |= INPUT_START; break;
-    case 'M': moveCode |= INPUT_MODE; break;
     case 'A': moveCode |= INPUT_A; break;
     case 'B': moveCode |= INPUT_B; break;
     case 'C': moveCode |= INPUT_C; break;
+    case 'S': moveCode |= INPUT_START; break;
     case 'X': moveCode |= INPUT_X; break;
     case 'Y': moveCode |= INPUT_Y; break;
     case 'Z': moveCode |= INPUT_Z; break;
+    case 'M': moveCode |= INPUT_MODE; break;
     case '.': break;
     case '|': break;
     default: EXIT_WITH_ERROR("Move provided cannot be parsed: '%s', unrecognized character: '%c'\n", move.c_str(), move[i]);
@@ -114,14 +114,14 @@ class EmuInstance : public EmuInstanceBase
   if (move & INPUT_DOWN) moveString += 'D'; else moveString += '.';
   if (move & INPUT_LEFT) moveString += 'L'; else moveString += '.';
   if (move & INPUT_RIGHT) moveString += 'R'; else moveString += '.';
-  if (move & INPUT_START) moveString += 'S'; else moveString += '.';
-  if (move & INPUT_MODE) moveString += 'M'; else moveString += '.';
   if (move & INPUT_A) moveString += 'A'; else moveString += '.';
   if (move & INPUT_B) moveString += 'B'; else moveString += '.';
   if (move & INPUT_C) moveString += 'C'; else moveString += '.';
+  if (move & INPUT_START) moveString += 'S'; else moveString += '.';
   if (move & INPUT_X) moveString += 'X'; else moveString += '.';
   if (move & INPUT_Y) moveString += 'Y'; else moveString += '.';
   if (move & INPUT_Z) moveString += 'Z'; else moveString += '.';
+  if (move & INPUT_MODE) moveString += 'M'; else moveString += '.';
 
   return moveString;
  }

@@ -864,19 +864,19 @@ void Train::showSavingLoop()
       double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - bestStateSaveTimer).count();
       if (bestStateTimerElapsed / 1.0e+9 > _outputSaveFrequency)
       {
-       _bestStateLock.lock();
-
-       // Storing best and worst states
-       uint8_t bestStateData[_STATE_DATA_SIZE];
-       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
-       _showGameInstance->pushState(bestStateData);
-       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
-
-       uint8_t worstStateData[_STATE_DATA_SIZE];
-       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
-       _showGameInstance->pushState(worstStateData);
-       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
-       _bestStateLock.unlock();
+//       _bestStateLock.lock();
+//
+//       // Storing best and worst states
+//       uint8_t bestStateData[_STATE_DATA_SIZE];
+//       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
+//       _showGameInstance->pushState(bestStateData);
+//       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
+//
+//       uint8_t worstStateData[_STATE_DATA_SIZE];
+//       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
+//       _showGameInstance->pushState(worstStateData);
+//       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
+//       _bestStateLock.unlock();
 
        // Storing the best and worst solution sequences
        #ifndef JAFFAR_DISABLE_MOVE_HISTORY

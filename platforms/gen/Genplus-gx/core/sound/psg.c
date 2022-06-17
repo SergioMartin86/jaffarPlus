@@ -74,7 +74,7 @@ static const uint16 chanVolume[16] = {
   0                             /*  OFF  */
 };
 
-static struct
+struct psg_t
 {
   int clocks;
   int latch;
@@ -89,7 +89,10 @@ static struct
   int chanDelta[4][2];
   int chanOut[4][2];
   int chanAmp[4][2];
-} psg;
+};
+
+typedef struct psg_t psg_t;
+__thread psg_t psg;
 
 static void psg_update(unsigned int clocks);
 

@@ -3,7 +3,7 @@
  
   "Emulator Configuration": 
   {
-    "Rom File": "../ootw.md",
+    "Rom File": "ootw.md",
     "State File": "boot.state"
   },
   

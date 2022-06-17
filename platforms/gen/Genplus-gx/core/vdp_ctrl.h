@@ -82,10 +82,10 @@ extern __thread uint32 hvc_latch;
 extern __thread const uint8 *hctab;
 
 /* Function pointers */
-extern void (*vdp_68k_data_w)(unsigned int data);
-extern void (*vdp_z80_data_w)(unsigned int data);
-extern unsigned int (*vdp_68k_data_r)(void);
-extern unsigned int (*vdp_z80_data_r)(void);
+extern __thread void (*vdp_68k_data_w)(unsigned int data);
+extern __thread void (*vdp_z80_data_w)(unsigned int data);
+extern __thread unsigned int (*vdp_68k_data_r)(void);
+extern __thread unsigned int (*vdp_z80_data_r)(void);
 
 /* Function prototypes */
 extern void vdp_init(void);
