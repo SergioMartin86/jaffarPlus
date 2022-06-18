@@ -27,6 +27,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
     hashIncludes.insert(entry.get<std::string>());
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Hash Includes' was not defined\n");
 
+  if (isDefined(config, "Timer Tolerance") == true)  timerTolerance = config["Timer Tolerance"].get<uint8_t>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
+
+
+
   // Initialize derivative values
   updateDerivedValues();
 }
@@ -39,6 +44,9 @@ uint64_t GameInstance::computeHash() const
 
   // Updating nametable
   if (hashIncludes.contains("Game Cycle")) hash.Update(*gameCycle);
+
+  // Timer tolerance
+  if (timerTolerance > 0) hash.Update(*gameTimer % timerTolerance);
 
   hash.Update(*winFlag);
   hash.Update(*marbleState);

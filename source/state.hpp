@@ -7,8 +7,8 @@
 #include <sys/stat.h>
 #include "xdelta3.h"
 
-#define _MAX_DIFFERENCE_COUNT 1500
-#define _MAX_MOVELIST_SIZE 500
+#define _MAX_DIFFERENCE_COUNT 2500
+#define _MAX_MOVELIST_SIZE 300
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
 enum stateType
@@ -70,15 +70,15 @@ class State
 #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
   // Stores the entire move history of the frame
-  INPUT_TYPE moveHistory[_MAX_MOVELIST_SIZE];
+  uint8_t moveHistory[_MAX_MOVELIST_SIZE];
 
   // Move r/w operations
-  inline void setMove(const size_t idx, const INPUT_TYPE move)
+  inline void setMove(const size_t idx, const uint8_t move)
   {
     moveHistory[idx] = move;
   }
 
-  inline INPUT_TYPE getMove(const size_t idx) const
+  inline uint8_t getMove(const size_t idx) const
   {
    return moveHistory[idx];
   }

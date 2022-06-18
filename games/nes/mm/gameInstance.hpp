@@ -46,6 +46,7 @@ class GameInstance : public GameInstanceBase
   uint16_t  marblePosY;
 
   std::set<std::string> hashIncludes;
+  uint8_t timerTolerance;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;
