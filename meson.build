@@ -39,7 +39,7 @@ jaffarSrc = [
 
 # Common Jaffar CFlags
 
-jaffarCFlags = [ '-Wfatal-errors', '-Wall' ]
+jaffarCFlags = [ '-Wfatal-errors', '-Wall', '-DINPUT_TYPE=' + inputType ]
 
 # Building main Jaffar training executable
 executable('jaffar',
@@ -49,7 +49,8 @@ executable('jaffar',
   dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
   link_with: [ platformTrainLibs ],
   link_args: [ platformTrainLFlags, xdelta3LFlags ],
-  cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags, xdelta3CFlags ]
+  cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags, xdelta3CFlags ],
+  c_args: [ platformTrainCFlags, gameInstanceCFlags ]
 )
 
 # Building playback/validation tool
@@ -60,7 +61,8 @@ executable('jaffar-play',
   dependencies: [ platformPlayDependencies ],
   link_with: [ platformPlayLibs ],
   link_args: [ platformPlayLFlags, '-lncurses', xdelta3LFlags ],
-  cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES', xdelta3CFlags ] 
+  cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES', xdelta3CFlags ],
+  c_args: [ platformPlayCFlags, gameInstanceCFlags ] 
 )
 
 # Building any necessary game-specific tools

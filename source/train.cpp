@@ -75,7 +75,7 @@ void Train::run()
     for (const auto& key : newMoveKeySet)
     {
      auto itr = key.second.begin();
-     printf("if (*winFlag == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
+     printf("if (*lesterFrame1 == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
      itr++;
      for (; itr != key.second.end(); itr++)
      {
@@ -244,10 +244,10 @@ void Train::computeStates()
         fullMoves.push_back(actualMove);
        }
 
-       for (uint16_t i = 0; i < 256; i++)
+       for (INPUT_TYPE i = 0; i < 256*sizeof(INPUT_TYPE); i++)
         if (possibleMoveSet.contains((uint8_t)i) == false)
-        if (((uint8_t)i & 0b00001000) == 0) // Start
-        //if (((uint8_t)i & 0b00000100) == 0) // Select
+        if (((uint8_t)i & INPUT_START) == 0)
+        if (((uint8_t)i & INPUT_MODE) == 0)
         {
          alternativeMoveSet.insert((uint8_t)i);
          fullMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
@@ -258,7 +258,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t winFlag = *_gameInstances[threadId]->winFlag;
+       uint16_t lesterFrame1 = *_gameInstances[threadId]->lesterFrame1;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -373,11 +373,11 @@ void Train::computeStates()
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          auto moveKey = winFlag;
+          auto moveKey = lesterFrame1;
           if (newMoveKeySet[moveKey].contains(possibleMoves[idx]) == false)
           {
            // Storing new move
-           newMoveKeySet[winFlag].insert(possibleMoves[idx]);
+           newMoveKeySet[lesterFrame1].insert(possibleMoves[idx]);
 
            //           if (possibleMoves[idx].find("s") != std::string::npos)
            //           {
@@ -864,19 +864,19 @@ void Train::showSavingLoop()
       double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - bestStateSaveTimer).count();
       if (bestStateTimerElapsed / 1.0e+9 > _outputSaveFrequency)
       {
-       _bestStateLock.lock();
-
-       // Storing best and worst states
-       uint8_t bestStateData[_STATE_DATA_SIZE];
-       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
-       _showGameInstance->pushState(bestStateData);
-       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
-
-       uint8_t worstStateData[_STATE_DATA_SIZE];
-       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
-       _showGameInstance->pushState(worstStateData);
-       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
-       _bestStateLock.unlock();
+//       _bestStateLock.lock();
+//
+//       // Storing best and worst states
+//       uint8_t bestStateData[_STATE_DATA_SIZE];
+//       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
+//       _showGameInstance->pushState(bestStateData);
+//       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
+//
+//       uint8_t worstStateData[_STATE_DATA_SIZE];
+//       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
+//       _showGameInstance->pushState(worstStateData);
+//       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
+//       _bestStateLock.unlock();
 
        // Storing the best and worst solution sequences
        #ifndef JAFFAR_DISABLE_MOVE_HISTORY

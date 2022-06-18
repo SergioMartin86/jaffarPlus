@@ -7,8 +7,8 @@
 #include <sys/stat.h>
 #include "xdelta3.h"
 
-#define _MAX_DIFFERENCE_COUNT 2500
-#define _MAX_MOVELIST_SIZE 300
+#define _MAX_DIFFERENCE_COUNT 10000
+#define _MAX_MOVELIST_SIZE 2000
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
 enum stateType

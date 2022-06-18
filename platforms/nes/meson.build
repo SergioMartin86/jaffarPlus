@@ -14,7 +14,7 @@ platformTrainIncludes = [ emuInstanceIncludes, quickernesIncludes ]
 platformTrainCFlags = [ quickernesCFlags ]
 platformTrainLibs = [ ] 
 platformTrainLFlags = [ ]
-platformTrainDependencies = [ ]
+platformTrainDependencies = [  ]
 
 # Platform's specific includes, source files and flags for playback
 
