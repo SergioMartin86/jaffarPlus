@@ -21,6 +21,7 @@ class EmuInstance : public EmuInstanceBase
  public:
 
  uint8_t* _68KRam;
+ uint8_t* _Z80Ram;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
@@ -47,8 +48,9 @@ class EmuInstance : public EmuInstanceBase
   std::string stateFilePath = config["State File"].get<std::string>();
   loadStateFile(stateFilePath);
 
-  // Getting pointer to 68K Ram
+  // Getting pointer to 68K and Z80 Ram
   _68KRam = work_ram;
+  _Z80Ram = zram;
  }
 
  void loadStateFile(const std::string& stateFilePath) override
@@ -134,8 +136,12 @@ class EmuInstance : public EmuInstanceBase
  void advanceState(const INPUT_TYPE move) override
  {
   jaffarInput = move;
+
   system_frame_gen(1);
   audio_update(soundframe);
+
+  while(_68KRam[0xE882] != 0x0001 && _68KRam[0xE882] != 0x000B && _68KRam[0xE882] != 0x000C && _68KRam[0xE882] != 0x0012 && _68KRam[0xE882] != 0x0017) { jaffarInput = 0; system_frame_gen(1); audio_update(soundframe); }
+
  }
 
 };

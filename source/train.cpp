@@ -8,6 +8,9 @@
 
 //#define _DETECT_POSSIBLE_MOVES
 
+auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
+auto moveCountComparerNumber = [](const uint16_t a, const uint16_t b) { return countButtonsPressedNumber16(a) < countButtonsPressedNumber16(b); };
+
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
@@ -74,14 +77,17 @@ void Train::run()
 
     for (const auto& key : newMoveKeySet)
     {
-     auto itr = key.second.begin();
-     printf("if (*lesterFrame1 == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
+     std::vector<std::string> vec(key.second.begin(), key.second.end());
+     std::sort(vec.begin(), vec.end(), moveCountComparerString);
+     auto itr = vec.begin();
+     printf("if (*gameTimer == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
      itr++;
-     for (; itr != key.second.end(); itr++)
+     for (; itr != vec.end(); itr++)
      {
        printf(", \"%s\"", itr->c_str());
      }
      printf("});\n");
+     printf("Size: %lu\n", vec.size());
     }
 
     #endif // _DETECT_POSSIBLE_MOVES
@@ -231,12 +237,9 @@ void Train::computeStates()
 
       #ifdef _DETECT_POSSIBLE_MOVES
 
-       auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
-       auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
-
-       std::set<uint8_t, decltype(moveCountComparerNumber)> possibleMoveSet;
+       std::set<INPUT_TYPE, decltype(moveCountComparerNumber)> possibleMoveSet;
        std::vector<std::string> fullMoves;
-       std::set<uint8_t, decltype(moveCountComparerNumber)> alternativeMoveSet;
+       std::set<INPUT_TYPE, decltype(moveCountComparerNumber)> alternativeMoveSet;
 
        for (const auto& actualMove : possibleMoves)
        {
@@ -245,20 +248,27 @@ void Train::computeStates()
        }
 
        for (INPUT_TYPE i = 0; i < 256*sizeof(INPUT_TYPE); i++)
-        if (possibleMoveSet.contains((uint8_t)i) == false)
-        if (((uint8_t)i & INPUT_START) == 0)
-        if (((uint8_t)i & INPUT_MODE) == 0)
+        if (possibleMoveSet.contains((INPUT_TYPE)i) == false)
+        if (((INPUT_TYPE)i & INPUT_START) == 0)
+        if (((INPUT_TYPE)i & INPUT_MODE) == 0)
+        if (((INPUT_TYPE)i & INPUT_X) == 0)
+        if (((INPUT_TYPE)i & INPUT_Y) == 0)
+        if (((INPUT_TYPE)i & INPUT_Z) == 0)
         {
-         alternativeMoveSet.insert((uint8_t)i);
-         fullMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
+         alternativeMoveSet.insert((INPUT_TYPE)i);
+         fullMoves.push_back(EmuInstance::moveCodeToString((INPUT_TYPE)i));
         }
 
        std::sort(fullMoves.begin(), fullMoves.end(), moveCountComparerString);
        auto possibleMoveCopy = possibleMoves;
+
+       //for (const auto& move : fullMoves) printf("%s\n", move.c_str());
+       //printf("Size: %lu\n", fullMoves.size());
+       //exit(0);
        possibleMoves = fullMoves;
 
        // Store key values
-       uint16_t lesterFrame1 = *_gameInstances[threadId]->lesterFrame1;
+       uint16_t gameTimer = *_gameInstances[threadId]->gameTimer;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -373,11 +383,11 @@ void Train::computeStates()
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          auto moveKey = lesterFrame1;
+          auto moveKey = gameTimer;
           if (newMoveKeySet[moveKey].contains(possibleMoves[idx]) == false)
           {
            // Storing new move
-           newMoveKeySet[lesterFrame1].insert(possibleMoves[idx]);
+           newMoveKeySet[gameTimer].insert(possibleMoves[idx]);
 
            //           if (possibleMoves[idx].find("s") != std::string::npos)
            //           {

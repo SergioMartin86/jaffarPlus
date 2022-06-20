@@ -79,6 +79,7 @@ void loadSolutionFile(
 
  // Getting sequence size
  sequenceLength = moveList.size();
+ moveList.push_back(".");
 
  // Flag to indicate whether a fail condition was met
  failConditionFound = false;
@@ -304,7 +305,7 @@ int main(int argc, char *argv[])
    if (isReproduce)
    {
     currentStep++;
-    if (currentStep >= sequenceLength)
+    if (currentStep > sequenceLength)
     {
      if (refreshOnFinish)
      {
@@ -337,7 +338,7 @@ int main(int argc, char *argv[])
 
    // Correct current step if requested more than possible
    if (currentStep < 0) currentStep = 0;
-   if (currentStep >= sequenceLength) currentStep = sequenceLength-1;
+   if (currentStep > sequenceLength) currentStep = sequenceLength;
 
    // Quicksave creation command
    if (command == 's')

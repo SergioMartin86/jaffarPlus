@@ -55,7 +55,7 @@ typedef struct
 } t_config;
 
 /* Global variables */
-extern t_config config;
+extern __thread t_config config;
 
 #ifdef __cplusplus
 extern "C" {

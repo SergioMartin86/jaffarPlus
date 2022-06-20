@@ -1,6 +1,7 @@
 #pragma once
 
 #define _INVERSE_FRAME_RATE 16667
+#define _ROOM_COUNT_ 256
 
 #include "gameInstanceBase.hpp"
 #include <set>
@@ -15,8 +16,8 @@ struct genericMagnet_t {
 
 // Datatype to describe a magnet
 struct magnetSet_t {
- genericMagnet_t lesterHorizontalMagnet;
- genericMagnet_t lesterVerticalMagnet;
+ genericMagnet_t lesterHorizontalMagnet[_ROOM_COUNT_];
+ genericMagnet_t lesterVerticalMagnet[_ROOM_COUNT_];
 };
 
 class GameInstance : public GameInstanceBase
@@ -24,24 +25,18 @@ class GameInstance : public GameInstanceBase
  public:
 
   // Container for game-specific values
-  uint16_t* gameTimer;
-
-  uint16_t* lesterPosX;
-  uint16_t* lesterPosY;
-  uint16_t* lesterFrame1;
-  uint16_t* lesterFrame2;
-  uint16_t* lesterFrame3;
-  uint8_t* lesterFrame4;
+  uint8_t* gameTimer;
+  uint8_t* lagFrame;
+  uint8_t* inputFrame;
+  uint8_t* animationFrame;
+  int16_t* lesterPosX;
+  int16_t* lesterPosY;
   uint8_t* lesterRoom;
-
-  int16_t* lesterForceX;
-  int16_t* lesterForceY;
-  int8_t* lesterForceY2;
+  uint8_t* gameMode;
 
   // Stage 01 Specific values
   uint8_t* stage01AppearTimer;
-  uint8_t* stage01MonsterAnimation;
-  uint8_t* stage01MetMonster;
+  uint8_t* stage01SkipMonsterFlag;
   int16_t* stage01VineState;
   uint8_t* stage01Finish;
 

@@ -1,7 +1,7 @@
 
 #include "shared.h"
 
-t_config config;
+__thread t_config config;
 
 
 void set_config_defaults(void)
@@ -49,13 +49,13 @@ void set_config_defaults(void)
 
   /* controllers options */
   input.system[0]       = SYSTEM_GAMEPAD;
-  input.system[1]       = SYSTEM_GAMEPAD;
-  config.gun_cursor[0]  = 1;
-  config.gun_cursor[1]  = 1;
+  input.system[1]       = NO_SYSTEM;
+  config.gun_cursor[0]  = 0;
+  config.gun_cursor[1]  = 0;
   config.invert_mouse   = 0;
   for (i=0;i<MAX_INPUTS;i++)
   {
     /* autodetected control pad type */
-    config.input[i].padtype = DEVICE_PAD2B | DEVICE_PAD3B | DEVICE_PAD6B;
+    config.input[i].padtype = DEVICE_PAD3B;
   }
 }

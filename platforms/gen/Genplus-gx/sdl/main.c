@@ -12,13 +12,13 @@
 #define VIDEO_WIDTH  320
 #define VIDEO_HEIGHT 240
 
-int joynum = 0;
-uint16_t jaffarInput;
-int log_error   = 1;
-int debug_on    = 0;
-int turbo_mode  = 0;
-int use_sound   = 0;
-int fullscreen  = 0; /* SDL_WINDOW_FULLSCREEN */
+__thread int joynum = 0;
+__thread uint16_t jaffarInput;
+__thread int log_error   = 1;
+__thread int debug_on    = 0;
+__thread int turbo_mode  = 0;
+__thread int use_sound   = 0;
+__thread int fullscreen  = 0; /* SDL_WINDOW_FULLSCREEN */
 
 struct {
   SDL_Window* window;
@@ -38,7 +38,7 @@ struct {
 } sdl_sound;
 
 
-static uint8 brm_format[0x40] =
+__thread  uint8 brm_format[0x40] =
 {
   0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x00,0x00,0x00,0x00,0x40,
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -130,8 +130,8 @@ static void sdl_sound_close()
 }
 
 /* video */
-md_ntsc_t *md_ntsc;
-sms_ntsc_t *sms_ntsc;
+__thread  md_ntsc_t *md_ntsc;
+__thread  sms_ntsc_t *sms_ntsc;
 
 static int sdl_video_init()
 {

@@ -6,15 +6,15 @@
 
 #define MAX_INPUTS 8
 
-extern int debug_on;
-extern int log_error;
+extern __thread  int debug_on;
+extern __thread  int log_error;
 extern int sdl_input_update(void);
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern uint16_t jaffarInput;
+extern __thread  uint16_t jaffarInput;
 void initSDLWindow();
 void sdl_video_update();
 
