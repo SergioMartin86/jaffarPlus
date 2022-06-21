@@ -23,7 +23,7 @@ void set_config_defaults(void)
   config.hg             = 100;
   config.lp_range       = 0x9999; /* 0.6 in 0.16 fixed point */
   config.ym2612         = YM2612_DISCRETE;
-  config.ym2413         = 2; /* = AUTO (0 = always OFF, 1 = always ON) */
+  config.ym2413         = 0; /* = AUTO (0 = always OFF, 1 = always ON) */
   config.ym3438         = 0;
   config.opll           = 0;
   config.mono           = 0;

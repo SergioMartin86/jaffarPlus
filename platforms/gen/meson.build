@@ -96,10 +96,7 @@ emuInstanceIncludes = include_directories([
 
 # Platform's specific includes, source files and flags for training
 commonCFlags = [ 
-                 '-march=native',
-                 '-O6',
                  '-fomit-frame-pointer',
-                 '-Wall',
                  '-Wno-strict-aliasing', 
                  '-DLSB_FIRST', 
                  '-DUSE_8BPP_RENDERING', 
@@ -114,7 +111,8 @@ commonCFlags = [
                  '-DHAVE_LROUND',
                  '-DHAVE_STDINT_H',
                  '-DHAVE_SYS_PARAM_H',
-                 '-DUSE_DYNAMIC_ALLOC'
+                 '-DUSE_DYNAMIC_ALLOC',
+                 '-D_DISABLE_Z80_'
                ]
                         
 

@@ -32,6 +32,8 @@ class GameInstance : public GameInstanceBase
   int16_t* lesterPosX;
   int16_t* lesterPosY;
   uint8_t* lesterRoom;
+  uint16_t* lesterFrame;
+  uint8_t* lesterState1;
   uint8_t* gameMode;
 
   // Stage 01 Specific values
@@ -40,6 +42,7 @@ class GameInstance : public GameInstanceBase
   int16_t* stage01VineState;
   uint8_t* stage01Finish;
 
+  uint16_t advanceState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;
   void updateDerivedValues() override;

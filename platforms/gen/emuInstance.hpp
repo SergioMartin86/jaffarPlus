@@ -12,10 +12,6 @@
 #include "md_ntsc.h"
 #include "main.h"
 
-#define SOUND_FREQUENCY 48000
-#define SOUND_SAMPLES_SIZE  2048
-static __thread short soundframe[SOUND_SAMPLES_SIZE];
-
 class EmuInstance : public EmuInstanceBase
 {
  public:
@@ -25,8 +21,6 @@ class EmuInstance : public EmuInstanceBase
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
-  FILE *fp;
-
   /* set default config */
   error_init();
   set_config_defaults();
@@ -39,7 +33,6 @@ class EmuInstance : public EmuInstanceBase
   if(!load_rom(romFilePath.c_str())) EXIT_WITH_ERROR("Could not initialize emulator with rom file: %s\n", romFilePath.c_str());
 
   /* initialize system hardware */
-  audio_init(SOUND_FREQUENCY, 0);
   system_init();
   system_reset();
 
@@ -128,20 +121,10 @@ class EmuInstance : public EmuInstanceBase
   return moveString;
  }
 
- void advanceState(const std::string& move) override
- {
-  advanceState(moveStringToCode(move));
- }
-
  void advanceState(const INPUT_TYPE move) override
  {
   jaffarInput = move;
-
   system_frame_gen(1);
-  audio_update(soundframe);
-
-  while(_68KRam[0xE882] != 0x0001 && _68KRam[0xE882] != 0x000B && _68KRam[0xE882] != 0x000C && _68KRam[0xE882] != 0x0012 && _68KRam[0xE882] != 0x0017) { jaffarInput = 0; system_frame_gen(1); audio_update(soundframe); }
-
  }
 
 };

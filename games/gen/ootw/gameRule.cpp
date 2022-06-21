@@ -40,8 +40,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Game Timer") return dt_uint16;
   if (propertyName == "Animation Frame") return dt_uint8;
   if (propertyName == "Game Mode") return dt_uint8;
-  if (propertyName == "Lester Position X") return dt_uint16;
-  if (propertyName == "Lester Position Y") return dt_uint16;
+  if (propertyName == "Lester Position X") return dt_int16;
+  if (propertyName == "Lester Position Y") return dt_int16;
   if (propertyName == "Lester Room") return dt_uint8;
 
   if (propertyName == "Stage 01 Appear Time") return dt_uint8;

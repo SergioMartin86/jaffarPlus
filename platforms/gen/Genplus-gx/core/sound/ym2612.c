@@ -2017,7 +2017,7 @@ void YM2612Update(int *buffer, int length)
     refresh_fc_eg_chan(&ym2612.CH[2]);
   }
   else
-  {  
+  {
     /* 3SLOT MODE (operator order is 0,1,3,2) */
     if(ym2612.CH[2].SLOT[SLOT1].Incr==-1)
     {

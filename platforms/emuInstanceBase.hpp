@@ -17,7 +17,6 @@ class EmuInstanceBase
 
   // Function to advance state
   virtual void advanceState(const INPUT_TYPE move) = 0;
-  virtual void advanceState(const std::string& move) = 0;
 
   // Minimal serialization functions
   virtual void serializeState(uint8_t* state) const  = 0;

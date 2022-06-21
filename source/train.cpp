@@ -12,7 +12,7 @@ auto moveCountComparerString = [](const std::string& a, const std::string& b) { 
 auto moveCountComparerNumber = [](const uint16_t a, const uint16_t b) { return countButtonsPressedNumber16(a) < countButtonsPressedNumber16(b); };
 
 #ifdef _DETECT_POSSIBLE_MOVES
- #define moveKeyTemplate uint8_t
+ #define moveKeyTemplate uint16_t
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -87,7 +87,7 @@ void Train::run()
        printf(", \"%s\"", itr->c_str());
      }
      printf("});\n");
-     printf("Size: %lu\n", vec.size());
+     //printf("Size: %lu\n", vec.size());
     }
 
     #endif // _DETECT_POSSIBLE_MOVES
@@ -254,6 +254,8 @@ void Train::computeStates()
         if (((INPUT_TYPE)i & INPUT_X) == 0)
         if (((INPUT_TYPE)i & INPUT_Y) == 0)
         if (((INPUT_TYPE)i & INPUT_Z) == 0)
+//        if (((INPUT_TYPE)i & INPUT_UP) == 0)
+//        if (((INPUT_TYPE)i & INPUT_DOWN) == 0)
         {
          alternativeMoveSet.insert((INPUT_TYPE)i);
          fullMoves.push_back(EmuInstance::moveCodeToString((INPUT_TYPE)i));
@@ -616,7 +618,7 @@ void Train::printTrainStatus()
 
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
   printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0));
-  printf("[Jaffar] Max State Difference: %lu / %u\n", _maxStateDiff, (uint16_t)_MAX_DIFFERENCE_COUNT);
+  printf("[Jaffar] Max State Difference: %lu / %u\n", _maxStateDiff, (uint32_t)_MAX_DIFFERENCE_COUNT);
 
   if (_showHashInfo)
   {

@@ -60,7 +60,8 @@ void loadSolutionFile(
                       const std::string& solutionFile,
                       const std::string& stateFile,
                       GameInstance& gameInstance,
-                      const size_t ruleCount
+                      const size_t ruleCount,
+                      std::vector<std::string>& unpackedMoveSequence
                       )
 {
  // Clearing hash map
@@ -76,6 +77,9 @@ void loadSolutionFile(
  // Getting move list
  moveList.clear();
  moveList = split(moveSequence, ' ');
+
+ // Clearing unpacked move sequence
+ unpackedMoveSequence.clear();
 
  // Getting sequence size
  sequenceLength = moveList.size();
@@ -113,11 +117,15 @@ void loadSolutionFile(
  hashMap[curHash] = 0;
 
  // Iterating move list in the sequence
- for (int i = 0; i < sequenceLength; i++)
+ for (size_t i = 0; i < moveList.size(); i++)
  {
   // Advancing state
-  gameInstance.advanceState(moveList[i]);
+  auto skippedFrames = gameInstance.advanceStateString(moveList[i]);
   gameInstance.updateDerivedValues();
+
+  // Storing full sequence
+  unpackedMoveSequence.push_back(moveList[i]);
+  for (uint16_t f = 0; f < skippedFrames; f++) unpackedMoveSequence.push_back(".");
 
   // Adding current hash to the set
   uint64_t curHash = gameInstance.computeHash();
@@ -255,13 +263,14 @@ int main(int argc, char *argv[])
   // Move sequence and information
   std::string moveSequence;
   std::vector<std::string> moveList;
+  std::vector<std::string> unpackedMoveSequence;
   int sequenceLength;
 
   // Variable for current step in view
   int currentStep = 0;
 
   // Loading solution
-  loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount);
+  loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount, unpackedMoveSequence);
 
   // Flag to continue running playback
   bool continueRunning = true;
@@ -293,7 +302,7 @@ int main(int argc, char *argv[])
      printw("[Jaffar]  + Hash Collision Found:   %s (%u -> %u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep+1, hashCollisionPrev+1);
      printw("[Jaffar]  + Fail State Found:       %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep+1);
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
-     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | g: set RNG | s: quicksave | p: play | q: quit\n");
+     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | g: set RNG | s: quicksave | p: play | d: unpack | q: quit\n");
      playbackInstance.printPlaybackCommands();
      refresh();
    }
@@ -310,7 +319,7 @@ int main(int argc, char *argv[])
      if (refreshOnFinish)
      {
       sleep(5);
-      loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount);
+      loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount, unpackedMoveSequence);
       currentStep = 0;
      }
      else
@@ -343,10 +352,29 @@ int main(int argc, char *argv[])
    // Quicksave creation command
    if (command == 's')
    {
-     // Storing replay file
+     // Storing state file
      std::string saveFileName = "jaffar.state";
      gameInstance.saveStateFile(saveFileName);
      printw("[Jaffar] Saved state to %s\n", saveFileName.c_str());
+
+     // Do no show frame info again after this action
+     showFrameInfo = false;
+   }
+
+   // Storing unpacked solution
+   if (command == 'd')
+   {
+     // Storing replay file
+     std::string sequenceFileName = "jaffar.sol";
+
+     // Unpacking full move sequence
+     std::string unpackedSequence;
+     for (const auto& move : unpackedMoveSequence) { unpackedSequence.append(move); unpackedSequence.append("\n"); }
+
+     // Storing file
+     saveStringToFile(unpackedSequence, sequenceFileName.c_str());
+
+     printw("[Jaffar] Saved unpacked sequence to %s\n", sequenceFileName.c_str());
 
      // Do no show frame info again after this action
      showFrameInfo = false;
@@ -379,3 +407,4 @@ int main(int argc, char *argv[])
   // Ending ncurses window
   endwin();
 }
+

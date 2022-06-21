@@ -8,7 +8,7 @@
 #include "xdelta3.h"
 
 #define _MAX_DIFFERENCE_COUNT 10000
-#define _MAX_MOVELIST_SIZE 1000
+#define _MAX_MOVELIST_SIZE 3000
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
 enum stateType
@@ -25,14 +25,15 @@ class State
 {
   public:
 
+
+  // Differentiation functions
+
+#ifndef _DISABLE_XDELTA3
+
   // Positions of the difference with respect to a base frame
   uint8_t diffOutput[_MAX_DIFFERENCE_COUNT];
   usize_t diffSize;
 
-  // Rule status vector
-  bool rulesStatus[_MAX_RULE_COUNT];
-
-  // Differentiation functions
   inline void computeStateDifference(const uint8_t* __restrict__ baseStateData, const uint8_t* __restrict__ newStateData)
   {
    int ret = xd3_encode_memory(newStateData, _STATE_DATA_SIZE, baseStateData, _STATE_DATA_SIZE, diffOutput, &diffSize, sizeof(diffOutput), 0);
@@ -47,6 +48,45 @@ class State
    int ret = xd3_decode_memory (diffOutput, diffSize, baseStateData, _STATE_DATA_SIZE, stateData, &output_size, _STATE_DATA_SIZE, 0);
    if (ret != 0) EXIT_WITH_ERROR("[Error] State Decode failure: %d: %s\n", ret, xd3_strerror(ret));
   }
+
+#else
+
+  // Positions of the difference with respect to a base frame
+  uint32_t frameDiffPositions[_MAX_DIFFERENCE_COUNT];
+  uint8_t frameDiffValues[_MAX_DIFFERENCE_COUNT];
+
+  inline void computeStateDifference(const uint8_t* __restrict__ baseStateData, const uint8_t* __restrict__ newStateData)
+  {
+   frameDiffCount = 0;
+   #pragma GCC unroll 32
+   #pragma GCC ivdep
+   for (uint32_t i = 0; i < _STATE_DATA_SIZE; i++) if (baseStateData[i] != newStateData[i])
+   {
+    frameDiffPositions[frameDiffCount] = i;
+    frameDiffValues[frameDiffCount] = (uint8_t)newStateData[i];
+    frameDiffCount++;
+   }
+
+   if (frameDiffCount > _maxStateDiff)
+   {
+    _maxStateDiff = frameDiffCount;
+     if (frameDiffCount > _MAX_DIFFERENCE_COUNT) EXIT_WITH_ERROR("[Error] Exceeded maximum frame difference: %d > %d. Increase this maximum in the state.hpp source file and rebuild.\n", frameDiffCount, _MAX_DIFFERENCE_COUNT);
+   }
+  }
+
+  inline void getStateDataFromDifference(const uint8_t* __restrict__ baseStateData, uint8_t* __restrict__ stateData) const
+  {
+    memcpy(stateData, baseStateData, _STATE_DATA_SIZE);
+    #pragma GCC unroll 32
+    #pragma GCC ivdep
+    for (uint32_t i = 0; i < frameDiffCount; i++) stateData[frameDiffPositions[i]] = frameDiffValues[i];
+  }
+
+#endif
+
+  // Rule status vector
+  bool rulesStatus[_MAX_RULE_COUNT];
+
 
   // Parsing configuration
   static void parseConfiguration(const nlohmann::json& config)

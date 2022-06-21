@@ -87,7 +87,7 @@
 /* The default compression level
  */
 #ifndef XD3_DEFAULT_LEVEL
-#define XD3_DEFAULT_LEVEL 3
+#define XD3_DEFAULT_LEVEL 0
 #endif
 
 #ifndef XD3_DEFAULT_SECONDARY_LEVEL

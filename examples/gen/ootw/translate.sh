@@ -1,6 +1,16 @@
 #!/bin/bash
 
 while read p; do
- charArray=(`echo $p | grep -o .`)
- echo "|..|"${charArray[0]}${charArray[1]}${charArray[2]}${charArray[3]}${charArray[4]}${charArray[5]}${charArray[6]}${charArray[7]}${charArray[8]}${charArray[9]}${charArray[10]}${charArray[11]}${charArray[12]}${charArray[13]}${charArray[14]}${charArray[15]}"|"
+ charArray=(`echo $p.`)
+
+ buttonU="."; if [[ $charArray == *U* ]]; then buttonU=U; fi
+ buttonD="."; if [[ $charArray == *D* ]]; then buttonD=D; fi
+ buttonL="."; if [[ $charArray == *L* ]]; then buttonL=L; fi
+ buttonR="."; if [[ $charArray == *R* ]]; then buttonR=R; fi
+ buttonA="."; if [[ $charArray == *A* ]]; then buttonA=A; fi
+ buttonB="."; if [[ $charArray == *B* ]]; then buttonB=B; fi
+ buttonC="."; if [[ $charArray == *C* ]]; then buttonC=C; fi
+ buttonS="."; if [[ $charArray == *S* ]]; then buttonS=S; fi
+
+ echo "|..|${buttonU}${buttonD}${buttonL}${buttonR}${buttonA}${buttonB}${buttonC}${buttonS}|"
 done < $1

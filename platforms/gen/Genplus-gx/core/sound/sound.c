@@ -89,7 +89,7 @@ INLINE void fm_update(int cycles)
     int samples = (cycles - fm_cycles_count + fm_cycles_ratio - 1) / fm_cycles_ratio;
 
     /* run FM chip to sample buffer */
-    YM_Update(fm_ptr, samples);
+    //YM_Update(fm_ptr, samples);
 
     /* update FM buffer pointer */
     fm_ptr += (samples * 2);

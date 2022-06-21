@@ -3419,6 +3419,7 @@ void z80_reset(void)
  ****************************************************************************/
 void z80_run(unsigned int cycles)
 {
+#ifndef _DISABLE_Z80_
   while( Z80.cycles < cycles )
   {
     /* check for IRQs before each instruction */
@@ -3432,6 +3433,7 @@ void z80_run(unsigned int cycles)
     R++;
     EXEC_INLINE(op,ROP());
   }
+#endif
 } 
 
 /****************************************************************************

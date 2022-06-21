@@ -55,6 +55,8 @@ extern "C" {
 #endif
 
 /* Function prototypes */
+extern int state_save_light(unsigned char *state);
+extern int state_load_light(const unsigned char *state);
 extern int state_load(const unsigned char *state);
 extern int state_save(unsigned char *state);
 
