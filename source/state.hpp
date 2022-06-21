@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include "xdelta3.h"
 
-#define _MAX_DIFFERENCE_COUNT 10000
+#define _MAX_DIFFERENCE_COUNT 6000
 #define _MAX_MOVELIST_SIZE 3000
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
@@ -36,7 +36,7 @@ class State
 
   inline void computeStateDifference(const uint8_t* __restrict__ baseStateData, const uint8_t* __restrict__ newStateData)
   {
-   int ret = xd3_encode_memory(newStateData, _STATE_DATA_SIZE, baseStateData, _STATE_DATA_SIZE, diffOutput, &diffSize, sizeof(diffOutput), 0);
+   int ret = xd3_encode_memory(newStateData, _STATE_DATA_SIZE_TRAIN, baseStateData, _STATE_DATA_SIZE_TRAIN, diffOutput, &diffSize, sizeof(diffOutput), 0);
    if (diffSize > _MAX_DIFFERENCE_COUNT) EXIT_WITH_ERROR("[Error] Exceeded maximum frame difference: %d > %d. Increase this maximum in the state.hpp source file and rebuild.\n", diffSize, _MAX_DIFFERENCE_COUNT);
    if (ret != 0) EXIT_WITH_ERROR("[Error] State Encode failure: %d: %s\n", ret, xd3_strerror(ret));
    if (diffSize > _maxStateDiff) _maxStateDiff = diffSize;
@@ -45,7 +45,7 @@ class State
   inline void getStateDataFromDifference(const uint8_t* __restrict__ baseStateData, uint8_t* __restrict__ stateData) const
   {
    usize_t output_size;
-   int ret = xd3_decode_memory (diffOutput, diffSize, baseStateData, _STATE_DATA_SIZE, stateData, &output_size, _STATE_DATA_SIZE, 0);
+   int ret = xd3_decode_memory (diffOutput, diffSize, baseStateData, _STATE_DATA_SIZE_TRAIN, stateData, &output_size, _STATE_DATA_SIZE_TRAIN, 0);
    if (ret != 0) EXIT_WITH_ERROR("[Error] State Decode failure: %d: %s\n", ret, xd3_strerror(ret));
   }
 
@@ -60,7 +60,7 @@ class State
    frameDiffCount = 0;
    #pragma GCC unroll 32
    #pragma GCC ivdep
-   for (uint32_t i = 0; i < _STATE_DATA_SIZE; i++) if (baseStateData[i] != newStateData[i])
+   for (uint32_t i = 0; i < _STATE_DATA_SIZE_TRAIN; i++) if (baseStateData[i] != newStateData[i])
    {
     frameDiffPositions[frameDiffCount] = i;
     frameDiffValues[frameDiffCount] = (uint8_t)newStateData[i];
@@ -76,7 +76,7 @@ class State
 
   inline void getStateDataFromDifference(const uint8_t* __restrict__ baseStateData, uint8_t* __restrict__ stateData) const
   {
-    memcpy(stateData, baseStateData, _STATE_DATA_SIZE);
+    memcpy(stateData, baseStateData, _STATE_DATA_SIZE_TRAIN);
     #pragma GCC unroll 32
     #pragma GCC ivdep
     for (uint32_t i = 0; i < frameDiffCount; i++) stateData[frameDiffPositions[i]] = frameDiffValues[i];

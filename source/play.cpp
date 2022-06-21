@@ -90,7 +90,7 @@ void loadSolutionFile(
  failConditionStep = 0;
 
  // Saving initial frame
- uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE);
+ uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE_PLAY);
  gameInstance.loadStateFile(stateFile);
  gameInstance.updateDerivedValues();
  gameInstance.popState(state);
@@ -138,7 +138,7 @@ void loadSolutionFile(
   hashMap[curHash] = i;
 
   // Storing new state
-  state = (uint8_t*) malloc(_STATE_DATA_SIZE);
+  state = (uint8_t*) malloc(_STATE_DATA_SIZE_PLAY);
   gameInstance.popState(state);
   stateSequence.push_back(state);
 
@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
    if (isReproduce)
    {
     currentStep++;
-    if (currentStep > sequenceLength)
+    if (currentStep >= sequenceLength)
     {
      if (refreshOnFinish)
      {

@@ -61,7 +61,7 @@ executable('jaffar-play',
   dependencies: [ platformPlayDependencies ],
   link_with: [ platformPlayLibs ],
   link_args: [ platformPlayLFlags, '-lncurses', xdelta3LFlags ],
-  cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES', xdelta3CFlags ],
+  cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES', xdelta3CFlags, '-D_JAFFAR_PLAY' ],
   c_args: [ platformPlayCFlags, gameInstanceCFlags ] 
 )
 

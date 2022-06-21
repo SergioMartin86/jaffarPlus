@@ -27,7 +27,7 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Sleeping for the inverse frame rate
   usleep(_INVERSE_FRAME_RATE);
 
-  uint8_t state[_STATE_DATA_SIZE];
+  uint8_t state[_STATE_DATA_SIZE_PLAY];
   _game->_emu->serializeState(state);
 
   system_frame_gen(0);
@@ -49,7 +49,7 @@ class PlaybackInstance : public PlaybackInstanceBase
   if (command == 'w')
   {
    std::string stateBuffer;
-   stateBuffer.resize(STATE_SIZE);
+   stateBuffer.resize(_STATE_DATA_SIZE_PLAY);
    size_t stateSize = state_save_light((uint8_t*)stateBuffer.c_str());
    stateBuffer.resize(stateSize);
    saveStringToFile(stateBuffer, "jaffar.state");

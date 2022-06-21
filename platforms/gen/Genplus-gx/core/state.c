@@ -308,7 +308,7 @@ int state_save_light(unsigned char *state)
   bufferptr += vdp_context_save_light(&state[bufferptr]);
 
   /* SOUND */
-  bufferptr += sound_context_save(&state[bufferptr]);
+  //bufferptr += sound_context_save(&state[bufferptr]);
 
   /* 68000 */ 
   if ((system_hw & SYSTEM_PBC) == SYSTEM_MD)
@@ -342,7 +342,7 @@ int state_save_light(unsigned char *state)
   }
 
   /* Z80 */ 
-  save_param(&Z80, sizeof(Z80_Regs));
+  //save_param(&Z80, sizeof(Z80_Regs));
 
   /* return total size */
   return bufferptr;
@@ -368,7 +368,7 @@ int state_load_light(const unsigned char *state)
   }
 
   /* reset system */
-  system_reset();
+  //system_reset();
 
   /* enable VDP access for TMSS systems */
   for (i=0xc0; i<0xe0; i+=8)
@@ -423,7 +423,7 @@ int state_load_light(const unsigned char *state)
   bufferptr += vdp_context_load_light(&state[bufferptr]);
 
   /* SOUND */
-  bufferptr += sound_context_load(&state[bufferptr]);
+  //bufferptr += sound_context_load(&state[bufferptr]);
   if ((system_hw & SYSTEM_PBC) == SYSTEM_MD)
   {
     psg_config(0, config.psg_preamp, 0xff);
@@ -461,7 +461,7 @@ int state_load_light(const unsigned char *state)
   }
 
   /* Z80 */
-  load_param(&Z80, sizeof(Z80_Regs));
+  //load_param(&Z80, sizeof(Z80_Regs));
   Z80.irq_callback = z80_irq_callback;
 
   return bufferptr;

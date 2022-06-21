@@ -98,7 +98,7 @@ void Train::run()
   {
    printf("[Jaffar]  + Winning Frame Info:\n");
 
-   uint8_t winStateData[_STATE_DATA_SIZE];
+   uint8_t winStateData[_STATE_DATA_SIZE_TRAIN];
    _winState->getStateDataFromDifference(_referenceStateData, winStateData);
    _gameInstances[0]->pushState(winStateData);
    _gameInstances[0]->printStateInfo(_winState->rulesStatus);
@@ -174,8 +174,8 @@ void Train::computeStates()
   std::vector<State*> newStates;
 
   // Storing current source state data for decoding
-  uint8_t currentSourceStateData[_STATE_DATA_SIZE];
-  memcpy(currentSourceStateData, _referenceStateData, _STATE_DATA_SIZE);
+  uint8_t currentSourceStateData[_STATE_DATA_SIZE_TRAIN];
+  memcpy(currentSourceStateData, _referenceStateData, _STATE_DATA_SIZE_TRAIN);
 
   // Updating reference data with the first entry of the latest states, for encoding
   _stateDB[0]->getStateDataFromDifference(currentSourceStateData, _referenceStateData);
@@ -202,7 +202,7 @@ void Train::computeStates()
     int threadId = omp_get_thread_num();
 
     // Storage for base states
-    uint8_t baseStateData[_STATE_DATA_SIZE];
+    uint8_t baseStateData[_STATE_DATA_SIZE_TRAIN];
 
     // Storage for copies and pointer to the base state
     State baseStateContent;
@@ -446,7 +446,7 @@ void Train::computeStates()
         // Encoding the state data
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
-        uint8_t gameState[_STATE_DATA_SIZE];
+        uint8_t gameState[_STATE_DATA_SIZE_TRAIN];
         _gameInstances[threadId]->popState(gameState);
         newState->computeStateDifference(_referenceStateData, gameState);
 
@@ -631,7 +631,7 @@ void Train::printTrainStatus()
 
   printf("[Jaffar] Best State Information:\n");
 
-  uint8_t bestStateData[_STATE_DATA_SIZE];
+  uint8_t bestStateData[_STATE_DATA_SIZE_TRAIN];
   _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
   _gameInstances[0]->pushState(bestStateData);
   _gameInstances[0]->printStateInfo(_bestState->rulesStatus);
@@ -807,12 +807,12 @@ Train::Train(int argc, char *argv[])
 
   auto firstState = new State;
 
-  uint8_t gameState[_STATE_DATA_SIZE];
+  uint8_t gameState[_STATE_DATA_SIZE_TRAIN];
   _gameInstances[0]->popState(gameState);
 
   // Storing initial state as base for differential comparison
-  memcpy(_initialStateData, gameState, _STATE_DATA_SIZE);
-  memcpy(_referenceStateData, gameState, _STATE_DATA_SIZE);
+  memcpy(_initialStateData, gameState, _STATE_DATA_SIZE_TRAIN);
+  memcpy(_referenceStateData, gameState, _STATE_DATA_SIZE_TRAIN);
   firstState->computeStateDifference(_referenceStateData, gameState);
 
   // Storing initial state difference
@@ -879,12 +879,12 @@ void Train::showSavingLoop()
 //       _bestStateLock.lock();
 //
 //       // Storing best and worst states
-//       uint8_t bestStateData[_STATE_DATA_SIZE];
+//       uint8_t bestStateData[_STATE_DATA_SIZE_TRAIN];
 //       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
 //       _showGameInstance->pushState(bestStateData);
 //       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
 //
-//       uint8_t worstStateData[_STATE_DATA_SIZE];
+//       uint8_t worstStateData[_STATE_DATA_SIZE_TRAIN];
 //       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
 //       _showGameInstance->pushState(worstStateData);
 //       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);

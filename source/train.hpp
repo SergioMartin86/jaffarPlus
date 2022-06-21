@@ -61,8 +61,8 @@ class Train
   uint16_t _maxNewStateRatioStep;
 
   // Storage for source state data for differential load/save
-  uint8_t _referenceStateData[_STATE_DATA_SIZE];
-  uint8_t _initialStateData[_STATE_DATA_SIZE];
+  uint8_t _referenceStateData[_STATE_DATA_SIZE_TRAIN];
+  uint8_t _initialStateData[_STATE_DATA_SIZE_TRAIN];
 
   // State databases
   size_t _databaseSize;

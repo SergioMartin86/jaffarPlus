@@ -67,12 +67,22 @@ class EmuInstance : public EmuInstanceBase
 
  void serializeState(uint8_t* state) const override
  {
-  state_save(state);
+  #ifdef _JAFFAR_PLAY
+   state_save(state);
+  #else
+   state_save_light(state);
+  #endif
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  state_load(state);
+  #ifdef _JAFFAR_PLAY
+   state_load(state);
+  #else
+   state_load_light(state);
+  #endif
+//  printf("size: %lu\n", size);
+//  exit(0);
  }
 
  static INPUT_TYPE moveStringToCode(const std::string& move)
