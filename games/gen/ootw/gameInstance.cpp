@@ -7,17 +7,18 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  _emu = emu;
 
  // Setting memory positions
+ currentStageRaw         = (uint8_t*)   &_emu->_68KRam[0xEC70];
  gameTimer               = (uint8_t*)   &_emu->_68KRam[0xE882];
  lagFrame                = (uint8_t*)   &_emu->_68KRam[0xFF5B];
- inputFrame              = (uint8_t*)   &_emu->_68KRam[0xFFDA];
+ inputFrame              = (uint8_t*)   &_emu->_68KRam[0xFFC4];
  animationFrame          = (uint8_t*)   &_emu->_68KRam[0xE800];
  gameMode                = (uint8_t*)   &_emu->_68KRam[0xED9C];
 
  lesterPosX              = (int16_t*)   &_emu->_68KRam[0xEA86];
  lesterPosY              = (int16_t*)   &_emu->_68KRam[0xEA88];
- lesterRoom              = (uint8_t*)    &_emu->_68KRam[0xEB52];
+ lesterRoom              = (uint8_t*)   &_emu->_68KRam[0xEB52];
 
- lesterFrame             = (uint16_t*)   &_emu->_68KRam[0xECAC];
+ lesterFrame             = (uint16_t*)  &_emu->_68KRam[0xECAC];
 
  lesterState1            = (uint8_t*)   &_emu->_68KRam[0xEB4A];
 
@@ -27,8 +28,12 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  stage01VineState         = (int16_t*)   &_emu->_68KRam[0xEC90];
  stage01Finish            = (uint8_t*)   &_emu->_68KRam[0xEAE9];
 
+ // Stage 02 Specific values
+ stage02AngularMomentum1  = (uint8_t*)   &_emu->_68KRam[0xEAAE];
+ stage02AngularMomentum2  = (uint8_t*)   &_emu->_68KRam[0xEAB0];
+
  // Initialize derivative values
-  updateDerivedValues();
+ updateDerivedValues();
 }
 
 // This function computes the hash for the current state
@@ -37,29 +42,42 @@ uint64_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash64 hash;
 
-  if(*gameTimer != 0x0001 && *gameTimer != 0x000B && *gameTimer != 0x000C && *gameTimer != 0x00012 && *gameTimer != 0x0017) { hash.Update(_emu->_68KRam+0x0000, 0xFFFF); }
+//  hash.Update(_emu->_68KRam+0xE880, 0x0560);
+  hash.Update(_emu->_68KRam+0xEA80, 0x040);
+  hash.Update(_emu->_68KRam+0xEC70, 0x090);
 
-//  hash.Update(_emu->_68KRam+0x0000, 0x0080);
-  hash.Update(*lagFrame);
-  hash.Update(*inputFrame);
+//    hash.Update(_emu->_68KRam+0x0000, 0x0080);
+//    hash.Update(_emu->_68KRam+0xFF50, 0x00B0);
+  hash.Update(*currentStageRaw);
+  hash.Update(*gameTimer);
+//  hash.Update(*inputFrame);
   hash.Update(*gameMode);
+  hash.Update(*lagFrame);
 
   hash.Update(*animationFrame);
   hash.Update(*lesterPosX);
   hash.Update(*lesterPosY);
   hash.Update(*lesterRoom);
-  hash.Update(*lesterState1);
+//  hash.Update(*lesterState1);
 
-  hash.Update(*lesterFrame);
+//  hash.Update(*lesterFrame);
 
-  hash.Update(*stage01AppearTimer);
-  hash.Update(*stage01SkipMonsterFlag);
-  hash.Update(*stage01VineState);
-  hash.Update(*stage01Finish);
+  if (currentStage == 1)
+  {
+   hash.Update(*stage01AppearTimer);
+   hash.Update(*stage01SkipMonsterFlag);
+   hash.Update(*stage01VineState);
+   hash.Update(*stage01Finish);
+  }
 
-  hash.Update(_emu->_68KRam+0xE880, 0x0200);
-  hash.Update(_emu->_68KRam+0xEA86, 0x0162);
-  hash.Update(_emu->_68KRam+0xEC82, 0x0160);
+  if (currentStage == 2)
+  {
+   hash.Update(*stage02AngularMomentum1);
+   hash.Update(*stage02AngularMomentum2);
+  }
+
+
+//  hash.Update(_emu->_CRam, 0x40);
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -69,6 +87,9 @@ uint64_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
+ currentStage = *currentStageRaw+1;
+
+ lesterAbsolutePosX = *lesterPosX > 0 ? *lesterPosX : -*lesterPosX;
 }
 
 // Function to determine the current possible moves
@@ -76,9 +97,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 {
  std::vector<std::string> moveList = {"."};
 
- if (*animationFrame == 1) return moveList;
-
- while(*gameTimer != 0x0001 && *gameTimer != 0x000B && *gameTimer != 0x000C && *gameTimer != 0x00012 && *gameTimer != 0x0017) { return moveList; }
+ if (*inputFrame == 255) return moveList;
 
  // Stage01a
 
@@ -89,8 +108,10 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 // if (*lesterFrame == 0xFFFF) moveList.insert(moveList.end(), { "....A.......", "...R........", "..L.........", ".D..........", "U...........", "...RA.......", "..L.A.......", ".D.R........", ".DL.........", "U...A.......", "U..R........", "U.L.........", "U..RA.......", "U.L.A......."});
 
  // Stage01b
+ if (currentStage == 1) moveList.insert(moveList.end(), { "L", "R", "B", "C", "LB", "LC", "RB", "RB", "LBC", "RBC", "LRB", "LRC", "LRBC"});
 
- moveList.insert(moveList.end(), { "L", "R", "A", "B", "C", "LA", "LB", "LC", "RA", "RB", "RB", "LAC", "RAC", "LBC", "RBC", "LRB", "LRBC"});
+ // Stage02a
+ if (currentStage == 2) moveList.insert(moveList.end(), { "L", "R" });
 
  return moveList;
 }
@@ -100,7 +121,7 @@ uint16_t GameInstance::advanceState(const INPUT_TYPE &move)
    _emu->advanceState(move);
   uint16_t skippedFrames = 0;
 
-//  while(*gameTimer != 0x0001 && *gameTimer != 0x000B && *gameTimer != 0x000C && *gameTimer != 0x00012 && *gameTimer != 0x0017) { _emu->advanceState(0); skippedFrames++; }
+//  while(*inputFrame != 0 || *animationFrame != 0) { _emu->advanceState(0); skippedFrames++; }
 
   updateDerivedValues();
   return skippedFrames;
@@ -149,6 +170,12 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   diff = std::abs(magnets.lesterVerticalMagnet[*lesterRoom].center - boundedValue);
   reward += magnets.lesterVerticalMagnet[*lesterRoom].intensity * -diff;
 
+  // Evaluating Stage 01 Vine Magnet
+  reward += magnets.stage01VineStateMagnet * (float)*stage01VineState;
+
+  // Evaluating Stage 02 Angular momentum magnet
+  reward += magnets.lesterAngularMomentumMagnet * (float)*stage02AngularMomentum1;
+
   // Returning reward
   return reward;
 }
@@ -160,6 +187,7 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Timer:                             %02u (%02u) (%02u)\n", *gameTimer, *lagFrame, *inputFrame);
+ LOG("[Jaffar]  + Current Stage:                     %02u\n", currentStage);
  LOG("[Jaffar]  + Reward:                            %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                              0x%lX\n", computeHash());
  LOG("[Jaffar]  + Game Mode:                         %02u\n", *gameMode);
@@ -167,14 +195,23 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Room:                              %02u\n", *lesterRoom);
  LOG("[Jaffar]  + Lester Pos X:                      %04d\n", *lesterPosX);
  LOG("[Jaffar]  + Lester Pos Y:                      %04d\n", *lesterPosY);
- LOG("[Jaffar]  + Lester State:                      [%02u]\n", *lesterState1);
+ LOG("[Jaffar]  + Lester State:                      %02u\n", *lesterState1);
  LOG("[Jaffar]  + Lester Frame:                      0x%04X [%02X, %02X]\n", *lesterFrame, *(((uint8_t*)lesterFrame)+0), *(((uint8_t*)lesterFrame)+1));
 
- LOG("[Jaffar]  + Level 1 Values:\n");
- LOG("[Jaffar]  + Appear Timer:                      %02u\n", *stage01AppearTimer);
- LOG("[Jaffar]  + Vine State:                        %04d\n", *stage01VineState);
- LOG("[Jaffar]  + Skip Monster Flag:                 %02u\n", *stage01SkipMonsterFlag);
- LOG("[Jaffar]  + Finished State:                    %02u\n", *stage01Finish);
+ if (currentStage == 1)
+ {
+  LOG("[Jaffar]  + Level 1 Values:\n");
+  LOG("[Jaffar]  + Appear Timer:                      %02u\n", *stage01AppearTimer);
+  LOG("[Jaffar]  + Vine State:                        %04d\n", *stage01VineState);
+  LOG("[Jaffar]  + Skip Monster Flag:                 %02u\n", *stage01SkipMonsterFlag);
+  LOG("[Jaffar]  + Finished State:                    %02u\n", *stage01Finish);
+ }
+
+ if (currentStage == 2)
+ {
+  LOG("[Jaffar]  + Level 2 Values:\n");
+  LOG("[Jaffar]  + Angular Momenta:                   [%02u, %02u]\n", *stage02AngularMomentum1, *stage02AngularMomentum2);
+ }
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -182,7 +219,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
  auto magnets = getMagnetValues(rulesStatus);
 
-  if (std::abs(magnets.lesterHorizontalMagnet[*lesterRoom].intensity) > 0.0f)  LOG("[Jaffar]  + Lester Horizontal Magnet      - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.lesterHorizontalMagnet[*lesterRoom].intensity, magnets.lesterHorizontalMagnet[*lesterRoom].center, magnets.lesterHorizontalMagnet[*lesterRoom].min, magnets.lesterHorizontalMagnet[*lesterRoom].max);
-  if (std::abs(magnets.lesterVerticalMagnet[*lesterRoom].intensity) > 0.0f)    LOG("[Jaffar]  + Lester Vertical Magnet        - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.lesterVerticalMagnet[*lesterRoom].intensity, magnets.lesterVerticalMagnet[*lesterRoom].center, magnets.lesterVerticalMagnet[*lesterRoom].min, magnets.lesterVerticalMagnet[*lesterRoom].max);
+  if (std::abs(magnets.lesterHorizontalMagnet[*lesterRoom].intensity) > 0.0f)  LOG("[Jaffar]  + Lester Horizontal Magnet       - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.lesterHorizontalMagnet[*lesterRoom].intensity, magnets.lesterHorizontalMagnet[*lesterRoom].center, magnets.lesterHorizontalMagnet[*lesterRoom].min, magnets.lesterHorizontalMagnet[*lesterRoom].max);
+  if (std::abs(magnets.lesterVerticalMagnet[*lesterRoom].intensity) > 0.0f)    LOG("[Jaffar]  + Lester Vertical Magnet         - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.lesterVerticalMagnet[*lesterRoom].intensity, magnets.lesterVerticalMagnet[*lesterRoom].center, magnets.lesterVerticalMagnet[*lesterRoom].min, magnets.lesterVerticalMagnet[*lesterRoom].max);
+  if (std::abs(magnets.lesterAngularMomentumMagnet) > 0.0f)                    LOG("[Jaffar]  + Lester Angular Momentum Magnet - Intensity: %.5f\n", magnets.lesterAngularMomentumMagnet);
+  if (std::abs(magnets.stage01VineStateMagnet) > 0.0f)                         LOG("[Jaffar]  + Stage 01 Vine State Magnet     - Intensity: %.5f\n", magnets.stage01VineStateMagnet);
 }
 

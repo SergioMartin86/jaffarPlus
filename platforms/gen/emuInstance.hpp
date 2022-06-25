@@ -18,6 +18,7 @@ class EmuInstance : public EmuInstanceBase
 
  uint8_t* _68KRam;
  uint8_t* _Z80Ram;
+ uint8_t* _CRam;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
@@ -44,6 +45,7 @@ class EmuInstance : public EmuInstanceBase
   // Getting pointer to 68K and Z80 Ram
   _68KRam = work_ram;
   _Z80Ram = zram;
+  _CRam = cram;
  }
 
  void loadStateFile(const std::string& stateFilePath) override
@@ -80,9 +82,10 @@ class EmuInstance : public EmuInstanceBase
    state_load(state);
   #else
    state_load_light(state);
+//   size_t size = state_load_light(state);
+//   printf("size: %lu\n", size);
+//   exit(0);
   #endif
-//  printf("size: %lu\n", size);
-//  exit(0);
  }
 
  static INPUT_TYPE moveStringToCode(const std::string& move)

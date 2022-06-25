@@ -26,7 +26,7 @@ extern int scd_68k_irq_ack(int level);
 #ifdef BUILD_TABLES
 __thread unsigned char s68ki_cycles[0x10000];
 #endif
-static __thread int irq_latency;
+__thread int irq_latency_s68;
 
 /* IRQ priority */
 static const uint8 irq_level[0x40] = 
@@ -318,7 +318,7 @@ void s68k_pulse_reset(void)
   /* Interrupt mask to level 7 */
   FLAG_INT_MASK = 0x0700;
   CPU_INT_LEVEL = 0;
-  irq_latency = 0;
+  irq_latency_s68 = 0;
 
   /* Go to supervisor mode */
   m68ki_set_s_flag(SFLAG_SET);

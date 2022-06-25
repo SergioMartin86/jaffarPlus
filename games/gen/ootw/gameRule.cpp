@@ -30,6 +30,21 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Stage 01 Vine State Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.stage01VineStateMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+
+  if (actionType == "Set Lester Angular Momentum Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.lesterAngularMomentumMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
   return recognizedActionType;
 }
 
@@ -41,8 +56,10 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Animation Frame") return dt_uint8;
   if (propertyName == "Game Mode") return dt_uint8;
   if (propertyName == "Lester Position X") return dt_int16;
+  if (propertyName == "Lester Absolute Position X") return dt_uint16;
   if (propertyName == "Lester Position Y") return dt_int16;
   if (propertyName == "Lester Room") return dt_uint8;
+  if (propertyName == "Lester Frame") return dt_uint16;
 
   if (propertyName == "Stage 01 Appear Time") return dt_uint8;
   if (propertyName == "Stage 01 Vine State") return dt_int16;
@@ -62,8 +79,10 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Animation Frame") return gameInstance->animationFrame;
   if (propertyName == "Game Mode") return gameInstance->gameMode;
   if (propertyName == "Lester Position X") return gameInstance->lesterPosX;
+  if (propertyName == "Lester Absolute Position X") return &gameInstance->lesterAbsolutePosX;
   if (propertyName == "Lester Position Y") return gameInstance->lesterPosY;
   if (propertyName == "Lester Room") return gameInstance->lesterRoom;
+  if (propertyName == "Lester Frame") return gameInstance->lesterFrame;
 
   if (propertyName == "Stage 01 Appear Time") return gameInstance->stage01AppearTimer;
   if (propertyName == "Stage 01 Vine State") return gameInstance->stage01VineState;

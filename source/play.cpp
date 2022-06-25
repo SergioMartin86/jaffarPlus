@@ -314,11 +314,11 @@ int main(int argc, char *argv[])
    if (isReproduce)
    {
     currentStep++;
-    if (currentStep >= sequenceLength)
+    if (currentStep > sequenceLength)
     {
      if (refreshOnFinish)
      {
-      sleep(5);
+      sleep(2);
       loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount, unpackedMoveSequence);
       currentStep = 0;
      }

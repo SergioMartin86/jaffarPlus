@@ -254,6 +254,7 @@ void Train::computeStates()
         if (((INPUT_TYPE)i & INPUT_X) == 0)
         if (((INPUT_TYPE)i & INPUT_Y) == 0)
         if (((INPUT_TYPE)i & INPUT_Z) == 0)
+        if (((INPUT_TYPE)i & INPUT_A) == 0)
 //        if (((INPUT_TYPE)i & INPUT_UP) == 0)
 //        if (((INPUT_TYPE)i & INPUT_DOWN) == 0)
         {
@@ -618,7 +619,9 @@ void Train::printTrainStatus()
 
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
   printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0));
+#ifndef _DISABLE_XDELTA3
   printf("[Jaffar] Max State Difference: %lu / %u\n", _maxStateDiff, (uint32_t)_MAX_DIFFERENCE_COUNT);
+#endif
 
   if (_showHashInfo)
   {

@@ -296,7 +296,7 @@ int state_save_light(unsigned char *state)
   if ((system_hw & SYSTEM_PBC) == SYSTEM_MD)
   {
     save_param(work_ram, sizeof(work_ram));
-    save_param(zram, sizeof(zram));
+    //save_param(zram, sizeof(zram));
     save_param(&zstate, sizeof(zstate));
     save_param(&zbank, sizeof(zbank));
   }
@@ -385,7 +385,7 @@ int state_load_light(const unsigned char *state)
   if ((system_hw & SYSTEM_PBC) == SYSTEM_MD)
   {
     load_param(work_ram, sizeof(work_ram));
-    load_param(zram, sizeof(zram));
+    //load_param(zram, sizeof(zram));
     load_param(&zstate, sizeof(zstate));
     load_param(&zbank, sizeof(zbank));
     if (zstate == 3)

@@ -18,6 +18,8 @@ struct genericMagnet_t {
 struct magnetSet_t {
  genericMagnet_t lesterHorizontalMagnet[_ROOM_COUNT_];
  genericMagnet_t lesterVerticalMagnet[_ROOM_COUNT_];
+ float stage01VineStateMagnet = 0;
+ float lesterAngularMomentumMagnet = 0;
 };
 
 class GameInstance : public GameInstanceBase
@@ -25,6 +27,7 @@ class GameInstance : public GameInstanceBase
  public:
 
   // Container for game-specific values
+  uint8_t* currentStageRaw;
   uint8_t* gameTimer;
   uint8_t* lagFrame;
   uint8_t* inputFrame;
@@ -41,6 +44,14 @@ class GameInstance : public GameInstanceBase
   uint8_t* stage01SkipMonsterFlag;
   int16_t* stage01VineState;
   uint8_t* stage01Finish;
+
+  // Stage 02 Specific values
+  uint8_t* stage02AngularMomentum1;
+  uint8_t* stage02AngularMomentum2;
+
+  // Derivative Values
+  uint8_t currentStage;
+  uint16_t lesterAbsolutePosX;
 
   uint16_t advanceState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
