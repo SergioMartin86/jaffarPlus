@@ -8,8 +8,11 @@
 
 //#define _DETECT_POSSIBLE_MOVES
 
+auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
+auto moveCountComparerNumber = [](const uint16_t a, const uint16_t b) { return countButtonsPressedNumber16(a) < countButtonsPressedNumber16(b); };
+
 #ifdef _DETECT_POSSIBLE_MOVES
- #define moveKeyTemplate uint8_t
+ #define moveKeyTemplate uint16_t
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -74,14 +77,17 @@ void Train::run()
 
     for (const auto& key : newMoveKeySet)
     {
-     auto itr = key.second.begin();
-     printf("if (*ninjaAnimationType == 0x%02X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
+     std::vector<std::string> vec(key.second.begin(), key.second.end());
+     std::sort(vec.begin(), vec.end(), moveCountComparerString);
+     auto itr = vec.begin();
+     printf("if (*gameTimer == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
      itr++;
-     for (; itr != key.second.end(); itr++)
+     for (; itr != vec.end(); itr++)
      {
        printf(", \"%s\"", itr->c_str());
      }
      printf("});\n");
+     //printf("Size: %lu\n", vec.size());
     }
 
     #endif // _DETECT_POSSIBLE_MOVES
@@ -92,7 +98,7 @@ void Train::run()
   {
    printf("[Jaffar]  + Winning Frame Info:\n");
 
-   uint8_t winStateData[_STATE_DATA_SIZE];
+   uint8_t winStateData[_STATE_DATA_SIZE_TRAIN];
    _winState->getStateDataFromDifference(_referenceStateData, winStateData);
    _gameInstances[0]->pushState(winStateData);
    _gameInstances[0]->printStateInfo(_winState->rulesStatus);
@@ -168,8 +174,8 @@ void Train::computeStates()
   std::vector<State*> newStates;
 
   // Storing current source state data for decoding
-  uint8_t currentSourceStateData[_STATE_DATA_SIZE];
-  memcpy(currentSourceStateData, _referenceStateData, _STATE_DATA_SIZE);
+  uint8_t currentSourceStateData[_STATE_DATA_SIZE_TRAIN];
+  memcpy(currentSourceStateData, _referenceStateData, _STATE_DATA_SIZE_TRAIN);
 
   // Updating reference data with the first entry of the latest states, for encoding
   _stateDB[0]->getStateDataFromDifference(currentSourceStateData, _referenceStateData);
@@ -196,7 +202,7 @@ void Train::computeStates()
     int threadId = omp_get_thread_num();
 
     // Storage for base states
-    uint8_t baseStateData[_STATE_DATA_SIZE];
+    uint8_t baseStateData[_STATE_DATA_SIZE_TRAIN];
 
     // Storage for copies and pointer to the base state
     State baseStateContent;
@@ -231,12 +237,9 @@ void Train::computeStates()
 
       #ifdef _DETECT_POSSIBLE_MOVES
 
-       auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
-       auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
-
-       std::set<uint8_t, decltype(moveCountComparerNumber)> possibleMoveSet;
+       std::set<INPUT_TYPE, decltype(moveCountComparerNumber)> possibleMoveSet;
        std::vector<std::string> fullMoves;
-       std::set<uint8_t, decltype(moveCountComparerNumber)> alternativeMoveSet;
+       std::set<INPUT_TYPE, decltype(moveCountComparerNumber)> alternativeMoveSet;
 
        for (const auto& actualMove : possibleMoves)
        {
@@ -244,21 +247,31 @@ void Train::computeStates()
         fullMoves.push_back(actualMove);
        }
 
-       for (uint16_t i = 0; i < 256; i++)
-        if (possibleMoveSet.contains((uint8_t)i) == false)
-        if (((uint8_t)i & 0b00001000) == 0)
-        if (((uint8_t)i & 0b00000100) == 0)
+       for (INPUT_TYPE i = 0; i < 256*sizeof(INPUT_TYPE); i++)
+        if (possibleMoveSet.contains((INPUT_TYPE)i) == false)
+        if (((INPUT_TYPE)i & INPUT_START) == 0)
+        if (((INPUT_TYPE)i & INPUT_MODE) == 0)
+        if (((INPUT_TYPE)i & INPUT_X) == 0)
+        if (((INPUT_TYPE)i & INPUT_Y) == 0)
+        if (((INPUT_TYPE)i & INPUT_Z) == 0)
+        if (((INPUT_TYPE)i & INPUT_A) == 0)
+//        if (((INPUT_TYPE)i & INPUT_UP) == 0)
+//        if (((INPUT_TYPE)i & INPUT_DOWN) == 0)
         {
-         alternativeMoveSet.insert((uint8_t)i);
-         fullMoves.push_back(EmuInstance::moveCodeToString((uint8_t)i));
+         alternativeMoveSet.insert((INPUT_TYPE)i);
+         fullMoves.push_back(EmuInstance::moveCodeToString((INPUT_TYPE)i));
         }
 
        std::sort(fullMoves.begin(), fullMoves.end(), moveCountComparerString);
        auto possibleMoveCopy = possibleMoves;
+
+       //for (const auto& move : fullMoves) printf("%s\n", move.c_str());
+       //printf("Size: %lu\n", fullMoves.size());
+       //exit(0);
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t ninjaAnimationType = *_gameInstances[threadId]->ninjaAnimationType;
+       uint16_t gameTimer = *_gameInstances[threadId]->gameTimer;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -373,11 +386,11 @@ void Train::computeStates()
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          auto moveKey = ninjaAnimationType;
+          auto moveKey = gameTimer;
           if (newMoveKeySet[moveKey].contains(possibleMoves[idx]) == false)
           {
            // Storing new move
-           newMoveKeySet[ninjaAnimationType].insert(possibleMoves[idx]);
+           newMoveKeySet[gameTimer].insert(possibleMoves[idx]);
 
            //           if (possibleMoves[idx].find("s") != std::string::npos)
            //           {
@@ -434,7 +447,7 @@ void Train::computeStates()
         // Encoding the state data
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
-        uint8_t gameState[_STATE_DATA_SIZE];
+        uint8_t gameState[_STATE_DATA_SIZE_TRAIN];
         _gameInstances[threadId]->popState(gameState);
         newState->computeStateDifference(_referenceStateData, gameState);
 
@@ -606,7 +619,9 @@ void Train::printTrainStatus()
 
   printf("[Jaffar] New States Created Ratio (Step/Max(Step)):  %.3f, %.3f (%u)\n", _stepNewStateRatio, _maxNewStateRatio, _maxNewStateRatioStep);
   printf("[Jaffar] Max States In Memory (Step/Max): %lu (%.3fmb) / %lu (%.3fmb)\n", _stepMaxStatesInMemory, (double)(_stepMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0), _totalMaxStatesInMemory, (double)(_totalMaxStatesInMemory * sizeof(State)) / (1024.0 * 1024.0));
-  printf("[Jaffar] Max State Difference: %lu / %u\n", _maxStateDiff, (uint16_t)_MAX_DIFFERENCE_COUNT);
+#ifndef _DISABLE_XDELTA3
+  printf("[Jaffar] Max State Difference: %lu / %u\n", _maxStateDiff, (uint32_t)_MAX_DIFFERENCE_COUNT);
+#endif
 
   if (_showHashInfo)
   {
@@ -619,7 +634,7 @@ void Train::printTrainStatus()
 
   printf("[Jaffar] Best State Information:\n");
 
-  uint8_t bestStateData[_STATE_DATA_SIZE];
+  uint8_t bestStateData[_STATE_DATA_SIZE_TRAIN];
   _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
   _gameInstances[0]->pushState(bestStateData);
   _gameInstances[0]->printStateInfo(_bestState->rulesStatus);
@@ -795,12 +810,12 @@ Train::Train(int argc, char *argv[])
 
   auto firstState = new State;
 
-  uint8_t gameState[_STATE_DATA_SIZE];
+  uint8_t gameState[_STATE_DATA_SIZE_TRAIN];
   _gameInstances[0]->popState(gameState);
 
   // Storing initial state as base for differential comparison
-  memcpy(_initialStateData, gameState, _STATE_DATA_SIZE);
-  memcpy(_referenceStateData, gameState, _STATE_DATA_SIZE);
+  memcpy(_initialStateData, gameState, _STATE_DATA_SIZE_TRAIN);
+  memcpy(_referenceStateData, gameState, _STATE_DATA_SIZE_TRAIN);
   firstState->computeStateDifference(_referenceStateData, gameState);
 
   // Storing initial state difference
@@ -864,19 +879,19 @@ void Train::showSavingLoop()
       double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - bestStateSaveTimer).count();
       if (bestStateTimerElapsed / 1.0e+9 > _outputSaveFrequency)
       {
-       _bestStateLock.lock();
-
-       // Storing best and worst states
-       uint8_t bestStateData[_STATE_DATA_SIZE];
-       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
-       _showGameInstance->pushState(bestStateData);
-       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
-
-       uint8_t worstStateData[_STATE_DATA_SIZE];
-       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
-       _showGameInstance->pushState(worstStateData);
-       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
-       _bestStateLock.unlock();
+//       _bestStateLock.lock();
+//
+//       // Storing best and worst states
+//       uint8_t bestStateData[_STATE_DATA_SIZE_TRAIN];
+//       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
+//       _showGameInstance->pushState(bestStateData);
+//       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
+//
+//       uint8_t worstStateData[_STATE_DATA_SIZE_TRAIN];
+//       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
+//       _showGameInstance->pushState(worstStateData);
+//       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
+//       _bestStateLock.unlock();
 
        // Storing the best and worst solution sequences
        #ifndef JAFFAR_DISABLE_MOVE_HISTORY

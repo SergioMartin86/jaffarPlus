@@ -113,7 +113,7 @@ class PlaybackInstance : public PlaybackInstanceBase
 //    while(1);
 
   // Storing current game state
-  uint8_t emuState[_STATE_DATA_SIZE];
+  uint8_t emuState[_STATE_DATA_SIZE_PLAY];
   _game->_emu->serializeState(emuState);
 
   SDL_Surface* overlayButtonASurface = NULL;
@@ -135,7 +135,7 @@ class PlaybackInstance : public PlaybackInstanceBase
   if (move.find("D") != std::string::npos) overlayButtonDownSurface = _overlayButtonDownSurface;
 
   // Since renderer is off by one frame, we need to emulate an additional frame
-  _game->advanceState(".");
+  _game->advanceState(0);
   int32_t curImage[BLIT_SIZE];
   _hqnState.blit(curImage, hqn::HQNState::NES_VIDEO_PALETTE, 0, 0, 0, 0);
   _hqnGUI->update_blit(curImage, _overlayBaseSurface, overlayButtonASurface, overlayButtonBSurface, overlayButtonSelectSurface, overlayButtonStartSurface, overlayButtonLeftSurface, overlayButtonRightSurface, overlayButtonUpSurface, overlayButtonDownSurface);

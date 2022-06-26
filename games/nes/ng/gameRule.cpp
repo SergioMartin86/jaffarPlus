@@ -70,6 +70,29 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Ninja Speed X Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Ninja Speed X Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    _magnets.ninjaSpeedXMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
+   if (actionType == "Set Ninja Speed Y Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Ninja Speed Y Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    _magnets.ninjaSpeedYMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
+   if (actionType == "Set Enemy HP Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Enemy HP Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Index") == false) EXIT_WITH_ERROR("[ERROR] Enemy HP Magnet in Rule %lu Action %lu missing 'Index' key.\n", _label, actionId);
+    _magnets.enemyHPMagnet.intensity = actionJs["Intensity"].get<float>();
+    _magnets.enemyHPMagnet.index = actionJs["Index"].get<uint8_t>();
+    recognizedActionType = true;
+   }
+
    if (actionType == "Set Boss Health Magnet")
    {
     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Boss Health Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -123,6 +146,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "PPU Indicator Bit 6") return dt_uint8;
   if (propertyName == "Enemy Flags") return dt_uint8;
   if (propertyName == "Enemy Type") return dt_uint8;
+  if (propertyName == "Enemy Position X Fractional") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -181,6 +205,12 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   {
    if (isDefined(condition, "Index") == false) EXIT_WITH_ERROR("[ERROR] Enemy missing 'Index' key.\n");
    return &gameInstance->enemyType[condition["Index"].get<uint8_t>()];
+  }
+
+  if (propertyName == "Enemy Position X Fractional")
+  {
+   if (isDefined(condition, "Index") == false) EXIT_WITH_ERROR("[ERROR] Enemy missing 'Index' key.\n");
+   return &gameInstance->enemyPosXFrac[condition["Index"].get<uint8_t>()];
   }
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());

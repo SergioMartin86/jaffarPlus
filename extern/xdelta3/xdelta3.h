@@ -87,15 +87,15 @@
 /* The default compression level
  */
 #ifndef XD3_DEFAULT_LEVEL
-#define XD3_DEFAULT_LEVEL 3
+#define XD3_DEFAULT_LEVEL 0
 #endif
 
 #ifndef XD3_DEFAULT_SECONDARY_LEVEL
-#define XD3_DEFAULT_SECONDARY_LEVEL 6
+#define XD3_DEFAULT_SECONDARY_LEVEL 0
 #endif
 
 #ifndef XD3_USE_LARGEFILE64
-#define XD3_USE_LARGEFILE64 1
+#define XD3_USE_LARGEFILE64 0
 #endif
 
 /* Sizes and addresses within VCDIFF windows are represented as usize_t

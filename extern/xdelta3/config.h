@@ -58,9 +58,6 @@
 /* Define to the home page for this package. */
 #define PACKAGE_URL "http://xdelta.org/"
 
-/* Define to the version of this package. */
-#define PACKAGE_VERSION "3.0.11"
-
 /* The size of `size_t', as computed by sizeof. */
 #define SIZEOF_SIZE_T 8
 

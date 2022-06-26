@@ -21,6 +21,13 @@ struct weaponMagnet_t {
 };
 
 // Datatype to describe a magnet
+struct enemyHPMagnet_t {
+ float intensity = 0.0; // How strong the magnet is
+ uint8_t index = 0;  // Specifies the enemy index
+};
+
+
+// Datatype to describe a magnet
 struct magnetSet_t {
  // Relevant simon magnets
  genericMagnet_t ninjaHorizontalMagnet;
@@ -29,8 +36,11 @@ struct magnetSet_t {
  genericMagnet_t bossVerticalMagnet;
  genericMagnet_t ninjaPowerMagnet;
  weaponMagnet_t ninjaWeaponMagnet;
+ enemyHPMagnet_t enemyHPMagnet;
  float bossHealthMagnet = 0.0;
  float ninjaBossDistanceMagnet = 0.0;
+ float ninjaSpeedXMagnet = 0.0;
+ float ninjaSpeedYMagnet = 0.0;
 };
 
 
@@ -52,10 +62,10 @@ class GameInstance : public GameInstanceBase
   uint8_t*  ninjaIsDead              ;
   uint8_t*  ninjaPosX                ;
   uint8_t*  ninjaPosXFrac            ;
-  uint8_t*  ninjaSpeedX              ;
+  int8_t*  ninjaSpeedX              ;
   uint8_t*  ninjaSpeedXFrac          ;
   uint8_t*  ninjaPosY                ;
-  uint8_t*  ninjaSpeedY              ;
+  int8_t*   ninjaSpeedY              ;
   uint8_t*  ninjaSpeedYFrac          ;
   uint8_t*  ninjaCollisionFlags      ;
   uint8_t*  ninjaFlinchDirection     ;
@@ -101,6 +111,8 @@ class GameInstance : public GameInstanceBase
 
   uint8_t* ppuIndicator;
   uint8_t timerTolerance;
+
+  uint8_t*  demonTimer;
 
   // Derivative Values
   double absolutePosX;

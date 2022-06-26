@@ -27,9 +27,9 @@ class GameInstanceBase
   // Function to return frame type
   stateType getStateType(const bool* rulesStatus) const;
 
-  // Function to advance state
-  void advanceState(const uint8_t &move) { _emu->advanceState(move); updateDerivedValues(); };
-  void advanceState(const std::string& move) { _emu->advanceState(move); updateDerivedValues(); };
+  // Function to advance state. Returns the number of skipped frames
+  virtual uint16_t advanceState(const INPUT_TYPE &move) { _emu->advanceState(move); updateDerivedValues(); return 0; };
+  uint16_t advanceStateString(const std::string& move) { return advanceState(_emu->moveStringToCode(move)); }
 
   // Serialization/Deserialization Routines
   void popState(uint8_t* __restrict__ outputStateData) const { _emu->serializeState(outputStateData); }

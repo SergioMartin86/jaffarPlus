@@ -1,0 +1,265 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ng.nes",
+    "State File": "stage1843a.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 2200,
+    "Max Move Count": 1300
+  },
+  
+  "Game Configuration": 
+  {
+    "Timer Tolerance": 1
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": false,
+    "Show Hash Information": false,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 120000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 2000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+   "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1000,
+    "Description": "Going right",
+    "Conditions":
+    [
+    ],
+
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.1, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 0.01, "Center": 100, "Min": 0, "Max": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Description": "Going right",
+    "Conditions":
+    [
+     { "Property": "Absolute Pos X", "Op": "<=", "Value": 1800 }
+    ],
+
+    "Satisfies": [  ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.001, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 0.01, "Center": 100, "Min": 0, "Max": 100 },
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    "Description": "Going right",
+    "Conditions":
+    [
+     { "Property": "Absolute Pos X", "Op": "<", "Value": 750 }
+    ],
+
+    "Satisfies": [ 1001 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.3, "Center": 128, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 0.01, "Center": 100, "Min": 0, "Max": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    "Description": "Going right",
+    "Conditions":
+    [
+     { "Property": "Absolute Pos X", "Op": "<", "Value": 466 }
+    ],
+
+    "Satisfies": [ 1003 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.001, "Center": 128, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 0.01, "Center": 100, "Min": 0, "Max": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "Going right",
+    "Conditions":
+    [
+     { "Property": "Absolute Pos X", "Op": "<", "Value": 232 }
+    ],
+
+    "Satisfies": [ 1004 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 115, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.5, "Center": 85, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 0.01, "Center": 100, "Min": 0, "Max": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Description": "Win on boss death",
+    "Conditions":
+    [
+      { "Property": "Current Substage", "Op": "==", "Value":  44 }
+    ],
+
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 1904,
+    "Description": "Win on boss death",
+    "Conditions":
+    [
+      { "Property": "Current Substage", "Op": "==", "Value":  42 }
+    ],
+
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1905,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Ninja Position Y", "Op": ">", "Value": 232 }
+    ],
+
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+
+   {
+    "Label": 1906,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Ninja HP", "Op": "==", "Value": 0 }
+    ],
+
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1907,
+    "Description": "Fail on killing skip enemy",
+    "Conditions":
+    [
+      { "Property": "Enemy Flags", "Index": 7, "Op": "BitTrue", "Value": 4  },
+      { "Property": "Enemy Type", "Index": 7, "Op": "==", "Value": 11  },
+      { "Property": "Absolute Pos X", "Op": ">", "Value": 940 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1908,
+    "Description": "Fail in losing ninpo",
+    "Conditions":
+    [
+      { "Property": "Ninja Power", "Op": "<", "Value": 5 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1909,
+    "Description": "Fail in losing weapon",
+    "Conditions":
+    [
+      { "Property": "Ninja Weapon", "Op": "!=", "Value": 130 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

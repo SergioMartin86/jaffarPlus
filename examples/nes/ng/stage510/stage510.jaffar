@@ -9,40 +9,41 @@
   
   "State Configuration": 
   { 
-    "Max Difference Count": 1500,
-    "Max Move Count": 1500
+    "Max Difference Count": 2000,
+    "Max Move Count": 400
   },
   
   "Game Configuration": 
   {
+    "Timer Tolerance": 3
   },
   
   "Jaffar Configuration": 
   {
-    "Show Timing Information": false,
+    "Show Timing Information": true,
     "Show Hash Information": false,
     "Show Winning State Information": true,
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 3000,
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Hash Database":
     { 
-     "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 10000
+     "Database Count": 2,
+     "Max Size Upper Bound (Mb)": 1000
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol",
-     "Best State Path": "/tmp/jaffar.best.state",
-     "Worst State Path": "/tmp/jaffar.worst.state"
+     "Best Solution Path": "/tmp/jaffar2.best.sol",
+     "Worst Solution Path": "/tmp/jaffar2.worst.sol",
+     "Best State Path": "/tmp/jaffar2.best.state",
+     "Worst State Path": "/tmp/jaffar2.worst.state"
     }
   },
   
@@ -71,11 +72,51 @@
    
    {
     "Label": 1001,
-    "Description": "Win on boss death",
+    "Description": "Going right",
     "Conditions":
     [
-      { "Property": "Game Mode", "Op": "==", "Value":  7 },
-      { "Property": "Absolute Pos X", "Op": ">", "Value":  100 }
+    { "Property": "Absolute Pos X", "Op": ">", "Value":  416 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.0, "Center": 80, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 0.001, "Center": 100, "Min": 0, "Max": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Description": "Going right",
+    "Conditions":
+    [
+    { "Property": "Absolute Pos X", "Op": ">", "Value":  510 }
+    ],
+    
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 0.001, "Center": 100, "Min": 0, "Max": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    "Description": "Win on toss disappear after ninja passed on correct fractional position",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  540 },
+      { "Property": "Enemy Flags", "Index": 7, "Op": "==", "Value":  0 },
+      { "Property": "Enemy Type", "Index": 7, "Op": "==", "Value":  18 },
+      { "Property": "Enemy Position X Fractional", "Index": 7, "Op": ">=", "Value":  48 },
+      { "Property": "Enemy Position X Fractional", "Index": 7, "Op": "<=", "Value":  64 }
     ],
     
     "Satisfies": [ ],
@@ -84,7 +125,66 @@
     [
      { "Type": "Trigger Win" }
     ]
-   }
+   },
    
+   {
+    "Label": 1004,
+    "Description": "Win on toss disappear after ninja passed on correct fractional position",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  540 },
+      { "Property": "Enemy Flags", "Index": 7, "Op": "==", "Value":  0 },
+      { "Property": "Enemy Type", "Index": 7, "Op": "==", "Value":  18 },
+      { "Property": "Enemy Position X Fractional", "Index": 7, "Op": ">=", "Value":  112 },
+      { "Property": "Enemy Position X Fractional", "Index": 7, "Op": "<=", "Value":  128 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "Win on toss disappear after ninja passed on correct fractional position",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  540 },
+      { "Property": "Enemy Flags", "Index": 7, "Op": "==", "Value":  0 },
+      { "Property": "Enemy Type", "Index": 7, "Op": "==", "Value":  18 },
+      { "Property": "Enemy Position X Fractional", "Index": 7, "Op": ">=", "Value":  176 },
+      { "Property": "Enemy Position X Fractional", "Index": 7, "Op": "<=", "Value":  192 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Description": "Win on toss disappear after ninja passed on correct fractional position",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  540 },
+      { "Property": "Enemy Flags", "Index": 7, "Op": "==", "Value":  0 },
+      { "Property": "Enemy Type", "Index": 7, "Op": "==", "Value":  18 },
+      { "Property": "Enemy Position X Fractional", "Index": 7, "Op": ">=", "Value":  240 },
+      { "Property": "Enemy Position X Fractional", "Index": 7, "Op": "<=", "Value":  255 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }          
   ]  
 }
