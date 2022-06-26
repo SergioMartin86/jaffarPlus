@@ -74,21 +74,21 @@ class EmuInstance : public EmuInstanceBase
  void saveStateFile(const std::string& stateFilePath) const override
  {
   std::string stateData;
-  stateData.resize(_STATE_DATA_SIZE);
+  stateData.resize(_STATE_DATA_SIZE_TRAIN);
   serializeState((uint8_t*)stateData.data());
   saveStringToFile(stateData, stateFilePath.c_str());
  }
 
  void serializeState(uint8_t* state) const override
  {
-  Mem_Writer w(state, _STATE_DATA_SIZE, 0);
+  Mem_Writer w(state, _STATE_DATA_SIZE_TRAIN, 0);
   Auto_File_Writer a(w);
   _nes->save_state(a);
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  Mem_File_Reader r(state, _STATE_DATA_SIZE);
+  Mem_File_Reader r(state, _STATE_DATA_SIZE_TRAIN);
   Auto_File_Reader a(r);
   _nes->load_state(a);
  }
@@ -145,12 +145,12 @@ class EmuInstance : public EmuInstanceBase
   return moveString;
  }
 
- void advanceState(const std::string& move) override
+ void advanceState(const std::string& move)
  {
   advanceState(moveStringToCode(move));
  }
 
- void advanceState(const uint8_t move) override
+ void advanceState(const INPUT_TYPE move) override
  {
   _nes->emulate_frame(move,0);
  }
