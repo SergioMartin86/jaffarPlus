@@ -18,6 +18,9 @@ struct genericMagnet_t {
 struct magnetSet_t {
  genericMagnet_t lesterHorizontalMagnet[_ROOM_COUNT_];
  genericMagnet_t lesterVerticalMagnet[_ROOM_COUNT_];
+ genericMagnet_t alienHorizontalMagnet[_ROOM_COUNT_];
+
+ float gunChargeMagnet = 0;
  float stage01VineStateMagnet = 0;
  float lesterAngularMomentumMagnet = 0;
 };
@@ -38,6 +41,13 @@ class GameInstance : public GameInstanceBase
   uint16_t* lesterFrame;
   uint8_t* lesterState1;
   uint8_t* gameMode;
+  int16_t* lesterHasGun;
+  uint8_t* lesterDeadFlag;
+  int16_t* lesterGunCharge;
+
+  uint8_t* alienDeadFlag;
+  int16_t* alienPosX;
+  uint8_t* alienRoom;
 
   // Stage 01 Specific values
   uint8_t* stage01AppearTimer;

@@ -17,10 +17,17 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  lesterPosX              = (int16_t*)   &_emu->_68KRam[0xEA86];
  lesterPosY              = (int16_t*)   &_emu->_68KRam[0xEA88];
  lesterRoom              = (uint8_t*)   &_emu->_68KRam[0xEB52];
-
  lesterFrame             = (uint16_t*)  &_emu->_68KRam[0xECAC];
-
  lesterState1            = (uint8_t*)   &_emu->_68KRam[0xEB4A];
+
+ lesterHasGun            = (int16_t*)   &_emu->_68KRam[0xECD8];
+ lesterGunCharge         = (int16_t*)   &_emu->_68KRam[0xEA90];
+ lesterDeadFlag          = (uint8_t*)   &_emu->_68KRam[0xEA8D];
+
+ // Alien
+ alienDeadFlag           = (uint8_t*)   &_emu->_68KRam[0xEB5B];
+ alienPosX               = (int16_t*)   &_emu->_68KRam[0xEB54];
+ alienRoom               = (uint8_t*)   &_emu->_68KRam[0xEB58];
 
  // Stage 01 Specific values
  stage01AppearTimer       = (uint8_t*)   &_emu->_68KRam[0xEAAD];
@@ -42,15 +49,16 @@ uint64_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash64 hash;
 
+  if (*animationFrame == 1) hash.Update(_emu->_68KRam+0x0000, 0xFFFF);
+
 //  hash.Update(_emu->_68KRam+0xE880, 0x0560);
   hash.Update(_emu->_68KRam+0xEA80, 0x040);
   hash.Update(_emu->_68KRam+0xEC70, 0x090);
-
 //    hash.Update(_emu->_68KRam+0x0000, 0x0080);
 //    hash.Update(_emu->_68KRam+0xFF50, 0x00B0);
+
   hash.Update(*currentStageRaw);
   hash.Update(*gameTimer);
-//  hash.Update(*inputFrame);
   hash.Update(*gameMode);
   hash.Update(*lagFrame);
 
@@ -58,9 +66,11 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*lesterPosX);
   hash.Update(*lesterPosY);
   hash.Update(*lesterRoom);
-//  hash.Update(*lesterState1);
+  hash.Update(*lesterHasGun);
+  hash.Update(*lesterGunCharge);
 
-//  hash.Update(*lesterFrame);
+  hash.Update(*alienPosX);
+  hash.Update(*alienRoom);
 
   if (currentStage == 1)
   {
@@ -108,10 +118,11 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 // if (*lesterFrame == 0xFFFF) moveList.insert(moveList.end(), { "....A.......", "...R........", "..L.........", ".D..........", "U...........", "...RA.......", "..L.A.......", ".D.R........", ".DL.........", "U...A.......", "U..R........", "U.L.........", "U..RA.......", "U.L.A......."});
 
  // Stage01b
- if (currentStage == 1) moveList.insert(moveList.end(), { "L", "R", "B", "C", "LB", "LC", "RB", "RB", "LBC", "RBC", "LRB", "LRC", "LRBC"});
+ // moveList.insert(moveList.end(), { "L", "R", "B", "C", "LB", "LC", "RB", "RB", "LBC", "RBC", "LRB", "LRC", "LRBC"});
 
  // Stage02a
- if (currentStage == 2) moveList.insert(moveList.end(), { "L", "R" });
+ // moveList.insert(moveList.end(), { "L", "R" });
+ moveList.insert(moveList.end(), { "L", "R", "B", "C", "D", "DB", "LR", "LB", "LC", "RB", "RB", "LBC", "RBC", "LRB", "LRC", "DLB", "DLC", "DRB", "DRC", "DBC", "LRBC"});
 
  return moveList;
 }
@@ -170,6 +181,16 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   diff = std::abs(magnets.lesterVerticalMagnet[*lesterRoom].center - boundedValue);
   reward += magnets.lesterVerticalMagnet[*lesterRoom].intensity * -diff;
 
+  // Evaluating alien magnet's reward on position X
+  boundedValue = (float)*alienPosX;
+  boundedValue = std::min(boundedValue, magnets.alienHorizontalMagnet[*alienRoom].max);
+  boundedValue = std::max(boundedValue, magnets.alienHorizontalMagnet[*alienRoom].min);
+  diff = std::abs(magnets.alienHorizontalMagnet[*alienRoom].center - boundedValue);
+  reward += magnets.alienHorizontalMagnet[*alienRoom].intensity * -diff;
+
+  // Evaluating Gun Charge Magnet
+  reward += magnets.gunChargeMagnet * (float)*lesterGunCharge;
+
   // Evaluating Stage 01 Vine Magnet
   reward += magnets.stage01VineStateMagnet * (float)*stage01VineState;
 
@@ -192,11 +213,16 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Hash:                              0x%lX\n", computeHash());
  LOG("[Jaffar]  + Game Mode:                         %02u\n", *gameMode);
  LOG("[Jaffar]  + Animation Frame:                   %02u\n", *animationFrame);
- LOG("[Jaffar]  + Room:                              %02u\n", *lesterRoom);
+ LOG("[Jaffar]  + Lester Room:                       %02u\n", *lesterRoom);
  LOG("[Jaffar]  + Lester Pos X:                      %04d\n", *lesterPosX);
  LOG("[Jaffar]  + Lester Pos Y:                      %04d\n", *lesterPosY);
  LOG("[Jaffar]  + Lester State:                      %02u\n", *lesterState1);
  LOG("[Jaffar]  + Lester Frame:                      0x%04X [%02X, %02X]\n", *lesterFrame, *(((uint8_t*)lesterFrame)+0), *(((uint8_t*)lesterFrame)+1));
+ LOG("[Jaffar]  + Lester Gun:                        State: %04d, Charge: %04d\n", *lesterHasGun, *lesterGunCharge);
+ LOG("[Jaffar]  + Lester Dead Flag                   %02u\n", *lesterDeadFlag);
+ LOG("[Jaffar]  + Alien Dead Flag                    %02u\n", *alienDeadFlag);
+ LOG("[Jaffar]  + Alien Room:                        %02u\n", *alienRoom);
+ LOG("[Jaffar]  + Alien Pos X:                       %04d\n", *alienPosX);
 
  if (currentStage == 1)
  {
@@ -221,6 +247,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
   if (std::abs(magnets.lesterHorizontalMagnet[*lesterRoom].intensity) > 0.0f)  LOG("[Jaffar]  + Lester Horizontal Magnet       - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.lesterHorizontalMagnet[*lesterRoom].intensity, magnets.lesterHorizontalMagnet[*lesterRoom].center, magnets.lesterHorizontalMagnet[*lesterRoom].min, magnets.lesterHorizontalMagnet[*lesterRoom].max);
   if (std::abs(magnets.lesterVerticalMagnet[*lesterRoom].intensity) > 0.0f)    LOG("[Jaffar]  + Lester Vertical Magnet         - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.lesterVerticalMagnet[*lesterRoom].intensity, magnets.lesterVerticalMagnet[*lesterRoom].center, magnets.lesterVerticalMagnet[*lesterRoom].min, magnets.lesterVerticalMagnet[*lesterRoom].max);
+  if (std::abs(magnets.alienHorizontalMagnet[*alienRoom].intensity) > 0.0f)    LOG("[Jaffar]  + Alien Horizontal Magnet        - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.alienHorizontalMagnet[*alienRoom].intensity, magnets.alienHorizontalMagnet[*alienRoom].center, magnets.alienHorizontalMagnet[*alienRoom].min, magnets.alienHorizontalMagnet[*alienRoom].max);
+  if (std::abs(magnets.gunChargeMagnet) > 0.0f)                                LOG("[Jaffar]  + Gun Charge Magnet              - Intensity: %.5f\n", magnets.gunChargeMagnet);
   if (std::abs(magnets.lesterAngularMomentumMagnet) > 0.0f)                    LOG("[Jaffar]  + Lester Angular Momentum Magnet - Intensity: %.5f\n", magnets.lesterAngularMomentumMagnet);
   if (std::abs(magnets.stage01VineStateMagnet) > 0.0f)                         LOG("[Jaffar]  + Stage 01 Vine State Magnet     - Intensity: %.5f\n", magnets.stage01VineStateMagnet);
 }

@@ -30,6 +30,24 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Alien Horizontal Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+   _magnets.alienHorizontalMagnet[actionJs["Room"].get<uint8_t>()] = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+    recognizedActionType = true;
+  }
+
+  if (actionType == "Set Gun Charge Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.gunChargeMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
   if (actionType == "Set Stage 01 Vine State Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -60,6 +78,14 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Lester Position Y") return dt_int16;
   if (propertyName == "Lester Room") return dt_uint8;
   if (propertyName == "Lester Frame") return dt_uint16;
+  if (propertyName == "Lester Has Gun") return dt_int16;
+  if (propertyName == "Lester Gun Charge") return dt_int16;
+  if (propertyName == "Lester Dead Flag") return dt_uint8;
+  if (propertyName == "Lester Gun Charge") return dt_int16;
+
+  if (propertyName == "Alien Dead Flag") return dt_uint8;
+  if (propertyName == "Alien Position X") return dt_int16;
+  if (propertyName == "Alien Room") return dt_uint8;
 
   if (propertyName == "Stage 01 Appear Time") return dt_uint8;
   if (propertyName == "Stage 01 Vine State") return dt_int16;
@@ -83,6 +109,13 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Lester Position Y") return gameInstance->lesterPosY;
   if (propertyName == "Lester Room") return gameInstance->lesterRoom;
   if (propertyName == "Lester Frame") return gameInstance->lesterFrame;
+  if (propertyName == "Lester Has Gun") return gameInstance->lesterHasGun;
+  if (propertyName == "Lester Gun Charge") return gameInstance->lesterGunCharge;
+  if (propertyName == "Lester Dead Flag") return gameInstance->lesterDeadFlag;
+
+  if (propertyName == "Alien Dead Flag") return gameInstance->alienDeadFlag;
+  if (propertyName == "Alien Position X") return gameInstance->alienPosX;
+  if (propertyName == "Alien Room") return gameInstance->alienRoom;
 
   if (propertyName == "Stage 01 Appear Time") return gameInstance->stage01AppearTimer;
   if (propertyName == "Stage 01 Vine State") return gameInstance->stage01VineState;
