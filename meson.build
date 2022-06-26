@@ -15,7 +15,7 @@ subdir('platforms/' + platform)
 # xDelta3 Configuration
 xdelta3Src = [ 'extern/xdelta3/xdelta3.c' ]
 xdelta3CFlags = [ '-DXD3_DEBUG=0', '-fno-builtin', '-DNDEBUG=1']
-xdelta3LFlags = [ '-llzma' ]
+xdelta3LFlags = [ '-Llzma' ]
 
 # Common Jaffar include dirs
 jaffarIncludes = include_directories([
