@@ -18,13 +18,13 @@
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
-    "Show Hash Information": false,
+    "Show Hash Information": true,
     "Show Winning State Information": true,
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 100000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 30000
     },
      
     "Hash Database":
@@ -96,9 +96,9 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 100000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.0, "Room": 1, "Center": -512, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 10000.0, "Room": 1, "Center": 0, "Min": -512, "Max": 512 },
      { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.0, "Room": 2, "Center": 512, "Min": -512, "Max": 512 },
-     { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.0, "Room": 1, "Center": -512, "Min": -512, "Max": 512 },
+     { "Type": "Set Alien Horizontal Magnet", "Intensity": 10000.0, "Room": 1, "Center": 0, "Min": -512, "Max": 512 },
      { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.0, "Room": 2, "Center": 512, "Min": -512, "Max": 512 }
     ]
    },
@@ -117,9 +117,9 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 100000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.0, "Room": 2, "Center": -512, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 10000.0, "Room": 2, "Center": 0, "Min": -512, "Max": 512 },
      { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 512, "Min": -512, "Max": 512 },
-     { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.0, "Room": 2, "Center": -512, "Min": -512, "Max": 512 },
+     { "Type": "Set Alien Horizontal Magnet", "Intensity": 10000.0, "Room": 2, "Center": 0, "Min": -512, "Max": 512 },
      { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 512, "Min": -512, "Max": 512 }
     ]
    },
@@ -138,9 +138,9 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 100000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": -512, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 10000.0, "Room": 3, "Center": 0, "Min": -512, "Max": 512 },
      { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 512, "Min": -512, "Max": 512 },
-     { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": -512, "Min": -512, "Max": 512 },
+     { "Type": "Set Alien Horizontal Magnet", "Intensity": 10000.0, "Room": 3, "Center": 0, "Min": -512, "Max": 512 },
      { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 512, "Min": -512, "Max": 512 }
     ]
    },

@@ -82,6 +82,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Lester Gun Charge") return dt_int16;
   if (propertyName == "Lester Dead Flag") return dt_uint8;
   if (propertyName == "Lester Gun Charge") return dt_int16;
+  if (propertyName == "Lift Status") return dt_int16;
 
   if (propertyName == "Alien Dead Flag") return dt_uint8;
   if (propertyName == "Alien Position X") return dt_int16;
@@ -112,6 +113,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Lester Has Gun") return gameInstance->lesterHasGun;
   if (propertyName == "Lester Gun Charge") return gameInstance->lesterGunCharge;
   if (propertyName == "Lester Dead Flag") return gameInstance->lesterDeadFlag;
+  if (propertyName == "Lift Status") return gameInstance->liftStatus;
 
   if (propertyName == "Alien Dead Flag") return gameInstance->alienDeadFlag;
   if (propertyName == "Alien Position X") return gameInstance->alienPosX;

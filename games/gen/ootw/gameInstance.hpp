@@ -44,6 +44,7 @@ class GameInstance : public GameInstanceBase
   int16_t* lesterHasGun;
   uint8_t* lesterDeadFlag;
   int16_t* lesterGunCharge;
+  int16_t* liftStatus;
 
   uint8_t* alienDeadFlag;
   int16_t* alienPosX;

@@ -24,6 +24,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  lesterGunCharge         = (int16_t*)   &_emu->_68KRam[0xEA90];
  lesterDeadFlag          = (uint8_t*)   &_emu->_68KRam[0xEA8D];
 
+ liftStatus              = (int16_t*)   &_emu->_68KRam[0xEAAC];
+
  // Alien
  alienDeadFlag           = (uint8_t*)   &_emu->_68KRam[0xEB5B];
  alienPosX               = (int16_t*)   &_emu->_68KRam[0xEB54];
@@ -223,6 +225,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Alien Dead Flag                    %02u\n", *alienDeadFlag);
  LOG("[Jaffar]  + Alien Room:                        %02u\n", *alienRoom);
  LOG("[Jaffar]  + Alien Pos X:                       %04d\n", *alienPosX);
+ LOG("[Jaffar]  + Lift Status:                       %04d\n", *liftStatus);
 
  if (currentStage == 1)
  {
