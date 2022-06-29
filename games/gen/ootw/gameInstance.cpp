@@ -7,7 +7,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  _emu = emu;
 
  // Setting memory positions
- currentStageRaw         = (uint8_t*)   &_emu->_68KRam[0xEC70];
+ currentStage            = (uint8_t*)   &_emu->_68KRam[0xEA84];
  gameTimer               = (uint8_t*)   &_emu->_68KRam[0xE882];
  lagFrame                = (uint8_t*)   &_emu->_68KRam[0xFF5B];
  inputFrame              = (uint8_t*)   &_emu->_68KRam[0xFFC4];
@@ -16,13 +16,18 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
  lesterPosX              = (int16_t*)   &_emu->_68KRam[0xEA86];
  lesterPosY              = (int16_t*)   &_emu->_68KRam[0xEA88];
- lesterRoom              = (uint8_t*)   &_emu->_68KRam[0xEB52];
+ lesterRoom              = (uint8_t*)   &_emu->_68KRam[0xEB50];
+ lesterNextRoom          = (uint8_t*)   &_emu->_68KRam[0xEB52];
  lesterFrame             = (uint16_t*)  &_emu->_68KRam[0xECAC];
  lesterState1            = (uint8_t*)   &_emu->_68KRam[0xEB4A];
 
  lesterHasGun            = (int16_t*)   &_emu->_68KRam[0xECD8];
  lesterGunCharge         = (int16_t*)   &_emu->_68KRam[0xEA90];
+ lesterGunPowerLoadFrame = (int16_t*)   &_emu->_68KRam[0xECB2];
+ lesterGunPowerLoad      = (uint8_t*)   &_emu->_68KRam[0xEAA2];
  lesterDeadFlag          = (uint8_t*)   &_emu->_68KRam[0xEA8D];
+
+ liftStatus              = (int16_t*)   &_emu->_68KRam[0xEAAC];
 
  // Alien
  alienDeadFlag           = (uint8_t*)   &_emu->_68KRam[0xEB5B];
@@ -38,6 +43,14 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  // Stage 02 Specific values
  stage02AngularMomentum1  = (uint8_t*)   &_emu->_68KRam[0xEAAE];
  stage02AngularMomentum2  = (uint8_t*)   &_emu->_68KRam[0xEAB0];
+ stage02BreakDoorState    = (uint8_t*)   &_emu->_68KRam[0xEBE8];
+ stage02TunnerSmokerState1 = (uint8_t*)   &_emu->_68KRam[0xEC54];
+ stage02TunnerSmokerState2 = (uint8_t*)   &_emu->_68KRam[0xEC56];
+ stage02TunnerSmokerState3 = (uint8_t*)   &_emu->_68KRam[0xEC90];
+
+ // Stage 31 Specific Values
+ stage31TriDoorState = (uint16_t*)   &_emu->_68KRam[0xEB16];
+ stage31WallState = (uint16_t*)   &_emu->_68KRam[0xEBE6];
 
  // Initialize derivative values
  updateDerivedValues();
@@ -57,7 +70,7 @@ uint64_t GameInstance::computeHash() const
 //    hash.Update(_emu->_68KRam+0x0000, 0x0080);
 //    hash.Update(_emu->_68KRam+0xFF50, 0x00B0);
 
-  hash.Update(*currentStageRaw);
+  hash.Update(*currentStage);
   hash.Update(*gameTimer);
   hash.Update(*gameMode);
   hash.Update(*lagFrame);
@@ -66,26 +79,38 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*lesterPosX);
   hash.Update(*lesterPosY);
   hash.Update(*lesterRoom);
+  hash.Update(*lesterNextRoom);
   hash.Update(*lesterHasGun);
   hash.Update(*lesterGunCharge);
+  hash.Update(*lesterGunPowerLoad);
+  hash.Update(*lesterGunPowerLoadFrame);
 
   hash.Update(*alienPosX);
   hash.Update(*alienRoom);
 
-  if (currentStage == 1)
-  {
-   hash.Update(*stage01AppearTimer);
-   hash.Update(*stage01SkipMonsterFlag);
-   hash.Update(*stage01VineState);
-   hash.Update(*stage01Finish);
-  }
+//  if (*currentStage == 1)
+//  {
+//   hash.Update(*stage01AppearTimer);
+//   hash.Update(*stage01SkipMonsterFlag);
+//   hash.Update(*stage01VineState);
+//   hash.Update(*stage01Finish);
+//  }
+//
+//  if (*currentStage == 2)
+//  {
+//   hash.Update(*stage02AngularMomentum1);
+//   hash.Update(*stage02AngularMomentum2);
+//   hash.Update(*stage02BreakDoorState);
+//   hash.Update(*stage02TunnerSmokerState1);
+//   hash.Update(*stage02TunnerSmokerState2);
+//   hash.Update(*stage02TunnerSmokerState3);
+//  }
 
-  if (currentStage == 2)
+  if (*currentStage == 31)
   {
-   hash.Update(*stage02AngularMomentum1);
-   hash.Update(*stage02AngularMomentum2);
+   hash.Update(*stage31TriDoorState);
+   hash.Update(*stage31WallState);
   }
-
 
 //  hash.Update(_emu->_CRam, 0x40);
 
@@ -97,8 +122,6 @@ uint64_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
- currentStage = *currentStageRaw+1;
-
  lesterAbsolutePosX = *lesterPosX > 0 ? *lesterPosX : -*lesterPosX;
 }
 
@@ -172,24 +195,27 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   boundedValue = std::min(boundedValue, magnets.lesterHorizontalMagnet[*lesterRoom].max);
   boundedValue = std::max(boundedValue, magnets.lesterHorizontalMagnet[*lesterRoom].min);
   diff = std::abs(magnets.lesterHorizontalMagnet[*lesterRoom].center - boundedValue);
-  reward += magnets.lesterHorizontalMagnet[*lesterRoom].intensity * -diff;
+  reward += magnets.lesterHorizontalMagnet[*lesterRoom].intensity * (-diff + 1024.0f);
 
   // Evaluating lester magnet's reward on position Y
   boundedValue = (float)*lesterPosY;
   boundedValue = std::min(boundedValue, magnets.lesterVerticalMagnet[*lesterRoom].max);
   boundedValue = std::max(boundedValue, magnets.lesterVerticalMagnet[*lesterRoom].min);
   diff = std::abs(magnets.lesterVerticalMagnet[*lesterRoom].center - boundedValue);
-  reward += magnets.lesterVerticalMagnet[*lesterRoom].intensity * -diff;
+  reward += magnets.lesterVerticalMagnet[*lesterRoom].intensity * (-diff + 1024.0f);
 
   // Evaluating alien magnet's reward on position X
   boundedValue = (float)*alienPosX;
   boundedValue = std::min(boundedValue, magnets.alienHorizontalMagnet[*alienRoom].max);
   boundedValue = std::max(boundedValue, magnets.alienHorizontalMagnet[*alienRoom].min);
   diff = std::abs(magnets.alienHorizontalMagnet[*alienRoom].center - boundedValue);
-  reward += magnets.alienHorizontalMagnet[*alienRoom].intensity * -diff;
+  reward += magnets.alienHorizontalMagnet[*alienRoom].intensity * (-diff + 1024.0f);
 
   // Evaluating Gun Charge Magnet
   reward += magnets.gunChargeMagnet * (float)*lesterGunCharge;
+
+  // Evaluating Gun Power Load Magnet
+  reward += magnets.gunPowerLoadMagnet * ((float)((double)*lesterGunPowerLoad + (0.000000001 * (double)*lesterGunPowerLoadFrame)));
 
   // Evaluating Stage 01 Vine Magnet
   reward += magnets.stage01VineStateMagnet * (float)*stage01VineState;
@@ -208,36 +234,47 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Timer:                             %02u (%02u) (%02u)\n", *gameTimer, *lagFrame, *inputFrame);
- LOG("[Jaffar]  + Current Stage:                     %02u\n", currentStage);
+ LOG("[Jaffar]  + Current Stage:                     %02u\n", *currentStage);
  LOG("[Jaffar]  + Reward:                            %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                              0x%lX\n", computeHash());
  LOG("[Jaffar]  + Game Mode:                         %02u\n", *gameMode);
  LOG("[Jaffar]  + Animation Frame:                   %02u\n", *animationFrame);
- LOG("[Jaffar]  + Lester Room:                       %02u\n", *lesterRoom);
+ LOG("[Jaffar]  + Lester Room:                       %02u, Next: %02u\n", *lesterRoom, *lesterNextRoom);
  LOG("[Jaffar]  + Lester Pos X:                      %04d\n", *lesterPosX);
  LOG("[Jaffar]  + Lester Pos Y:                      %04d\n", *lesterPosY);
  LOG("[Jaffar]  + Lester State:                      %02u\n", *lesterState1);
  LOG("[Jaffar]  + Lester Frame:                      0x%04X [%02X, %02X]\n", *lesterFrame, *(((uint8_t*)lesterFrame)+0), *(((uint8_t*)lesterFrame)+1));
- LOG("[Jaffar]  + Lester Gun:                        State: %04d, Charge: %04d\n", *lesterHasGun, *lesterGunCharge);
+ LOG("[Jaffar]  + Lester Gun:                        State: %04d, Charge: %04d, Power: [%02u, %04d]\n", *lesterHasGun, *lesterGunCharge, *lesterGunPowerLoad, *lesterGunPowerLoadFrame);
  LOG("[Jaffar]  + Lester Dead Flag                   %02u\n", *lesterDeadFlag);
  LOG("[Jaffar]  + Alien Dead Flag                    %02u\n", *alienDeadFlag);
  LOG("[Jaffar]  + Alien Room:                        %02u\n", *alienRoom);
  LOG("[Jaffar]  + Alien Pos X:                       %04d\n", *alienPosX);
+ LOG("[Jaffar]  + Lift Status:                       %04d\n", *liftStatus);
 
- if (currentStage == 1)
- {
-  LOG("[Jaffar]  + Level 1 Values:\n");
-  LOG("[Jaffar]  + Appear Timer:                      %02u\n", *stage01AppearTimer);
-  LOG("[Jaffar]  + Vine State:                        %04d\n", *stage01VineState);
-  LOG("[Jaffar]  + Skip Monster Flag:                 %02u\n", *stage01SkipMonsterFlag);
-  LOG("[Jaffar]  + Finished State:                    %02u\n", *stage01Finish);
- }
+// if (*currentStage == 1)
+// {
+//  LOG("[Jaffar]  + Level 1 Values:\n");
+//  LOG("[Jaffar]  + Appear Timer:                      %02u\n", *stage01AppearTimer);
+//  LOG("[Jaffar]  + Vine State:                        %04d\n", *stage01VineState);
+//  LOG("[Jaffar]  + Skip Monster Flag:                 %02u\n", *stage01SkipMonsterFlag);
+//  LOG("[Jaffar]  + Finished State:                    %02u\n", *stage01Finish);
+// }
+//
+// if (*currentStage == 2)
+// {
+//  LOG("[Jaffar]  + Level 2 Values:\n");
+//  LOG("[Jaffar]  + Angular Momenta:                   [%02u, %02u]\n", *stage02AngularMomentum1, *stage02AngularMomentum2);
+//  LOG("[Jaffar]  + Break Door State:                  %02u\n", *stage02BreakDoorState);
+//  LOG("[Jaffar]  + Tunnel Smoker States:              [ %02u, %02u, %02u ]\n", *stage02TunnerSmokerState1, *stage02TunnerSmokerState2, *stage02TunnerSmokerState3);
+// }
 
- if (currentStage == 2)
- {
-  LOG("[Jaffar]  + Level 2 Values:\n");
-  LOG("[Jaffar]  + Angular Momenta:                   [%02u, %02u]\n", *stage02AngularMomentum1, *stage02AngularMomentum2);
- }
+  if (*currentStage == 31)
+  {
+   LOG("[Jaffar]  + Level 31 Values:\n");
+   LOG("[Jaffar]  + Tridoor State:                   [%04u]\n", *stage31TriDoorState);
+   LOG("[Jaffar]  + Wall State:                      [%04u]\n", *stage31WallState);
+  }
+
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -249,6 +286,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   if (std::abs(magnets.lesterVerticalMagnet[*lesterRoom].intensity) > 0.0f)    LOG("[Jaffar]  + Lester Vertical Magnet         - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.lesterVerticalMagnet[*lesterRoom].intensity, magnets.lesterVerticalMagnet[*lesterRoom].center, magnets.lesterVerticalMagnet[*lesterRoom].min, magnets.lesterVerticalMagnet[*lesterRoom].max);
   if (std::abs(magnets.alienHorizontalMagnet[*alienRoom].intensity) > 0.0f)    LOG("[Jaffar]  + Alien Horizontal Magnet        - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.alienHorizontalMagnet[*alienRoom].intensity, magnets.alienHorizontalMagnet[*alienRoom].center, magnets.alienHorizontalMagnet[*alienRoom].min, magnets.alienHorizontalMagnet[*alienRoom].max);
   if (std::abs(magnets.gunChargeMagnet) > 0.0f)                                LOG("[Jaffar]  + Gun Charge Magnet              - Intensity: %.5f\n", magnets.gunChargeMagnet);
+  if (std::abs(magnets.gunPowerLoadMagnet) > 0.0f)                             LOG("[Jaffar]  + Gun Power Load Magnet          - Intensity: %.5f\n", magnets.gunPowerLoadMagnet);
   if (std::abs(magnets.lesterAngularMomentumMagnet) > 0.0f)                    LOG("[Jaffar]  + Lester Angular Momentum Magnet - Intensity: %.5f\n", magnets.lesterAngularMomentumMagnet);
   if (std::abs(magnets.stage01VineStateMagnet) > 0.0f)                         LOG("[Jaffar]  + Stage 01 Vine State Magnet     - Intensity: %.5f\n", magnets.stage01VineStateMagnet);
 }

@@ -21,6 +21,7 @@ struct magnetSet_t {
  genericMagnet_t alienHorizontalMagnet[_ROOM_COUNT_];
 
  float gunChargeMagnet = 0;
+ float gunPowerLoadMagnet = 0;
  float stage01VineStateMagnet = 0;
  float lesterAngularMomentumMagnet = 0;
 };
@@ -30,7 +31,7 @@ class GameInstance : public GameInstanceBase
  public:
 
   // Container for game-specific values
-  uint8_t* currentStageRaw;
+  uint8_t* currentStage;
   uint8_t* gameTimer;
   uint8_t* lagFrame;
   uint8_t* inputFrame;
@@ -38,12 +39,16 @@ class GameInstance : public GameInstanceBase
   int16_t* lesterPosX;
   int16_t* lesterPosY;
   uint8_t* lesterRoom;
+  uint8_t* lesterNextRoom;
   uint16_t* lesterFrame;
   uint8_t* lesterState1;
   uint8_t* gameMode;
   int16_t* lesterHasGun;
   uint8_t* lesterDeadFlag;
   int16_t* lesterGunCharge;
+  uint8_t* lesterGunPowerLoad;
+  int16_t* lesterGunPowerLoadFrame;
+  int16_t* liftStatus;
 
   uint8_t* alienDeadFlag;
   int16_t* alienPosX;
@@ -58,9 +63,16 @@ class GameInstance : public GameInstanceBase
   // Stage 02 Specific values
   uint8_t* stage02AngularMomentum1;
   uint8_t* stage02AngularMomentum2;
+  uint8_t* stage02BreakDoorState;
+  uint8_t* stage02TunnerSmokerState1;
+  uint8_t* stage02TunnerSmokerState2;
+  uint8_t* stage02TunnerSmokerState3;
+
+  // Stage 31 Specific values
+  uint16_t* stage31TriDoorState;
+  uint16_t* stage31WallState;
 
   // Derivative Values
-  uint8_t currentStage;
   uint16_t lesterAbsolutePosX;
 
   uint16_t advanceState(const INPUT_TYPE &move) override;
