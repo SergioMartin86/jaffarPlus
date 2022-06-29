@@ -8,12 +8,12 @@
 #include "xdelta3.h"
 
 #ifndef _DISABLE_XDELTA3
-  #define _MAX_DIFFERENCE_COUNT 5000
+  #define _MAX_DIFFERENCE_COUNT 10000
 static size_t _maxStateDiff;
 #endif
 
 
-#define _MAX_MOVELIST_SIZE 1100
+#define _MAX_MOVELIST_SIZE 2500
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
 
