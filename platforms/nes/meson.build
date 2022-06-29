@@ -1,6 +1,8 @@
 subdir('hqn')
 subdir('quickernes')
 
+inputType = 'uint8_t'
+
 # Declaring source and include dirs for a NES game instance / emulator
 
 srcDir = meson.current_source_dir()

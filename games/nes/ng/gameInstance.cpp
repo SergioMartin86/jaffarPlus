@@ -92,7 +92,7 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*currentStage);
   hash.Update(*currentSubStage);
   hash.Update(*ninjalives);
-  hash.Update(*ninjaPower);
+  //hash.Update(*ninjaPower);
   hash.Update(*ninjaHP);
   hash.Update(*bossHP);
   hash.Update(*ninjaStateFlags);
@@ -119,51 +119,51 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*screenScroll2);
   hash.Update(*screenScroll3);
 
-  hash.Update(*ninjaProjectile1PosX);
-  hash.Update(*ninjaProjectile2PosX);
-  hash.Update(*ninjaProjectile3PosX);
-
-  hash.Update(*ninjaProjectile1PosY);
-  hash.Update(*ninjaProjectile2PosY);
-  hash.Update(*ninjaProjectile3PosY);
+//  hash.Update(*ninjaProjectile1PosX);
+//  hash.Update(*ninjaProjectile2PosX);
+//  hash.Update(*ninjaProjectile3PosX);
+//
+//  hash.Update(*ninjaProjectile1PosY);
+//  hash.Update(*ninjaProjectile2PosY);
+//  hash.Update(*ninjaProjectile3PosY);
 
   // Using stage timer to allow pauses
 //  hash.Update(*frameCounter % timerTolerance);
 
   // Enemies
   hash.Update(*enemyCount);
-//  hash.Update(*enemySlots);
+  hash.Update(*enemySlots);
 //  hash.Update(*enemyActions);
 //  hash.Update(*enemyLastIdx);
 
-//  for (uint8_t i = 0; i < ENEMY_COUNT; i++)
-//   if (((i == 7) && (*enemySlots & 0b10000000)) ||
-//       ((i == 6) && (*enemySlots & 0b01000000)) ||
-//       ((i == 5) && (*enemySlots & 0b00100000)) ||
-//       ((i == 4) && (*enemySlots & 0b00010000)) ||
-//       ((i == 3) && (*enemySlots & 0b00001000)) ||
-//       ((i == 2) && (*enemySlots & 0b00000100)) ||
-//       ((i == 1) && (*enemySlots & 0b00000010)) ||
-//       ((i == 0) && (*enemySlots & 0b00000001)))
-//   {
-//    hash.Update(*(enemyType+i));
+  for (uint8_t i = 0; i < ENEMY_COUNT; i++)
+   if (((i == 7) && (*enemySlots & 0b10000000)) ||
+       ((i == 6) && (*enemySlots & 0b01000000)) ||
+       ((i == 5) && (*enemySlots & 0b00100000)) ||
+       ((i == 4) && (*enemySlots & 0b00010000)) ||
+       ((i == 3) && (*enemySlots & 0b00001000)) ||
+       ((i == 2) && (*enemySlots & 0b00000100)) ||
+       ((i == 1) && (*enemySlots & 0b00000010)) ||
+       ((i == 0) && (*enemySlots & 0b00000001)))
+   {
+    hash.Update(*(enemyType+i));
 //    hash.Update(*(enemyHP+i));
-//    hash.Update(*(enemyFlags+i));
-//    hash.Update(*(enemyPosX+i));
-//    hash.Update(*(enemyPosXFrac+i));
-//    hash.Update(*(enemyVelX+i));
-//    hash.Update(*(enemyVelXFrac+i));
-//    hash.Update(*(enemyPosY+i));
-//    hash.Update(*(enemyPosYFrac+i));
-//    hash.Update(*(enemyVelY+i));
-////    hash.Update(*(enemyVelYFrac+i));
+    hash.Update(*(enemyFlags+i));
+    hash.Update(*(enemyPosX+i));
+    hash.Update(*(enemyPosXFrac+i));
+    hash.Update(*(enemyVelX+i));
+    hash.Update(*(enemyVelXFrac+i));
+    hash.Update(*(enemyPosY+i));
+    hash.Update(*(enemyPosYFrac+i));
+    hash.Update(*(enemyVelY+i));
+    hash.Update(*(enemyVelYFrac+i));
 //    hash.Update(*(enemyCollision+i));
 //    hash.Update(*(enemyAITimer+i));
 //    hash.Update(*(enemyAIStage+i));
-//
+
 //    hash.Update(*demonTimer);
-//   }
-////
+   }
+
 //  hash.Update(*ppuIndicator);
 
   uint64_t result;
@@ -310,15 +310,15 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Demon Timer:                       %02u\n", *demonTimer);
 
  for (uint8_t i = 0; i < ENEMY_COUNT; i++)
-  if (((i == 7) && (*enemySlots & 0b10000000)) ||
-      ((i == 6) && (*enemySlots & 0b01000000)) ||
-      ((i == 5) && (*enemySlots & 0b00100000)) ||
-      ((i == 4) && (*enemySlots & 0b00010000)) ||
-      ((i == 3) && (*enemySlots & 0b00001000)) ||
-      ((i == 2) && (*enemySlots & 0b00000100)) ||
-      ((i == 1) && (*enemySlots & 0b00000010)) ||
-      ((i == 0) && (*enemySlots & 0b00000001)))
-      LOG("[Jaffar]    + Enemy %02u - T: (%03u), HP:(%03u), F:(%03u), X:(%03u, %03u), vX(%03u, %03u), Y:(%03u, %03u), vY(%03u, %03u), C(%03u), AI: (%03u, %03u)\n", i, *(enemyType+i), *(enemyHP+i), *(enemyFlags+i), *(enemyPosX+i), *(enemyPosXFrac+i), *(enemyVelX+i), *(enemyVelXFrac+i), *(enemyPosY+i), *(enemyPosYFrac+i), *(enemyVelY+i), *(enemyVelYFrac+i), *(enemyCollision+i), *(enemyAITimer+i), *(enemyAIStage+i));
+//  if (((i == 7) && (*enemySlots & 0b10000000)) ||
+//      ((i == 6) && (*enemySlots & 0b01000000)) ||
+//      ((i == 5) && (*enemySlots & 0b00100000)) ||
+//      ((i == 4) && (*enemySlots & 0b00010000)) ||
+//      ((i == 3) && (*enemySlots & 0b00001000)) ||
+//      ((i == 2) && (*enemySlots & 0b00000100)) ||
+//      ((i == 1) && (*enemySlots & 0b00000010)) ||
+//      ((i == 0) && (*enemySlots & 0b00000001)))
+      LOG("[Jaffar]    + Enemy %02u - T: (0x%2X), HP:(0x%2X), F:(0x%2X), X:(0x%2X, 0x%2X), vX(0x%2X, 0x%2X), Y:(0x%2X, 0x%2X), vY(0x%2X, 0x%2X), C(0x%2X), AI: (0x%2X, 0x%2X)\n", i, *(enemyType+i), *(enemyHP+i), *(enemyFlags+i), *(enemyPosX+i), *(enemyPosXFrac+i), *(enemyVelX+i), *(enemyVelXFrac+i), *(enemyPosY+i), *(enemyPosYFrac+i), *(enemyVelY+i), *(enemyVelYFrac+i), *(enemyCollision+i), *(enemyAITimer+i), *(enemyAIStage+i));
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
