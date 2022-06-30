@@ -72,6 +72,14 @@ class GameInstance : public GameInstanceBase
   uint16_t* stage31TriDoorState;
   uint16_t* stage31WallState;
 
+  // Stage 33-37 Specific Values
+  uint16_t* stage33PoolWallState;
+  uint16_t* stage33BatActive;
+  uint16_t* stage33BigRockState;
+  uint16_t* stage33Room204Vine1PosY;
+  uint16_t* stage33WaterWall;
+  uint16_t* stage33WaterPush;
+
   // Derivative Values
   uint16_t lesterAbsolutePosX;
 

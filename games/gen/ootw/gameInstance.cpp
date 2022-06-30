@@ -52,6 +52,14 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  stage31TriDoorState = (uint16_t*)   &_emu->_68KRam[0xEB16];
  stage31WallState = (uint16_t*)   &_emu->_68KRam[0xEBE6];
 
+ // Stage 33-37 Specific Values
+ stage33PoolWallState   = (uint16_t*)   &_emu->_68KRam[0xEBE4];
+ stage33BatActive       = (uint16_t*)   &_emu->_68KRam[0xEBE6];
+ stage33BigRockState    = (uint16_t*)   &_emu->_68KRam[0xCD80];
+ stage33Room204Vine1PosY = (uint16_t*)   &_emu->_68KRam[0xEB62];
+ stage33WaterWall        = (uint16_t*)   &_emu->_68KRam[0xEBE4];
+ stage33WaterPush       = (uint16_t*)   &_emu->_68KRam[0xECB0];
+
  // Initialize derivative values
  updateDerivedValues();
 }
@@ -66,6 +74,7 @@ uint64_t GameInstance::computeHash() const
 
 //  hash.Update(_emu->_68KRam+0xE880, 0x0560);
   hash.Update(_emu->_68KRam+0xEA80, 0x040);
+  hash.Update(_emu->_68KRam+0xEB40, 0x050);
   hash.Update(_emu->_68KRam+0xEC70, 0x090);
 //    hash.Update(_emu->_68KRam+0x0000, 0x0080);
 //    hash.Update(_emu->_68KRam+0xFF50, 0x00B0);
@@ -106,11 +115,20 @@ uint64_t GameInstance::computeHash() const
 //   hash.Update(*stage02TunnerSmokerState3);
 //  }
 
-  if (*currentStage == 31)
-  {
-   hash.Update(*stage31TriDoorState);
-   hash.Update(*stage31WallState);
-  }
+//  if (*currentStage == 31)
+//  {
+//   hash.Update(*stage31TriDoorState);
+//   hash.Update(*stage31WallState);
+//  }
+
+  // Stages 33-37
+  hash.Update(*stage33PoolWallState);
+  hash.Update(*stage33BatActive);
+  hash.Update(*stage33BigRockState);
+  hash.Update(*stage33Room204Vine1PosY);
+  hash.Update(*stage33WaterWall);
+  hash.Update(*stage33WaterPush);
+
 
 //  hash.Update(_emu->_CRam, 0x40);
 
@@ -145,7 +163,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 
  // Stage02a
  // moveList.insert(moveList.end(), { "L", "R" });
- moveList.insert(moveList.end(), { "L", "R", "B", "C", "D", "DB", "LR", "LB", "LC", "RB", "RB", "LBC", "RBC", "LRB", "LRC", "DLB", "DLC", "DRB", "DRC", "DBC", "LRBC"});
+ moveList.insert(moveList.end(), { "L", "R", "B", "C", "D", "DB", "LR", "LB", "LC", "RB", "RB", "LBC", "RBC", "LRB", "LRC", "DLB", "DLC", "DRB", "DRC", "DBC", "LRBC", "U", "UL" });
 
  return moveList;
 }
@@ -268,13 +286,21 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 //  LOG("[Jaffar]  + Tunnel Smoker States:              [ %02u, %02u, %02u ]\n", *stage02TunnerSmokerState1, *stage02TunnerSmokerState2, *stage02TunnerSmokerState3);
 // }
 
-  if (*currentStage == 31)
-  {
-   LOG("[Jaffar]  + Level 31 Values:\n");
-   LOG("[Jaffar]  + Tridoor State:                   [%04u]\n", *stage31TriDoorState);
-   LOG("[Jaffar]  + Wall State:                      [%04u]\n", *stage31WallState);
-  }
+//  if (*currentStage == 31)
+//  {
+//   LOG("[Jaffar]  + Level 31 Values:\n");
+//   LOG("[Jaffar]  + Tridoor State:                   [%04u]\n", *stage31TriDoorState);
+//   LOG("[Jaffar]  + Wall State:                      [%04u]\n", *stage31WallState);
+//  }
 
+
+ LOG("[Jaffar]  + Level 33-37 Values:\n");
+ LOG("[Jaffar]  + Pool Wall State:                    %04u\n", *stage33PoolWallState);
+ LOG("[Jaffar]  + Bat Active:                         %04u\n", *stage33BatActive);
+ LOG("[Jaffar]  + Big Rock State:                     %04u\n", *stage33BigRockState);
+ LOG("[Jaffar]  + Room 204 Vine 1 State:              %04u\n", *stage33Room204Vine1PosY);
+ LOG("[Jaffar]  + Water Wall State:                   %04u\n", *stage33WaterWall);
+ LOG("[Jaffar]  + Water Push State:                   %04u\n", *stage33WaterPush);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

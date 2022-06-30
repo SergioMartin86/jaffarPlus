@@ -110,6 +110,13 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Stage 31 TriDoor State") return dt_uint16;
   if (propertyName == "Stage 31 Wall State") return dt_uint16;
 
+  if (propertyName == "Stage 33 Pool Wall State") return dt_uint16;
+  if (propertyName == "Stage 33 Bat Active") return dt_uint16;
+  if (propertyName == "Stage 33 Big Rock State") return dt_uint16;
+  if (propertyName == "Stage 33 Room 204 Vine 1 Pos Y") return dt_uint16;
+  if (propertyName == "Stage 33 Water Wall") return dt_uint16;
+  if (propertyName == "Stage 33 Water Push") return dt_uint16;
+
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
   return dt_uint8;
@@ -148,6 +155,14 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
 
   if (propertyName == "Stage 31 TriDoor State") return gameInstance->stage31TriDoorState;
   if (propertyName == "Stage 31 Wall State") return gameInstance->stage31WallState;
+
+  if (propertyName == "Stage 33 Pool Wall State") return gameInstance->stage33PoolWallState;
+  if (propertyName == "Stage 33 Bat Active") return gameInstance->stage33BatActive;
+  if (propertyName == "Stage 33 Big Rock State") return gameInstance->stage33BigRockState;
+  if (propertyName == "Stage 33 Room 204 Vine 1 Pos Y") return gameInstance->stage33Room204Vine1PosY;
+  if (propertyName == "Stage 33 Water Wall") return gameInstance->stage33WaterWall;
+  if (propertyName == "Stage 33 Water Push") return gameInstance->stage33WaterPush;
+
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
