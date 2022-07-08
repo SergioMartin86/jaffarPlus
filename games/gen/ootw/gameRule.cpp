@@ -56,6 +56,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Shield 1 Horizontal Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.shield1HorizontalMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
 
   if (actionType == "Set Stage 01 Vine State Magnet")
   {
@@ -96,6 +103,13 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Lester Gun Power Load") return dt_uint8;
   if (propertyName == "Lift Status") return dt_int16;
 
+  if (propertyName == "Shield 1 Pos X") return dt_int16;
+  if (propertyName == "Shield 1 Duration") return dt_int16;
+  if (propertyName == "Shield 2 Duration") return dt_int16;
+  if (propertyName == "Shield 3 Duration") return dt_int16;
+  if (propertyName == "Shield 4 Duration") return dt_int16;
+  if (propertyName == "Shield 5 Duration") return dt_int16;
+
   if (propertyName == "Alien Dead Flag") return dt_uint8;
   if (propertyName == "Alien Position X") return dt_int16;
   if (propertyName == "Alien Room") return dt_uint8;
@@ -116,6 +130,20 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Stage 33 Room 204 Vine 1 Pos Y") return dt_uint16;
   if (propertyName == "Stage 33 Water Wall") return dt_uint16;
   if (propertyName == "Stage 33 Water Push") return dt_uint16;
+
+  if (propertyName == "Stage 37 Progress State") return dt_uint16;
+
+  if (propertyName == "Stage 64 Progress State") return dt_uint16;
+  if (propertyName == "Stage 64 Enemy 1 Dead State") return dt_uint16;
+  if (propertyName == "Stage 64 Enemy 2 Dead State") return dt_uint16;
+  if (propertyName == "Stage 64 Guard Door State") return dt_uint16;
+
+  if (propertyName == "Stage 50 Panel Progress") return dt_uint16;
+  if (propertyName == "Stage 50 Button 1") return dt_uint16;
+  if (propertyName == "Stage 50 Button 2") return dt_uint16;
+  if (propertyName == "Stage 50 Button 3") return dt_uint16;
+  if (propertyName == "Stage 50 Button 4") return dt_uint16;
+  if (propertyName == "Stage 50 Escape") return dt_uint16;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -142,6 +170,13 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Lester Dead Flag") return gameInstance->lesterDeadFlag;
   if (propertyName == "Lift Status") return gameInstance->liftStatus;
 
+  if (propertyName == "Shield 1 Pos X") return gameInstance->shield1PosX;
+  if (propertyName == "Shield 1 Duration") return gameInstance->shield1Duration;
+  if (propertyName == "Shield 2 Duration") return gameInstance->shield1Duration;
+  if (propertyName == "Shield 3 Duration") return gameInstance->shield1Duration;
+  if (propertyName == "Shield 4 Duration") return gameInstance->shield1Duration;
+  if (propertyName == "Shield 5 Duration") return gameInstance->shield1Duration;
+
   if (propertyName == "Alien Dead Flag") return gameInstance->alienDeadFlag;
   if (propertyName == "Alien Position X") return gameInstance->alienPosX;
   if (propertyName == "Alien Room") return gameInstance->alienRoom;
@@ -163,6 +198,19 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Stage 33 Water Wall") return gameInstance->stage33WaterWall;
   if (propertyName == "Stage 33 Water Push") return gameInstance->stage33WaterPush;
 
+  if (propertyName == "Stage 37 Progress State") return gameInstance->stage37ProgressState;
+
+  if (propertyName == "Stage 64 Progress State") return gameInstance->stage64ProgressState;
+  if (propertyName == "Stage 64 Enemy 1 Dead State") return gameInstance->stage64Enemy1DeadState;
+  if (propertyName == "Stage 64 Enemy 2 Dead State") return gameInstance->stage64Enemy2DeadState;
+  if (propertyName == "Stage 64 Guard Door State") return gameInstance->stage64GuardDoorState;
+
+  if (propertyName == "Stage 50 Panel Progress") return gameInstance->stage50PanelProgress;
+  if (propertyName == "Stage 50 Button 1") return gameInstance->stage50Button1;
+  if (propertyName == "Stage 50 Button 2") return gameInstance->stage50Button2;
+  if (propertyName == "Stage 50 Button 3") return gameInstance->stage50Button3;
+  if (propertyName == "Stage 50 Button 4") return gameInstance->stage50Button4;
+  if (propertyName == "Stage 50 Escape")  return gameInstance->stage50Escape;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

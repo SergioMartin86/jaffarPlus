@@ -194,7 +194,8 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  std::vector<std::string> moveList = {"."};
 
  // First pass stage 00-00
- moveList.insert(moveList.end(), { ".......A", "......B.", "...U..B.", "..D.....", "..D...B.", ".L......", ".L.....A", ".L....B.", ".LDU....", "R.......", "R......A", "R.....B.", ".RDU....", "RL......"});
+ moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", ".L.....A", ".LDU....", "R.......", "R......A", ".RDU....", "RL......",  "...U..B."});
+// moveList.insert(moveList.end(), { ".......A", "......B.", "...U..B.", "..D.....", "..D...B.", ".L......", ".L.....A", ".L....B.", ".LDU....", "R.......", "R......A", "R.....B.", ".RDU....", "RL......"});
 
  return moveList;
 }

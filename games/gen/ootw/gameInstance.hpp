@@ -24,6 +24,7 @@ struct magnetSet_t {
  float gunPowerLoadMagnet = 0;
  float stage01VineStateMagnet = 0;
  float lesterAngularMomentumMagnet = 0;
+ float shield1HorizontalMagnet = 0;
 };
 
 class GameInstance : public GameInstanceBase
@@ -32,6 +33,7 @@ class GameInstance : public GameInstanceBase
 
   // Container for game-specific values
   uint8_t* currentStage;
+  uint16_t* gameRNG;
   uint8_t* gameTimer;
   uint8_t* lagFrame;
   uint8_t* inputFrame;
@@ -49,6 +51,14 @@ class GameInstance : public GameInstanceBase
   uint8_t* lesterGunPowerLoad;
   int16_t* lesterGunPowerLoadFrame;
   int16_t* liftStatus;
+
+  int16_t* shield1PosX;
+
+  int16_t* shield1Duration;
+  int16_t* shield2Duration;
+  int16_t* shield3Duration;
+  int16_t* shield4Duration;
+  int16_t* shield5Duration;
 
   uint8_t* alienDeadFlag;
   int16_t* alienPosX;
@@ -79,6 +89,26 @@ class GameInstance : public GameInstanceBase
   uint16_t* stage33Room204Vine1PosY;
   uint16_t* stage33WaterWall;
   uint16_t* stage33WaterPush;
+
+  // Stage 37 Specific Values
+  uint16_t* stage37ProgressState;
+
+  // Stage 64 Specific Values
+  uint16_t* stage64ProgressState;
+  uint16_t* stage64Enemy1DeadState;
+  uint16_t* stage64Enemy2DeadState;
+  uint16_t* stage64GuardDoorState;
+
+  // Stage 50 Specific Values
+  uint16_t* stage50PanelProgress;
+  uint16_t* stage50Escape;
+  uint16_t* stage50Button1;
+  uint16_t* stage50Button2;
+  uint16_t* stage50Button3;
+  uint16_t* stage50Button4;
+
+  // Stage 60 Specific Values
+  uint16_t* lesterCrawlAnimation;
 
   // Derivative Values
   uint16_t lesterAbsolutePosX;

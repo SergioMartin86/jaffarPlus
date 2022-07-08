@@ -23,13 +23,13 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 15000,
-     "Max Size Upper Bound (Mb)": 53000
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 100000
     },
      
     "Hash Database":
     { 
-     "Database Count": 4,
+     "Database Count": 4, 
      "Max Size Upper Bound (Mb)": 1000
     },
     
@@ -659,7 +659,7 @@
     "Conditions":
     [
      { "Property": "Lester Frame", "Op": "==", "Value":  65535 },
-     { "Property": "Stage 33 Water Push", "Op": "!=", "Value": 65535 }
+     { "Property": "Lester Room", "Op": "!=", "Value": 135 }
     ],
 
     "Satisfies": [ ],

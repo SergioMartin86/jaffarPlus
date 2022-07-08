@@ -8,6 +8,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
  // Setting memory positions
  currentStage            = (uint8_t*)   &_emu->_68KRam[0xEA84];
+ gameRNG                 = (uint16_t*)  &_emu->_68KRam[0xEAE6];
  gameTimer               = (uint8_t*)   &_emu->_68KRam[0xE882];
  lagFrame                = (uint8_t*)   &_emu->_68KRam[0xFF5B];
  inputFrame              = (uint8_t*)   &_emu->_68KRam[0xFFC4];
@@ -26,6 +27,14 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  lesterGunPowerLoadFrame = (int16_t*)   &_emu->_68KRam[0xECB2];
  lesterGunPowerLoad      = (uint8_t*)   &_emu->_68KRam[0xEAA2];
  lesterDeadFlag          = (uint8_t*)   &_emu->_68KRam[0xEA8D];
+
+ shield1PosX             = (int16_t*)   &_emu->_68KRam[0xEBC4];
+
+ shield1Duration         = (int16_t*)   &_emu->_68KRam[0xEBC6];
+ shield2Duration         = (int16_t*)   &_emu->_68KRam[0xEBCC];
+ shield3Duration         = (int16_t*)   &_emu->_68KRam[0xEBD2];
+ shield4Duration         = (int16_t*)   &_emu->_68KRam[0xEBD8];
+ shield5Duration         = (int16_t*)   &_emu->_68KRam[0xEBDE];
 
  liftStatus              = (int16_t*)   &_emu->_68KRam[0xEAAC];
 
@@ -60,6 +69,26 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  stage33WaterWall        = (uint16_t*)   &_emu->_68KRam[0xEBE4];
  stage33WaterPush       = (uint16_t*)   &_emu->_68KRam[0xECB0];
 
+ // Stage 37 Specific Values
+ stage37ProgressState = (uint16_t*)   &_emu->_68KRam[0xEBE6];
+
+ // Stage 64 Specific Values
+ stage64ProgressState = (uint16_t*)   &_emu->_68KRam[0xEBF6];
+ stage64Enemy1DeadState = (uint16_t*)   &_emu->_68KRam[0xEB6A];
+ stage64Enemy2DeadState = (uint16_t*)   &_emu->_68KRam[0xEB7A];
+ stage64GuardDoorState = (uint16_t*)   &_emu->_68KRam[0xEBF6];
+
+ // Stage 50 Specific Values
+ stage50PanelProgress = (uint16_t*)   &_emu->_68KRam[0xEB52];
+ stage50Escape        = (uint16_t*)   &_emu->_68KRam[0xEB4A];
+ stage50Button1       = (uint16_t*)   &_emu->_68KRam[0xEB68];
+ stage50Button2       = (uint16_t*)   &_emu->_68KRam[0xEB66];
+ stage50Button3       = (uint16_t*)   &_emu->_68KRam[0xEB6C];
+ stage50Button4       = (uint16_t*)   &_emu->_68KRam[0xEB6E];
+
+ // Stage 60 Specific Values
+ lesterCrawlAnimation = (uint16_t*)   &_emu->_68KRam[0xECB0];
+
  // Initialize derivative values
  updateDerivedValues();
 }
@@ -70,19 +99,28 @@ uint64_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash64 hash;
 
-  if (*animationFrame == 1) hash.Update(_emu->_68KRam+0x0000, 0xFFFF);
+  hash.Update(_emu->_68KRam+0x0000, 0xFFFF);
 
 //  hash.Update(_emu->_68KRam+0xE880, 0x0560);
-  hash.Update(_emu->_68KRam+0xEA80, 0x040);
-  hash.Update(_emu->_68KRam+0xEB40, 0x050);
-  hash.Update(_emu->_68KRam+0xEC70, 0x090);
+  hash.Update(_emu->_68KRam+0xEA80, 0x64);
+//  hash.Update(_emu->_68KRam+0xEAE8, 0x40);
+  hash.Update(_emu->_68KRam+0xEB36, 0x050);
+//  hash.Update(_emu->_68KRam+0xEC70, 0x090);
 //    hash.Update(_emu->_68KRam+0x0000, 0x0080);
 //    hash.Update(_emu->_68KRam+0xFF50, 0x00B0);
 
   hash.Update(*currentStage);
   hash.Update(*gameTimer);
+  hash.Update(*inputFrame);
   hash.Update(*gameMode);
   hash.Update(*lagFrame);
+
+  hash.Update(*shield1PosX);
+  hash.Update(*shield1Duration == -1 ? -1 : 1);
+  hash.Update(*shield2Duration == -1 ? -1 : 1);
+  hash.Update(*shield3Duration == -1 ? -1 : 1);
+  hash.Update(*shield4Duration == -1 ? -1 : 1);
+  hash.Update(*shield5Duration == -1 ? -1 : 1);
 
   hash.Update(*animationFrame);
   hash.Update(*lesterPosX);
@@ -90,7 +128,7 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*lesterRoom);
   hash.Update(*lesterNextRoom);
   hash.Update(*lesterHasGun);
-  hash.Update(*lesterGunCharge);
+  hash.Update(*lesterGunCharge % 2);
   hash.Update(*lesterGunPowerLoad);
   hash.Update(*lesterGunPowerLoadFrame);
 
@@ -122,15 +160,33 @@ uint64_t GameInstance::computeHash() const
 //  }
 
   // Stages 33-37
-  hash.Update(*stage33PoolWallState);
-  hash.Update(*stage33BatActive);
-  hash.Update(*stage33BigRockState);
-  hash.Update(*stage33Room204Vine1PosY);
-  hash.Update(*stage33WaterWall);
-  hash.Update(*stage33WaterPush);
+//  hash.Update(*stage33PoolWallState);
+//  hash.Update(*stage33BatActive);
+//  hash.Update(*stage33BigRockState);
+//  hash.Update(*stage33Room204Vine1PosY);
+//  hash.Update(*stage33WaterWall);
+//  hash.Update(*stage33WaterPush);
 
+// Stage 37
+//  hash.Update(*stage37ProgressState);
+
+  // Stage 64
+//  hash.Update(*stage64ProgressState);
+//  hash.Update(*stage64Enemy1DeadState);
+//  hash.Update(*stage64GuardDoorState);
+
+  // Stage 50
+//  hash.Update(*stage50PanelProgress);
+//  hash.Update(*stage50Escape);
+//  hash.Update(*stage50Button1);
+//  hash.Update(*stage50Button2);
+//  hash.Update(*stage50Button3);
+//  hash.Update(*stage50Button4);
 
 //  hash.Update(_emu->_CRam, 0x40);
+
+  // Stage 60
+//  hash.Update(*lesterCrawlAnimation);
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -148,7 +204,9 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 {
  std::vector<std::string> moveList = {"."};
 
- if (*inputFrame == 255) return moveList;
+// if (*inputFrame == 255) return moveList;
+
+ if (*lagFrame != 3) return moveList;
 
  // Stage01a
 
@@ -163,7 +221,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 
  // Stage02a
  // moveList.insert(moveList.end(), { "L", "R" });
- moveList.insert(moveList.end(), { "L", "R", "B", "C", "D", "DB", "LR", "LB", "LC", "RB", "RB", "LBC", "RBC", "LRB", "LRC", "DLB", "DLC", "DRB", "DRC", "DBC", "LRBC", "U", "UL" });
+ moveList.insert(moveList.end(), { "L", "R", "B", "C", "D", "DB", "LR", "LB", "LC", "RB", "RB", "LBC", "RBC", "LRB", "LRC", "DLB", "DLC", "DRB", "DRC", "DBC", "LRBC" });
 
  return moveList;
 }
@@ -209,7 +267,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   float diff = 0.0;
 
   // Evaluating lester magnet's reward on position X
-  boundedValue = (float)*lesterPosX;
+  boundedValue = (float)*lesterPosX + ((float)*lesterCrawlAnimation / 100000.0f);
   boundedValue = std::min(boundedValue, magnets.lesterHorizontalMagnet[*lesterRoom].max);
   boundedValue = std::max(boundedValue, magnets.lesterHorizontalMagnet[*lesterRoom].min);
   diff = std::abs(magnets.lesterHorizontalMagnet[*lesterRoom].center - boundedValue);
@@ -241,17 +299,23 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating Stage 02 Angular momentum magnet
   reward += magnets.lesterAngularMomentumMagnet * (float)*stage02AngularMomentum1;
 
+  // Evaluating Shield 1 horizontal magnet
+  reward += magnets.shield1HorizontalMagnet * (float)*shield1PosX;
+
   // Returning reward
   return reward;
 }
 
 void GameInstance::setRNGState(const uint64_t RNGState)
 {
+ *gameRNG = (uint16_t) RNGState;
+// *lesterPosX = (int16_t) RNGState;
 }
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Timer:                             %02u (%02u) (%02u)\n", *gameTimer, *lagFrame, *inputFrame);
+ LOG("[Jaffar]  + RNG:                               %04u\n", *gameRNG);
  LOG("[Jaffar]  + Current Stage:                     %02u\n", *currentStage);
  LOG("[Jaffar]  + Reward:                            %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                              0x%lX\n", computeHash());
@@ -268,6 +332,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Alien Room:                        %02u\n", *alienRoom);
  LOG("[Jaffar]  + Alien Pos X:                       %04d\n", *alienPosX);
  LOG("[Jaffar]  + Lift Status:                       %04d\n", *liftStatus);
+ LOG("[Jaffar]  + Shield Pos X:                      [ %04d ]\n", *shield1PosX);
+ LOG("[Jaffar]  + Shield Status:                     [ %04d, %04d, %04d, %04d, %04d ]\n", *shield1Duration, *shield2Duration, *shield3Duration, *shield4Duration, *shield5Duration);
 
 // if (*currentStage == 1)
 // {
@@ -294,13 +360,32 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 //  }
 
 
- LOG("[Jaffar]  + Level 33-37 Values:\n");
- LOG("[Jaffar]  + Pool Wall State:                    %04u\n", *stage33PoolWallState);
- LOG("[Jaffar]  + Bat Active:                         %04u\n", *stage33BatActive);
- LOG("[Jaffar]  + Big Rock State:                     %04u\n", *stage33BigRockState);
- LOG("[Jaffar]  + Room 204 Vine 1 State:              %04u\n", *stage33Room204Vine1PosY);
- LOG("[Jaffar]  + Water Wall State:                   %04u\n", *stage33WaterWall);
- LOG("[Jaffar]  + Water Push State:                   %04u\n", *stage33WaterPush);
+// LOG("[Jaffar]  + Level 33-37 Values:\n");
+// LOG("[Jaffar]  + Pool Wall State:                    %04u\n", *stage33PoolWallState);
+// LOG("[Jaffar]  + Bat Active:                         %04u\n", *stage33BatActive);
+// LOG("[Jaffar]  + Big Rock State:                     %04u\n", *stage33BigRockState);
+// LOG("[Jaffar]  + Room 204 Vine 1 State:              %04u\n", *stage33Room204Vine1PosY);
+// LOG("[Jaffar]  + Water Wall State:                   %04u\n", *stage33WaterWall);
+// LOG("[Jaffar]  + Water Push State:                   %04u\n", *stage33WaterPush);
+
+// LOG("[Jaffar]  + Level 37 Values:\n");
+// LOG("[Jaffar]  + Progress State:                   %04u\n", *stage37ProgressState);
+
+// LOG("[Jaffar]  + Level 64 Values:\n");
+// LOG("[Jaffar]  + Progress State:                   %04u\n", *stage64ProgressState);
+// LOG("[Jaffar]  + Enemy 1 Dead State:               %04u\n", *stage64Enemy1DeadState);
+// LOG("[Jaffar]  + Enemy 2 Dead State:               %04u\n", *stage64Enemy2DeadState);
+// LOG("[Jaffar]  + Guard Door State:                 %04u\n", *stage64GuardDoorState);
+
+// LOG("[Jaffar]  + Level 50 Values:\n");
+// LOG("[Jaffar]  + Panel Progress:                    %04u\n", *stage50PanelProgress);
+// LOG("[Jaffar]  + Panel Button 1:                    %04u\n", *stage50Button1);
+// LOG("[Jaffar]  + Panel Button 2:                    %04u\n", *stage50Button2);
+// LOG("[Jaffar]  + Panel Button 3:                    %04u\n", *stage50Button3);
+// LOG("[Jaffar]  + Panel Button 4:                    %04u\n", *stage50Button4);
+// LOG("[Jaffar]  + Panel Escape:                      %04u\n", *stage50Escape);
+
+  LOG("[Jaffar]  + Lester Crawl Animation:                      %04u\n", *lesterCrawlAnimation);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -315,5 +400,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   if (std::abs(magnets.gunPowerLoadMagnet) > 0.0f)                             LOG("[Jaffar]  + Gun Power Load Magnet          - Intensity: %.5f\n", magnets.gunPowerLoadMagnet);
   if (std::abs(magnets.lesterAngularMomentumMagnet) > 0.0f)                    LOG("[Jaffar]  + Lester Angular Momentum Magnet - Intensity: %.5f\n", magnets.lesterAngularMomentumMagnet);
   if (std::abs(magnets.stage01VineStateMagnet) > 0.0f)                         LOG("[Jaffar]  + Stage 01 Vine State Magnet     - Intensity: %.5f\n", magnets.stage01VineStateMagnet);
+  if (std::abs(magnets.shield1HorizontalMagnet) > 0.0f)                        LOG("[Jaffar]  + Shield 1 Horizontal Magnet     - Intensity: %.5f\n", magnets.shield1HorizontalMagnet);
 }
 
