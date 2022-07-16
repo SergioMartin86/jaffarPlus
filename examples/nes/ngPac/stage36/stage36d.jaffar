@@ -1,0 +1,235 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ng.nes",
+    "State File": "stage36d.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 1600,
+    "Max Move Count": 800
+  },
+  
+  "Game Configuration": 
+  {
+    "Timer Tolerance": 6
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 4000,
+     "Max Size Upper Bound (Mb)": 38800
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+   "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1001,
+    "Description": "Going right",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.01, "Center": 90, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Description": "Going right",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": "<", "Value":  160 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 122, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.00, "Center": 84, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "Win on exit",
+    "Conditions":
+    [
+      { "Property": "Current Substage", "Op": "==", "Value":  37 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1905,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Ninja Position Y", "Op": ">=", "Value": 240 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+      {
+    "Label": 1802,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Enemy Type", "Index": 1, "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1803,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Enemy Type", "Index": 2, "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1804,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Enemy Type", "Index": 3, "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+
+   {
+    "Label": 1805,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Enemy Type", "Index": 4, "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+      
+   {
+    "Label": 1806,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Enemy Type", "Index": 5, "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1807,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Enemy Type", "Index": 6, "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1808,
+    "Description": "Fail on coming back",
+    "Conditions":
+    [
+      { "Property": "Enemy Type", "Index": 7, "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+
+  ]  
+}

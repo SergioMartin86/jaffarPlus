@@ -1,0 +1,198 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ng.nes",
+    "State File": "stage11b.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 1500,
+    "Max Move Count": 1000
+  },
+  
+  "Game Configuration": 
+  {
+    "Timer Tolerance": 4
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 60000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+   "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+  {
+    "Label": 1000,
+    "Description": "Going right",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.0001, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+    
+   {
+    "Label": 1001,
+    "Description": "Going right",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  1610 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000000 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.1, "Center": 96, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1101,
+    "Description": "Going right",
+    "Conditions":
+    [
+      { "Property": "Ninja HP", "Op": "==", "Value":  6 },
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  1770 },
+      { "Property": "Absolute Pos X", "Op": "<", "Value":  1900 }
+    ],
+    
+    "Satisfies": [  1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000000 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.1, "Center": 96, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Description": "Going right",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  1900 },
+      { "Property": "Ninja Position Y", "Op": "<=", "Value":  96 }
+    ],
+    
+    "Satisfies": [ 1101  ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.0001, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    "Description": "Going right",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  2015 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" },
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.001, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    "Description": "Win on skip",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  255 },
+      { "Property": "Game Mode", "Op": "==", "Value":  7 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Description": "Fail if falling",
+    "Conditions":
+    [
+      { "Property": "Ninja Position Y", "Op": ">", "Value": 200 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+  {
+    "Label": 1007,
+    "Description": "Fail if falling",
+    "Conditions":
+    [
+      { "Property": "Enemy Flags", "Index": 5, "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

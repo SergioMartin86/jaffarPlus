@@ -146,6 +146,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "PPU Indicator Bit 6") return dt_uint8;
   if (propertyName == "Enemy Flags") return dt_uint8;
   if (propertyName == "Enemy Type") return dt_uint8;
+  if (propertyName == "Enemy HP") return dt_uint8;
+  if (propertyName == "Enemy Position X") return dt_uint8;
   if (propertyName == "Enemy Position X Fractional") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
@@ -205,6 +207,19 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   {
    if (isDefined(condition, "Index") == false) EXIT_WITH_ERROR("[ERROR] Enemy missing 'Index' key.\n");
    return &gameInstance->enemyType[condition["Index"].get<uint8_t>()];
+  }
+
+  if (propertyName == "Enemy HP")
+  {
+   if (isDefined(condition, "Index") == false) EXIT_WITH_ERROR("[ERROR] Enemy missing 'Index' key.\n");
+   return &gameInstance->enemyHP[condition["Index"].get<uint8_t>()];
+  }
+
+
+  if (propertyName == "Enemy Position X")
+  {
+   if (isDefined(condition, "Index") == false) EXIT_WITH_ERROR("[ERROR] Enemy missing 'Index' key.\n");
+   return &gameInstance->enemyPosX[condition["Index"].get<uint8_t>()];
   }
 
   if (propertyName == "Enemy Position X Fractional")

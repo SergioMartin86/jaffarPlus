@@ -106,7 +106,7 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*ninjaSpeedYFrac);
   hash.Update(*ninjaCollisionFlags);
   hash.Update(*ninjaFlinchDirection);
-  hash.Update(*ninjaInvincibilityTimer);
+  hash.Update(*ninjaInvincibilityTimer > 0);
   hash.Update(*ninjaWeapon);
   hash.Update(*ninjaAnimationType);
   hash.Update(*ninjaAnimationOffset);
@@ -147,7 +147,7 @@ uint64_t GameInstance::computeHash() const
        ((i == 0) && (*enemySlots & 0b00000001)))
    {
     hash.Update(*(enemyType+i));
-//    hash.Update(*(enemyHP+i));
+    hash.Update(*(enemyHP+i));
     hash.Update(*(enemyFlags+i));
     hash.Update(*(enemyPosX+i));
     hash.Update(*(enemyPosXFrac+i));
@@ -194,8 +194,9 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  std::vector<std::string> moveList = {"."};
 
  // First pass stage 00-00
- moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", ".L.....A", ".LDU....", "R.......", "R......A", ".RDU....", "RL......",  "...U..B."});
-// moveList.insert(moveList.end(), { ".......A", "......B.", "...U..B.", "..D.....", "..D...B.", ".L......", ".L.....A", ".L....B.", ".LDU....", "R.......", "R......A", "R.....B.", ".RDU....", "RL......"});
+// moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", ".L.....A", ".LDU....", "R.......", "R......A", ".RDU....", "RL......",  "...U..B."});
+//  moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", ".L.....A", ".LDU....", "R.......", "R......A", ".RDU....", "RL......"});
+ moveList.insert(moveList.end(), { ".......A", "......B.", "...U..B.", "..D.....", "..D...B.", ".L......", ".L.....A", ".L....B.", ".LDU....", "R.......", "R......A", "R.....B.", ".RDU....", "RL......"});
 
  return moveList;
 }
@@ -284,31 +285,31 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + PPU Indicator:                     %02u B6:(%02u)\n", *ppuIndicator, ppuIndicatorBit6);
  LOG("[Jaffar]  + Reward:                            %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                              0x%lX\n", computeHash());
- LOG("[Jaffar]  + Ninja Lives:                       %02u\n", *ninjalives);
- LOG("[Jaffar]  + Ninja Power:                       %02u\n", *ninjaPower);
+// LOG("[Jaffar]  + Ninja Lives:                       %02u\n", *ninjalives);
+// LOG("[Jaffar]  + Ninja Power:                       %02u\n", *ninjaPower);
  LOG("[Jaffar]  + Ninja HP:                          %02u\n", *ninjaHP);
- LOG("[Jaffar]  + Ninja Animation:                   %02u %02u %02u %02u\n", *ninjaAnimationType, *ninjaAnimationOffset, *ninjaAnimationTimer, *ninjaAnimationFrame);
+// LOG("[Jaffar]  + Ninja Animation:                   %02u %02u %02u %02u\n", *ninjaAnimationType, *ninjaAnimationOffset, *ninjaAnimationTimer, *ninjaAnimationFrame);
  LOG("[Jaffar]  + Ninja Weapon:                      %02u\n", *ninjaWeapon);
- LOG("[Jaffar]  + Ninja State Flags:                 %02u, D:(%02u)\n", *ninjaStateFlags, *ninjaIsDead);
+// LOG("[Jaffar]  + Ninja State Flags:                 %02u, D:(%02u)\n", *ninjaStateFlags, *ninjaIsDead);
  LOG("[Jaffar]  + Ninja Position X:                  %f: %02u + %02u\n", absolutePosX, *ninjaPosX, *ninjaPosXFrac);
- LOG("[Jaffar]  + Ninja Speed X:                     %02d + %02u\n", *ninjaSpeedX, *ninjaSpeedXFrac);
+// LOG("[Jaffar]  + Ninja Speed X:                     %02d + %02u\n", *ninjaSpeedX, *ninjaSpeedXFrac);
  LOG("[Jaffar]  + Ninja Position Y:                  %02u\n", *ninjaPosY);
- LOG("[Jaffar]  + Ninja Speed Y:                     %02d + %02u\n", *ninjaSpeedY, *ninjaSpeedYFrac);
- LOG("[Jaffar]  + Ninja Collision Flags:             %02u\n", *ninjaCollisionFlags);
- LOG("[Jaffar]  + Ninja Flinch:                      %02u\n", *ninjaFlinchDirection);
+// LOG("[Jaffar]  + Ninja Speed Y:                     %02d + %02u\n", *ninjaSpeedY, *ninjaSpeedYFrac);
+// LOG("[Jaffar]  + Ninja Collision Flags:             %02u\n", *ninjaCollisionFlags);
+// LOG("[Jaffar]  + Ninja Flinch:                      %02u\n", *ninjaFlinchDirection);
  LOG("[Jaffar]  + Ninja Invincibility Timer:         %02u\n", *ninjaInvincibilityTimer);
- LOG("[Jaffar]  + Ninja Projectiles X:               %02u %02u %02u\n", *ninjaProjectile1PosX, *ninjaProjectile2PosX, *ninjaProjectile3PosX);
- LOG("[Jaffar]  + Ninja Projectiles Y:               %02u %02u %02u\n", *ninjaProjectile1PosY, *ninjaProjectile2PosY, *ninjaProjectile3PosY);
-
- LOG("[Jaffar]  + General Timer:                     %02u + %02u\n", *timeoutSeconds1, *timeoutSeconds60);
+// LOG("[Jaffar]  + Ninja Projectiles X:               %02u %02u %02u\n", *ninjaProjectile1PosX, *ninjaProjectile2PosX, *ninjaProjectile3PosX);
+// LOG("[Jaffar]  + Ninja Projectiles Y:               %02u %02u %02u\n", *ninjaProjectile1PosY, *ninjaProjectile2PosY, *ninjaProjectile3PosY);
+//
+// LOG("[Jaffar]  + General Timer:                     %02u + %02u\n", *timeoutSeconds1, *timeoutSeconds60);
  LOG("[Jaffar]  + Screen Scroll:                     %02u + %02u + %02u\n", *screenScroll3, *screenScroll2, *screenScroll1);
  LOG("[Jaffar]  + Boss HP:                           %02u\n", *bossHP);
- LOG("[Jaffar]  + Ninja/Boss Distance:               %.3f\n", ninjaBossDistance);
-
- LOG("[Jaffar]  + Enemy Count:                       %02u (%02u)\n", *enemyCount, *enemySlots);
- LOG("[Jaffar]  + Enemy Actions:                     %02u\n", *enemyActions);
- LOG("[Jaffar]  + Enemy Last Idx:                    %02u\n", *enemyLastIdx);
- LOG("[Jaffar]  + Demon Timer:                       %02u\n", *demonTimer);
+// LOG("[Jaffar]  + Ninja/Boss Distance:               %.3f\n", ninjaBossDistance);
+//
+// LOG("[Jaffar]  + Enemy Count:                       %02u (%02u)\n", *enemyCount, *enemySlots);
+// LOG("[Jaffar]  + Enemy Actions:                     %02u\n", *enemyActions);
+// LOG("[Jaffar]  + Enemy Last Idx:                    %02u\n", *enemyLastIdx);
+// LOG("[Jaffar]  + Demon Timer:                       %02u\n", *demonTimer);
 
  for (uint8_t i = 0; i < ENEMY_COUNT; i++)
 //  if (((i == 7) && (*enemySlots & 0b10000000)) ||
