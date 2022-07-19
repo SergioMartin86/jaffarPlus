@@ -130,6 +130,8 @@ void Mapper_Mmc3::run_until( nes_time_t end_time )
 {
 	bool bg_enabled = ppu_enabled();
 	
+	if (next_time < 0) next_time = 0;
+
 	end_time *= ppu_overclock;
 	while ( next_time < end_time && next_time <= last_scanline )
 	{

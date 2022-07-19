@@ -3,19 +3,19 @@
  
   "Emulator Configuration": 
   {
-    "Rom File": "../ng.nes",
-    "State File": "stage47b.state"
+    "Rom File": "../ng2.nes",
+    "State File": "boss00_146.state"
   },
   
   "State Configuration": 
   { 
-    "Max Difference Count": 1000,
-    "Max Move Count": 350
+    "Max Difference Count": 1200,
+    "Max Move Count": 150
   },
   
   "Game Configuration": 
   {
-    "Timer Tolerance": 3
+    "Timer Tolerance": 2
   },
   
   "Jaffar Configuration": 
@@ -27,7 +27,7 @@
     "State Database":
     {
      "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 7000
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
@@ -54,23 +54,34 @@
   
   "Rules":
   [
-  
    {
     "Label": 1000,
-    "Description": "Going right after scroll activation",
     "Conditions":
     [
     ],
     
-    "Satisfies": [  ],
+    "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 255 }
+     { "Type": "Set Ninja/Boss Distance Magnet", "Intensity": -0.001  },
+     { "Type": "Set Boss HP Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 16 }
     ]
-   }
+   },
    
-   
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+     { "Property": "Boss HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win" }
+    ]
+   }   
   ]  
 }

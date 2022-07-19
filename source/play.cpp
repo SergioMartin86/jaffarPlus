@@ -61,7 +61,9 @@ void loadSolutionFile(
                       const std::string& stateFile,
                       GameInstance& gameInstance,
                       const size_t ruleCount,
-                      std::vector<std::string>& unpackedMoveSequence
+                      std::vector<std::string>& unpackedMoveSequence,
+                      bool& unsupportedMoveFound,
+                      uint16_t& unsupportedMoveStep
                       )
 {
  // Clearing hash map
@@ -88,6 +90,10 @@ void loadSolutionFile(
  // Flag to indicate whether a fail condition was met
  failConditionFound = false;
  failConditionStep = 0;
+
+ // Flag to indicate whether a move is given that is not otherwise supported
+ unsupportedMoveFound = false;
+ unsupportedMoveStep = 0;
 
  // Saving initial frame
  uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE_PLAY);
@@ -119,6 +125,18 @@ void loadSolutionFile(
  // Iterating move list in the sequence
  for (size_t i = 0; i < moveList.size(); i++)
  {
+  // Getting possible moves
+  auto possibleMoves = gameInstance.getPossibleMoves();
+  bool moveFound = false;
+  for (const auto& move : possibleMoves) if (EmuInstance::moveStringToCode(move) == EmuInstance::moveStringToCode(moveList[i])) moveFound = true;
+  if (moveFound == false)
+  if (unsupportedMoveFound == false)
+  if (i < sequenceLength)
+  {
+   unsupportedMoveFound = true;
+   unsupportedMoveStep = i-1;
+  }
+
   // Advancing state
   auto skippedFrames = gameInstance.advanceStateString(moveList[i]);
   gameInstance.updateDerivedValues();
@@ -260,6 +278,10 @@ int main(int argc, char *argv[])
   bool failConditionFound;
   uint16_t failConditionStep;
 
+  // Flag to indicate whether a move is unsupported by the bo
+  bool unsupportedMoveFound;
+  uint16_t unsupportedMoveStep;
+
   // Move sequence and information
   std::string moveSequence;
   std::vector<std::string> moveList;
@@ -270,7 +292,7 @@ int main(int argc, char *argv[])
   int currentStep = 0;
 
   // Loading solution
-  loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount, unpackedMoveSequence);
+  loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount, unpackedMoveSequence, unsupportedMoveFound, unsupportedMoveStep);
 
   // Flag to continue running playback
   bool continueRunning = true;
@@ -301,6 +323,7 @@ int main(int argc, char *argv[])
      printw("[Jaffar]  + Possible Moves: '%s'", possibleMoves[0].c_str()); for (size_t i = 1; i < possibleMoves.size(); i++) printw(", '%s'", possibleMoves[i].c_str()); printw("\n");
      printw("[Jaffar]  + Hash Collision Found:   %s (%u -> %u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep+1, hashCollisionPrev+1);
      printw("[Jaffar]  + Fail State Found:       %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep+1);
+     printw("[Jaffar]  + Unsupported Move Found: %s (%u)\n", unsupportedMoveFound ? "True" : "False", unsupportedMoveStep+1);
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
      printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | g: set RNG | s: quicksave | p: play | d: unpack | q: quit\n");
      playbackInstance.printPlaybackCommands();
@@ -319,7 +342,7 @@ int main(int argc, char *argv[])
      if (refreshOnFinish)
      {
       sleep(2);
-      loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount, unpackedMoveSequence);
+      loadSolutionFile(hashMap, hashCollisionFound, hashCollisionStep, hashCollisionPrev, stateSequence, ruleStatusSequence, failConditionFound, failConditionStep, moveSequence, moveList, sequenceLength, solutionFile, stateFile, gameInstance, ruleCount, unpackedMoveSequence, unsupportedMoveFound, unsupportedMoveStep);
       currentStep = 0;
      }
      else

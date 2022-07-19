@@ -128,6 +128,14 @@ static const unsigned char clock_table [256] = {
 	3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7 // F
 };
 
+#pragma pack(push,1)
+struct instruction_t
+{
+  uint8_t opcode;
+  uint8_t data;
+};
+#pragma pack(pop)
+
 Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 {
 	set_end_time_( end );
@@ -188,27 +196,15 @@ Nes_Cpu::result_t Nes_Cpu::run( nes_time_t end )
 dec_clock_loop:
 	clock_count--;
 loop:
-	
-// if (pc == 0xF5A2 || pc == 0xF5A5)
-// {
-//  if (low_mem[0x4C] & 0b01000000 == false)
-//  {
-//   printf("Found lag frame where 4C.6 is not set\n");
-//   while(1);
-//  }
-// }
 
 	uint8_t const* page = code_map [pc >> page_bits];
-	unsigned opcode = page [pc];
-	pc++;
-	
-	if ( clock_count >= clock_limit )
-		goto stop;
-	
+	instruction_t instruction = *((instruction_t*)&page[pc++]);
+	uint8_t opcode = instruction.opcode;
+	uint16_t data = instruction.data;
+
+	if ( clock_count >= clock_limit )	goto stop;
 	clock_count += clock_table [opcode];
-	unsigned data;
-	data = page [pc];
-	
+
 	switch ( opcode )
 	{
 

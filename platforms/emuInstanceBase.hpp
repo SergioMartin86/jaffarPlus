@@ -21,4 +21,8 @@ class EmuInstanceBase
   // Minimal serialization functions
   virtual void serializeState(uint8_t* state) const  = 0;
   virtual void deserializeState(const uint8_t* state)  = 0;
+
+  // Move parsing functions
+  static inline INPUT_TYPE moveStringToCode(const std::string& move);
+  static  inline std::string moveCodeToString(const INPUT_TYPE move);
 };

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 Nes_Mapper::Nes_Mapper()
 {
 	emu_ = NULL;
-	static char c;
+	__thread static char c;
 	state = &c; // TODO: state must not be null?
 	state_size = 0;
 }

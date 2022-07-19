@@ -9,10 +9,11 @@
 //#define _DETECT_POSSIBLE_MOVES
 
 auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
-auto moveCountComparerNumber = [](const uint16_t a, const uint16_t b) { return countButtonsPressedNumber16(a) < countButtonsPressedNumber16(b); };
+auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return countButtonsPressedNumber8(a) < countButtonsPressedNumber8(b); };
 
 #ifdef _DETECT_POSSIBLE_MOVES
- #define moveKeyTemplate uint16_t
+ #define moveKeyTemplate uint8_t
+ #define _KEY_VALUE_ ninjaAnimation
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -80,7 +81,7 @@ void Train::run()
      std::vector<std::string> vec(key.second.begin(), key.second.end());
      std::sort(vec.begin(), vec.end(), moveCountComparerString);
      auto itr = vec.begin();
-     printf("if (*gameTimer == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
+     printf("if (*_KEY_VALUE_ == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
      itr++;
      for (; itr != vec.end(); itr++)
      {
@@ -247,31 +248,39 @@ void Train::computeStates()
         fullMoves.push_back(actualMove);
        }
 
-       for (INPUT_TYPE i = 0; i < 256*sizeof(INPUT_TYPE); i++)
-        if (possibleMoveSet.contains((INPUT_TYPE)i) == false)
-        if (((INPUT_TYPE)i & INPUT_START) == 0)
-        if (((INPUT_TYPE)i & INPUT_MODE) == 0)
-        if (((INPUT_TYPE)i & INPUT_X) == 0)
-        if (((INPUT_TYPE)i & INPUT_Y) == 0)
-        if (((INPUT_TYPE)i & INPUT_Z) == 0)
-        if (((INPUT_TYPE)i & INPUT_A) == 0)
+       for (int i = 0; i < 256*sizeof(INPUT_TYPE); i++)
+       {
+        INPUT_TYPE idx = (INPUT_TYPE)i;
+        if (possibleMoveSet.contains(idx) == false)
+        if ((idx & 0b00001000) == 0)
+        if ((idx & 0b00000100) == 0)
+//        if (((INPUT_TYPE)i & INPUT_START) == 0)
+//         if (((INPUT_TYPE)i & INPUT_START) == 0)
+//        if (((INPUT_TYPE)i & INPUT_MODE) == 0)
+//        if (((INPUT_TYPE)i & INPUT_X) == 0)
+//        if (((INPUT_TYPE)i & INPUT_Y) == 0)
+//        if (((INPUT_TYPE)i & INPUT_Z) == 0)
+//        if (((INPUT_TYPE)i & INPUT_A) == 0)
 //        if (((INPUT_TYPE)i & INPUT_UP) == 0)
 //        if (((INPUT_TYPE)i & INPUT_DOWN) == 0)
         {
-         alternativeMoveSet.insert((INPUT_TYPE)i);
-         fullMoves.push_back(EmuInstance::moveCodeToString((INPUT_TYPE)i));
+//         printf("i: %d\n", idx);
+         alternativeMoveSet.insert(idx);
+         fullMoves.push_back(EmuInstance::moveCodeToString(idx));
         }
+       }
 
        std::sort(fullMoves.begin(), fullMoves.end(), moveCountComparerString);
        auto possibleMoveCopy = possibleMoves;
+//
+//       for (const auto& move : fullMoves) printf("%s\n", move.c_str());
+//       printf("Size: %lu\n", fullMoves.size());
+//       exit(0);
 
-       //for (const auto& move : fullMoves) printf("%s\n", move.c_str());
-       //printf("Size: %lu\n", fullMoves.size());
-       //exit(0);
        possibleMoves = fullMoves;
 
        // Store key values
-       uint16_t gameTimer = *_gameInstances[threadId]->gameTimer;
+       uint8_t keyValue = *_gameInstances[threadId]->_KEY_VALUE_;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -386,11 +395,10 @@ void Train::computeStates()
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
          {
-          auto moveKey = gameTimer;
-          if (newMoveKeySet[moveKey].contains(possibleMoves[idx]) == false)
+          if (newMoveKeySet[keyValue].contains(possibleMoves[idx]) == false)
           {
            // Storing new move
-           newMoveKeySet[gameTimer].insert(possibleMoves[idx]);
+           newMoveKeySet[keyValue].insert(possibleMoves[idx]);
 
            //           if (possibleMoves[idx].find("s") != std::string::npos)
            //           {

@@ -10,7 +10,7 @@
   "State Configuration": 
   { 
     "Max Difference Count": 1000,
-    "Max Move Count": 250
+    "Max Move Count": 2500
   },
   
   "Game Configuration": 
@@ -26,8 +26,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 60000,
-     "Max Size Upper Bound (Mb)": 230000
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 150000
     },
     
     "Hash Database":
@@ -120,10 +120,96 @@
     
     "Actions":
     [
-     { "Type": "Trigger Win" }
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+  {
+    "Label": 1004,
+    "Description": "Going right after scroll activation",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  32 },
+      { "Property": "Enemy Flags", "Index": 0, "Op": "==", "Value":  210 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "Going right after scroll activation",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  32 },
+      { "Property": "Enemy Flags", "Index": 1, "Op": "==", "Value":  210 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Description": "Going right after scroll activation",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  32 },
+      { "Property": "Enemy Flags", "Index": 2, "Op": "==", "Value":  210 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+  {
+    "Label": 1007,
+    "Description": "Going right after scroll activation",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  32 },
+      { "Property": "Enemy Flags", "Index": 3, "Op": "==", "Value":  210 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1008,
+    "Description": "Going right after scroll activation",
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  32 },
+      { "Property": "Enemy Flags", "Index": 4, "Op": "==", "Value":  210 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
-   
    
   ]  
 }

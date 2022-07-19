@@ -107,9 +107,9 @@ class EmuInstance : public EmuInstanceBase
  // RLDUTSBA
  // ........
 
- static uint8_t moveStringToCode(const std::string& move)
+ static inline INPUT_TYPE moveStringToCode(const std::string& move)
  {
-  uint8_t moveCode = 0;
+  INPUT_TYPE moveCode = 0;
 
   for (size_t i = 0; i < move.size(); i++) switch(move[i])
   {
@@ -129,7 +129,7 @@ class EmuInstance : public EmuInstanceBase
   return moveCode;
  }
 
- static std::string moveCodeToString(const uint8_t move)
+ static inline std::string moveCodeToString(const INPUT_TYPE move)
  {
   std::string moveString;
 
