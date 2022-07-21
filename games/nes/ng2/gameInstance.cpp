@@ -19,6 +19,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   _emu = emu;
 
   frameCounter             = (uint8_t*)   &_emu->_baseMem[0x00C1]; //
+  currentLevel             = (uint8_t*)   &_emu->_baseMem[0x007E];
   ninjaAirMode             = (uint8_t*)   &_emu->_baseMem[0x0046];
   ninjaFrame               = (uint8_t*)   &_emu->_baseMem[0x0050];
   ninjaAnimation           = (uint8_t*)   &_emu->_baseMem[0x0460];
@@ -43,11 +44,20 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   ninjaInvincibilityTimer  = (uint8_t*)   &_emu->_baseMem[0x0068];
   gameMode                 = (uint8_t*)   &_emu->_baseMem[0x01FE];
   bossHP                   = (uint8_t*)   &_emu->_baseMem[0x0081];
+  windTimer                = (uint8_t*)   &_emu->_baseMem[0x0042];
+  windCycle                = (uint8_t*)   &_emu->_baseMem[0x0066];
+
+  cloneOffset              = (uint8_t*)   &_emu->_baseMem[0x004B];
+  clonePosXArray           = (uint8_t*)   &_emu->_baseMem[0x0100];
+  clonePosYArray           = (uint8_t*)   &_emu->_baseMem[0x0140];
+  cloneStateArray          = (uint8_t*)   &_emu->_baseMem[0x0180];
 
   // Object Activation Bits
   ObjectActivationBits1    = (uint8_t*)   &_emu->_baseMem[0x0048];
   ObjectActivationBits2    = (uint8_t*)   &_emu->_baseMem[0x0049];
   ObjectActivationBits3    = (uint8_t*)   &_emu->_baseMem[0x004A];
+
+  collisionFlags           = (uint8_t*)   &_emu->_baseMem[0x04C0];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -67,6 +77,7 @@ uint64_t GameInstance::computeHash() const
   // if in transition, take frame counter as hash value
 //  if (*gameMode != 0) hash.Update(*frameCounter);
 
+  hash.Update(*currentLevel);
   hash.Update(*ninjaLives);
   hash.Update(*ninjaFrame);
   hash.Update(*ninjaAnimation);
@@ -90,6 +101,14 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*screenScroll2);
   hash.Update(*screenScroll3);
   hash.Update(*gameMode);
+  hash.Update(*windTimer);
+  hash.Update(*windCycle / 16);
+
+//  hash.Update(*cloneOffset);
+//  hash.Update(clonePosXArray, 0x40);
+//  hash.Update(clonePosYArray, 0x40);
+//  hash.Update(cloneStateArray, 0x40);
+  hash.Update(collisionFlags, 0x18);
 
   // Hashing Active Objects
   hash.Update(ObjectActivationFlags);
@@ -97,25 +116,25 @@ uint64_t GameInstance::computeHash() const
   // Special Weapon Symbol Information
   for (uint8_t i = 0; i < PROJECTILE_COUNT; i++) if (ObjectActivationFlags[PROJECTILE_OFFSET+i] == 1)
   {
-    hash.Update(*(ninjaState+PROJECTILE_OFFSET+i));
-    hash.Update(*(ninjaPosX+PROJECTILE_OFFSET+i));
-    hash.Update(*(ninjaPosY+PROJECTILE_OFFSET+i));
+//    hash.Update(*(ninjaState+PROJECTILE_OFFSET+i));
+//    hash.Update(*(ninjaPosX+PROJECTILE_OFFSET+i));
+//    hash.Update(*(ninjaPosY+PROJECTILE_OFFSET+i));
   }
 
   // Clone Information
   for (uint8_t i = 0; i < CLONE_COUNT; i++) if (ObjectActivationFlags[CLONE_OFFSET+i] == 1)
   {
-    hash.Update(*(ninjaState+CLONE_OFFSET+i));
-    hash.Update(*(ninjaPosX+CLONE_OFFSET+i));
-    hash.Update(*(ninjaPosY+CLONE_OFFSET+i));
+//    hash.Update(*(ninjaState+CLONE_OFFSET+i));
+//    hash.Update(*(ninjaPosX+CLONE_OFFSET+i));
+//    hash.Update(*(ninjaPosY+CLONE_OFFSET+i));
   }
 
   // Orb Information
   for (uint8_t i = 0; i < ORB_COUNT; i++) if (ObjectActivationFlags[ORB_OFFSET+i] == 1)
   {
     hash.Update(*(ninjaState+ORB_OFFSET+i));
-    hash.Update(*(ninjaPosX+ORB_OFFSET+i));
-    hash.Update(*(ninjaPosY+ORB_OFFSET+i));
+//    hash.Update(*(ninjaPosX+ORB_OFFSET+i));
+//    hash.Update(*(ninjaPosY+ORB_OFFSET+i));
   }
 
   // Enemy Information
@@ -123,15 +142,15 @@ uint64_t GameInstance::computeHash() const
   {
     hash.Update(*(ninjaState+ENEMY_OFFSET+i));
     hash.Update(*(ninjaPosX+ENEMY_OFFSET+i));
-    hash.Update(*(ninjaPosXFrac+ENEMY_OFFSET+i));
+//    hash.Update(*(ninjaPosXFrac+ENEMY_OFFSET+i));
     hash.Update(*(ninjaPosY+ENEMY_OFFSET+i));
-    hash.Update(*(ninjaPosYFrac+ENEMY_OFFSET+i));
+//    hash.Update(*(ninjaPosYFrac+ENEMY_OFFSET+i));
   }
 
   // Hashing Invincivility
   if (*ninjaInvincibilityTimer == 0) hash.Update(0);
   if (*ninjaInvincibilityTimer == 128) hash.Update(1);
-  if (*ninjaInvincibilityTimer > 0 && *ninjaInvincibilityTimer > 128) hash.Update(2);
+  if (*ninjaInvincibilityTimer > 0 && *ninjaInvincibilityTimer < 128) hash.Update(2);
 
   // Adding time tolerance
   hash.Update(*frameCounter % (timerTolerance+1));
@@ -231,14 +250,14 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*ninjaAnimation == 0x0002) moveList.insert(moveList.end(), { ".......A", "......B.", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", "R......A", "R.D.....", "R.......", "RL......", ".LDU...."});
  if (*ninjaAnimation == 0x0003) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", ".L......", "...U..B.", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", "RL.....A", ".LDU...."});
  if (*ninjaAnimation == 0x0004) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", "R......A", "R.....B."});
- if (*ninjaAnimation == 0x0005) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", "...U..B.", "R......A", "R.....B.", "R.D.....", "R.......", "RL......"});
+ if (*ninjaAnimation == 0x0005) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", "...U..B.", ".L.....A", "R......A", "R.....B.", "R.D.....", "R.......", "RL......"});
  if (*ninjaAnimation == 0x0006) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", ".LDU...."});
- if (*ninjaAnimation == 0x0007) moveList.insert(moveList.end(), { ".......A", "......B.", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", ".LDU...."});
+ if (*ninjaAnimation == 0x0007) moveList.insert(moveList.end(), { ".......A", "...U....", "......B.", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", ".LDU....", "RL.....A"});
  if (*ninjaAnimation == 0x0009) moveList.insert(moveList.end(), { ".......A", ".L.....A", "R......A"});
  if (*ninjaAnimation == 0x000A) moveList.insert(moveList.end(), { ".......A", ".L.....A", "R......A"});
  if (*ninjaAnimation == 0x000B) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", ".L......", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.......", "RL......"});
  if (*ninjaAnimation == 0x000E) moveList.insert(moveList.end(), { ".......A", ".L......", ".L.....A", "R......A", "R.......", "RL......"});
- if (*ninjaAnimation == 0x000F) moveList.insert(moveList.end(), { ".......A", "...U....", "..D.....", ".L......", ".L.....A", "R......A", "R.......", "RL......"});
+ if (*ninjaAnimation == 0x000F) moveList.insert(moveList.end(), { ".......A", "...U....", "..D.....", ".L......", ".L.....A", "R......A", "R.......", "RL......", ".LDU...."});
 
  if (*ninjaAnimation == 0x0000) moveList.insert(moveList.end(), { ".LDU..B.", "RLDU...A"});
  if (*ninjaAnimation == 0x0003) moveList.insert(moveList.end(), { "RLDU...A"});
@@ -329,9 +348,11 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
+
  LOG("[Jaffar]  + Frame Counter:                     %02u (Tolerance: %02u)\n", *frameCounter, timerTolerance);
  LOG("[Jaffar]  + Reward:                            %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                              0x%lX\n", computeHash());
+ LOG("[Jaffar]  + Current Level:                     %02u\n", *currentLevel);
  LOG("[Jaffar]  + Game Mode:                         %02u\n", *gameMode);
  LOG("[Jaffar]  + Ninja Animation / Action / State   0x%02X / 0x%02X / 0x%02X\n", *ninjaAnimation, *ninjaCurrentAction, *ninjaState);
  LOG("[Jaffar]  + Ninja Frame / Air Mode:            %02u / %02u\n", *ninjaFrame, *ninjaAirMode);
@@ -347,6 +368,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Ninja Invincibility Timer:         %02u\n", *ninjaInvincibilityTimer);
  LOG("[Jaffar]  + Boss HP:                           %02u\n", *bossHP);
  LOG("[Jaffar]  + Ninja/Boss Distance:               %.3f\n", ninjaBossDistance);
+ LOG("[Jaffar]  + Wind Cycle / Timer:                %02u / %02u\n", *windCycle, *windTimer);
 
  LOG("[Jaffar]  + Active Objects:\n");
 

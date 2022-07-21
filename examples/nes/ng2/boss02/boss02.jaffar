@@ -4,13 +4,13 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
-    "State File": "boss00_146.state"
+    "State File": "boss02.state"
   },
   
   "State Configuration": 
   { 
-    "Max Difference Count": 1200,
-    "Max Move Count": 170
+    "Max Difference Count": 1300,
+    "Max Move Count": 120
   },
   
   "Game Configuration": 
@@ -26,8 +26,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 30000, 
-     "Max Size Upper Bound (Mb)": 150000
+     "Max Size Lower Bound (Mb)": 60000, 
+     "Max Size Upper Bound (Mb)": 230000
     },
     
     "Hash Database":
@@ -64,7 +64,6 @@
     
     "Actions":
     [
-     { "Type": "Set Ninja/Boss Distance Magnet", "Intensity": -0.001  },
      { "Type": "Set Boss HP Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 16 }
     ]
    },

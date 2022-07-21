@@ -69,6 +69,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Current Level") return dt_uint8;
   if (propertyName == "Ninja Power") return dt_uint8;
   if (propertyName == "Ninja Power Max") return dt_uint8;
   if (propertyName == "Ninja HP") return dt_uint8;
@@ -94,6 +95,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Current Level") return gameInstance->currentLevel;
   if (propertyName == "Ninja Lives") return gameInstance->ninjaLives;
   if (propertyName == "Ninja Power") return gameInstance->ninjaPower;
   if (propertyName == "Ninja Power Max") return gameInstance->ninjaPower;

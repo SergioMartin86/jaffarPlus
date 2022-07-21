@@ -44,6 +44,7 @@ class GameInstance : public GameInstanceBase
 
   // Container for game-specific values
   uint8_t*  gameMode                 ;
+  uint8_t*  currentLevel             ;
   uint8_t*  frameCounter             ;
   uint8_t*  ninjaAnimation           ;
   uint8_t*  ninjaCurrentAction       ;
@@ -69,10 +70,21 @@ class GameInstance : public GameInstanceBase
   uint8_t*  bossHP                   ;
   uint8_t*  ninjaInvincibilityTimer;
 
+  uint8_t*  windTimer            ;
+  uint8_t*  windCycle            ;
+
+  uint8_t* collisionFlags;
+
   // Object Activation Bits
   uint8_t* ObjectActivationBits1;
   uint8_t* ObjectActivationBits2;
   uint8_t* ObjectActivationBits3;
+
+  // Shadow clone state history
+  uint8_t* cloneOffset;
+  uint8_t* clonePosXArray;
+  uint8_t* clonePosYArray;
+  uint8_t* cloneStateArray;
 
   // Flattened Object Activation Bits
   uint8_t ObjectActivationFlags[OBJECT_COUNT];
