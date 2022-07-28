@@ -2,18 +2,18 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
-    "State File": "stage43a.state"
+    "State File": "stage44a.state"
   },
   
   "State Configuration": 
   { 
     "Max Difference Count": 2200,
-    "Max Move Count": 200
+    "Max Move Count": 600
   },
   
   "Game Configuration": 
   {
-    "Timer Tolerance": 4
+    "Timer Tolerance": 2
   },
   
   "Jaffar Configuration": 
@@ -62,8 +62,9 @@
     
     "Actions":
     [
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.00, "Center": 56, "Min": 0, "Max": 255 }
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 0.05, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.00, "Center": 100, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 100.00, "Center": 100, "Min": 0, "Max": 100 }
     ]
    },
    
@@ -72,7 +73,7 @@
     "Conditions":
     [
       { "Property": "Ninja Position Y", "Op": "<", "Value": 120 },
-      { "Property": "Absolute Pos X", "Op": "<", "Value": 100 }
+      { "Property": "Absolute Pos X", "Op": ">", "Value": 100 }
     ],
     
     "Satisfies": [ ],
@@ -80,8 +81,8 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 100000 },
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 59, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.00, "Center": 56, "Min": 0, "Max": 255 }
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.0001, "Center": 0, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -89,7 +90,7 @@
     "Label": 1003,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value": 44 }
+     { "Property": "Game Mode", "Op": "==", "Value": 147 }
     ],
     
     "Satisfies": [ ],
@@ -114,9 +115,24 @@
         { "Type": "Trigger Fail" }
     ]
    },
-  
+   
    {
     "Label": 1904,
+    "Conditions":
+    [
+      { "Property": "Ninja HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+        { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1905,
     "Conditions":
     [
       { "Property": "Ninja Power", "Op": "<", "Value":  90 }

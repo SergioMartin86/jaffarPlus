@@ -143,9 +143,9 @@ uint64_t GameInstance::computeHash() const
   {
     hash.Update(*(ninjaState+ENEMY_OFFSET+i));
     hash.Update(*(ninjaPosX+ENEMY_OFFSET+i));
-    hash.Update(*(ninjaPosXFrac+ENEMY_OFFSET+i));
+//    hash.Update(*(ninjaPosXFrac+ENEMY_OFFSET+i));
     hash.Update(*(ninjaPosY+ENEMY_OFFSET+i));
-    hash.Update(*(ninjaPosYFrac+ENEMY_OFFSET+i));
+//    hash.Update(*(ninjaPosYFrac+ENEMY_OFFSET+i));
   }
 
   // Hashing Invincivility
