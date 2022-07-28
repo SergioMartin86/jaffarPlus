@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
-    "State File": "stage06b.state"
+    "State File": "stage28b.state"
   },
   
   "State Configuration": 
@@ -13,7 +13,7 @@
   
   "Game Configuration": 
   {
-    "Timer Tolerance": 2
+    "Timer Tolerance": 3
   },
   
   "Jaffar Configuration": 
@@ -24,8 +24,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 20000,
-     "Max Size Upper Bound (Mb)": 150000
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 63000
     },
     
     "Hash Database":
@@ -53,7 +53,7 @@
   "Rules":
   [
    {
-    "Label": 1001,
+    "Label": 1000,
     "Conditions":
     [
     ],
@@ -62,41 +62,25 @@
     
     "Actions":
     [
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.001, "Center": 0, "Min": 0, "Max": 255 }
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.20, "Center": 0, "Min": 0, "Max": 255 }
     ]
    },
    
    {
-    "Label": 1002,
+    "Label": 1001,
     "Conditions":
     [
-     { "Property": "Ninja Power Max", "Op": "==", "Value":  50 }
+     { "Property": "Absolute Pos X", "Op": ">", "Value":  755 },
+     { "Property": "Ninja Position Y", "Op": "<=", "Value":  74 }
     ],
     
-    "Satisfies": [ 1001 ],
+    "Satisfies": [ ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 100000 },
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.001, "Center": 0, "Min": 0, "Max": 255 }
-    ]
-   },
-   
-   {
-    "Label": 1003,
-    "Conditions":
-    [
-     { "Property": "Ninja Power Max", "Op": "==", "Value":  50 },
-     { "Property": "Absolute Pos X", "Op": ">", "Value":  635 }
-    ],
-    
-    "Satisfies": [ 1002 ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Win" }
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 6000, "Min": 0, "Max": 6000 }
     ]
    },
    
@@ -104,15 +88,14 @@
     "Label": 1901,
     "Conditions":
     [
-     { "Property": "Ninja Position Y", "Op": ">", "Value":  140 },
-     { "Property": "Absolute Pos X", "Op": "<", "Value":  500 }
+     { "Property": "Absolute Pos X", "Op": ">", "Value":  1285 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Trigger Fail" }
+        { "Type": "Trigger Win" }
     ]
    },
    
@@ -120,14 +103,29 @@
     "Label": 1902,
     "Conditions":
     [
-     { "Property": "Object State", "Index": 19, "Op": "==", "Value":  83 }
+     { "Property": "Ninja Power", "Op": "<", "Value":  20 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Trigger Fail" }
+        { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1903,
+    "Conditions":
+    [
+     { "Property": "Ninja Position Y", "Op": ">", "Value":  170 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+        { "Type": "Trigger Fail" }
     ]
    }
    

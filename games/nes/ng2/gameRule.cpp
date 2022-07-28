@@ -83,6 +83,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Screen Scroll 2") return dt_uint8;
   if (propertyName == "Screen Scroll 3") return dt_uint8;
   if (propertyName == "Object Active") return dt_uint8;
+  if (propertyName == "Object State") return dt_uint8;
   if (propertyName == "Game Mode") return dt_uint8;
   if (propertyName == "Boss HP") return dt_uint8;
 
@@ -98,7 +99,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Current Level") return gameInstance->currentLevel;
   if (propertyName == "Ninja Lives") return gameInstance->ninjaLives;
   if (propertyName == "Ninja Power") return gameInstance->ninjaPower;
-  if (propertyName == "Ninja Power Max") return gameInstance->ninjaPower;
+  if (propertyName == "Ninja Power Max") return gameInstance->ninjaPowerMax;
   if (propertyName == "Ninja HP") return gameInstance->ninjaHP;
   if (propertyName == "Ninja Weapon") return gameInstance->ninjaWeapon;
   if (propertyName == "Ninja Position X") return gameInstance->ninjaPosX;
@@ -116,6 +117,12 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   {
    if (isDefined(condition, "Index") == false) EXIT_WITH_ERROR("[ERROR] Object missing 'Index' key.\n");
    return &gameInstance->ObjectActivationFlags[condition["Index"].get<uint8_t>()];
+  }
+
+  if (propertyName == "Object State")
+  {
+   if (isDefined(condition, "Index") == false) EXIT_WITH_ERROR("[ERROR] Object missing 'Index' key.\n");
+   return &gameInstance->ninjaState[condition["Index"].get<uint8_t>()];
   }
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());

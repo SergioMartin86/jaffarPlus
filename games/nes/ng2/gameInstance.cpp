@@ -96,19 +96,20 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*ninjaPosYFrac);
   hash.Update(*ninjaSpeedY);
   hash.Update(*ninjaSpeedYFrac);
-  hash.Update(*bossHP);
+//  hash.Update(*bossHP);
   hash.Update(*screenScroll1);
   hash.Update(*screenScroll2);
   hash.Update(*screenScroll3);
   hash.Update(*gameMode);
-  hash.Update(*windTimer);
-  hash.Update(*windCycle / 16);
+//  hash.Update(*windTimer);
+//  hash.Update(*windCycle / 16);
 
 //  hash.Update(*cloneOffset);
 //  hash.Update(clonePosXArray, 0x40);
 //  hash.Update(clonePosYArray, 0x40);
 //  hash.Update(cloneStateArray, 0x40);
-  hash.Update(collisionFlags, 0x18);
+//  hash.Update(collisionFlags, 0x18);
+  hash.Update(collisionFlags, 0x01);
 
   // Hashing Active Objects
   hash.Update(ObjectActivationFlags);
@@ -132,7 +133,7 @@ uint64_t GameInstance::computeHash() const
   // Orb Information
   for (uint8_t i = 0; i < ORB_COUNT; i++) if (ObjectActivationFlags[ORB_OFFSET+i] == 1)
   {
-    hash.Update(*(ninjaState+ORB_OFFSET+i));
+//    hash.Update(*(ninjaState+ORB_OFFSET+i));
 //    hash.Update(*(ninjaPosX+ORB_OFFSET+i));
 //    hash.Update(*(ninjaPosY+ORB_OFFSET+i));
   }
@@ -142,9 +143,9 @@ uint64_t GameInstance::computeHash() const
   {
     hash.Update(*(ninjaState+ENEMY_OFFSET+i));
     hash.Update(*(ninjaPosX+ENEMY_OFFSET+i));
-//    hash.Update(*(ninjaPosXFrac+ENEMY_OFFSET+i));
+    hash.Update(*(ninjaPosXFrac+ENEMY_OFFSET+i));
     hash.Update(*(ninjaPosY+ENEMY_OFFSET+i));
-//    hash.Update(*(ninjaPosYFrac+ENEMY_OFFSET+i));
+    hash.Update(*(ninjaPosYFrac+ENEMY_OFFSET+i));
   }
 
   // Hashing Invincivility
@@ -246,14 +247,15 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 // if (foundAction == false) moveList.insert(moveList.end(), { ".......A", "......B.", "...U..B.", "..D.....", "..D...B.", ".L......", ".L.....A", ".L....B.", ".LDU....", "R.......", "R......A", "R.....B.", "RL....B.", "RL.....A", ".RDU....", "RL......", ".LDU..B.", "R.DU..B.", ".LDU....A", "R.DU...A"});
 
  if (*ninjaAnimation == 0x0000) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", "RL.....A", ".LDU...."});
- if (*ninjaAnimation == 0x0001) moveList.insert(moveList.end(), { ".......A", "......B.", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", "R......A", "R.D.....", "R.......", "RL......", ".LDU...."});
+ if (*ninjaAnimation == 0x0001) moveList.insert(moveList.end(), { ".......A", "......B.", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", "R......A", "R.D.....", "R.......", "RL......", ".LDU....", ".L....B.", "R.....B."});
  if (*ninjaAnimation == 0x0002) moveList.insert(moveList.end(), { ".......A", "......B.", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", "R......A", "R.D.....", "R.......", "RL......", ".LDU...."});
  if (*ninjaAnimation == 0x0003) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", ".L......", "...U..B.", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", "RL.....A", ".LDU...."});
  if (*ninjaAnimation == 0x0004) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", "R......A", "R.....B."});
  if (*ninjaAnimation == 0x0005) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", "...U..B.", ".L.....A", "R......A", "R.....B.", "R.D.....", "R.......", "RL......"});
  if (*ninjaAnimation == 0x0006) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", ".LDU...."});
  if (*ninjaAnimation == 0x0007) moveList.insert(moveList.end(), { ".......A", "...U....", "......B.", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", ".LDU....", "RL.....A"});
- if (*ninjaAnimation == 0x0009) moveList.insert(moveList.end(), { ".......A", ".L.....A", "R......A"});
+ if (*ninjaAnimation == 0x0008) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", "RL.....A", ".LDU...."});
+ if (*ninjaAnimation == 0x0009) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", "RL.....A", ".LDU...."});
  if (*ninjaAnimation == 0x000A) moveList.insert(moveList.end(), { ".......A", ".L.....A", "R......A"});
  if (*ninjaAnimation == 0x000B) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", ".L......", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.......", "RL......"});
  if (*ninjaAnimation == 0x000E) moveList.insert(moveList.end(), { ".......A", ".L......", ".L.....A", "R......A", "R.......", "RL......"});
@@ -265,8 +267,10 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*ninjaAnimation == 0x0005) moveList.insert(moveList.end(), { ".LD....A", ".LD...B.", "RL.U...A"});
  if (*ninjaAnimation == 0x0006) moveList.insert(moveList.end(), { "RLDU...A", "RL.....A", "R......A"});
  if (*ninjaAnimation == 0x0007) moveList.insert(moveList.end(), { "RLDU...A"});
- if (*ninjaAnimation == 0x0008) moveList.insert(moveList.end(), { "...U....", "..D....."});
- if (*ninjaAnimation == 0x000B) moveList.insert(moveList.end(), { "RLD....A"});
+ if (*ninjaAnimation == 0x000B) moveList.insert(moveList.end(), { "RLD....A", "RL.....A"});
+
+ if (*ninjaAnimation == 0x0001) moveList.insert(moveList.end(), { ".L.U..BA", "R.DU..BA"});
+ if (*ninjaAnimation == 0x0002) moveList.insert(moveList.end(), { ".L.U..BA", "R.DU..BA"});
 
  return moveList;
 }
