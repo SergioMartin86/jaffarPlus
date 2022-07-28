@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
-    "State File": "stage40b.state"
+    "State File": "stage42b.state"
   },
   
   "State Configuration": 
@@ -24,8 +24,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 60000,
-     "Max Size Upper Bound (Mb)": 230000
+     "Max Size Lower Bound (Mb)": 50,
+     "Max Size Upper Bound (Mb)": 1000
     },
     
     "Hash Database":
@@ -62,24 +62,24 @@
     
     "Actions":
     [
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 88, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.05, "Center": 48, "Min": 0, "Max": 255 },
-     { "Type": "Set Ninja Power Magnet", "Intensity": 100.0, "Center": 100, "Min": 0, "Max": 100 }
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 1179, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.05, "Center": 57, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 0.001, "Center": 100, "Min": 0, "Max": 100 }
     ]
    },
    
    {
-    "Label": 1003,
+    "Label": 1901,
     "Conditions":
     [
-     { "Property": "Absolute Pos X", "Op": "<", "Value": 250 }
+      { "Property": "Ninja Power", "Op": "<", "Value":  90 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Trigger Win" }
+        { "Type": "Trigger Fail" }
     ]
    },
    
@@ -87,7 +87,7 @@
     "Label": 1902,
     "Conditions":
     [
-      { "Property": "Ninja Weapon", "Op": "!=", "Value":  0 }
+      { "Property": "Ninja Weapon", "Op": "!=", "Value":  2 }
     ],
     
     "Satisfies": [ ],
