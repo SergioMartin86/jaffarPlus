@@ -12,7 +12,7 @@
 static size_t _maxStateDiff;
 #endif
 
-#define _MAX_MOVELIST_SIZE 250
+#define _MAX_MOVELIST_SIZE 80
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
 enum stateType
