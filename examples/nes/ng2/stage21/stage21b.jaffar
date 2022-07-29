@@ -24,8 +24,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 60000,
-     "Max Size Upper Bound (Mb)": 230000
+     "Max Size Lower Bound (Mb)": 6000,
+     "Max Size Upper Bound (Mb)": 53000
     },
     
     "Hash Database":
@@ -102,8 +102,25 @@
     "Label": 1902,
     "Conditions":
     [
-     { "Property": "Absolute Pos X", "Op": ">", "Value":  950 },
-     { "Property": "Ninja Position Y", "Op": ">", "Value":  170 }
+     { "Property": "Absolute Pos X", "Op": ">", "Value":  850 },
+     { "Property": "Absolute Pos X", "Op": "<", "Value":  890 },
+     { "Property": "Ninja Position Y", "Op": ">", "Value":  160 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1903,
+    "Conditions":
+    [
+     { "Property": "Absolute Pos X", "Op": ">", "Value":  875 },
+     { "Property": "Ninja Position Y", "Op": ">", "Value":  210 }
     ],
     
     "Satisfies": [ ],
