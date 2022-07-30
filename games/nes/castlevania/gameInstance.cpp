@@ -203,6 +203,9 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*subweapon2Direction);
   hash.Update(*subweapon3Direction);
 
+  // All object info
+  hash.Update(&_emu->_baseMem[0x300], 0x134);
+
   // Updating nametable
   if (hashIncludes.contains("Full NES Nametable")) hash.Update(_emu->_ppuNameTableMem, 0x1000);
   for (const auto& tilePos : tileHashIncludes ) hash.Update(_emu->_ppuNameTableMem[tilePos]);
