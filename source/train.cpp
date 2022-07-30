@@ -13,7 +13,7 @@ auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return cou
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ ninjaAnimation
+ #define _KEY_VALUE_ simonState
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 

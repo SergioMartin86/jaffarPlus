@@ -277,14 +277,13 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (enablePause) moveList.push_back("S");
 
  // Pass 1 - Stage 3-0
- if (*simonState == 0x00) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", "..DU....", ".L......", ".L.....A", ".L....B.", ".L.U....", ".L.U...A", ".LD.....", ".LD....A", ".LD...B.", ".LDU....", "R.......", "R......A", "R.....B.", "R..U....", "R..U...A", "R..U..B.", "R.D.....", "R.D....A", "R.D...B.", "R.DU....", "RL.U....", "RL.U...A", "RLD.....", "RLD....A", "RLD...B.", "RL.U.sB."});
+ if (*simonState == 0x00) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", "..DU....", ".L......", ".L.....A", ".L....B.", ".L.U....", ".L.U...A", ".LD.....", ".LD....A", ".LD...B.", ".LDU....", "R.......", "R......A", "R.....B.", "R..U....", "R..U...A", "R..U..B.", "R.D.....", "R.D....A", "R.D...B.", "R.DU....", "RL.U....", "RL.U...A", "RLD.....", "RLD....A", "RLD...B.", "RL.U..B."});
  if (*simonState == 0x01) moveList.insert(moveList.end(), { "......B.", "...U..B.", "RL......", "RL.U..B."});
  if (*simonState == 0x03) moveList.insert(moveList.end(), { "..D.....", "..D...B.", ".L......", ".LD.....", ".LD...B.", "R.......", "R.D.....", "R.D...B."});
  if (*simonState == 0x04) moveList.insert(moveList.end(), { "......B.", ".L......", "R......."});
  if (*simonState == 0x09) moveList.insert(moveList.end(), { "......B.", ".L......", ".L....B.", "R.......", "R.....B."});
 
  // Pass 2 - Stage 1-0
- if (*simonState == 0x00) moveList.insert(moveList.end(), { "RLDU.sB."});
  if (*simonState == 0x01) moveList.insert(moveList.end(), { "RL....B."});
  if (*simonState == 0x03) moveList.insert(moveList.end(), { "..DU..BA", ".LDU..B.", "R.DU..B."});
  if (*simonState == 0x03) moveList.insert(moveList.end(), { "RLDU..B."});
@@ -296,10 +295,11 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 
  // Pass 4 - Stage 14-1
 
- if (*simonState == 0x00) moveList.insert(moveList.end(), { "RLDU.sBA"});
  if (*simonState == 0x02) moveList.insert(moveList.end(), { ".......A", "......B.", "......BA", "...U....", "...U...A", "...U..B.", "...U..BA", "..D.....", "..D....A", "..D...B.", "..D...BA", "..DU....", "..DU...A", "..DU..B.", "..DU..BA"});
- if (*simonState == 0x02) moveList.insert(moveList.end(), { "..DU.sBA", "R..U.sBA", "R.D..sBA", "R.DU.s.A", "R.DU.sB.", "RL...sBA", "RL.U.s.A", "RL.U.sB.", "RLD..s.A", "RLD..sB.", "RLDU.s.."});
- if (*simonState == 0x03) moveList.insert(moveList.end(), { "RLDU..B."});
+
+ if (*simonState == 0x0000) moveList.insert(moveList.end(), { ".LDU..B.", "RLDU..B."});
+ if (*simonState == 0x0001) moveList.insert(moveList.end(), { ".LDU..B."});
+ if (*simonState == 0x0007) moveList.insert(moveList.end(), { "RL......"});
 
  return moveList;
 }
