@@ -25,7 +25,7 @@
      "Candelabra States"
    ],
    
-   "Tile Hash Includes": [ "0x060F", "0x0597", "0x019B", "0x028B", "0x0213","0x00CB" ],
+   "Tile Hash Includes": [ "0x060F", "0x0597", "0x019B", "0x028B", "0x0213" ],
    "Enable Pause": false,
    "Timer Tolerance": 6
   },
@@ -37,8 +37,8 @@
     "Show Winning State Information": true,
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 90000
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":
@@ -76,7 +76,27 @@
     
     "Actions":
     [
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 1484, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0001, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 4, "Min": 0, "Max": 4 }
+    ]
+   },
+   
+   {
+    "Label": 1108,
+    "Description": "Reward on passing first part",
+    "Conditions":
+    [
+      { "Property": "Simon Position X", "Op": ">", "Value": 1122 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 1484, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0001, "Center": 0, "Min": 0, "Max": 255 },
      { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 4, "Min": 0, "Max": 4 }
     ]
    },
@@ -86,17 +106,38 @@
     "Description": "Win on end game",
     "Conditions":
     [
-      { "Property": "Simon Position X", "Op": ">", "Value": 1300 }
+      { "Property": "Simon Position X", "Op": ">", "Value": 1351 }
+    ],
+    
+    "Satisfies": [ 1108 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 1484, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.01, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": 1.0, "Center": 4, "Min": 0, "Max": 4 }
+
+    ]
+   },
+   
+   
+   {
+    "Label": 1110,
+    "Description": "Win on end game",
+    "Conditions":
+    [
+         { "Property": "Current Stage", "Op": "==", "Value":  11 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Trigger Win" }
+      { "Type": "Trigger Win" }
     ]
    },
-   
+        
    {
     "Label": 1909,
     "Description": "Win on end game",
@@ -183,7 +224,8 @@
     "Description": "Fail on losing tile",
     "Conditions":
     [
-      { "Property": "Tile State", "Position": "0x028B", "Op": "!=", "Value": 107 }
+      { "Property": "Tile State", "Position": "0x028B", "Op": "!=", "Value": 107 },
+      { "Property": "Simon Position X", "Op": "<", "Value": 1300 }
     ],
     
     "Satisfies": [ ],
@@ -200,22 +242,6 @@
     "Conditions":
     [
       { "Property": "Tile State", "Position": "0x0213", "Op": "!=", "Value": 107 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1027,
-    "Description": "Fail on losing tile",
-    "Conditions":
-    [
-      { "Property": "Tile State", "Position": "0x00CB", "Op": "!=", "Value": 61 }
     ],
     
     "Satisfies": [ ],
