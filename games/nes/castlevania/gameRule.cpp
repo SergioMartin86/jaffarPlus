@@ -201,6 +201,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Current Stage") return dt_uint8;
   if (propertyName == "Current SubStage") return dt_uint8;
   if (propertyName == "Simon Lives") return dt_uint8;
+  if (propertyName == "Is Lag Frame") return dt_uint8;
+  if (propertyName == "Stage Timer") return dt_uint8;
   if (propertyName == "Screen Offset") return dt_uint16;
   if (propertyName == "Simon Stair Mode") return dt_uint8;
   if (propertyName == "Simon Position Y") return dt_uint8;
@@ -226,11 +228,17 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Simon Vertical Direction") return dt_uint8;
   if (propertyName == "Boss Health") return dt_uint8;
   if (propertyName == "Boss Is Active") return dt_uint8;
+  if (propertyName == "Boss State") return dt_uint8;
   if (propertyName == "Boss Position X") return dt_uint8;
   if (propertyName == "Boss Position Y") return dt_uint8;
   if (propertyName == "Boss State Timer") return dt_uint8;
   if (propertyName == "Freeze Time Timer") return dt_uint8;
+  if (propertyName == "Enemy State 0") return dt_uint8;
   if (propertyName == "Bat / Medusa 1 State") return dt_uint8;
+  if (propertyName == "Bat / Medusa 2 State") return dt_uint8;
+  if (propertyName == "Bat / Medusa 3 State") return dt_uint8;
+  if (propertyName == "Bat / Medusa 4 State") return dt_uint8;
+  if (propertyName == "Bat / Medusa 5 State") return dt_uint8;
   if (propertyName == "Bat / Medusa 1 Position Y") return dt_uint8;
   if (propertyName == "Bat / Medusa 1 Position X") return dt_uint8;
   if (propertyName == "Enemy 1 Holy Water Lock State") return dt_uint8;
@@ -239,6 +247,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Mummies Distance") return dt_uint8;
   if (propertyName == "Tile State") return dt_uint8;
   if (propertyName == "Candelabrum State") return dt_uint8;
+  if (propertyName == "Is Candelabrum Broken") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -253,6 +262,8 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Game SubMode") return gameInstance->gameSubMode;
   if (propertyName == "Current Stage") return gameInstance->currentStage;
   if (propertyName == "Current SubStage") return gameInstance->currentSubStage;
+  if (propertyName == "Is Lag Frame") return gameInstance->isLagFrame;
+  if (propertyName == "Stage Timer") return gameInstance->stageTimer;
   if (propertyName == "Simon Lives") return gameInstance->simonLives;
   if (propertyName == "Screen Offset") return gameInstance->screenOffset;
   if (propertyName == "Simon Stair Mode") return gameInstance->simonStairMode;
@@ -278,16 +289,23 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Simon Vertical Direction") return gameInstance->simonVerticalDirection;
   if (propertyName == "Boss Health") return gameInstance->bossHealth;
   if (propertyName == "Boss Is Active") return gameInstance->bossIsActive;
+  if (propertyName == "Boss State") return gameInstance->bossState;
+  if (propertyName == "Enemy State 0") return gameInstance->enemy0State;
   if (propertyName == "Boss Position X") return gameInstance->bossPosX;
   if (propertyName == "Boss Position Y") return gameInstance->bossPosY;
   if (propertyName == "Boss State Timer") return gameInstance->bossStateTimer;
   if (propertyName == "Freeze Time Timer") return gameInstance->freezeTimeTimer;
   if (propertyName == "Bat / Medusa 1 State") return gameInstance->batMedusa1State;
+  if (propertyName == "Bat / Medusa 2 State") return gameInstance->batMedusa2State;
+  if (propertyName == "Bat / Medusa 3 State") return gameInstance->batMedusa3State;
+  if (propertyName == "Bat / Medusa 4 State") return gameInstance->batMedusa4State;
+  if (propertyName == "Bat / Medusa 5 State") return gameInstance->batMedusa5State;
   if (propertyName == "Bat / Medusa 1 Position Y") return gameInstance->batMedusa1PosY;
   if (propertyName == "Bat / Medusa 1 Position X") return gameInstance->batMedusa1PosX;
   if (propertyName == "Enemy 1 Holy Water Lock State") return gameInstance->enemy1HolyWaterLockState;
   if (propertyName == "Mummies Distance") return &gameInstance->mummiesDistance;
   if (propertyName == "Skeleton Pos X") return gameInstance->skeletonPosX;
+  if (propertyName == "Is Candelabrum Broken") return &gameInstance->isCandelabrumBroken;
 
   if (propertyName == "Tile State")
   {

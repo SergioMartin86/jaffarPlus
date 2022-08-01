@@ -45,6 +45,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   enemy1PosX             = (uint8_t*)   &_emu->_baseMem[0x0390];
   enemy2PosX             = (uint8_t*)   &_emu->_baseMem[0x0391];
   enemy3PosX             = (uint8_t*)   &_emu->_baseMem[0x0392];
+  enemy0State            = (uint8_t*)   &_emu->_baseMem[0x0437];
   enemy1State            = (uint8_t*)   &_emu->_baseMem[0x0438];
   enemy2State            = (uint8_t*)   &_emu->_baseMem[0x0439];
   enemy3State            = (uint8_t*)   &_emu->_baseMem[0x043A];
@@ -58,6 +59,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   batMedusa3State        = (uint8_t*)   &_emu->_baseMem[0x04CB];
   batMedusa3PosX         = (uint8_t*)   &_emu->_baseMem[0x0397];
   batMedusa3PosY         = (uint8_t*)   &_emu->_baseMem[0x035F];
+  batMedusa4State        = (uint8_t*)   &_emu->_baseMem[0x04CC];
+  batMedusa5State        = (uint8_t*)   &_emu->_baseMem[0x04CD];
   itemDropCounter        = (uint8_t*)   &_emu->_baseMem[0x007B];
   RNGState               = (uint8_t*)   &_emu->_baseMem[0x006F];
   stairAnimationFrame    = (uint8_t*)   &_emu->_baseMem[0x0370];
@@ -88,6 +91,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   subweapon2Direction = (uint8_t*)   &_emu->_baseMem[0x0481];
   subweapon3Direction = (uint8_t*)   &_emu->_baseMem[0x0482];
 
+  enemyStates = (uint8_t*)   &_emu->_baseMem[0x0434];
+
   enemy1HolyWaterLockState = (uint8_t*)   &_emu->_baseMem[0x056C];
   holyWaterFire1Timer      = (uint8_t*)   &_emu->_baseMem[0x057C];
 
@@ -116,6 +121,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   if (isDefined(config, "Enable Pause") == true)
    enablePause = config["Enable Pause"].get<bool>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Enable Pause' was not defined\n");
+
+  if (isDefined(config, "Allow B") == true)
+   allowB = config["Allow B"].get<bool>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Allow B' was not defined\n");
+
 
   // Initialize derivative values
   updateDerivedValues();
@@ -154,7 +164,7 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*bossImage);
   hash.Update(*bossState);
   hash.Update(*stairAnimationFrame);
-  hash.Update(*bossStateTimer % 8);
+  hash.Update(*bossStateTimer);
   hash.Update(*simonScreenOffsetX);
   hash.Update(*levelTransitionTimer);
   hash.Update(*screenMotionX);
@@ -171,13 +181,10 @@ uint64_t GameInstance::computeHash() const
   if (hashIncludes.contains("Enemy 1 State")) hash.Update(*enemy1State);
   if (hashIncludes.contains("Enemy 2 State")) hash.Update(*enemy2State);
   if (hashIncludes.contains("Enemy 3 State")) hash.Update(*enemy3State);
-  if (hashIncludes.contains("Bat / Medusa 1 State")) hash.Update(*batMedusa1State);
   if (hashIncludes.contains("Bat / Medusa 1 Pos X")) hash.Update(*batMedusa1PosX);
   if (hashIncludes.contains("Bat / Medusa 1 Pos Y")) hash.Update(*batMedusa1PosY);
-  if (hashIncludes.contains("Bat / Medusa 2 State")) hash.Update(*batMedusa2State);
   if (hashIncludes.contains("Bat / Medusa 2 Pos X")) hash.Update(*batMedusa2PosX);
   if (hashIncludes.contains("Bat / Medusa 2 Pos Y")) hash.Update(*batMedusa2PosY);
-  if (hashIncludes.contains("Bat / Medusa 3 State")) hash.Update(*batMedusa3State);
   if (hashIncludes.contains("Bat / Medusa 3 Pos X")) hash.Update(*batMedusa3PosX);
   if (hashIncludes.contains("Bat / Medusa 3 Pos Y")) hash.Update(*batMedusa3PosY);
   if (hashIncludes.contains("Enemy 1 Holy Water Lock State")) hash.Update(*enemy1HolyWaterLockState);
@@ -193,6 +200,12 @@ uint64_t GameInstance::computeHash() const
   if (hashIncludes.contains("Subweapon 2 Position Y")) hash.Update(*subweapon2PosY);
   if (hashIncludes.contains("Subweapon 3 Position Y")) hash.Update(*subweapon3PosY);
 
+  hash.Update(*batMedusa1State);
+  hash.Update(*batMedusa2State);
+  hash.Update(*batMedusa3State);
+  hash.Update(*batMedusa4State);
+  hash.Update(*batMedusa5State);
+
   hash.Update(*subweapon1State);
   hash.Update(*subweapon2State);
   hash.Update(*subweapon3State);
@@ -204,7 +217,7 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*subweapon3Direction);
 
   // All object info
-  hash.Update(&_emu->_baseMem[0x300], 0x200);
+  if (hashIncludes.contains("Detailed Enemy State")) hash.Update(&_emu->_baseMem[0x354], 0x200);
 
   // Updating nametable
   if (hashIncludes.contains("Full NES Nametable")) hash.Update(_emu->_ppuNameTableMem, 0x1000);
@@ -238,6 +251,7 @@ uint64_t GameInstance::computeHash() const
   // If we are in an animation, add timer to hash
   if (*gameMode == 0x08 || *gameMode == 0x0A) hash.Update(*stageTimer);
   if (*gameMode == 0x05 && *gameSubMode == 0x02) hash.Update(*stageTimer);
+  if (*gameSubMode != 0x06) hash.Update(*stageTimer);
 
   // If grabbing item, add timer to hash
   if (*grabItemTimer > 0) hash.Update(*stageTimer);
@@ -269,6 +283,9 @@ void GameInstance::updateDerivedValues()
  bossWeaponDistance = (*subweapon1State == 0 ? 255 : std::abs(weapon1PosXInt - bossPosXInt)) + (subweapon2State == 0 ? 255 : std::abs(weapon2PosXInt - bossPosXInt));
 
  //while ( (advanceCounter < 1024) && (*gameMode == 8) ) { _emu->advanceState(0); advanceCounter++; }
+
+ isCandelabrumBroken = 0;
+ for (size_t i = 0x0191; i < 0x1A8; i++) if (_emu->_baseMem[i] > 0) isCandelabrumBroken = 1;
 }
 
 // Function to determine the current possible moves
@@ -279,31 +296,43 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  // If pause enabled, add it to the possible movement list
  if (enablePause) moveList.push_back("S");
 
- // Pass 1 - Stage 3-0
- if (*simonState == 0x00) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", "..DU....", ".L......", ".L.....A", ".L....B.", ".L.U....", ".L.U...A", ".LD.....", ".LD....A", ".LD...B.", ".LDU....", "R.......", "R......A", "R.....B.", "R..U....", "R..U...A", "R..U..B.", "R.D.....", "R.D....A", "R.D...B.", "R.DU....", "RL.U....", "RL.U...A", "RLD.....", "RLD....A", "RLD...B.", "RL.U..B."});
- if (*simonState == 0x01) moveList.insert(moveList.end(), { "......B.", "...U..B.", "RL......", "RL.U..B."});
- if (*simonState == 0x03) moveList.insert(moveList.end(), { "..D.....", "..D...B.", ".L......", ".LD.....", ".LD...B.", "R.......", "R.D.....", "R.D...B."});
- if (*simonState == 0x04) moveList.insert(moveList.end(), { "......B.", ".L......", "R......."});
- if (*simonState == 0x09) moveList.insert(moveList.end(), { "......B.", ".L......", ".L....B.", "R.......", "R.....B."});
+// // Pass 1 - Stage 3-0
+// if (*simonState == 0x00) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", "..DU....", ".L......", ".L.....A", ".L....B.", ".L.U....", ".L.U...A", ".LD.....", ".LD....A", ".LD...B.", ".LDU....", "R.......", "R......A", "R.....B.", "R..U....", "R..U...A", "R..U..B.", "R.D.....", "R.D....A", "R.D...B.", "R.DU....", "RL.U....", "RL.U...A", "RLD.....", "RLD....A", "RLD...B.", "RL.U..B."});
+// if (*simonState == 0x01) moveList.insert(moveList.end(), { "......B.", "...U..B.", "RL......", "RL.U..B."});
+// if (*simonState == 0x03) moveList.insert(moveList.end(), { "..D.....", "..D...B.", ".L......", ".LD.....", ".LD...B.", "R.......", "R.D.....", "R.D...B."});
+// if (*simonState == 0x04) moveList.insert(moveList.end(), { "......B.", ".L......", "R......."});
+// if (*simonState == 0x09) moveList.insert(moveList.end(), { "......B.", ".L......", ".L....B.", "R.......", "R.....B."});
+//
+// // Pass 2 - Stage 1-0
+// if (*simonState == 0x01) moveList.insert(moveList.end(), { "RL....B."});
+// if (*simonState == 0x03) moveList.insert(moveList.end(), { "..DU..BA", ".LDU..B.", "R.DU..B."});
+// if (*simonState == 0x03) moveList.insert(moveList.end(), { "RLDU..B."});
+// if (*simonState == 0x04) moveList.insert(moveList.end(), { "...U..B."});
+//
+// // Pass 3 - Stage 4-0
+//
+// if (*simonState == 0x09) moveList.insert(moveList.end(), { ".L.U..B.", "R..U..B."});
+//
+// // Pass 4 - Stage 14-1
+//
+// if (*simonState == 0x02) moveList.insert(moveList.end(), { ".......A", "......B.", "......BA", "...U....", "...U...A", "...U..B.", "...U..BA", "..D.....", "..D....A", "..D...B.", "..D...BA", "..DU....", "..DU...A", "..DU..B.", "..DU..BA"});
+//
+// if (*simonState == 0x0000) moveList.insert(moveList.end(), { ".LDU..B.", "RLDU..B."});
+// if (*simonState == 0x0001) moveList.insert(moveList.end(), { ".LDU..B."});
+// if (*simonState == 0x0007) moveList.insert(moveList.end(), { "RL......"});
 
- // Pass 2 - Stage 1-0
- if (*simonState == 0x01) moveList.insert(moveList.end(), { "RL....B."});
- if (*simonState == 0x03) moveList.insert(moveList.end(), { "..DU..BA", ".LDU..B.", "R.DU..B."});
- if (*simonState == 0x03) moveList.insert(moveList.end(), { "RLDU..B."});
- if (*simonState == 0x04) moveList.insert(moveList.end(), { "...U..B."});
+ /// PACIFIST
 
- // Pass 3 - Stage 4-0
+  // Pass 1 - Stage 3-0
+  if (*simonState == 0x00) moveList.insert(moveList.end(), { ".......A", "...U....", "..D.....", "..DU....", ".L......", ".L.....A", ".L.U....", ".L.U...A", ".LD.....", ".LD....A", ".LDU....", "R.......", "R......A", "R..U....", "R..U...A", "R.D.....", "R.D....A", "R.DU....", "RL.U....", "RL.U...A", "RLD.....", "RLD....A"});
+  if (*simonState == 0x01) moveList.insert(moveList.end(), { "RL......"});
+  if (*simonState == 0x02) moveList.insert(moveList.end(), { ".......A", "...U....", "...U...A", "..D.....", "..D....A", "..DU....", "..DU...A"});
+  if (*simonState == 0x03) moveList.insert(moveList.end(), { "..D.....", ".L......", ".LD.....", "R.......", "R.D....."});
+  if (*simonState == 0x04) moveList.insert(moveList.end(), { ".L......", "R......."});
+  if (*simonState == 0x07) moveList.insert(moveList.end(), { "RL......"});
+  if (*simonState == 0x09) moveList.insert(moveList.end(), { ".L......", "R......."});
 
- if (*simonState == 0x09) moveList.insert(moveList.end(), { ".L.U..B.", "R..U..B."});
-
- // Pass 4 - Stage 14-1
-
- if (*simonState == 0x02) moveList.insert(moveList.end(), { ".......A", "......B.", "......BA", "...U....", "...U...A", "...U..B.", "...U..BA", "..D.....", "..D....A", "..D...B.", "..D...BA", "..DU....", "..DU...A", "..DU..B.", "..DU..BA"});
-
- if (*simonState == 0x0000) moveList.insert(moveList.end(), { ".LDU..B.", "RLDU..B."});
- if (*simonState == 0x0001) moveList.insert(moveList.end(), { ".LDU..B."});
- if (*simonState == 0x0007) moveList.insert(moveList.end(), { "RL......"});
-
+  if (allowB == true) moveList.insert(moveList.end(), { "......B."} );
  return moveList;
 }
 
@@ -452,24 +481,25 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
   LOG("[Jaffar]  + Game Mode:              %02u-%02u\n", *gameMode, *gameSubMode);
-  LOG("[Jaffar]  + Screen Offset:          %04u\n", *screenOffset);
-  LOG("[Jaffar]  + Simon Heart Count:      %02u\n", *simonHeartCount);
-  LOG("[Jaffar]  + Simon Image:            %02u\n", *simonImage);
+//  LOG("[Jaffar]  + Screen Offset:          %04u\n", *screenOffset);
+  LOG("[Jaffar]  + Is Lag Frame:           %02u\n", *isLagFrame);
+//  LOG("[Jaffar]  + Simon Heart Count:      %02u\n", *simonHeartCount);
+  LOG("[Jaffar]  + Simon State:            %02u\n", *simonState);
   LOG("[Jaffar]  + Simon Facing Direction: %02u\n", *simonFacingDirection);
-  LOG("[Jaffar]  + Simon Vertical Speed:   %02u-%02u\n", *simonVerticalSpeed, *simonVerticalDirection);
-  LOG("[Jaffar]  + Simon Lives:            %02u\n", *simonLives);
+//  LOG("[Jaffar]  + Simon Vertical Speed:   %02u-%02u\n", *simonVerticalSpeed, *simonVerticalDirection);
+//  LOG("[Jaffar]  + Simon Lives:            %02u\n", *simonLives);
   LOG("[Jaffar]  + Simon Stair Mode:       %02u\n", *simonStairMode);
   LOG("[Jaffar]  + Simon Health:           %02u\n", *simonHealth);
   LOG("[Jaffar]  + Simon Pos X:            %04u (%02u %02u) (%02u)\n", *simonPosX, simonRelativePosX, *(((uint8_t*)simonPosX)+1), *jumpingInertia);
   LOG("[Jaffar]  + Simon Pos Y:            %04u\n", *simonPosY);
-  LOG("[Jaffar]  + Simon Screen Offset:    %02u %02u\n", *simonScreenOffsetX, *screenMotionX);
+//  LOG("[Jaffar]  + Simon Screen Offset:    %02u %02u\n", *simonScreenOffsetX, *screenMotionX);
   LOG("[Jaffar]  + Simon Invulnerability:  %02u\n", *simonInvulnerability);
-  LOG("[Jaffar]  + Simon Kneeling Mode:    %02u\n", *simonKneelingMode);
-  LOG("[Jaffar]  + Subweapon Info:         %02u (%02u), H: %02u, D: %.0f\n", *subweaponNumber, *subweaponShotCount, *subweaponHitCount, bossWeaponDistance);
-  LOG("[Jaffar]  + Subweapon 1:            S: %02u, X: %02u Y: %02u, B: %02u, D: %02u\n", *subweapon1State, *subweapon1PosX, *subweapon1PosY, *subweapon1Bounce, *subweapon1Direction);
-  LOG("[Jaffar]  + Subweapon 2:            S: %02u, X: %02u Y: %02u, B: %02u, D: %02u\n", *subweapon2State, *subweapon2PosX, *subweapon2PosY, *subweapon2Bounce, *subweapon2Direction);
-  LOG("[Jaffar]  + Subweapon 3:            S: %02u, X: %02u Y: %02u, B: %02u, D: %02u\n", *subweapon3State, *subweapon3PosX, *subweapon3PosY, *subweapon3Bounce, *subweapon3Direction);
-  LOG("[Jaffar]  + Whip Length:            %02u\n", *whipLength);
+//  LOG("[Jaffar]  + Simon Kneeling Mode:    %02u\n", *simonKneelingMode);
+//  LOG("[Jaffar]  + Subweapon Info:         %02u (%02u), H: %02u, D: %.0f\n", *subweaponNumber, *subweaponShotCount, *subweaponHitCount, bossWeaponDistance);
+//  LOG("[Jaffar]  + Subweapon 1:            S: %02u, X: %02u Y: %02u, B: %02u, D: %02u\n", *subweapon1State, *subweapon1PosX, *subweapon1PosY, *subweapon1Bounce, *subweapon1Direction);
+//  LOG("[Jaffar]  + Subweapon 2:            S: %02u, X: %02u Y: %02u, B: %02u, D: %02u\n", *subweapon2State, *subweapon2PosX, *subweapon2PosY, *subweapon2Bounce, *subweapon2Direction);
+//  LOG("[Jaffar]  + Subweapon 3:            S: %02u, X: %02u Y: %02u, B: %02u, D: %02u\n", *subweapon3State, *subweapon3PosX, *subweapon3PosY, *subweapon3Bounce, *subweapon3Direction);
+//  LOG("[Jaffar]  + Whip Length:            %02u\n", *whipLength);
   LOG("[Jaffar]  + Boss H/X/Y/D:           %02u, %02u, %02u, %03.4f\n", *bossHealth, *bossPosX, *bossPosY, bossSimonDistance);
   LOG("[Jaffar]  + Mummies X1/X2/D:        %02u, %02u, %02u\n", *bossPosX, *mummy2PosX, mummiesDistance);
   LOG("[Jaffar]  + Boss Image / State:     %02u / %02u\n", *bossImage, *bossState);
@@ -481,6 +511,11 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Freeze Time Timer:      %02u\n", *freezeTimeTimer);
   LOG("[Jaffar]  + Item Drop Counter:      %02u\n", *itemDropCounter);
   LOG("[Jaffar]  + Holy Water:             %02u, %02u\n", *enemy1HolyWaterLockState, *holyWaterFire1Timer);
+
+
+  LOG("[Jaffar]  + Object States: ");
+      for (size_t i = 0x03; i < 0x0D; i++) LOG("%02u ", *(enemyStates+i));
+  LOG("\n");
 
   LOG("[Jaffar]  + Candelabra States: ");
     for (size_t i = 0x0191; i < 0x1A8; i++) LOG("%d", _emu->_baseMem[i] > 0 ? 1 : 0);

@@ -98,6 +98,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* enemy1PosX;
   uint8_t* enemy2PosX;
   uint8_t* enemy3PosX;
+  uint8_t* enemy0State;
   uint8_t* enemy1State;
   uint8_t* enemy2State;
   uint8_t* enemy3State;
@@ -110,6 +111,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* batMedusa3State;
   uint8_t* batMedusa3PosX;
   uint8_t* batMedusa3PosY;
+  uint8_t* batMedusa4State;
+  uint8_t* batMedusa5State;
   uint8_t* freezeTimeTimer;
   uint8_t* itemDropCounter;
   uint8_t* RNGState;
@@ -139,12 +142,14 @@ class GameInstance : public GameInstanceBase
   uint8_t* subweapon1Direction;
   uint8_t* subweapon2Direction;
   uint8_t* subweapon3Direction;
+  uint8_t* enemyStates;
 
   uint8_t* mummy2PosX;
   uint8_t* jumpingInertia;
 
   // Mummy distance
   uint8_t mummiesDistance;
+  uint8_t isCandelabrumBroken;
 
   // Aboslute position of bat 1
   int16_t batMedusa1AbsolutePosX;
@@ -160,6 +165,7 @@ class GameInstance : public GameInstanceBase
 
   // Setting for allowing hitting start
   bool enablePause;
+  bool allowB;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

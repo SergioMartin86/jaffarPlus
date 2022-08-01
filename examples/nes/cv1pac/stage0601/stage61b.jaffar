@@ -1,0 +1,89 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../castlevania_prg0.nes",
+    "State File": "stage61c.state"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 1000,
+    "Max Move Count": 300
+  },
+  
+  "Game Configuration": 
+  {
+    "Hash Includes": [
+                       "Simon Heart Count"
+                     ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 30000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+   "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1007,
+    "Description": "Win on boss activation",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 5.0, "Center": 38, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 5.0, "Center": 144, "Min": 0, "Max": 6000 },
+     { "Type": "Set Boss Horizontal Magnet", "Intensity": 5.0, "Center": 56, "Min": 0, "Max": 6000 },
+     { "Type": "Set Boss Vertical Magnet", "Intensity": 5.0, "Center": 142, "Min": 0, "Max": 6000 },
+     { "Type": "Set Boss Health Magnet", "Intensity": -1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1008,
+    "Description": "Reward Killing medusa",
+    "Conditions":
+    [
+      { "Property": "Boss Health", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+   
+  ]  
+}
