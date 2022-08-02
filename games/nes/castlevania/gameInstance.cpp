@@ -14,6 +14,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   gameSubMode            = (uint8_t*)   &_emu->_baseMem[0x0019];
   stageTimer             = (uint8_t*)   &_emu->_baseMem[0x001A];
   isLagFrame             = (uint8_t*)   &_emu->_baseMem[0x001B];
+  isPaused               = (uint8_t*)   &_emu->_baseMem[0x0022];
   levelTransitionTimer   = (uint8_t*)   &_emu->_baseMem[0x001D];
   currentStage           = (uint8_t*)   &_emu->_baseMem[0x0028];
   currentSubStage        = (uint8_t*)   &_emu->_baseMem[0x0046];
@@ -45,10 +46,18 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   enemy1PosX             = (uint8_t*)   &_emu->_baseMem[0x0390];
   enemy2PosX             = (uint8_t*)   &_emu->_baseMem[0x0391];
   enemy3PosX             = (uint8_t*)   &_emu->_baseMem[0x0392];
-  enemy0State            = (uint8_t*)   &_emu->_baseMem[0x0437];
-  enemy1State            = (uint8_t*)   &_emu->_baseMem[0x0438];
-  enemy2State            = (uint8_t*)   &_emu->_baseMem[0x0439];
-  enemy3State            = (uint8_t*)   &_emu->_baseMem[0x043A];
+  enemy4PosX             = (uint8_t*)   &_emu->_baseMem[0x0393];
+  enemy5PosX             = (uint8_t*)   &_emu->_baseMem[0x0394];
+  enemy6PosX             = (uint8_t*)   &_emu->_baseMem[0x0395];
+  enemy7PosX             = (uint8_t*)   &_emu->_baseMem[0x0396];
+  enemy0State            = (uint8_t*)   &_emu->_baseMem[0x0435];
+  enemy1State            = (uint8_t*)   &_emu->_baseMem[0x0436];
+  enemy2State            = (uint8_t*)   &_emu->_baseMem[0x0437];
+  enemy3State            = (uint8_t*)   &_emu->_baseMem[0x0438];
+  enemy4State            = (uint8_t*)   &_emu->_baseMem[0x0439];
+  enemy5State            = (uint8_t*)   &_emu->_baseMem[0x043A];
+  enemy6State            = (uint8_t*)   &_emu->_baseMem[0x043B];
+  enemy7State            = (uint8_t*)   &_emu->_baseMem[0x043C];
   freezeTimeTimer        = (uint8_t*)   &_emu->_baseMem[0x057C];
   batMedusa1State        = (uint8_t*)   &_emu->_baseMem[0x04C9];
   batMedusa1PosX         = (uint8_t*)   &_emu->_baseMem[0x0395];
@@ -70,6 +79,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   mummy2PosX             = (uint8_t*)   &_emu->_baseMem[0x0394];
 
   skeletonPosX           = (uint8_t*)   &_emu->_baseMem[0x0393];
+  skeletonPosX2          = (uint8_t*)   &_emu->_baseMem[0x0394];
   skeletonBone1PosY      = (uint8_t*)   &_emu->_baseMem[0x0360];
   skeletonBone2PosY      = (uint8_t*)   &_emu->_baseMem[0x0361];
   skeletonBone3PosY      = (uint8_t*)   &_emu->_baseMem[0x0362];
@@ -139,6 +149,7 @@ uint64_t GameInstance::computeHash() const
 
   // Adding fixed hash elements
   hash.Update(*isLagFrame);
+  hash.Update(*isPaused);
   hash.Update(*gameMode);
   hash.Update(*gameSubMode);
   hash.Update(*currentStage);
@@ -190,6 +201,7 @@ uint64_t GameInstance::computeHash() const
   if (hashIncludes.contains("Enemy 1 Holy Water Lock State")) hash.Update(*enemy1HolyWaterLockState);
   if (hashIncludes.contains("Holy Water Fire 1 Timer")) hash.Update(*holyWaterFire1Timer);
   if (hashIncludes.contains("Skeleton Position X")) hash.Update(*skeletonPosX);
+  if (hashIncludes.contains("Skeleton Position X2")) hash.Update(*skeletonPosX2);
   if (hashIncludes.contains("Skeleton Bone 1 Pos Y")) hash.Update(*skeletonBone1PosY);
   if (hashIncludes.contains("Skeleton Bone 2 Pos Y")) hash.Update(*skeletonBone2PosY);
   if (hashIncludes.contains("Skeleton Bone 3 Pos Y")) hash.Update(*skeletonBone3PosY);
@@ -200,21 +212,27 @@ uint64_t GameInstance::computeHash() const
   if (hashIncludes.contains("Subweapon 2 Position Y")) hash.Update(*subweapon2PosY);
   if (hashIncludes.contains("Subweapon 3 Position Y")) hash.Update(*subweapon3PosY);
 
-  hash.Update(*batMedusa1State);
-  hash.Update(*batMedusa2State);
-  hash.Update(*batMedusa3State);
-  hash.Update(*batMedusa4State);
-  hash.Update(*batMedusa5State);
+//  hash.Update(*enemy0State);
+//  hash.Update(*enemy1State);
+//  hash.Update(*enemy2State);
+//  hash.Update(*enemy3State);
+//  hash.Update(*enemy4State);
+//  hash.Update(*enemy5State);
+//  hash.Update(*batMedusa1State);
+//  hash.Update(*batMedusa2State);
+//  hash.Update(*batMedusa3State);
+//  hash.Update(*batMedusa4State);
+//  hash.Update(*batMedusa5State);
 
-  hash.Update(*subweapon1State);
-  hash.Update(*subweapon2State);
-  hash.Update(*subweapon3State);
-  hash.Update(*subweapon1Bounce);
-  hash.Update(*subweapon2Bounce);
-  hash.Update(*subweapon3Bounce);
-  hash.Update(*subweapon1Direction);
-  hash.Update(*subweapon2Direction);
-  hash.Update(*subweapon3Direction);
+//  hash.Update(*subweapon1State);
+//  hash.Update(*subweapon2State);
+//  hash.Update(*subweapon3State);
+//  hash.Update(*subweapon1Bounce);
+//  hash.Update(*subweapon2Bounce);
+//  hash.Update(*subweapon3Bounce);
+//  hash.Update(*subweapon1Direction);
+//  hash.Update(*subweapon2Direction);
+//  hash.Update(*subweapon3Direction);
 
   // All object info
   if (hashIncludes.contains("Detailed Enemy State")) hash.Update(&_emu->_baseMem[0x354], 0x200);
@@ -224,7 +242,7 @@ uint64_t GameInstance::computeHash() const
   for (const auto& tilePos : tileHashIncludes ) hash.Update(_emu->_ppuNameTableMem[tilePos]);
 
   // Turning invulnerability into a boolean
-  hash.Update(*simonInvulnerability % 2);
+  hash.Update(*simonInvulnerability > 0);
 
   if (hashIncludes.contains("Simon Heart Count"))  hash.Update(*simonHeartCount);
 
@@ -239,22 +257,26 @@ uint64_t GameInstance::computeHash() const
   {
    hash.Update(*bossPosX);
    hash.Update(*bossPosY);
-   //hash.Update(*mummy2PosX);
+   hash.Update(*mummy2PosX);
   }
 
-  // If simon is getting knocked back or paralyzed, use timer
-  if (*simonState == 0x05 || *simonState == 0x09) hash.Update(*stageTimer);
+  // Only compute timer if not paused
+  if (isPaused == 0)
+  {
+   // If simon is getting knocked back or paralyzed, use timer
+   if (*simonState == 0x05 || *simonState == 0x09) hash.Update(*stageTimer);
 
-  // If simon is standing-attacking, use timer
-  if (*simonState == 0x02) hash.Update(*stageTimer);
+   // If simon is standing-attacking, use timer
+   if (*simonState == 0x02) hash.Update(*stageTimer);
 
-  // If we are in an animation, add timer to hash
-  if (*gameMode == 0x08 || *gameMode == 0x0A) hash.Update(*stageTimer);
-  if (*gameMode == 0x05 && *gameSubMode == 0x02) hash.Update(*stageTimer);
-  if (*gameSubMode != 0x06) hash.Update(*stageTimer);
+   // If we are in an animation, add timer to hash
+   if (*gameMode == 0x08 || *gameMode == 0x0A) hash.Update(*stageTimer);
+   if (*gameMode == 0x05 && *gameSubMode == 0x02) hash.Update(*stageTimer);
+   if (*gameSubMode != 0x06) hash.Update(*stageTimer);
 
-  // If grabbing item, add timer to hash
-  if (*grabItemTimer > 0) hash.Update(*stageTimer);
+   // If grabbing item, add timer to hash
+   if (*grabItemTimer > 0) hash.Update(*stageTimer);
+  }
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -296,43 +318,49 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  // If pause enabled, add it to the possible movement list
  if (enablePause) moveList.push_back("S");
 
-// // Pass 1 - Stage 3-0
-// if (*simonState == 0x00) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", "..DU....", ".L......", ".L.....A", ".L....B.", ".L.U....", ".L.U...A", ".LD.....", ".LD....A", ".LD...B.", ".LDU....", "R.......", "R......A", "R.....B.", "R..U....", "R..U...A", "R..U..B.", "R.D.....", "R.D....A", "R.D...B.", "R.DU....", "RL.U....", "RL.U...A", "RLD.....", "RLD....A", "RLD...B.", "RL.U..B."});
-// if (*simonState == 0x01) moveList.insert(moveList.end(), { "......B.", "...U..B.", "RL......", "RL.U..B."});
-// if (*simonState == 0x03) moveList.insert(moveList.end(), { "..D.....", "..D...B.", ".L......", ".LD.....", ".LD...B.", "R.......", "R.D.....", "R.D...B."});
-// if (*simonState == 0x04) moveList.insert(moveList.end(), { "......B.", ".L......", "R......."});
-// if (*simonState == 0x09) moveList.insert(moveList.end(), { "......B.", ".L......", ".L....B.", "R.......", "R.....B."});
-//
-// // Pass 2 - Stage 1-0
-// if (*simonState == 0x01) moveList.insert(moveList.end(), { "RL....B."});
-// if (*simonState == 0x03) moveList.insert(moveList.end(), { "..DU..BA", ".LDU..B.", "R.DU..B."});
-// if (*simonState == 0x03) moveList.insert(moveList.end(), { "RLDU..B."});
-// if (*simonState == 0x04) moveList.insert(moveList.end(), { "...U..B."});
-//
-// // Pass 3 - Stage 4-0
-//
-// if (*simonState == 0x09) moveList.insert(moveList.end(), { ".L.U..B.", "R..U..B."});
-//
-// // Pass 4 - Stage 14-1
-//
-// if (*simonState == 0x02) moveList.insert(moveList.end(), { ".......A", "......B.", "......BA", "...U....", "...U...A", "...U..B.", "...U..BA", "..D.....", "..D....A", "..D...B.", "..D...BA", "..DU....", "..DU...A", "..DU..B.", "..DU..BA"});
-//
-// if (*simonState == 0x0000) moveList.insert(moveList.end(), { ".LDU..B.", "RLDU..B."});
-// if (*simonState == 0x0001) moveList.insert(moveList.end(), { ".LDU..B."});
-// if (*simonState == 0x0007) moveList.insert(moveList.end(), { "RL......"});
-
- /// PACIFIST
+ if (allowB == true)
+ {
 
   // Pass 1 - Stage 3-0
-  if (*simonState == 0x00) moveList.insert(moveList.end(), { ".......A", "...U....", "..D.....", "..DU....", ".L......", ".L.....A", ".L.U....", ".L.U...A", ".LD.....", ".LD....A", ".LDU....", "R.......", "R......A", "R..U....", "R..U...A", "R.D.....", "R.D....A", "R.DU....", "RL.U....", "RL.U...A", "RLD.....", "RLD....A"});
-  if (*simonState == 0x01) moveList.insert(moveList.end(), { "RL......"});
-  if (*simonState == 0x02) moveList.insert(moveList.end(), { ".......A", "...U....", "...U...A", "..D.....", "..D....A", "..DU....", "..DU...A"});
-  if (*simonState == 0x03) moveList.insert(moveList.end(), { "..D.....", ".L......", ".LD.....", "R.......", "R.D....."});
-  if (*simonState == 0x04) moveList.insert(moveList.end(), { ".L......", "R......."});
-  if (*simonState == 0x07) moveList.insert(moveList.end(), { "RL......"});
-  if (*simonState == 0x09) moveList.insert(moveList.end(), { ".L......", "R......."});
+  if (*simonState == 0x00) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", "..DU....", ".L......", ".L.....A", ".L....B.", ".L.U....", ".L.U...A", ".LD.....", ".LD....A", ".LD...B.", ".LDU....", "R.......", "R......A", "R.....B.", "R..U....", "R..U...A", "R..U..B.", "R.D.....", "R.D....A", "R.D...B.", "R.DU....", "RL.U....", "RL.U...A", "RLD.....", "RLD....A", "RLD...B.", "RL.U..B."});
+  if (*simonState == 0x01) moveList.insert(moveList.end(), { "......B.", "...U..B.", "RL......", "RL.U..B."});
+  if (*simonState == 0x03) moveList.insert(moveList.end(), { "..D.....", "..D...B.", ".L......", ".LD.....", ".LD...B.", "R.......", "R.D.....", "R.D...B."});
+  if (*simonState == 0x04) moveList.insert(moveList.end(), { "......B.", ".L......", "R......."});
+  if (*simonState == 0x09) moveList.insert(moveList.end(), { "......B.", ".L......", ".L....B.", "R.......", "R.....B."});
 
-  if (allowB == true) moveList.insert(moveList.end(), { "......B."} );
+  // Pass 2 - Stage 1-0
+  if (*simonState == 0x01) moveList.insert(moveList.end(), { "RL....B."});
+  if (*simonState == 0x03) moveList.insert(moveList.end(), { "..DU..BA", ".LDU..B.", "R.DU..B."});
+  if (*simonState == 0x03) moveList.insert(moveList.end(), { "RLDU..B."});
+  if (*simonState == 0x04) moveList.insert(moveList.end(), { "...U..B."});
+
+  // Pass 3 - Stage 4-0
+
+  if (*simonState == 0x09) moveList.insert(moveList.end(), { ".L.U..B.", "R..U..B."});
+
+  // Pass 4 - Stage 14-1
+
+  if (*simonState == 0x02) moveList.insert(moveList.end(), { ".......A", "......B.", "......BA", "...U....", "...U...A", "...U..B.", "...U..BA", "..D.....", "..D....A", "..D...B.", "..D...BA", "..DU....", "..DU...A", "..DU..B.", "..DU..BA"});
+
+  if (*simonState == 0x0000) moveList.insert(moveList.end(), { ".LDU..B.", "RLDU..B."});
+  if (*simonState == 0x0001) moveList.insert(moveList.end(), { ".LDU..B."});
+  if (*simonState == 0x0007) moveList.insert(moveList.end(), { "RL......"});
+ }
+
+  /// PACIFIST
+
+ if (allowB == false)
+ {
+   // Pass 1 - Stage 3-0
+   if (*simonState == 0x00) moveList.insert(moveList.end(), { ".......A", "...U....", "..D.....", "..DU....", ".L......", ".L.....A", ".L.U....", ".L.U...A", ".LD.....", ".LD....A", ".LDU....", "R.......", "R......A", "R..U....", "R..U...A", "R.D.....", "R.D....A", "R.DU....", "RL.U....", "RL.U...A", "RLD.....", "RLD....A"});
+   if (*simonState == 0x01) moveList.insert(moveList.end(), { "RL......"});
+   if (*simonState == 0x02) moveList.insert(moveList.end(), { ".......A", "...U....", "...U...A", "..D.....", "..D....A", "..DU....", "..DU...A"});
+   if (*simonState == 0x03) moveList.insert(moveList.end(), { "..D.....", ".L......", ".LD.....", "R.......", "R.D....."});
+   if (*simonState == 0x04) moveList.insert(moveList.end(), { ".L......", "R......."});
+   if (*simonState == 0x07) moveList.insert(moveList.end(), { "RL......"});
+   if (*simonState == 0x09) moveList.insert(moveList.end(), { ".L......", "R......."});
+ }
+
  return moveList;
 }
 
@@ -408,7 +436,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.bossVerticalMagnet.intensity * -diff;
 
   // Evaluating skeleton reward on pos x
-  boundedValue = (float)*skeletonPosX;
+  boundedValue = (float)*skeletonPosX2;
   boundedValue = std::min(boundedValue, magnets.skeletonHorizontalMagnet.max);
   boundedValue = std::max(boundedValue, magnets.skeletonHorizontalMagnet.min);
   diff = std::abs(magnets.skeletonHorizontalMagnet.center - boundedValue);
@@ -480,7 +508,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Timer:                  %u (%02u)\n", *stageTimer, *levelTransitionTimer);
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
-  LOG("[Jaffar]  + Game Mode:              %02u-%02u\n", *gameMode, *gameSubMode);
+  LOG("[Jaffar]  + Game Mode:              %02u-%02u (P: %02u)\n", *gameMode, *gameSubMode, *isPaused);
 //  LOG("[Jaffar]  + Screen Offset:          %04u\n", *screenOffset);
   LOG("[Jaffar]  + Is Lag Frame:           %02u\n", *isLagFrame);
 //  LOG("[Jaffar]  + Simon Heart Count:      %02u\n", *simonHeartCount);
@@ -504,18 +532,18 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Mummies X1/X2/D:        %02u, %02u, %02u\n", *bossPosX, *mummy2PosX, mummiesDistance);
   LOG("[Jaffar]  + Boss Image / State:     %02u / %02u\n", *bossImage, *bossState);
   LOG("[Jaffar]  + Boss Is Active:         %02u (%02u)\n", *bossIsActive, *bossStateTimer);
-  LOG("[Jaffar]  + Enemy S/X:              (%02u, %02u), (%02u, %02u), (%02u, %02u) \n", *enemy1State, *enemy1PosX, *enemy2State, *enemy2PosX, *enemy3State, *enemy3PosX);
+//  LOG("[Jaffar]  + Enemy S/X:              (%02u, %02u), (%02u, %02u), (%02u, %02u), %02u, %02u \n", *enemy1State, *enemy1PosX, *enemy2State, *enemy2PosX, *enemy3State, *enemy3PosX, *enemy4State, *enemy5State);
   LOG("[Jaffar]  + Bat / Medusa S/X/Y:     (%02u, %02u, %02u, A: %04u) (%02u, %02u, %02u) (%02u, %02u, %02u) \n", *batMedusa1State, *batMedusa1PosX, *batMedusa1PosY, batMedusa1AbsolutePosX, *batMedusa2State, *batMedusa2PosX, *batMedusa2PosY, *batMedusa3State, *batMedusa3PosX, *batMedusa3PosY);
-  LOG("[Jaffar]  + Skeleton X/B1/B2/B3:    %02u, %02u, %02u, %02u\n", *skeletonPosX, *skeletonBone1PosY, *skeletonBone2PosY, *skeletonBone3PosY);
+  LOG("[Jaffar]  + Skeleton X/X2/B1/B2/B3:    %02u, %02u, %02u, %02u\n", *skeletonPosX, *skeletonPosX2, *skeletonBone1PosY, *skeletonBone2PosY, *skeletonBone3PosY);
   LOG("[Jaffar]  + Grab Item Timer:        %02u\n", *grabItemTimer);
   LOG("[Jaffar]  + Freeze Time Timer:      %02u\n", *freezeTimeTimer);
   LOG("[Jaffar]  + Item Drop Counter:      %02u\n", *itemDropCounter);
   LOG("[Jaffar]  + Holy Water:             %02u, %02u\n", *enemy1HolyWaterLockState, *holyWaterFire1Timer);
 
+  LOG("[Jaffar]  + Enemy States:           %02u, %02u, %02u, %02u, %02u, %02u, %02u, %02u\n", *enemy0State, *enemy1State, *enemy2State, *enemy3State, *enemy4State, *enemy5State, *enemy6State, *enemy7State);
+  LOG("[Jaffar]  + Bat States:             %02u, %02u, %02u, %02u, %02u\n", *batMedusa1State, *batMedusa2State, *batMedusa3State, *batMedusa4State, *batMedusa5State);
 
-  LOG("[Jaffar]  + Object States: ");
-      for (size_t i = 0x03; i < 0x0D; i++) LOG("%02u ", *(enemyStates+i));
-  LOG("\n");
+  LOG("[Jaffar]  + Enemy X:                %02u, %02u, %02u, %02u, %02u, %02u, %02u\n", *enemy1PosX, *enemy2PosX, *enemy3PosX, *enemy4PosX, *enemy5PosX, *enemy6PosX, *enemy7PosX);
 
   LOG("[Jaffar]  + Candelabra States: ");
     for (size_t i = 0x0191; i < 0x1A8; i++) LOG("%d", _emu->_baseMem[i] > 0 ? 1 : 0);

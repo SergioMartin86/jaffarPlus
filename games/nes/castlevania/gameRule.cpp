@@ -130,6 +130,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Mummies Distance Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Boss/Simon Distance Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.mummiesDistanceMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
   if (actionType == "Set Boss/Weapon Distance Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Boss/Weapon Distance Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -233,7 +240,14 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Boss Position Y") return dt_uint8;
   if (propertyName == "Boss State Timer") return dt_uint8;
   if (propertyName == "Freeze Time Timer") return dt_uint8;
-  if (propertyName == "Enemy State 0") return dt_uint8;
+  if (propertyName == "Enemy 0 State") return dt_uint8;
+  if (propertyName == "Enemy 1 State") return dt_uint8;
+  if (propertyName == "Enemy 2 State") return dt_uint8;
+  if (propertyName == "Enemy 3 State") return dt_uint8;
+  if (propertyName == "Enemy 4 State") return dt_uint8;
+  if (propertyName == "Enemy 5 State") return dt_uint8;
+  if (propertyName == "Enemy 6 State") return dt_uint8;
+  if (propertyName == "Enemy 7 State") return dt_uint8;
   if (propertyName == "Bat / Medusa 1 State") return dt_uint8;
   if (propertyName == "Bat / Medusa 2 State") return dt_uint8;
   if (propertyName == "Bat / Medusa 3 State") return dt_uint8;
@@ -244,6 +258,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Enemy 1 Holy Water Lock State") return dt_uint8;
   if (propertyName == "Enemy 1 Holy Water Lock State") return dt_uint8;
   if (propertyName == "Skeleton Pos X") return dt_uint8;
+  if (propertyName == "Skeleton Pos X2") return dt_uint8;
   if (propertyName == "Mummies Distance") return dt_uint8;
   if (propertyName == "Tile State") return dt_uint8;
   if (propertyName == "Candelabrum State") return dt_uint8;
@@ -290,7 +305,14 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Boss Health") return gameInstance->bossHealth;
   if (propertyName == "Boss Is Active") return gameInstance->bossIsActive;
   if (propertyName == "Boss State") return gameInstance->bossState;
-  if (propertyName == "Enemy State 0") return gameInstance->enemy0State;
+  if (propertyName == "Enemy 0 State") return gameInstance->enemy0State;
+  if (propertyName == "Enemy 1 State") return gameInstance->enemy1State;
+  if (propertyName == "Enemy 2 State") return gameInstance->enemy2State;
+  if (propertyName == "Enemy 3 State") return gameInstance->enemy3State;
+  if (propertyName == "Enemy 4 State") return gameInstance->enemy4State;
+  if (propertyName == "Enemy 5 State") return gameInstance->enemy5State;
+  if (propertyName == "Enemy 6 State") return gameInstance->enemy6State;
+  if (propertyName == "Enemy 7 State") return gameInstance->enemy7State;
   if (propertyName == "Boss Position X") return gameInstance->bossPosX;
   if (propertyName == "Boss Position Y") return gameInstance->bossPosY;
   if (propertyName == "Boss State Timer") return gameInstance->bossStateTimer;
@@ -305,6 +327,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Enemy 1 Holy Water Lock State") return gameInstance->enemy1HolyWaterLockState;
   if (propertyName == "Mummies Distance") return &gameInstance->mummiesDistance;
   if (propertyName == "Skeleton Pos X") return gameInstance->skeletonPosX;
+  if (propertyName == "Skeleton Pos X2") return gameInstance->skeletonPosX2;
   if (propertyName == "Is Candelabrum Broken") return &gameInstance->isCandelabrumBroken;
 
   if (propertyName == "Tile State")

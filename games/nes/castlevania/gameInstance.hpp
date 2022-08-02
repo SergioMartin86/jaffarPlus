@@ -67,6 +67,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* gameSubMode;
   uint8_t* stageTimer;
   uint8_t* isLagFrame;
+  uint8_t* isPaused;
   uint8_t* currentStage;
   uint8_t* currentSubStage;
   uint8_t* simonLives;
@@ -98,10 +99,18 @@ class GameInstance : public GameInstanceBase
   uint8_t* enemy1PosX;
   uint8_t* enemy2PosX;
   uint8_t* enemy3PosX;
+  uint8_t* enemy4PosX;
+  uint8_t* enemy5PosX;
+  uint8_t* enemy6PosX;
+  uint8_t* enemy7PosX;
   uint8_t* enemy0State;
   uint8_t* enemy1State;
   uint8_t* enemy2State;
   uint8_t* enemy3State;
+  uint8_t* enemy4State;
+  uint8_t* enemy5State;
+  uint8_t* enemy6State;
+  uint8_t* enemy7State;
   uint8_t* batMedusa1State;
   uint8_t* batMedusa1PosX;
   uint8_t* batMedusa1PosY;
@@ -124,6 +133,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* holyWaterFire1Timer;
   uint8_t* screenMotionX;
   uint8_t* skeletonPosX;
+  uint8_t* skeletonPosX2;
   uint8_t* skeletonBone1PosY;
   uint8_t* skeletonBone2PosY;
   uint8_t* skeletonBone3PosY;

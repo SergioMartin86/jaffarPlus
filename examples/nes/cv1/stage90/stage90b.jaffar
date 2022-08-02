@@ -23,7 +23,7 @@
    
    "Tile Hash Includes": [ "0x06C7" ],
    "Enable Pause": false,
-   "Timer Tolerance": 3
+   "Timer Tolerance": 6
   },
   
   "Jaffar Configuration": 
