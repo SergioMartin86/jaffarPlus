@@ -250,7 +250,7 @@ uint64_t GameInstance::computeHash() const
   if (hashIncludes.contains("Freeze Time Timer"))  hash.Update(*freezeTimeTimer == 0 ? 0 : (*freezeTimeTimer % 4) + 1);
 
   // Candelabra states go from 0x191 to 0x1A8
-  if (hashIncludes.contains("Candelabra States")) for (size_t i = 0x0191; i < 0x1A8; i++) hash.Update(_emu->_baseMem[i]);
+  if (hashIncludes.contains("Candelabra States")) for (size_t i = 0x0191; i < 0x1A9; i++) hash.Update(_emu->_baseMem[i]);
 
   // Only hash boss position if active
   if (*bossIsActive > 0)
@@ -307,7 +307,7 @@ void GameInstance::updateDerivedValues()
  //while ( (advanceCounter < 1024) && (*gameMode == 8) ) { _emu->advanceState(0); advanceCounter++; }
 
  isCandelabrumBroken = 0;
- for (size_t i = 0x0191; i < 0x1A8; i++) if (_emu->_baseMem[i] > 0) isCandelabrumBroken = 1;
+ for (size_t i = 0x0191; i < 0x1A9; i++) if (_emu->_baseMem[i] > 0) isCandelabrumBroken = 1;
 }
 
 // Function to determine the current possible moves
@@ -546,7 +546,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Enemy X:                %02u, %02u, %02u, %02u, %02u, %02u, %02u\n", *enemy1PosX, *enemy2PosX, *enemy3PosX, *enemy4PosX, *enemy5PosX, *enemy6PosX, *enemy7PosX);
 
   LOG("[Jaffar]  + Candelabra States: ");
-    for (size_t i = 0x0191; i < 0x1A8; i++) LOG("%d", _emu->_baseMem[i] > 0 ? 1 : 0);
+    for (size_t i = 0x0191; i < 0x1A9; i++) LOG("%d", _emu->_baseMem[i] > 0 ? 1 : 0);
   LOG("\n");
 
   LOG("[Jaffar]  + Rule Status: ");

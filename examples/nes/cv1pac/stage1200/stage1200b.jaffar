@@ -4,7 +4,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../castlevania_prg0.nes",
-    "State File": "stage0900c.state"
+    "State File": "stage1200b.state"
   },
   
    "State Configuration": 
@@ -17,9 +17,9 @@
   {
     "Hash Includes": [ 
   ],
-   "Tile Hash Includes": [ "0x06C7" ],
-   "Enable Pause": false,
-   "Timer Tolerance": 4,
+   "Tile Hash Includes": [  ],
+   "Enable Pause": true,
+   "Timer Tolerance": 8,
    "Allow B": true
   },
   
@@ -31,8 +31,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 20000,
-     "Max Size Upper Bound (Mb)": 63000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 23000
     },
     
     "Hash Database":
@@ -71,7 +71,8 @@
     "Actions":
     [
       { "Type": "Set Boss State Timer Magnet", "Intensity": -100.0 },
-      { "Type": "Set Simon Vertical Magnet", "Intensity": 0.0001, "Center": 255, "Min": 0, "Max": 255 }
+      { "Type": "Set Boss/Simon Distance Magnet", "Intensity": -1.0 },
+      { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 997, "Min": 0, "Max": 6000 }
     ]
    },
    
@@ -88,8 +89,9 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 100000 },
-     { "Type": "Set Boss Health Magnet", "Intensity": -20.0 },
-     { "Type": "Set Mummies Distance Magnet", "Intensity": -1.0 }
+     { "Type": "Set Boss Health Magnet", "Intensity": -2000.0 },
+     { "Type": "Set Boss/Simon Distance Magnet", "Intensity": -1.0 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 997, "Min": 0, "Max": 6000 }
     ]
    },
    
@@ -195,22 +197,6 @@
     "Conditions":
     [
       { "Property": "Bat / Medusa 5 State", "Op": "==", "Value": 38 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1109,
-    "Description": "Fail on losing tile",
-    "Conditions":
-    [
-      { "Property": "Tile State", "Position": "0x06C7", "Op": "!=", "Value": 105 }
     ],
     
     "Satisfies": [ ],
