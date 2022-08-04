@@ -257,7 +257,7 @@ uint64_t GameInstance::computeHash() const
   {
    hash.Update(*bossPosX);
    hash.Update(*bossPosY);
-   hash.Update(*mummy2PosX);
+//   hash.Update(*mummy2PosX);
   }
 
   // Only compute timer if not paused

@@ -16,10 +16,11 @@
   "Game Configuration": 
   {
     "Hash Includes": [ 
+    "Detailed Enemy State"
   ],
    "Tile Hash Includes": [  ],
-   "Enable Pause": true,
-   "Timer Tolerance": 8,
+   "Enable Pause": false,
+   "Timer Tolerance": 2,
    "Allow B": true
   },
   
@@ -32,7 +33,7 @@
     "State Database":
     {
      "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 23000
+     "Max Size Upper Bound (Mb)": 30000
     },
     
     "Hash Database":
