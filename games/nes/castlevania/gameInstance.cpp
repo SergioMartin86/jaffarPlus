@@ -189,6 +189,7 @@ uint64_t GameInstance::computeHash() const
   if (hashIncludes.contains("Enemy 1 Pos X")) hash.Update(*enemy1PosX);
   if (hashIncludes.contains("Enemy 2 Pos X")) hash.Update(*enemy2PosX);
   if (hashIncludes.contains("Enemy 3 Pos X")) hash.Update(*enemy3PosX);
+  if (hashIncludes.contains("Enemy 4 Pos X")) hash.Update(*enemy3PosX);
   if (hashIncludes.contains("Enemy 1 State")) hash.Update(*enemy1State);
   if (hashIncludes.contains("Enemy 2 State")) hash.Update(*enemy2State);
   if (hashIncludes.contains("Enemy 3 State")) hash.Update(*enemy3State);
@@ -436,11 +437,17 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.bossVerticalMagnet.intensity * -diff;
 
   // Evaluating skeleton reward on pos x
-  boundedValue = (float)*skeletonPosX2;
+  boundedValue = (float)*skeletonPosX;
   boundedValue = std::min(boundedValue, magnets.skeletonHorizontalMagnet.max);
   boundedValue = std::max(boundedValue, magnets.skeletonHorizontalMagnet.min);
   diff = std::abs(magnets.skeletonHorizontalMagnet.center - boundedValue);
   reward += magnets.skeletonHorizontalMagnet.intensity * -diff;
+
+  boundedValue = (float)*skeletonPosX2;
+  boundedValue = std::min(boundedValue, magnets.skeleton2HorizontalMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.skeleton2HorizontalMagnet.min);
+  diff = std::abs(magnets.skeleton2HorizontalMagnet.center - boundedValue);
+  reward += magnets.skeleton2HorizontalMagnet.intensity * -diff;
 
   // Evaluating subweapon hit count magnet
   boundedValue = (float)*subweaponHitCount;
@@ -534,7 +541,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Boss Is Active:         %02u (%02u)\n", *bossIsActive, *bossStateTimer);
 //  LOG("[Jaffar]  + Enemy S/X:              (%02u, %02u), (%02u, %02u), (%02u, %02u), %02u, %02u \n", *enemy1State, *enemy1PosX, *enemy2State, *enemy2PosX, *enemy3State, *enemy3PosX, *enemy4State, *enemy5State);
   LOG("[Jaffar]  + Bat / Medusa S/X/Y:     (%02u, %02u, %02u, A: %04u) (%02u, %02u, %02u) (%02u, %02u, %02u) \n", *batMedusa1State, *batMedusa1PosX, *batMedusa1PosY, batMedusa1AbsolutePosX, *batMedusa2State, *batMedusa2PosX, *batMedusa2PosY, *batMedusa3State, *batMedusa3PosX, *batMedusa3PosY);
-  LOG("[Jaffar]  + Skeleton X/X2/B1/B2/B3:    %02u, %02u, %02u, %02u\n", *skeletonPosX, *skeletonPosX2, *skeletonBone1PosY, *skeletonBone2PosY, *skeletonBone3PosY);
+  LOG("[Jaffar]  + Skeleton X/X2/B1/B2/B3:  %02u,  %02u, %02u, %02u, %02u\n", *skeletonPosX, *skeletonPosX2, *skeletonBone1PosY, *skeletonBone2PosY, *skeletonBone3PosY);
   LOG("[Jaffar]  + Grab Item Timer:        %02u\n", *grabItemTimer);
   LOG("[Jaffar]  + Freeze Time Timer:      %02u\n", *freezeTimeTimer);
   LOG("[Jaffar]  + Item Drop Counter:      %02u\n", *itemDropCounter);
@@ -564,6 +571,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   if (std::abs(magnets.batMedusaHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Bat / Medusa Horizontal Magnet - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.batMedusaHorizontalMagnet.intensity, magnets.batMedusaHorizontalMagnet.center, magnets.batMedusaHorizontalMagnet.min, magnets.batMedusaHorizontalMagnet.max);
   if (std::abs(magnets.batMedusaVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Bat / Medusa Vertical Magnet   - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.batMedusaVerticalMagnet.intensity, magnets.batMedusaVerticalMagnet.center, magnets.batMedusaVerticalMagnet.min, magnets.batMedusaVerticalMagnet.max);
   if (std::abs(magnets.skeletonHorizontalMagnet.intensity) > 0.0f)  LOG("[Jaffar]  + Skeleton Horizontal Magnet     - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.skeletonHorizontalMagnet.intensity, magnets.skeletonHorizontalMagnet.center, magnets.skeletonHorizontalMagnet.min, magnets.skeletonHorizontalMagnet.max);
+  if (std::abs(magnets.skeleton2HorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Skeleton 2 Horizontal Magnet   - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.skeleton2HorizontalMagnet.intensity, magnets.skeleton2HorizontalMagnet.center, magnets.skeleton2HorizontalMagnet.min, magnets.skeleton2HorizontalMagnet.max);
   if (std::abs(magnets.subweaponHitCountMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Subweapon Hit Count Magnet     - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.subweaponHitCountMagnet.intensity, magnets.subweaponHitCountMagnet.center, magnets.subweaponHitCountMagnet.min, magnets.subweaponHitCountMagnet.max);
   if (std::abs(magnets.simonHeartMagnet) > 0.0f)                    LOG("[Jaffar]  + Simon Heart Magnet             - Intensity: %.5f\n", magnets.simonHeartMagnet);
   if (std::abs(magnets.freezeTimeMagnet) > 0.0f)                    LOG("[Jaffar]  + Freeze Time Magnet             - Intensity: %.5f\n", magnets.freezeTimeMagnet);

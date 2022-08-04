@@ -42,6 +42,7 @@ struct magnetSet_t {
  genericMagnet_t batMedusaHorizontalMagnet;
  genericMagnet_t batMedusaVerticalMagnet;
  genericMagnet_t skeletonHorizontalMagnet;
+ genericMagnet_t skeleton2HorizontalMagnet;
  genericMagnet_t subweaponHitCountMagnet;
  float simonHeartMagnet = 0.0;
  float freezeTimeMagnet = 0.0;
