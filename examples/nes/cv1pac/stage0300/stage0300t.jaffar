@@ -1,0 +1,167 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../castlevania_prg0.nes",
+    "State File": "stage0300t.state"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 2048,
+    "Max Move Count": 800
+  },
+  
+  "Game Configuration": 
+  {
+    "Hash Includes": [ 
+   ],
+   
+   "Tile Hash Includes": [ "0x0253" ],
+   "Enable Pause": true,
+   "Timer Tolerance": 16,
+   "Allow B": true
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+    "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+    {
+    "Label": 1001,
+    "Description": "Setting magnet to make Simon go to the right",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Description": "Set boss magnets when it becomes active",
+    "Conditions":
+    [
+      { "Property": "Boss State Timer", "Op": ">", "Value":  1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 500000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 712, "Min": 0, "Max": 1000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Center": 136, "Min": 0, "Max":  255 },
+     { "Type": "Set Simon Stair Mode Magnet", "Mode": 0, "Reward": 10000.0 },
+     { "Type": "Set Boss Horizontal Magnet", "Intensity": 20.0, "Center": 180, "Min": 0, "Max": 255 },
+     { "Type": "Set Boss Vertical Magnet", "Intensity": 20.0, "Center": 117, "Min": 0, "Max":  255 },
+     { "Type": "Set Boss State Timer Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Boss Health Magnet", "Intensity": -1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Description": "Reward Opening Door",
+    "Conditions":
+    [
+      { "Property": "Boss Health", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions": 
+    [
+      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1900,
+    "Description": "Fail on losing tile",
+    "Conditions":
+    [
+      { "Property": "Tile State", "Position": "0x0253", "Op": "==", "Value": 143 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1902,
+    "Description": "Fail on losing tile",
+    "Conditions":
+    [
+      { "Property": "Tile State", "Position": "0x0253", "Op": "==", "Value": 107 },
+      { "Property": "Simon Position X", "Op": ">", "Value":  440 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1901,
+    "Description": "Fail on losing tile",
+    "Conditions":
+    [
+      { "Property": "Is Candelabrum Broken", "Op": "==", "Value": 1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

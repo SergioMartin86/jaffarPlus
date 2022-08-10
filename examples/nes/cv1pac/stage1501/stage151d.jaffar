@@ -1,0 +1,153 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../castlevania_prg0.nes",
+    "State File": "stage151e.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 1200,
+    "Max Move Count": 150
+  },
+  
+  "Game Configuration": 
+  {
+  
+    "Hash Includes":
+   [
+    "Simon Heart Count",
+    "Subweapon 1 Position X",
+    "Subweapon 2 Position X",
+    "Subweapon 3 Position X"
+   ],
+   
+   "Tile Hash Includes": [ ],
+   "Enable Pause": false,
+   "Timer Tolerance": 1
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 100000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 2000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+   "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1004,
+    "Description": "Reward activating boss",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Boss Health Magnet", "Intensity": -1.0 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 0.001, "Center": 180, "Min": 0, "Max": 6000 },
+     { "Type": "Set Boss Horizontal Magnet", "Intensity": 0.001, "Center": 225, "Min": 0, "Max": 255 },
+     { "Type": "Set Simon Heart Magnet", "Intensity": -0.0001 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "Reward activating boss",
+    "Conditions":
+    [
+     { "Property": "Boss Health", "Op": "<=", "Value":  20 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000000.0 },
+     { "Type": "Set Boss Health Magnet", "Intensity": -1.0 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 0.001, "Center": 210, "Min": 0, "Max": 6000 },
+     { "Type": "Set Boss Horizontal Magnet", "Intensity": 0.0001, "Center": 225, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1009,
+    "Description": "Win on killing death",
+    "Conditions":
+    [
+      { "Property": "Boss Health", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1907,
+    "Description": "Fail on Simon death",
+    "Conditions":
+    [
+      { "Property": "Simon Health", "Op": "<", "Value":  32 },
+      { "Property": "Boss Health", "Op": ">", "Value":  20 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1908,
+    "Description": "Fail on Simon death",
+    "Conditions":
+    [
+      { "Property": "Simon Health", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

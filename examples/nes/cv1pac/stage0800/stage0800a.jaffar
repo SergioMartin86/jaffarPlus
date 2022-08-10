@@ -4,44 +4,36 @@
   "Emulator Configuration": 
   {
     "Rom File": "../castlevania_prg0.nes",
-    "State File": "stage1701a.state"
+    "State File": "stage0800a.state"
   },
   
-  "State Configuration": 
-  { 
-    "Max Difference Count": 1400,
-    "Max Move Count": 1000
+   "State Configuration": 
+  {
+    "Max Difference Count": 1000,
+    "Max Move Count": 900
   },
   
   "Game Configuration": 
   {
     "Hash Includes": [ 
-     "Skeleton Position X",
-     "Skeleton Position X2",
-     "Skeleton Bone 1 Pos Y",
-     "Skeleton Bone 2 Pos Y",
-     "Skeleton Bone 3 Pos Y",
-     "Bat / Medusa 1 State",
-     "Bat / Medusa 2 State",
-     "Bat / Medusa 3 State",
-     "Bat / Medusa 1 Pos X",
-     "Bat / Medusa 2 Pos X",
-     "Bat / Medusa 3 Pos X",
-     "Bat / Medusa 1 Pos Y",
-     "Bat / Medusa 2 Pos Y",
-     "Bat / Medusa 3 Pos Y",
-     "Enemy 1 Pos X",
-     "Enemy 2 Pos X",
-     "Enemy 3 Pos X",
-     "Enemy 1 State",
-     "Enemy 2 State",
-     "Enemy 3 State"
-   ],
-   
-   "Tile Hash Includes": [ "0x0603", "0x019F" ],
+               "Bat / Medusa 1 Pos X",
+               "Bat / Medusa 1 Pos Y",
+               "Bat / Medusa 1 State",
+               "Bat / Medusa 2 Pos X",
+               "Bat / Medusa 2 Pos Y",
+               "Bat / Medusa 2 State",
+               "Bat / Medusa 3 Pos X",
+               "Bat / Medusa 3 Pos Y",
+               "Bat / Medusa 3 State",
+               "Skeleton Position X",
+               "Skeleton Bone 1 Pos Y",
+               "Skeleton Bone 2 Pos Y",
+               "Skeleton Bone 3 Pos Y"
+  ],
+   "Tile Hash Includes": [  ],
    "Enable Pause": true,
    "Timer Tolerance": 4,
-      "Allow B": true
+   "Allow B": true
   },
   
   "Jaffar Configuration": 
@@ -49,10 +41,11 @@
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
+    
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 20000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 22000
     },
     
     "Hash Database":
@@ -90,10 +83,8 @@
     
     "Actions":
     [
-     { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 0.1, "Center": 718, "Min": 0, "Max": 6000 },
-     { "Type": "Set Skeleton Horizontal Magnet", "Intensity": 0.1, "Center": 186, "Min": 0, "Max": 255 },
-     { "Type": "Set Skeleton 2 Horizontal Magnet", "Intensity": 0.001, "Center": 255, "Min": 0, "Max": 255 }
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 637, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.1, "Center": 84, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -102,121 +93,74 @@
     "Description": "Reward getting up",
     "Conditions":
     [
-      { "Property": "Simon Position Y", "Op": "<=", "Value":  116 }
+      { "Property": "Simon Position Y", "Op": "<=", "Value":  84 }
     ],
     
     "Satisfies": [  ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 50000.0 },
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.05, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Skeleton 2 Horizontal Magnet", "Intensity": 0.01, "Center": 255, "Min": 0, "Max": 255 }
+     { "Type": "Add Reward", "Value": 50000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 611, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 1000.0, "Mode": 0 }
     ]
    },
    
    {
-    "Label": 1004,
-    "Description": "Reaching Pos",
+    "Label": 1009,
+    "Description": "Win on Stair Mode",
     "Conditions":
     [
-      { "Property": "Simon Position X", "Op": "<", "Value":  550 },
-      { "Property": "Simon Position Y", "Op": "<", "Value":  90 }
+      { "Property": "Simon Stair Mode", "Op": "==", "Value":  0 },
+      { "Property": "Simon Position Y", "Op": "<", "Value":  80 }
     ],
     
     "Satisfies": [ 1003 ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 50000.0 },
-     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Simon Vertical Magnet", "Intensity": 0.05, "Center": 0, "Min": 0, "Max": 255 }
+     { "Type": "Add Reward", "Value": 50000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 611, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 1000.0, "Mode": 0 }
     ]
    },
    
    {
-    "Label": 1008,
-    "Description": "Win on exiting",
+    "Label": 1010,
+    "Description": "Win on Stair Mode",
     "Conditions":
     [
-      { "Property": "Game Mode", "Op": "==", "Value":  8 }
+      { "Property": "Current SubStage", "Op": "==", "Value":  1 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 1009 ],
     
     "Actions":
     [
-     { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 1024,
-    "Description": "Fail on losing tile",
-    "Conditions":
-    [
-      { "Property": "Tile State", "Position": "0x0603", "Op": "!=", "Value": 104 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1025,
-    "Description": "Fail on losing tile",
-    "Conditions":
-    [
-      { "Property": "Tile State", "Position": "0x019F", "Op": "!=", "Value": 97 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1900,
-    "Description": "Fail on losing tile",
-    "Conditions":
-    [
-      { "Property": "Simon Health", "Op": "<", "Value": 32 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
+       { "Type": "Trigger Win" }
     ]
    },
    
    {
     "Label": 1108,
-    "Description": "Punish on coming back",
+    "Description": "Punish on stair mode below skip",
     "Conditions":
     [
-      { "Property": "Simon Facing Direction", "Op": "==", "Value":  1 },
-      { "Property": "Simon Position Y", "Op": ">", "Value":  200 }
+      { "Property": "Simon Stair Mode", "Op": "==", "Value":  0 },
+      { "Property": "Simon Position Y", "Op": ">", "Value":  120 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Trigger Fail" }
+     { "Type": "Add Reward", "Value": -50000.0 }
     ]
    },
    
-     {
+   
+    {
     "Label": 1901,
     "Description": "Fail on losing tile",
     "Conditions":
@@ -439,10 +383,5 @@
      { "Type": "Trigger Fail" }
     ]
    }
-   
-   
-   
-   
-   
   ]  
 }

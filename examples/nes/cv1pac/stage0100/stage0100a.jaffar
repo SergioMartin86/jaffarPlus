@@ -1,0 +1,171 @@
+{
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../castlevania_prg0.nes",
+    "State File": "stage0100a.state"
+  },
+  
+  "State Configuration": 
+  {
+    "Max Difference Count": 2048,
+    "Max Move Count": 1700
+  },
+  
+  "Game Configuration": 
+  {
+    "Hash Includes": [ 
+     "Bat / Medusa 1 Pos X",
+     "Bat / Medusa 2 Pos X"
+   ],
+   
+   "Tile Hash Includes": [ "0x01C7" ],
+   "Enable Pause": false,
+   "Timer Tolerance": 6
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 40000,
+     "Max Size Upper Bound (Mb)": 200000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+    "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+    {
+    "Label": 1001,
+    "Description": "Setting magnet to make Simon go to the right",
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 1295, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 0.0, "Mode": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    "Description": "Reward getting into stairs at the end of stage 1",
+    "Conditions":
+    [
+      { "Property": "Simon Position X", "Op": ">", "Value":  1290 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Vertical Magnet", "Intensity": 10.0, "Center": 0, "Min": 0, "Max":  255 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 1000.0, "Mode": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "Reward getting upstairs",
+    "Conditions":
+    [
+      { "Property": "Simon Position Y", "Op": "==", "Value":  96 },
+      { "Property": "Simon Position X", "Op": ">", "Value":  1290 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Simon Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Simon Stair Mode Magnet", "Reward": 0.0, "Mode": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Description": "Reward Opening Door",
+    "Conditions":
+    [
+      { "Property": "Game Mode", "Op": "==", "Value":  8 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions": 
+    [
+      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1900,
+    "Description": "Fail on losing tile",
+    "Conditions":
+    [
+      { "Property": "Tile State", "Position": "0x01C7", "Op": "!=", "Value": 8 },
+      { "Property": "Simon Position X", "Op": ">", "Value":  1300 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1901,
+    "Description": "Reward Opening Door",
+    "Conditions":
+    [
+      { "Property": "Simon Health", "Op": "<", "Value":  16 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions": 
+    [
+      { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}
