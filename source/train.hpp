@@ -24,10 +24,10 @@ using hashSet_t = HashSetT<uint64_t>;
 class Train
 {
   public:
-  Train(int argc, char *argv[]);
+  Train(const nlohmann::json& config);
+  ~Train();
   void run();
-
-  private:
+  void reset();
 
   // Configuration
   nlohmann::json _config;

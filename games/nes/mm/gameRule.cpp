@@ -50,9 +50,9 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Win Flag") return dt_uint8;
-  if (propertyName == "Marble Position X") return dt_uint16;
-  if (propertyName == "Marble Position Y") return dt_uint16;
-  if (propertyName == "Marble Position Z") return dt_uint8;
+  if (propertyName == "Marble Position X") return dt_float;
+  if (propertyName == "Marble Position Y") return dt_float;
+  if (propertyName == "Marble Position Z") return dt_float;
   if (propertyName == "Marble Velocity X") return dt_int8;
   if (propertyName == "Marble Velocity Y") return dt_int8;
   if (propertyName == "Marble Dead Flag") return dt_uint8;
@@ -70,7 +70,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Win Flag") return gameInstance->winFlag;
   if (propertyName == "Marble Position X") return &gameInstance->marblePosX;
   if (propertyName == "Marble Position Y") return &gameInstance->marblePosY;
-  if (propertyName == "Marble Position Z") return gameInstance->marblePosZ;
+  if (propertyName == "Marble Position Z") return &gameInstance->marblePosZ;
   if (propertyName == "Marble Velocity X") return gameInstance->marbleVelX;
   if (propertyName == "Marble Velocity Y") return gameInstance->marbleVelY;
   if (propertyName == "Marble Dead Flag") return gameInstance->marbleDeadFlag;

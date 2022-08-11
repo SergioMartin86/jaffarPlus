@@ -656,65 +656,13 @@ void Train::printTrainStatus()
   #endif
 }
 
-Train::Train(int argc, char *argv[])
+Train::Train(const nlohmann::json& config)
 {
+  // Creating copy of the configuration
+  _config = config;
+
   // Getting number of openMP threads
   _threadCount = omp_get_max_threads();
-
-  // Profiling information
-  _searchTotalTime = 0.0;
-  _currentStepTime = 0.0;
-
-  // Initializing counters
-  _stepBaseStatesProcessedCounter = 0;
-  _stepNewStatesProcessedCounter = 0;
-  _totalStatesProcessedCounter = 0;
-  _stepMaxStatesInMemory = 0;
-  _totalMaxStatesInMemory = 0;
-  _newCollisionCounter = 0;
-  _hashEntriesTotal = 0;
-  _hashEntriesStep = 0;
-  _hashCurAge = 0;
-  _stepNewStateRatio = 0.0;
-  _maxNewStateRatio = 0.0;
-  _maxNewStateRatioStep = 0;
-
-  // Initializing step timers
-  _stepHashCalculationTime = 0;
-  _stepHashCheckingTime = 0;
-  _stepStateAdvanceTime = 0;
-  _stepStateDeserializationTime = 0;
-  _stepStateEncodingTime = 0;
-  _stepStateDecodingTime = 0;
-  _stepStateCreationTime = 0;
-  _stepStateDBSortingTime = 0;
-  _stepStateEvaluationTime = 0;
-  _stepHashFilteringTime = 0;
-
-  // Setting starting step
-  _currentStep = 0;
-
-  // Flag to determine if win state was found
-  _winStateFound = false;
-
-  // Parsing command line arguments
-  argparse::ArgumentParser program("jaffar", "2.0");
-
-  program.add_argument("configFile")
-    .help("path to the Jaffar configuration script (.jaffar) file to run.")
-    .required();
-
-  // Try to parse arguments
-  try { program.parse_args(argc, argv);  }
-  catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
-
-  // Parsing _config file
-  std::string configFile = program.get<std::string>("configFile");
-  std::string configFileString;
-  auto status = loadStringFromFile(configFileString, configFile.c_str());
-  if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar _config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
-  try { _config = nlohmann::json::parse(configFileString); }
-  catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
   // Parsing Jaffar configuration
   if (isDefined(_config, "Jaffar Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Jaffar Configuration' key.\n");
@@ -765,8 +713,6 @@ Train::Train(int argc, char *argv[])
   // Checking whether it contains the Game configuration field
   if (isDefined(_config, "Game Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Game Configuration' key.\n");
 
-  printf("[Jaffar] Initializing Game...\n");
-
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
 
@@ -797,8 +743,6 @@ Train::Train(int argc, char *argv[])
   // Parsing state configuration
   State::parseConfiguration(_config);
 
-  printf("[Jaffar] Allocating Storage...\n");
-
   // Calculating max DB size bounds
   _maxDatabaseSizeLowerBound = floor(((double)_maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
   _maxDatabaseSizeUpperBound = floor(((double)_maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
@@ -806,62 +750,133 @@ Train::Train(int argc, char *argv[])
   // Pre-allocating and touching State containers
   for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push((State*)calloc(1, sizeof(State)));
 
-  // Setting initial values
-  _hasFinalized = false;
-  _hashCollisions = 0;
-
-  // Setting win status
-  _winStateFound = false;
-
-  // Computing initial hash
-  const auto hash = _gameInstances[0]->computeHash();
-
-  auto firstState = new State;
-
-  uint8_t gameState[_STATE_DATA_SIZE_TRAIN];
-  _gameInstances[0]->popState(gameState);
-
-  // Storing initial state as base for differential comparison
-  memcpy(_initialStateData, gameState, _STATE_DATA_SIZE_TRAIN);
-  memcpy(_referenceStateData, gameState, _STATE_DATA_SIZE_TRAIN);
-  firstState->computeStateDifference(_referenceStateData, gameState);
-
-  // Storing initial state difference
-  for (size_t i = 0; i < _ruleCount; i++) firstState->rulesStatus[i] = false;
-
-  // Evaluating Rules on initial state
-  _gameInstances[0]->evaluateRules(firstState->rulesStatus);
-
-  // Evaluating Score on initial state
-  firstState->reward = _gameInstances[0]->getStateReward(firstState->rulesStatus);
-
-  // Creating hash databases and registering hash for initial state
-  _hashCurDB = std::make_unique<hashSet_t>();
-  _hashCurDB->reserve(hashEntriesFromSize(_hashSizeUpperBound));
-  for (ssize_t i = 0; i < _hashDBCount-1; i++)
-  {
-   _hashPastDBs.push_back(std::make_unique<hashSet_t>());
-   _hashDBAges.push_back(0);
-  }
-  _hashCurDB->insert(hash);
+  // Storing initial state
+  _gameInstances[0]->popState(_initialStateData);
 
   // Creating storage for win, best and worst states
   _winState = new State;
   _bestState = new State;
   _worstState = new State;
 
-  // Copying initial state into the best/worst state
-  memcpy(_bestState, firstState, sizeof(State));
-  memcpy(_worstState, firstState, sizeof(State));
-
-  // Adding state to the initial database
-  _databaseSize = 1;
-  _stateDB.push_back(firstState);
-
   // Initializing show thread
   if (_outputEnabled)
    if (pthread_create(&_showThreadId, NULL, showThreadFunction, this) != 0)
     EXIT_WITH_ERROR("[ERROR] Could not create show thread.\n");
+}
+
+void Train::reset()
+{
+ // Profiling information
+ _searchTotalTime = 0.0;
+ _currentStepTime = 0.0;
+
+ // Initializing counters
+ _stepBaseStatesProcessedCounter = 0;
+ _stepNewStatesProcessedCounter = 0;
+ _totalStatesProcessedCounter = 0;
+ _stepMaxStatesInMemory = 0;
+ _totalMaxStatesInMemory = 0;
+ _newCollisionCounter = 0;
+ _hashEntriesTotal = 0;
+ _hashEntriesStep = 0;
+ _hashCurAge = 0;
+ _stepNewStateRatio = 0.0;
+ _maxNewStateRatio = 0.0;
+ _maxNewStateRatioStep = 0;
+
+ // Initializing step timers
+ _stepHashCalculationTime = 0;
+ _stepHashCheckingTime = 0;
+ _stepStateAdvanceTime = 0;
+ _stepStateDeserializationTime = 0;
+ _stepStateEncodingTime = 0;
+ _stepStateDecodingTime = 0;
+ _stepStateCreationTime = 0;
+ _stepStateDBSortingTime = 0;
+ _stepStateEvaluationTime = 0;
+ _stepHashFilteringTime = 0;
+
+ // Setting starting step
+ _currentStep = 0;
+
+ // Flag to determine if win state was found
+ _winStateFound = false;
+
+ // Clearing state database
+ limitStateDatabase(_stateDB, 0);
+
+ // Setting initial values
+ _hasFinalized = false;
+ _hashCollisions = 0;
+
+ // Setting win status
+ _winStateFound = false;
+
+ // Computing initial hash
+ const auto hash = _gameInstances[0]->computeHash();
+
+ auto firstState = new State;
+ _gameInstances[0]->pushState(_initialStateData);
+
+ // Storing initial state as base for differential comparison
+ memcpy(_referenceStateData, _initialStateData, _STATE_DATA_SIZE_TRAIN);
+ firstState->computeStateDifference(_referenceStateData, _initialStateData);
+
+ // Storing initial state difference
+ for (size_t i = 0; i < _ruleCount; i++) firstState->rulesStatus[i] = false;
+
+ // Evaluating Rules on initial state
+ _gameInstances[0]->evaluateRules(firstState->rulesStatus);
+
+ // Evaluating Score on initial state
+ firstState->reward = _gameInstances[0]->getStateReward(firstState->rulesStatus);
+
+ // Creating hash databases and registering hash for initial state
+ _hashCurDB = std::make_unique<hashSet_t>();
+ _hashCurDB->reserve(hashEntriesFromSize(_hashSizeUpperBound));
+ for (ssize_t i = 0; i < _hashDBCount-1; i++)
+ {
+  _hashPastDBs.push_back(std::make_unique<hashSet_t>());
+  _hashDBAges.push_back(0);
+ }
+ _hashCurDB->insert(hash);
+
+ // Copying initial state into the best/worst state
+ memcpy(_bestState, firstState, sizeof(State));
+ memcpy(_worstState, firstState, sizeof(State));
+
+ // Adding state to the initial database
+ _databaseSize = 1;
+ _stateDB.clear();
+ _stateDB.push_back(firstState);
+}
+
+Train::~Train()
+{
+  delete _winState;
+  delete _bestState;
+  delete _worstState;
+
+  limitStateDatabase(_stateDB, 0);
+  while (_freeStateQueue.empty() == false)
+  {
+   free(_freeStateQueue.front());
+   _freeStateQueue.pop();
+  }
+
+  // Initializing thread-specific instances
+  #pragma omp parallel
+  {
+   // Getting thread id
+   int threadId = omp_get_thread_num();
+
+   // Doing this as a critical section so not all threads try to access files at the same time
+   #pragma omp critical
+   {
+    free(_gameInstances[threadId]->_emu);
+    free(_gameInstances[threadId]);
+   }
+  }
 }
 
 // Functions for the show thread
@@ -924,10 +939,37 @@ void Train::showSavingLoop()
   }
 }
 
+#ifndef DISABLE_MAIN
+
 int main(int argc, char *argv[])
 {
-  Train train(argc, argv);
+ // Parsing command line arguments
+ argparse::ArgumentParser program("jaffar", "2.0");
+
+ program.add_argument("configFile")
+   .help("path to the Jaffar configuration script (.jaffar) file to run.")
+   .required();
+
+ // Try to parse arguments
+ try { program.parse_args(argc, argv);  }
+ catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
+
+ // Parsing _config file
+ std::string configFile = program.get<std::string>("configFile");
+ std::string configFileString;
+ auto status = loadStringFromFile(configFileString, configFile.c_str());
+ if (status == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar _config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
+ nlohmann::json config;
+ try { config = nlohmann::json::parse(configFileString); }
+ catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
+
+ printf("[Jaffar] Initializing Jaffar...\n");
+ Train train(config);
+ train.reset();
 
   // Running Search
-  train.run();
+ printf("[Jaffar] Running...\n");
+ train.run();
 }
+
+#endif

@@ -33,17 +33,20 @@ class GameInstance : public GameInstanceBase
   uint8_t*  marbleFlags;
   uint8_t*  marblePosX1;
   uint8_t*  marblePosX2;
+  uint8_t*  marblePosX3;
   uint8_t*  marblePosY1;
   uint8_t*  marblePosY2;
-  uint8_t*  marblePosZ;
+  uint8_t*  marblePosY3;
+  uint8_t*  marblePosZ1;
   uint8_t*  marbleAirtime;
   int8_t*   marbleVelX;
   int8_t*   marbleVelY;
   uint8_t*  marbleDeadFlag;
   uint8_t*  marbleSurfaceAngle;
 
-  uint16_t  marblePosX;
-  uint16_t  marblePosY;
+  float  marblePosX;
+  float  marblePosY;
+  float  marblePosZ;
 
   std::set<std::string> hashIncludes;
   uint8_t timerTolerance;

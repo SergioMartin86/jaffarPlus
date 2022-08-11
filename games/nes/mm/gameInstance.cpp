@@ -11,11 +11,13 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   winFlag               = (uint8_t*)   &_emu->_baseMem[0x008B];
   marbleState           = (uint8_t*)   &_emu->_baseMem[0x0019];
   marbleFlags           = (uint8_t*)   &_emu->_baseMem[0x0408];
-  marblePosX1           = (uint8_t*)   &_emu->_baseMem[0x0390];
-  marblePosX2           = (uint8_t*)   &_emu->_baseMem[0x0398];
-  marblePosY1           = (uint8_t*)   &_emu->_baseMem[0x03A8];
-  marblePosY2           = (uint8_t*)   &_emu->_baseMem[0x03B0];
-  marblePosZ            = (uint8_t*)   &_emu->_baseMem[0x03C0];
+  marblePosX1           = (uint8_t*)   &_emu->_baseMem[0x0398];
+  marblePosX2           = (uint8_t*)   &_emu->_baseMem[0x0390];
+  marblePosX3           = (uint8_t*)   &_emu->_baseMem[0x0388];
+  marblePosY1           = (uint8_t*)   &_emu->_baseMem[0x03B0];
+  marblePosY2           = (uint8_t*)   &_emu->_baseMem[0x03A8];
+  marblePosY3           = (uint8_t*)   &_emu->_baseMem[0x03A0];
+  marblePosZ1           = (uint8_t*)   &_emu->_baseMem[0x03C0];
   marbleAirtime         = (uint8_t*)   &_emu->_baseMem[0x03C8];
   marbleVelX            = (int8_t*)    &_emu->_baseMem[0x03D0];
   marbleVelY            = (int8_t*)    &_emu->_baseMem[0x03E0];
@@ -29,8 +31,6 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   if (isDefined(config, "Timer Tolerance") == true)  timerTolerance = config["Timer Tolerance"].get<uint8_t>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
-
-
 
   // Initialize derivative values
   updateDerivedValues();
@@ -53,9 +53,11 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*marbleFlags);
   hash.Update(*marblePosX1);
   hash.Update(*marblePosX2);
+  hash.Update(*marblePosX3);
   hash.Update(*marblePosY1);
   hash.Update(*marblePosY2);
-  hash.Update(*marblePosZ);
+  hash.Update(*marblePosY3);
+  hash.Update(*marblePosZ1);
   hash.Update(*marbleAirtime);
   hash.Update(*marbleVelX);
   hash.Update(*marbleVelY);
@@ -70,8 +72,9 @@ uint64_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
- marblePosX = (uint16_t)*marblePosX2 * 256 + (uint16_t)*marblePosX1;
- marblePosY = (uint16_t)*marblePosY2 * 256 + (uint16_t)*marblePosY1;
+ marblePosX = (float)*marblePosX1 * 256.0f + (float)*marblePosX2 + (float)*marblePosX3 / 256.0f;
+ marblePosY = (float)*marblePosY1 * 256.0f + (float)*marblePosY2 + (float)*marblePosY3 / 256.0f;
+ marblePosZ = (float)*marblePosZ1;
 }
 
 // Function to determine the current possible moves
@@ -128,7 +131,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.marbleYMagnet.intensity * -diff;
 
   // Evaluating marble reward on position Z
-  boundedValue = (float)*marblePosZ;
+  boundedValue = (float)marblePosZ;
   boundedValue = std::min(boundedValue, magnets.marbleZMagnet.max);
   boundedValue = std::max(boundedValue, magnets.marbleZMagnet.min);
   diff = std::abs(magnets.marbleZMagnet.center - boundedValue);
@@ -151,9 +154,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
  LOG("[Jaffar]  + Marble State:           %02u\n", *marbleState);
  LOG("[Jaffar]  + Marble Flags:           %02u\n", *marbleFlags);
- LOG("[Jaffar]  + Marble Pos X:           %u, (%02u, %02u)\n", marblePosX, *marblePosX1, *marblePosX2);
- LOG("[Jaffar]  + Marble Pos Y:           %u, (%02u, %02u)\n", marblePosY, *marblePosY1, *marblePosY2);
- LOG("[Jaffar]  + Marble Pos Z:           %02u\n", *marblePosZ);
+ LOG("[Jaffar]  + Marble Pos X:           %f, (%02u, %02u, %02u)\n", marblePosX, *marblePosX1, *marblePosX2, *marblePosX3);
+ LOG("[Jaffar]  + Marble Pos Y:           %f, (%02u, %02u, %02u)\n", marblePosY, *marblePosY1, *marblePosY2, *marblePosY3);
+ LOG("[Jaffar]  + Marble Pos Z:           %f\n", marblePosZ);
  LOG("[Jaffar]  + Marble Vel X:           %02d\n", *marbleVelX);
  LOG("[Jaffar]  + Marble Vel Y:           %02d\n", *marbleVelY);
  LOG("[Jaffar]  + Marble Airtime:         %02u\n", *marbleAirtime);

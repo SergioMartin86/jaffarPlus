@@ -24,7 +24,8 @@ enum datatype_t
   dt_int8 = 3,
   dt_int16 = 4,
   dt_int32 = 5,
-  dt_double = 6
+  dt_double = 6,
+  dt_float = 7
 };
 
 class GameInstance;

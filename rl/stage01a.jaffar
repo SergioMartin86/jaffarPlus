@@ -3,8 +3,8 @@
  
   "Emulator Configuration": 
   {
-    "Rom File": "../mm.nes",
-    "State File": "stage01a.state"
+    "Rom File": "../examples/nes/mm/mm.nes",
+    "State File": "../examples/nes/mm/stage01/stage01a.state"
   },
   
   "State Configuration": 
@@ -27,8 +27,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 100,
-     "Max Size Upper Bound (Mb)": 2000
+     "Max Size Lower Bound (Mb)": 10,
+     "Max Size Upper Bound (Mb)": 200
     },
     
     "Hash Database":
@@ -39,7 +39,7 @@
     
     "Save Intermediate Results":
     {
-     "Enabled": true,
+     "Enabled": false,
      "Frequency (s)": 1.0,
      "Best Solution Path": "/tmp/jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
@@ -50,7 +50,7 @@
   
   "Playback Configuration": 
   {
-   "Overlay Path": "../../../../platforms/nes/overlay"
+   "Overlay Path": "../platforms/nes/overlay"
   },
   
   "Rules":
@@ -77,7 +77,7 @@
     "Description": "Win on reaching goal",
     "Conditions":
     [
-      { "Property": "Win Flag", "Op": "==", "Value":  0 }
+      { "Property": "Marble Flags", "Op": "==", "Value":  27 }
     ],
 
     "Satisfies": [ ],

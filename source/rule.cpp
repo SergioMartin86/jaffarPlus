@@ -49,6 +49,7 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
      if (dtype == dt_int16) condition = new _vCondition<int16_t>(operation, property, NULL, conditionJs["Value"].get<int16_t>());
      if (dtype == dt_int32) condition = new _vCondition<int32_t>(operation, property, NULL, conditionJs["Value"].get<int32_t>());
      if (dtype == dt_double) condition = new _vCondition<double>(operation, property, NULL, conditionJs["Value"].get<double>());
+     if (dtype == dt_float) condition = new _vCondition<float>(operation, property, NULL, conditionJs["Value"].get<float>());
 
      // Adding condition to the list
      _conditions.push_back(condition);
@@ -78,6 +79,7 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
      if (dtype == dt_int16) condition = new _vCondition<int16_t>(operation, property, valuePtr, 0);
      if (dtype == dt_int32) condition = new _vCondition<int32_t>(operation, property, valuePtr, 0);
      if (dtype == dt_double) condition = new _vCondition<double>(operation, property, valuePtr, 0);
+     if (dtype == dt_float) condition = new _vCondition<float>(operation, property, valuePtr, 0);
      _conditions.push_back(condition);
 
      valueFound = true;
