@@ -22,7 +22,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   marbleVelX            = (int8_t*)    &_emu->_baseMem[0x03D0];
   marbleVelY            = (int8_t*)    &_emu->_baseMem[0x03E0];
   marbleDeadFlag        = (uint8_t*)   &_emu->_baseMem[0x0400];
-  marbleSurfaceAngle    = (uint8_t*)   &_emu->_baseMem[0x0028];
+  marbleSurfaceAngle    = (uint8_t*)   &_emu->_baseMem[0x0428];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -75,6 +75,15 @@ void GameInstance::updateDerivedValues()
  marblePosX = (float)*marblePosX1 * 256.0f + (float)*marblePosX2 + (float)*marblePosX3 / 256.0f;
  marblePosY = (float)*marblePosY1 * 256.0f + (float)*marblePosY2 + (float)*marblePosY3 / 256.0f;
  marblePosZ = (float)*marblePosZ1;
+
+ surfaceAngleX = 1.0; surfaceAngleY = 1.0;
+ if (*marbleSurfaceAngle == 3) { surfaceAngleX = 1.0; surfaceAngleY = 1.0; }
+ if (*marbleSurfaceAngle == 0) { surfaceAngleX = 0.5; surfaceAngleY = 0.5; }
+ if (*marbleSurfaceAngle == 1) { surfaceAngleX = 0.5; surfaceAngleY = 1.0; }
+ if (*marbleSurfaceAngle == 4) { surfaceAngleX = 0.75; surfaceAngleY = 1.0; }
+ if (*marbleSurfaceAngle == 2) { surfaceAngleX = 1.0; surfaceAngleY = 0.5; }
+ if (*marbleSurfaceAngle == 255) { surfaceAngleX = -5.0; surfaceAngleY = -5.0; }
+ if (*marbleSurfaceAngle == 128) { surfaceAngleX = -5.0; surfaceAngleY = -5.0; }
 }
 
 // Function to determine the current possible moves

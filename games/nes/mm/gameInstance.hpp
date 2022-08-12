@@ -47,6 +47,8 @@ class GameInstance : public GameInstanceBase
   float  marblePosX;
   float  marblePosY;
   float  marblePosZ;
+  float  surfaceAngleX;
+  float  surfaceAngleY;
 
   std::set<std::string> hashIncludes;
   uint8_t timerTolerance;

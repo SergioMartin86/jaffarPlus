@@ -51,8 +51,11 @@ int main(int argc, char *argv[])
   gameInstance->updateDerivedValues();
   gameInstance->popState(initialGameState);
 
+  // Initializing max reward
+  maxReward = -std::numeric_limits<float>::infinity();
+
   // Initializing Jaffar trainer
-  _train = new Train(config);
+//  _train = new Train(config);
 
   ////// Initializing Experiment
 
@@ -79,41 +82,22 @@ int main(int argc, char *argv[])
   e["Variables"][vIdx]["Name"] = "Marble Pos Z"; vIdx++;
   e["Variables"][vIdx]["Name"] = "Marble Vel X"; vIdx++;
   e["Variables"][vIdx]["Name"] = "Marble Vel Y"; vIdx++;
+  e["Variables"][vIdx]["Name"] = "Surface Angle X"; vIdx++;
+  e["Variables"][vIdx]["Name"] = "Surface Angle Y"; vIdx++;
 
   //// Setting action variables
 
-  e["Variables"][vIdx]["Name"] = "Up Button";
+  e["Variables"][vIdx]["Name"] = "Vertical Force";
   e["Variables"][vIdx]["Type"] = "Action";
   e["Variables"][vIdx]["Initial Exploration Noise"] = 0.447f;
-  e["Variables"][vIdx]["Lower Bound"] = 0.0;
+  e["Variables"][vIdx]["Lower Bound"] = -1.0;
   e["Variables"][vIdx]["Upper Bound"] = 1.0;
   vIdx++;
 
-  e["Variables"][vIdx]["Name"] = "Down Button";
+  e["Variables"][vIdx]["Name"] = "Horizontal Force";
   e["Variables"][vIdx]["Type"] = "Action";
   e["Variables"][vIdx]["Initial Exploration Noise"] = 0.447f;
-  e["Variables"][vIdx]["Lower Bound"] = 0.0;
-  e["Variables"][vIdx]["Upper Bound"] = 1.0;
-  vIdx++;
-
-  e["Variables"][vIdx]["Name"] = "Left Button";
-  e["Variables"][vIdx]["Type"] = "Action";
-  e["Variables"][vIdx]["Initial Exploration Noise"] = 0.447f;
-  e["Variables"][vIdx]["Lower Bound"] = 0.0;
-  e["Variables"][vIdx]["Upper Bound"] = 1.0;
-  vIdx++;
-
-  e["Variables"][vIdx]["Name"] = "Right Button";
-  e["Variables"][vIdx]["Type"] = "Action";
-  e["Variables"][vIdx]["Initial Exploration Noise"] = 0.447f;
-  e["Variables"][vIdx]["Lower Bound"] = 0.0;
-  e["Variables"][vIdx]["Upper Bound"] = 1.0;
-  vIdx++;
-
-  e["Variables"][vIdx]["Name"] = "A Button";
-  e["Variables"][vIdx]["Type"] = "Action";
-  e["Variables"][vIdx]["Initial Exploration Noise"] = 0.447f;
-  e["Variables"][vIdx]["Lower Bound"] = 0.0;
+  e["Variables"][vIdx]["Lower Bound"] = -1.0;
   e["Variables"][vIdx]["Upper Bound"] = 1.0;
   vIdx++;
 
@@ -121,14 +105,14 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Episodes Per Generation"] = 1;
+  e["Solver"]["Episodes Per Generation"] = 10;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = learningRate;
   e["Solver"]["Discount Factor"] = 0.995;
 
   e["Solver"]["Policy"]["Distribution"] = "Normal";
   e["Solver"]["State Rescaling"]["Enabled"] = false;
-  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
 
   /// Defining the configuration of replay memory
 

@@ -10,7 +10,7 @@
   "State Configuration": 
   { 
     "Max Difference Count": 1200,
-    "Max Move Count": 100
+    "Max Move Count": 400
   },
   
   "Game Configuration": 

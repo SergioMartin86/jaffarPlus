@@ -78,9 +78,9 @@ foreach g : gameTools
   )
 endforeach
 
-# Building playback/validation tool
+# Building RL Engine
 
-# Listing required schema files
+if get_option('buildRL')
 
 korali_cppFlags_raw =  run_command('python3', [ '-m', 'korali.cxx', '--cflags' ]).stdout().strip().split()
 korali_cppFlags = [ ]
@@ -103,3 +103,5 @@ executable('jaffar-rl',
   cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags, xdelta3CFlags, korali_cppFlags, '-DDISABLE_MAIN' ],
   c_args: [ platformTrainCFlags, gameInstanceCFlags ]
 )
+
+endif
