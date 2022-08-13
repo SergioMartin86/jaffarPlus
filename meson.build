@@ -80,7 +80,7 @@ endforeach
 
 # Building RL Engine
 
-if get_option('buildRL')
+if get_option('buildRL') == true
 
 korali_cppFlags_raw =  run_command('python3', [ '-m', 'korali.cxx', '--cflags' ]).stdout().strip().split()
 korali_cppFlags = [ ]

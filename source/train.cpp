@@ -280,7 +280,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t keyValue = *_gameInstances[threadId]->_KEY_VALUE_;
+       uint8_t keyValue = 1; // *_gameInstances[threadId]->_KEY_VALUE_;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
