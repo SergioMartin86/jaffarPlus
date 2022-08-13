@@ -25,8 +25,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 10,
-     "Max Size Upper Bound (Mb)": 400
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 20000
     },
     
     "Hash Database":
@@ -54,7 +54,7 @@
   "Rules":
   [
    {
-    "Label": 1001,
+    "Label": 1000,
     "Description": "Going right",
     "Conditions":
     [
@@ -64,7 +64,25 @@
     
     "Actions":
     [
-     { "Type": "Set Hero Vertical Magnet", "Intensity": 0.001, "Center": 466, "Min": 0, "Max": 6000 },
+     { "Type": "Set Hero Vertical Magnet", "Intensity": 0.1, "Center": 466, "Min": 0, "Max": 6000 },
+     { "Type": "Set Boss Health Magnet", "Intensity": -1.0 },
+     { "Type": "Set Hero Magic Magnet", "Intensity": 0.0001 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Description": "Going right",
+    "Conditions":
+    [
+     { "Property": "Hero Pos Y", "Op": "<=", "Value": 466 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000 },
      { "Type": "Set Boss Health Magnet", "Intensity": -1.0 }
     ]
    },

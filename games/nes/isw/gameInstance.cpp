@@ -50,7 +50,11 @@ uint64_t GameInstance::computeHash() const
   MetroHash64 hash;
 
 //  hash.Update(*RNGValue      );
-  hash.Update(&_emu->_baseMem[0x0200], 0x100);
+  //hash.Update(&_emu->_baseMem[0x0200], 0x100);
+  hash.Update(*heroPosX1      );
+  hash.Update(*heroPosX2      );
+  hash.Update(*heroPosY1      );
+  hash.Update(*heroPosY2      );
   hash.Update(*heroLife      );
   hash.Update(*heroMagic     );
   hash.Update(*heroKeys      );
@@ -73,6 +77,10 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*bossHealth2   );
   hash.Update(*bossHealth3   );
   hash.Update(*bossHealth4   );
+  hash.Update(*attackX1      );
+  hash.Update(*attackX2 % 4  );
+  hash.Update(*attackY1   );
+  hash.Update(*attackY2 % 4  );
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
