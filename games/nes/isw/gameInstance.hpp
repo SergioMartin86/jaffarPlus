@@ -20,6 +20,7 @@ struct magnetSet_t {
  genericMagnet_t heroHorizontalMagnet;
  genericMagnet_t heroVerticalMagnet;
  float bossHealthMagnet = 0.0;
+ float boss2HealthMagnet = 0.0;
  float heroMagicMagnet = 0.0;
 };
 
@@ -30,6 +31,9 @@ class GameInstance : public GameInstanceBase
 
   // Container for game-specific values
   uint8_t*  RNGValue;
+  uint8_t*  isLagFrame;
+  uint8_t*  gameTimer;
+  uint8_t*  gameMode;
   uint8_t*  heroPosX1;
   uint8_t*  heroPosX2;
   uint8_t*  heroPosY1;
@@ -60,6 +64,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  attackX2;
   uint8_t*  attackY1;
   uint8_t*  attackY2;
+  uint8_t*  inventoryHasEgg;
 
   // Derivative Values
   float heroPosX;

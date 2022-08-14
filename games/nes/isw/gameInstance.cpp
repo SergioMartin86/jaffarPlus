@@ -8,6 +8,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   // Container for game-specific values
   RNGValue       = (uint8_t*)   &_emu->_baseMem[0x00F9];
+  isLagFrame     = (uint8_t*)   &_emu->_baseMem[0x0001];
+  gameMode       = (uint8_t*)   &_emu->_baseMem[0x000A];
+  gameTimer      = (uint8_t*)   &_emu->_baseMem[0x0061];
   heroPosX1      = (uint8_t*)   &_emu->_baseMem[0x0226];
   heroPosX2      = (uint8_t*)   &_emu->_baseMem[0x0213];
   heroPosY1      = (uint8_t*)   &_emu->_baseMem[0x025F];
@@ -38,6 +41,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   attackX2       = (uint8_t*)   &_emu->_baseMem[0x0214];
   attackY1       = (uint8_t*)   &_emu->_baseMem[0x0260];
   attackY2       = (uint8_t*)   &_emu->_baseMem[0x024D];
+  inventoryHasEgg = (uint8_t*)   &_emu->_baseMem[0x00F1];
 
   // Initialize derivative values
   updateDerivedValues();
@@ -49,8 +53,10 @@ uint64_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash64 hash;
 
-//  hash.Update(*RNGValue      );
-  //hash.Update(&_emu->_baseMem[0x0200], 0x100);
+  if (gameMode != 0)  hash.Update(*gameTimer);
+  hash.Update(&_emu->_baseMem[0x0210], 0x100);
+  hash.Update(*isLagFrame     );
+  hash.Update(*gameMode       );
   hash.Update(*heroPosX1      );
   hash.Update(*heroPosX2      );
   hash.Update(*heroPosY1      );
@@ -81,6 +87,7 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*attackX2 % 4  );
   hash.Update(*attackY1   );
   hash.Update(*attackY2 % 4  );
+  hash.Update(*inventoryHasEgg   );
 
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -104,8 +111,10 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 {
  std::vector<std::string> moveList = {"."};
 
+ if (*gameMode != 0 || *isLagFrame == 0) return {".", "A"};
+
  // First pass stage 00-00
- moveList.insert(moveList.end(), { "...U....", ".......A", "......B.", "...U..B.", "..D.....", "..D...B.", ".L......", ".L.....A", ".L....B.", ".LDU....", "R.......", "R......A", "R.....B.", ".R.U....", ".LU....", ".RDU....", "RL......", "R.....BA", ".L....BA", "URB", "ULB", "LD", "RD", "..DU..BA", ".LD...BA", ".LDU..B.", "R.DU..BA", "RLDU..B."});
+ moveList.insert(moveList.end(), { "...U....", ".......A", "......B.", "...U..B.", "..D.....", "..D...B.", ".L......", ".L.....A", ".L....B.", ".LDU....", "R.......", "R......A", "R.....B.", ".R.U....", ".LU....", ".RDU....", "RL......", "R.....BA", ".L....BA", "URB", "ULB", "LD", "RD", "..DU..BA", ".LD...BA", ".LDU..B.", "R.DU..BA", "RLDU..B.", "URA", "ULA"});
 
  return moveList;
 }
@@ -156,6 +165,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating boss health magnet
   reward += magnets.bossHealthMagnet * bossHealth;
 
+  // Evaluating boss health magnet
+  reward += magnets.boss2HealthMagnet * (float)*bossHealth2;
+
   // Evaluating hero magic magnet
   reward += magnets.heroMagicMagnet * *heroMagic;
 
@@ -169,17 +181,23 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
+ LOG("[Jaffar]  + Game Timer:                       %02u\n", *gameTimer);
+ LOG("[Jaffar]  + Game Mode:                        %02u\n", *gameMode);
+ LOG("[Jaffar]  + Is Lag Frame:                     %02u\n", *isLagFrame);
  LOG("[Jaffar]  + RNG Value:                        %02u\n", *RNGValue);
  LOG("[Jaffar]  + Reward:                           %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                             0x%lX\n", computeHash());
  LOG("[Jaffar]  + Hero Life:                        %02u\n", *heroLife);
  LOG("[Jaffar]  + Hero Magic:                       %02u\n", *heroMagic);
+ LOG("[Jaffar]  + Hero Keys:                        %02u\n", *heroKeys);
  LOG("[Jaffar]  + Hero Jump State:                  %02u\n", *heroJumpState);
  LOG("[Jaffar]  + Hero Position X:                  %f (%02u, %02u)\n", heroPosX, *heroPosX1, *heroPosX2);
  LOG("[Jaffar]  + Hero Position Y:                  %f (%02u, %02u)\n", heroPosY, *heroPosY1, *heroPosY2);
  LOG("[Jaffar]  + Attack Position X:                %f\n", attackX);
  LOG("[Jaffar]  + Attack Position Y:                %f\n", attackY);
  LOG("[Jaffar]  + Boss HP:                          %f (%02u, %02u, %02u, %02u,)\n", bossHealth, *bossHealth1, *bossHealth2, *bossHealth3, *bossHealth4);
+ LOG("[Jaffar]  + Inventory:\n");
+ if (*inventoryHasEgg > 0) LOG("[Jaffar]    + Egg:\n");
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -190,6 +208,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.heroHorizontalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Hero Horizontal Magnet        - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.heroHorizontalMagnet.intensity, magnets.heroHorizontalMagnet.center, magnets.heroHorizontalMagnet.min, magnets.heroHorizontalMagnet.max);
  if (std::abs(magnets.heroVerticalMagnet.intensity) > 0.0f)       LOG("[Jaffar]  + Hero Vertical Magnet          - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.heroVerticalMagnet.intensity, magnets.heroVerticalMagnet.center, magnets.heroVerticalMagnet.min, magnets.heroVerticalMagnet.max);
  if (std::abs(magnets.bossHealthMagnet) > 0.0f)                   LOG("[Jaffar]  + Boss Health Magnet            - Intensity: %.5f\n", magnets.bossHealthMagnet);
+ if (std::abs(magnets.boss2HealthMagnet) > 0.0f)                  LOG("[Jaffar]  + Boss 2 Health Magnet            - Intensity: %.5f\n", magnets.boss2HealthMagnet);
  if (std::abs(magnets.heroMagicMagnet) > 0.0f)                    LOG("[Jaffar]  + Hero Magic Magnet             - Intensity: %.5f\n", magnets.heroMagicMagnet);
 }
 
