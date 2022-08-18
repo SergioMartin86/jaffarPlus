@@ -74,18 +74,16 @@
     "Label": 1102,
     "Conditions":
     [
-      { "Property": "Hero Pos X", "Op": ">=", "Value": 421 },
       { "Property": "Hero Pos X", "Op": "<=", "Value": 423 },
-      { "Property": "Boss Pos X", "Op": ">=", "Value": 100 },
-      { "Property": "Boss Pos X", "Op": "<=", "Value": 102 }
+      { "Property": "Boss Pos X", "Op": "<=", "Value": 105 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 5.0 },
-     { "Type": "Set Hero Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Hero Horizontal Magnet", "Intensity": 1.0, "Center": 422, "Min": 0, "Max": 6000 },
      { "Type": "Set Boss Health Magnet", "Intensity": -0.3 },
      { "Type": "Set Hero Health Magnet", "Intensity": -0.001 }
     ]
