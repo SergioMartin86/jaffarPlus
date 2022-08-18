@@ -56,6 +56,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Boss Horizontal Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    _magnets.bossHorizontalMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
   return recognizedActionType;
 }
 
@@ -67,6 +74,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Hero Pos Y") return dt_float;
   if (propertyName == "Hero HP") return dt_int8;
   if (propertyName == "Boss HP") return dt_int8;
+  if (propertyName == "Boss Pos X") return dt_uint8;
   if (propertyName == "Game Mode") return dt_uint8;
   if (propertyName == "Enemy Shrug Counter") return dt_uint8;
   if (propertyName == "Enemy Grab Counter") return dt_uint8;
@@ -84,6 +92,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Hero Pos Y") return &gameInstance->heroPosY;
   if (propertyName == "Game Mode") return gameInstance->gameMode;
   if (propertyName == "Boss HP") return gameInstance->bossHP;
+  if (propertyName == "Boss Pos X") return gameInstance->bossPosX;
   if (propertyName == "Hero HP") return gameInstance->heroHP;
   if (propertyName == "Enemy Shrug Counter") return gameInstance->enemyShrugCounter;
   if (propertyName == "Enemy Grab Counter") return gameInstance->enemyGrabCounter;

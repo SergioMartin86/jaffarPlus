@@ -22,6 +22,7 @@ struct magnetSet_t {
  float heroHealthMagnet = 0.0;
  float scoreMagnet = 0.0;
  float positionImbalanceMagnet = 0.0;
+ float bossHorizontalMagnet = 0.0;
 };
 
 
@@ -53,6 +54,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  enemyPosX;
   uint8_t*  enemyAction;
   uint8_t*  enemyActionTimer;
+  uint8_t*  bossPosX;
 
   uint8_t timerTolerance;
 
