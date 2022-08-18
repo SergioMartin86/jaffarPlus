@@ -13,7 +13,7 @@ auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return cou
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ simonState
+ #define _KEY_VALUE_ heroAction
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -280,7 +280,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t keyValue = 1; // *_gameInstances[threadId]->_KEY_VALUE_;
+       uint8_t keyValue = 1;//*_gameInstances[threadId]->_KEY_VALUE_;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
