@@ -748,7 +748,10 @@ Train::Train(const nlohmann::json& config)
   _maxDatabaseSizeUpperBound = floor(((double)_maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
 
   // Pre-allocating and touching State containers
-  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push((State*)calloc(1, sizeof(State)));
+  State* newStateDB = (State*)malloc(_maxDatabaseSizeUpperBound * sizeof(State));
+  #pragma omp parallel for
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++)  for (size_t j = 0; j < sizeof(State); j += 1024) *((uint8_t*)&newStateDB[i] + j) = (uint8_t)0;
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push(&newStateDB[i]);
 
   // Storing initial state
   _gameInstances[0]->popState(_initialStateData);
