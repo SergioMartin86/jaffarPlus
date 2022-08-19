@@ -22,14 +22,14 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 170000,
-     "Max Size Upper Bound (Mb)": 230000
+     "Max Size Lower Bound (Mb)": 120000,
+     "Max Size Upper Bound (Mb)": 180000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Max Size Upper Bound (Mb)": 6000
     },
     
     "Save Intermediate Results":
