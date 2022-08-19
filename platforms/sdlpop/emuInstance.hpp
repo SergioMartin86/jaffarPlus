@@ -22,8 +22,12 @@ class EmuInstance : public EmuInstanceBase
   if (isDefined(config, "Levels File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Levels File' key.\n");
   _levelsFilePath = config["Levels File"].get<std::string>();
 
-  if (isDefined(config, "SDLPop Root Path") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'SDLPop Root Path' key.\n");
-  _sdlPopEnvRoot = config["SDLPop Root Path"].get<std::string>();
+  if(const char* env_p = std::getenv("SDLPOP_ROOT_PATH_OVERRIDE")) _sdlPopEnvRoot = env_p;
+  else
+  {
+   if (isDefined(config, "SDLPop Root Path") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'SDLPop Root Path' key.\n");
+   _sdlPopEnvRoot = config["SDLPop Root Path"].get<std::string>();
+  }
 
   // Checking whether configuration contains the state file
   if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");

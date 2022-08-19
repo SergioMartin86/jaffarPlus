@@ -345,8 +345,13 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Initializes the playback module instance
  PlaybackInstance(GameInstance* game, const nlohmann::json& config) : PlaybackInstanceBase(game, config)
  {
-  if (isDefined(config, "SDLPop Library File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'SDLPop Library File' key.\n");
-  std::string libraryFile = config["SDLPop Library File"].get<std::string>();
+  std::string libraryFile;
+  if(const char* env_p = std::getenv("SDLPOP_LIBRARY_PATH_OVERRIDE")) libraryFile = env_p;
+  else
+  {
+   if (isDefined(config, "SDLPop Library File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'SDLPop Library File' key.\n");
+   libraryFile = config["SDLPop Library File"].get<std::string>();
+  }
 
   // Opening SDLPoP shared library
   _dllHandle = dlopen (libraryFile.c_str(), RTLD_NOW);
