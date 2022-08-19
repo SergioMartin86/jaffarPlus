@@ -124,7 +124,7 @@ void Train::run()
    #ifndef JAFFAR_DISABLE_MOVE_HISTORY
     std::string solutionString;
     solutionString += EmuInstance::moveCodeToString(lastState->moveHistory[0]);
-    for (size_t i = 1; i < _currentStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->moveHistory[i]);
+    for (ssize_t i = 1; i < _currentStep-1; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->moveHistory[i]);
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    #endif
   }
@@ -290,6 +290,9 @@ void Train::computeStates()
 
       tf = std::chrono::high_resolution_clock::now();
       threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
+
+//      std::vector<std::vector<std::string>> possibleMoveHack = {{"R"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"R"},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"LS"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"L"},{"U"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"R"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"."},{"."},{"S"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"D"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"U"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"S"},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"L"},{"."},{"."},{"L"},{"."},{"."},{"."},{"R"},{"S"},{"."},{"."},{"."},{"."},{"."}};
+//      possibleMoves = possibleMoveHack[_currentStep];
 
       // Running possible moves
       for (size_t idx = 0; idx < possibleMoves.size(); idx++)
@@ -799,6 +802,15 @@ void Train::reset()
  _stepStateEvaluationTime = 0;
  _stepHashFilteringTime = 0;
 
+ _hashCollisions = 0;
+ _hashEntriesStep = 0;
+ _hashSizeStep = 0;
+ _hashSizeCurrent = 0;
+ _hashEntriesTotal = 0;
+
+ _worstStateReward = 0.0;
+ _bestStateReward = 0.0;
+
  // Setting starting step
  _currentStep = 0;
 
@@ -871,8 +883,8 @@ Train::~Train()
    // Doing this as a critical section so not all threads try to access files at the same time
    #pragma omp critical
    {
-    free(_gameInstances[threadId]->_emu);
-    free(_gameInstances[threadId]);
+    delete _gameInstances[threadId]->_emu;
+    delete _gameInstances[threadId];
    }
   }
 }
@@ -918,7 +930,7 @@ void Train::showSavingLoop()
        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
          std::string bestSolutionString;
          bestSolutionString += EmuInstance::moveCodeToString(_bestState->moveHistory[0]);
-         for (size_t i = 1; i < _currentStep; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState->moveHistory[i]);
+         for (ssize_t i = 1; i < _currentStep-1; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState->moveHistory[i]);
          saveStringToFile(bestSolutionString, _outputSolutionBestPath.c_str());
 
          std::string solWithStep = _outputSolutionBestPath + std::string(".") + std::to_string(_currentStep);
@@ -926,7 +938,7 @@ void Train::showSavingLoop()
 
          std::string worstSolutionString;
          worstSolutionString += EmuInstance::moveCodeToString(_worstState->moveHistory[0]);
-         for (size_t i = 1; i < _currentStep; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState->moveHistory[i]);
+         for (ssize_t i = 1; i < _currentStep-1; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState->moveHistory[i]);
          saveStringToFile(worstSolutionString, _outputSolutionWorstPath.c_str());
        #endif
 

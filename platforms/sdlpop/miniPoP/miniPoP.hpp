@@ -26,7 +26,7 @@ The authors of this program may be contacted at https://forum.princed.org
 #pragma once
 #include "types.h"
 
-extern "C" __thread struct miniPopState_t gameState;
+extern "C" __thread struct sdlPopState_t gameState;
 extern "C" __thread word* copyprot_room;
 extern "C" __thread byte* sound_interruptible;
 extern "C" __thread custom_options_type *custom;

@@ -26,6 +26,8 @@ class GameInstance : public GameInstanceBase
   bool _hashGuardCurrentHp;
   bool _hashTrobCount;
 
+  uint8_t timerTolerance;
+
   std::map<int, hashType> _hashTypeTrobs;
   std::vector<int> _hashTypeStatic;
   std::map<std::pair<int, int>, hashType> _hashTypeMobs;

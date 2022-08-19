@@ -586,7 +586,7 @@ class PlaybackInstance : public PlaybackInstanceBase
    *g_argv = NULL;
 
    // Fix feather fall problem when quickload/quicksaving
-   init_copyprot();
+//   init_copyprot();
    (*fixes)->fix_quicksave_during_feather = 1;
    (*fixes)->fix_quicksave_during_lvl1_music = 1;
 
@@ -624,7 +624,7 @@ class PlaybackInstance : public PlaybackInstanceBase
    *draw_mode = 0;
    *demo_mode = 0;
 
-   init_copyprot_dialog();
+   //init_copyprot_dialog();
 
    *play_demo_level = 0;
 
@@ -728,8 +728,9 @@ class PlaybackInstance : public PlaybackInstanceBase
  void renderFrame(const uint16_t currentStep, const std::string& move) override
  {
   // Loading state from underlying miniPop
-  std::string state = _game->_emu->getSDLPopStateString();
+  std::string state;
   state.resize(_STATE_DATA_SIZE_PLAY);
+  _game->_emu->serializeState((uint8_t*)state.data());
   loadState(state);
 
   restore_room_after_quick_load();

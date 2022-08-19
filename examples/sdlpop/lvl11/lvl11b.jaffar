@@ -10,22 +10,26 @@
   
   "State Configuration": 
   {
-    "Max Difference Count": 150,
+    "Max Difference Count": 460,
     "Max Move Count": 300
   },
   
   "Jaffar Configuration": 
   {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 150000,
-     "Max Size Upper Bound (Mb)": 190000
+     "Max Size Lower Bound (Mb)": 170000,
+     "Max Size Upper Bound (Mb)": 230000
     },
     
     "Hash Database":
     { 
-     "Database Count": 5,
-     "Max Size Upper Bound (Mb)": 10000
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Save Intermediate Results":
@@ -33,12 +37,15 @@
      "Enabled": true,
      "Frequency (s)": 1.0,
      "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol"
-    }
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
   },
   
   "Game Configuration": 
   {
+   "Timer Tolerance": 8,
    "Property Hash Types": [ ],
    "Static Tile Hash Types":
     [

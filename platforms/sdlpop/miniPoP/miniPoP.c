@@ -49,7 +49,7 @@ __thread word flash_color;
 __thread word flash_time;
 __thread word upside_down;
 
-__thread struct miniPopState_t gameState;
+__thread struct sdlPopState_t gameState;
 __thread custom_options_type *custom = &custom_defaults;
 __thread byte is_validate_mode;
 __thread word text_time_remaining;
@@ -293,10 +293,10 @@ FILE *fcache_open(const char *filename, const char *mode)
     }
 
   // Checking if file is directory. Do not open in that case.
-  struct stat path_stat;
-  stat(filename, &path_stat);
-  if (S_ISREG(path_stat.st_mode) == 0)
-    return NULL;
+//  struct stat path_stat;
+//  stat(filename, &path_stat);
+//  if (S_ISREG(path_stat.st_mode) == 0)
+//    return NULL;
 
   // Open source file
   FILE *srcFile = fopen(filename, "rb");

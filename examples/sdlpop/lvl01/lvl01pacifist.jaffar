@@ -10,9 +10,8 @@
   
   "State Configuration": 
   {
-    "Max Difference Count": 50,
-    "Max Move Count": 500,
-    "Store Move List": false    
+    "Max Difference Count": 300,
+    "Max Move Count": 600
   },
   
   "Game Configuration": 
@@ -37,8 +36,8 @@
     
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 500,
-     "Max Size Upper Bound (Mb)": 23000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
@@ -67,6 +66,26 @@
   "Rules":
   [
    {
+    "Label": 1000,
+    "Description": "Setting magnet to make kid go to the left/down on the first screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Guard Room", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 3,  "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 3, "Value": 1.0 },
+     { "Type": "Set Guard Vertical Magnet Intensity", "Room": 3, "Value": -1.0 }
+    ]
+   },
+   
+   {
     "Label": 1001,
     "Description": "Setting magnet to make kid go to the left/down on the first screen",
     "Conditions":
@@ -75,13 +94,32 @@
      { "Property": "Guard Room", "Op": "==", "Value":  2 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 1000 ],
     
     "Actions":
     [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 3,  "Value": 0.0 },
      { "Type": "Set Guard Horizontal Magnet Position", "Room": 2,  "Value": 0.0 },
      { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
      { "Type": "Set Guard Vertical Magnet Intensity", "Room": 2, "Value": -1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Description": "Win if guard dies.",
+    "Conditions":
+    [
+     { "Property": "Guard Position Y", "Op": ">", "Value":  120 },
+     { "Property": "Kid Room", "Op": "==", "Value":  "Guard Room" }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
     ]
    },
    

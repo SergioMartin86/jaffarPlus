@@ -1425,67 +1425,6 @@ typedef struct directory_listing_type directory_listing_type;
 
 #endif
 
-#pragma pack(push,1)
-struct miniPopState_t {
-
- // Differential Frame Info
- level_type level;
- mob_type mobs[14];
- trob_type trobs[30];
- word checkpoint;
- word current_level;
- word next_level;
- word hitp_beg_lev;
- word hitp_max;
- word have_sword;
- word is_feather_fall;
- word need_level1_music;
- short united_with_shadow;
- word demo_index;
- short demo_time;
-
- // Fixed Frame Info
- word drawn_room;
- short mobs_count;
- short trobs_count;
- word leveldoor_open;
- char_type Kid;
- word hitp_curr;
- word grab_timer;
- word holding_sword;
- word kid_sword_strike;
- short pickup_obj_type;
- word offguard; // name from Apple II source
- char_type Guard;
- word guardhp_curr;
- word guardhp_max;
- short guard_notice_timer;
- word guard_skill;
- word shadow_initialized;
- word guard_refrac;
- word justblocked; // name from Apple II source
- word droppedout; // name from Apple II source
- sbyte curr_row_coll_room[10];
- byte curr_row_coll_flags[10];
- sbyte below_row_coll_room[10];
- byte below_row_coll_flags[10];
- sbyte above_row_coll_room[10];
- byte above_row_coll_flags[10];
- sbyte prev_collision_row;
- word is_screaming;
- word last_loose_sound;
- dword random_seed;
- sbyte ctrl1_forward;
- sbyte ctrl1_backward;
- sbyte ctrl1_up;
- sbyte ctrl1_down;
- sbyte ctrl1_shift2;
- word exit_room_timer;
- word is_guard_notice;
- short can_guard_see_kid;
-};
-#pragma pack(pop)
-
 // SDLPop state to miniPop State conversion
 #pragma pack(push,1)
 struct sdlPopState_t {

@@ -8,6 +8,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   // Parsing SDLPoP-specific configuration
   _hashKidCurrentHp = false;
+  _hashGuardCurrentHp = false;
+  _hashTrobCount = false;
   if (isDefined(config, "Property Hash Types") == true)
   {
    for (const auto& entry : config["Property Hash Types"])
@@ -86,6 +88,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   }
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Static Tile Hash Types' was not defined\n");
 
+  // Timer tolerance
+  if (isDefined(config, "Timer Tolerance") == true)
+   timerTolerance = config["Timer Tolerance"].get<uint8_t>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
+
 };
 
 // This function computes the hash for the current state
@@ -93,6 +100,9 @@ uint64_t GameInstance::computeHash() const
 {
  // Storage for hash calculation
  MetroHash64 hash;
+
+ // If timer tolerance is set, use the game tick for hashing
+ if (timerTolerance > 0) hash.Update(gameState.rem_tick % (timerTolerance+1));
 
  // Adding fixed hash elements
  hash.Update(gameState.drawn_room);
@@ -400,6 +410,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Current/Next Level: %2d / %2d\n", gameState.current_level, gameState.next_level);
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
+  LOG("[Jaffar]  + Game Tick: %d, Tolerance: %u\n", gameState.rem_tick, timerTolerance);
   LOG("[Jaffar]  + [Kid]   Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.hitp_curr), int(gameState.hitp_max));
   LOG("[Jaffar]  + [Guard] Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.guardhp_curr), int(gameState.guardhp_max));
   LOG("[Jaffar]  + Exit Room Timer: %d\n", gameState.exit_room_timer);
