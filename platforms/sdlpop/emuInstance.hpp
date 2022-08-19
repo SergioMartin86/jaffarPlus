@@ -152,7 +152,7 @@ class EmuInstance : public EmuInstanceBase
  {
   // Saving state
   std::string miniPopState;
-  miniPopState.resize(_STATE_DATA_SIZE);
+  miniPopState.resize(_STATE_DATA_SIZE_TRAIN);
   serializeState((uint8_t*)miniPopState.data());
   auto sdlPopState = saveSdlPopState(miniPopState);
   return sdlPopState;
@@ -175,12 +175,12 @@ class EmuInstance : public EmuInstanceBase
  }
  void serializeState(uint8_t* state) const override
  {
-  memcpy(state, &gameState, _STATE_DATA_SIZE);
+  memcpy(state, &gameState, _STATE_DATA_SIZE_TRAIN);
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  memcpy(&gameState, state, _STATE_DATA_SIZE);
+  memcpy(&gameState, state, _STATE_DATA_SIZE_TRAIN);
  }
 
  // Controller input bits
@@ -232,7 +232,7 @@ class EmuInstance : public EmuInstanceBase
   return moveString;
  }
 
- void advanceState(const std::string& move) override
+ void advanceState(const std::string& move)
  {
   advanceState(moveStringToCode(move));
  }

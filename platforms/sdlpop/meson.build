@@ -1,5 +1,7 @@
 # Declaring source and include dirs for SDLPoP
 
+inputType = 'uint8_t'
+
 srcDir = meson.current_source_dir()
 emuInstanceSrc = [ ]
 emuInstanceIncludes = include_directories(['.'])

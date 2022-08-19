@@ -748,10 +748,10 @@ Train::Train(const nlohmann::json& config)
   _maxDatabaseSizeUpperBound = floor(((double)_maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
 
   // Pre-allocating and touching State containers
-  State* newStateDB = (State*)malloc(_maxDatabaseSizeUpperBound * sizeof(State));
+  _mainStateDB = (State*)malloc(_maxDatabaseSizeUpperBound * sizeof(State));
   #pragma omp parallel for
-  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++)  for (size_t j = 0; j < sizeof(State); j += 1024) *((uint8_t*)&newStateDB[i] + j) = (uint8_t)0;
-  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push(&newStateDB[i]);
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++)  for (size_t j = 0; j < sizeof(State); j += 1024) *((uint8_t*)&_mainStateDB[i] + j) = (uint8_t)0;
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push(&_mainStateDB[i]);
 
   // Storing initial state
   _gameInstances[0]->popState(_initialStateData);
@@ -860,12 +860,7 @@ Train::~Train()
   delete _bestState;
   delete _worstState;
 
-  limitStateDatabase(_stateDB, 0);
-  while (_freeStateQueue.empty() == false)
-  {
-   free(_freeStateQueue.front());
-   _freeStateQueue.pop();
-  }
+  free(_mainStateDB);
 
   // Initializing thread-specific instances
   #pragma omp parallel

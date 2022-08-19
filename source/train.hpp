@@ -73,7 +73,7 @@ class Train
   std::vector<State*> _stateDB;
 
   // Queue for free states
-  uint8_t* _stateStorage;
+  State* _mainStateDB;
   std::queue<State*> _freeStateQueue;
   Lock _freeStateQueueLock;
 

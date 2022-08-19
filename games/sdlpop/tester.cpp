@@ -49,7 +49,7 @@ struct level_t
  std::vector<std::string> moveList;
  uint16_t sequenceLength;
  std::string stateFile;
- uint8_t stateData[_STATE_DATA_SIZE];
+ uint8_t stateData[_STATE_DATA_SIZE_TRAIN];
  uint8_t RNGOffset;
 };
 
@@ -171,7 +171,7 @@ void solve(int argc, char *argv[])
      ((uint8_t*)&bigEndianRNG)[2] = ((uint8_t*)&gameState.random_seed)[1];
      ((uint8_t*)&bigEndianRNG)[1] = ((uint8_t*)&gameState.random_seed)[2];
      ((uint8_t*)&bigEndianRNG)[0] = ((uint8_t*)&gameState.random_seed)[3];
-     for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
+//     for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
      printf("Do Delay: 0x%08x\n", bigEndianRNG);
     }
 
@@ -196,7 +196,7 @@ void solve(int argc, char *argv[])
 
    for (uint8_t k = 0; k < levels[i].RNGOffset; k++)
    {
-    gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
+//    gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
 
     uint32_t bigEndianRNG;
     ((uint8_t*)&bigEndianRNG)[3] = ((uint8_t*)&gameState.random_seed)[0];
@@ -209,7 +209,7 @@ void solve(int argc, char *argv[])
 //   if (i == 2) exit(0);
    for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
    {
-    _gameInstance->advanceState(levels[i].moveList[j]);
+//    _gameInstance->advanceState(levels[i].moveList[j]);
     //printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
     uint32_t bigEndianRNG;
     ((uint8_t*)&bigEndianRNG)[3] = ((uint8_t*)&gameState.random_seed)[0];
@@ -428,7 +428,7 @@ void explore(int argc, char *argv[])
      size_t curMov = 0;
      for (; curMov < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; curMov++)
      {
-      _gameInstances[threadId]->advanceState(levels[i].moveList[curMov]);
+//      _gameInstances[threadId]->advanceState(levels[i].moveList[curMov]);
       //printf("Step %u - Base Level: %u / Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", curMov, levels[i].levelId, gameState.current_level, levels[i].moveList[curMov].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
      }
 

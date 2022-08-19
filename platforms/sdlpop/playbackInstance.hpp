@@ -724,7 +724,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  {
   // Loading state from underlying miniPop
   std::string state = _game->_emu->getSDLPopStateString();
-  state.resize(_STATE_DATA_SIZE);
+  state.resize(_STATE_DATA_SIZE_PLAY);
   loadState(state);
 
   restore_room_after_quick_load();
@@ -828,8 +828,8 @@ class PlaybackInstance : public PlaybackInstanceBase
 
  void loadState(const std::string &data)
  {
-   if (data.size() != _STATE_DATA_SIZE)
-     EXIT_WITH_ERROR("[Error] Wrong state size. Expected %lu, got: %lu\n", _STATE_DATA_SIZE, data.size());
+   if (data.size() != _STATE_DATA_SIZE_PLAY)
+     EXIT_WITH_ERROR("[Error] Wrong state size. Expected %lu, got: %lu\n", _STATE_DATA_SIZE_PLAY, data.size());
 
    size_t curPos = 0;
    for (const auto &item : _items)

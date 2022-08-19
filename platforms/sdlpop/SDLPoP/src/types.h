@@ -20,7 +20,7 @@ The authors of this program may be contacted at https://forum.princed.org
 
 #ifndef TYPES_H
 #define TYPES_H
-
+#include "config.h"
 #define STB_VORBIS_HEADER_ONLY
 #include "stb_vorbis.c"
 

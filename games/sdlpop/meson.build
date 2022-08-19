@@ -3,5 +3,5 @@
 srcDir = meson.current_source_dir()
 gameInstanceSrc = [ srcDir + '/gameInstance.cpp', srcDir + '/gameRule.cpp' ]
 gameInstanceIncludes = include_directories(['.'])
-gameInstanceCFlags = [ '-D_STATE_DATA_SIZE=2649', '-D_MAX_RULE_COUNT=36' ]
+gameInstanceCFlags = [ '-D_STATE_DATA_SIZE_TRAIN=2649', '-D_STATE_DATA_SIZE_PLAY=2649', '-D_MAX_RULE_COUNT=32', '-D_DISABLE_XDELTA3' ]
 gameTools =  [ {'name': 'tester', 'mainSrc': srcDir + '/tester.cpp' }  ]
