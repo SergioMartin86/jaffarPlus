@@ -45,6 +45,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   shipShields            = (uint8_t*)   &_emu->_baseMem[0x0065];
   objectType             = (uint8_t*)   &_emu->_baseMem[0x0317];
   objectData             = (uint8_t*)   &_emu->_baseMem[0x0393];
+  fuelDelivered          = (uint8_t*)   &_emu->_baseMem[0x0513];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -120,6 +121,9 @@ uint64_t GameInstance::computeHash() const
     hash.Update(*(shipPosY2+i));
    }
 
+  // For fuel delivery
+  hash.Update(&_emu->_baseMem[0x0500], 0x0100);
+
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
@@ -132,7 +136,7 @@ void GameInstance::updateDerivedValues()
  shipPosY = (float)*shipPosY1 * 256.0f + (float)*shipPosY2 + (float)*shipPosY3 / 256.0f;
 
  shipVelX = (float)*shipVelX1 + (float)*shipVelX2 / 256.0f; if (*shipVelXS) shipVelX *= -1.0f;
- shipVelY = (float)*shipVelY1 + (float)*shipVelY2 / 256.0f; if (*shipVelXS) shipVelY *= -1.0f;
+ shipVelY = (float)*shipVelY1 + (float)*shipVelY2 / 256.0f; if (*shipVelYS) shipVelY *= -1.0f;
 
  shipFuel = (float)*shipFuel1 + (float)*shipFuel2 / 256.0f;
  shipHealth = (float)*shipHealth1 + (float)*shipHealth2 / 256.0f;
@@ -160,11 +164,13 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 {
  std::vector<std::string> moveList = {"."};
 
- if (*gameTimer % 2 == 1) return {"............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................."};
+ if (*gameTimer % 2 == 1) return {"."};
 
- // First pass stage 00-00
- moveList.insert(moveList.end(), { "R", "L", "LA", "RA", "RB", "LB", "RLA", "RLB", "B", "A", "BA"});
+ // Stage 00
+ //moveList.insert(moveList.end(), { "R", "L", "LA", "RA", "RB", "LB", "RLA", "RLB", "B", "A", "BA", "D" });
 
+ // Stage 12
+ moveList.insert(moveList.end(), { "R", "L", "B", "D", "RL", "RB", "RD", "LB", "LD", "BD", "RLB", "RLD", "LBD", "RLBD"  });
  return moveList;
 }
 
@@ -211,6 +217,20 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   diff = std::abs(magnets.shipVerticalMagnet.center - boundedValue);
   reward += magnets.shipVerticalMagnet.intensity * -diff;
 
+  // Evaluating ship magnet's reward on vel X
+  boundedValue = shipVelX;
+  boundedValue = std::min(boundedValue, magnets.shipVelXMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.shipVelXMagnet.min);
+  diff = std::abs(magnets.shipVelXMagnet.center - boundedValue);
+  reward += magnets.shipVelXMagnet.intensity * -diff;
+
+  // Evaluating ship magnet's reward on vel Y
+  boundedValue = shipVelY;
+  boundedValue = std::min(boundedValue, magnets.shipVelYMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.shipVelYMagnet.min);
+  diff = std::abs(magnets.shipVelYMagnet.center - boundedValue);
+  reward += magnets.shipVelYMagnet.intensity * -diff;
+
   // Evaluating ship health  magnet
   reward += magnets.shipHealthMagnet * shipHealth;
 
@@ -219,6 +239,11 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 
   // Evaluating ship health  magnet
   reward += magnets.warpCounterMagnet * warpCounter;
+
+  // Evaluating carrying magnet
+  int isCarrying = 0;
+  if (*shipCarriedObject != 0) isCarrying = 1;
+  reward += magnets.carryMagnet * isCarrying;
 
   // Returning reward
   return reward;
@@ -247,6 +272,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Ship Shields:                     %03u\n", *shipShields);
  LOG("[Jaffar]  + Warp Counter:                     %f\n", warpCounter);
  LOG("[Jaffar]  + Warp 7 Found:                     %01u\n", foundWarp7);
+ LOG("[Jaffar]  + Fuel Delivered:                   %02u\n", *fuelDelivered);
  LOG("[Jaffar]  + Screen Scroll X:                  %03u %03u\n", *screenScrollX1, *screenScrollX2);
  LOG("[Jaffar]  + Screen Scroll Y:                  %03u %03u\n", *screenScrollY1, *screenScrollY2);
 
@@ -271,8 +297,11 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
  if (std::abs(magnets.shipHorizontalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Ship Horizontal Magnet        - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.shipHorizontalMagnet.intensity, magnets.shipHorizontalMagnet.center, magnets.shipHorizontalMagnet.min, magnets.shipHorizontalMagnet.max);
  if (std::abs(magnets.shipVerticalMagnet.intensity) > 0.0f)       LOG("[Jaffar]  + Ship Vertical Magnet          - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.shipVerticalMagnet.intensity, magnets.shipVerticalMagnet.center, magnets.shipVerticalMagnet.min, magnets.shipVerticalMagnet.max);
+ if (std::abs(magnets.shipVelXMagnet.intensity) > 0.0f)           LOG("[Jaffar]  + Ship Vel X Magnet             - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.shipVelXMagnet.intensity, magnets.shipVelXMagnet.center, magnets.shipVelXMagnet.min, magnets.shipVelXMagnet.max);
+ if (std::abs(magnets.shipVelYMagnet.intensity) > 0.0f)           LOG("[Jaffar]  + Ship Vel Y Magnet             - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.shipVelYMagnet.intensity, magnets.shipVelYMagnet.center, magnets.shipVelYMagnet.min, magnets.shipVelYMagnet.max);
  if (std::abs(magnets.shipHealthMagnet) > 0.0f)                   LOG("[Jaffar]  + Ship Health Magnet            - Intensity: %.5f\n", magnets.shipHealthMagnet);
  if (std::abs(magnets.scoreMagnet) > 0.0f)                        LOG("[Jaffar]  + Score Magnet                  - Intensity: %.5f\n", magnets.scoreMagnet);
  if (std::abs(magnets.warpCounterMagnet) > 0.0f)                  LOG("[Jaffar]  + Warp Counter Magnet           - Intensity: %.5f\n", magnets.warpCounterMagnet);
+ if (std::abs(magnets.carryMagnet) > 0.0f)                        LOG("[Jaffar]  + Carry Magnet                  - Intensity: %.5f\n", magnets.carryMagnet);
 }
 

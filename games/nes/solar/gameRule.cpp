@@ -28,6 +28,25 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Ship Vel X Magnet")
+    {
+     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+     if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+     if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+     if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+     _magnets.shipVelXMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Ship Vel Y Magnet")
+    {
+     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+     if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+     if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+     _magnets.shipVelYMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+     recognizedActionType = true;
+    }
+
    if (actionType == "Set Ship Health Magnet")
    {
     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Ship Health Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -49,6 +68,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Carry Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Carry Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    _magnets.carryMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
   return recognizedActionType;
 }
 
@@ -63,6 +89,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Ship Shields") return dt_uint8;
   if (propertyName == "Current Stage") return dt_uint8;
   if (propertyName == "Found Warp 7") return dt_uint8;
+  if (propertyName == "Fuel Delivered") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -80,6 +107,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Warp Counter") return &gameInstance->warpCounter;
   if (propertyName == "Current Stage") return gameInstance->currentStage;
   if (propertyName == "Found Warp 7") return &gameInstance->foundWarp7;
+  if (propertyName == "Fuel Delivered") return gameInstance->fuelDelivered;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

@@ -20,9 +20,12 @@ struct genericMagnet_t {
 struct magnetSet_t {
  genericMagnet_t shipHorizontalMagnet;
  genericMagnet_t shipVerticalMagnet;
+ genericMagnet_t shipVelXMagnet;
+ genericMagnet_t shipVelYMagnet;
  float shipHealthMagnet = 0.0;
  float scoreMagnet = 0.0;
  float warpCounterMagnet = 0.0;
+ float carryMagnet = 0.0;
 };
 
 
@@ -70,6 +73,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  shipShields;
   uint8_t*  objectType;
   uint8_t*  objectData;
+  uint8_t*  fuelDelivered;
 
   uint8_t timerTolerance;
 
