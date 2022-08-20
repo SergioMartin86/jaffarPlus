@@ -43,7 +43,7 @@
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Save Intermediate Results":

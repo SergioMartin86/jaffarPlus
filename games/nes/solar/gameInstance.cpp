@@ -157,6 +157,10 @@ void GameInstance::updateDerivedValues()
  foundWarp7 = 0;
  for (size_t i = 0; i < OBJECT_COUNT; i++)
   if (*(objectType+i) == 10 && *(objectData+i) == 7) foundWarp7 = 1;
+
+ foundWarp8 = 0;
+ for (size_t i = 0; i < OBJECT_COUNT; i++)
+  if (*(objectType+i) == 10 && *(objectData+i) > 7) foundWarp8 = 1;
 }
 
 // Function to determine the current possible moves
@@ -167,10 +171,10 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*gameTimer % 2 == 1) return {"."};
 
  // Stage 00
- //moveList.insert(moveList.end(), { "R", "L", "LA", "RA", "RB", "LB", "RLA", "RLB", "B", "A", "BA", "D" });
+ moveList.insert(moveList.end(), { "R", "L", "LA", "RA", "RB", "LB", "RLA", "RLB", "B", "A", "BA", "D" });
 
  // Stage 12
- moveList.insert(moveList.end(), { "R", "L", "B", "D", "RL", "RB", "RD", "LB", "LD", "BD", "RLB", "RLD", "LBD", "RLBD"  });
+// moveList.insert(moveList.end(), { "R", "L", "B", "D", "RL", "RB", "RD", "LB", "LD", "BD", "RLB", "RLD", "LBD", "RLBD"  });
  return moveList;
 }
 

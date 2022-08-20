@@ -89,6 +89,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Ship Shields") return dt_uint8;
   if (propertyName == "Current Stage") return dt_uint8;
   if (propertyName == "Found Warp 7") return dt_uint8;
+  if (propertyName == "Found Warp 8") return dt_uint8;
   if (propertyName == "Fuel Delivered") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
@@ -107,6 +108,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Warp Counter") return &gameInstance->warpCounter;
   if (propertyName == "Current Stage") return gameInstance->currentStage;
   if (propertyName == "Found Warp 7") return &gameInstance->foundWarp7;
+  if (propertyName == "Found Warp 8") return &gameInstance->foundWarp7;
   if (propertyName == "Fuel Delivered") return gameInstance->fuelDelivered;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
