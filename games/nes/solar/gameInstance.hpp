@@ -91,6 +91,7 @@ class GameInstance : public GameInstanceBase
   float warpCounter;
   uint8_t foundWarp7;
   uint8_t foundWarp8;
+  uint8_t foundWarp9;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

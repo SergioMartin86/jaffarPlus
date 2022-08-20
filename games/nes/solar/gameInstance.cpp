@@ -160,7 +160,11 @@ void GameInstance::updateDerivedValues()
 
  foundWarp8 = 0;
  for (size_t i = 0; i < OBJECT_COUNT; i++)
-  if (*(objectType+i) == 10 && *(objectData+i) > 7) foundWarp8 = 1;
+  if (*(objectType+i) == 10 && *(objectData+i) == 8) foundWarp8 = 1;
+
+ foundWarp9 = 0;
+ for (size_t i = 0; i < OBJECT_COUNT; i++)
+  if (*(objectType+i) == 10 && *(objectData+i) > 8) foundWarp9 = 1;
 }
 
 // Function to determine the current possible moves

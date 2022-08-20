@@ -293,10 +293,10 @@ FILE *fcache_open(const char *filename, const char *mode)
     }
 
   // Checking if file is directory. Do not open in that case.
-//  struct stat path_stat;
-//  stat(filename, &path_stat);
-//  if (S_ISREG(path_stat.st_mode) == 0)
-//    return NULL;
+  struct stat path_stat;
+  stat(filename, &path_stat);
+  if (S_ISREG(path_stat.st_mode) == 0)
+    return NULL;
 
   // Open source file
   FILE *srcFile = fopen(filename, "rb");
