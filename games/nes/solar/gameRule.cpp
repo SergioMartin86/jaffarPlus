@@ -75,6 +75,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Max Warp Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Max Warp Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    _magnets.maxWarpMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
   return recognizedActionType;
 }
 
@@ -88,9 +95,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Warp Counter") return dt_float;
   if (propertyName == "Ship Shields") return dt_uint8;
   if (propertyName == "Current Stage") return dt_uint8;
-  if (propertyName == "Found Warp 7") return dt_uint8;
-  if (propertyName == "Found Warp 8") return dt_uint8;
-  if (propertyName == "Found Warp 9") return dt_uint8;
+  if (propertyName == "Max Warp") return dt_uint8;
   if (propertyName == "Fuel Delivered") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
@@ -108,9 +113,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Ship Shields") return gameInstance->shipShields;
   if (propertyName == "Warp Counter") return &gameInstance->warpCounter;
   if (propertyName == "Current Stage") return gameInstance->currentStage;
-  if (propertyName == "Found Warp 7") return &gameInstance->foundWarp7;
-  if (propertyName == "Found Warp 8") return &gameInstance->foundWarp8;
-  if (propertyName == "Found Warp 9") return &gameInstance->foundWarp9;
+  if (propertyName == "Max Warp") return &gameInstance->maxWarp;
   if (propertyName == "Fuel Delivered") return gameInstance->fuelDelivered;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());

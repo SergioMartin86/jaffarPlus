@@ -26,6 +26,7 @@ struct magnetSet_t {
  float scoreMagnet = 0.0;
  float warpCounterMagnet = 0.0;
  float carryMagnet = 0.0;
+ float maxWarpMagnet = 0.0;
 };
 
 
@@ -89,9 +90,7 @@ class GameInstance : public GameInstanceBase
   float objectPosX[OBJECT_COUNT];
   float objectPosY[OBJECT_COUNT];
   float warpCounter;
-  uint8_t foundWarp7;
-  uint8_t foundWarp8;
-  uint8_t foundWarp9;
+  uint8_t maxWarp;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

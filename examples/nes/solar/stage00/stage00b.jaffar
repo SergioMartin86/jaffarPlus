@@ -117,61 +117,7 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Ship Horizontal Magnet", "Intensity": 1.0, "Center": 800, "Min": 0, "Max": 6000 },
      { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 445, "Min": 0, "Max": 6000 },
-     { "Type": "Set Warp Counter Magnet", "Intensity": 10000.0 }
-    ]
-   },
-   
-   {
-    "Label": 1004,
-    "Conditions":
-    [
-      { "Property": "Found Warp 7" , "Op": "==", "Value": 1 }
-    ],
-    
-    "Satisfies": [ 1003 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Ship Horizontal Magnet", "Intensity": 1.0, "Center": 873, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 445, "Min": 0, "Max": 6000 },
-     { "Type": "Set Warp Counter Magnet", "Intensity": 10000.0 }
-    ]
-   },
-   
-   {
-    "Label": 1005,
-    "Conditions":
-    [
-      { "Property": "Found Warp 8" , "Op": "==", "Value": 1 }
-    ],
-    
-    "Satisfies": [ 1004 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Ship Horizontal Magnet", "Intensity": 1.0, "Center": 873, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 445, "Min": 0, "Max": 6000 },
-     { "Type": "Set Warp Counter Magnet", "Intensity": 10000.0 }
-    ]
-   },
-   
-   {
-    "Label": 1006,
-    "Conditions":
-    [
-      { "Property": "Found Warp 9" , "Op": "==", "Value": 1 }
-    ],
-    
-    "Satisfies": [ 1005 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Ship Horizontal Magnet", "Intensity": 1.0, "Center": 873, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 445, "Min": 0, "Max": 6000 },
-     { "Type": "Set Warp Counter Magnet", "Intensity": 10000.0 }
+     { "Type": "Set Max Warp Magnet", "Intensity": 100000.0 }
     ]
    },
    

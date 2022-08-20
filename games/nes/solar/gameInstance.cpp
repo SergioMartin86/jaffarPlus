@@ -154,17 +154,9 @@ void GameInstance::updateDerivedValues()
  for (size_t i = 0; i < OBJECT_COUNT; i++) if (*(objectType+i) == 10) warpCounter += 1.0f;
  for (size_t i = 0; i < OBJECT_COUNT; i++) if (*(objectType+i) == 184) warpCounter += 0.5f;
 
- foundWarp7 = 0;
+ maxWarp = 0;
  for (size_t i = 0; i < OBJECT_COUNT; i++)
-  if (*(objectType+i) == 10 && *(objectData+i) == 7) foundWarp7 = 1;
-
- foundWarp8 = 0;
- for (size_t i = 0; i < OBJECT_COUNT; i++)
-  if (*(objectType+i) == 10 && *(objectData+i) == 8) foundWarp8 = 1;
-
- foundWarp9 = 0;
- for (size_t i = 0; i < OBJECT_COUNT; i++)
-  if (*(objectType+i) == 10 && *(objectData+i) > 8) foundWarp9 = 1;
+  if (*(objectType+i) == 10 && *(objectData+i) > maxWarp) maxWarp = *(objectData+i);
 }
 
 // Function to determine the current possible moves
@@ -248,6 +240,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating ship health  magnet
   reward += magnets.warpCounterMagnet * warpCounter;
 
+  // Evaluating ship health  magnet
+  reward += magnets.maxWarpMagnet * maxWarp;
+
   // Evaluating carrying magnet
   int isCarrying = 0;
   if (*shipCarriedObject != 0) isCarrying = 1;
@@ -279,7 +274,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Ship Vel Y:                       %f\n", shipVelY);
  LOG("[Jaffar]  + Ship Shields:                     %03u\n", *shipShields);
  LOG("[Jaffar]  + Warp Counter:                     %f\n", warpCounter);
- LOG("[Jaffar]  + Warp 7 Found:                     %01u\n", foundWarp7);
+ LOG("[Jaffar]  + Max Warp:                         %02u\n", maxWarp);
  LOG("[Jaffar]  + Fuel Delivered:                   %02u\n", *fuelDelivered);
  LOG("[Jaffar]  + Screen Scroll X:                  %03u %03u\n", *screenScrollX1, *screenScrollX2);
  LOG("[Jaffar]  + Screen Scroll Y:                  %03u %03u\n", *screenScrollY1, *screenScrollY2);
@@ -311,5 +306,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.scoreMagnet) > 0.0f)                        LOG("[Jaffar]  + Score Magnet                  - Intensity: %.5f\n", magnets.scoreMagnet);
  if (std::abs(magnets.warpCounterMagnet) > 0.0f)                  LOG("[Jaffar]  + Warp Counter Magnet           - Intensity: %.5f\n", magnets.warpCounterMagnet);
  if (std::abs(magnets.carryMagnet) > 0.0f)                        LOG("[Jaffar]  + Carry Magnet                  - Intensity: %.5f\n", magnets.carryMagnet);
+ if (std::abs(magnets.maxWarpMagnet) > 0.0f)                      LOG("[Jaffar]  + Max Warp Magnet               - Intensity: %.5f\n", magnets.maxWarpMagnet);
 }
 
