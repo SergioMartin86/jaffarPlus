@@ -117,7 +117,8 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Ship Horizontal Magnet", "Intensity": 1.0, "Center": 800, "Min": 0, "Max": 6000 },
      { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 445, "Min": 0, "Max": 6000 },
-     { "Type": "Set Max Warp Magnet", "Intensity": 100000.0 }
+     { "Type": "Set Warp Counter Magnet", "Intensity": 100000.0 },
+     { "Type": "Set Max Warp Magnet", "Intensity": 5000.0 }
     ]
    },
    
