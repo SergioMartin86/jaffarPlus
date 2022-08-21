@@ -26,9 +26,10 @@
      "Freeze Time Timer"
    ],
    
-   "Tile Hash Includes": [ "0x029B", "0x00C9" ],
-   "Enable Pause": false,
-   "Timer Tolerance": 3
+   "Allow B": true,
+   "Tile Hash Includes": [ "0x029B", "0x00C9", "0x0187" ],
+   "Enable Pause": true,
+   "Timer Tolerance": 6
   },
   
   "Jaffar Configuration": 
@@ -153,7 +154,23 @@
     "Description": "Fail on losing tile",
     "Conditions":
     [
-      { "Property": "Tile State", "Position": "0x00c9", "Op": "==", "Value": 99 }
+      { "Property": "Tile State", "Position": "0x00C9", "Op": "==", "Value": 99 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1024,
+    "Description": "Fail on losing tile",
+    "Conditions":
+    [
+      { "Property": "Tile State", "Position": "0x0187", "Op": "==", "Value": 102 }
     ],
     
     "Satisfies": [ ],

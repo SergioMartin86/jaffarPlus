@@ -25,8 +25,9 @@
      "Candelabra States"
    ],
    
-   "Tile Hash Includes": [ "0x060F", "0x0597", "0x019B", "0x028B", "0x0213" ],
-   "Enable Pause": false,
+   "Allow B": true,
+   "Tile Hash Includes": [ "0x060F", "0x0597", "0x019B", "0x028B", "0x0213", "0x0187"  ],
+   "Enable Pause": true,
    "Timer Tolerance": 6
   },
   
@@ -37,8 +38,8 @@
     "Show Winning State Information": true,
     "State Database":
     {
-     "Max Size Lower Bound (Mb)": 60000,
-     "Max Size Upper Bound (Mb)": 230000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 80000
     },
     
     "Hash Database":
@@ -244,6 +245,22 @@
     "Conditions":
     [
       { "Property": "Tile State", "Position": "0x0213", "Op": "!=", "Value": 107 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1027,
+    "Description": "Fail on losing tile",
+    "Conditions":
+    [
+      { "Property": "Tile State", "Position": "0x0187", "Op": "==", "Value": 102 }
     ],
     
     "Satisfies": [ ],

@@ -92,7 +92,6 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   if (isDefined(config, "Timer Tolerance") == true)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
-
 };
 
 // This function computes the hash for the current state
@@ -399,7 +398,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  }
 
  // For some levels, keeping HP allows for later skips
- reward += gameState.hitp_curr * 100.0f;
+ //reward += gameState.hitp_curr * 100.0f;
 
  // Returning reward
  return reward;

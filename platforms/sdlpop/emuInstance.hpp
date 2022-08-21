@@ -16,11 +16,18 @@ class EmuInstance : public EmuInstanceBase
  std::string _levelsFilePath;
  std::string _stateFilePath;
 
+ uint32_t _overrideRNGValue;
+ uint8_t _overrideLooseSound;
+
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
-  // Checking whether configuration contains the rom file
-  if (isDefined(config, "Levels File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Levels File' key.\n");
-  _levelsFilePath = config["Levels File"].get<std::string>();
+  // Checking whether configuration contains the rom fil
+  if(const char* env_p = std::getenv("SDLPOP_LEVELS_FILE_OVERRIDE")) _levelsFilePath = env_p;
+  else
+  {
+   if (isDefined(config, "Levels File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Levels File' key.\n");
+   _levelsFilePath = config["Levels File"].get<std::string>();
+  }
 
   if(const char* env_p = std::getenv("SDLPOP_ROOT_PATH_OVERRIDE")) _sdlPopEnvRoot = env_p;
   else
@@ -99,6 +106,14 @@ class EmuInstance : public EmuInstanceBase
 
   // Loading state file
   loadStateFile(_stateFilePath);
+
+  if (isDefined(config, "RNG Value") == true)
+   _overrideRNGValue = config["RNG Value"].get<std::uint32_t>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'RNG Value' was not defined\n");
+
+  if (isDefined(config, "Loose Tile Sound Id") == true)
+   _overrideLooseSound = config["Loose Tile Sound Id"].get<uint8_t>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Loose Tile Sound Id' was not defined\n");
  }
 
  void startLevel(const word level)
@@ -162,7 +177,13 @@ class EmuInstance : public EmuInstanceBase
   uint8_t stateData[_STATE_DATA_SIZE_TRAIN];
   memset(stateData, 0, _STATE_DATA_SIZE_TRAIN);
   memcpy(stateData, (uint8_t*)sdlPopState.data(), sdlPopState.size());
-  deserializeState(stateData);
+
+  sdlPopState_t tmpState;
+  memcpy(&tmpState, stateData, _STATE_DATA_SIZE_TRAIN);
+  tmpState.random_seed = _overrideRNGValue;
+  tmpState.last_loose_sound = _overrideLooseSound;
+
+  deserializeState((uint8_t*)&tmpState);
  }
 
  void saveStateFile(const std::string& _stateFilePath) const override
