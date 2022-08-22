@@ -23,6 +23,8 @@ enum stateType
 };
 
 static size_t _ruleCount;
+static size_t _moveHistorySize;
+static size_t _moveHistoryOffset;
 
 class State
 {
@@ -30,23 +32,22 @@ class State
 
  static size_t getSize()
  {
-  size_t size = sizeof(State);
-  size += _MAX_MOVELIST_SIZE * sizeof(INPUT_TYPE);
-  return size;
+  size_t offset = sizeof(State);
+
+  _moveHistoryOffset = offset;
+  _moveHistorySize = sizeof(INPUT_TYPE) * _MAX_MOVELIST_SIZE;
+  offset += _moveHistorySize;
+
+  return offset;
  }
 
  void copy(const State* src)
  {
   memcpy(this->frameStateData, src->frameStateData, sizeof(uint8_t) * _STATE_DATA_SIZE_TRAIN);
   memcpy(this->rulesStatus, src->rulesStatus, sizeof(bool) * _MAX_RULE_COUNT);
-  memcpy(this->moveHistory, src->moveHistory, sizeof(INPUT_TYPE) * _MAX_MOVELIST_SIZE);
+  memcpy((uint8_t*)this + _moveHistoryOffset, (uint8_t*)src + _moveHistoryOffset, _moveHistorySize);
   this->reward = src->reward;
   this->frameDiffCount = src->frameDiffCount;
- }
-
- void initialize()
- {
-  moveHistory = (INPUT_TYPE*)((uint8_t*)this + sizeof(State));
  }
 
   // Differentiation functions
@@ -119,18 +120,15 @@ class State
 
 #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
-  // Stores the entire move history of the frame
-  INPUT_TYPE* moveHistory;
-
   // Move r/w operations
   inline void setMove(const size_t idx, const uint8_t move)
   {
-    moveHistory[idx] = move;
+    *((INPUT_TYPE*)((uint8_t*)this + _moveHistoryOffset + idx)) = move;
   }
 
   inline uint8_t getMove(const size_t idx) const
   {
-   return moveHistory[idx];
+   return *((INPUT_TYPE*)((uint8_t*)this + _moveHistoryOffset + idx));
   }
 
 #endif

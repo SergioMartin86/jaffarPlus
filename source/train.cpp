@@ -107,7 +107,7 @@ void Train::run()
     #ifndef JAFFAR_DISABLE_MOVE_HISTORY
      printf("[Jaffar]  + Win Move List: ");
      for (uint16_t i = 0; i < _currentStep; i++)
-      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState->moveHistory[i])).c_str());
+      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState->getMove(i))).c_str());
      printf("\n");
     #endif
   }
@@ -123,8 +123,8 @@ void Train::run()
    // Storing the solution sequence
    #ifndef JAFFAR_DISABLE_MOVE_HISTORY
     std::string solutionString;
-    solutionString += EmuInstance::moveCodeToString(lastState->moveHistory[0]);
-    for (ssize_t i = 1; i < _currentStep-1; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->moveHistory[i]);
+    solutionString += EmuInstance::moveCodeToString(lastState->getMove(0));
+    for (ssize_t i = 1; i < _currentStep-1; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->getMove(i));
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    #endif
   }
@@ -206,7 +206,7 @@ void Train::computeStates()
     uint8_t baseStateData[_STATE_DATA_SIZE_TRAIN];
 
     // Storage for copies and pointer to the base state
-    State* baseStateContent = (State*) malloc(_stateSize); baseStateContent->initialize();
+    State* baseStateContent = (State*) malloc(_stateSize);
     State* baseFramePointer;
 
     // Profiling timers
@@ -447,7 +447,7 @@ void Train::computeStates()
 
         // Copying move list and adding new move
         #ifndef JAFFAR_DISABLE_MOVE_HISTORY
-         newState->moveHistory[_currentStep] = moveId;
+         newState->setMove(_currentStep, moveId);
         #endif
 
         // Calculating current reward
@@ -658,7 +658,7 @@ void Train::printTrainStatus()
   #ifndef JAFFAR_DISABLE_MOVE_HISTORY
    printf("[Jaffar]  + Move List: ");
    for (size_t i = 0; i < _currentStep; i++)
-     printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_bestState->moveHistory[i])).c_str());
+     printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_bestState->getMove(i))).c_str());
    printf("\n");
   #endif
 }
@@ -759,17 +759,15 @@ Train::Train(const nlohmann::json& config)
   _mainStateStorage = (uint8_t*)malloc(_maxDatabaseSizeUpperBound * _stateSize);
   #pragma omp parallel for
   for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++)  for (size_t j = 0; j < _stateSize; j += 1024) *((uint8_t*)&_mainStateStorage[i] + j) = (uint8_t)0;
-  #pragma omp parallel for
-  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) ((State*)(_mainStateStorage + _stateSize * i))->initialize();
   for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push((State*)(_mainStateStorage + _stateSize * i));
 
   // Storing initial state
   _gameInstances[0]->popState(_initialStateData);
 
   // Creating storage for win, best and worst states
-  _winState = (State*) malloc(_stateSize); _winState->initialize();
-  _bestState = (State*) malloc(_stateSize); _bestState->initialize();
-  _worstState = (State*) malloc(_stateSize); _worstState->initialize();
+  _winState = (State*) malloc(_stateSize);
+  _bestState = (State*) malloc(_stateSize);
+  _worstState = (State*) malloc(_stateSize);
 
   // Initializing show thread
   if (_outputEnabled)
@@ -837,7 +835,7 @@ void Train::reset()
  // Computing initial hash
  const auto hash = _gameInstances[0]->computeHash();
 
- auto firstState = (State*) malloc(_stateSize); firstState->initialize();
+ auto firstState = (State*) malloc(_stateSize);
  _gameInstances[0]->pushState(_initialStateData);
 
  // Storing initial state as base for differential comparison
@@ -936,16 +934,16 @@ void Train::showSavingLoop()
        // Storing the best and worst solution sequences
        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
          std::string bestSolutionString;
-         bestSolutionString += EmuInstance::moveCodeToString(_bestState->moveHistory[0]);
-         for (ssize_t i = 1; i < _currentStep-1; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState->moveHistory[i]);
+         bestSolutionString += EmuInstance::moveCodeToString(_bestState->getMove(0));
+         for (ssize_t i = 1; i < _currentStep-1; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState->getMove(i));
          saveStringToFile(bestSolutionString, _outputSolutionBestPath.c_str());
 
          std::string solWithStep = _outputSolutionBestPath + std::string(".") + std::to_string(_currentStep);
          saveStringToFile(bestSolutionString, solWithStep.c_str());
 
          std::string worstSolutionString;
-         worstSolutionString += EmuInstance::moveCodeToString(_worstState->moveHistory[0]);
-         for (ssize_t i = 1; i < _currentStep-1; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState->moveHistory[i]);
+         worstSolutionString += EmuInstance::moveCodeToString(_worstState->getMove(0));
+         for (ssize_t i = 1; i < _currentStep-1; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState->getMove(i));
          saveStringToFile(worstSolutionString, _outputSolutionWorstPath.c_str());
        #endif
 
