@@ -40,7 +40,7 @@ class State
   size_t offset = sizeof(State);
 
   _moveHistoryOffset = offset;
-  _moveHistorySize = sizeof(INPUT_TYPE) * _maxMoveCount;
+  _moveHistorySize = _storeMoveHistory ? sizeof(INPUT_TYPE) * _maxMoveCount : 0;
   offset += _moveHistorySize;
 
   _frameDataOffset = offset;
@@ -97,6 +97,9 @@ class State
   {
    if (isDefined(config, "Max Move Count") == false) EXIT_WITH_ERROR("[ERROR] State Configuration missing 'Max Move Count' key.\n");
    _maxMoveCount = config["Max Move Count"].get<uint16_t>();
+
+   if (isDefined(config, "Store Move History") == false) EXIT_WITH_ERROR("[ERROR] State Configuration missing 'Store Move History' key.\n");
+   _storeMoveHistory = config["Store Move History"].get<bool>();
 
 #ifndef _DISABLE_XDELTA3
 

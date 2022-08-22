@@ -104,12 +104,13 @@ void Train::run()
    _gameInstances[0]->pushState(winStateData);
    _gameInstances[0]->printStateInfo(_winState->getRuleStatus());
 
-    #ifndef JAFFAR_DISABLE_MOVE_HISTORY
+    if (_storeMoveHistory)
+    {
      printf("[Jaffar]  + Win Move List: ");
      for (uint16_t i = 0; i < _currentStep; i++)
       printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState->getMove(i))).c_str());
      printf("\n");
-    #endif
+    }
   }
 
   // Stopping show thread
@@ -121,12 +122,13 @@ void Train::run()
    auto lastState = _winStateFound ? _winState : _bestState;
 
    // Storing the solution sequence
-   #ifndef JAFFAR_DISABLE_MOVE_HISTORY
+   if (_storeMoveHistory)
+   {
     std::string solutionString;
     solutionString += EmuInstance::moveCodeToString(lastState->getMove(0));
     for (ssize_t i = 1; i < _currentStep-1; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->getMove(i));
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
-   #endif
+   }
   }
 }
 
@@ -446,9 +448,7 @@ void Train::computeStates()
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
 
         // Copying move list and adding new move
-        #ifndef JAFFAR_DISABLE_MOVE_HISTORY
-         newState->setMove(_currentStep, moveId);
-        #endif
+        if (_storeMoveHistory)  newState->setMove(_currentStep, moveId);
 
         // Calculating current reward
         newState->reward = _gameInstances[threadId]->getStateReward(newState->getRuleStatus());
@@ -655,12 +655,13 @@ void Train::printTrainStatus()
   _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
 
   // Print Move History
-  #ifndef JAFFAR_DISABLE_MOVE_HISTORY
+  if (_storeMoveHistory)
+  {
    printf("[Jaffar]  + Move List: ");
    for (size_t i = 0; i < _currentStep; i++)
      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_bestState->getMove(i))).c_str());
    printf("\n");
-  #endif
+  }
 }
 
 Train::Train(const nlohmann::json& config)
@@ -935,7 +936,8 @@ void Train::showSavingLoop()
 //       _bestStateLock.unlock();
 
        // Storing the best and worst solution sequences
-       #ifndef JAFFAR_DISABLE_MOVE_HISTORY
+       if (_storeMoveHistory)
+       {
          std::string bestSolutionString;
          bestSolutionString += EmuInstance::moveCodeToString(_bestState->getMove(0));
          for (ssize_t i = 1; i < _currentStep-1; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState->getMove(i));
@@ -948,7 +950,7 @@ void Train::showSavingLoop()
          worstSolutionString += EmuInstance::moveCodeToString(_worstState->getMove(0));
          for (ssize_t i = 1; i < _currentStep-1; i++) worstSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_worstState->getMove(i));
          saveStringToFile(worstSolutionString, _outputSolutionWorstPath.c_str());
-       #endif
+       }
 
         // Resetting timer
         bestStateSaveTimer = std::chrono::high_resolution_clock::now();

@@ -1,40 +1,6 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 7 until drinking the potion",
   
-  "Emulator Configuration": 
-  {
-    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
-    "Levels File": "../LEVELS.DAT",
-    "State File": "lvl07.sav",
-    "RNG Value": 16,
-    "Loose Tile Sound Id": 20
-  },
-  
-  "Game Configuration": 
-  {
-   "Timer Tolerance": 8,
-   "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
-   "Static Tile Hash Types": 
-   [
-    { "Room": 7, "Tile": 5, "Comment": "Loose Tile" },
-    { "Room": 7, "Tile": 25, "Comment": "Debris" }
-   ],
-   
-   "Falling Tiles Hash Types": 
-   [
-    { "Room": 7, "Column": 16, "Type": "Full" }
-   ],
-   
-   "Active Objects Hash Types":
-   [
-    { "Room": 7, "Tile": 5, "Type": "Full", "Comment": "Loose Tile" },
-    { "Room": 7, "Tile": 23, "Type": "Full", "Comment": "Gate" },
-    { "Room": 2, "Tile": 8, "Type": "Full", "Comment": "Chomper" },
-    { "Room": 3, "Tile": 27, "Type": "Full", "Comment": "Gate" },
-    { "Room": 3, "Tile": 24, "Type": "Full", "Comment": "Exit Level Door" }
-   ]
-  },
-  
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
@@ -69,6 +35,40 @@
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
      }
+  },
+  
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl07.sav",
+    "RNG Value": 16,
+    "Loose Tile Sound Id": 20
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 8,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
+   "Static Tile Hash Types": 
+   [
+    { "Room": 7, "Tile": 5, "Comment": "Loose Tile" },
+    { "Room": 7, "Tile": 25, "Comment": "Debris" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 7, "Column": 16, "Type": "Full" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Room": 7, "Tile": 5, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 7, "Tile": 23, "Type": "Full", "Comment": "Gate" },
+    { "Room": 2, "Tile": 8, "Type": "Full", "Comment": "Chomper" },
+    { "Room": 3, "Tile": 27, "Type": "Full", "Comment": "Gate" },
+    { "Room": 3, "Tile": 24, "Type": "Full", "Comment": "Exit Level Door" }
+   ]
   },
   
   "Playback Configuration": 
