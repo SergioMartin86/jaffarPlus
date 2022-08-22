@@ -31,12 +31,22 @@ class State
  static size_t getSize()
  {
   size_t size = sizeof(State);
+  size += _MAX_MOVELIST_SIZE * sizeof(INPUT_TYPE);
   return size;
  }
 
  void copy(const State* src)
  {
-  memcpy(this, src, sizeof(State));
+  memcpy(this->frameStateData, src->frameStateData, sizeof(uint8_t) * _STATE_DATA_SIZE_TRAIN);
+  memcpy(this->rulesStatus, src->rulesStatus, sizeof(bool) * _MAX_RULE_COUNT);
+  memcpy(this->moveHistory, src->moveHistory, sizeof(INPUT_TYPE) * _MAX_MOVELIST_SIZE);
+  this->reward = src->reward;
+  this->frameDiffCount = src->frameDiffCount;
+ }
+
+ void initialize()
+ {
+  moveHistory = (INPUT_TYPE*)((uint8_t*)this + sizeof(State));
  }
 
   // Differentiation functions
@@ -110,7 +120,7 @@ class State
 #ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
   // Stores the entire move history of the frame
-  uint8_t moveHistory[_MAX_MOVELIST_SIZE];
+  INPUT_TYPE* moveHistory;
 
   // Move r/w operations
   inline void setMove(const size_t idx, const uint8_t move)

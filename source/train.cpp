@@ -206,7 +206,7 @@ void Train::computeStates()
     uint8_t baseStateData[_STATE_DATA_SIZE_TRAIN];
 
     // Storage for copies and pointer to the base state
-    State baseStateContent;
+    State* baseStateContent = (State*) malloc(_stateSize); baseStateContent->initialize();
     State* baseFramePointer;
 
     // Profiling timers
@@ -286,7 +286,7 @@ void Train::computeStates()
       #endif // _DETECT_POSSIBLE_MOVES
 
       // Making copy of base state data and pointer
-      baseStateContent.copy(baseState);
+      baseStateContent->copy(baseState);
       baseFramePointer = baseState;
 
       tf = std::chrono::high_resolution_clock::now();
@@ -385,7 +385,7 @@ void Train::computeStates()
         }
 
         // Getting rule status from the base state
-        newState->copy(&baseStateContent);
+        newState->copy(baseStateContent);
 
         // Evaluating rules on the new state
         _gameInstances[threadId]->evaluateRules(newState->rulesStatus);
@@ -516,6 +516,9 @@ void Train::computeStates()
      _stepStateCreationTime += threadStateCreationTime;
      _stepStateEvaluationTime += threadStateEvaluationTime;
     }
+
+    // Deallocating base state storage
+    free(baseStateContent);
   }
 
   // Updating timer averages
@@ -756,15 +759,17 @@ Train::Train(const nlohmann::json& config)
   _mainStateStorage = (uint8_t*)malloc(_maxDatabaseSizeUpperBound * _stateSize);
   #pragma omp parallel for
   for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++)  for (size_t j = 0; j < _stateSize; j += 1024) *((uint8_t*)&_mainStateStorage[i] + j) = (uint8_t)0;
+  #pragma omp parallel for
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) ((State*)(_mainStateStorage + _stateSize * i))->initialize();
   for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push((State*)(_mainStateStorage + _stateSize * i));
 
   // Storing initial state
   _gameInstances[0]->popState(_initialStateData);
 
   // Creating storage for win, best and worst states
-  _winState = (State*) malloc(_stateSize);
-  _bestState = (State*) malloc(_stateSize);
-  _worstState = (State*) malloc(_stateSize);
+  _winState = (State*) malloc(_stateSize); _winState->initialize();
+  _bestState = (State*) malloc(_stateSize); _bestState->initialize();
+  _worstState = (State*) malloc(_stateSize); _worstState->initialize();
 
   // Initializing show thread
   if (_outputEnabled)
@@ -832,7 +837,7 @@ void Train::reset()
  // Computing initial hash
  const auto hash = _gameInstances[0]->computeHash();
 
- auto firstState = (State*) malloc(_stateSize);
+ auto firstState = (State*) malloc(_stateSize); firstState->initialize();
  _gameInstances[0]->pushState(_initialStateData);
 
  // Storing initial state as base for differential comparison
