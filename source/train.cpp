@@ -286,7 +286,7 @@ void Train::computeStates()
       #endif // _DETECT_POSSIBLE_MOVES
 
       // Making copy of base state data and pointer
-      memcpy(&baseStateContent, baseState, sizeof(State));
+      baseStateContent.copy(baseState);
       baseFramePointer = baseState;
 
       tf = std::chrono::high_resolution_clock::now();
@@ -385,7 +385,7 @@ void Train::computeStates()
         }
 
         // Getting rule status from the base state
-        memcpy(newState, &baseStateContent, sizeof(State));
+        newState->copy(&baseStateContent);
 
         // Evaluating rules on the new state
         _gameInstances[threadId]->evaluateRules(newState->rulesStatus);
@@ -472,7 +472,7 @@ void Train::computeStates()
          // Storing new winning state
          if (type == f_win && newState->reward > winStateReward)
          {
-           memcpy(_winState, newState, sizeof(State));
+           _winState->copy(newState);
            winStateReward = newState->reward;
            _winStateFound = true;
          }
@@ -549,8 +549,8 @@ void Train::computeStates()
   _bestStateLock.lock();
   for (const auto& state : newStates)
   {
-   if (state->reward > _bestStateReward) {  memcpy(_bestState, state, sizeof(State)); _bestStateReward = _bestState->reward; }
-   if (state->reward < _worstStateReward) { memcpy(_worstState, state, sizeof(State)); _worstStateReward = _worstState->reward; }
+   if (state->reward > _bestStateReward) {  _bestState->copy(state); _bestStateReward = _bestState->reward; }
+   if (state->reward < _worstStateReward) { _worstState->copy(state); _worstStateReward = _worstState->reward; }
   }
   _bestStateLock.unlock();
 
@@ -746,24 +746,25 @@ Train::Train(const nlohmann::json& config)
 
   // Parsing state configuration
   State::parseConfiguration(_config);
+  _stateSize = State::getSize();
 
   // Calculating max DB size bounds
-  _maxDatabaseSizeLowerBound = floor(((double)_maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
-  _maxDatabaseSizeUpperBound = floor(((double)_maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)sizeof(State)));
+  _maxDatabaseSizeLowerBound = floor(((double)_maxDBSizeMbLowerBound * 1024.0 * 1024.0) / ((double)_stateSize));
+  _maxDatabaseSizeUpperBound = floor(((double)_maxDBSizeMbUpperBound * 1024.0 * 1024.0) / ((double)_stateSize));
 
   // Pre-allocating and touching State containers
-  _mainStateDB = (State*)malloc(_maxDatabaseSizeUpperBound * sizeof(State));
+  _mainStateStorage = (uint8_t*)malloc(_maxDatabaseSizeUpperBound * _stateSize);
   #pragma omp parallel for
-  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++)  for (size_t j = 0; j < sizeof(State); j += 1024) *((uint8_t*)&_mainStateDB[i] + j) = (uint8_t)0;
-  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push(&_mainStateDB[i]);
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++)  for (size_t j = 0; j < _stateSize; j += 1024) *((uint8_t*)&_mainStateStorage[i] + j) = (uint8_t)0;
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push((State*)(_mainStateStorage + _stateSize * i));
 
   // Storing initial state
   _gameInstances[0]->popState(_initialStateData);
 
   // Creating storage for win, best and worst states
-  _winState = new State;
-  _bestState = new State;
-  _worstState = new State;
+  _winState = (State*) malloc(_stateSize);
+  _bestState = (State*) malloc(_stateSize);
+  _worstState = (State*) malloc(_stateSize);
 
   // Initializing show thread
   if (_outputEnabled)
@@ -831,7 +832,7 @@ void Train::reset()
  // Computing initial hash
  const auto hash = _gameInstances[0]->computeHash();
 
- auto firstState = new State;
+ auto firstState = (State*) malloc(_stateSize);
  _gameInstances[0]->pushState(_initialStateData);
 
  // Storing initial state as base for differential comparison
@@ -858,8 +859,8 @@ void Train::reset()
  _hashCurDB->insert(hash);
 
  // Copying initial state into the best/worst state
- memcpy(_bestState, firstState, sizeof(State));
- memcpy(_worstState, firstState, sizeof(State));
+ _bestState->copy(firstState);
+ _worstState->copy(firstState);
 
  // Adding state to the initial database
  _databaseSize = 1;
@@ -873,7 +874,7 @@ Train::~Train()
   delete _bestState;
   delete _worstState;
 
-  free(_mainStateDB);
+  free(_mainStateStorage);
 
   // Initializing thread-specific instances
   #pragma omp parallel

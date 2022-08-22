@@ -12,7 +12,7 @@
 static size_t _maxStateDiff;
 #endif
 
-#define _MAX_MOVELIST_SIZE 600
+#define _MAX_MOVELIST_SIZE 500
 //#define JAFFAR_DISABLE_MOVE_HISTORY
 
 enum stateType
@@ -27,6 +27,17 @@ static size_t _ruleCount;
 class State
 {
   public:
+
+ static size_t getSize()
+ {
+  size_t size = sizeof(State);
+  return size;
+ }
+
+ void copy(const State* src)
+ {
+  memcpy(this, src, sizeof(State));
+ }
 
   // Differentiation functions
 
