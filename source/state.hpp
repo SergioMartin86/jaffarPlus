@@ -12,9 +12,6 @@
 static size_t _maxStateDiff;
 #endif
 
-#define _MAX_MOVELIST_SIZE 500
-//#define JAFFAR_DISABLE_MOVE_HISTORY
-
 enum stateType
 {
   f_regular,
@@ -31,6 +28,9 @@ static size_t _frameDataOffset;
 static size_t _ruleStatusSize;
 static size_t _ruleStatusOffset;
 
+static bool _storeMoveHistory;
+static uint16_t _maxMoveCount;
+
 class State
 {
   public:
@@ -40,7 +40,7 @@ class State
   size_t offset = sizeof(State);
 
   _moveHistoryOffset = offset;
-  _moveHistorySize = sizeof(INPUT_TYPE) * _MAX_MOVELIST_SIZE;
+  _moveHistorySize = sizeof(INPUT_TYPE) * _maxMoveCount;
   offset += _moveHistorySize;
 
   _frameDataOffset = offset;
@@ -48,7 +48,7 @@ class State
   offset += _frameDataSize;
 
   _ruleStatusOffset = offset;
-  _ruleStatusSize = sizeof(bool) * _MAX_RULE_COUNT;
+  _ruleStatusSize = sizeof(bool) * _ruleCount;
   offset += _ruleStatusSize;
 
   return offset;
@@ -95,27 +95,19 @@ class State
   // Parsing configuration
   static void parseConfiguration(const nlohmann::json& config)
   {
-   // Checking whether it contains the state configuration field
-   if (isDefined(config, "State Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State Configuration' key.\n");
-
-   if (isDefined(config["State Configuration"], "Max Move Count") == false) EXIT_WITH_ERROR("[ERROR] State Configuration missing 'Max Move Count' key.\n");
-   uint16_t maxMoveCount = config["State Configuration"]["Max Move Count"].get<uint16_t>();
+   if (isDefined(config, "Max Move Count") == false) EXIT_WITH_ERROR("[ERROR] State Configuration missing 'Max Move Count' key.\n");
+   _maxMoveCount = config["Max Move Count"].get<uint16_t>();
 
 #ifndef _DISABLE_XDELTA3
 
    // Checking whether it contains the emulator configuration field
-   if (isDefined(config["State Configuration"], "Max Difference Count") == false) EXIT_WITH_ERROR("[ERROR] State Configuration missing 'Max Difference Count' key.\n");
-   uint16_t maxDifferenceCount = config["State Configuration"]["Max Difference Count"].get<uint16_t>();
+   if (isDefined(config, "Max Difference Count") == false) EXIT_WITH_ERROR("[ERROR] State Configuration missing 'Max Difference Count' key.\n");
+   uint16_t maxDifferenceCount = config["Max Difference Count"].get<uint16_t>();
 
 
    if (maxDifferenceCount != (uint16_t)_MAX_DIFFERENCE_COUNT) EXIT_WITH_ERROR("[Error] Configured 'Max Difference Count' (%u) does not concide with _MAX_DIFFERENCE_COUNT (%u) in state.hpp source file. Adjust the value in either place and rebuild.\n", maxDifferenceCount, (uint16_t)_MAX_DIFFERENCE_COUNT);
 #endif
-
-   if (_ruleCount > (uint16_t)_MAX_RULE_COUNT) EXIT_WITH_ERROR("[Error] Jaffar script contains %u rules, which is more than what the emulator with _MAX_RULE_COUNT (%u) was configured. Adjust the value in either place and rebuild.\n", _ruleCount, (uint16_t)_MAX_RULE_COUNT);
-   if (maxMoveCount != (uint16_t)_MAX_MOVELIST_SIZE) EXIT_WITH_ERROR("[Error] Configured 'Max Move Count' (%u) does not concide with _MAX_MOVELIST_SIZE (%u) in state.hpp source file. Adjust the value in either place and rebuild.\n", maxMoveCount, (uint16_t)_MAX_MOVELIST_SIZE);
   }
-
-#ifndef JAFFAR_DISABLE_MOVE_HISTORY
 
   // Move r/w operations
   inline void setMove(const size_t idx, const uint8_t move)
@@ -127,8 +119,6 @@ class State
   {
    return *((INPUT_TYPE*)((uint8_t*)this + _moveHistoryOffset + idx));
   }
-
-#endif
 
   // The score calculated for this frame
   float reward;

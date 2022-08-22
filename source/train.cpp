@@ -64,7 +64,7 @@ void Train::run()
     }
 
     // Terminate if maximum number of states was reached
-    if (_currentStep >= _MAX_MOVELIST_SIZE)
+    if (_currentStep >= _maxMoveCount)
     {
       printf("[Jaffar] Maximum step reached, finishing...\n");
       printf("[Jaffar] To run Jaffar for more steps, increase 'Max Move Count' in the .jaffar file.\n");
@@ -608,7 +608,7 @@ void Train::printTrainStatus()
   ssize_t totalStepTime = _stepHashCalculationTime + _stepHashCheckingTime + _stepHashFilteringTime + _stepStateAdvanceTime + _stepStateDeserializationTime + _stepStateEncodingTime + _stepStateDecodingTime + _stepStateEvaluationTime + _stepStateCreationTime + _stepStateDBSortingTime;
 
   printf("[Jaffar] ----------------------------------------------------------------\n");
-  printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _MAX_MOVELIST_SIZE);
+  printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _maxMoveCount);
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
   printf("[Jaffar] Base States Performance: %.3f States/s\n", (double)_stepBaseStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
@@ -748,7 +748,9 @@ Train::Train(const nlohmann::json& config)
   _ruleCount = _gameInstances[0]->_rules.size();
 
   // Parsing state configuration
-  State::parseConfiguration(_config);
+  if (isDefined(_config, "Jaffar Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Jaffar Configuration' key.\n");
+  if (isDefined(_config["Jaffar Configuration"], "State Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Jaffar Configuration' key.\n");
+  State::parseConfiguration(_config["Jaffar Configuration"]["State Configuration"]);
   _stateSize = State::getSize();
 
   // Calculating max DB size bounds
