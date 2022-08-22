@@ -866,7 +866,7 @@ void  start_game()
   // Prevent filling of stack.
   // start_game is called from many places to restart the game, for example:
   // process_key, play_frame, draw_game_frame, play_level, control_kid, end_sequence, expired
-  init_copyprot();
+  //init_copyprot();
 
  init_game(start_level);
 }

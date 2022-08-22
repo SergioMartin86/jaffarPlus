@@ -16,8 +16,8 @@ class EmuInstance : public EmuInstanceBase
  std::string _levelsFilePath;
  std::string _stateFilePath;
 
- uint32_t _overrideRNGValue;
- uint8_t _overrideLooseSound;
+ dword _overrideRNGValue;
+ word _overrideLooseSound;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
@@ -56,8 +56,8 @@ class EmuInstance : public EmuInstanceBase
   // Setting levels.dat path
   sprintf(levels_file, "%s", _levelsFilePath.c_str());
 
-  init_copyprot();
-
+  //init_copyprot();
+  prandom(1);
   // Setting argument config
   is_validate_mode = true;
   g_argc = 1;
@@ -104,16 +104,16 @@ class EmuInstance : public EmuInstanceBase
   startLevel(1);
   gameState.need_level1_music = custom->intro_music_time_initial;
 
-  // Loading state file
-  loadStateFile(_stateFilePath);
-
   if (isDefined(config, "RNG Value") == true)
-   _overrideRNGValue = config["RNG Value"].get<std::uint32_t>();
+   _overrideRNGValue = config["RNG Value"].get<dword>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'RNG Value' was not defined\n");
 
   if (isDefined(config, "Loose Tile Sound Id") == true)
-   _overrideLooseSound = config["Loose Tile Sound Id"].get<uint8_t>();
+   _overrideLooseSound = config["Loose Tile Sound Id"].get<word>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Loose Tile Sound Id' was not defined\n");
+
+  // Loading state file
+  loadStateFile(_stateFilePath);
  }
 
  void startLevel(const word level)
@@ -177,13 +177,10 @@ class EmuInstance : public EmuInstanceBase
   uint8_t stateData[_STATE_DATA_SIZE_TRAIN];
   memset(stateData, 0, _STATE_DATA_SIZE_TRAIN);
   memcpy(stateData, (uint8_t*)sdlPopState.data(), sdlPopState.size());
+  deserializeState(stateData);
 
-  sdlPopState_t tmpState;
-  memcpy(&tmpState, stateData, _STATE_DATA_SIZE_TRAIN);
-  tmpState.random_seed = _overrideRNGValue;
-  tmpState.last_loose_sound = _overrideLooseSound;
-
-  deserializeState((uint8_t*)&tmpState);
+  gameState.random_seed = _overrideRNGValue;
+  gameState.last_loose_sound = _overrideLooseSound;
  }
 
  void saveStateFile(const std::string& _stateFilePath) const override

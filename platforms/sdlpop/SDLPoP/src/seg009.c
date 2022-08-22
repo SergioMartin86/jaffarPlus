@@ -166,15 +166,9 @@ bool file_exists(const char* filename) {
 }
 
 const char* locate_file_(const char* filename, char* path_buffer, int buffer_size) {
-	if(file_exists(filename)) {
-		return filename;
-	} else {
-		// If failed, it may be that SDLPoP is being run from the wrong different working directory.
-		// We can try to rescue the situation by loading from the directory of the executable.
 		find_exe_dir();
         snprintf_check(path_buffer, buffer_size, "%s/%s", exe_dir, filename);
         return (const char*) path_buffer;
-	}
 }
 
 #ifdef _WIN32
