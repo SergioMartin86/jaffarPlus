@@ -102,7 +102,7 @@ void Train::run()
    uint8_t winStateData[_STATE_DATA_SIZE_TRAIN];
    _winState->getStateDataFromDifference(_referenceStateData, winStateData);
    _gameInstances[0]->pushState(winStateData);
-   _gameInstances[0]->printStateInfo(_winState->rulesStatus);
+   _gameInstances[0]->printStateInfo(_winState->getRuleStatus());
 
     #ifndef JAFFAR_DISABLE_MOVE_HISTORY
      printf("[Jaffar]  + Win Move List: ");
@@ -388,10 +388,10 @@ void Train::computeStates()
         newState->copy(baseStateContent);
 
         // Evaluating rules on the new state
-        _gameInstances[threadId]->evaluateRules(newState->rulesStatus);
+        _gameInstances[threadId]->evaluateRules(newState->getRuleStatus());
 
         // Getting state type
-        stateType type = _gameInstances[threadId]->getStateType(newState->rulesStatus);
+        stateType type = _gameInstances[threadId]->getStateType(newState->getRuleStatus());
 
         #ifdef _DETECT_POSSIBLE_MOVES
 
@@ -420,7 +420,7 @@ void Train::computeStates()
            //             _gameInstances[threadId]->pushState(baseStateData);
            //             _gameInstances[threadId]->saveStateFile(saveFileName);
            //              printf("[Jaffar] Base state to %s\n", saveFileName.c_str());
-           //             _gameInstances[threadId]->printStateInfo(newState->rulesStatus);
+           //             _gameInstances[threadId]->printStateInfo(newState->getRuleStatus());
            //
            //             getchar();
            //             printf("[Jaffar] Continuing...\n");
@@ -451,7 +451,7 @@ void Train::computeStates()
         #endif
 
         // Calculating current reward
-        newState->reward = _gameInstances[threadId]->getStateReward(newState->rulesStatus);
+        newState->reward = _gameInstances[threadId]->getStateReward(newState->getRuleStatus());
 
         tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateCreationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
@@ -612,7 +612,7 @@ void Train::printTrainStatus()
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
   printf("[Jaffar] Base States Performance: %.3f States/s\n", (double)_stepBaseStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
-  printf("[Jaffar] State size: %lu bytes\n", sizeof(State));
+  printf("[Jaffar] State size: %lu bytes\n", _stateSize);
   printf("[Jaffar] States Processed: (Step/Total): %lu / %lu\n", _stepNewStatesProcessedCounter, _totalStatesProcessedCounter);
   printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * sizeof(State)) / (1024.0 * 1024.0));
   printf("[Jaffar] State DB Lower / Upper Bounds:  %lu (%.3fmb) / %lu (%.3fmb)\n", _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * sizeof(State)) / (1024.0 * 1024.0), _maxDatabaseSizeUpperBound, (double)(_maxDatabaseSizeUpperBound * sizeof(State)) / (1024.0 * 1024.0));
@@ -652,7 +652,7 @@ void Train::printTrainStatus()
   uint8_t bestStateData[_STATE_DATA_SIZE_TRAIN];
   _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
   _gameInstances[0]->pushState(bestStateData);
-  _gameInstances[0]->printStateInfo(_bestState->rulesStatus);
+  _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
 
   // Print Move History
   #ifndef JAFFAR_DISABLE_MOVE_HISTORY
@@ -835,21 +835,21 @@ void Train::reset()
  // Computing initial hash
  const auto hash = _gameInstances[0]->computeHash();
 
- auto firstState = (State*) malloc(_stateSize);
+ auto _firstState = (State*) malloc(_stateSize);
  _gameInstances[0]->pushState(_initialStateData);
 
  // Storing initial state as base for differential comparison
  memcpy(_referenceStateData, _initialStateData, _STATE_DATA_SIZE_TRAIN);
- firstState->computeStateDifference(_referenceStateData, _initialStateData);
+ _firstState->computeStateDifference(_referenceStateData, _initialStateData);
 
  // Storing initial state difference
- for (size_t i = 0; i < _ruleCount; i++) firstState->rulesStatus[i] = false;
+ for (size_t i = 0; i < _ruleCount; i++) _firstState->getRuleStatus()[i] = false;
 
  // Evaluating Rules on initial state
- _gameInstances[0]->evaluateRules(firstState->rulesStatus);
+ _gameInstances[0]->evaluateRules(_firstState->getRuleStatus());
 
  // Evaluating Score on initial state
- firstState->reward = _gameInstances[0]->getStateReward(firstState->rulesStatus);
+ _firstState->reward = _gameInstances[0]->getStateReward(_firstState->getRuleStatus());
 
  // Creating hash databases and registering hash for initial state
  _hashCurDB = std::make_unique<hashSet_t>();
@@ -862,13 +862,13 @@ void Train::reset()
  _hashCurDB->insert(hash);
 
  // Copying initial state into the best/worst state
- _bestState->copy(firstState);
- _worstState->copy(firstState);
+ _bestState->copy(_firstState);
+ _worstState->copy(_firstState);
 
  // Adding state to the initial database
  _databaseSize = 1;
  _stateDB.clear();
- _stateDB.push_back(firstState);
+ _stateDB.push_back(_firstState);
 }
 
 Train::~Train()
@@ -876,6 +876,7 @@ Train::~Train()
   delete _winState;
   delete _bestState;
   delete _worstState;
+  delete _firstState;
 
   free(_mainStateStorage);
 

@@ -74,9 +74,9 @@ class Train
 
   // Queue for free states
   uint8_t* _mainStateStorage;
-  size_t _stateSize;
   std::queue<State*> _freeStateQueue;
   Lock _freeStateQueueLock;
+  State *_firstState;
 
   // Storage for the win, best and worst state
   Lock _bestStateLock;

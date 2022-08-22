@@ -23,8 +23,13 @@ enum stateType
 };
 
 static size_t _ruleCount;
+static size_t _stateSize;
 static size_t _moveHistorySize;
 static size_t _moveHistoryOffset;
+static size_t _frameDataSize;
+static size_t _frameDataOffset;
+static size_t _ruleStatusSize;
+static size_t _ruleStatusOffset;
 
 class State
 {
@@ -38,19 +43,19 @@ class State
   _moveHistorySize = sizeof(INPUT_TYPE) * _MAX_MOVELIST_SIZE;
   offset += _moveHistorySize;
 
+  _frameDataOffset = offset;
+  _frameDataSize = _STATE_DATA_SIZE_TRAIN;
+  offset += _frameDataSize;
+
+  _ruleStatusOffset = offset;
+  _ruleStatusSize = sizeof(bool) * _MAX_RULE_COUNT;
+  offset += _ruleStatusSize;
+
   return offset;
  }
 
- void copy(const State* src)
- {
-  memcpy(this->frameStateData, src->frameStateData, sizeof(uint8_t) * _STATE_DATA_SIZE_TRAIN);
-  memcpy(this->rulesStatus, src->rulesStatus, sizeof(bool) * _MAX_RULE_COUNT);
-  memcpy((uint8_t*)this + _moveHistoryOffset, (uint8_t*)src + _moveHistoryOffset, _moveHistorySize);
-  this->reward = src->reward;
-  this->frameDiffCount = src->frameDiffCount;
- }
-
-  // Differentiation functions
+ inline void copy(const State* src) { memcpy(this, src, _stateSize); }
+ inline bool* getRuleStatus() { return (bool*)((uint8_t*)this + _ruleStatusOffset); }
 
 #ifndef _DISABLE_XDELTA3
 
@@ -75,24 +80,17 @@ class State
 
 #else
 
-  // Positions of the difference with respect to a base frame
-  uint8_t frameStateData[_STATE_DATA_SIZE_TRAIN];
-
   inline void computeStateDifference(const uint8_t* __restrict__ baseStateData, const uint8_t* __restrict__ newStateData)
   {
-   memcpy(frameStateData, newStateData, _STATE_DATA_SIZE_TRAIN);
+   memcpy((uint8_t*)this + _frameDataOffset, newStateData, _frameDataSize);
   }
 
   inline void getStateDataFromDifference(const uint8_t* __restrict__ baseStateData, uint8_t* __restrict__ stateData) const
   {
-   memcpy(stateData, frameStateData, _STATE_DATA_SIZE_TRAIN);
+   memcpy(stateData, (uint8_t*)this + _frameDataOffset, _frameDataSize);
   }
 
 #endif
-
-  // Rule status vector
-  bool rulesStatus[_MAX_RULE_COUNT];
-
 
   // Parsing configuration
   static void parseConfiguration(const nlohmann::json& config)
@@ -115,7 +113,6 @@ class State
 
    if (_ruleCount > (uint16_t)_MAX_RULE_COUNT) EXIT_WITH_ERROR("[Error] Jaffar script contains %u rules, which is more than what the emulator with _MAX_RULE_COUNT (%u) was configured. Adjust the value in either place and rebuild.\n", _ruleCount, (uint16_t)_MAX_RULE_COUNT);
    if (maxMoveCount != (uint16_t)_MAX_MOVELIST_SIZE) EXIT_WITH_ERROR("[Error] Configured 'Max Move Count' (%u) does not concide with _MAX_MOVELIST_SIZE (%u) in state.hpp source file. Adjust the value in either place and rebuild.\n", maxMoveCount, (uint16_t)_MAX_MOVELIST_SIZE);
-
   }
 
 #ifndef JAFFAR_DISABLE_MOVE_HISTORY
@@ -135,7 +132,4 @@ class State
 
   // The score calculated for this frame
   float reward;
-
-  // Positions of the difference with respect to a base frame
-  uint16_t frameDiffCount;
 };
