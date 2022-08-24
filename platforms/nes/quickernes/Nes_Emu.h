@@ -210,7 +210,6 @@ public:
 	const char * set_sample_rate( long rate, class Nes_Buffer* );
 	const char * set_sample_rate( long rate, class Nes_Effects_Buffer* );
 	void irq_changed() { emu.irq_changed(); }
-private:
 
 	frame_t* frame_;
 	int buffer_height_;
@@ -225,7 +224,6 @@ private:
 	long timestamp() const { return emu.nes.frame_count; }
 	void set_timestamp( long t ) { emu.nes.frame_count = t; }
 
-private:
 	// noncopyable
 	Nes_Emu( const Nes_Emu& );
 	Nes_Emu& operator = ( const Nes_Emu& );

@@ -14,7 +14,7 @@ class Nes_Mapper;
 class Nes_Cart;
 class Nes_State;
 
-class Nes_Core : private Nes_Cpu {
+class Nes_Core : public Nes_Cpu {
 	typedef Nes_Cpu cpu;
 public:
 	Nes_Core();
@@ -33,7 +33,7 @@ public:
 	void irq_changed();
 	void event_changed();
 	
-public: private: friend class Nes_Emu;
+public:   friend class Nes_Emu;
 	
 	struct impl_t
 	{
@@ -57,7 +57,7 @@ public:
 	nes_state_t nes;
 	Nes_Ppu ppu;
 
-private:
+
 	// noncopyable
 	Nes_Core( const Nes_Core& );
 	Nes_Core& operator = ( const Nes_Core& );
@@ -91,22 +91,22 @@ private:
 	nes_time_t cpu_time() const { return clock_ + 1; }
 	void cpu_adjust_time( int offset );
 	
-public: private: friend class Nes_Ppu;
+public:   friend class Nes_Ppu;
 	void set_ppu_2002_time( nes_time_t t ) { ppu_2002_time = t - 1 - cpu_time_offset; }
 	
-public: private: friend class Nes_Mapper;
+public:   friend class Nes_Mapper;
 	void enable_prg_6000();
 	void enable_sram( bool enabled, bool read_only = false );
 	nes_time_t clock() const { return clock_; }
 	void add_mapper_intercept( nes_addr_t start, unsigned size, bool read, bool write );
 	
-public: private: friend class Nes_Cpu;
+public:   friend class Nes_Cpu;
 	int  cpu_read_ppu( nes_addr_t, nes_time_t );
 	int  cpu_read( nes_addr_t, nes_time_t );
 	void cpu_write( nes_addr_t, int data, nes_time_t );
 	void cpu_write_2007( int data );
 	
-private:
+
 	unsigned char data_reader_mapped [page_count + 1]; // extra entry for overflow
 	unsigned char data_writer_mapped [page_count + 1];
 };

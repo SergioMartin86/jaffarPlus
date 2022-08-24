@@ -83,8 +83,10 @@ class GameInstance : public GameInstanceBase
   uint8_t* lvl10Room0DoorState;
   uint8_t* lvl10Room4DoorState;
 
+
   // Hash-specific configuration
   std::set<std::string> hashIncludes;
+  uint8_t timerTolerance;
 
   // Derivative values
   uint8_t isCorrectRender;

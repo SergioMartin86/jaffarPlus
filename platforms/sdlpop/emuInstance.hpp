@@ -18,6 +18,7 @@ class EmuInstance : public EmuInstanceBase
 
  dword _overrideRNGValue;
  word _overrideLooseSound;
+ bool _overrideRNGFlag;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
@@ -56,8 +57,8 @@ class EmuInstance : public EmuInstanceBase
   // Setting levels.dat path
   sprintf(levels_file, "%s", _levelsFilePath.c_str());
 
-  //init_copyprot();
-  prandom(1);
+  init_copyprot();
+//  prandom(1);
   // Setting argument config
   is_validate_mode = true;
   g_argc = 1;
@@ -111,6 +112,11 @@ class EmuInstance : public EmuInstanceBase
   if (isDefined(config, "Loose Tile Sound Id") == true)
    _overrideLooseSound = config["Loose Tile Sound Id"].get<word>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Loose Tile Sound Id' was not defined\n");
+
+  if (isDefined(config, "Override RNG Value") == true)
+   _overrideRNGFlag = config["Override RNG Value"].get<bool>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Override RNG Value' was not defined\n");
+
 
   // Loading state file
   loadStateFile(_stateFilePath);
@@ -179,8 +185,11 @@ class EmuInstance : public EmuInstanceBase
   memcpy(stateData, (uint8_t*)sdlPopState.data(), sdlPopState.size());
   deserializeState(stateData);
 
-  gameState.random_seed = _overrideRNGValue;
-  gameState.last_loose_sound = _overrideLooseSound;
+  if (_overrideRNGFlag)
+  {
+   gameState.random_seed = _overrideRNGValue;
+   gameState.last_loose_sound = _overrideLooseSound;
+  }
  }
 
  void saveStateFile(const std::string& _stateFilePath) const override

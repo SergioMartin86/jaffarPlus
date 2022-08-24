@@ -65,7 +65,6 @@ public:
 	// One of the many opcodes that are undefined and stop CPU emulation.
 	enum { bad_opcode = 0xD2 };
 	
-private:
 	uint8_t const* code_map [page_count + 1];
 	nes_time_t clock_limit;
 	nes_time_t clock_count;
@@ -77,7 +76,6 @@ private:
 	void set_code_page( int, uint8_t const* );
 	void update_clock_limit();
 	
-public:
 	registers_t r;
 	bool isCorrectExecution = true;
 	

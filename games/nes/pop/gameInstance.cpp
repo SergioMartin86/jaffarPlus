@@ -63,6 +63,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
     hashIncludes.insert(entry.get<std::string>());
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Hash Includes' was not defined\n");
 
+  // Timer tolerance
+  if (isDefined(config, "Timer Tolerance") == true)
+   timerTolerance = config["Timer Tolerance"].get<uint8_t>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
+
   updateDerivedValues();
 }
 
@@ -71,6 +76,8 @@ uint64_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
   MetroHash64 hash;
+
+  if (timerTolerance > 0) hash.Update(*globalTimer % (timerTolerance+1));
 
   hash.Update(*currentLevel);
   hash.Update(*framePhase);

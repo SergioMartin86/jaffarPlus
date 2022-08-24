@@ -1,11 +1,52 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 10.",
 
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 320,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 250,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 8000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 6000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
   "Emulator Configuration": 
   {
-    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
-    "State File": "lvl10c.sav"
+    "State File": "lvl10c.sav",
+    "Override RNG Value": true,
+    "RNG Value": 228722061,
+    "Loose Tile Sound Id": 20
   },
   
   "State Configuration": 
@@ -17,7 +58,8 @@
   
   "Game Configuration": 
   {
-   "Property Hash Types": [ "Kid Current HP" ],
+   "Timer Tolerance": 8,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
    "Static Tile Hash Types":
    [ 
     { "Room": 1, "Tile": 21, "Comment": "Loose Tile on Top" },
@@ -36,34 +78,12 @@
    ]
   },
   
-  "Jaffar Configuration": 
-  {
-    "State Database":
-    {
-     "Max Size Lower Bound (Mb)": 1550,
-     "Max Size Upper Bound (Mb)": 200000
-    },
-    
-    "Hash Database": 
-    { 
-     "Max Size Lower Bound (Mb)": 12000,
-     "Max Size Upper Bound (Mb)": 20000
-    },
-    
-    "Save Intermediate Results":
-    {
-     "Enabled": true,
-     "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol"
-    }
-  }, 
-  
   "Playback Configuration": 
   {
-    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
   },
+  
   
   "Rules":
   [
