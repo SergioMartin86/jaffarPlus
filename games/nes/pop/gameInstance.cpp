@@ -31,6 +31,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   guardMovement          = (uint8_t*)   &_emu->_baseMem[0x0625];
   drawnRoom              = (uint8_t*)   &_emu->_baseMem[0x0051];
   screenTransition       = (uint8_t*)   &_emu->_baseMem[0x04AC];
+  screenTransition2      = (uint8_t*)   &_emu->_baseMem[0x01E0];
   exitDoorState          = (uint8_t*)   &_emu->_baseMem[0x0400];
 
   screenDrawn            = (uint8_t*)   &_emu->_baseMem[0x0732];
@@ -78,6 +79,7 @@ uint64_t GameInstance::computeHash() const
   MetroHash64 hash;
 
   if (timerTolerance > 0) hash.Update(*globalTimer % (timerTolerance+1));
+  if (*isPaused != 2 || *screenDrawn != 0) hash.Update(*globalTimer);
 
   hash.Update(*currentLevel);
   hash.Update(*framePhase);
@@ -107,12 +109,15 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*guardMovement);
   hash.Update(*drawnRoom);
   hash.Update(*screenTransition);
+  hash.Update(*screenTransition2);
   hash.Update(*screenDrawn);
   hash.Update(*isPaused);
 
   hash.Update(*guardPresent);
   hash.Update(*guardDisappearMode);
   hash.Update(*lvl4ExitDoorState);
+
+  hash.Update(screenTransition2, 0x20);
 
   if (*gameState == 8) hash.Update(*passwordTimer);
   if (*gameState == 8 && *passwordTimer == 0) hash.Update(*globalTimer);
@@ -171,45 +176,8 @@ void GameInstance::updateDerivedValues()
  if (_emu->_nes->emu.ppu.isCorrectRender == false) isCorrectRender = 0;
  if (_emu->_nes->emu.isCorrectExecution == false) isCorrectRender = 0;
 
- // Advancing useless frames
- uint16_t advanceCounter = 0;
-
-  while ( (advanceCounter < 64) && (*isPaused != 2) ) { _emu->advanceState(0); advanceCounter++; }
-  if (*kidJumpingState == 28 && *framePhase == 4) return; // Allows for ending level
-
-  // Number of frames per state
-  uint16_t framesPerState = 4;
-  if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
-
-  while ( (advanceCounter < 64) && (framesPerState == 4) && (*framePhase != 2) )
-  {
-   _emu->advanceState(0); advanceCounter++;
-   framesPerState = 4;
-   if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
-  }
-
-  while ( (advanceCounter < 64) && (framesPerState == 5) && (*framePhase != 3) )
-  {
-   _emu->advanceState(0); advanceCounter++;
-
-   framesPerState = 4;
-   if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
-  }
-
-  while ( (advanceCounter < 64) && (framesPerState == 4) && (*framePhase != 2) )
-  {
-   _emu->advanceState(0); advanceCounter++;
-   framesPerState = 4;
-   if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
-  }
-
-  while ( (advanceCounter < 64) && (framesPerState == 5) && (*framePhase != 3) )
-  {
-   _emu->advanceState(0); advanceCounter++;
-
-   framesPerState = 4;
-   if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
-  }
+ framesPerState = 4;
+ if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
 }
 
 // Function to determine the current possible moves
@@ -220,8 +188,9 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   if (*gameState == 8) return { "." };
   if (*gameState == 1 && *kidFrame == 0 && *kidMovement == 91) return { ".", "A", "S" };
 
-  // Allows for ending level
+  if (framesPerState == 5 && *framePhase != 3) return { "." };
   if (*kidJumpingState == 28 && *framePhase == 4) return { ".", "U" };
+  if (framesPerState == 4 && *framePhase != 2) return { "." };
 
   if (*kidFrame == 1)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 2)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
@@ -472,7 +441,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + RNG State:              0x%X\n", *RNGState);
   LOG("[Jaffar]  + Global Timer:           %02u\n", *globalTimer);
   LOG("[Jaffar]  + Kid Frame / Direction:  %02u %02u\n", *kidFrame, *kidDirection);
-  LOG("[Jaffar]  + Frame Phase:            %02u\n", *framePhase);
+  LOG("[Jaffar]  + Frame Phase:            %02u / %02u\n", *framePhase, framesPerState);
   LOG("[Jaffar]  + Is Paused:              %02u\n", *isPaused);
   LOG("[Jaffar]  + Screen Trans / Drawn:   %02u / %02u\n", *screenTransition, *screenDrawn);
   LOG("[Jaffar]  + Bottom / Pass Timer:    %02u, %02u\n", *bottomTextTimer, *passwordTimer);

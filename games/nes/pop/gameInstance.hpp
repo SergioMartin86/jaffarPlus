@@ -4,7 +4,8 @@
 #include <set>
 
 #define ROOM_COUNT 256
-#define _INVERSE_FRAME_RATE 16667
+//#define _INVERSE_FRAME_RATE 16667
+#define _INVERSE_FRAME_RATE 4166
 
 // Datatype to describe a generic magnet
 struct genericMagnet_t {
@@ -83,6 +84,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* lvl10Room0DoorState;
   uint8_t* lvl10Room4DoorState;
 
+  uint8_t* screenTransition2;
+
 
   // Hash-specific configuration
   std::set<std::string> hashIncludes;
@@ -90,6 +93,7 @@ class GameInstance : public GameInstanceBase
 
   // Derivative values
   uint8_t isCorrectRender;
+  uint8_t framesPerState;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;
