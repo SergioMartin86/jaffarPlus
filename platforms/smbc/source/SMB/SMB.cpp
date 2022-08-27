@@ -3,8 +3,6 @@
 //
 #include "SMB.hpp"
 
-uint8_t* romImage;
-
 void SMBEngine::code(int mode)
 {
     switch (mode)

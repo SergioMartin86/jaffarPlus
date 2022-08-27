@@ -18,31 +18,6 @@ static SMBEngine* smbEngine = nullptr;
 static uint32_t renderBuffer[RENDER_WIDTH * RENDER_HEIGHT];
 
 /**
- * Load the Super Mario Bros. ROM image.
- */
-static bool loadRomImage()
-{
-    FILE* file = fopen(Configuration::getRomFileName().c_str(), "r");
-    if (file == NULL)
-    {
-        std::cout << "Failed to open the file \"" << Configuration::getRomFileName() << "\". Exiting.\n";
-        return false;
-    }
-
-    // Find the size of the file
-    fseek(file, 0L, SEEK_END);
-    size_t fileSize = ftell(file);
-    fseek(file, 0L, SEEK_SET);
-
-    // Read the entire file into a buffer
-    romImage = new uint8_t[fileSize];
-    fread(romImage, sizeof(uint8_t), fileSize, file);
-    fclose(file);
-
-    return true;
-}
-
-/**
  * SDL Audio callback function.
  */
 static void audioCallback(void* userdata, uint8_t* buffer, int len)
@@ -61,12 +36,6 @@ static bool initialize()
     // Load the configuration
     //
     Configuration::initialize(CONFIG_FILE_NAME);
-
-    // Load the SMB ROM image
-    if (!loadRomImage())
-    {
-        return false;
-    }
 
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
@@ -125,23 +94,6 @@ static bool initialize()
         }
     }
 
-    if (Configuration::getAudioEnabled())
-    {
-        // Initialize audio
-        SDL_AudioSpec desiredSpec;
-        desiredSpec.freq = Configuration::getAudioFrequency();
-        desiredSpec.format = AUDIO_S8;
-        desiredSpec.channels = 1;
-        desiredSpec.samples = 2048;
-        desiredSpec.callback = audioCallback;
-        desiredSpec.userdata = NULL;
-
-        SDL_AudioSpec obtainedSpec;
-        SDL_OpenAudio(&desiredSpec, &obtainedSpec);
-
-        // Start playing audio
-        SDL_PauseAudio(0);
-    }
 
     return true;
 }

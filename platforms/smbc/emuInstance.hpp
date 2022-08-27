@@ -6,10 +6,14 @@
 #include <vector>
 #include <utils.hpp>
 #include <state.hpp>
+#include <SMB.hpp>
 
 class EmuInstance : public EmuInstanceBase
 {
  public:
+
+ std::string _romData;
+ SMBEngine* _nes;
 
  // Emulator instance
  //TBD
@@ -24,8 +28,12 @@ class EmuInstance : public EmuInstanceBase
   if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
   std::string stateFilePath = config["State File"].get<std::string>();
 
-  // Creating new emulator and loading rom
-  // TBD
+  //  loading rom
+  if (loadStringFromFile(_romData, romFilePath.c_str()) != true) EXIT_WITH_ERROR("[ERROR] Could not load rom file.\n");
+  romImage = (uint8_t*)_romData.data();
+
+  _nes = new SMBEngine(romImage);
+  _nes->reset();
 
   // Loading state file, if specified
   if (stateFilePath != "") loadStateFile(stateFilePath);
@@ -120,7 +128,7 @@ class EmuInstance : public EmuInstanceBase
 
  void advanceState(const INPUT_TYPE move) override
  {
-  // TBD
+  _nes->update();
  }
 
 };

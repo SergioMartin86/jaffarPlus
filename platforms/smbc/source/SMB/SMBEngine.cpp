@@ -10,6 +10,8 @@
 
 #define DATA_STORAGE_OFFSET 0x8000 // Starting address for storing constant data
 
+uint8_t* romImage;
+
 //---------------------------------------------------------------------
 // Public interface
 //---------------------------------------------------------------------
@@ -71,10 +73,10 @@ void SMBEngine::update()
     code(1);
 
     // Update the APU
-    if (Configuration::getAudioEnabled())
-    {
-        apu->stepFrame();
-    }
+//    if (Configuration::getAudioEnabled())
+//    {
+//        apu->stepFrame();
+//    }
 }
 
 //---------------------------------------------------------------------

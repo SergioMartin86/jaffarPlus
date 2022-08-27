@@ -8,6 +8,7 @@
 
 #include "SMBDataPointers.hpp"
 
+extern uint8_t* romImage;
 class APU;
 class Controller;
 class PPU;
