@@ -164,6 +164,13 @@ uint64_t GameInstance::computeHash() const
    hash.Update(*lvl10Room4DoorState);
   }
 
+  // Keypad input: (0x0040:0x40A), [0x0000:0x0037), 0x003A,
+  // Timer: 0x0791
+  hash.Update( &_emu->_baseMem[0x0000], 0x0036);
+  hash.Update( &_emu->_baseMem[0x0042], 0x03C7);
+//  hash.Update( &_emu->_baseMem[0x040C], 0x0384);
+//  hash.Update( &_emu->_baseMem[0x0793], 0x006D);
+
   uint64_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;

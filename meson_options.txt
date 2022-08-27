@@ -12,7 +12,8 @@ option('game', type : 'combo', choices :
     'nes/contra',
     'nes/kungfu',
     'nes/solar',
-    'nes/bt',  
+    'nes/bt',
+    'smbc',  
     'sdlpop'], description: 'Selects the game to run Jaffar with')
 
 option('buildRL', type : 'boolean', value : false, description: 'Decides whether to build the experimental RL engine')

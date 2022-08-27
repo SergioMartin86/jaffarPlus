@@ -8,15 +8,9 @@
     "State File": "lvl01a.state"
   },
   
-  "State Configuration": 
-  {
-    "Max Difference Count": 0,
-    "Max Move Count": 1500
-  },
-  
   "Game Configuration": 
   {
-   "Timer Tolerance": 8,
+   "Timer Tolerance": 4,
    "Hash Includes": [  ]
   },
   
@@ -29,7 +23,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 2000,
+      "Max Move Count": 5500,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 5000,
@@ -38,8 +32,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 20000
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
