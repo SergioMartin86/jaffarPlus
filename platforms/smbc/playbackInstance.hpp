@@ -37,7 +37,7 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Initializes the playback module instance
  PlaybackInstance(GameInstance* game, const nlohmann::json& config) : PlaybackInstanceBase(game, config)
  {
-  videoScale = 1;
+  videoScale = 2;
   smbEngine = _game->_emu->_nes;
 
   if (isDefined(config, "Overlay Path") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Overlay Path' key.\n");
@@ -112,24 +112,6 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Storing current game state
   // TBD
 
-  SDL_Surface* overlayButtonASurface = NULL;
-  SDL_Surface* overlayButtonBSurface = NULL;
-  SDL_Surface* overlayButtonSelectSurface = NULL;
-  SDL_Surface* overlayButtonStartSurface = NULL;
-  SDL_Surface* overlayButtonLeftSurface = NULL;
-  SDL_Surface* overlayButtonRightSurface = NULL;
-  SDL_Surface* overlayButtonUpSurface = NULL;
-  SDL_Surface* overlayButtonDownSurface = NULL;
-
-  if (move.find("A") != std::string::npos) overlayButtonASurface = _overlayButtonASurface;
-  if (move.find("B") != std::string::npos) overlayButtonBSurface = _overlayButtonBSurface;
-  if (move.find("S") != std::string::npos) overlayButtonSelectSurface = _overlayButtonSelectSurface;
-  if (move.find("T") != std::string::npos) overlayButtonStartSurface = _overlayButtonStartSurface;
-  if (move.find("L") != std::string::npos) overlayButtonLeftSurface = _overlayButtonLeftSurface;
-  if (move.find("R") != std::string::npos) overlayButtonRightSurface = _overlayButtonRightSurface;
-  if (move.find("U") != std::string::npos) overlayButtonUpSurface = _overlayButtonUpSurface;
-  if (move.find("D") != std::string::npos) overlayButtonDownSurface = _overlayButtonDownSurface;
-
   // Reload game state
   smbEngine->update();
   smbEngine->render(renderBuffer);
@@ -141,7 +123,72 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Render the screen
   SDL_RenderSetLogicalSize(renderer, RENDER_WIDTH, RENDER_HEIGHT);
   SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+  const SDL_Rect OVERLAY_BLIT_RECT_SRC = { 0, 0, 169, 53 };
+  const SDL_Rect OVERLAY_BLIT_RECT_DST = { 171, 212, 84, 26 };
+
+  auto overlayTex = SDL_CreateTextureFromSurface(renderer, _overlayBaseSurface);
+  SDL_RenderCopy(renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+  SDL_DestroyTexture(overlayTex);
+
+  if (move.find("A") != std::string::npos)
+  {
+   auto overlayTex = SDL_CreateTextureFromSurface(renderer, _overlayButtonASurface);
+   SDL_RenderCopy(renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+   SDL_DestroyTexture(overlayTex);
+  }
+
+  if (move.find("B") != std::string::npos)
+  {
+   auto overlayTex = SDL_CreateTextureFromSurface(renderer, _overlayButtonBSurface);
+   SDL_RenderCopy(renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+   SDL_DestroyTexture(overlayTex);
+  }
+
+  if (move.find("S") != std::string::npos)
+  {
+   auto overlayTex = SDL_CreateTextureFromSurface(renderer, _overlayButtonSelectSurface);
+   SDL_RenderCopy(renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+   SDL_DestroyTexture(overlayTex);
+  }
+
+  if (move.find("T") != std::string::npos)
+  {
+   auto overlayTex = SDL_CreateTextureFromSurface(renderer, _overlayButtonStartSurface);
+   SDL_RenderCopy(renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+   SDL_DestroyTexture(overlayTex);
+  }
+
+  if (move.find("U") != std::string::npos)
+  {
+   auto overlayTex = SDL_CreateTextureFromSurface(renderer, _overlayButtonUpSurface);
+   SDL_RenderCopy(renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+   SDL_DestroyTexture(overlayTex);
+  }
+
+  if (move.find("D") != std::string::npos)
+  {
+   auto overlayTex = SDL_CreateTextureFromSurface(renderer, _overlayButtonDownSurface);
+   SDL_RenderCopy(renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+   SDL_DestroyTexture(overlayTex);
+  }
+
+  if (move.find("L") != std::string::npos)
+  {
+   auto overlayTex = SDL_CreateTextureFromSurface(renderer, _overlayButtonLeftSurface);
+   SDL_RenderCopy(renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+   SDL_DestroyTexture(overlayTex);
+  }
+
+  if (move.find("R") != std::string::npos)
+  {
+   auto overlayTex = SDL_CreateTextureFromSurface(renderer, _overlayButtonRightSurface);
+   SDL_RenderCopy(renderer, overlayTex, &OVERLAY_BLIT_RECT_SRC, &OVERLAY_BLIT_RECT_DST);
+   SDL_DestroyTexture(overlayTex);
+  }
+
   SDL_RenderPresent(renderer);
+
  }
 
  // Function to render frame
