@@ -1,6 +1,6 @@
 #include "../SMB/SMBEngine.hpp"
 #include "../Util/Video.hpp"
-
+#include <cstring>
 #include "PPU.hpp"
 
 static const uint8_t nametableMirrorLookup[][4] = {
@@ -86,6 +86,22 @@ const uint32_t* paletteRGB = defaultPaletteRGB;
 PPU::PPU(SMBEngine& engine) :
     engine(engine)
 {
+
+ ppuCtrl    = 0;
+ ppuMask    = 0;
+ ppuStatus  = 0;
+ oamAddress = 0;
+ ppuScrollX = 0;
+ ppuScrollY = 0;
+
+ memset(palette, 0, 32); /**< Palette data. */
+ memset(nametable, 0, 2048); /**< Background table. */
+ memset(oam, 0, 256); /**< Sprite memory. */
+
+ currentAddress = 0;
+ writeToggle = false;
+ vramBuffer = 0;
+
     currentAddress = 0;
     writeToggle = false;
 }

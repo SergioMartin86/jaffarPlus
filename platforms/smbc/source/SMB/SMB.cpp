@@ -180,8 +180,7 @@ RotPRandomBit: // rotate carry into d7, and rotate last bit into carry
 Sprite0Clr: // wait for sprite 0 flag to clear, which will
     a = M(PPU_STATUS);
     a &= BOOST_BINARY(01000000); // not happen until vblank has ended
-    if (!z)
-        goto Sprite0Clr;
+    if (!z) goto Sprite0Clr;
     a = M(GamePauseStatus); // if in pause mode, do not bother with sprites at all
     a >>= 1;
     if (c)

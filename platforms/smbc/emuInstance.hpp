@@ -53,7 +53,7 @@ class EmuInstance : public EmuInstanceBase
  {
   std::string stateData;
   if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("[ERROR] Could not state file.\n"); ;
-  deserializeState((uint8_t*) stateData.data());
+//  deserializeState((uint8_t*) stateData.data());
  }
 
  void saveStateFile(const std::string& stateFilePath) const override

@@ -118,6 +118,10 @@ SMBEngine::SMBEngine(uint8_t* romImage) :
     y(*this, &registerY),
     s(*this, &registerS)
 {
+   memset(dataStorage, 0, 0x8000); /**< 32kb of storage for constant data. */
+   memset(ram, 0, 0x800);          /**< 2kb of RAM. */
+   memset(returnIndexStack, 0, 100);   /**< Stack for managing JSR subroutines. */
+
     ppu = new PPU(*this);
     controller1 = new Controller();
     controller2 = new Controller();
