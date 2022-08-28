@@ -53,7 +53,7 @@ class EmuInstance : public EmuInstanceBase
  {
   std::string stateData;
   if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("[ERROR] Could not state file.\n"); ;
-//  deserializeState((uint8_t*) stateData.data());
+  deserializeState((uint8_t*) stateData.data());
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
@@ -133,22 +133,16 @@ class EmuInstance : public EmuInstanceBase
 
  void advanceState(const INPUT_TYPE move) override
  {
-  if (move & 0b10000000) _nes->controller1->setButtonState(BUTTON_RIGHT, true);
-  if (move & 0b01000000) _nes->controller1->setButtonState(BUTTON_LEFT, true);
-  if (move & 0b00100000) _nes->controller1->setButtonState(BUTTON_DOWN, true);
-  if (move & 0b00010000) _nes->controller1->setButtonState(BUTTON_UP, true);
-  if (move & 0b00001000) _nes->controller1->setButtonState(BUTTON_START, true);
-  if (move & 0b00000100) _nes->controller1->setButtonState(BUTTON_SELECT, true);
-  if (move & 0b00000010) _nes->controller1->setButtonState(BUTTON_B, true);
-  if (move & 0b00000001) _nes->controller1->setButtonState(BUTTON_A, true);
-
-//  printf("Pre Step\n");
+  if (move & 0b10000000) _nes->controller1->setButtonState(BUTTON_RIGHT, true); else _nes->controller1->setButtonState(BUTTON_RIGHT, false);
+  if (move & 0b01000000) _nes->controller1->setButtonState(BUTTON_LEFT, true); else _nes->controller1->setButtonState(BUTTON_LEFT, false);
+  if (move & 0b00100000) _nes->controller1->setButtonState(BUTTON_DOWN, true); else _nes->controller1->setButtonState(BUTTON_DOWN, false);
+  if (move & 0b00010000) _nes->controller1->setButtonState(BUTTON_UP, true); else _nes->controller1->setButtonState(BUTTON_UP, false);
+  if (move & 0b00001000) _nes->controller1->setButtonState(BUTTON_START, true); else _nes->controller1->setButtonState(BUTTON_START, false);
+  if (move & 0b00000100) _nes->controller1->setButtonState(BUTTON_SELECT, true); else _nes->controller1->setButtonState(BUTTON_SELECT, false);
+  if (move & 0b00000010) _nes->controller1->setButtonState(BUTTON_B, true); else _nes->controller1->setButtonState(BUTTON_B, false);
+  if (move & 0b00000001) _nes->controller1->setButtonState(BUTTON_A, true); else _nes->controller1->setButtonState(BUTTON_A, false);
 
   _nes->update();
-
-//  printf("Done Step\n");
-//  fflush(stdout);
-//  exit(0);
  }
 
 };

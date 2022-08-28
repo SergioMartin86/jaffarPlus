@@ -102,15 +102,6 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   // Initialize derivative values
   updateDerivedValues();
-
-  for (size_t i = 0; i < 100; i++)
-  {
-   printf("STEP: %lu\n", i);
-   fflush(stdout);
-   _emu->advanceState(0);
-   printStateInfo(NULL);
-  }
-  exit(0);
 }
 
 // This function computes the hash for the current state

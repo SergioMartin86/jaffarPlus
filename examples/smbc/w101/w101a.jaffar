@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../smb.nes",
-    "State File": "../boot.state"
+    "State File": "w101a.state"
   },
   
   "Game Configuration": 
@@ -32,8 +32,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 30,
-     "Max Size Upper Bound (Mb)": 2000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
@@ -55,7 +55,7 @@
   
   "Playback Configuration": 
   {
-     "Disable Display": true,
+     "Disable Display": false,
      "Overlay Path": "../../../platforms/nes/overlay"
   },
   
