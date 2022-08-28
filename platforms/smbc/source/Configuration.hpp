@@ -14,6 +14,8 @@
 class ConfigurationOption
 {
 public:
+
+   virtual ~ConfigurationOption() = default;
     /**
      * Construct a configuration option.
      * 

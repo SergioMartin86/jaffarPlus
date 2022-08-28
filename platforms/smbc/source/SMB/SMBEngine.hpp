@@ -9,7 +9,6 @@
 #include "SMBDataPointers.hpp"
 
 extern uint8_t* romImage;
-class APU;
 class Controller;
 class PPU;
 
@@ -63,9 +62,7 @@ public:
      */
     void update();
 
-private:
     // NES Emulation subsystems:
-    APU* apu;
     PPU* ppu;
     Controller* controller1;
     Controller* controller2;
@@ -178,6 +175,10 @@ private:
      * Map constant data to the address space. The address must be at least 0x8000.
      */
     void writeData(uint16_t address, const uint8_t* data, std::size_t length);
+
+    size_t getStateSize();
+    void saveState(uint8_t* state) const;
+    void loadState(const uint8_t* state);
 };
 
 #endif // SMBENGINE_HPP

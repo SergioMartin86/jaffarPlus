@@ -35,6 +35,7 @@ public:
      * Set the state of a button on the controller.
      */
     void setButtonState( ControllerButton button, bool state );
+    void setButtonStates(uint8_t states);
 
     /**
      * Write a byte to the controller register.

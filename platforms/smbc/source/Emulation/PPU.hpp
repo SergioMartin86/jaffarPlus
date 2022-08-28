@@ -24,7 +24,6 @@ public:
 
     void writeRegister(uint16_t address, uint8_t value);
 
-private:
     SMBEngine& engine;
 
     uint8_t ppuCtrl; /**< $2000 */

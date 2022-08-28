@@ -7,6 +7,7 @@
 #include <utils.hpp>
 #include <state.hpp>
 #include <SMB.hpp>
+#include "Emulation/Controller.hpp"
 
 class EmuInstance : public EmuInstanceBase
 {
@@ -34,6 +35,15 @@ class EmuInstance : public EmuInstanceBase
 
   _nes = new SMBEngine(romImage);
   _nes->reset();
+  _nes->update();
+
+//  size_t stateSize = _nes->getStateSize();
+//  printf("Size: %lu\n", stateSize);
+//  std::string bootState;
+//  bootState.resize(stateSize);
+//  _nes->saveState((uint8_t*) bootState.data());
+//  saveStringToFile(bootState, "boot.state");
+//  exit(0);
 
   // Loading state file, if specified
   if (stateFilePath != "") loadStateFile(stateFilePath);
@@ -41,32 +51,27 @@ class EmuInstance : public EmuInstanceBase
 
  void loadStateFile(const std::string& stateFilePath) override
  {
-  // Loading state data
-  // TBD
-
-  // Loading state data into state object
-  // TBD
-
-  // Loading state object into the emulator
-  // TBD
+  std::string stateData;
+  if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("[ERROR] Could not state file.\n"); ;
+//  deserializeState((uint8_t*) stateData.data());
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
  {
   std::string stateData;
-  stateData.resize(_STATE_DATA_SIZE_TRAIN);
+  stateData.resize(_nes->getStateSize());
   serializeState((uint8_t*)stateData.data());
   saveStringToFile(stateData, stateFilePath.c_str());
  }
 
  void serializeState(uint8_t* state) const override
  {
-  // TBD
+  _nes->saveState(state);
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  // TBD
+  _nes->loadState(state);
  }
 
  // Controller input bits
@@ -128,7 +133,22 @@ class EmuInstance : public EmuInstanceBase
 
  void advanceState(const INPUT_TYPE move) override
  {
+  if (move & 0b10000000) _nes->controller1->setButtonState(BUTTON_RIGHT, true);
+  if (move & 0b01000000) _nes->controller1->setButtonState(BUTTON_LEFT, true);
+  if (move & 0b00100000) _nes->controller1->setButtonState(BUTTON_DOWN, true);
+  if (move & 0b00010000) _nes->controller1->setButtonState(BUTTON_UP, true);
+  if (move & 0b00001000) _nes->controller1->setButtonState(BUTTON_START, true);
+  if (move & 0b00000100) _nes->controller1->setButtonState(BUTTON_SELECT, true);
+  if (move & 0b00000010) _nes->controller1->setButtonState(BUTTON_B, true);
+  if (move & 0b00000001) _nes->controller1->setButtonState(BUTTON_A, true);
+
+//  printf("Pre Step\n");
+
   _nes->update();
+
+//  printf("Done Step\n");
+//  fflush(stdout);
+//  exit(0);
  }
 
 };

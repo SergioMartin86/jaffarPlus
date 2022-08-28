@@ -6,7 +6,6 @@ smbcSrc = [
 srcDir + '/Emulation/Controller.cpp',
 srcDir + '/Emulation/MemoryAccess.cpp',
 srcDir + '/Emulation/PPU.cpp',
-srcDir + '/Emulation/APU.cpp',
 srcDir + '/Configuration.cpp',
 srcDir + '/Util/Video.cpp',
 srcDir + '/SMB/SMBEngine.cpp',

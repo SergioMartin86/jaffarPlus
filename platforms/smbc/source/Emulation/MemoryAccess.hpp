@@ -46,7 +46,6 @@ public:
      */
     void ror();
 
-private:
     SMBEngine& engine;
     uint8_t* value;
     uint8_t constant;

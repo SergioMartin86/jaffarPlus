@@ -32,6 +32,11 @@ void Controller::setButtonState( ControllerButton button, bool state )
     buttonStates[(int)button] = state;
 }
 
+void Controller::setButtonStates(uint8_t states)
+{
+    *(uint8_t*)buttonStates = states;
+}
+
 void Controller::writeByte( uint8_t value )
 {
     if( (value & (1 << 0)) == 0 && (strobe & (1 << 0)) == 1 )
