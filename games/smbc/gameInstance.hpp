@@ -5,20 +5,20 @@
 #include "gameInstanceBase.hpp"
 #include <set>
 
-// Datatype to describe a magnet
-struct magnet_t {
- float intensity = 0; // How strong the magnet is
- float min = 0;  // What is the minimum input value to the calculation.
- float max = 0;  // What is the maximum input value to the calculation.
+// Datatype to describe a generic magnet
+struct genericMagnet_t {
+ float intensity = 0.0; // How strong the magnet is
+ float center = 0.0;  // What is the central point of attraction
+ float min = 0.0;  // What is the minimum input value to the calculation.
+ float max = 0.0;  // What is the maximum input value to the calculation.
 };
 
 // Datatype to describe a magnet
 struct magnetSet_t {
- // Relevant mario magnets
- magnet_t marioScreenOffsetMagnet;
- magnet_t marioHorizontalMagnet;
- magnet_t marioVerticalMagnet;
+ genericMagnet_t marioHorizontalMagnet;
+ genericMagnet_t marioVerticalMagnet;
 };
+
 
 
 

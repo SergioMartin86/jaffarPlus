@@ -25,7 +25,7 @@ class Train
 {
   public:
   Train(const nlohmann::json& config);
-  ~Train();
+  ~Train() = default;
   void run();
   void reset();
 

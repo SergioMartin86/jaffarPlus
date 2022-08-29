@@ -10,7 +10,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4,
+   "Timer Tolerance": 0,
    "Hash Includes": [  ]
   },
   
@@ -61,6 +61,86 @@
   
   "Rules":
   [
+      {
+    "Label": 1001,
+    "Description": "Setting magnet to make Mario go to the right",
+    "Conditions":
+    [
+     { "Property": "Current World", "Op": "==", "Value":  1 },
+     { "Property": "Current Stage", "Op": "==", "Value":  1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max":  6000 },
+      { "Type": "Set Mario Vertical Magnet", "Intensity": 0.01, "Center": 0, "Min": 0, "Max":  255 }
+    ]
+   },
    
+   {
+    "Label": 1002,
+    "Description": "If Mario gets to pipe, go down until screen is over.",
+    "Conditions":
+    [
+     { "Property": "Mario State", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    "Description": "Win when mario is down the pipe and screen changes.",
+    "Conditions":
+    [
+     { "Property": "Level Entry Flag", "Op": "==", "Value":  1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1998,
+    "Description": "If Mario dies from getting hit, then fail.",
+    "Conditions":
+    [
+     { "Property": "Mario State", "Op": "==", "Value":  11 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Description": "If Mario dies from falling, then fail.",
+    "Conditions":
+    [
+     { "Property": "Mario Position Y", "Op": ">", "Value":  250 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
   ]  
 }

@@ -13,7 +13,7 @@ auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return cou
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ kidFrame
+ #define _KEY_VALUE_ marioAnimation
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -35,15 +35,8 @@ void Train::run()
     // Printing search status
     printTrainStatus();
 
-    /////////////////////////////////////////////////////////////////
     /// Main state processing cycle begin
-    /////////////////////////////////////////////////////////////////
-
     computeStates();
-
-    /////////////////////////////////////////////////////////////////
-    /// Main state processing cycle end
-    /////////////////////////////////////////////////////////////////
 
     // Advancing step
     _currentStep++;
@@ -81,7 +74,7 @@ void Train::run()
      std::vector<std::string> vec(key.second.begin(), key.second.end());
      std::sort(vec.begin(), vec.end(), moveCountComparerString);
      auto itr = vec.begin();
-     printf("if (*_KEY_VALUE_ == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", key.first, itr->c_str());
+     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "marioAnimation", key.first, itr->c_str());
      itr++;
      for (; itr != vec.end(); itr++)
      {
@@ -240,9 +233,9 @@ void Train::computeStates()
 
       #ifdef _DETECT_POSSIBLE_MOVES
 
-       std::set<INPUT_TYPE, decltype(moveCountComparerNumber)> possibleMoveSet;
+       std::set<uint64_t> possibleMoveSet;
        std::vector<std::string> fullMoves;
-       std::set<INPUT_TYPE, decltype(moveCountComparerNumber)> alternativeMoveSet;
+       std::set<uint64_t> alternativeMoveSet;
 
        for (const auto& actualMove : possibleMoves)
        {
@@ -250,23 +243,13 @@ void Train::computeStates()
         fullMoves.push_back(actualMove);
        }
 
-       for (int i = 0; i < 256*sizeof(INPUT_TYPE); i++)
+       for (uint64_t i = 0; i < 256*sizeof(INPUT_TYPE); i++)
        {
-        INPUT_TYPE idx = (INPUT_TYPE)i;
-        if (possibleMoveSet.contains(idx) == false)
-        if ((idx & 0b00001000) == 0)
-        if ((idx & 0b00000100) == 0)
-//        if (((INPUT_TYPE)i & INPUT_START) == 0)
-//         if (((INPUT_TYPE)i & INPUT_START) == 0)
-//        if (((INPUT_TYPE)i & INPUT_MODE) == 0)
-//        if (((INPUT_TYPE)i & INPUT_X) == 0)
-//        if (((INPUT_TYPE)i & INPUT_Y) == 0)
-//        if (((INPUT_TYPE)i & INPUT_Z) == 0)
-//        if (((INPUT_TYPE)i & INPUT_A) == 0)
-//        if (((INPUT_TYPE)i & INPUT_UP) == 0)
-//        if (((INPUT_TYPE)i & INPUT_DOWN) == 0)
+        if (possibleMoveSet.contains(i) == false)
+        if ((i & 0b00001000) == 0)
+        if ((i & 0b00000100) == 0)
         {
-//         printf("i: %d\n", idx);
+         INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
          fullMoves.push_back(EmuInstance::moveCodeToString(idx));
         }
@@ -274,11 +257,6 @@ void Train::computeStates()
 
        std::sort(fullMoves.begin(), fullMoves.end(), moveCountComparerString);
        auto possibleMoveCopy = possibleMoves;
-//
-//       for (const auto& move : fullMoves) printf("%s\n", move.c_str());
-//       printf("Size: %lu\n", fullMoves.size());
-//       exit(0);
-
        possibleMoves = fullMoves;
 
        // Store key values
@@ -293,8 +271,6 @@ void Train::computeStates()
       tf = std::chrono::high_resolution_clock::now();
       threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
-//      std::vector<std::vector<std::string>> possibleMoveHack = {{"R"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"R"},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"LS"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"L"},{"U"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"R"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"."},{"."},{"S"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"D"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"U"},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"."},{"S"},{"."},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"L"},{"."},{"."},{"."},{"L"},{"."},{"."},{"L"},{"."},{"."},{"."},{"R"},{"S"},{"."},{"."},{"."},{"."},{"."}};
-//      possibleMoves = possibleMoveHack[_currentStep];
 
       // Running possible moves
       for (size_t idx = 0; idx < possibleMoves.size(); idx++)
@@ -399,35 +375,8 @@ void Train::computeStates()
          // Checking if move is not there in actual moves
          #pragma omp critical
          if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
-         {
           if (newMoveKeySet[keyValue].contains(possibleMoves[idx]) == false)
-          {
-           // Storing new move
            newMoveKeySet[keyValue].insert(possibleMoves[idx]);
-
-           //           if (possibleMoves[idx].find("s") != std::string::npos)
-           //           {
-           //             printf("Possible move not found! '%s'\n", possibleMoves[idx].c_str());
-           //             printf("[Jaffar]  + Idx: %lu\n", idx);
-           //             printf("[Jaffar]  + Full Set Moves:\n  - '%s'", possibleMoves[0].c_str()); for (size_t i = 1; i < possibleMoves.size(); i++) printf("\n   - '%s'", possibleMoves[i].c_str()); printf("\n");
-           //             printf("[Jaffar]  + Actual Possible Moves: '%s'", possibleMoveCopy[0].c_str()); for (size_t i = 1; i < possibleMoveCopy.size(); i++) printf(", '%s'", possibleMoveCopy[i].c_str()); printf("\n");
-           //
-           //             // Storing save file
-           //             std::string saveFileName = "_newMove.state";
-           //             _gameInstances[threadId]->saveStateFile(saveFileName);
-           //             printf("[Jaffar] New movement state to %s\n", saveFileName.c_str());
-           //
-           //             saveFileName = "_base.state";
-           //             _gameInstances[threadId]->pushState(baseStateData);
-           //             _gameInstances[threadId]->saveStateFile(saveFileName);
-           //              printf("[Jaffar] Base state to %s\n", saveFileName.c_str());
-           //             _gameInstances[threadId]->printStateInfo(newState->getRuleStatus());
-           //
-           //             getchar();
-           //             printf("[Jaffar] Continuing...\n");
-           //           }
-          }
-         }
 
         #endif // _DETECT_POSSIBLE_MOVES
 
@@ -870,30 +819,6 @@ void Train::reset()
  _databaseSize = 1;
  _stateDB.clear();
  _stateDB.push_back(_firstState);
-}
-
-Train::~Train()
-{
-  delete _winState;
-  delete _bestState;
-  delete _worstState;
-  delete _firstState;
-
-  free(_mainStateStorage);
-
-  // Initializing thread-specific instances
-  #pragma omp parallel
-  {
-   // Getting thread id
-   int threadId = omp_get_thread_num();
-
-   // Doing this as a critical section so not all threads try to access files at the same time
-   #pragma omp critical
-   {
-    delete _gameInstances[threadId]->_emu;
-    delete _gameInstances[threadId];
-   }
-  }
 }
 
 // Functions for the show thread
