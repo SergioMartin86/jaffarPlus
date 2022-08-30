@@ -1,6 +1,63 @@
 {
   "Description": "This script searches for the fastest any% solution for NES SMB World 8-2",  
- 
+   
+   "Emulator Configuration": 
+  {
+    "Rom File": "../smb.nes",
+    "State File": "w802a.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 0,
+   "Hash Includes": [  ]
+  },
+  
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 2500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 5000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+     "Disable Display": false,
+     "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
   "Rules":
   [
    {
@@ -16,7 +73,7 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Max":  6000 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center":  6000, "Min": 0, "Max": 6000 }
     ]
    },
    

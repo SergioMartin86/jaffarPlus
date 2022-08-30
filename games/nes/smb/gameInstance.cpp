@@ -270,6 +270,11 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   if (*marioAnimation == 0x0086) moveList.insert(moveList.end(), { "..D....."});
   if (*marioAnimation == 0x00FE) moveList.insert(moveList.end(), { "...U...."});
 
+  if (*marioAnimation == 0x0006) moveList.insert(moveList.end(), { ".LD.....", "R.D....."});
+  if (*marioAnimation == 0x000E) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "RL......"});
+  if (*marioAnimation == 0x0016) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "RL......"});
+  if (*marioAnimation == 0x0006) moveList.insert(moveList.end(), { "...U...."});
+
   return moveList;
 }
 
