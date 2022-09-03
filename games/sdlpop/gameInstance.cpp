@@ -108,6 +108,8 @@ uint64_t GameInstance::computeHash() const
  hash.Update(gameState.leveldoor_open);
  hash.Update(gameState.Kid);
  if (gameState.Kid.room == gameState.Guard.room) hash.Update(gameState.Guard);
+ if (gameState.Kid.room == gameState.Char.room) hash.Update(gameState.Char);
+ if (gameState.Kid.room == gameState.Opp.room) hash.Update(gameState.Opp);
  hash.Update(gameState.grab_timer);
  hash.Update(gameState.holding_sword);
  hash.Update(gameState.united_with_shadow);
@@ -123,9 +125,37 @@ uint64_t GameInstance::computeHash() const
  hash.Update(gameState.is_feather_fall);
  hash.Update(gameState.last_loose_sound);
 
+ hash.Update(gameState.is_guard_notice);
+ hash.Update(gameState.can_guard_see_kid);
+ hash.Update(gameState.collision_row);
+ hash.Update(gameState.prev_coll_room);
+ hash.Update(gameState.prev_coll_flags);
+ hash.Update(gameState.jumped_through_mirror);
+
+ hash.Update(gameState.current_level);
+ hash.Update(gameState.next_level);
+ hash.Update(gameState.mobs_count);
+ hash.Update(gameState.pickup_obj_type);
+ hash.Update(gameState.demo_index);
+ hash.Update(gameState.demo_time);
+ hash.Update(gameState.curr_guard_color);
+ hash.Update(gameState.guard_skill);
+ hash.Update(gameState.shadow_initialized);
+
+ hash.Update(gameState.curr_row_coll_room);
+ hash.Update(gameState.curr_row_coll_flags);
+ hash.Update(gameState.below_row_coll_room);
+ hash.Update(gameState.below_row_coll_flags);
+ hash.Update(gameState.above_row_coll_room);
+ hash.Update(gameState.above_row_coll_flags);
+ hash.Update(gameState.prev_collision_row);
+ hash.Update(gameState.exit_room_timer);
+
+
+
  // Manual hashing
  //hash.Update(gameState.level.guards_x);
- //hash.Update(gameState.level.guards_dir);
+ hash.Update(gameState.level.guards_dir);
  //hash.Update(gameState.level.guards_seq_lo);
  //hash.Update(gameState.level.guards_seq_hi);
  //hash.Update(gameState.level.guards_tile);

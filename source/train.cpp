@@ -273,10 +273,6 @@ void Train::computeStates()
       tf = std::chrono::high_resolution_clock::now();
       threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
-//      possibleMoves.clear();
-//      if (_currentStep == 0) possibleMoves.push_back("L");
-//      if (_currentStep == 1) possibleMoves.push_back(".");
-
       // Running possible moves
       for (size_t idx = 0; idx < possibleMoves.size(); idx++)
       {
@@ -307,39 +303,6 @@ void Train::computeStates()
         auto hash = _gameInstances[threadId]->computeHash();
         tf = std::chrono::high_resolution_clock::now();
         threadHashCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
-
-
-        //      auto moves = std::vector<std::string>({".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", "..L....", "....U..", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", "......S", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", "..L....", ".......", "......S", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", "......S", ".......", ".......", "....U..", ".......", ".......", ".......", "..L....", ".......", ".......", "..L....", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".....D.", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", "....U..", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", "..L....", ".......", ".......", "...R...", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "...R...", ".......", ".......", ".......", ".......", ".......", ".......", "...R...", ".......", ".......", ".......", ".......", "...R...", ".......", ".......", "...R...", ".......", ".......", ".......", ".....D.", ".......", ".......", ".......", ".......", ".......", "....U..", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "......." });
-        //      possibleMoves.clear();
-        //      possibleMoves.push_back(moves[_currentStep]);
-        uint8_t newData[_STATE_DATA_SIZE_TRAIN];
-        _gameInstances[threadId]->popState(newData);
-        _gameInstances[threadId]->pushState(_initialStateData);
-        for (ssize_t i = 0; i < _currentStep; i++) _gameInstances[threadId]->advanceState(baseState->getMove(i));
-        _gameInstances[threadId]->advanceState(moveId);
-        auto newHash = _gameInstances[threadId]->computeHash();
-        if (hash != newHash)
-        {
-         uint8_t correctData[_STATE_DATA_SIZE_TRAIN];
-         _gameInstances[threadId]->popState(correctData);
-
-         printf("Bad new hash for move history:\n");
-         for (ssize_t i = 0; i < _currentStep; i++) printf("%s ", EmuInstance::moveCodeToString(baseState->getMove(i)).c_str());
-         printf("%s\n", EmuInstance::moveCodeToString(moveId).c_str());
-         printf("Base:\n");
-         _gameInstances[0]->pushState(baseStateData);
-         _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
-
-         printf("New:\n");
-         _gameInstances[0]->pushState(newData);
-         _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
-
-         printf("Correct:\n");
-         _gameInstances[0]->pushState(correctData);
-         _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
-
-         exit(0);
-        }
 
         // Checking for the existence of the hash in the hash database
         t0 = std::chrono::high_resolution_clock::now(); // Profiling

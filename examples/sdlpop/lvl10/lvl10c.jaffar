@@ -18,8 +18,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 8000
+     "Max Size Lower Bound (Mb)": 130000,
+     "Max Size Upper Bound (Mb)": 180000
     },
     
     "Hash Database":
@@ -43,7 +43,7 @@
   {
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
-    "State File": "jaffar.state",
+    "State File": "lvl10c.sav",
     "Override RNG Value": false,
     "RNG Value": 228722061,
     "Loose Tile Sound Id": 20
