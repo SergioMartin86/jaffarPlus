@@ -154,9 +154,6 @@ extern "C" __thread word current_sound;
 extern "C" __thread byte edge_type;
 extern "C" __thread char **sound_names;
 extern "C" __thread int g_argc;
-extern "C" __thread sbyte collision_row;
-extern "C" __thread sbyte prev_coll_room[10];
-extern "C" __thread byte prev_coll_flags[10];
 extern "C" __thread int last_key_scancode;
 extern "C" __thread word curmob_index;
 extern "C" __thread dat_type *dathandle;
@@ -188,7 +185,6 @@ extern "C" __thread short drawn_col;
 extern "C" __thread byte tile_left;
 extern "C" __thread byte modifier_left;
 extern "C" __thread byte kidSeqId;
-extern "C" __thread short jumped_through_mirror;
 extern "C" __thread char levels_file[POP_MAX_PATH];
 
 typedef void restore_room_after_quick_load_minipop_t(void);

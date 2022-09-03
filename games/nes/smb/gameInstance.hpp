@@ -21,9 +21,6 @@ struct magnetSet_t {
  genericMagnet_t marioVerticalMagnet;
 };
 
-
-
-
 class GameInstance : public GameInstanceBase
 {
  public:

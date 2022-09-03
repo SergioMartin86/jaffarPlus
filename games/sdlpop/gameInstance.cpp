@@ -107,7 +107,7 @@ uint64_t GameInstance::computeHash() const
  hash.Update(gameState.drawn_room);
  hash.Update(gameState.leveldoor_open);
  hash.Update(gameState.Kid);
- hash.Update(gameState.Guard);
+ if (gameState.Kid.room == gameState.Guard.room) hash.Update(gameState.Guard);
  hash.Update(gameState.grab_timer);
  hash.Update(gameState.holding_sword);
  hash.Update(gameState.united_with_shadow);
@@ -121,13 +121,14 @@ uint64_t GameInstance::computeHash() const
  hash.Update(gameState.need_level1_music);
  hash.Update(gameState.is_screaming);
  hash.Update(gameState.is_feather_fall);
+ hash.Update(gameState.last_loose_sound);
 
  // Manual hashing
- hash.Update(gameState.level.guards_x);
- hash.Update(gameState.level.guards_dir);
- hash.Update(gameState.level.guards_seq_lo);
- hash.Update(gameState.level.guards_seq_hi);
- hash.Update(gameState.level.guards_tile);
+ //hash.Update(gameState.level.guards_x);
+ //hash.Update(gameState.level.guards_dir);
+ //hash.Update(gameState.level.guards_seq_lo);
+ //hash.Update(gameState.level.guards_seq_hi);
+ //hash.Update(gameState.level.guards_tile);
 
  if (_hashKidCurrentHp == true) hash.Update(gameState.hitp_curr);
  if (_hashGuardCurrentHp == true) hash.Update(gameState.guardhp_curr);
@@ -170,8 +171,7 @@ uint64_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
- next_room = gameState.drawn_room = gameState.Kid.room;
- load_room_links();
+
 }
 
 // Function to determine the current possible moves

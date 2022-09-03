@@ -157,7 +157,6 @@ __thread short prev_char_top_row;
 __thread short prev_char_col_right;
 __thread short prev_char_col_left;
 __thread short char_bottom_row;
-__thread short jumped_through_mirror;
 __thread byte curr_tile2;
 __thread short tile_row;
 __thread word char_width_half;
@@ -174,9 +173,6 @@ __thread word current_sound;
 __thread byte edge_type;
 __thread char **sound_names;
 __thread int g_argc;
-__thread sbyte collision_row;
-__thread sbyte prev_coll_room[10];
-__thread byte prev_coll_flags[10];
 __thread int last_key_scancode;
 __thread word curmob_index;
 __thread dat_type *dathandle;
@@ -3049,7 +3045,7 @@ void  timers()
 // seg003:0798
 void  check_mirror()
 {
-  if (jumped_through_mirror == -1)
+  if (gameState.jumped_through_mirror == -1)
   {
     jump_through_mirror();
   }
@@ -3058,7 +3054,7 @@ void  check_mirror()
 // seg003:080A
 void  jump_through_mirror()
 {
-  jumped_through_mirror = 0;
+  gameState.jumped_through_mirror = 0;
   Char.charid = charid_1_shadow;
   gameState.guardhp_max = gameState.guardhp_curr = gameState.hitp_max;
   gameState.hitp_curr = 1;
@@ -4790,29 +4786,29 @@ void  check_collisions()
   bump_col_left_of_wall = bump_col_right_of_wall = -1;
   if (Char.action == actions_7_turn)
     return;
-  collision_row = Char.curr_row;
+  gameState.collision_row = Char.curr_row;
   move_coll_to_prev();
-  gameState.prev_collision_row = collision_row;
+  gameState.prev_collision_row = gameState.collision_row;
   right_checked_col = MIN(get_tile_div_mod_m7(char_x_right_coll) + 2, 11);
   left_checked_col = get_tile_div_mod_m7(char_x_left_coll) - 1;
-  get_row_collision_data(collision_row, gameState.curr_row_coll_room, gameState.curr_row_coll_flags);
-  get_row_collision_data(collision_row + 1, gameState.below_row_coll_room, gameState.below_row_coll_flags);
-  get_row_collision_data(collision_row - 1, gameState.above_row_coll_room, gameState.above_row_coll_flags);
+  get_row_collision_data(gameState.collision_row, gameState.curr_row_coll_room, gameState.curr_row_coll_flags);
+  get_row_collision_data(gameState.collision_row + 1, gameState.below_row_coll_room, gameState.below_row_coll_flags);
+  get_row_collision_data(gameState.collision_row - 1, gameState.above_row_coll_room, gameState.above_row_coll_flags);
   for (column = 9; column >= 0; --column)
   {
     if (gameState.curr_row_coll_room[column] >= 0 &&
-        prev_coll_room[column] == gameState.curr_row_coll_room[column])
+        gameState.prev_coll_room[column] == gameState.curr_row_coll_room[column])
     {
       // char bumps into left of wall
       if (
-        (prev_coll_flags[column] & 0x0F) == 0 &&
+        (gameState.prev_coll_flags[column] & 0x0F) == 0 &&
         (gameState.curr_row_coll_flags[column] & 0x0F) != 0)
       {
         bump_col_left_of_wall = column;
       }
       // char bumps into right of wall
       if (
-        (prev_coll_flags[column] & 0xF0) == 0 &&
+        (gameState.prev_coll_flags[column] & 0xF0) == 0 &&
         (gameState.curr_row_coll_flags[column] & 0xF0) != 0)
       {
         bump_col_right_of_wall = column;
@@ -4827,16 +4823,16 @@ void  move_coll_to_prev()
   sbyte *row_coll_room_ptr;
   byte *row_coll_flags_ptr;
   short column;
-  if (collision_row == gameState.prev_collision_row ||
-      collision_row + 3 == gameState.prev_collision_row ||
-      collision_row - 3 == gameState.prev_collision_row)
+  if (gameState.collision_row == gameState.prev_collision_row ||
+      gameState.collision_row + 3 == gameState.prev_collision_row ||
+      gameState.collision_row - 3 == gameState.prev_collision_row)
   {
     row_coll_room_ptr = gameState.curr_row_coll_room;
     row_coll_flags_ptr = gameState.curr_row_coll_flags;
   }
   else if (
-    collision_row + 1 == gameState.prev_collision_row ||
-    collision_row - 2 == gameState.prev_collision_row)
+    gameState.collision_row + 1 == gameState.prev_collision_row ||
+    gameState.collision_row - 2 == gameState.prev_collision_row)
   {
     row_coll_room_ptr = gameState.above_row_coll_room;
     row_coll_flags_ptr = gameState.above_row_coll_flags;
@@ -4848,8 +4844,8 @@ void  move_coll_to_prev()
   }
   for (column = 0; column < 10; ++column)
   {
-    prev_coll_room[column] = row_coll_room_ptr[column];
-    prev_coll_flags[column] = row_coll_flags_ptr[column];
+    gameState.prev_coll_room[column] = row_coll_room_ptr[column];
+    gameState.prev_coll_flags[column] = row_coll_flags_ptr[column];
     gameState.below_row_coll_room[column] = -1;
     gameState.above_row_coll_room[column] = -1;
     gameState.curr_row_coll_room[column] = -1;
@@ -4993,7 +4989,7 @@ int  is_obstacle()
   )
   {
     curr_room_modif[curr_tilepos] = 0x56; // broken mirror or what?
-    jumped_through_mirror = -1;
+    gameState.jumped_through_mirror = -1;
     return 0;
   }
   coll_tile_left_xpos = xpos_in_drawn_room(x_bump[tile_col + 5]) + 7;
@@ -5172,7 +5168,7 @@ void  bumped_sound()
 // seg004:0601
 void  clear_coll_rooms()
 {
-  memset_near(prev_coll_room, -1, sizeof(prev_coll_room));
+  memset_near(gameState.prev_coll_room, -1, sizeof(gameState.prev_coll_room));
   memset_near(gameState.curr_row_coll_room, -1, sizeof(gameState.curr_row_coll_room));
   memset_near(gameState.below_row_coll_room, -1, sizeof(gameState.below_row_coll_room));
   memset_near(gameState.above_row_coll_room, -1, sizeof(gameState.above_row_coll_room));
@@ -5352,7 +5348,7 @@ void  check_gate_push()
     orig_col = tile_col;
     if ((curr_tile2 == tiles_4_gate ||
          get_tile(curr_room, --tile_col, tile_row) == tiles_4_gate) &&
-        (gameState.curr_row_coll_flags[tile_col] & prev_coll_flags[tile_col]) == 0xFF &&
+        (gameState.curr_row_coll_flags[tile_col] & gameState.prev_coll_flags[tile_col]) == 0xFF &&
         can_bump_into_gate())
     {
       bumped_sound();

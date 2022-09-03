@@ -1,35 +1,44 @@
 {
   "Description": "This script searches for the fastest any% solution for NES SMB World 8-4c",  
  
-  "Emulator Configuration": 
+    "Emulator Configuration": 
   {
     "Rom File": "../smb.nes",
     "State File": "w804c.state"
   },
   
-  "State Configuration": 
-  {
-    "Max Difference Count": 750,
-    "Max Move Count": 200,
-    "Store Move List": true    
-  },
-  
   "Game Configuration": 
   {
+   "Timer Tolerance": 0,
+   "Hash Includes": [  ]
   },
+  
   
   "Jaffar Configuration": 
   {
-    "State Database":
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 150000,
-     "Max Size Upper Bound (Mb)": 220000
+      "Max Move Count": 210,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 5000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
     { 
-     "Max Size Lower Bound (Mb)": 12000,
-     "Max Size Upper Bound (Mb)": 20000
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Save Intermediate Results":
@@ -37,13 +46,16 @@
      "Enabled": true,
      "Frequency (s)": 1.0,
      "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol"
-    }
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
   },
   
   "Playback Configuration": 
   {
-  
+     "Disable Display": false,
+     "Overlay Path": "../../../../platforms/nes/overlay"
   },
  
   "Rules":
@@ -61,7 +73,7 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Min": 3128, "Max": 3463 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 3463, "Min": 0, "Max": 6000 }
     ]
    },
    
@@ -78,7 +90,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": -1.0, "Min": 3128, "Max": 3463 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 3128, "Min": 0, "Max": 6000 }
     ]
    },
    

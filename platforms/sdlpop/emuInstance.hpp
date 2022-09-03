@@ -209,6 +209,9 @@ class EmuInstance : public EmuInstanceBase
  void deserializeState(const uint8_t* state) override
  {
   memcpy(&gameState, state, _STATE_DATA_SIZE_TRAIN);
+
+  next_room = gameState.drawn_room = gameState.Kid.room;
+  load_room_links();
  }
 
  // Controller input bits
@@ -292,7 +295,7 @@ class EmuInstance : public EmuInstanceBase
   // if we're on lvl 4, check mirror
   if (gameState.current_level == 4)
   {
-   if (jumped_through_mirror == -1) gameState.Guard.x = 245;
+   if (gameState.jumped_through_mirror == -1) gameState.Guard.x = 245;
    check_mirror();
   }
 

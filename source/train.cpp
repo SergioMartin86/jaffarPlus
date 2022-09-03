@@ -13,7 +13,7 @@ auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return cou
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ marioAnimation
+ #define _KEY_VALUE_ gameState.Kid.frame
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -246,8 +246,10 @@ void Train::computeStates()
        for (uint64_t i = 0; i < 256*sizeof(INPUT_TYPE); i++)
        {
         if (possibleMoveSet.contains(i) == false)
-        if ((i & 0b00001000) == 0)
-        if ((i & 0b00000100) == 0)
+//        if ((i & 0b00001000) == 0)
+//        if ((i & 0b00000100) == 0)
+          if ((i & 0b01000000) == 0)
+          if ((i & 0b00100000) == 0)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
@@ -260,7 +262,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t keyValue = *_gameInstances[threadId]->_KEY_VALUE_;
+       uint8_t keyValue = _KEY_VALUE_; //*_gameInstances[threadId]->_KEY_VALUE_;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -271,6 +273,9 @@ void Train::computeStates()
       tf = std::chrono::high_resolution_clock::now();
       threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
+//      possibleMoves.clear();
+//      if (_currentStep == 0) possibleMoves.push_back("L");
+//      if (_currentStep == 1) possibleMoves.push_back(".");
 
       // Running possible moves
       for (size_t idx = 0; idx < possibleMoves.size(); idx++)
@@ -302,6 +307,39 @@ void Train::computeStates()
         auto hash = _gameInstances[threadId]->computeHash();
         tf = std::chrono::high_resolution_clock::now();
         threadHashCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
+
+
+        //      auto moves = std::vector<std::string>({".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", "..L....", "....U..", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", "......S", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", "..L....", ".......", "......S", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", "......S", ".......", ".......", "....U..", ".......", ".......", ".......", "..L....", ".......", ".......", "..L....", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".....D.", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", "....U..", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "..L....", ".......", ".......", ".......", "..L....", ".......", ".......", "...R...", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "...R...", ".......", ".......", ".......", ".......", ".......", ".......", "...R...", ".......", ".......", ".......", ".......", "...R...", ".......", ".......", "...R...", ".......", ".......", ".......", ".....D.", ".......", ".......", ".......", ".......", ".......", "....U..", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", ".......", "......." });
+        //      possibleMoves.clear();
+        //      possibleMoves.push_back(moves[_currentStep]);
+        uint8_t newData[_STATE_DATA_SIZE_TRAIN];
+        _gameInstances[threadId]->popState(newData);
+        _gameInstances[threadId]->pushState(_initialStateData);
+        for (ssize_t i = 0; i < _currentStep; i++) _gameInstances[threadId]->advanceState(baseState->getMove(i));
+        _gameInstances[threadId]->advanceState(moveId);
+        auto newHash = _gameInstances[threadId]->computeHash();
+        if (hash != newHash)
+        {
+         uint8_t correctData[_STATE_DATA_SIZE_TRAIN];
+         _gameInstances[threadId]->popState(correctData);
+
+         printf("Bad new hash for move history:\n");
+         for (ssize_t i = 0; i < _currentStep; i++) printf("%s ", EmuInstance::moveCodeToString(baseState->getMove(i)).c_str());
+         printf("%s\n", EmuInstance::moveCodeToString(moveId).c_str());
+         printf("Base:\n");
+         _gameInstances[0]->pushState(baseStateData);
+         _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
+
+         printf("New:\n");
+         _gameInstances[0]->pushState(newData);
+         _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
+
+         printf("Correct:\n");
+         _gameInstances[0]->pushState(correctData);
+         _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
+
+         exit(0);
+        }
 
         // Checking for the existence of the hash in the hash database
         t0 = std::chrono::high_resolution_clock::now(); // Profiling

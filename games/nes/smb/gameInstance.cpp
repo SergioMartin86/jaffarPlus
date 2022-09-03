@@ -275,6 +275,40 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   if (*marioAnimation == 0x0016) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "RL......"});
   if (*marioAnimation == 0x0006) moveList.insert(moveList.end(), { "...U...."});
 
+  if (*marioAnimation == 0x000E) moveList.insert(moveList.end(), { "..D.....", ".L....B.", "RL....B."});
+  if (*marioAnimation == 0x00FC) moveList.insert(moveList.end(), { "..D.....", ".L....B.", "RL....B."});
+
+  if (*marioAnimation == 0x0006) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x000C) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x0035) moveList.insert(moveList.end(), { "..D....A", "RL.....A"});
+  if (*marioAnimation == 0x0039) moveList.insert(moveList.end(), { "..D....A", "RL.....A"});
+  if (*marioAnimation == 0x003C) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x0040) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x0045) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", "......BA", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x0047) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", "......BA", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x0049) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", "......BA", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x004F) moveList.insert(moveList.end(), { "..D....A", "R.D....A", "RL.....A"});
+  if (*marioAnimation == 0x00F8) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00F9) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FC) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FD) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FE) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FF) moveList.insert(moveList.end(), { "RL.....A"});
+
+  if (*marioAnimation == 0x0012) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x0018) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x0020) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x0035) moveList.insert(moveList.end(), { "...U...A"});
+  if (*marioAnimation == 0x0039) moveList.insert(moveList.end(), { "...U...A"});
+  if (*marioAnimation == 0x003C) moveList.insert(moveList.end(), { "..D....A"});
+  if (*marioAnimation == 0x0040) moveList.insert(moveList.end(), { "..D....A"});
+  if (*marioAnimation == 0x0045) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x0047) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x0049) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x004F) moveList.insert(moveList.end(), { "...U...A", ".LD....A"});
+  if (*marioAnimation == 0x00FA) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FB) moveList.insert(moveList.end(), { "RL.....A"});
+
   return moveList;
 }
 

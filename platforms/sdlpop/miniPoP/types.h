@@ -1498,5 +1498,9 @@ struct sdlPopState_t {
  float replay_curr_tick;
  word is_guard_notice;
  short can_guard_see_kid;
+ sbyte collision_row;
+ sbyte prev_coll_room[10];
+ byte prev_coll_flags[10];
+ short jumped_through_mirror;
 };
 #pragma pack(pop)
