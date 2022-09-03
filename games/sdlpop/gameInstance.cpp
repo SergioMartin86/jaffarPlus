@@ -151,8 +151,6 @@ uint64_t GameInstance::computeHash() const
  hash.Update(gameState.prev_collision_row);
  hash.Update(gameState.exit_room_timer);
 
-
-
  // Manual hashing
  //hash.Update(gameState.level.guards_x);
  hash.Update(gameState.level.guards_dir);

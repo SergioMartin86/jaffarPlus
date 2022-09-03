@@ -6,7 +6,10 @@ runJaffar()
 {
  seed=$(((RANDOM<<15|RANDOM)))
  echo "Running Seed: $seed"
- cat lvl10c.jaffar | sed -e 's/"RNG Value":.*/"RNG Value": '$seed',/g' > lvl10crng.jaffar
+ cat lvl10c.jaffar | sed \
+	 -e 's/"RNG Value":.*/"RNG Value": '$seed',/g' \
+	 -e 's/"Override RNG Value":.*/"Override RNG Value": true,/g' \
+	 > lvl10crng.jaffar
  frame=`jaffar lvl10crng.jaffar | tee /dev/stderr | grep "Winning" | cut -d' ' -f6`
  echo "$seed $frame"
  echo "$seed $frame" >> results.txt

@@ -9,7 +9,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 320,
+      "Max Move Count": 200,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 250,
@@ -18,8 +18,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Max Size Lower Bound (Mb)": 130000,
+     "Max Size Upper Bound (Mb)": 180000
     },
     
     "Hash Database":
@@ -44,7 +44,8 @@
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "lvl10c.sav",
-    "RNG Value": 557564175,
+    "Override RNG Value": true,
+    "RNG Value": 51575064,
     "Loose Tile Sound Id": 20
   },
   
