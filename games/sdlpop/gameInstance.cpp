@@ -47,6 +47,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
      if (entry["Room"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Active Objects Hash Types room must be an integer.\n");
      room = entry["Room"].get<int>();
     }
+    else EXIT_WITH_ERROR("[Error] Game Configuration 'Active Objects Hash Types', 'Room' entry was not defined\n");
 
     int tile = -1;
     if (isDefined(entry, "Tile") == true)
@@ -54,6 +55,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
      if (entry["Tile"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Active Objects Hash Types tile must be an integer.\n");
      tile = entry["Tile"].get<int>();
     }
+    else EXIT_WITH_ERROR("[Error] Game Configuration 'Active Objects Hash Types', 'Tile' entry was not defined\n");
 
     int idx = (room-1)*30 + (tile-1);
     if (hashType == "Index Only") _hashTypeTrobs[idx] = INDEX_ONLY;
@@ -70,16 +72,18 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
      int room = -1;
      if (isDefined(entry, "Room") == true)
      {
-      if (entry["Room"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Active Objects Hash Types room must be an integer.\n");
+      if (entry["Room"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Static Tile Hash Types room must be an integer.\n");
       room = entry["Room"].get<int>();
      }
+     else EXIT_WITH_ERROR("[Error] Game Configuration 'Static Tile Hash Types', 'Room' entry was not defined\n");
 
      int tile = -1;
      if (isDefined(entry, "Tile") == true)
      {
-      if (entry["Tile"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Active Objects Hash Types tile must be an integer.\n");
+      if (entry["Tile"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Static Tile Hash Types tile must be an integer.\n");
       tile = entry["Tile"].get<int>();
      }
+     else EXIT_WITH_ERROR("[Error] Game Configuration 'Static Tile Hash Types', 'Tile' entry was not defined\n");
 
      int idx = (room-1)*30 + (tile-1);
 

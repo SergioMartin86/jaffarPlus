@@ -187,11 +187,6 @@ __thread sbyte right_checked_col;
 __thread sbyte left_checked_col;
 __thread short coll_tile_left_xpos;
 __thread word curr_tile_temp;
-__thread long int _cachedFilePointerTable[MAX_CACHED_FILES];
-__thread char *_cachedFileBufferTable[MAX_CACHED_FILES];
-__thread size_t _cachedFileBufferSizes[MAX_CACHED_FILES];
-__thread char _cachedFilePathTable[MAX_CACHED_FILES][POP_MAX_PATH];
-__thread size_t _cachedFileCounter = 0;
 __thread char exe_dir[POP_MAX_PATH] = ".";
 __thread bool found_exe_dir = false;
 __thread word which_quote;
@@ -276,113 +271,6 @@ __thread byte sound_interruptible[] = {
                                                    0, // sound_56_ending_music
                                                    0};
 
-
-FILE *fcache_open(const char *filename, const char *mode)
-{
-  size_t i;
-  // Check if already cached, and return it directly from cache if it is
-  for (i = 0; i < _cachedFileCounter; i++)
-    if (strcmp(filename, _cachedFilePathTable[i]) == 0)
-    {
-      _cachedFilePointerTable[i] = 0; // Rewinding
-      return (FILE *)i;
-    }
-
-  // Checking if file is directory. Do not open in that case.
-  struct stat path_stat;
-  stat(filename, &path_stat);
-  if (S_ISREG(path_stat.st_mode) == 0)
-    return NULL;
-
-  // Open source file
-  FILE *srcFile = fopen(filename, "rb");
-
-  // If failed to load, return immediately
-  if (srcFile == NULL)
-    return NULL;
-
-  // Finding out file's size
-  fseek(srcFile, 0, SEEK_END);
-  long int fileSize = ftell(srcFile);
-  fseek(srcFile, 0, SEEK_SET);
-
-  // Creating cached file buffer
-  _cachedFileBufferTable[_cachedFileCounter] = malloc(fileSize);
-
-  // Reading source file info buffer
-  fread(_cachedFileBufferTable[_cachedFileCounter], 1, fileSize, srcFile);
-
-  // Closing source file
-  fclose(srcFile);
-
-  // Add filepath to the cache table
-  strcpy(_cachedFilePathTable[_cachedFileCounter], filename);
-
-  // Storing file size
-  _cachedFileBufferSizes[_cachedFileCounter] = fileSize;
-
-  // Resetting pointer
-  _cachedFilePointerTable[_cachedFileCounter] = 0;
-
-  // Setting found ptr
-  FILE *foundPtr = (FILE *)_cachedFileCounter;
-
-  // Increase cached file counter
-  _cachedFileCounter++;
-
-  return foundPtr;
-}
-
-size_t fcache_read(void *ptr, size_t size, size_t count, FILE *stream)
-{
-  size_t fileId = (size_t)stream;
-  size_t readCount = _cachedFileBufferSizes[fileId] / size;
-  if (readCount > count)
-    readCount = count;
-
-  // Copying data from cached file to pointer
-  memcpy(ptr, &_cachedFileBufferTable[fileId][_cachedFilePointerTable[fileId]], readCount * size);
-
-  // Advancing file pointer
-  _cachedFilePointerTable[fileId] += readCount * size;
-
-  // Returning number of elements read
-  return readCount;
-}
-
-int fcache_seek(FILE *stream, long int offset, int origin)
-{
-  long int base;
-  size_t fileId = (size_t)stream;
-  if (origin == SEEK_SET)
-    base = 0;
-  if (origin == SEEK_CUR)
-    base = _cachedFilePointerTable[fileId];
-  if (origin == SEEK_END)
-    base = _cachedFileBufferSizes[fileId] - 1;
-
-  long int dest = base + offset;
-  if (dest > _cachedFileBufferSizes[fileId] - 1)
-    return -1;
-  if (dest < 0)
-    return -1;
-
-  _cachedFilePointerTable[fileId] = base + offset;
-
-  return 0;
-}
-
-int fcache_tell(FILE *stream)
-{
-  size_t fileId = (size_t)stream;
-  return _cachedFilePointerTable[fileId] + 1;
-}
-
-int fcache_close(FILE *file)
-{
-  // Do not actually close it. This will be done at the end
-  return 0;
-}
 
 
 void find_exe_dir()
@@ -520,7 +408,7 @@ word prandom(word max)
 static FILE *open_dat_from_root_or_data_dir(const char *filename)
 {
   FILE *fp = NULL;
-  fp = fcache_open(filename, "rb");
+  fp = fopen(filename, "rb");
 
   // if failed, try if the DAT file can be opened in the data/ directory, instead of the main folder
   if (fp == NULL)
@@ -535,7 +423,7 @@ static FILE *open_dat_from_root_or_data_dir(const char *filename)
     }
 
     // verify that this is a regular file and not a directory (otherwise, don't open)
-    fp = fcache_open(data_path, "rb");
+    fp = fopen(data_path, "rb");
   }
   return fp;
 }
@@ -555,12 +443,12 @@ dat_type *__pascal open_dat(const char *filename, int drive)
 
   if (fp != NULL)
   {
-    if (fcache_read(&dat_header, 6, 1, fp) != 1)
+    if (fread(&dat_header, 6, 1, fp) != 1)
       goto failed;
     dat_table = (dat_table_type *)malloc(dat_header.table_size);
     if (dat_table == NULL ||
-        fcache_seek(fp, dat_header.table_offset, SEEK_SET) ||
-        fcache_read(dat_table, dat_header.table_size, 1, fp) != 1)
+        fseek(fp, dat_header.table_offset, SEEK_SET) ||
+        fread(dat_table, dat_header.table_size, 1, fp) != 1)
       goto failed;
     pointer->handle = fp;
     pointer->dat_table = dat_table;
@@ -571,7 +459,7 @@ out:
 failed:
   perror(filename);
   if (fp)
-    fcache_close(fp);
+    fclose(fp);
   if (dat_table)
     free(dat_table);
   goto out;
@@ -610,7 +498,7 @@ void far *__pascal load_from_opendats_alloc(int resource, const char *extension,
 
   void *area = malloc(size);
   //read(fd, area, size);
-  if (fcache_read(area, size, 1, fp) != 1)
+  if (fread(area, size, 1, fp) != 1)
   {
     printf("ERROR\n");
     fprintf(stderr, "%s: %s, resource %d, size %d, failed: %s\n", __func__, pointer->filename, resource, size, strerror(errno));
@@ -619,7 +507,7 @@ void far *__pascal load_from_opendats_alloc(int resource, const char *extension,
   }
 
   if (result == data_directory)
-    fcache_close(fp);
+    fclose(fp);
   /* XXX: check checksum */
   return area;
 }
@@ -710,8 +598,8 @@ void load_from_opendats_metadata(int resource_id, const char *extension, FILE **
         // found
         *result = data_DAT;
         *size = dat_table->entries[i].size;
-        if (fcache_seek(fp, dat_table->entries[i].offset, SEEK_SET) ||
-            fcache_read(checksum, 1, 1, fp) != 1)
+        if (fseek(fp, dat_table->entries[i].offset, SEEK_SET) ||
+            fread(checksum, 1, 1, fp) != 1)
         {
           perror(pointer->filename);
           fp = NULL;
@@ -739,7 +627,7 @@ void load_from_opendats_metadata(int resource_id, const char *extension, FILE **
         //printf("loading (binary) %s",image_filename);
         const char *filename = locate_file(image_filename);
         //printf("File: %s\n", filename);
-        fp = fcache_open(filename, "rb");
+        fp = fopen(filename, "rb");
         if (fp != NULL)
         {
           *result = data_directory;
@@ -749,9 +637,9 @@ void load_from_opendats_metadata(int resource_id, const char *extension, FILE **
       {
         *result = data_directory;
 
-        fcache_seek(fp, 0L, SEEK_END);
-        *size = fcache_tell(fp);
-        fcache_seek(fp, 0L, SEEK_SET);
+        fseek(fp, 0L, SEEK_END);
+        *size = ftell(fp);
+        fseek(fp, 0L, SEEK_SET);
       }
     }
   }
@@ -776,7 +664,7 @@ void  close_dat(dat_type far *pointer)
     {
       *prev = curr->next_dat;
       if (curr->handle)
-        fcache_close(curr->handle);
+        fclose(curr->handle);
       if (curr->dat_table)
         free(curr->dat_table);
       free(curr);
@@ -802,13 +690,13 @@ int  load_from_opendats_to_area(int resource, void far *area, int length, const 
   load_from_opendats_metadata(resource, extension, &fp, &result, &checksum, &size, &pointer);
   if (result == data_none)
     return 0;
-  if (fcache_read(area, MIN(size, length), 1, fp) != 1)
+  if (fread(area, MIN(size, length), 1, fp) != 1)
   {
     fprintf(stderr, "%s: %s, resource %d, size %d, failed: %s\n", __func__, pointer->filename, resource, size, strerror(errno));
     memset(area, 0, MIN(size, length));
   }
   if (result == data_directory)
-    fcache_close(fp);
+    fclose(fp);
   /* XXX: check checksum */
   return 0;
 }

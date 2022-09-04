@@ -9,7 +9,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 500,
+      "Max Move Count": 510,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 250,
@@ -18,8 +18,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 25000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 10000
     },
     
     "Hash Database":
@@ -44,7 +44,8 @@
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "lvl07.sav",
-    "RNG Value": 20,
+    "Override RNG Value": false,
+    "RNG Value": 21,
     "Loose Tile Sound Id": 20
   },
   
@@ -113,7 +114,7 @@
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 0.0 },
      { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 },
      { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 230.0 },
-     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 2, "Value": 2.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 2, "Value": 4.0 },
      { "Type": "Set Guard Horizontal Magnet Position", "Room": 2, "Value": 230.0 }
     ]
    },
