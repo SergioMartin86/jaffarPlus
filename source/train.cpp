@@ -709,7 +709,7 @@ Train::Train(const nlohmann::json& config)
   // Pre-allocating and touching State containers
   _mainStateStorage = (uint8_t*)malloc(_maxDatabaseSizeUpperBound * _stateSize);
   #pragma omp parallel for
-  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++)  for (size_t j = 0; j < _stateSize; j += 1024) *((uint8_t*)&_mainStateStorage[i] + j) = (uint8_t)0;
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound * _stateSize; i += 1024) *(uint8_t*)&_mainStateStorage[i] = (uint8_t)0;
   for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push((State*)(_mainStateStorage + _stateSize * i));
 
   // Storing initial state

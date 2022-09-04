@@ -18,8 +18,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 130000,
-     "Max Size Upper Bound (Mb)": 180000
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 70000
     },
     
     "Hash Database":
@@ -45,7 +45,7 @@
     "Levels File": "../LEVELS.DAT",
     "State File": "lvl10c.sav",
     "Override RNG Value": true,
-    "RNG Value": 51575064,
+    "RNG Value": 471315259,
     "Loose Tile Sound Id": 20
   },
   
