@@ -44,8 +44,8 @@
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "lvl10a.sav",
-    "Override RNG Value": false,
-    "RNG Value": 237021007,
+    "Override RNG Value": true,
+    "RNG Value": 15,
     "Loose Tile Sound Id": 20
   },
   

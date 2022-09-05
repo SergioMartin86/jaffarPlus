@@ -46,6 +46,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   objectType             = (uint8_t*)   &_emu->_baseMem[0x0317];
   objectData             = (uint8_t*)   &_emu->_baseMem[0x0393];
   fuelDelivered          = (uint8_t*)   &_emu->_baseMem[0x0513];
+  eyeValues              = (uint8_t*)   &_emu->_baseMem[0x0460];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -100,26 +101,27 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*score6);
   hash.Update(shotActive, SHOT_COUNT);
   hash.Update(objectType, OBJECT_COUNT);
+  hash.Update(eyeValues, EYE_COUNT);
 
-  for (size_t i = 0; i < OBJECT_COUNT; i++)
-   if (*(objectType+i) == 10)
-   {
-    hash.Update(*(objectData+i));
-    hash.Update(*(shipPosX1+i));
-    hash.Update(*(shipPosX2+i));
-    hash.Update(*(shipPosY1+i));
-    hash.Update(*(shipPosY2+i));
-   }
-
-  for (size_t i = 0; i < OBJECT_COUNT; i++)
-   if (*(objectType+i) == 184)
-   {
-    hash.Update(*(objectData+i));
-    hash.Update(*(shipPosX1+i));
-    hash.Update(*(shipPosX2+i));
-    hash.Update(*(shipPosY1+i));
-    hash.Update(*(shipPosY2+i));
-   }
+//  for (size_t i = 0; i < OBJECT_COUNT; i++)
+////   if (*(objectType+i) == 10)
+//   {
+//    hash.Update(*(objectData+i));
+//    hash.Update(*(shipPosX1+i));
+//    hash.Update(*(shipPosX2+i));
+//    hash.Update(*(shipPosY1+i));
+//    hash.Update(*(shipPosY2+i));
+//   }
+//
+//  for (size_t i = 0; i < OBJECT_COUNT; i++)
+////   if (*(objectType+i) == 184)
+//   {
+//    hash.Update(*(objectData+i));
+//    hash.Update(*(shipPosX1+i));
+//    hash.Update(*(shipPosX2+i));
+//    hash.Update(*(shipPosY1+i));
+//    hash.Update(*(shipPosY2+i));
+//   }
 
   // For fuel delivery
   hash.Update(&_emu->_baseMem[0x0500], 0x0100);
@@ -157,6 +159,9 @@ void GameInstance::updateDerivedValues()
  maxWarp = 0;
  for (size_t i = 0; i < OBJECT_COUNT; i++)
   if (*(objectType+i) == 10 && *(objectData+i) > maxWarp) maxWarp = *(objectData+i);
+
+ eyeCount = 0;
+ for (size_t i = 0; i < EYE_COUNT; i++) if (*(eyeValues+i) == 94) eyeCount++;
 }
 
 // Function to determine the current possible moves
@@ -167,10 +172,14 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*gameTimer % 2 == 1) return {"."};
 
  // Stage 00
- moveList.insert(moveList.end(), { "R", "L", "LA", "RA", "RB", "LB", "RLA", "RLB", "B", "A", "BA", "D" });
+// moveList.insert(moveList.end(), { "R", "L", "LA", "RA", "RB", "LB", "RLA", "RLB", "B", "A", "BA", "D" });
 
  // Stage 12
 // moveList.insert(moveList.end(), { "R", "L", "B", "D", "RL", "RB", "RD", "LB", "LD", "BD", "RLB", "RLD", "LBD", "RLBD"  });
+
+ // Stage scroller
+ moveList.insert(moveList.end(), { "...U....", "..D.....", ".L......", ".......A", "R.......", "...U...A", "..D....A", ".L.....A", ".L.U....", ".LD.....", "R.D.....", "R......A", "R..U....", "R.D....A", "R..U...A", ".LD....A", ".L.U...A"});
+
  return moveList;
 }
 
@@ -243,6 +252,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating ship health  magnet
   reward += magnets.maxWarpMagnet * maxWarp;
 
+  // Evaluating ship health  magnet
+  reward += magnets.eyeCountMagnet * (float)eyeCount;
+
   // Evaluating carrying magnet
   int isCarrying = 0;
   if (*shipCarriedObject != 0) isCarrying = 1;
@@ -283,14 +295,28 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 // for (size_t i = 0; i < SHOT_COUNT; i++)
 //  LOG("[Jaffar]  + Shot %lu:                          State: %03u\n", i, *(shotActive+i));
 
- LOG("[Jaffar]  + Warps:\n");
- for (size_t i = 0; i < OBJECT_COUNT; i++)
-  if (*(objectType+i) == 10)
-   LOG("[Jaffar]    + Warp %02lu:                       Type: %03u, D: %03u, X: %3.3f (%03u, %03u, %03u), Y: %3.3f (%03u, %03u, %03u)\n", i, *(objectType+i), *(objectData+i), objectPosX[i], *(shipPosX1+i), *(shipPosX2+i), *(shipPosX3+i),  objectPosY[i], *(shipPosY1+i), *(shipPosY2+i), *(shipPosY3+i));
+// LOG("[Jaffar]  + Warps:\n");
+// for (size_t i = 0; i < OBJECT_COUNT; i++)
+//  if (*(objectType+i) == 10)
+//   LOG("[Jaffar]    + Warp %02lu:                       Type: %03u, D: %03u, X: %3.3f (%03u, %03u, %03u), Y: %3.3f (%03u, %03u, %03u)\n", i, *(objectType+i), *(objectData+i), objectPosX[i], *(shipPosX1+i), *(shipPosX2+i), *(shipPosX3+i),  objectPosY[i], *(shipPosY1+i), *(shipPosY2+i), *(shipPosY3+i));
 
- for (size_t i = 0; i < OBJECT_COUNT; i++)
-  if (*(objectType+i) == 184)
-   LOG("[Jaffar]    + Green Ship %02lu:                 Type: %03u, D: %03u, X: %3.3f (%03u, %03u, %03u), Y: %3.3f (%03u, %03u, %03u)\n", i, *(objectType+i), *(objectData+i), objectPosX[i], *(shipPosX1+i), *(shipPosX2+i), *(shipPosX3+i),  objectPosY[i], *(shipPosY1+i), *(shipPosY2+i), *(shipPosY3+i));
+// LOG("[Jaffar]  + Eyes:\n");
+// for (size_t i = 0; i < OBJECT_COUNT; i++)
+//  if (*(objectType+i) == 94)
+//   LOG("[Jaffar]    + Eye %02lu:                        Type: %03u, D: %03u, X: %3.3f (%03u, %03u, %03u), Y: %3.3f (%03u, %03u, %03u)\n", i, *(objectType+i), *(objectData+i), objectPosX[i], *(shipPosX1+i), *(shipPosX2+i), *(shipPosX3+i),  objectPosY[i], *(shipPosY1+i), *(shipPosY2+i), *(shipPosY3+i));
+
+//  LOG("[Jaffar]  + Objects:\n");
+//  for (size_t i = 0; i < OBJECT_COUNT; i++)
+//    LOG("[Jaffar]    + Obj %02lu:                        Type: %03u, D: %03u, X: %3.3f (%03u, %03u, %03u), Y: %3.3f (%03u, %03u, %03u)\n", i, *(objectType+i), *(objectData+i), objectPosX[i], *(shipPosX1+i), *(shipPosX2+i), *(shipPosX3+i),  objectPosY[i], *(shipPosY1+i), *(shipPosY2+i), *(shipPosY3+i));
+
+  LOG("[Jaffar]  + Eyes Count:                           %02u\n", eyeCount);
+  LOG("[Jaffar]  + Eyes:\n");
+  for (size_t i = 0; i < EYE_COUNT; i++)
+    LOG("[Jaffar]    + Eye   %02lu:                      Value: %03u\n", i, *(eyeValues+i));
+
+// for (size_t i = 0; i < OBJECT_COUNT; i++)
+//  if (*(objectType+i) == 184)
+//   LOG("[Jaffar]    + Green Ship %02lu:                 Type: %03u, D: %03u, X: %3.3f (%03u, %03u, %03u), Y: %3.3f (%03u, %03u, %03u)\n", i, *(objectType+i), *(objectData+i), objectPosX[i], *(shipPosX1+i), *(shipPosX2+i), *(shipPosX3+i),  objectPosY[i], *(shipPosY1+i), *(shipPosY2+i), *(shipPosY3+i));
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -307,5 +333,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.warpCounterMagnet) > 0.0f)                  LOG("[Jaffar]  + Warp Counter Magnet           - Intensity: %.5f\n", magnets.warpCounterMagnet);
  if (std::abs(magnets.carryMagnet) > 0.0f)                        LOG("[Jaffar]  + Carry Magnet                  - Intensity: %.5f\n", magnets.carryMagnet);
  if (std::abs(magnets.maxWarpMagnet) > 0.0f)                      LOG("[Jaffar]  + Max Warp Magnet               - Intensity: %.5f\n", magnets.maxWarpMagnet);
+ if (std::abs(magnets.eyeCountMagnet) > 0.0f)                     LOG("[Jaffar]  + Eye Count Magnet              - Intensity: %.5f\n", magnets.eyeCountMagnet);
 }
 

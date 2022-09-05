@@ -1,8 +1,9 @@
 #pragma once
 
-#define _INVERSE_FRAME_RATE 16667
+#define _INVERSE_FRAME_RATE 4166
 #define SHOT_COUNT 8
 #define OBJECT_COUNT 30
+#define EYE_COUNT 5
 
 #include "gameInstanceBase.hpp"
 #include <set>
@@ -27,6 +28,7 @@ struct magnetSet_t {
  float warpCounterMagnet = 0.0;
  float carryMagnet = 0.0;
  float maxWarpMagnet = 0.0;
+ float eyeCountMagnet = 0.0;
 };
 
 
@@ -75,7 +77,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  objectType;
   uint8_t*  objectData;
   uint8_t*  fuelDelivered;
-
+  uint8_t*  eyeValues;
   uint8_t timerTolerance;
 
   // Derivative Values
@@ -91,6 +93,7 @@ class GameInstance : public GameInstanceBase
   float objectPosY[OBJECT_COUNT];
   float warpCounter;
   uint8_t maxWarp;
+  uint8_t eyeCount;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

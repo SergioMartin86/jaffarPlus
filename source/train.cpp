@@ -13,7 +13,7 @@ auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return cou
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ gameState.Kid.frame
+// #define _KEY_VALUE_ gameState.Kid.frame
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -246,10 +246,10 @@ void Train::computeStates()
        for (uint64_t i = 0; i < 256*sizeof(INPUT_TYPE); i++)
        {
         if (possibleMoveSet.contains(i) == false)
-//        if ((i & 0b00001000) == 0)
-//        if ((i & 0b00000100) == 0)
-          if ((i & 0b01000000) == 0)
-          if ((i & 0b00100000) == 0)
+        if ((i & 0b00001000) == 0) // NES
+        if ((i & 0b00000100) == 0) // NES
+//          if ((i & 0b01000000) == 0) // SDLPOP
+//          if ((i & 0b00100000) == 0) // SDLPOP
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
@@ -262,7 +262,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t keyValue = _KEY_VALUE_; //*_gameInstances[threadId]->_KEY_VALUE_;
+       uint8_t keyValue = 0;//_KEY_VALUE_; //*_gameInstances[threadId]->_KEY_VALUE_;
 
       #endif // _DETECT_POSSIBLE_MOVES
 

@@ -1,7 +1,6 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 10.",
 
-
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
@@ -10,23 +9,23 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 450,
+      "Max Move Count": 350,
       "Store Move History": true,
       "XDelta3 Enabled": true,
-      "XDelta3 Max Differences": 500,
+      "XDelta3 Max Differences": 360,
       "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 150000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 120000,
+     "Max Size Upper Bound (Mb)": 160000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 6000
+     "Max Size Upper Bound (Mb)": 15000
     },
     
     "Save Intermediate Results":
@@ -45,18 +44,17 @@
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "lvl10a.sav",
-    "Override RNG Value": false,
-    "RNG Value": 237021007,
+    "Override RNG Value": true,
+    "RNG Value": 319860,
     "Loose Tile Sound Id": 20
   },
   
   "Game Configuration": 
   {
    "Timer Tolerance": 8,
-   "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
+   "Property Hash Types": [  ],
    "Static Tile Hash Types":
    [ 
-    { "Room": 7, "Column": 36, "Type": "Index Only", "Description": "Falling Tile" }
    ],
    
    "Falling Tiles Hash Types": 
@@ -65,8 +63,15 @@
    
    "Active Objects Hash Types":
    [
-    { "Index": 149, "Type": "Full", "Description": "Torch First Room" },
-    { "Index": 59, "Type": "Full", "Description": "Loose Skip Tile" }
+    { "Room": 5, "Tile": 10, "Type": "Full", "Description": "Last Gate" },
+    { "Room": 1, "Tile": 28, "Type": "Full", "Description": "First Gate" },
+    { "Room": 1, "Tile": 30, "Type": "Full", "Description": "Second Gate" },
+    { "Room": 1, "Tile": 10, "Type": "Full", "Description": "Third Gate" },
+    { "Room": 1, "Tile": 10, "Type": "Full", "Description": "Fourth Gate" },
+    { "Room": 2, "Tile": 30, "Type": "Full", "Description": "Tile" },
+    { "Room": 2, "Tile": 21, "Type": "Full", "Description": "Tile" },
+    { "Room": 1, "Tile": 9, "Type": "Full", "Description": "Tile" }
+    
    ]
   },
   
