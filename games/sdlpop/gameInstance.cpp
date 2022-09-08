@@ -449,6 +449,13 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Feather Fall: %d\n", gameState.is_feather_fall);
   LOG("[Jaffar]  + RNG State: 0x%08X (Last Loose Tile Sound Id: %d)\n", gameState.random_seed, gameState.last_loose_sound);
 
+  LOG("[Jaffar]  + Moving Objects:\n");
+  for (int i = 0; i < gameState.mobs_count; ++i)
+  {
+    const auto &mob = (gameState.mobs)[i];
+    LOG("[Jaffar]    + Room: %d, X: %d, Y: %d, Speed: %d, Type: %d, Row: %d\n", mob.room, mob.xh, mob.y, mob.speed, mob.type, mob.row);
+  }
+
   LOG("[Jaffar]  + Rule Status: ");
   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
   LOG("\n");

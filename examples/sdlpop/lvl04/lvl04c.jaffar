@@ -1,0 +1,199 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 4",  
+  
+    "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 600,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 250,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 50000,
+     "Max Size Upper Bound (Mb)": 150000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 6000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl04c.sav",
+    "Override RNG Value": true,
+    "RNG Value": 1,
+    "Loose Tile Sound Id": 20
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 8,
+   "Property Hash Types": [  ],
+   "Static Tile Hash Types":
+   [ 
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+     { "Room": 7, "Column": 20, "Type": "Full", "Comment": "Loose Tile" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Room": 1, "Tile": 20, "Type": "Full", "Comment": "Initial Door" },
+    { "Room": 24, "Tile": 13, "Type": "Index Only", "Comment": "Exit Door" },
+    { "Room": 7, "Tile": 16, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 11, "Tile": 12, "Type": "Full", "Comment": "Chomper" }
+   ]
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 4004,
+    "Description": "Rewarding kid for advancing to screen 24.",
+    "Conditions":
+    [ 
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 4, "Value": 205.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 4, "Value": 1.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 4, "Value": 160 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 4, "Value": 10.0 }
+    ]
+   },
+   
+   {
+    "Label": 4007,
+    "Description": "Rewarding kid for advancing to screen 4 (mirror room).",
+    "Conditions":
+    [
+     { "Property": "Kid Position X", "Op": "<", "Value": 140 },
+     { "Property": "Tile BG State", "Room": 24, "Tile": 13, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 4998,
+    "Description": "Rewarding kid for advancing to screen 4 (mirror room).",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 4 },
+     { "Property": "Kid Position X", "Op": ">", "Value": 140 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 4999,
+    "Description": "If Kid dies, fail",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+     
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 4995,
+    "Description": "If Kid dies, fail",
+    "Conditions":
+    [
+     { "Property": "Kid Position Y", "Op": "<", "Value": 118  }
+    ],
+     
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 4997,
+    "Description": "If Falls, fail",
+    "Conditions":
+    [
+     { "Property": "Guard Position Y", "Op": ">", "Value":  120 },
+     { "Property": "Kid Room", "Op": "==", "Value": "Guard Room" }
+    ],
+     
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 4996,
+    "Description": "If Guard dies, fail",
+    "Conditions":
+    [
+     { "Property": "Guard Frame", "Op": "==", "Value":  185 }
+    ],
+     
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

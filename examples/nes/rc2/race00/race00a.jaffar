@@ -1,8 +1,5 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
- 
-  "Jaffar Configuration": 
+   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
@@ -10,23 +7,23 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 8000,
+      "Max Move Count": 300,
       "Store Move History": true,
       "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 1500,
+      "XDelta3 Max Differences": 460,
       "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 300,
-     "Max Size Upper Bound (Mb)": 21000
+     "Max Size Lower Bound (Mb)": 1200,
+     "Max Size Upper Bound (Mb)": 5700
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Save Intermediate Results":
@@ -42,13 +39,13 @@
   
   "Emulator Configuration": 
   {
-    "Rom File": "../solar.nes",
-    "State File": "scroller.state"
+    "Rom File": "../rc2.nes",
+    "State File": "race00a.state"
   },
   
   "Game Configuration": 
   {
-      "Timer Tolerance": 8
+   "Timer Tolerance": 0
   },
   
   "Playback Configuration": 
@@ -68,25 +65,9 @@
     
     "Actions":
     [
-     { "Type": "Set Eye Count Magnet", "Intensity": -1000.0 },
-     { "Type": "Set Ship Health Magnet", "Intensity": 1.0 }
-    ]
-   },
-   
-   {
-    "Label": 1900,
-    "Conditions":
-    [
-      { "Property": "Ship Health", "Op": "<=", "Value": 0 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
+     { "Type": "Set Player 1 Speed Magnet", "Intensity": 1.0 },
+     { "Type": "Set Player 1 Standing Magnet", "Intensity": -100.0 }
     ]
    }
-   
   ]  
 }

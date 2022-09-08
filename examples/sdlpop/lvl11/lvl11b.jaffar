@@ -1,29 +1,25 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 11",
   
-  "Emulator Configuration": 
-  {
-    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
-    "Levels File": "../LEVELS.DAT",
-    "State File": "lvl11b.sav"
-  },
-  
-  "State Configuration": 
-  {
-    "Max Difference Count": 460,
-    "Max Move Count": 300
-  },
-  
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
     
-    "State Database":
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 50,
-     "Max Size Upper Bound (Mb)": 500
+      "Max Move Count": 300,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 460,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 150000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -43,12 +39,22 @@
      }
   },
   
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl11b.sav",
+    "Override RNG Value": false,
+    "RNG Value": 1,
+    "Loose Tile Sound Id": 20
+  },
+  
   "Game Configuration": 
   {
    "Timer Tolerance": 8,
-   "Property Hash Types": [ ],
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP"  ],
    "Static Tile Hash Types":
-    [
+   [ 
      { "Room": 14, "Tile": 21, "Type": "Full"},
      { "Room": 14, "Tile": 22, "Type": "Full"},
      { "Room": 14, "Tile": 25, "Type": "Full"},
@@ -81,7 +87,7 @@
    
    "Falling Tiles Hash Types": 
    [
-    { "Room": 14, "Column": 4, "Type": "Full", "Description": "Falling Tile" },
+     { "Room": 14, "Column": 4, "Type": "Full", "Description": "Falling Tile" },
     { "Room": 15, "Column": 4, "Type": "Full", "Description": "Falling Tile" },
     { "Room": 14, "Column": 6, "Type": "Full", "Description": "Falling Tile" },
     { "Room": 15, "Column": 16, "Type": "Full", "Description": "Falling Tile" },
@@ -137,7 +143,7 @@
     "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
     "Overlay Path": "../../../platforms/sdlpop/overlay"
   },
-  
+    
   "Rules":
   [
    {

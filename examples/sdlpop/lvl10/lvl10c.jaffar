@@ -49,13 +49,6 @@
     "Loose Tile Sound Id": 20
   },
   
-  "State Configuration": 
-  {
-    "Max Difference Count": 60,
-    "Max Move Count": 200,
-    "Store Move List": true    
-  },
-  
   "Game Configuration": 
   {
    "Timer Tolerance": 8,

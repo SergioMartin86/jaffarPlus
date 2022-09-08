@@ -13,6 +13,7 @@ option('game', type : 'combo', choices :
     'nes/kungfu',
     'nes/solar',
     'nes/bt',
+    'nes/rc2',
     'smbc',  
     'sdlpop'], description: 'Selects the game to run Jaffar with')
 

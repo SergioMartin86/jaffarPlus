@@ -1,24 +1,62 @@
 {
   "Description": "This script searches for the fastest any% solution for vanilla PoP level 5",  
   
-  "Emulator Configuration": 
+  
+  "Jaffar Configuration": 
   {
-    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
-    "Levels File": "../LEVELS.DAT",
-    "State File": "lvl05a.sav"
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 250,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 250,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 15000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 6000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
   },
   
-  "State Configuration": 
+  "Emulator Configuration": 
   {
-    "Max Difference Count": 55,
-    "Max Move Count": 250,
-    "Store Move List": false    
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl05a.sav",
+    "Override RNG Value": false,
+    "RNG Value": 1,
+    "Loose Tile Sound Id": 20
   },
   
   "Game Configuration": 
   {
-   "Property Hash Types": [ ],
-   "Static Tile Hash Types": [  ],
+   "Timer Tolerance": 8,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP"  ],
+   "Static Tile Hash Types":
+   [ 
+   ],
    
    "Falling Tiles Hash Types": 
    [
@@ -30,33 +68,10 @@
    ]
   },
   
-  "Jaffar Configuration": 
-  {
-    "State Database":
-    {
-     "Max Size Lower Bound (Mb)": 150,
-     "Max Size Upper Bound (Mb)": 220
-    },
-    
-    "Hash Database":
-    { 
-     "Max Size Lower Bound (Mb)": 12000,
-     "Max Size Upper Bound (Mb)": 20000
-    },
-    
-    "Save Intermediate Results":
-    {
-     "Enabled": true,
-     "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol"
-    }
-  }, 
-  
   "Playback Configuration": 
   {
-    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
   },
   
   "Rules":
