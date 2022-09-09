@@ -136,8 +136,14 @@ const char * Nes_Emu::emulate_skip_frame( int joypad1, int joypad2 )
 
 const char * Nes_Emu::emulate_frame( int joypad1, int joypad2 )
 {
+#ifndef _USE_PLAYER_FOUR
 	emu.current_joypad [0] = (joypad1 |= ~0xFF);
 	emu.current_joypad [1] = (joypad2 |= ~0xFF);
+#else
+ emu.current_joypad [0] = 0;
+ uint32_t c = (uint8_t)joypad1;
+ emu.current_joypad [1] = (uint32_t)0 | c << 8;
+#endif
 
 	emu.ppu.host_pixels = NULL;
 

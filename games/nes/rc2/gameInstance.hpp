@@ -1,6 +1,7 @@
 #pragma once
 
 #define _INVERSE_FRAME_RATE 16667
+#define _PLAYER_POS 3
 
 #include "gameInstanceBase.hpp"
 #include <set>
@@ -16,8 +17,10 @@ struct genericMagnet_t {
 
 // Datatype to describe a magnet
 struct magnetSet_t {
- float player1SpeedMagnet = 0.0;
- float player1StandingMagnet = 0.0;
+ float playerSpeedMagnet = 0.0;
+ float playerStandingMagnet = 0.0;
+ float playerLapProgressMagnet = 0.0;
+ float playerMoneyMagnet = 0.0;
 };
 
 
@@ -27,19 +30,45 @@ class GameInstance : public GameInstanceBase
 
   // Container for game-specific values
   uint8_t*  gameTimer;
-  uint8_t*  player1Speed;
-  uint8_t*  player1Angle;
-  uint8_t*  player1Standing;
-  uint8_t*  player1PosX1;
-  uint8_t*  player1PosX2;
-  uint8_t*  player1PosY1;
-  uint8_t*  player1PosY2;
+  uint8_t*  isLagFrame;
+  uint8_t*  trafficLightTimer;
+  uint8_t*  isRaceActive;
+
+  uint8_t*  playerSpeed1;
+  uint8_t*  playerSpeed2;
+  uint8_t*  playerMomentum1;
+  uint8_t*  playerMomentum2;
+  uint8_t*  playerAngle;
+  uint8_t*  playerStanding;
+  uint8_t*  playerCurrentLap;
+  uint8_t*  playerLapProgress1;
+  uint8_t*  playerLapProgress2;
+  uint8_t*  playerPosX1;
+  uint8_t*  playerPosX2;
+  uint8_t*  playerPosY1;
+  uint8_t*  playerPosY2;
+  uint8_t*  playerPosZ;
+  uint8_t*  playerFloorZ;
+  uint8_t*  playerMoney1;
+  uint8_t*  playerMoney2;
+  uint8_t*  playerFinishPosition;
+  uint8_t*  playerZipperBoost1;
+  uint8_t*  playerZipperBoost2;
+
+  uint8_t*  playerNitroState;
+  uint8_t*  playerNitroBoost;
+  uint8_t*  playerNitroPhase;
+  uint8_t*  playerNitroCounter;
 
   uint8_t timerTolerance;
 
   // Derivative Values
-  float player1PosX;
-  float player1PosY;
+  float playerPosX;
+  float playerPosY;
+  float playerMoney;
+  float playerLapProgress;
+  float playerSpeed;
+  bool isAirborne;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint64_t computeHash() const override;

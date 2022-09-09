@@ -7,7 +7,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 1700,
+      "Max Move Count": 3000,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 460,
@@ -16,8 +16,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 4000
+     "Max Size Lower Bound (Mb)": 130000,
+     "Max Size Upper Bound (Mb)": 230000
     },
     
     "Hash Database":
@@ -40,7 +40,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../rc2.nes",
-    "State File": "prerace.state"
+    "State File": "race25a.state"
   },
   
   "Game Configuration": 
@@ -66,7 +66,8 @@
     "Actions":
     [
      { "Type": "Set Player Speed Magnet", "Intensity": 0.01 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 100.0 }
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 100.0 },
+     { "Type": "Set Player Money Magnet", "Intensity": 0.000001 }
     ]
    },
    
