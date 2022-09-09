@@ -59,7 +59,7 @@ uint64_t GameInstance::computeHash() const
 
   hash.Update(*playerSpeed1);
 //  hash.Update(*playerSpeed2);
-  hash.Update(*playerMomentum1);
+//  hash.Update(*playerMomentum1);
 //  hash.Update(*playerMomentum2);
   hash.Update(*playerZipperBoost1);
 //  hash.Update(*playerZipperBoost2);
