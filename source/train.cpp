@@ -247,7 +247,7 @@ void Train::computeStates()
        {
         if (possibleMoveSet.contains(i) == false)
         if ((i & 0b00001000) == 0) // NES
-        if ((i & 0b00000100) == 0) // NES
+        if ((i & 0b00000100) == 0) // NES Select
 //          if ((i & 0b01000000) == 0) // SDLPOP
 //          if ((i & 0b00100000) == 0) // SDLPOP
         {

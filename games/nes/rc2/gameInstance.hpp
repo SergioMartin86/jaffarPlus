@@ -21,6 +21,7 @@ struct magnetSet_t {
  float playerStandingMagnet = 0.0;
  float playerLapProgressMagnet = 0.0;
  float playerMoneyMagnet = 0.0;
+ float playerNitroCountMagnet = 0.0;
 };
 
 
@@ -55,7 +56,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  playerZipperBoost1;
   uint8_t*  playerZipperBoost2;
 
-  uint8_t*  playerNitroState;
+  uint8_t*  playerNitroCount;
   uint8_t*  playerNitroBoost;
   uint8_t*  playerNitroPhase;
   uint8_t*  playerNitroCounter;

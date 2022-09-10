@@ -32,7 +32,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   playerMoney2           = (uint8_t*)   &_emu->_baseMem[0x05F6 + _PLAYER_POS];
   playerPosZ             = (uint8_t*)   &_emu->_baseMem[0x0572 + _PLAYER_POS];
   playerFloorZ           = (uint8_t*)   &_emu->_baseMem[0x058E + _PLAYER_POS];
-  playerNitroState       = (uint8_t*)   &_emu->_baseMem[0x0748 + _PLAYER_POS];
+  playerNitroCount       = (uint8_t*)   &_emu->_baseMem[0x0748 + _PLAYER_POS];
   playerNitroBoost       = (uint8_t*)   &_emu->_baseMem[0x0626 + _PLAYER_POS];
   playerNitroPhase       = (uint8_t*)   &_emu->_baseMem[0x061E + _PLAYER_POS];
   playerNitroCounter     = (uint8_t*)   &_emu->_baseMem[0x0622 + _PLAYER_POS];
@@ -79,10 +79,10 @@ uint64_t GameInstance::computeHash() const
   hash.Update(*playerPosZ);
   hash.Update(*playerFloorZ);
 
-  hash.Update(*playerNitroState);
-  hash.Update(*playerNitroBoost);
+  hash.Update(*playerNitroCount);
+  hash.Update(*playerNitroBoost > 0);
   hash.Update(*playerNitroPhase);
-  hash.Update(*playerNitroCounter);
+  hash.Update(*playerNitroCounter > 0);
 
   hash.Update(_emu->_nes->high_mem()[0x203D]);
 
@@ -152,6 +152,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating player health  magnet
   reward += magnets.playerMoneyMagnet * playerMoney;
 
+  // Evaluating player health  magnet
+  reward += magnets.playerNitroCountMagnet * (float)*playerNitroCount;
+
   // Returning reward
   return reward;
 }
@@ -162,6 +165,7 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
+ LOG("[Jaffar]  + Reward:                             %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                               0x%lX\n", computeHash());
  LOG("[Jaffar]  + Game Timer:                         %03u\n", *gameTimer);
  LOG("[Jaffar]  + Traffic Light Timer:                %03u\n", *trafficLightTimer);
@@ -178,7 +182,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Player Speed:                       %f (%03u/%03u + %03u/%03u)\n", playerSpeed, *playerSpeed1, *playerSpeed2, *playerZipperBoost1, *playerZipperBoost2);
  LOG("[Jaffar]  + Player Angle:                       %03u\n", *playerAngle);
  LOG("[Jaffar]  + Player Money:                       %f\n", playerMoney);
- LOG("[Jaffar]  + Player Boost:                       %03u, %03u, %03u, %03u\n", *playerNitroState, *playerNitroBoost, *playerNitroPhase, *playerNitroCounter);
+ LOG("[Jaffar]  + Player Boost:                       %03u, %03u, %03u, %03u\n", *playerNitroCount, *playerNitroBoost, *playerNitroPhase, *playerNitroCounter);
  LOG("[Jaffar]  + Player Momentum:                    %03u, %03u\n", *playerMomentum1, *playerMomentum2);
  LOG("[Jaffar]  + SRAM Value:                         %03u\n",  _emu->_nes->high_mem()[0x203D]);
  //for (size_t i = 0; i < 0x20; i++) LOG("%03u ", _emu->_nes->high_mem()[0x203D + i]);
@@ -192,5 +196,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.playerSpeedMagnet) > 0.0f)                     LOG("[Jaffar]  + Player Speed Magnet              - Intensity: %.5f\n", magnets.playerSpeedMagnet);
  if (std::abs(magnets.playerStandingMagnet) > 0.0f)                  LOG("[Jaffar]  + Player Standing Magnet           - Intensity: %.5f\n", magnets.playerStandingMagnet);
  if (std::abs(magnets.playerLapProgressMagnet) > 0.0f)               LOG("[Jaffar]  + Player Lap Progress Magnet       - Intensity: %.5f\n", magnets.playerLapProgressMagnet);
+ if (std::abs(magnets.playerNitroCountMagnet) > 0.0f)                LOG("[Jaffar]  + Player Nitro Count Magnet        - Intensity: %.5f\n", magnets.playerNitroCountMagnet);
 }
 
