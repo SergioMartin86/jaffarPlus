@@ -40,12 +40,12 @@
   "Emulator Configuration": 
   {
     "Rom File": "../rc2.nes",
-    "State File": "race25a.state"
+    "State File": "race25.state"
   },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 0
+   "Timer Tolerance": 2
   },
   
   "Playback Configuration": 

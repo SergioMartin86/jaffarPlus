@@ -54,7 +54,7 @@ uint64_t GameInstance::computeHash() const
 
   if (timerTolerance > 0) hash.Update(*gameTimer % timerTolerance);
   hash.Update(*isLagFrame);
-//  hash.Update(*trafficLightTimer);
+  hash.Update(*trafficLightTimer);
   hash.Update(*isRaceActive);
 
   hash.Update(*playerSpeed1);
