@@ -94,10 +94,10 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-uint64_t GameInstance::computeHash() const
+uint128_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
-  MetroHash64 hash;
+  MetroHash128 hash;
 
   hash.Update(_emu->_68KRam+0x0000, 0xFFFF);
 
@@ -188,7 +188,7 @@ uint64_t GameInstance::computeHash() const
   // Stage 60
 //  hash.Update(*lesterCrawlAnimation);
 
-  uint64_t result;
+  uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
 }

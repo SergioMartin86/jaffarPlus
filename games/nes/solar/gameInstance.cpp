@@ -58,10 +58,10 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-uint64_t GameInstance::computeHash() const
+uint128_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
-  MetroHash64 hash;
+  MetroHash128 hash;
 
   if (timerTolerance > 0) hash.Update(*gameTimer % timerTolerance);
 //  hash.Update(*gameTimer);
@@ -126,7 +126,7 @@ uint64_t GameInstance::computeHash() const
   // For fuel delivery
   hash.Update(&_emu->_baseMem[0x0500], 0x0100);
 
-  uint64_t result;
+  uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
 }

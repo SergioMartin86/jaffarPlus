@@ -62,7 +62,7 @@ class GameInstance : public GameInstanceBase
   float score;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
-  uint64_t computeHash() const override;
+  uint128_t computeHash() const override;
   void updateDerivedValues() override;
   std::vector<std::string> getPossibleMoves() const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;

@@ -142,10 +142,10 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-uint64_t GameInstance::computeHash() const
+uint128_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
-  MetroHash64 hash;
+  MetroHash128 hash;
 
   // Adding fixed hash elements
   hash.Update(*isLagFrame);
@@ -279,7 +279,7 @@ uint64_t GameInstance::computeHash() const
    if (*grabItemTimer > 0) hash.Update(*stageTimer);
   }
 
-  uint64_t result;
+  uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
 }

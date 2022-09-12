@@ -99,10 +99,10 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 };
 
 // This function computes the hash for the current state
-uint64_t GameInstance::computeHash() const
+uint128_t GameInstance::computeHash() const
 {
  // Storage for hash calculation
- MetroHash64 hash;
+ MetroHash128 hash;
 
  // If timer tolerance is set, use the game tick for hashing
  if (timerTolerance > 0) hash.Update(gameState.rem_tick % (timerTolerance+1));
@@ -196,7 +196,7 @@ uint64_t GameInstance::computeHash() const
  // Computing hash for static objects. They only change on tile type, hence we only read FG
  for (const auto idx : _hashTypeStatic)  hash.Update(gameState.level.fg[idx] + idx * 255);
 
- uint64_t result;
+ uint128_t result;
  hash.Finalize(reinterpret_cast<uint8_t *>(&result));
  return result;
 }

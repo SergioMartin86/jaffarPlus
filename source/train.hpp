@@ -19,7 +19,7 @@
 #define SETNAME phmap::parallel_flat_hash_set
 #define SETEXTRAARGS , phmap::priv::hash_default_hash<V>, phmap::priv::hash_default_eq<V>, std::allocator<V>, 4, std::mutex
 template <class V> using HashSetT = SETNAME<V SETEXTRAARGS>;
-using hashSet_t = HashSetT<uint64_t>;
+using hashSet_t = HashSetT<uint128_t>;
 
 class Train
 {

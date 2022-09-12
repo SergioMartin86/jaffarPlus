@@ -19,7 +19,7 @@ xdelta3LFlags = [ '-Llzma' ]
 
 # Common Jaffar include dirs
 jaffarIncludes = include_directories([
- 'extern/metrohash64',
+ 'extern/metrohash128',
  'extern/argparse',
  'extern/json/single_include',
  'extern/phmap',
@@ -33,7 +33,7 @@ jaffarIncludes = include_directories([
 jaffarSrc = [
  'source/utils.cpp',
  'source/rule.cpp',
- 'extern/metrohash64/metrohash64.cc',
+ 'extern/metrohash128/metrohash128.cpp',
  'games/gameInstanceBase.cpp'
 ]
 

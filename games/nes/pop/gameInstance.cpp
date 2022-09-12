@@ -73,10 +73,10 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-uint64_t GameInstance::computeHash() const
+uint128_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
-  MetroHash64 hash;
+  MetroHash128 hash;
 
   if (timerTolerance > 0) hash.Update(*globalTimer % (timerTolerance+1));
   if (*isPaused != 2 || *screenDrawn != 0) hash.Update(*globalTimer);
@@ -171,7 +171,7 @@ uint64_t GameInstance::computeHash() const
 //  hash.Update( &_emu->_baseMem[0x040C], 0x0384);
 //  hash.Update( &_emu->_baseMem[0x0793], 0x006D);
 
-  uint64_t result;
+  uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
 }

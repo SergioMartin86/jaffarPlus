@@ -18,6 +18,9 @@
 #define METROHASH_METROHASH_128_H
 
 #include <stdint.h>
+#include <utility>
+
+typedef std::pair<uint64_t, uint64_t> uint128_t;
 
 class MetroHash128
 {
@@ -33,7 +36,14 @@ public:
     // Update the hash state with a string of bytes. If the length
     // is sufficiently long, the implementation switches to a bulk
     // hashing algorithm directly on the argument buffer for speed.
-    void Update(const uint8_t * buffer, const uint64_t length);
+    void Update(const void* buffer, const uint64_t length) {
+      Update(reinterpret_cast<const uint8_t*>(buffer), length);
+    }
+    void Update(const uint8_t* buffer, const uint64_t length);
+    template <class T>
+    void Update(const T& x) {
+      Update(&x, sizeof(x));
+    }
     
     // Constructs the final hash and writes it to the argument buffer.
     // After a hash is finalized, this instance must be Initialized()-ed

@@ -47,12 +47,17 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-uint64_t GameInstance::computeHash() const
+uint128_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
-  MetroHash64 hash;
+  MetroHash128 hash;
 
-  if (timerTolerance > 0) hash.Update(*gameTimer % timerTolerance);
+  if (timerTolerance > 0)
+  {
+   int timerPhase = *gameTimer % timerTolerance;
+   hash.Update(&timerPhase);
+  }
+
   hash.Update(*isLagFrame);
   hash.Update(*trafficLightTimer);
   hash.Update(*isRaceActive);
@@ -86,7 +91,7 @@ uint64_t GameInstance::computeHash() const
 
   hash.Update(_emu->_nes->high_mem()[0x203D]);
 
-  uint64_t result;
+  uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
 }
@@ -166,7 +171,7 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Reward:                             %f\n", getStateReward(rulesStatus));
- LOG("[Jaffar]  + Hash:                               0x%lX\n", computeHash());
+ LOG("[Jaffar]  + Hash:                               0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Game Timer:                         %03u\n", *gameTimer);
  LOG("[Jaffar]  + Traffic Light Timer:                %03u\n", *trafficLightTimer);
  LOG("[Jaffar]  + Is Race Active:                     %03u\n", *isRaceActive);
