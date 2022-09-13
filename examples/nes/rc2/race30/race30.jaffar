@@ -16,7 +16,7 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 40000,
+     "Max Size Lower Bound (Mb)": 4000,
      "Max Size Upper Bound (Mb)": 100000
     },
     
@@ -45,7 +45,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 2
+   "Timer Tolerance": 0
   },
   
   "Playback Configuration": 
@@ -67,7 +67,7 @@
     [
      { "Type": "Set Player Speed Magnet", "Intensity": 0.01 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 100.0 },
-     { "Type": "Set Player Nitro Count Magnet", "Intensity": 1.0 }
+     { "Type": "Set Player Nitro Count Magnet", "Intensity": 3.0 }
     ]
    },
    
