@@ -147,13 +147,13 @@ size_t Train::hashGetTotalCount() const
 double Train::hashSizeFromEntries(const ssize_t entries) const
 {
  // Just an approximation of how much the hash table requires
- return (((double)sizeof(uint128_t) + (double)sizeof(void*) ) *(double)entries) / (1024.0 * 1024.0);
+ return (((double)sizeof(uint128_t) + (double)sizeof(void*) ) *(double)entries) / (512.0 * 1024.0);
 };
 
 size_t Train::hashEntriesFromSize(const double size) const
 {
   // Just an approximation of how much the hash table requires
-  return (size_t)((size * (1024.0 * 1024.0)) / ((double)sizeof(uint128_t) + (double)sizeof(void*)));
+  return (size_t)((size * (512.0 * 1024.0)) / ((double)sizeof(uint128_t) + (double)sizeof(void*)));
 };
 
 void Train::computeStates()
