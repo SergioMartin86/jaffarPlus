@@ -7,7 +7,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 1800,
+      "Max Move Count": 2300,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 2000,
@@ -16,8 +16,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 70000,
-     "Max Size Upper Bound (Mb)": 190000
+     "Max Size Lower Bound (Mb)": 40000,
+     "Max Size Upper Bound (Mb)": 100000
     },
     
     "Hash Database":
@@ -40,7 +40,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../rc2.nes",
-    "State File": "race30.state"
+    "State File": "race32.state"
   },
   
   "Game Configuration": 
