@@ -123,7 +123,7 @@ void loadSolutionFile(
  hashMap[curHash] = 0;
 
  // Iterating move list in the sequence
- for (size_t i = 0; i < moveList.size(); i++)
+ for (ssize_t i = 0; i < moveList.size(); i++)
  {
   // Getting possible moves
   auto possibleMoves = gameInstance.getPossibleMoves();

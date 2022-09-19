@@ -7,7 +7,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 2300,
+      "Max Move Count": 3000,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 2000,
@@ -16,8 +16,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 80000,
-     "Max Size Upper Bound (Mb)": 160000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":
@@ -40,7 +40,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../rc2.nes",
-    "State File": "race32.state"
+    "State File": "race37.state"
   },
   
   "Game Configuration": 
@@ -67,7 +67,8 @@
     [
      { "Type": "Set Player Speed Magnet", "Intensity": 0.01 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 100.0 },
-     { "Type": "Set Player Nitro Count Magnet", "Intensity": 5.0 }
+     { "Type": "Set Player Nitro Grab Magnet", "Intensity": 20.0 },
+     { "Type": "Set Player Nitro Active Magnet", "Intensity": 10.0 }
     ]
    },
    

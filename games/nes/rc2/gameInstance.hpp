@@ -21,7 +21,9 @@ struct magnetSet_t {
  float playerStandingMagnet = 0.0;
  float playerLapProgressMagnet = 0.0;
  float playerMoneyMagnet = 0.0;
- float playerNitroCountMagnet = 0.0;
+ float playerNitroActiveMagnet = 0.0;
+ float playerNitroGrabMagnet = 0.0;
+ float playerLastInputMagnet = 0.0;
 };
 
 
@@ -61,6 +63,11 @@ class GameInstance : public GameInstanceBase
   uint8_t*  playerNitroPhase;
   uint8_t*  playerNitroCounter;
 
+  uint8_t*  playerNitroPrevCount;
+  uint8_t*  playerNitroPickedUp;
+  uint8_t*  playerLastInputKey;
+  uint8_t*  playerLastInputFrame;
+
   uint8_t timerTolerance;
 
   // Derivative Values
@@ -70,6 +77,7 @@ class GameInstance : public GameInstanceBase
   float playerLapProgress;
   float playerSpeed;
   bool isAirborne;
+  bool isNitroActive;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint128_t computeHash() const override;

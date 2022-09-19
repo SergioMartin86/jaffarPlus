@@ -50,6 +50,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   enemy5PosX             = (uint8_t*)   &_emu->_baseMem[0x0394];
   enemy6PosX             = (uint8_t*)   &_emu->_baseMem[0x0395];
   enemy7PosX             = (uint8_t*)   &_emu->_baseMem[0x0396];
+  enemy8PosX             = (uint8_t*)   &_emu->_baseMem[0x0396];
+  enemy9PosX             = (uint8_t*)   &_emu->_baseMem[0x0396];
   enemy0State            = (uint8_t*)   &_emu->_baseMem[0x0435];
   enemy1State            = (uint8_t*)   &_emu->_baseMem[0x0436];
   enemy2State            = (uint8_t*)   &_emu->_baseMem[0x0437];
@@ -58,6 +60,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   enemy5State            = (uint8_t*)   &_emu->_baseMem[0x043A];
   enemy6State            = (uint8_t*)   &_emu->_baseMem[0x043B];
   enemy7State            = (uint8_t*)   &_emu->_baseMem[0x043C];
+  enemy8State            = (uint8_t*)   &_emu->_baseMem[0x043B];
+  enemy9State            = (uint8_t*)   &_emu->_baseMem[0x043C];
   freezeTimeTimer        = (uint8_t*)   &_emu->_baseMem[0x057C];
   batMedusa1State        = (uint8_t*)   &_emu->_baseMem[0x04C9];
   batMedusa1PosX         = (uint8_t*)   &_emu->_baseMem[0x0395];
@@ -105,6 +109,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   enemy1HolyWaterLockState = (uint8_t*)   &_emu->_baseMem[0x056C];
   holyWaterFire1Timer      = (uint8_t*)   &_emu->_baseMem[0x057C];
+
+  batShot1PosX      = (uint8_t*)   &_emu->_baseMem[0x0399];
+  batShot1PosY      = (uint8_t*)   &_emu->_baseMem[0x0361];
 
   jumpingInertia      = (uint8_t*)   &_emu->_baseMem[0x0584];
 
@@ -182,7 +189,7 @@ uint128_t GameInstance::computeHash() const
 //  hash.Update(*jumpingInertia);
 
   // Using stage timer to allow pauses
-  hash.Update(*stageTimer % timerTolerance);
+  if (timerTolerance > 0) hash.Update(*stageTimer % (timerTolerance+1));
 
   // Conditional hashes
   if (hashIncludes.contains("Subweapon Number")) hash.Update(*subweaponNumber);
@@ -279,6 +286,9 @@ uint128_t GameInstance::computeHash() const
    if (*grabItemTimer > 0) hash.Update(*stageTimer);
   }
 
+  hash.Update(*batShot1PosX);
+  hash.Update(*batShot1PosY);
+
   uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
@@ -298,14 +308,9 @@ void GameInstance::updateDerivedValues()
  simonRelativePosX = *((uint8_t*)simonPosX);
  batMedusa1AbsolutePosX = *screenOffset - 128 + *batMedusa1PosX;
 
- // Advancing useless frames
- uint16_t advanceCounter = 0;
-
  int weapon1PosXInt = *subweapon1PosX;
  int weapon2PosXInt = *subweapon2PosX;
  bossWeaponDistance = (*subweapon1State == 0 ? 255 : std::abs(weapon1PosXInt - bossPosXInt)) + (subweapon2State == 0 ? 255 : std::abs(weapon2PosXInt - bossPosXInt));
-
- //while ( (advanceCounter < 1024) && (*gameMode == 8) ) { _emu->advanceState(0); advanceCounter++; }
 
  isCandelabrumBroken = 0;
  for (size_t i = 0x0191; i < 0x1A9; i++) if (_emu->_baseMem[i] > 0) isCandelabrumBroken = 1;
@@ -514,7 +519,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Current Stage:          %02u-%02u\n", *currentStage, *currentSubStage);
   LOG("[Jaffar]  + Timer:                  %u (%02u)\n", *stageTimer, *levelTransitionTimer);
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
-  LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
+  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second );
   LOG("[Jaffar]  + Game Mode:              %02u-%02u (P: %02u)\n", *gameMode, *gameSubMode, *isPaused);
 //  LOG("[Jaffar]  + Screen Offset:          %04u\n", *screenOffset);
   LOG("[Jaffar]  + Is Lag Frame:           %02u\n", *isLagFrame);
@@ -547,10 +552,11 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Item Drop Counter:      %02u\n", *itemDropCounter);
   LOG("[Jaffar]  + Holy Water:             %02u, %02u\n", *enemy1HolyWaterLockState, *holyWaterFire1Timer);
 
-  LOG("[Jaffar]  + Enemy States:           %02u, %02u, %02u, %02u, %02u, %02u, %02u, %02u\n", *enemy0State, *enemy1State, *enemy2State, *enemy3State, *enemy4State, *enemy5State, *enemy6State, *enemy7State);
+  LOG("[Jaffar]  + Enemy States:           %02u, %02u, %02u, %02u, %02u, %02u, %02u, %02u, %02u, %02u\n", *enemy0State, *enemy1State, *enemy2State, *enemy3State, *enemy4State, *enemy5State, *enemy6State, *enemy7State, *enemy8State, *enemy9State);
   LOG("[Jaffar]  + Bat States:             %02u, %02u, %02u, %02u, %02u\n", *batMedusa1State, *batMedusa2State, *batMedusa3State, *batMedusa4State, *batMedusa5State);
 
-  LOG("[Jaffar]  + Enemy X:                %02u, %02u, %02u, %02u, %02u, %02u, %02u\n", *enemy1PosX, *enemy2PosX, *enemy3PosX, *enemy4PosX, *enemy5PosX, *enemy6PosX, *enemy7PosX);
+  LOG("[Jaffar]  + Enemy X:                %02u, %02u, %02u, %02u, %02u, %02u, %02u, %02u, %02u\n", *enemy1PosX, *enemy2PosX, *enemy3PosX, *enemy4PosX, *enemy5PosX, *enemy6PosX, *enemy7PosX, *enemy8PosX, *enemy9PosX);
+  LOG("[Jaffar]  + Bat Shot (X/Y):         %02u, %02u\n", *batShot1PosX, *batShot1PosY);
 
   LOG("[Jaffar]  + Candelabra States: ");
     for (size_t i = 0x0191; i < 0x1A9; i++) LOG("%d", _emu->_baseMem[i] > 0 ? 1 : 0);

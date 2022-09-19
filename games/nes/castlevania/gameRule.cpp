@@ -272,6 +272,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Tile State") return dt_uint8;
   if (propertyName == "Candelabrum State") return dt_uint8;
   if (propertyName == "Is Candelabrum Broken") return dt_uint8;
+  if (propertyName == "Bat Shot 1 Pos X") return dt_uint8;
+  if (propertyName == "Bat Shot 1 Pos Y") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -338,6 +340,8 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Skeleton Pos X") return gameInstance->skeletonPosX;
   if (propertyName == "Skeleton Pos X2") return gameInstance->skeletonPosX2;
   if (propertyName == "Is Candelabrum Broken") return &gameInstance->isCandelabrumBroken;
+  if (propertyName == "Bat Shot 1 Pos X") return &gameInstance->batShot1PosX;
+  if (propertyName == "Bat Shot 1 Pos Y") return &gameInstance->batShot1PosY;
 
   if (propertyName == "Tile State")
   {

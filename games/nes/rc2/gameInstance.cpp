@@ -36,6 +36,10 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   playerNitroBoost       = (uint8_t*)   &_emu->_baseMem[0x0626 + _PLAYER_POS];
   playerNitroPhase       = (uint8_t*)   &_emu->_baseMem[0x061E + _PLAYER_POS];
   playerNitroCounter     = (uint8_t*)   &_emu->_baseMem[0x0622 + _PLAYER_POS];
+  playerNitroPickedUp    = (uint8_t*)   &_emu->_baseMem[0x07FF];
+  playerNitroPrevCount   = (uint8_t*)   &_emu->_baseMem[0x07FE];
+  playerLastInputKey     = (uint8_t*)   &_emu->_baseMem[0x06E8];
+  playerLastInputFrame   = (uint8_t*)   &_emu->_baseMem[0x07FD];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -91,6 +95,10 @@ uint128_t GameInstance::computeHash() const
 
   hash.Update(_emu->_nes->high_mem()[0x203D]);
 
+  hash.Update(*playerNitroPrevCount);
+  hash.Update(*playerNitroPickedUp);
+  hash.Update(*playerLastInputFrame);
+
   uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
@@ -106,6 +114,14 @@ void GameInstance::updateDerivedValues()
  isAirborne = *playerPosZ != *playerFloorZ;
 
  playerSpeed = (float)*playerSpeed1 + (float)*playerSpeed2 / 256.0f + (float)*playerZipperBoost1 + (float)*playerZipperBoost2 / 256.0f;
+
+ if (*playerNitroCount > *playerNitroPrevCount) *playerNitroPickedUp += 1;
+ *playerNitroPrevCount = *playerNitroCount;
+
+ if (*playerLastInputKey != 0) *playerLastInputFrame = *gameTimer;
+
+ isNitroActive = 0;
+ if ( *playerNitroBoost > 0 || *playerNitroPhase > 0 || *playerNitroCounter > 0) isNitroActive = 1;
 }
 
 // Function to determine the current possible moves
@@ -115,7 +131,18 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 
  if (isAirborne) return moveList;
  moveList.insert(moveList.end(), { "......B.", ".L......", "R.......", ".L....B.", "R.....B."});
- moveList.insert(moveList.end(), { ".......A", "......BA", ".L.....A", "R......A", ".L....BA", "R.....BA"});
+ if (*playerNitroCount > 0 && *playerNitroBoost == 0)
+ {
+  bool useBoost = false;
+  if (playerLapProgress > 3.0 && playerLapProgress < 4.0) useBoost = true;
+  if (playerLapProgress > 6.5 && playerLapProgress < 7.5) useBoost = true;
+  if (playerLapProgress > 15.4 && playerLapProgress < 16.2) useBoost = true;
+  if (playerLapProgress > (256.0 + 3.5) && playerLapProgress < (256.0 + 4.5)) useBoost = true;
+  if (playerLapProgress > (256.0 + 6.5) && playerLapProgress < (256.0 + 7.5)) useBoost = true;
+  if (playerLapProgress > (256.0 + 15.4) && playerLapProgress < (256.0 + 16.2)) useBoost = true;
+
+  if (useBoost == true) moveList.insert(moveList.end(), { ".......A", "......BA", ".L.....A", "R......A", ".L....BA", "R.....BA"});
+ }
 
  return moveList;
 }
@@ -158,7 +185,13 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.playerMoneyMagnet * playerMoney;
 
   // Evaluating player health  magnet
-  reward += magnets.playerNitroCountMagnet * (float)*playerNitroCount;
+  reward += magnets.playerNitroActiveMagnet * isNitroActive;
+
+  // Evaluating player health  magnet
+  reward += magnets.playerNitroGrabMagnet * (float)*playerNitroPickedUp;
+
+  // Evaluating player health  magnet
+  reward += magnets.playerLastInputMagnet * (float)*playerLastInputFrame;
 
   // Returning reward
   return reward;
@@ -187,10 +220,13 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Player Speed:                       %f (%03u/%03u + %03u/%03u)\n", playerSpeed, *playerSpeed1, *playerSpeed2, *playerZipperBoost1, *playerZipperBoost2);
  LOG("[Jaffar]  + Player Angle:                       %03u\n", *playerAngle);
  LOG("[Jaffar]  + Player Money:                       %f\n", playerMoney);
- LOG("[Jaffar]  + Player Boost:                       %03u, %03u, %03u, %03u\n", *playerNitroCount, *playerNitroBoost, *playerNitroPhase, *playerNitroCounter);
+ LOG("[Jaffar]  + Player Boost:                       %03u, %03u, %03u, %03u, Active: %01u\n", *playerNitroCount, *playerNitroBoost, *playerNitroPhase, *playerNitroCounter, isNitroActive);
  LOG("[Jaffar]  + Player Momentum:                    %03u, %03u\n", *playerMomentum1, *playerMomentum2);
  LOG("[Jaffar]  + SRAM Value:                         %03u\n",  _emu->_nes->high_mem()[0x203D]);
+ LOG("[Jaffar]  + Boost Prev / Picked Up              %02u / %02u\n",  *playerNitroPrevCount, *playerNitroPickedUp);
+ LOG("[Jaffar]  + Last Input / Frame                  %03u / %03u\n",  *playerLastInputKey, *playerLastInputFrame);
  //for (size_t i = 0; i < 0x20; i++) LOG("%03u ", _emu->_nes->high_mem()[0x203D + i]);
+
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -201,6 +237,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.playerSpeedMagnet) > 0.0f)                     LOG("[Jaffar]  + Player Speed Magnet              - Intensity: %.5f\n", magnets.playerSpeedMagnet);
  if (std::abs(magnets.playerStandingMagnet) > 0.0f)                  LOG("[Jaffar]  + Player Standing Magnet           - Intensity: %.5f\n", magnets.playerStandingMagnet);
  if (std::abs(magnets.playerLapProgressMagnet) > 0.0f)               LOG("[Jaffar]  + Player Lap Progress Magnet       - Intensity: %.5f\n", magnets.playerLapProgressMagnet);
- if (std::abs(magnets.playerNitroCountMagnet) > 0.0f)                LOG("[Jaffar]  + Player Nitro Count Magnet        - Intensity: %.5f\n", magnets.playerNitroCountMagnet);
+ if (std::abs(magnets.playerNitroActiveMagnet) > 0.0f)               LOG("[Jaffar]  + Player Nitro Active Magnet       - Intensity: %.5f\n", magnets.playerNitroActiveMagnet);
+ if (std::abs(magnets.playerNitroGrabMagnet) > 0.0f)                 LOG("[Jaffar]  + Player Nitro Grab Magnet         - Intensity: %.5f\n", magnets.playerNitroGrabMagnet);
+ if (std::abs(magnets.playerLastInputMagnet) > 0.0f)                 LOG("[Jaffar]  + Player Last Input Magnet         - Intensity: %.5f\n", magnets.playerLastInputMagnet);
 }
 

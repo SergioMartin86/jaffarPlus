@@ -40,7 +40,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../rc2.nes",
-    "State File": "race32.state"
+    "State File": "race34.state"
   },
   
   "Game Configuration": 

@@ -37,10 +37,25 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
-  if (actionType == "Set Player Nitro Count Magnet")
+  if (actionType == "Set Player Nitro Grab Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
-   _magnets.playerNitroCountMagnet = actionJs["Intensity"].get<float>();
+   _magnets.playerNitroGrabMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+
+  if (actionType == "Set Player Nitro Active Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.playerNitroActiveMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Last Input Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.playerLastInputMagnet = actionJs["Intensity"].get<float>();
    recognizedActionType = true;
   }
 
@@ -56,6 +71,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Player Speed") return dt_float;
   if (propertyName == "Player Pos X") return dt_float;
   if (propertyName == "Player Pos Y") return dt_float;
+  if (propertyName == "Player Last Input Frame") return dt_uint8;
+
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -71,6 +88,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Player Speed") return &gameInstance->playerSpeed;
   if (propertyName == "Player Pos X") return &gameInstance->playerPosX;
   if (propertyName == "Player Pos Y") return &gameInstance->playerPosY;
+  if (propertyName == "Player Last Input Frame") return gameInstance->playerLastInputFrame;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

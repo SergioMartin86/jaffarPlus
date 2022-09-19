@@ -104,6 +104,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* enemy5PosX;
   uint8_t* enemy6PosX;
   uint8_t* enemy7PosX;
+  uint8_t* enemy8PosX;
+  uint8_t* enemy9PosX;
   uint8_t* enemy0State;
   uint8_t* enemy1State;
   uint8_t* enemy2State;
@@ -112,6 +114,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* enemy5State;
   uint8_t* enemy6State;
   uint8_t* enemy7State;
+  uint8_t* enemy8State;
+  uint8_t* enemy9State;
   uint8_t* batMedusa1State;
   uint8_t* batMedusa1PosX;
   uint8_t* batMedusa1PosY;
@@ -157,6 +161,9 @@ class GameInstance : public GameInstanceBase
 
   uint8_t* mummy2PosX;
   uint8_t* jumpingInertia;
+
+  uint8_t* batShot1PosX; //0x399
+  uint8_t* batShot1PosY; //0x361
 
   // Mummy distance
   uint8_t mummiesDistance;
