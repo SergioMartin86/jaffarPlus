@@ -7,7 +7,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 3000,
+      "Max Move Count": 2000,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 2000,
@@ -40,7 +40,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../rc2.nes",
-    "State File": "race37.state"
+    "State File": "race37b.state"
   },
   
   "Game Configuration": 
