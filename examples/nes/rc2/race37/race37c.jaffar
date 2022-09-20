@@ -16,8 +16,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 60000
+     "Max Size Lower Bound (Mb)": 80000,
+     "Max Size Upper Bound (Mb)": 150000
     },
     
     "Hash Database":
@@ -45,7 +45,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 0
+   "Timer Tolerance": 2
   },
   
   "Playback Configuration": 
@@ -90,7 +90,22 @@
     "Label": 1998,
     "Conditions":
     [
-      { "Property": "Player Last Input Frame", "Op": ">", "Value": 28 }
+      { "Property": "Player Last Input Frame", "Op": ">", "Value": 195 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail"}
+    ]
+   },
+   
+   {
+    "Label": 1997,
+    "Conditions":
+    [
+      { "Property": "Player Last Input Frame", "Op": "<", "Value": 50 }
     ],
     
     "Satisfies": [ ],
