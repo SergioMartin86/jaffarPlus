@@ -1,4 +1,5 @@
 *.bk
+*.nes
 jaffar.best.sav
 jaffar.current.sav
 subprojects/abseil-cpp*
