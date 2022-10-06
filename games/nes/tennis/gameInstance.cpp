@@ -28,6 +28,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   pointEnd               = (uint8_t*)   &_emu->_baseMem[0x0072];
   playerScore            = (uint8_t*)   &_emu->_baseMem[0x0058];
   playerGames            = (uint8_t*)   &_emu->_baseMem[0x005A];
+  playerShotType         = (uint8_t*)   &_emu->_baseMem[0x0318];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -73,6 +74,7 @@ uint128_t GameInstance::computeHash() const
   hash.Update(*pointEnd);
   hash.Update(*playerScore);
   hash.Update(*playerGames);
+  hash.Update(*playerShotType);
 
   uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -138,8 +140,9 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 // if (*playerAnimation == 0x0024) moveList.insert(moveList.end(), { "......B.", "...U...A", ".L.....A", "R......A", ".LD....A", "R..U...A", "R.D....A"});
 // if (*playerAnimation == 0x003A) moveList.insert(moveList.end(), { "......B.", "...U...A", "..D...B.", "..DU....", ".L.....A", "R......A", ".LD....A", "R..U...A", "R.D....A"});
 
- moveList.insert(moveList.end(), { "......B.", ".......A", "..D.....", "...U....", ".L......", "R......."});
-
+// moveList.insert(moveList.end(), { ".......A", "......B.",  "..D.....", "...U....", ".L......", "R......."});
+ moveList.insert(moveList.end(), { ".......A", "..D.....", "...U....", ".L......", "R......."});
+// moveList.insert(moveList.end(), { "......B.", "..D.....", "...U....", ".L......", "R......."});
  return moveList;
 }
 
@@ -175,6 +178,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.playerScoreMagnet * *playerScore;
   reward += magnets.playerBallDistanceXMagnet * (float)playerBallDistanceX;
   reward += magnets.playerBallDistanceYMagnet * (float)playerBallDistanceY;
+  reward += magnets.oppPosYMagnet * *oppPosY;
 
   // Returning reward
   return reward;
@@ -202,6 +206,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Player Score:                       (%03u)\n", *playerScore);
  LOG("[Jaffar]  + Player Games:                       (%03u)\n", *playerGames);
  LOG("[Jaffar]  + Player / Ball Distance:             (X: %.2f, Y: %.2f)\n", playerBallDistanceX, playerBallDistanceY);
+ LOG("[Jaffar]  + Player Shot Type:                   (%03u)\n", *playerShotType);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -215,5 +220,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.playerScoreMagnet) > 0.0f)                LOG("[Jaffar]  + Player Score Magnet               - Intensity: %.5f\n", magnets.playerScoreMagnet);
  if (std::abs(magnets.playerBallDistanceXMagnet) > 0.0f)        LOG("[Jaffar]  + Player / Ball Distance X Magnet   - Intensity: %.5f\n", magnets.playerBallDistanceXMagnet);
  if (std::abs(magnets.playerBallDistanceYMagnet) > 0.0f)        LOG("[Jaffar]  + Player / Ball Distance Y Magnet   - Intensity: %.5f\n", magnets.playerBallDistanceYMagnet);
+ if (std::abs(magnets.oppPosYMagnet) > 0.0f)                    LOG("[Jaffar]  + Opp Pos Y Magnet                  - Intensity: %.5f\n", magnets.oppPosYMagnet);
 }
 

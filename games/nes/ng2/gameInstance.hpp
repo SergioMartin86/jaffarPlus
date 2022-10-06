@@ -34,6 +34,7 @@ struct magnetSet_t {
  genericMagnet_t ninjaPowerMagnet;
  genericMagnet_t ninjaHPMagnet;
  genericMagnet_t bossHPMagnet;
+ genericMagnet_t headHPMagnet;
  float ninjaBossDistanceMagnet = 0.0;
 };
 
@@ -73,7 +74,13 @@ class GameInstance : public GameInstanceBase
   uint8_t*  windTimer            ;
   uint8_t*  windCycle            ;
 
+  uint8_t*  heartTimer           ;
+  uint8_t*  heartState           ;
+  uint8_t*  headHP               ;
+
   uint8_t* collisionFlags;
+  uint8_t* lastInputKey;
+  uint8_t* lastInputTime;
 
   // Object Activation Bits
   uint8_t* ObjectActivationBits1;
@@ -90,6 +97,7 @@ class GameInstance : public GameInstanceBase
   uint8_t ObjectActivationFlags[OBJECT_COUNT];
 
   uint8_t timerTolerance;
+  uint8_t lastInputKeyAccepted;
 
   // Derivative Values
   double absolutePosX;

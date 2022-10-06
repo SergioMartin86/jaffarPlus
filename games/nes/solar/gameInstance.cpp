@@ -46,7 +46,27 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   objectType             = (uint8_t*)   &_emu->_baseMem[0x0317];
   objectData             = (uint8_t*)   &_emu->_baseMem[0x0393];
   fuelDelivered          = (uint8_t*)   &_emu->_baseMem[0x0513];
-  eyeValues              = (uint8_t*)   &_emu->_baseMem[0x0460];
+
+  eye0State              = (uint8_t*)   &_emu->_baseMem[0x0461];
+  eye1State              = (uint8_t*)   &_emu->_baseMem[0x0462];
+  eye2State              = (uint8_t*)   &_emu->_baseMem[0x0463];
+  eye3State              = (uint8_t*)   &_emu->_baseMem[0x0464];
+  eye4State              = (uint8_t*)   &_emu->_baseMem[0x0460];
+
+  eye1Health             = (uint8_t*)   &_emu->_baseMem[0x0459];
+  eye2Health             = (uint8_t*)   &_emu->_baseMem[0x0458];
+  eye3Health             = (uint8_t*)   &_emu->_baseMem[0x045A];
+  eye4Health             = (uint8_t*)   &_emu->_baseMem[0x045B];
+
+  eye1Aperture           = (uint8_t*)   &_emu->_baseMem[0x038C];
+  eye2Aperture           = (uint8_t*)   &_emu->_baseMem[0x038B];
+  eye3Aperture           = (uint8_t*)   &_emu->_baseMem[0x038D];
+  eye4Aperture           = (uint8_t*)   &_emu->_baseMem[0x038E];
+
+  eye1Timer           = (uint8_t*)   &_emu->_baseMem[0x041B];
+  eye2Timer           = (uint8_t*)   &_emu->_baseMem[0x041A];
+  eye3Timer           = (uint8_t*)   &_emu->_baseMem[0x041C];
+  eye4Timer           = (uint8_t*)   &_emu->_baseMem[0x041D];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -65,43 +85,60 @@ uint128_t GameInstance::computeHash() const
 
   if (timerTolerance > 0) hash.Update(*gameTimer % timerTolerance);
 //  hash.Update(*gameTimer);
-  hash.Update(*currentStage);
-  hash.Update(*prevStage);
-  hash.Update(*screenScrollX1);
-  hash.Update(*screenScrollX2);
-  hash.Update(*screenScrollY1);
-  hash.Update(*screenScrollY2);
-  hash.Update(*shipCarriedObject);
-  //hash.Update(*shipHealth1);
-  //hash.Update(*shipHealth2);
-  hash.Update(*shipMaxHealth1);
-  hash.Update(*shipMaxHealth2);
-  hash.Update(*shipUpgrades);
+//  hash.Update(*currentStage);
+//  hash.Update(*prevStage);
+//  hash.Update(*screenScrollX1);
+//  hash.Update(*screenScrollX2);
+//  hash.Update(*screenScrollY1);
+//  hash.Update(*screenScrollY2);
+//  hash.Update(*shipCarriedObject);
+//  hash.Update(*shipHealth1);
+//  hash.Update(*shipHealth2);
+//  hash.Update(*shipMaxHealth1);
+//  hash.Update(*shipMaxHealth2);
+//  hash.Update(*shipUpgrades);
   hash.Update(*shipPosX1);
   hash.Update(*shipPosX2);
   //hash.Update(*shipPosX3);
   hash.Update(*shipPosY1);
   hash.Update(*shipPosY2);
   //hash.Update(*shipPosY3);
-  hash.Update(*shipVelX1);
-//  hash.Update(*shipVelX2);
-  hash.Update(*shipVelXS);
-  hash.Update(*shipVelY1);
-//  hash.Update(*shipVelY2);
-  hash.Update(*shipVelYS);
-  hash.Update(*shipAngle);
-  hash.Update(*shipFuel1);
-  hash.Update(*shipFuel2);
-  hash.Update(*shipShields);
-  hash.Update(*score1);
-  hash.Update(*score2);
-  hash.Update(*score3);
-  hash.Update(*score4);
-  hash.Update(*score5);
-  hash.Update(*score6);
+//  hash.Update(*shipVelX1);
+  hash.Update(*shipVelX2);
+//  hash.Update(*shipVelXS);
+//  hash.Update(*shipVelY1);
+  hash.Update(*shipVelY2);
+//  hash.Update(*shipVelYS);
+//  hash.Update(*shipAngle);
+//  hash.Update(*shipFuel1);
+//  hash.Update(*shipFuel2);
+//  hash.Update(*shipShields);
+//  hash.Update(*score1);
+//  hash.Update(*score2);
+//  hash.Update(*score3);
+//  hash.Update(*score4);
+//  hash.Update(*score5);
+//  hash.Update(*score6);
   hash.Update(shotActive, SHOT_COUNT);
   hash.Update(objectType, OBJECT_COUNT);
-  hash.Update(eyeValues, EYE_COUNT);
+  hash.Update(*eye0State);
+  hash.Update(*eye1State);
+  hash.Update(*eye2State);
+  hash.Update(*eye3State);
+  hash.Update(*eye4State);
+  hash.Update(*eye1Health);
+  hash.Update(*eye2Health);
+  hash.Update(*eye3Health);
+  hash.Update(*eye4Health);
+  hash.Update(*eye1Aperture);
+  hash.Update(*eye2Aperture);
+  hash.Update(*eye3Aperture);
+  hash.Update(*eye4Aperture);
+
+  hash.Update(*eye1Timer % 2);
+  hash.Update(*eye2Timer % 2);
+  hash.Update(*eye3Timer % 2);
+  hash.Update(*eye4Timer % 2);
 
 //  for (size_t i = 0; i < OBJECT_COUNT; i++)
 ////   if (*(objectType+i) == 10)
@@ -124,7 +161,7 @@ uint128_t GameInstance::computeHash() const
 //   }
 
   // For fuel delivery
-  hash.Update(&_emu->_baseMem[0x0500], 0x0100);
+  //hash.Update(&_emu->_baseMem[0x0500], 0x0100);
 
   uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -161,7 +198,20 @@ void GameInstance::updateDerivedValues()
   if (*(objectType+i) == 10 && *(objectData+i) > maxWarp) maxWarp = *(objectData+i);
 
  eyeCount = 0;
- for (size_t i = 0; i < EYE_COUNT; i++) if (*(eyeValues+i) == 94) eyeCount++;
+ if (*eye0State == 94) eyeCount++;
+ if (*eye1State == 94) eyeCount++;
+ if (*eye2State == 94) eyeCount++;
+ if (*eye3State == 94) eyeCount++;
+ if (*eye4State == 94) eyeCount++;
+
+ eye1Readiness = *eye1Aperture == 180 ? ((float)*eye1Timer - 32.0f) : 1.0f;
+ eye2Readiness = *eye2Aperture == 180 ? ((float)*eye2Timer - 32.0f) : 1.0f;
+ eye3Readiness = *eye3Aperture == 180 ? ((float)*eye3Timer - 32.0f) : 1.0f;
+ eye4Readiness = *eye4Aperture == 180 ? ((float)*eye4Timer - 32.0f) : 1.0f;
+
+ shotsActive = 0;
+ for (size_t i = 0; i < SHOT_COUNT; i++)
+  if (*(shotActive+i) > 0) shotsActive++;
 }
 
 // Function to determine the current possible moves
@@ -253,7 +303,16 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.maxWarpMagnet * maxWarp;
 
   // Evaluating ship health  magnet
-  reward += magnets.eyeCountMagnet * (float)eyeCount;
+  reward += magnets.eye1HealthMagnet * (float)*eye1Health;
+  reward += magnets.eye2HealthMagnet * (float)*eye2Health;
+  reward += magnets.eye3HealthMagnet * (float)*eye3Health;
+  reward += magnets.eye4HealthMagnet * (float)*eye4Health;
+  reward += magnets.eye1ReadinessMagnet * eye1Readiness;
+  reward += magnets.eye2ReadinessMagnet * eye2Readiness;
+  reward += magnets.eye3ReadinessMagnet * eye3Readiness;
+  reward += magnets.eye4ReadinessMagnet * eye4Readiness;
+  reward += magnets.shotsActiveMagnet * (float)shotsActive;
+
 
   // Evaluating carrying magnet
   int isCarrying = 0;
@@ -273,25 +332,25 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Game Timer:                       %03u\n", *gameTimer);
  LOG("[Jaffar]  + Stage:                            %03u (Prev: %03u)\n", *currentStage, *prevStage);
  LOG("[Jaffar]  + Reward:                           %f\n", getStateReward(rulesStatus));
- LOG("[Jaffar]  + Hash:                             0x%lX\n", computeHash());
+ LOG("[Jaffar]  + Hash:                             0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Score:                            %f\n", score);
  LOG("[Jaffar]  + Ship Health:                      %f / %f\n", shipHealth, shipMaxHealth);
  LOG("[Jaffar]  + Ship Fuel:                        %f\n", shipFuel);
- LOG("[Jaffar]  + Ship Angle:                       %03u\n", *shipAngle);
- LOG("[Jaffar]  + Ship Upgrades:                    %03u\n", *shipUpgrades);
+// LOG("[Jaffar]  + Ship Angle:                       %03u\n", *shipAngle);
+// LOG("[Jaffar]  + Ship Upgrades:                    %03u\n", *shipUpgrades);
  LOG("[Jaffar]  + Ship Carried Object:              %03u\n", *shipCarriedObject);
  LOG("[Jaffar]  + Ship Pos X:                       %f (%03u, %03u, %03u)\n", shipPosX, *shipPosX1, *shipPosX2, *shipPosX3);
  LOG("[Jaffar]  + Ship Pos Y:                       %f (%03u, %03u, %03u)\n", shipPosY, *shipPosY1, *shipPosY2, *shipPosY3);
  LOG("[Jaffar]  + Ship Vel X:                       %f\n", shipVelX);
  LOG("[Jaffar]  + Ship Vel Y:                       %f\n", shipVelY);
  LOG("[Jaffar]  + Ship Shields:                     %03u\n", *shipShields);
- LOG("[Jaffar]  + Warp Counter:                     %f\n", warpCounter);
- LOG("[Jaffar]  + Max Warp:                         %02u\n", maxWarp);
- LOG("[Jaffar]  + Fuel Delivered:                   %02u\n", *fuelDelivered);
+// LOG("[Jaffar]  + Warp Counter:                     %f\n", warpCounter);
+// LOG("[Jaffar]  + Max Warp:                         %02u\n", maxWarp);
+// LOG("[Jaffar]  + Fuel Delivered:                   %02u\n", *fuelDelivered);
  LOG("[Jaffar]  + Screen Scroll X:                  %03u %03u\n", *screenScrollX1, *screenScrollX2);
  LOG("[Jaffar]  + Screen Scroll Y:                  %03u %03u\n", *screenScrollY1, *screenScrollY2);
 
-// LOG("[Jaffar]  + Shots:\n");
+// LOG("[Jaffar]  + Shots (Active):                   (%03u)\n", shotsActive);
 // for (size_t i = 0; i < SHOT_COUNT; i++)
 //  LOG("[Jaffar]  + Shot %lu:                          State: %03u\n", i, *(shotActive+i));
 
@@ -309,10 +368,11 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 //  for (size_t i = 0; i < OBJECT_COUNT; i++)
 //    LOG("[Jaffar]    + Obj %02lu:                        Type: %03u, D: %03u, X: %3.3f (%03u, %03u, %03u), Y: %3.3f (%03u, %03u, %03u)\n", i, *(objectType+i), *(objectData+i), objectPosX[i], *(shipPosX1+i), *(shipPosX2+i), *(shipPosX3+i),  objectPosY[i], *(shipPosY1+i), *(shipPosY2+i), *(shipPosY3+i));
 
-  LOG("[Jaffar]  + Eyes Count:                           %02u\n", eyeCount);
-  LOG("[Jaffar]  + Eyes:\n");
-  for (size_t i = 0; i < EYE_COUNT; i++)
-    LOG("[Jaffar]    + Eye   %02lu:                      Value: %03u\n", i, *(eyeValues+i));
+  LOG("[Jaffar]  + Eyes Count:                            %02u\n", eyeCount);
+  LOG("[Jaffar]  + Eye 1 S / H / A / T / R:               %03u / %03u / %03u / %03u / %f\n", *eye1State, *eye1Health, *eye1Aperture, *eye1Timer, eye1Readiness);
+  LOG("[Jaffar]  + Eye 2 S / H / A / T / R:               %03u / %03u / %03u / %03u / %f\n", *eye2State, *eye2Health, *eye2Aperture, *eye2Timer, eye2Readiness);
+  LOG("[Jaffar]  + Eye 3 S / H / A / T / R:               %03u / %03u / %03u / %03u / %f\n", *eye3State, *eye3Health, *eye3Aperture, *eye3Timer, eye3Readiness);
+  LOG("[Jaffar]  + Eye 4 S / H / A / T / R:               %03u / %03u / %03u / %03u / %f\n", *eye4State, *eye4Health, *eye4Aperture, *eye4Timer, eye4Readiness);
 
 // for (size_t i = 0; i < OBJECT_COUNT; i++)
 //  if (*(objectType+i) == 184)
@@ -333,6 +393,14 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.warpCounterMagnet) > 0.0f)                  LOG("[Jaffar]  + Warp Counter Magnet           - Intensity: %.5f\n", magnets.warpCounterMagnet);
  if (std::abs(magnets.carryMagnet) > 0.0f)                        LOG("[Jaffar]  + Carry Magnet                  - Intensity: %.5f\n", magnets.carryMagnet);
  if (std::abs(magnets.maxWarpMagnet) > 0.0f)                      LOG("[Jaffar]  + Max Warp Magnet               - Intensity: %.5f\n", magnets.maxWarpMagnet);
- if (std::abs(magnets.eyeCountMagnet) > 0.0f)                     LOG("[Jaffar]  + Eye Count Magnet              - Intensity: %.5f\n", magnets.eyeCountMagnet);
+ if (std::abs(magnets.eye1HealthMagnet) > 0.0f)                   LOG("[Jaffar]  + Eye 1 Health Magnet           - Intensity: %.5f\n", magnets.eye1HealthMagnet);
+ if (std::abs(magnets.eye2HealthMagnet) > 0.0f)                   LOG("[Jaffar]  + Eye 2 Health Magnet           - Intensity: %.5f\n", magnets.eye2HealthMagnet);
+ if (std::abs(magnets.eye3HealthMagnet) > 0.0f)                   LOG("[Jaffar]  + Eye 3 Health Magnet           - Intensity: %.5f\n", magnets.eye3HealthMagnet);
+ if (std::abs(magnets.eye4HealthMagnet) > 0.0f)                   LOG("[Jaffar]  + Eye 4 Health Magnet           - Intensity: %.5f\n", magnets.eye4HealthMagnet);
+ if (std::abs(magnets.eye1ReadinessMagnet) > 0.0f)                LOG("[Jaffar]  + Eye 1 Readiness Magnet           - Intensity: %.5f\n", magnets.eye1ReadinessMagnet);
+ if (std::abs(magnets.eye2ReadinessMagnet) > 0.0f)                LOG("[Jaffar]  + Eye 2 Readiness Magnet           - Intensity: %.5f\n", magnets.eye2ReadinessMagnet);
+ if (std::abs(magnets.eye3ReadinessMagnet) > 0.0f)                LOG("[Jaffar]  + Eye 3 Readiness Magnet           - Intensity: %.5f\n", magnets.eye3ReadinessMagnet);
+ if (std::abs(magnets.eye4ReadinessMagnet) > 0.0f)                LOG("[Jaffar]  + Eye 4 Readiness Magnet           - Intensity: %.5f\n", magnets.eye4ReadinessMagnet);
+ if (std::abs(magnets.shotsActiveMagnet) > 0.0f)                  LOG("[Jaffar]  + Shots Active Magnet           - Intensity: %.5f\n", magnets.shotsActiveMagnet);
 }
 

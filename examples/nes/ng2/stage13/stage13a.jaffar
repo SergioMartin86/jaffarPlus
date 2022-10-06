@@ -1,37 +1,29 @@
 {
-  "Emulator Configuration": 
-  {
-    "Rom File": "../ng2.nes",
-    "State File": "stage13a.state"
-  },
-  
-  "State Configuration": 
-  { 
-    "Max Difference Count": 2000,
-    "Max Move Count": 500
-  },
-  
-  "Game Configuration": 
-  {
-    "Timer Tolerance": 1
-  },
-  
-  "Jaffar Configuration": 
+   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
     
-    "State Database":
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 60000,
-     "Max Size Upper Bound (Mb)": 230000
+      "Max Move Count": 200,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 100000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Max Size Upper Bound (Mb)": 6000
     },
     
     "Save Intermediate Results":
@@ -42,13 +34,25 @@
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
-    }
+     }
+  },
+  
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ng2.nes",
+    "State File": "stage13a.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 0
   },
   
   "Playback Configuration": 
   {
    "Overlay Path": "../../../../platforms/nes/overlay"
   },
+  
   
   "Rules":
   [
@@ -62,28 +66,8 @@
     
     "Actions":
     [
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 0.1, "Center": 0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.0, "Center": 97, "Min": 0, "Max": 255 },
-     { "Type": "Set Ninja Power Magnet", "Intensity": 0.0001, "Center": 100, "Min": 0, "Max": 100 }
-    ]
-   },
-   
-   {
-    "Label": 1001,
-    "Conditions":
-    [
-      { "Property": "Absolute Pos X", "Op": "<", "Value":  658 },
-      { "Property": "Ninja Position Y", "Op": "<", "Value":  120 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 100000 },
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.001, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Ninja Power Magnet", "Intensity": 0.0001, "Center": 100, "Min": 0, "Max": 100 }
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 0.1, "Center": 698, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.0, "Center": 97, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -91,17 +75,16 @@
     "Label": 1002,
     "Conditions":
     [
-      { "Property": "Ninja Weapon", "Op": "==", "Value":  2 }
+      { "Property": "Ninja Position Y", "Op": "<", "Value":  130 }
     ],
     
-    "Satisfies": [ 1001 ],
+    "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.001, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Ninja Power Magnet", "Intensity": 0.0001, "Center": 100, "Min": 0, "Max": 100 }
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.1, "Center": 100, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -109,45 +92,7 @@
     "Label": 1003,
     "Conditions":
     [
-      { "Property": "Ninja Power Max", "Op": "==", "Value":  60 },
-      { "Property": "Ninja Weapon", "Op": "==", "Value":  2 }
-    ],
-    
-    "Satisfies": [ 1002 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 100000 },
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.001, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Ninja Power Magnet", "Intensity": 0.0001, "Center": 100, "Min": 0, "Max": 100 }
-    ]
-   },
-   
-   {
-    "Label": 1004,
-    "Conditions":
-    [
-      { "Property": "Ninja Power Max", "Op": "==", "Value":  60 },
-      { "Property": "Absolute Pos X", "Op": "<", "Value":  134 },
-      { "Property": "Ninja Weapon", "Op": "==", "Value":  2 }
-    ],
-    
-    "Satisfies": [ 1003 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 100000 },
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 87, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.7, "Center": 56, "Min": 0, "Max": 255 }
-    ]
-   },
-   
-   {
-    "Label": 1005,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  14 }
+      { "Property": "Absolute Pos X", "Op": "<", "Value":  600 }
     ],
     
     "Satisfies": [ ],
@@ -163,6 +108,21 @@
     "Conditions":
     [
      { "Property": "Ninja Position Y", "Op": ">", "Value":  210 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1902,
+    "Conditions":
+    [
+     { "Property": "Ninja Power", "Op": "!=", "Value":  50 }
     ],
     
     "Satisfies": [ ],

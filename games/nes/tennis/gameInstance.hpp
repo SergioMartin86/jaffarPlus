@@ -13,6 +13,7 @@ struct magnetSet_t {
  float playerScoreMagnet = 0.0f;
  float playerBallDistanceXMagnet = 0.0f;
  float playerBallDistanceYMagnet = 0.0f;
+ float oppPosYMagnet = 0.0f;
 };
 
 
@@ -41,6 +42,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  pointEnd;
   uint8_t*  playerScore;
   uint8_t*  playerGames;
+  uint8_t*  playerShotType;
 
   uint8_t timerTolerance;
 

@@ -28,7 +28,15 @@ struct magnetSet_t {
  float warpCounterMagnet = 0.0;
  float carryMagnet = 0.0;
  float maxWarpMagnet = 0.0;
- float eyeCountMagnet = 0.0;
+ float eye1HealthMagnet = 0.0;
+ float eye2HealthMagnet = 0.0;
+ float eye3HealthMagnet = 0.0;
+ float eye4HealthMagnet = 0.0;
+ float eye1ReadinessMagnet = 0.0;
+ float eye2ReadinessMagnet = 0.0;
+ float eye3ReadinessMagnet = 0.0;
+ float eye4ReadinessMagnet = 0.0;
+ float shotsActiveMagnet = 0.0;
 };
 
 
@@ -77,8 +85,30 @@ class GameInstance : public GameInstanceBase
   uint8_t*  objectType;
   uint8_t*  objectData;
   uint8_t*  fuelDelivered;
-  uint8_t*  eyeValues;
+
+  uint8_t*  eye0State;
+  uint8_t*  eye1State;
+  uint8_t*  eye2State;
+  uint8_t*  eye3State;
+  uint8_t*  eye4State;
+
+  uint8_t*  eye1Health;
+  uint8_t*  eye2Health;
+  uint8_t*  eye3Health;
+  uint8_t*  eye4Health;
+
+  uint8_t*  eye1Aperture;
+  uint8_t*  eye2Aperture;
+  uint8_t*  eye3Aperture;
+  uint8_t*  eye4Aperture;
+
+  uint8_t*  eye1Timer;
+  uint8_t*  eye2Timer;
+  uint8_t*  eye3Timer;
+  uint8_t*  eye4Timer;
+
   uint8_t timerTolerance;
+  uint8_t eyeCount;
 
   // Derivative Values
   float shipHealth;
@@ -92,8 +122,13 @@ class GameInstance : public GameInstanceBase
   float objectPosX[OBJECT_COUNT];
   float objectPosY[OBJECT_COUNT];
   float warpCounter;
+  uint8_t shotsActive;
   uint8_t maxWarp;
-  uint8_t eyeCount;
+
+  float eye1Readiness;
+  float eye2Readiness;
+  float eye3Readiness;
+  float eye4Readiness;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint128_t computeHash() const override;

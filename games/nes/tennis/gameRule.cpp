@@ -30,6 +30,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Opp Pos Y Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.oppPosYMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
   if (actionType == "Set Player Score Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -51,6 +58,7 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+
   return recognizedActionType;
 }
 
@@ -58,6 +66,10 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Ball Pos X") return dt_uint8;
+  if (propertyName == "Ball Pos Y") return dt_uint8;
+  if (propertyName == "Player Pos X") return dt_uint8;
+  if (propertyName == "Player Pos Y") return dt_uint8;
   if (propertyName == "Player Turn") return dt_uint8;
   if (propertyName == "Ball Direction") return dt_int8;
   if (propertyName == "Serve Fault") return dt_uint8;
@@ -76,6 +88,10 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Ball Pos X") return gameInstance->ballPosX;
+  if (propertyName == "Ball Pos Y") return gameInstance->ballPosY;
+  if (propertyName == "Player Pos X") return gameInstance->playerPosX;
+  if (propertyName == "Player Pos Y") return gameInstance->playerPosY;
   if (propertyName == "Player Turn") return gameInstance->playerTurn;
   if (propertyName == "Ball Direction") return gameInstance->ballDirection;
   if (propertyName == "Serve Fault") return gameInstance->serveFault;

@@ -55,6 +55,16 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Head HP Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+    _magnets.headHPMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+    recognizedActionType = true;
+   }
+
+
    if (actionType == "Set Ninja/Boss Distance Magnet")
    {
     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Ninja/Boss Distance Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -86,6 +96,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Object State") return dt_uint8;
   if (propertyName == "Game Mode") return dt_uint8;
   if (propertyName == "Boss HP") return dt_uint8;
+  if (propertyName == "Heart State") return dt_uint8;
+
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -112,6 +124,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Screen Scroll 3") return gameInstance->screenScroll3;
   if (propertyName == "Game Mode") return gameInstance->gameMode;
   if (propertyName == "Boss HP") return gameInstance->bossHP;
+  if (propertyName == "Heart State") return gameInstance->heartState;
 
   if (propertyName == "Object Active")
   {

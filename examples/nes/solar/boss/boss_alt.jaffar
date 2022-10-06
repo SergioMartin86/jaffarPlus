@@ -1,0 +1,255 @@
+{
+   "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Configuration": 
+    { 
+      "Max Move Count": 800,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 50000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 6000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Emulator Configuration": 
+  {
+    "Rom File": "../solar.nes",
+    "State File": "boss.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 2
+  },
+    
+  "Playback Configuration": 
+  {
+   "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1000,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Eye 2 Health Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Eye 1 Readiness Magnet", "Intensity": 100.0 },
+     { "Type": "Set Eye 2 Readiness Magnet", "Intensity": 1000.0 },
+     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 649, "Min": 0, "Max": 60000 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+      { "Property": "Eye 2 Health", "Op": "<", "Value": 7 }
+    ],
+    
+    "Satisfies": [ 1000 ],
+    
+    "Actions":
+    [   
+     { "Type": "Add Reward", "Value": 1000000.0 },
+     { "Type": "Set Eye 1 Health Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Eye 1 Readiness Magnet", "Intensity": 1000.0 },
+     { "Type": "Set Eye 2 Health Magnet", "Intensity": -1.0 },
+     { "Type": "Set Eye 2 Readiness Magnet", "Intensity": 10.0 },
+     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 615, "Min": 0, "Max": 60000 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Conditions":
+    [
+      { "Property": "Eye 1 Health", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [   
+     { "Type": "Add Reward", "Value": 1000000.0 },
+     { "Type": "Set Eye 2 Health Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Eye 2 Readiness Magnet", "Intensity": 1000.0 },
+     { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 10.0 },
+     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 2.0 },
+     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 649, "Min": 0, "Max": 60000 }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    "Conditions":
+    [
+      { "Property": "Eye 1 Health", "Op": "==", "Value": 0 },
+      { "Property": "Eye 2 Health", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 1002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000000.0 },
+     { "Type": "Set Eye 3 Health Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 1000.0 },
+     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 100.0 },
+     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 680, "Min": 0, "Max": 60000 }
+
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    "Conditions":
+    [
+      { "Property": "Eye 1 Health", "Op": "==", "Value": 0 },
+      { "Property": "Eye 2 Health", "Op": "==", "Value": 0 },
+      { "Property": "Eye 3 Health", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 1003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000000.0 },
+     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 1000.0 },
+     { "Type": "Set Eye 4 Health Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 708, "Min": 0, "Max": 60000 }
+    ]
+   },
+   
+   {
+    "Label": 1800,
+    "Conditions":
+    [
+      { "Property": "Eye 4 Health", "Op": "==", "Value": 0 },
+      { "Property": "Eye 3 Health", "Op": "==", "Value": 0 },
+      { "Property": "Eye 2 Health", "Op": "==", "Value": 0 },
+      { "Property": "Eye 1 Health", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1900,
+    "Conditions":
+    [
+      { "Property": "Ship Health", "Op": "<=", "Value": 0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1901,
+    "Conditions":
+    [
+      { "Property": "Eye 1 Health", "Op": ">", "Value": 0 },
+      { "Property": "Eye 1 Timer", "Op": "<", "Value": 18 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1902,
+    "Conditions":
+    [
+      { "Property": "Eye 2 Health", "Op": ">", "Value": 0 },
+      { "Property": "Eye 2 Timer", "Op": "<", "Value": 16 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1903,
+    "Conditions":
+    [
+      { "Property": "Eye 2 Health", "Op": "<=", "Value": 6 },
+      { "Property": "Eye 3 Health", "Op": ">", "Value": 0 },
+      { "Property": "Eye 3 Timer", "Op": "<", "Value": 17 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1904,
+    "Conditions":
+    [
+      { "Property": "Eye 2 Health", "Op": "<=", "Value": 6 },
+      { "Property": "Eye 4 Health", "Op": ">", "Value": 0 },
+      { "Property": "Eye 4 Timer", "Op": "<", "Value": 26 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

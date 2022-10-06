@@ -1,37 +1,30 @@
 {
-  "Emulator Configuration": 
-  {
-    "Rom File": "../ng2.nes",
-    "State File": "stage21c_alt.state"
-  },
-  
-  "State Configuration": 
-  { 
-    "Max Difference Count": 2000,
-    "Max Move Count": 800
-  },
-  
-  "Game Configuration": 
-  {
-    "Timer Tolerance": 2
-  },
-  
-  "Jaffar Configuration": 
+
+   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
     
-    "State Database":
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 230000
+      "Max Move Count": 500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Max Size Upper Bound (Mb)": 6000
     },
     
     "Save Intermediate Results":
@@ -42,9 +35,21 @@
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
-    }
+     }
   },
   
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ng2.nes",
+    "State File": "stage21c_alt.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 0,
+   "Last Input Key Accepted": 0
+  },
+    
   "Playback Configuration": 
   {
    "Overlay Path": "../../../../platforms/nes/overlay"
