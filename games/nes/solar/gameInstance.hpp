@@ -19,6 +19,7 @@ struct genericMagnet_t {
 
 // Datatype to describe a magnet
 struct magnetSet_t {
+ genericMagnet_t screenScrollMagnet;
  genericMagnet_t shipHorizontalMagnet;
  genericMagnet_t shipVerticalMagnet;
  genericMagnet_t shipVelXMagnet;
@@ -108,7 +109,11 @@ class GameInstance : public GameInstanceBase
   uint8_t*  eye4Timer;
 
   uint8_t timerTolerance;
+  uint8_t lastInputKeyAccepted;
   uint8_t eyeCount;
+
+  uint8_t*  lastInputKey;
+  uint8_t*  lastInputFrame;
 
   // Derivative Values
   float shipHealth;
@@ -129,6 +134,8 @@ class GameInstance : public GameInstanceBase
   float eye2Readiness;
   float eye3Readiness;
   float eye4Readiness;
+
+  float screenScroll;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   uint128_t computeHash() const override;

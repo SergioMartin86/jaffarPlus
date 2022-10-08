@@ -7,17 +7,17 @@
     
     "State Configuration": 
     { 
-      "Max Move Count": 8000,
+      "Max Move Count": 150,
       "Store Move History": true,
       "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 2000,
+      "XDelta3 Max Differences": 1600,
       "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 15,
-     "Max Size Upper Bound (Mb)": 6000
+     "Max Size Lower Bound (Mb)": 50000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -40,13 +40,13 @@
   "Emulator Configuration": 
   {
     "Rom File": "../solar.nes",
-    "State File": "scroller.state"
+    "State File": "finale.state"
   },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 2,
-      "Last Input Key Accepted": 0
+   "Timer Tolerance": 4,
+   "Last Input Key Accepted": 125
   },
     
   "Playback Configuration": 
@@ -57,41 +57,28 @@
   "Rules":
   [
    {
-    "Label": 1000,
-    "Conditions":
-    [
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Set Ship Health Magnet", "Intensity": 1.0 }
-    ]
-   },
-   
-   {
-    "Label": 1001,
-    "Conditions":
-    [
-      { "Property": "Eye 0 State", "Op": "==", "Value": 0 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 100000.0 },
-     { "Type": "Set Screen Scroll Magnet", "Intensity": 1.0, "Center": 15000, "Min": 0, "Max": 60000 }
-    ]
-   },
-   
-   {
     "Label": 1002,
     "Conditions":
     [
-      { "Property": "Eye 0 State", "Op": "==", "Value": 0 },
-      { "Property": "Eye 2 Health", "Op": "==", "Value": 10 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Eye 3 Health Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 100.0 },
+     { "Type": "Set Eye 4 Health Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 100.0 }
+    ]
+   },
+   
+   {
+    "Label": 1800,
+    "Conditions":
+    [
+      { "Property": "Eye 4 Health", "Op": "==", "Value": 0 },
+      { "Property": "Eye 3 Health", "Op": "==", "Value": 0 }
     ],
     
     "Satisfies": [ ],
@@ -106,7 +93,7 @@
     "Label": 1900,
     "Conditions":
     [
-      { "Property": "Ship Health", "Op": "<=", "Value": 0 }
+      { "Property": "Ship Health", "Op": "<=", "Value": 50 }
     ],
     
     "Satisfies": [ ],
@@ -116,6 +103,5 @@
      { "Type": "Trigger Fail" }
     ]
    }
-   
   ]  
 }

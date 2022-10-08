@@ -7,17 +7,17 @@
     
     "State Configuration": 
     { 
-      "Max Move Count": 800,
+      "Max Move Count": 400,
       "Store Move History": true,
-      "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 2000,
+      "XDelta3 Enabled": true,
+      "XDelta3 Max Differences": 1600,
       "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Max Size Lower Bound (Mb)": 40000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -68,6 +68,8 @@
      { "Type": "Set Eye 2 Health Magnet", "Intensity": -1000.0 },
      { "Type": "Set Eye 1 Readiness Magnet", "Intensity": 100.0 },
      { "Type": "Set Eye 2 Readiness Magnet", "Intensity": 1000.0 },
+     { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 1.0 },
+     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 1.0 },
      { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 649, "Min": 0, "Max": 60000 }
     ]
    },
@@ -88,12 +90,14 @@
      { "Type": "Set Eye 1 Readiness Magnet", "Intensity": 1000.0 },
      { "Type": "Set Eye 2 Health Magnet", "Intensity": -1.0 },
      { "Type": "Set Eye 2 Readiness Magnet", "Intensity": 10.0 },
+     { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 1.0 },
+     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 1.0 },
      { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 615, "Min": 0, "Max": 60000 }
     ]
    },
    
    {
-    "Label": 1002,
+    "Label": 1012,
     "Conditions":
     [
       { "Property": "Eye 1 Health", "Op": "==", "Value": 0 }
@@ -103,12 +107,33 @@
     
     "Actions":
     [   
+     { "Type": "Set Ship Horizontal Magnet", "Intensity": 500.0, "Center": 6781, "Min": 0, "Max": 60000 },
+     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 649, "Min": 0, "Max": 60000 },
+     { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 10.0 },
+     { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 1.0 },
+     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Conditions":
+    [
+      { "Property": "Eye 1 State", "Op": "==", "Value": 0 },
+      { "Property": "Ship Pos X", "Op": "<", "Value": 6783 }
+    ],
+    
+    "Satisfies": [ 1012 ],
+    
+    "Actions":
+    [   
      { "Type": "Add Reward", "Value": 1000000.0 },
      { "Type": "Set Eye 2 Health Magnet", "Intensity": -1000.0 },
      { "Type": "Set Eye 2 Readiness Magnet", "Intensity": 1000.0 },
-     { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 10.0 },
-     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 2.0 },
-     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 649, "Min": 0, "Max": 60000 }
+     { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 1.0 },
+     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 1.0 },
+     { "Type": "Set Ship Vertical Magnet", "Intensity": 5.0, "Center": 649, "Min": 0, "Max": 60000 },
+     { "Type": "Set Ship Horizontal Magnet", "Intensity": 500.0, "Center": 6781, "Min": 0, "Max": 60000 }
     ]
    },
    
@@ -116,8 +141,8 @@
     "Label": 1003,
     "Conditions":
     [
-      { "Property": "Eye 1 Health", "Op": "==", "Value": 0 },
-      { "Property": "Eye 2 Health", "Op": "==", "Value": 0 }
+      { "Property": "Eye 1 State", "Op": "==", "Value": 0 },
+      { "Property": "Eye 2 State", "Op": "==", "Value": 0 }
     ],
     
     "Satisfies": [ 1002 ],
@@ -127,8 +152,8 @@
      { "Type": "Add Reward", "Value": 1000000.0 },
      { "Type": "Set Eye 3 Health Magnet", "Intensity": -1000.0 },
      { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 1000.0 },
-     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 100.0 },
-     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 680, "Min": 0, "Max": 60000 }
+     { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 1.0 },
+     { "Type": "Set Ship Vertical Magnet", "Intensity": 5.0, "Center": 680, "Min": 0, "Max": 60000 }
 
     ]
    },
@@ -137,9 +162,9 @@
     "Label": 1004,
     "Conditions":
     [
-      { "Property": "Eye 1 Health", "Op": "==", "Value": 0 },
-      { "Property": "Eye 2 Health", "Op": "==", "Value": 0 },
-      { "Property": "Eye 3 Health", "Op": "==", "Value": 0 }
+      { "Property": "Eye 1 State", "Op": "==", "Value": 0 },
+      { "Property": "Eye 2 State", "Op": "==", "Value": 0 },
+      { "Property": "Eye 3 State", "Op": "==", "Value": 0 }
     ],
     
     "Satisfies": [ 1003 ],
@@ -157,10 +182,10 @@
     "Label": 1800,
     "Conditions":
     [
-      { "Property": "Eye 4 Health", "Op": "==", "Value": 0 },
-      { "Property": "Eye 3 Health", "Op": "==", "Value": 0 },
-      { "Property": "Eye 2 Health", "Op": "==", "Value": 0 },
-      { "Property": "Eye 1 Health", "Op": "==", "Value": 0 }
+      { "Property": "Eye 4 State", "Op": "==", "Value": 0 },
+      { "Property": "Eye 3 State", "Op": "==", "Value": 0 },
+      { "Property": "Eye 2 State", "Op": "==", "Value": 0 },
+      { "Property": "Eye 1 State", "Op": "==", "Value": 0 }
     ],
     
     "Satisfies": [ ],
@@ -175,73 +200,7 @@
     "Label": 1900,
     "Conditions":
     [
-      { "Property": "Ship Health", "Op": "<=", "Value": 0 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1901,
-    "Conditions":
-    [
-      { "Property": "Eye 1 Health", "Op": ">", "Value": 0 },
-      { "Property": "Eye 1 Timer", "Op": "<", "Value": 18 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1902,
-    "Conditions":
-    [
-      { "Property": "Eye 2 Health", "Op": ">", "Value": 0 },
-      { "Property": "Eye 2 Timer", "Op": "<", "Value": 16 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1903,
-    "Conditions":
-    [
-      { "Property": "Eye 2 Health", "Op": "<=", "Value": 6 },
-      { "Property": "Eye 3 Health", "Op": ">", "Value": 0 },
-      { "Property": "Eye 3 Timer", "Op": "<", "Value": 17 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1904,
-    "Conditions":
-    [
-      { "Property": "Eye 2 Health", "Op": "<=", "Value": 6 },
-      { "Property": "Eye 4 Health", "Op": ">", "Value": 0 },
-      { "Property": "Eye 4 Timer", "Op": "<", "Value": 26 }
+      { "Property": "Ship Health", "Op": "<", "Value": 150 }
     ],
     
     "Satisfies": [ ],

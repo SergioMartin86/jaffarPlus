@@ -68,10 +68,19 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   eye3Timer           = (uint8_t*)   &_emu->_baseMem[0x041C];
   eye4Timer           = (uint8_t*)   &_emu->_baseMem[0x041D];
 
+  lastInputKey     = (uint8_t*)   &_emu->_baseMem[0x0018];
+  lastInputFrame   = (uint8_t*)   &_emu->_baseMem[0x0150];
+
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
+
+
+  // Last Input Frame Tolerance
+  if (isDefined(config, "Last Input Key Accepted") == true)
+   lastInputKeyAccepted = config["Last Input Key Accepted"].get<uint8_t>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Last Input Key Accepted' was not defined\n");
 
   // Initialize derivative values
   updateDerivedValues();
@@ -87,10 +96,10 @@ uint128_t GameInstance::computeHash() const
 //  hash.Update(*gameTimer);
 //  hash.Update(*currentStage);
 //  hash.Update(*prevStage);
-//  hash.Update(*screenScrollX1);
-//  hash.Update(*screenScrollX2);
-//  hash.Update(*screenScrollY1);
-//  hash.Update(*screenScrollY2);
+  hash.Update(*screenScrollX1);
+  hash.Update(*screenScrollX2);
+  hash.Update(*screenScrollY1);
+  hash.Update(*screenScrollY2);
 //  hash.Update(*shipCarriedObject);
 //  hash.Update(*shipHealth1);
 //  hash.Update(*shipHealth2);
@@ -99,10 +108,10 @@ uint128_t GameInstance::computeHash() const
 //  hash.Update(*shipUpgrades);
   hash.Update(*shipPosX1);
   hash.Update(*shipPosX2);
-  //hash.Update(*shipPosX3);
+//  hash.Update(*shipPosX3);
   hash.Update(*shipPosY1);
   hash.Update(*shipPosY2);
-  //hash.Update(*shipPosY3);
+//  hash.Update(*shipPosY3);
 //  hash.Update(*shipVelX1);
   hash.Update(*shipVelX2);
 //  hash.Update(*shipVelXS);
@@ -140,6 +149,8 @@ uint128_t GameInstance::computeHash() const
   hash.Update(*eye3Timer % 2);
   hash.Update(*eye4Timer % 2);
 
+  hash.Update(*lastInputFrame);
+
 //  for (size_t i = 0; i < OBJECT_COUNT; i++)
 ////   if (*(objectType+i) == 10)
 //   {
@@ -171,6 +182,7 @@ uint128_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
+ screenScroll = (float)*screenScrollX1 * 256.0f + (float)*screenScrollX2;
  shipPosX = (float)*shipPosX1 * 256.0f + (float)*shipPosX2 + (float)*shipPosX3 / 256.0f;
  shipPosY = (float)*shipPosY1 * 256.0f + (float)*shipPosY2 + (float)*shipPosY3 / 256.0f;
 
@@ -212,6 +224,8 @@ void GameInstance::updateDerivedValues()
  shotsActive = 0;
  for (size_t i = 0; i < SHOT_COUNT; i++)
   if (*(shotActive+i) > 0) shotsActive++;
+
+ if (*lastInputKey != 0) *lastInputFrame = *gameTimer;
 }
 
 // Function to determine the current possible moves
@@ -220,6 +234,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  std::vector<std::string> moveList = {"."};
 
  if (*gameTimer % 2 == 1) return {"."};
+ if (lastInputKeyAccepted != 0) if (*gameTimer > lastInputKeyAccepted && *gameTimer < lastInputKeyAccepted + 60) return {"."};
 
  // Stage 00
 // moveList.insert(moveList.end(), { "R", "L", "LA", "RA", "RB", "LB", "RLA", "RLB", "B", "A", "BA", "D" });
@@ -261,6 +276,13 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Container for bounded value and difference with center
   float boundedValue = 0.0;
   float diff = 0.0;
+
+  // Evaluating screen scroll magnet
+  boundedValue = screenScroll;
+  boundedValue = std::min(boundedValue, magnets.screenScrollMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.screenScrollMagnet.min);
+  diff = std::abs(magnets.screenScrollMagnet.center - boundedValue);
+  reward += magnets.screenScrollMagnet.intensity * -diff;
 
   // Evaluating ship magnet's reward on position X
   boundedValue = shipPosX;
@@ -331,6 +353,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Game Timer:                       %03u\n", *gameTimer);
  LOG("[Jaffar]  + Stage:                            %03u (Prev: %03u)\n", *currentStage, *prevStage);
+ LOG("[Jaffar]  + Last Input Time / Key:            %02u (Max: %02u) / %02u\n", *lastInputFrame, lastInputKeyAccepted, *lastInputKey);
  LOG("[Jaffar]  + Reward:                           %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                             0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Score:                            %f\n", score);
@@ -338,7 +361,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Ship Fuel:                        %f\n", shipFuel);
 // LOG("[Jaffar]  + Ship Angle:                       %03u\n", *shipAngle);
 // LOG("[Jaffar]  + Ship Upgrades:                    %03u\n", *shipUpgrades);
- LOG("[Jaffar]  + Ship Carried Object:              %03u\n", *shipCarriedObject);
+// LOG("[Jaffar]  + Ship Carried Object:              %03u\n", *shipCarriedObject);
  LOG("[Jaffar]  + Ship Pos X:                       %f (%03u, %03u, %03u)\n", shipPosX, *shipPosX1, *shipPosX2, *shipPosX3);
  LOG("[Jaffar]  + Ship Pos Y:                       %f (%03u, %03u, %03u)\n", shipPosY, *shipPosY1, *shipPosY2, *shipPosY3);
  LOG("[Jaffar]  + Ship Vel X:                       %f\n", shipVelX);
@@ -347,7 +370,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 // LOG("[Jaffar]  + Warp Counter:                     %f\n", warpCounter);
 // LOG("[Jaffar]  + Max Warp:                         %02u\n", maxWarp);
 // LOG("[Jaffar]  + Fuel Delivered:                   %02u\n", *fuelDelivered);
- LOG("[Jaffar]  + Screen Scroll X:                  %03u %03u\n", *screenScrollX1, *screenScrollX2);
+ LOG("[Jaffar]  + Screen Scroll X:                  %f, %03u %03u\n", screenScroll, *screenScrollX1, *screenScrollX2);
  LOG("[Jaffar]  + Screen Scroll Y:                  %03u %03u\n", *screenScrollY1, *screenScrollY2);
 
 // LOG("[Jaffar]  + Shots (Active):                   (%03u)\n", shotsActive);
@@ -369,6 +392,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 //    LOG("[Jaffar]    + Obj %02lu:                        Type: %03u, D: %03u, X: %3.3f (%03u, %03u, %03u), Y: %3.3f (%03u, %03u, %03u)\n", i, *(objectType+i), *(objectData+i), objectPosX[i], *(shipPosX1+i), *(shipPosX2+i), *(shipPosX3+i),  objectPosY[i], *(shipPosY1+i), *(shipPosY2+i), *(shipPosY3+i));
 
   LOG("[Jaffar]  + Eyes Count:                            %02u\n", eyeCount);
+  LOG("[Jaffar]  + Eye 0 S:                               %03u\n", *eye0State);
   LOG("[Jaffar]  + Eye 1 S / H / A / T / R:               %03u / %03u / %03u / %03u / %f\n", *eye1State, *eye1Health, *eye1Aperture, *eye1Timer, eye1Readiness);
   LOG("[Jaffar]  + Eye 2 S / H / A / T / R:               %03u / %03u / %03u / %03u / %f\n", *eye2State, *eye2Health, *eye2Aperture, *eye2Timer, eye2Readiness);
   LOG("[Jaffar]  + Eye 3 S / H / A / T / R:               %03u / %03u / %03u / %03u / %f\n", *eye3State, *eye3Health, *eye3Aperture, *eye3Timer, eye3Readiness);
@@ -384,6 +408,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
  auto magnets = getMagnetValues(rulesStatus);
 
+ if (std::abs(magnets.screenScrollMagnet.intensity) > 0.0f)       LOG("[Jaffar]  + Screen Scroll Magnet          - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.screenScrollMagnet.intensity, magnets.screenScrollMagnet.center, magnets.screenScrollMagnet.min, magnets.screenScrollMagnet.max);
  if (std::abs(magnets.shipHorizontalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Ship Horizontal Magnet        - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.shipHorizontalMagnet.intensity, magnets.shipHorizontalMagnet.center, magnets.shipHorizontalMagnet.min, magnets.shipHorizontalMagnet.max);
  if (std::abs(magnets.shipVerticalMagnet.intensity) > 0.0f)       LOG("[Jaffar]  + Ship Vertical Magnet          - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.shipVerticalMagnet.intensity, magnets.shipVerticalMagnet.center, magnets.shipVerticalMagnet.min, magnets.shipVerticalMagnet.max);
  if (std::abs(magnets.shipVelXMagnet.intensity) > 0.0f)           LOG("[Jaffar]  + Ship Vel X Magnet             - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.shipVelXMagnet.intensity, magnets.shipVelXMagnet.center, magnets.shipVelXMagnet.min, magnets.shipVelXMagnet.max);

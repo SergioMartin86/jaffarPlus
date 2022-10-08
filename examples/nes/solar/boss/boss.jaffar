@@ -7,16 +7,16 @@
     
     "State Configuration": 
     { 
-      "Max Move Count": 800,
+      "Max Move Count": 400,
       "Store Move History": true,
-      "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 2000,
+      "XDelta3 Enabled": true,
+      "XDelta3 Max Differences": 1600,
       "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
+     "Max Size Lower Bound (Mb)": 40000,
      "Max Size Upper Bound (Mb)": 200000
     },
     
@@ -105,7 +105,7 @@
      { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 10.0 },
      { "Type": "Set Eye 4 Readiness Magnet", "Intensity": 100.0 },
      { "Type": "Set Eye 4 Health Magnet", "Intensity": -1000.0 },
-     { "Type": "Set Ship Vertical Magnet", "Intensity": 1.0, "Center": 708, "Min": 0, "Max": 60000 }
+     { "Type": "Set Ship Vertical Magnet", "Intensity": 100.0, "Center": 708, "Min": 0, "Max": 60000 }
     ]
    },
    
@@ -122,7 +122,9 @@
     [
      { "Type": "Add Reward", "Value": 1000000.0 },
      { "Type": "Set Eye 1 Health Magnet", "Intensity": -10.0 },
+     { "Type": "Set Eye 1 Readiness Magnet", "Intensity": 1.0 },
      { "Type": "Set Eye 2 Health Magnet", "Intensity": -10.0 },
+     { "Type": "Set Eye 2 Readiness Magnet", "Intensity": 1.0 },
      { "Type": "Set Eye 3 Readiness Magnet", "Intensity": 1000.0 },
      { "Type": "Set Eye 3 Health Magnet", "Intensity": -1000.0 },
      { "Type": "Set Ship Vertical Magnet", "Intensity": 100.0, "Center": 680, "Min": 0, "Max": 60000 },
@@ -144,6 +146,7 @@
     [
      { "Type": "Add Reward", "Value": 1000000.0 },
      { "Type": "Set Eye 1 Health Magnet", "Intensity": -10.0 },
+     { "Type": "Set Eye 1 Readiness Magnet", "Intensity": 1.0 },
      { "Type": "Set Eye 2 Health Magnet", "Intensity": -1000.0 },
      { "Type": "Set Eye 2 Readiness Magnet", "Intensity": 1000.0 },
      { "Type": "Set Ship Vertical Magnet", "Intensity": 100.0, "Center": 649, "Min": 0, "Max": 60000 },

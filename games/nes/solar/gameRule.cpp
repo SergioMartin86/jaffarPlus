@@ -9,6 +9,17 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
   bool recognizedActionType = false;
   std::string actionType = actionJs["Type"].get<std::string>();
 
+  if (actionType == "Set Screen Scroll Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Min") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Min' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Max") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Max' key.\n", _label, actionId);
+    _magnets.screenScrollMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .min = actionJs["Min"].get<float>(), .max = actionJs["Max"].get<float>() };
+     recognizedActionType = true;
+   }
+
+
   if (actionType == "Set Ship Horizontal Magnet")
    {
     if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -161,6 +172,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Max Warp") return dt_uint8;
   if (propertyName == "Fuel Delivered") return dt_uint8;
   if (propertyName == "Eye Count") return dt_uint8;
+  if (propertyName == "Eye 0 State") return dt_uint8;
   if (propertyName == "Eye 1 State") return dt_uint8;
   if (propertyName == "Eye 2 State") return dt_uint8;
   if (propertyName == "Eye 3 State") return dt_uint8;
@@ -197,6 +209,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Fuel Delivered") return gameInstance->fuelDelivered;
   if (propertyName == "Eye Count") return &gameInstance->eyeCount;
 
+  if (propertyName == "Eye 0 State") return gameInstance->eye0State;
   if (propertyName == "Eye 1 State") return gameInstance->eye1State;
   if (propertyName == "Eye 2 State") return gameInstance->eye2State;
   if (propertyName == "Eye 3 State") return gameInstance->eye3State;
