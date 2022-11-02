@@ -1,5 +1,8 @@
 *.bk
 *.nes
+*.sfc
+*.rom
+*.bin
 jaffar.best.sav
 jaffar.current.sav
 subprojects/abseil-cpp*
