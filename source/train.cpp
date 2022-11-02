@@ -52,7 +52,7 @@ void Train::run()
     // Terminate if a winning rule was found
     if (_winStateFound)
     {
-      printf("[Jaffar] Winning state reached in %u moves, finishing...\n", _currentStep-1);
+      printf("[Jaffar] Winning state reached in %u moves (%.3fs), finishing...\n", _currentStep-1, _searchTotalTime / 1.0e+9);
       _hasFinalized = true;
     }
 
@@ -262,7 +262,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t keyValue = *_gameInstances[threadId]->_KEY_VALUE_;
+       uint8_t keyValue = 0; //*_gameInstances[threadId]->_KEY_VALUE_;
 
       #endif // _DETECT_POSSIBLE_MOVES
 

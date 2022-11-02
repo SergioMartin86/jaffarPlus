@@ -10,7 +10,7 @@ runJaffar()
 	 -e 's/"RNG Value":.*/"RNG Value": '$seed',/g' \
 	 -e 's/"Override RNG Value":.*/"Override RNG Value": true,/g' \
 	 > lvl10crng.jaffar
- frame=`jaffar lvl10crng.jaffar | tee /dev/stderr | grep "Winning" | cut -d' ' -f6`
+ frame=`jaffar lvl10crng.jaffar | tee /dev/stderr | grep "reached" | cut -d' ' -f6`
  echo "$seed $frame"
  echo "$seed $frame" >> results.txt
 }

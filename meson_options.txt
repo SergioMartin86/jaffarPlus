@@ -8,6 +8,7 @@ option('game', type : 'combo', choices :
     'nes/ng',
     'nes/ng2',
     'nes/mm', 
+    'nes/nm', 
     'nes/isw',
     'nes/contra',
     'nes/kungfu',

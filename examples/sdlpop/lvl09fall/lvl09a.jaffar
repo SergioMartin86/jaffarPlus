@@ -1,0 +1,359 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 9.",
+  
+    "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 1400,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 600,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 20000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 12000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl09a.sav",
+    "Override RNG Value": false,
+    "RNG Value": 228722061,
+    "Loose Tile Sound Id": 20
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
+   "Static Tile Hash Types":
+   [
+   { "Room": 16, "Tile": 5, "Comment": "Loose Tile -> Empty" },
+   { "Room": 16, "Tile": 6, "Comment": "Loose Tile -> Empty" },
+   { "Room": 16, "Tile": 7, "Comment": "Loose Tile -> Empty" },
+   { "Room": 17, "Tile": 17, "Comment": "Loose Tile -> Empty" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Room": 9, "Tile": 13, "Type": "Full", "Comment": "Chomper" },
+     { "Room": 4, "Tile": 20, "Type": "Full", "Comment": "Gate" },
+     { "Room": 13, "Tile": 24, "Type": "Full", "Comment": "Chomper" },
+     { "Room": 12, "Tile": 20, "Type": "Full", "Comment": "Gate" },
+     { "Room": 18, "Tile": 13, "Type": "Full", "Comment": "Gate" },
+     { "Room": 10, "Tile": 30, "Type": "Full", "Comment": "Gate" },
+     { "Room": 1, "Tile": 17, "Type": "Full", "Comment": "Chomper" },
+     { "Room": 1, "Tile": 12, "Type": "Full", "Comment": "Gate" },
+     { "Room": 1, "Tile": 6, "Type": "Full", "Comment": "Gate" },
+     { "Room": 23, "Tile": 6, "Type": "Full", "Comment": "Chomper" },
+     { "Room": 5, "Tile": 24, "Type": "Full", "Comment": "Exit Door" }
+   ]
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
+  },
+  
+  
+  "Rules":
+  [
+     {
+    "Label": 9000,
+    "Description": "Setting magnet to make kid go to the left on the first screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 11, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 11, "Value": 55 }
+    ]
+   },
+   
+   {
+    "Label": 9001,
+    "Description": "Keep going to the left on room 9.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  9 }
+    ],
+   
+    "Satisfies": [ 9000 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 11, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 9, "Value": 55.0 }
+    ]
+   },
+   
+   {
+    "Label": 9002,
+    "Description": "Go up on room 4.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4 }
+    ],
+   
+    "Satisfies": [ 9001 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 9, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 4, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 4, "Value": 80.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 4, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 9003,
+    "Description": "[Checkpoint] Go right on room 2",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+   
+    "Satisfies": [ 9002 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 4, "Value": 0.0 },
+     { "Type": "Set Kid Vertical Magnet Intensity", "Room": 4, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 2, "Value": 200.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 9009,
+    "Description": "On room 20, run towards the door open tile",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 }
+    ],
+   
+    "Satisfies": [ 9003 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 2000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 2, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 5, "Value": 200.0 }
+    ]
+   },
+   
+   {
+    "Label": 9010,
+    "Description": "Once tile is pressed, go to the left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 13 }
+    ],
+   
+    "Satisfies": [ 9009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 2000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 13, "Value": 255.0 }
+    ]
+   },
+
+   {
+    "Label": 9011,
+    "Description": "Keep going to the left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 },
+     { "Property": "Kid Position X", "Op": ">", "Value":  130 }
+    ],
+   
+    "Satisfies": [ 9010 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 2000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 13, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 13, "Value": 10.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 13, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 9012,
+    "Description": "Past the door, go to the left and keep going up",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Guard Room", "Op": "==", "Value":  5 }
+    ],
+   
+    "Satisfies": [ 9011 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 2000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 13, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 5, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 13, "Value": 0.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 5, "Value": 10.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 5, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 9013,
+    "Description": "Past the door, go to the left and keep going up",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Guard Position X", "Op": "<", "Value":  70 },
+     { "Property": "Guard Room", "Op": "==", "Value":  5 }
+    ],
+   
+    "Satisfies": [ 9011 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 2000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 5, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 5, "Value": 255.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 5, "Value": 10.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 5, "Value": 93.0 }
+    ]
+   },
+   
+   {
+    "Label": 9014,
+    "Description": "Keep going to the left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 },
+     { "Property": "Guard Position X", "Op": "==", "Value":  95 },
+     { "Property": "Guard Room", "Op": "==", "Value":  5 }
+    ],
+   
+    "Satisfies": [ 9013 ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 9111,
+    "Description": "Keep going to the left",
+    "Conditions":
+    [
+     { "Property": "Tile BG State", "Room": 5, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
+    ],
+   
+    "Satisfies": [  ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 9029,
+    "Description": "If kid advances to next level, trigger win.",
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": ">", "Value":  9 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 9999,
+    "Description": "If kid dies, fail.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 9998,
+    "Description": "If kid dies, fail.",
+    "Conditions":
+    [
+     { "Property": "Guard Current HP", "Op": "==", "Value":  0 },
+     { "Property": "Guard Room", "Op": "==", "Value":  "Kid Room" }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

@@ -440,7 +440,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
   LOG("[Jaffar]  + Current/Next Level: %2d / %2d\n", gameState.current_level, gameState.next_level);
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
-  LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
+  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
   LOG("[Jaffar]  + Game Tick: %d, Tolerance: %u\n", gameState.rem_tick, timerTolerance);
   LOG("[Jaffar]  + [Kid]   Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.hitp_curr), int(gameState.hitp_max));
   LOG("[Jaffar]  + [Guard] Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.guardhp_curr), int(gameState.guardhp_max));

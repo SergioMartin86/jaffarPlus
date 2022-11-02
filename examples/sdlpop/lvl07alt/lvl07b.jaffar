@@ -1,0 +1,190 @@
+{
+  "Description": "This script searches for the fastest any% solution for vanilla PoP level 7 until drinking the potion",
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 510,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 750,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 15000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl07b.sav",
+    "Override RNG Value": false,
+    "RNG Value": 21,
+    "Loose Tile Sound Id": 20
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 8,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
+   "Static Tile Hash Types": 
+   [
+    { "Room": 7, "Tile": 5, "Comment": "Loose Tile" },
+    { "Room": 7, "Tile": 25, "Comment": "Debris" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Room": 7, "Column": 16, "Type": "Full" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Room": 7, "Tile": 5, "Type": "Full", "Comment": "Loose Tile" },
+    { "Room": 7, "Tile": 23, "Type": "Full", "Comment": "Gate" },
+    { "Room": 2, "Tile": 8, "Type": "Full", "Comment": "Chomper" },
+    { "Room": 3, "Tile": 27, "Type": "Full", "Comment": "Gate" },
+    { "Room": 3, "Tile": 24, "Type": "Full", "Comment": "Exit Level Door" }
+   ]
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 7000,
+    "Description": "Setting magnet to make kid go to the right on the first screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 }
+    ],
+   
+    "Satisfies": [ ],
+   
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 1, "Value": 0.0 }
+    ]
+   },
+   
+   {
+    "Label": 7001,
+    "Description": "Setting magnet to make kid go advancing to the right screen while luring guard.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  55 }
+    ],
+   
+    "Satisfies": [ 7000 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 7002,
+    "Description": "Setting magnet to make kid go advancing to the right screen while luring guard.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 }
+    ],
+   
+    "Satisfies": [ 7000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 1, "Value": 0.0 },
+     { "Type": "Set Kid Horizontal Magnet Intensity", "Room": 16, "Value": 1.0 },
+     { "Type": "Set Kid Horizontal Magnet Position", "Room": 16, "Value": 255.0 },
+     { "Type": "Set Guard Horizontal Magnet Intensity", "Room": 16, "Value": 1.0 },
+     { "Type": "Set Guard Horizontal Magnet Position", "Room": 16, "Value": 255.0 }
+    ]
+   },
+   
+   {
+    "Label": 7998,
+    "Description": "If Kid exits to the next level, then win.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 7999,
+    "Description": "If Kid exits to the next level, then win.",
+    "Conditions":
+    [
+     { "Property": "Guard Room", "Op": "==", "Value":  "Kid Room" },
+     { "Property": "Guard Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 7997,
+    "Description": "If Kid exits to the next level, then win.",
+    "Conditions":
+    [
+     { "Property": "Guard Room", "Op": "==", "Value":  16 },
+     { "Property": "Guard Position Y", "Op": ">", "Value":  55 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }    
+  ]  
+}

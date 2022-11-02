@@ -11,21 +11,21 @@
     {
       "Max Move Count": 510,
       "Store Move History": true,
-      "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 250,
-      "XDelta3 Use Zlib Compression": true
+      "XDelta3 Enabled": true,
+      "XDelta3 Max Differences": 750,
+      "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Lower Bound (Mb)": 120000,
+     "Max Size Upper Bound (Mb)": 160000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 6000
+     "Max Size Upper Bound (Mb)": 15000
     },
     
     "Save Intermediate Results":
