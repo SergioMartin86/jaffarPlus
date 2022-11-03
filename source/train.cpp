@@ -147,13 +147,13 @@ size_t Train::hashGetTotalCount() const
 double Train::hashSizeFromEntries(const ssize_t entries) const
 {
  // Just an approximation of how much the hash table requires
- return (((double)sizeof(uint128_t) + (double)sizeof(void*) ) *(double)entries) / (512.0 * 1024.0);
+ return (((double)sizeof(_uint128_t) + (double)sizeof(void*) ) *(double)entries) / (512.0 * 1024.0);
 };
 
 size_t Train::hashEntriesFromSize(const double size) const
 {
   // Just an approximation of how much the hash table requires
-  return (size_t)((size * (512.0 * 1024.0)) / ((double)sizeof(uint128_t) + (double)sizeof(void*)));
+  return (size_t)((size * (512.0 * 1024.0)) / ((double)sizeof(_uint128_t) + (double)sizeof(void*)));
 };
 
 void Train::computeStates()
@@ -337,7 +337,7 @@ void Train::computeStates()
         else
         {
          // Grabbing lock from free state queue
-         _freeStateQueueLock.lock();
+         _freeStateQueueMutex.lock();
 
          // If we ran out of free states, gotta check if we can free up the worst states from the next state db
          if (_freeStateQueue.empty())
@@ -359,7 +359,7 @@ void Train::computeStates()
          _freeStateQueue.pop();
 
          // Releasing lock
-         _freeStateQueueLock.unlock();
+         _freeStateQueueMutex.unlock();
         }
 
         // Getting rule status from the base state
@@ -387,9 +387,9 @@ void Train::computeStates()
         // If state type is failed, continue to the next possible move
         if (type == f_fail)
         {
-         _freeStateQueueLock.lock();
+         _freeStateQueueMutex.lock();
          _freeStateQueue.push(newState);
-         _freeStateQueueLock.unlock();
+         _freeStateQueueMutex.unlock();
          continue;
         }
 
@@ -443,9 +443,9 @@ void Train::computeStates()
       // Adding used base state back into free state queue, if it wasn't recycled locally
       if (baseFramePointer != NULL)
       {
-       _freeStateQueueLock.lock();
+       _freeStateQueueMutex.lock();
        _freeStateQueue.push(baseState);
-       _freeStateQueueLock.unlock();
+       _freeStateQueueMutex.unlock();
       }
 
       // Increasing counter for base states processed
@@ -498,13 +498,13 @@ void Train::computeStates()
   // Looking for and storing best/worst state
   _bestStateReward = -std::numeric_limits<float>::infinity();
   _worstStateReward = std::numeric_limits<float>::infinity();
-  _bestStateLock.lock();
+  _bestStateMutex.lock();
   for (const auto& state : newStates)
   {
    if (state->reward > _bestStateReward) {  _bestState->copy(state); _bestStateReward = _bestState->reward; }
    if (state->reward < _worstStateReward) { _worstState->copy(state); _worstStateReward = _worstState->reward; }
   }
-  _bestStateLock.unlock();
+  _bestStateMutex.unlock();
 
   // Setting new states to be current states for the next step
   std::swap(newStates, _stateDB);
@@ -845,7 +845,7 @@ void Train::showSavingLoop()
       double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - bestStateSaveTimer).count();
       if (bestStateTimerElapsed / 1.0e+9 > _outputSaveFrequency)
       {
-//       _bestStateLock.lock();
+//       _bestStateMutex.lock();
 //
 //       // Storing best and worst states
 //       uint8_t bestStateData[_STATE_DATA_SIZE_TRAIN];
@@ -857,7 +857,7 @@ void Train::showSavingLoop()
 //       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
 //       _showGameInstance->pushState(worstStateData);
 //       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
-//       _bestStateLock.unlock();
+//       _bestStateMutex.unlock();
 
        // Storing the best and worst solution sequences
        if (_storeMoveHistory)

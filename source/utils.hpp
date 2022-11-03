@@ -112,18 +112,18 @@ T swap_endian(T u)
 
 
 // Class for pthread lock implementation
-class Lock
+class Mutex
 {
  pthread_mutex_t _lock;
 
  public:
 
- Lock()
+ Mutex()
  {
   pthread_mutex_init(&_lock, 0);
  }
 
- ~Lock()
+ ~Mutex()
  {
   pthread_mutex_destroy(&_lock);
  }

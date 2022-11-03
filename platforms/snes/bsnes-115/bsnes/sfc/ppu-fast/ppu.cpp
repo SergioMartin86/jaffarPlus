@@ -168,7 +168,8 @@ auto PPU::refresh() -> void {
     }
 
     if(auto device = controllerPort2.device) device->draw(output, pitch * sizeof(uint16), width, height);
-    platform->videoFrame(output, pitch * sizeof(uint16), width, height, hd() ? hdScale() : 1);
+
+    if (renderActive) platform->videoFrame(output, pitch * sizeof(uint16), width, height, hd() ? hdScale() : 1);
 
     frame.pitch  = pitch;
     frame.width  = width;

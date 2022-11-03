@@ -74,6 +74,10 @@ struct Interface : Emulator::Interface {
 
   auto runAhead() -> bool override;
   auto setRunAhead(bool runAhead) -> void override;
+
+  auto refreshRender() -> void;
+  auto enableRendering() -> void;
+  auto disableRendering() -> void;
 };
 
 #include "configuration.hpp"

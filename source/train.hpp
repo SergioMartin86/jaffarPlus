@@ -19,7 +19,7 @@
 #define SETNAME phmap::parallel_flat_hash_set
 #define SETEXTRAARGS , phmap::priv::hash_default_hash<V>, phmap::priv::hash_default_eq<V>, std::allocator<V>, 4, std::mutex
 template <class V> using HashSetT = SETNAME<V SETEXTRAARGS>;
-using hashSet_t = HashSetT<uint128_t>;
+using hashSet_t = HashSetT<_uint128_t>;
 
 class Train
 {
@@ -75,11 +75,11 @@ class Train
   // Queue for free states
   uint8_t* _mainStateStorage;
   std::queue<State*> _freeStateQueue;
-  Lock _freeStateQueueLock;
+  Mutex _freeStateQueueMutex;
   State *_firstState;
 
   // Storage for the win, best and worst state
-  Lock _bestStateLock;
+  Mutex _bestStateMutex;
   State* _bestState;
   float _bestStateReward;
   State* _worstState;

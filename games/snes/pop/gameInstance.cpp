@@ -11,13 +11,13 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
   MetroHash128 hash;
 
 
-  uint128_t result;
+  _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
 }
@@ -38,6 +38,8 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 uint16_t GameInstance::advanceState(const INPUT_TYPE &move)
 {
   uint16_t skippedFrames = 0;
+
+  _emu->advanceState(0);
 
   return skippedFrames;
 }

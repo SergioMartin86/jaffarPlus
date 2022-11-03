@@ -4,7 +4,7 @@
  
   "Emulator Configuration": 
   {
-    "Rom File": "../pop.nes",
+    "Rom File": "../pop.sfc",
     "State File": "lvl01a.state"
   },
   

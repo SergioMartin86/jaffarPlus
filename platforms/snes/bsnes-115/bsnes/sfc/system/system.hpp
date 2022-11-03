@@ -23,6 +23,10 @@ struct System {
   auto serialize(bool synchronize) -> serializer;
   auto unserialize(serializer&) -> bool;
 
+  auto refreshRender() -> void;
+  auto enableRendering() -> void;
+  auto disableRendering() -> void;
+
   uint frameSkip = 0;
   uint frameCounter = 0;
   bool runAhead = 0;

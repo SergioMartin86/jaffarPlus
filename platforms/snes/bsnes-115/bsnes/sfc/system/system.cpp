@@ -94,6 +94,20 @@ auto System::runToSaveStrict() -> void {
   }
 }
 
+auto System::refreshRender() -> void {
+ ppufast.renderActive = true;
+ ppufast.refresh();
+ ppufast.renderActive = false;
+}
+
+auto System::enableRendering() -> void {
+ ppufast.renderActive = true;
+}
+
+auto System::disableRendering() -> void {
+ ppufast.renderActive = false;
+}
+
 auto System::frameEvent() -> void {
   ppu.refresh();
 

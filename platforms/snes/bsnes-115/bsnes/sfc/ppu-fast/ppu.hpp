@@ -273,6 +273,7 @@ public:
   Latch latch;
   IO io;
 
+  bool renderActive = false;
   uint16 vram[32 * 1024] = {};
   uint16 cgram[256] = {};
   Object objects[128] = {};

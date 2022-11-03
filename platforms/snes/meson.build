@@ -54,7 +54,8 @@ emuInstanceIncludes = include_directories([
     '.',
     'bsnes-115/hiro', 
     'bsnes-115/ruby',
-    'bsnes-115/bsnes', 
+    'bsnes-115/bsnes',
+    'bsnes-115/bsnes/target-bsnes', 
     'bsnes-115/',
    ])
 

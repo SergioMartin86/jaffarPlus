@@ -46,7 +46,7 @@ int getKeyPress()
 
 
 void loadSolutionFile(
-                      std::map<uint128_t, uint16_t>& hashMap,
+                      std::map<_uint128_t, uint16_t>& hashMap,
                       bool& hashCollisionFound,
                       uint16_t& hashCollisionStep,
                       uint16_t& hashCollisionPrev,
@@ -119,7 +119,7 @@ void loadSolutionFile(
  }
 
  // Adding current hash to the set
- uint128_t curHash = gameInstance.computeHash();
+ _uint128_t curHash = gameInstance.computeHash();
  hashMap[curHash] = 0;
 
  // Iterating move list in the sequence
@@ -139,6 +139,7 @@ void loadSolutionFile(
 
   // Advancing state
   auto skippedFrames = gameInstance.advanceStateString(moveList[i]);
+  refresh();
   gameInstance.updateDerivedValues();
 
   // Storing full sequence
@@ -146,7 +147,7 @@ void loadSolutionFile(
   for (uint16_t f = 0; f < skippedFrames; f++) unpackedMoveSequence.push_back(".");
 
   // Adding current hash to the set
-  uint128_t curHash = gameInstance.computeHash();
+  _uint128_t curHash = gameInstance.computeHash();
   if (hashCollisionFound == false && hashMap.contains(curHash))
   {
    hashCollisionStep = i;
@@ -244,7 +245,7 @@ int main(int argc, char *argv[])
   scrollok(stdscr, TRUE);
 
   // This storage will indicate whether a repeated hash was found
-  std::map<uint128_t, uint16_t> hashMap;
+  std::map<_uint128_t, uint16_t> hashMap;
   bool hashCollisionFound;
   uint16_t hashCollisionStep;
   uint16_t hashCollisionPrev;

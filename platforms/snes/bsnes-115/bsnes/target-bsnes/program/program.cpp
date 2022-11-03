@@ -66,10 +66,6 @@ auto Program::create() -> void {
   driverSettings.audioDriverChanged();
   driverSettings.inputDriverChanged();
 
-  if(gameQueue) load();
-  if(startFullScreen && emulator->loaded()) {
-    toggleVideoFullScreen();
-  }
   Application::onMain({&Program::main, this});
 }
 

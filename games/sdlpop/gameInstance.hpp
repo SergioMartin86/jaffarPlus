@@ -37,7 +37,7 @@ class GameInstance : public GameInstanceBase
   magnetInfo_t getGuardMagnetValues(const bool* rulesStatus, const int room) const;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
-  uint128_t computeHash() const override;
+  _uint128_t computeHash() const override;
   void updateDerivedValues() override;
   std::vector<std::string> getPossibleMoves() const override;
   float getStateReward(const bool* rulesStatus) const override;

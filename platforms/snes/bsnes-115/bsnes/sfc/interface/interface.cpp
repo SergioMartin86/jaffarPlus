@@ -215,6 +215,18 @@ auto Interface::connect(uint port, uint device) -> void {
   if(port == ID::Port::Expansion) expansionPort.connect(settings.expansionPort = device);
 }
 
+auto Interface::refreshRender() -> void {
+ system.refreshRender();
+}
+
+auto Interface::enableRendering() -> void {
+ system.enableRendering();
+}
+
+auto Interface::disableRendering() -> void {
+ system.disableRendering();
+}
+
 auto Interface::power() -> void {
   system.power(/* reset = */ false);
 }
