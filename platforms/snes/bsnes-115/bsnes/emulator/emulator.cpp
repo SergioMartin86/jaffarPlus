@@ -3,6 +3,6 @@
 
 namespace Emulator {
 
-Platform* platform = nullptr;
+thread_local Platform* platform = nullptr;
 
 }

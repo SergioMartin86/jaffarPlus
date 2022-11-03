@@ -1,14 +1,14 @@
 #include <ruby/ruby.hpp>
 using namespace ruby;
-extern Video video;
-extern Audio audio;
-extern Input input;
+extern thread_local Video video;
+extern thread_local Audio audio;
+extern thread_local Input input;
 
 #include <hiro/hiro.hpp>
 using namespace hiro;
 
 #include <emulator/emulator.hpp>
-extern unique_pointer<Emulator::Interface> emulator;
+extern thread_local unique_pointer<Emulator::Interface> emulator;
 
 #include <filter/filter.hpp>
 #include <lzma/lzma.hpp>

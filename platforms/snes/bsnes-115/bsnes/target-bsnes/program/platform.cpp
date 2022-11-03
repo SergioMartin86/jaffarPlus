@@ -100,109 +100,115 @@ auto Program::open(uint id, string name, vfs::file::mode mode, bool required) ->
 }
 
 auto Program::load(uint id, string name, string type, vector<string> options) -> Emulator::Platform::Load {
-  BrowserDialog dialog;
-  dialog.setAlignment(*presentation);
-  dialog.setOptions(options);
 
-  if(id == 1 && name == "Super Famicom" && type == "sfc") {
-    if(gameQueue) {
-      auto game = gameQueue.takeLeft().split(";", 1L);
-      superFamicom.option = game(0);
-      superFamicom.location = game(1);
-    } else {
-      dialog.setTitle("Load SNES ROM");
-      dialog.setPath(path("Games", settings.path.recent.superFamicom));
-      dialog.setFilters({string{"SNES ROMs|*.sfc:*.smc:*.zip:*.7z:*.SFC:*.SMC:*.ZIP:*.7Z:*.Sfc:*.Smc:*.Zip"}, string{"All Files|*"}});
-      superFamicom.location = openGame(dialog);
-      superFamicom.option = dialog.option();
-    }
-    if(inode::exists(superFamicom.location)) {
-      settings.path.recent.superFamicom = Location::dir(superFamicom.location);
-      if(loadSuperFamicom(superFamicom.location)) {
-        return {id, superFamicom.option};
-      }
-    }
-  }
+       superFamicom.location = "/home/jaffar/pop.sfc";
+       superFamicom.option = "Auto";
+       if(loadSuperFamicom(superFamicom.location)) return {id, superFamicom.option};
 
-  if(id == 2 && name == "Game Boy" && type == "gb") {
-    if(gameQueue) {
-      auto game = gameQueue.takeLeft().split(";", 1L);
-      gameBoy.option = game(0);
-      gameBoy.location = game(1);
-    } else {
-      dialog.setTitle("Load Game Boy ROM");
-      dialog.setPath(path("Games", settings.path.recent.gameBoy));
-      dialog.setFilters({string{"Game Boy ROMs|*.gb:*.gbc:*.zip:*.7z:*.GB:*.GBC:*.ZIP:*.7Z:*.Gb:*.Gbc:*.Zip"}, string{"All Files|*"}});
-      gameBoy.location = openGame(dialog);
-      gameBoy.option = dialog.option();
-    }
-    if(inode::exists(gameBoy.location)) {
-      settings.path.recent.gameBoy = Location::dir(gameBoy.location);
-      if(loadGameBoy(gameBoy.location)) {
-        return {id, gameBoy.option};
-      }
-    }
-  }
-
-  if(id == 3 && name == "BS Memory" && type == "bs") {
-    if(gameQueue) {
-      auto game = gameQueue.takeLeft().split(";", 1L);
-      bsMemory.option = game(0);
-      bsMemory.location = game(1);
-    } else {
-      dialog.setTitle("Load BS Memory ROM");
-      dialog.setPath(path("Games", settings.path.recent.bsMemory));
-      dialog.setFilters({string{"BS Memory ROMs|*.bs:*.zip:*.7z:*.BS:*.ZIP:*.7Z:*.Bs:*.Zip"}, string{"All Files|*"}});
-      bsMemory.location = openGame(dialog);
-      bsMemory.option = dialog.option();
-    }
-    if(inode::exists(bsMemory.location)) {
-      settings.path.recent.bsMemory = Location::dir(bsMemory.location);
-      if(loadBSMemory(bsMemory.location)) {
-        return {id, bsMemory.option};
-      }
-    }
-  }
-
-  if(id == 4 && name == "Sufami Turbo" && type == "st") {
-    if(gameQueue) {
-      auto game = gameQueue.takeLeft().split(";", 1L);
-      sufamiTurboA.option = game(0);
-      sufamiTurboA.location = game(1);
-    } else {
-      dialog.setTitle("Load Sufami Turbo ROM - Slot A");
-      dialog.setPath(path("Games", settings.path.recent.sufamiTurboA));
-      dialog.setFilters({string{"Sufami Turbo ROMs|*.st:*.zip:*.7z:*.ST:*.ZIP:*.7Z:*.St:*.Zip"}, string{"All Files|*"}});
-      sufamiTurboA.location = openGame(dialog);
-      sufamiTurboA.option = dialog.option();
-    }
-    if(inode::exists(sufamiTurboA.location)) {
-      settings.path.recent.sufamiTurboA = Location::dir(sufamiTurboA.location);
-      if(loadSufamiTurboA(sufamiTurboA.location)) {
-        return {id, sufamiTurboA.option};
-      }
-    }
-  }
-
-  if(id == 5 && name == "Sufami Turbo" && type == "st") {
-    if(gameQueue) {
-      auto game = gameQueue.takeLeft().split(";", 1L);
-      sufamiTurboB.option = game(0);
-      sufamiTurboB.location = game(1);
-    } else {
-      dialog.setTitle("Load Sufami Turbo ROM - Slot B");
-      dialog.setPath(path("Games", settings.path.recent.sufamiTurboB));
-      dialog.setFilters({string{"Sufami Turbo ROMs|*.st:*.zip:*.7z:*.ST:*.ZIP:*.7Z:*.St:*.Zip"}, string{"All Files|*"}});
-      sufamiTurboB.location = openGame(dialog);
-      sufamiTurboB.option = dialog.option();
-    }
-    if(inode::exists(sufamiTurboB.location)) {
-      settings.path.recent.sufamiTurboB = Location::dir(sufamiTurboB.location);
-      if(loadSufamiTurboB(sufamiTurboB.location)) {
-        return {id, sufamiTurboB.option};
-      }
-    }
-  }
+//  BrowserDialog dialog;
+//  dialog.setAlignment(*presentation);
+//  dialog.setOptions(options);
+//
+//  if(id == 1 && name == "Super Famicom" && type == "sfc") {
+//    if(gameQueue) {
+//      auto game = gameQueue.takeLeft().split(";", 1L);
+//      superFamicom.option = game(0);
+//      superFamicom.location = game(1);
+//    } else {
+//      dialog.setTitle("Load SNES ROM");
+//      dialog.setPath(path("Games", settings.path.recent.superFamicom));
+//      dialog.setFilters({string{"SNES ROMs|*.sfc:*.smc:*.zip:*.7z:*.SFC:*.SMC:*.ZIP:*.7Z:*.Sfc:*.Smc:*.Zip"}, string{"All Files|*"}});
+//      superFamicom.location = openGame(dialog);
+//      superFamicom.option = dialog.option();
+//      printf("Location: %s, option: %s\n", superFamicom.location.data(), superFamicom.option.data());
+//    }
+//    if(inode::exists(superFamicom.location)) {
+//      settings.path.recent.superFamicom = Location::dir(superFamicom.location);
+//      if(loadSuperFamicom(superFamicom.location)) {
+//        return {id, superFamicom.option};
+//      }
+//    }
+//  }
+//
+//  if(id == 2 && name == "Game Boy" && type == "gb") {
+//    if(gameQueue) {
+//      auto game = gameQueue.takeLeft().split(";", 1L);
+//      gameBoy.option = game(0);
+//      gameBoy.location = game(1);
+//    } else {
+//      dialog.setTitle("Load Game Boy ROM");
+//      dialog.setPath(path("Games", settings.path.recent.gameBoy));
+//      dialog.setFilters({string{"Game Boy ROMs|*.gb:*.gbc:*.zip:*.7z:*.GB:*.GBC:*.ZIP:*.7Z:*.Gb:*.Gbc:*.Zip"}, string{"All Files|*"}});
+//      gameBoy.location = openGame(dialog);
+//      gameBoy.option = dialog.option();
+//    }
+//    if(inode::exists(gameBoy.location)) {
+//      settings.path.recent.gameBoy = Location::dir(gameBoy.location);
+//      if(loadGameBoy(gameBoy.location)) {
+//        return {id, gameBoy.option};
+//      }
+//    }
+//  }
+//
+//  if(id == 3 && name == "BS Memory" && type == "bs") {
+//    if(gameQueue) {
+//      auto game = gameQueue.takeLeft().split(";", 1L);
+//      bsMemory.option = game(0);
+//      bsMemory.location = game(1);
+//    } else {
+//      dialog.setTitle("Load BS Memory ROM");
+//      dialog.setPath(path("Games", settings.path.recent.bsMemory));
+//      dialog.setFilters({string{"BS Memory ROMs|*.bs:*.zip:*.7z:*.BS:*.ZIP:*.7Z:*.Bs:*.Zip"}, string{"All Files|*"}});
+//      bsMemory.location = openGame(dialog);
+//      bsMemory.option = dialog.option();
+//    }
+//    if(inode::exists(bsMemory.location)) {
+//      settings.path.recent.bsMemory = Location::dir(bsMemory.location);
+//      if(loadBSMemory(bsMemory.location)) {
+//        return {id, bsMemory.option};
+//      }
+//    }
+//  }
+//
+//  if(id == 4 && name == "Sufami Turbo" && type == "st") {
+//    if(gameQueue) {
+//      auto game = gameQueue.takeLeft().split(";", 1L);
+//      sufamiTurboA.option = game(0);
+//      sufamiTurboA.location = game(1);
+//    } else {
+//      dialog.setTitle("Load Sufami Turbo ROM - Slot A");
+//      dialog.setPath(path("Games", settings.path.recent.sufamiTurboA));
+//      dialog.setFilters({string{"Sufami Turbo ROMs|*.st:*.zip:*.7z:*.ST:*.ZIP:*.7Z:*.St:*.Zip"}, string{"All Files|*"}});
+//      sufamiTurboA.location = openGame(dialog);
+//      sufamiTurboA.option = dialog.option();
+//    }
+//    if(inode::exists(sufamiTurboA.location)) {
+//      settings.path.recent.sufamiTurboA = Location::dir(sufamiTurboA.location);
+//      if(loadSufamiTurboA(sufamiTurboA.location)) {
+//        return {id, sufamiTurboA.option};
+//      }
+//    }
+//  }
+//
+//  if(id == 5 && name == "Sufami Turbo" && type == "st") {
+//    if(gameQueue) {
+//      auto game = gameQueue.takeLeft().split(";", 1L);
+//      sufamiTurboB.option = game(0);
+//      sufamiTurboB.location = game(1);
+//    } else {
+//      dialog.setTitle("Load Sufami Turbo ROM - Slot B");
+//      dialog.setPath(path("Games", settings.path.recent.sufamiTurboB));
+//      dialog.setFilters({string{"Sufami Turbo ROMs|*.st:*.zip:*.7z:*.ST:*.ZIP:*.7Z:*.St:*.Zip"}, string{"All Files|*"}});
+//      sufamiTurboB.location = openGame(dialog);
+//      sufamiTurboB.option = dialog.option();
+//    }
+//    if(inode::exists(sufamiTurboB.location)) {
+//      settings.path.recent.sufamiTurboB = Location::dir(sufamiTurboB.location);
+//      if(loadSufamiTurboB(sufamiTurboB.location)) {
+//        return {id, sufamiTurboB.option};
+//      }
+//    }
+//  }
 
   return {};
 }

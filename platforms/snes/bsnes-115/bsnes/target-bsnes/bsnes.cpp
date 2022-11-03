@@ -1,9 +1,9 @@
 #include "bsnes.hpp"
 #include <sfc/interface/interface.hpp>
-Video video;
-Audio audio;
-Input input;
-unique_pointer<Emulator::Interface> emulator;
+thread_local Video video;
+thread_local Audio audio;
+thread_local Input input;
+thread_local unique_pointer<Emulator::Interface> emulator;
 
 auto locate(string name) -> string {
   string location = {Path::program(), name};
@@ -49,10 +49,18 @@ auto nall::main(Arguments arguments) -> void {
   Instances::cheatWindow.construct();
   Instances::stateWindow.construct();
   Instances::toolsWindow.construct();
+
   emulator = new SuperFamicom::Interface;
   program.create();
+  program.load();
 
-  Application::run();
+  //Application::run();
+
+  while(true)
+  {
+   program.main();
+  }
+
   Instances::presentation.destruct();
   Instances::settingsWindow.destruct();
   Instances::cheatDatabase.destruct();

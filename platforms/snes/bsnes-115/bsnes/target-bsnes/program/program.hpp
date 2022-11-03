@@ -209,4 +209,4 @@ public:
   bool rewinding = false;
 };
 
-extern Program program;
+thread_local extern Program program;

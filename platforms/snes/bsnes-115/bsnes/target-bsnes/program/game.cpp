@@ -103,7 +103,7 @@ auto Program::loadFile(string location) -> vector<uint8_t> {
 auto Program::loadSuperFamicom(string location) -> bool {
   string manifest;
   vector<uint8_t> rom;
-
+  printf("%s\n", location.data());
   if(location.endsWith("/")) {
     manifest = file::read({location, "manifest.bml"});
     rom.append(file::read({location, "program.rom"}));

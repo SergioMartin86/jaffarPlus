@@ -15,7 +15,7 @@
 #include "hacks.cpp"
 #include "filter.cpp"
 #include "viewport.cpp"
-Program program;
+thread_local Program program;
 
 auto Program::create() -> void {
   Emulator::platform = this;

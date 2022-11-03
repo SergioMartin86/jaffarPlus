@@ -24,6 +24,6 @@ struct Platform {
   virtual auto notify(string text) -> void {}
 };
 
-extern Platform* platform;
+extern thread_local Platform* platform;
 
 }
