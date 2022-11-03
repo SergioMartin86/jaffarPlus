@@ -25,4 +25,4 @@ private:
   uint8 echoram[64 * 1024] = {};
 };
 
-extern DSP dsp;
+thread_local extern DSP dsp;

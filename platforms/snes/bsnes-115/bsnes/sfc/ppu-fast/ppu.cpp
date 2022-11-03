@@ -7,7 +7,7 @@ PPU& ppubase = ppu;
 #define PPU PPUfast
 #define ppu ppufast
 
-PPU ppu;
+thread_local PPU ppu;
 #include "io.cpp"
 #include "line.cpp"
 #include "background.cpp"

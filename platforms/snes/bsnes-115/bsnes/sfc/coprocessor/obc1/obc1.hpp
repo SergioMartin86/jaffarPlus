@@ -20,4 +20,4 @@ private:
   } status;
 };
 
-extern OBC1 obc1;
+thread_local extern OBC1 obc1;

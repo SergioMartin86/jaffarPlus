@@ -22,7 +22,7 @@ struct DSP4_t
   uint8 output[512];
 };
 
-extern struct DSP4_t DSP4;
+thread_local extern struct DSP4_t DSP4;
 
 struct DSP4_vars_t
 {
@@ -103,6 +103,6 @@ struct DSP4_vars_t
   int16 OAM_Row[32];          // current number of tiles per row
 };
 
-extern struct DSP4_vars_t DSP4_vars;
+thread_local extern struct DSP4_vars_t DSP4_vars;
 
 #endif

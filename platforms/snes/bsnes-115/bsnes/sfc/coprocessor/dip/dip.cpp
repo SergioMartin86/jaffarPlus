@@ -6,7 +6,7 @@
 namespace SuperFamicom {
 
 #include "serialization.cpp"
-DIP dip;
+thread_local DIP dip;
 
 auto DIP::power() -> void {
 }

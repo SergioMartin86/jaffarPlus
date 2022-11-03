@@ -4,7 +4,7 @@
 
 namespace SuperFamicom {
 
-ExpansionPort expansionPort;
+thread_local ExpansionPort expansionPort;
 
 Expansion::Expansion() {
 }

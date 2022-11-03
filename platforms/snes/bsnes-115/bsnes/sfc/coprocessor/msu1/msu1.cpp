@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-MSU1 msu1;
+thread_local MSU1 msu1;
 
 #include "serialization.cpp"
 

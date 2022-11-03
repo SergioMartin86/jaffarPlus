@@ -1,6 +1,6 @@
 #include "../bsnes.hpp"
-namespace Instances { Instance<Presentation> presentation; }
-Presentation& presentation = Instances::presentation();
+namespace Instances { thread_local Instance<Presentation> presentation; }
+thread_local Presentation& presentation = Instances::presentation();
 
 auto Presentation::create() -> void {
   systemMenu.setText(tr("System"));

@@ -3,8 +3,8 @@
 namespace SuperFamicom {
 
 #include "serialization.cpp"
-SufamiTurboCartridge sufamiturboA;
-SufamiTurboCartridge sufamiturboB;
+thread_local SufamiTurboCartridge sufamiturboA;
+thread_local SufamiTurboCartridge sufamiturboB;
 
 auto SufamiTurboCartridge::unload() -> void {
   rom.reset();

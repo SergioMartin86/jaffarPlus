@@ -1,5 +1,5 @@
-extern uint16_t SnowData[800];
-extern  uint8_t SnowVelDist[800];
+thread_local extern uint16_t SnowData[800];
+thread_local extern uint8_t SnowVelDist[800];
 
 auto Program::viewportSize(uint& width, uint& height, uint scale) -> void {
   uint videoWidth = 256 * (settings.video.aspectCorrection ? 8.0 / 7.0 : 1.0);
@@ -112,7 +112,7 @@ auto Program::viewportRefresh() -> void {
   }
 }
 
-uint16_t SnowData[800] = {
+thread_local uint16_t SnowData[800] = {
 	161, 251, 115, 211, 249,  87, 128, 101, 232, 176,  51, 180, 108, 193, 224, 112, 254, 159, 102, 238,
 	223, 123, 218,  42, 173, 160, 143, 170,  64,   1, 174,  29,  34, 187, 194, 199,  40,  89, 232,  32,
 	  7, 195, 141,  67, 216,  48, 234,   1, 243, 116, 164, 182, 146, 136,  66,  70,  36,  43,  98, 208,
@@ -155,7 +155,7 @@ uint16_t SnowData[800] = {
 	140,  81, 118,  81,  63, 193, 173, 228, 214,  78, 124, 123, 222, 149,   9, 242,   0, 128, 194, 110
 };
 
-uint8_t SnowVelDist[800] = {
+thread_local uint8_t SnowVelDist[800] = {
 	 57,  92, 100,  19, 100, 184, 238, 225,  55, 240, 255, 221, 215, 105, 226, 153, 164,  41,  22,  93,
 	176, 203, 155, 199, 244,  52, 233, 219, 110, 227, 229, 227, 152, 240,  83, 248, 226,  31, 163,  22,
 	 28, 156,  18,  10, 248,  67, 123, 167,  25, 138,  90,  10,  79, 107, 208, 229, 248, 233, 185,  10,

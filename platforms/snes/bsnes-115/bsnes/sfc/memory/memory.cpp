@@ -2,8 +2,8 @@
 
 namespace SuperFamicom {
 
-bool Memory::GlobalWriteEnable = false;
-Bus bus;
+thread_local bool Memory::GlobalWriteEnable = false;
+thread_local Bus bus;
 
 Bus::~Bus() {
   if(lookup) delete[] lookup;

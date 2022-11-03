@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-Settings settings;
+thread_local Settings settings;
 #include "configuration.cpp"
 
 auto Interface::information() -> Information {

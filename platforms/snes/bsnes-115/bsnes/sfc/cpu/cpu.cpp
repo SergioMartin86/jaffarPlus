@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-CPU cpu;
+thread_local CPU cpu;
 #include "dma.cpp"
 #include "memory.cpp"
 #include "io.cpp"

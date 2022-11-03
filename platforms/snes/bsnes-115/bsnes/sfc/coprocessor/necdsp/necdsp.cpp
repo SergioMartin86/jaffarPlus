@@ -4,7 +4,7 @@
 namespace SuperFamicom {
 
 #include "serialization.cpp"
-NECDSP necdsp;
+thread_local NECDSP necdsp;
 
 auto NECDSP::synchronizeCPU() -> void {
   if(clock >= 0) scheduler.resume(cpu.thread);

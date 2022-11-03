@@ -24,8 +24,9 @@ namespace SuperFamicom {
   namespace File = Emulator::File;
   using Random = Emulator::Random;
   using Cheat = Emulator::Cheat;
-  extern Random random;
-  extern Cheat cheat;
+
+  thread_local extern Random random;
+  thread_local extern Cheat cheat;
 
   struct Scheduler {
     enum class Mode : uint { Run, Synchronize } mode;
@@ -70,7 +71,7 @@ namespace SuperFamicom {
       desynchronized = true;
     }
   };
-  extern Scheduler scheduler;
+  thread_local extern Scheduler scheduler;
 
   struct Thread {
     enum : uint { Size = 4_KiB * sizeof(void*) };

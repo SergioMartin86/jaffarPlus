@@ -1,5 +1,5 @@
 struct Memory {
-  static bool GlobalWriteEnable;
+  thread_local static bool GlobalWriteEnable;
 
   virtual ~Memory() { reset(); }
   inline explicit operator bool() const { return size() > 0; }
@@ -46,4 +46,4 @@ private:
   uint counter[256];
 };
 
-extern Bus bus;
+thread_local extern Bus bus;

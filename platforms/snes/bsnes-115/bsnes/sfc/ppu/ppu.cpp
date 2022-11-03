@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-PPU ppu;
+thread_local  PPU ppu;
 #include "main.cpp"
 #include "io.cpp"
 #include "mosaic.cpp"

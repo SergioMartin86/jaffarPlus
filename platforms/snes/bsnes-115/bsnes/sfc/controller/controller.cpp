@@ -2,8 +2,8 @@
 
 namespace SuperFamicom {
 
-ControllerPort controllerPort1;
-ControllerPort controllerPort2;
+thread_local ControllerPort controllerPort1;
+thread_local ControllerPort controllerPort2;
 #include "gamepad/gamepad.cpp"
 #include "mouse/mouse.cpp"
 #include "super-multitap/super-multitap.cpp"

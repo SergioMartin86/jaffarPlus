@@ -3,7 +3,7 @@
 namespace SuperFamicom {
 
 #include "serialization.cpp"
-MCC mcc;
+thread_local MCC mcc;
 
 auto MCC::unload() -> void {
   rom.reset();

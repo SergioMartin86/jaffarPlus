@@ -48,7 +48,7 @@ private:
   friend class Cartridge;
 };
 
-extern System system;
+thread_local extern System system;
 
 auto Region::NTSC() -> bool { return system.region() == System::Region::NTSC; }
 auto Region::PAL() -> bool { return system.region() == System::Region::PAL; }

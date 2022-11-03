@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-SDD1 sdd1;
+thread_local SDD1 sdd1;
 
 #include "decompressor.cpp"
 #include "serialization.cpp"

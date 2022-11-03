@@ -49,4 +49,4 @@ private:
   //bit 15 = unknown (test register interface?)
 };
 
-extern MCC mcc;
+thread_local extern MCC mcc;

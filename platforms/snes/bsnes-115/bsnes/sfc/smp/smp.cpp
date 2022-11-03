@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-SMP smp;
+thread_local SMP smp;
 #include "memory.cpp"
 #include "io.cpp"
 #include "timing.cpp"

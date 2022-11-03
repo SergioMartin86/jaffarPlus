@@ -1,4 +1,4 @@
-Configuration configuration;
+thread_local Configuration configuration;
 
 auto Configuration::process(Markup::Node document, bool load) -> void {
   #define bind(type, path, name) \

@@ -36,4 +36,4 @@ struct ST0010 {
   void op_01(int16 x0, int16 y0, int16 &x1, int16 &y1, int16 &quadrant, int16 &theta);
 };
 
-extern ST0010 st0010;
+thread_local extern ST0010 st0010;

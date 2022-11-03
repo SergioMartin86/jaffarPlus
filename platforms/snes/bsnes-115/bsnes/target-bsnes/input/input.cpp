@@ -1,6 +1,6 @@
 #include "../bsnes.hpp"
 #include "hotkeys.cpp"
-InputManager inputManager;
+thread_local InputManager inputManager;
 
 auto InputMapping::bind() -> void {
   for(auto& binding : bindings) binding = {};

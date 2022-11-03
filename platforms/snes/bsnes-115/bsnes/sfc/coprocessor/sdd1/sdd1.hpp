@@ -36,4 +36,4 @@ public:
   Decompressor decompressor;
 };
 
-extern SDD1 sdd1;
+thread_local extern SDD1 sdd1;

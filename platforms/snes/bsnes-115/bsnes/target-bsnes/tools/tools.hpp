@@ -192,15 +192,15 @@ public:
       VerticalLayout panelContainer{&panelLayout, Size{~0, ~0}};
 };
 
-namespace Instances { extern Instance<CheatDatabase> cheatDatabase; }
-extern CheatFinder cheatFinder;
-extern CheatDatabase& cheatDatabase;
-namespace Instances { extern Instance<CheatWindow> cheatWindow; }
-extern CheatWindow& cheatWindow;
-extern CheatEditor cheatEditor;
-namespace Instances { extern Instance<StateWindow> stateWindow; }
-extern StateWindow& stateWindow;
-extern StateManager stateManager;
-extern ManifestViewer manifestViewer;
-namespace Instances { extern Instance<ToolsWindow> toolsWindow; }
-extern ToolsWindow& toolsWindow;
+namespace Instances { thread_local extern Instance<CheatDatabase> cheatDatabase; }
+thread_local extern CheatFinder cheatFinder;
+thread_local extern CheatDatabase& cheatDatabase;
+namespace Instances { thread_local extern Instance<CheatWindow> cheatWindow; }
+thread_local extern CheatWindow& cheatWindow;
+thread_local extern CheatEditor cheatEditor;
+namespace Instances { thread_local extern Instance<StateWindow> stateWindow; }
+thread_local extern StateWindow& stateWindow;
+thread_local extern StateManager stateManager;
+thread_local extern ManifestViewer manifestViewer;
+namespace Instances { thread_local extern Instance<ToolsWindow> toolsWindow; }
+thread_local extern ToolsWindow& toolsWindow;

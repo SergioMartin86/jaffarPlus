@@ -6,7 +6,7 @@ namespace SuperFamicom {
 #include "data.cpp"
 #include "alu.cpp"
 #include "serialization.cpp"
-SPC7110 spc7110;
+thread_local SPC7110 spc7110;
 
 SPC7110::SPC7110() {
   decompressor = new Decompressor(*this);

@@ -9,7 +9,7 @@ namespace SuperFamicom {
 #include "memory.cpp"
 #include "io.cpp"
 #include "serialization.cpp"
-SA1 sa1;
+thread_local SA1 sa1;
 
 auto SA1::synchronizeCPU() -> void {
   if(clock >= 0) scheduler.resume(cpu.thread);

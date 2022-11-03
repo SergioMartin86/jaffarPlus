@@ -5,7 +5,7 @@ namespace SuperFamicom {
 #define DSP2_CPP
 #include "opcodes.cpp"
 
-DSP2 dsp2;
+thread_local DSP2 dsp2;
 #include "serialization.cpp"
 
 auto DSP2::power() -> void {

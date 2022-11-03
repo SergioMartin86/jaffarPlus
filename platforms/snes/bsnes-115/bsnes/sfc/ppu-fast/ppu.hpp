@@ -365,6 +365,6 @@ public:
   } mode7LineGroups;
 };
 
-extern PPU ppufast;
+thread_local extern PPU ppufast;
 
 #undef PPU

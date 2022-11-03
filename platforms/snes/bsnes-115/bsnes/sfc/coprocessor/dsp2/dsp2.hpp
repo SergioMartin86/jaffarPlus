@@ -35,4 +35,4 @@ struct DSP2 {
   void op0d();
 };
 
-extern DSP2 dsp2;
+thread_local extern DSP2 dsp2;

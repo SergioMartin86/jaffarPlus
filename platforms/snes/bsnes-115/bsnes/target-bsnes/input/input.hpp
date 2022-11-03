@@ -97,4 +97,4 @@ public:
   uint turboFrequency = 0;
 };
 
-extern InputManager inputManager;
+thread_local extern InputManager inputManager;

@@ -87,4 +87,4 @@ public:
   void   writel(uint16 addr, uint32 data);
 };
 
-extern Cx4 cx4;
+thread_local extern Cx4 cx4;

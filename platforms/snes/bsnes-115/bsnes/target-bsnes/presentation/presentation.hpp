@@ -138,5 +138,5 @@ struct Presentation : Window {
       Label spacerRight{&statusLayout, Size{8, ~0}, 0};
 };
 
-namespace Instances { extern Instance<Presentation> presentation; }
-extern Presentation& presentation;
+namespace Instances { thread_local extern Instance<Presentation> presentation; }
+thread_local extern Presentation& presentation;

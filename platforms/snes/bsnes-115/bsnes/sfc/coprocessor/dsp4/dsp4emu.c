@@ -17,8 +17,8 @@ Fixed-point math reminder:
 
 #include "dsp4emu.h"
 
-struct DSP4_t DSP4;
-struct DSP4_vars_t DSP4_vars;
+thread_local struct DSP4_t DSP4;
+thread_local struct DSP4_vars_t DSP4_vars;
 
 //////////////////////////////////////////////////////////////
 

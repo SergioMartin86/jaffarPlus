@@ -50,4 +50,4 @@ private:
   } io;
 };
 
-extern MSU1 msu1;
+thread_local extern MSU1 msu1;

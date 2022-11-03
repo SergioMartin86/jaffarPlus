@@ -69,4 +69,4 @@ private:
   auto process(Markup::Node document, bool load) -> void;
 };
 
-extern Configuration configuration;
+thread_local extern Configuration configuration;

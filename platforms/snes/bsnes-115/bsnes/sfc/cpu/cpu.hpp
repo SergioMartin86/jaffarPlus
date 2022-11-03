@@ -241,4 +241,4 @@ private:
   } channels[8];
 };
 
-extern CPU cpu;
+thread_local extern CPU cpu;

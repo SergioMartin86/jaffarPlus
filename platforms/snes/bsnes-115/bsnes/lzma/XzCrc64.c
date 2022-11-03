@@ -32,7 +32,7 @@
 typedef UInt64 (MY_FAST_CALL *CRC64_FUNC)(UInt64 v, const void *data, size_t size, const UInt64 *table);
 
 static CRC64_FUNC g_Crc64Update;
-UInt64 g_Crc64Table[256 * CRC64_NUM_TABLES];
+thread_local UInt64 g_Crc64Table[256 * CRC64_NUM_TABLES];
 
 UInt64 MY_FAST_CALL Crc64Update(UInt64 v, const void *data, size_t size)
 {

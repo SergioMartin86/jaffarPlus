@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-ICD icd;
+thread_local ICD icd;
 #include "interface.cpp"
 #include "io.cpp"
 #include "boot-roms.cpp"

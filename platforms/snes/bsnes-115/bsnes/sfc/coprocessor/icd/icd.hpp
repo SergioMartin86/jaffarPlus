@@ -82,4 +82,4 @@ public:
   uint32_t bitmap[160 * 144];
 };
 
-extern ICD icd;
+thread_local extern ICD icd;

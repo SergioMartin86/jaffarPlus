@@ -48,4 +48,4 @@ private:
   uint scoreSecondsRemaining;
 };
 
-extern Event event;
+thread_local extern Event event;

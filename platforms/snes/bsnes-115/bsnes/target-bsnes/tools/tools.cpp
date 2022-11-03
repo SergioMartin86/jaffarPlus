@@ -3,18 +3,18 @@
 #include "cheat-editor.cpp"
 #include "state-manager.cpp"
 #include "manifest-viewer.cpp"
-namespace Instances { Instance<CheatDatabase> cheatDatabase; }
-CheatFinder cheatFinder;
-CheatDatabase& cheatDatabase = Instances::cheatDatabase();
-namespace Instances { Instance<CheatWindow> cheatWindow; }
-CheatWindow& cheatWindow = Instances::cheatWindow();
-CheatEditor cheatEditor;
-namespace Instances { Instance<StateWindow> stateWindow; }
-StateWindow& stateWindow = Instances::stateWindow();
-StateManager stateManager;
-ManifestViewer manifestViewer;
-namespace Instances { Instance<ToolsWindow> toolsWindow; }
-ToolsWindow& toolsWindow = Instances::toolsWindow();
+namespace Instances { thread_local Instance<CheatDatabase> cheatDatabase; }
+thread_local CheatFinder cheatFinder;
+thread_local CheatDatabase& cheatDatabase = Instances::cheatDatabase();
+namespace Instances { thread_local Instance<CheatWindow> cheatWindow; }
+thread_local CheatWindow& cheatWindow = Instances::cheatWindow();
+thread_local CheatEditor cheatEditor;
+namespace Instances { thread_local Instance<StateWindow> stateWindow; }
+thread_local StateWindow& stateWindow = Instances::stateWindow();
+thread_local StateManager stateManager;
+thread_local ManifestViewer manifestViewer;
+namespace Instances { thread_local Instance<ToolsWindow> toolsWindow; }
+thread_local ToolsWindow& toolsWindow = Instances::toolsWindow();
 
 struct ToolsHome : VerticalLayout {
   ToolsHome() {

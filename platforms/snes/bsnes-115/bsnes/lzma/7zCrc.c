@@ -30,7 +30,7 @@ CRC_FUNC g_CrcUpdateT4;
 CRC_FUNC g_CrcUpdateT8;
 CRC_FUNC g_CrcUpdate;
 
-UInt32 g_CrcTable[256 * CRC_NUM_TABLES];
+thread_local UInt32 g_CrcTable[256 * CRC_NUM_TABLES];
 
 UInt32 MY_FAST_CALL CrcUpdate(UInt32 v, const void *data, size_t size)
 {

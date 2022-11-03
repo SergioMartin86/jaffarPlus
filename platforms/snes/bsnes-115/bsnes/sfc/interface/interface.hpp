@@ -85,6 +85,6 @@ struct Settings {
   bool random = true;
 };
 
-extern Settings settings;
+thread_local extern Settings settings;
 
 }

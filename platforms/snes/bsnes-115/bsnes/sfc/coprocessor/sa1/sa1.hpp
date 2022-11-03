@@ -284,4 +284,4 @@ private:
   } mmio;
 };
 
-extern SA1 sa1;
+thread_local extern SA1 sa1;

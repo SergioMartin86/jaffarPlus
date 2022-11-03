@@ -87,7 +87,7 @@ private:
   friend class Audio;
 };
 
-extern Audio audio;
+thread_local extern Audio audio;
 
 }
 

@@ -13,7 +13,7 @@ struct ExpansionPort {
   Expansion* device = nullptr;
 };
 
-extern ExpansionPort expansionPort;
+thread_local extern ExpansionPort expansionPort;
 
 #include <sfc/expansion/satellaview/satellaview.hpp>
 //#include <sfc/expansion/21fx/21fx.hpp>

@@ -87,4 +87,4 @@ struct EpsonRTC : Thread {
   auto tickYear() -> void;
 };
 
-extern EpsonRTC epsonrtc;
+thread_local extern EpsonRTC epsonrtc;

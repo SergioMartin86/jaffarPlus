@@ -36,8 +36,8 @@ struct ControllerPort {
   Controller* device = nullptr;
 };
 
-extern ControllerPort controllerPort1;
-extern ControllerPort controllerPort2;
+thread_local extern ControllerPort controllerPort1;
+thread_local extern ControllerPort controllerPort2;
 
 #include "gamepad/gamepad.hpp"
 #include "mouse/mouse.hpp"

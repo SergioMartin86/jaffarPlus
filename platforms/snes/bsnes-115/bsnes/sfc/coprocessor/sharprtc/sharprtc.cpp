@@ -5,7 +5,7 @@ namespace SuperFamicom {
 #include "memory.cpp"
 #include "time.cpp"
 #include "serialization.cpp"
-SharpRTC sharprtc;
+thread_local SharpRTC sharprtc;
 
 auto SharpRTC::synchronizeCPU() -> void {
   if(clock >= 0) scheduler.resume(cpu.thread);

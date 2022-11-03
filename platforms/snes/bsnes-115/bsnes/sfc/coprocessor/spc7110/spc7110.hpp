@@ -120,4 +120,4 @@ private:
   uint8 r4834;  //bank mapping settings
 };
 
-extern SPC7110 spc7110;
+thread_local extern SPC7110 spc7110;

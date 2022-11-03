@@ -9,7 +9,7 @@ namespace SuperFamicom {
 #include "io.cpp"
 #include "timing.cpp"
 #include "serialization.cpp"
-SuperFX superfx;
+thread_local SuperFX superfx;
 
 auto SuperFX::synchronizeCPU() -> void {
   if(clock >= 0) scheduler.resume(cpu.thread);

@@ -97,4 +97,4 @@ private:
   inline auto stepTimers(uint clocks) -> void;
 };
 
-extern SMP smp;
+thread_local extern SMP smp;

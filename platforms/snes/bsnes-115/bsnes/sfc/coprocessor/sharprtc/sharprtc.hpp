@@ -43,4 +43,4 @@ struct SharpRTC : Thread {
   auto calculateWeekday(uint year, uint month, uint day) -> uint;
 };
 
-extern SharpRTC sharprtc;
+thread_local extern SharpRTC sharprtc;

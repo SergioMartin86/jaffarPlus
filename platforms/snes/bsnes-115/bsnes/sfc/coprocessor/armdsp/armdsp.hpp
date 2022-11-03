@@ -33,4 +33,4 @@ struct ArmDSP : Processor::ARM7TDMI, Thread {
   uint8 programRAM[16 * 1024];
 };
 
-extern ArmDSP armdsp;
+thread_local extern ArmDSP armdsp;

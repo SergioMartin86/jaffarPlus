@@ -66,7 +66,6 @@ auto nall::main(Arguments arguments) -> void {
    state.setMode(serializer::Mode::Load);
    emulator->unserialize(state);
 
-
    emulator->run();
   }
 

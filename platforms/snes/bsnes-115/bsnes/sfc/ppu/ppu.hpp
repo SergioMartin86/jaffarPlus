@@ -176,4 +176,4 @@ private:
   friend class PPUfast;
 };
 
-extern PPU ppu;
+thread_local extern PPU ppu;

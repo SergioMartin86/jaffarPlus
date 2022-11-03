@@ -6,7 +6,7 @@ namespace SuperFamicom {
 #include "data.hpp"
 #include "opcodes.cpp"
 
-ST0010 st0010;
+thread_local ST0010 st0010;
 #include "serialization.cpp"
 
 auto ST0010::power() -> void {

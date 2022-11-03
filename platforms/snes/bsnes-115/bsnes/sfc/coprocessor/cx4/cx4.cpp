@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-Cx4 cx4;
+thread_local Cx4 cx4;
 #define CX4_CPP
 #include "data.cpp"
 #include "functions.cpp"

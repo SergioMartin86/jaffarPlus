@@ -5,7 +5,7 @@ namespace SuperFamicom {
 #include "load.cpp"
 #include "save.cpp"
 #include "serialization.cpp"
-Cartridge cartridge;
+thread_local Cartridge cartridge;
 
 auto Cartridge::hashes() const -> vector<string> {
   vector<string> hashes;

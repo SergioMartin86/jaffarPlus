@@ -5,7 +5,7 @@ namespace SuperFamicom {
 #include "memory.cpp"
 #include "time.cpp"
 #include "serialization.cpp"
-EpsonRTC epsonrtc;
+thread_local EpsonRTC epsonrtc;
 
 auto EpsonRTC::synchronizeCPU() -> void {
   if(clock >= 0) scheduler.resume(cpu.thread);

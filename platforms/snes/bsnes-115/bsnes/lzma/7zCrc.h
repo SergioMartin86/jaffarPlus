@@ -8,7 +8,7 @@
 
 EXTERN_C_BEGIN
 
-extern UInt32 g_CrcTable[];
+thread_local extern UInt32 g_CrcTable[];
 
 /* Call CrcGenerateTable one time before other CRC functions */
 void MY_FAST_CALL CrcGenerateTable(void);

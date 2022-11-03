@@ -2,10 +2,10 @@
 
 namespace SuperFamicom {
 
-System system;
-Scheduler scheduler;
-Random random;
-Cheat cheat;
+thread_local System system;
+thread_local Scheduler scheduler;
+thread_local Random random;
+thread_local Cheat cheat;
 #include "serialization.cpp"
 
 auto System::run() -> void {

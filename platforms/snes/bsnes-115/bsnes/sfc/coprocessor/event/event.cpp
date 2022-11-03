@@ -3,7 +3,7 @@
 namespace SuperFamicom {
 
 #include "serialization.cpp"
-Event event;
+thread_local Event event;
 
 auto Event::synchronizeCPU() -> void {
   if(clock >= 0) scheduler.resume(cpu.thread);

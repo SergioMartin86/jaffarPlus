@@ -165,4 +165,4 @@ private:
   auto failed() -> void;
 };
 
-extern BSMemory bsmemory;
+thread_local extern BSMemory bsmemory;

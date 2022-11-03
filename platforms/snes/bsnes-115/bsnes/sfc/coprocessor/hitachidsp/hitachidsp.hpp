@@ -49,4 +49,4 @@ struct HitachiDSP : Processor::HG51B, Thread {
   static const uint8_t staticDataROM[3072];
 };
 
-extern HitachiDSP hitachidsp;
+thread_local extern HitachiDSP hitachidsp;

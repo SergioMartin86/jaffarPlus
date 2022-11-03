@@ -502,15 +502,16 @@ public:
   StatusBar statusBar{this};
 };
 
-extern Settings settings;
-extern VideoSettings videoSettings;
-extern AudioSettings audioSettings;
-extern InputSettings inputSettings;
-extern HotkeySettings hotkeySettings;
-extern PathSettings pathSettings;
-extern EmulatorSettings emulatorSettings;
-extern EnhancementSettings enhancementSettings;
-extern CompatibilitySettings compatibilitySettings;
-extern DriverSettings driverSettings;
-namespace Instances { extern Instance<SettingsWindow> settingsWindow; }
-extern SettingsWindow& settingsWindow;
+thread_local extern Settings settings;
+thread_local extern VideoSettings videoSettings;
+thread_local extern AudioSettings audioSettings;
+thread_local extern InputSettings inputSettings;
+thread_local extern HotkeySettings hotkeySettings;
+thread_local extern PathSettings pathSettings;
+thread_local extern EmulatorSettings emulatorSettings;
+thread_local extern EnhancementSettings enhancementSettings;
+thread_local extern CompatibilitySettings compatibilitySettings;
+thread_local extern DriverSettings driverSettings;
+
+namespace Instances { thread_local extern Instance<SettingsWindow> settingsWindow; }
+thread_local extern SettingsWindow& settingsWindow;

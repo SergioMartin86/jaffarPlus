@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-DSP dsp;
+thread_local DSP dsp;
 
 #include "serialization.cpp"
 #include "SPC_DSP.cpp"

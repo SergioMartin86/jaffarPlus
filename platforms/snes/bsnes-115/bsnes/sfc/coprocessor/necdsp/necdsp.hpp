@@ -18,4 +18,4 @@ struct NECDSP : Processor::uPD96050, Thread {
   uint Frequency = 0;
 };
 
-extern NECDSP necdsp;
+thread_local extern NECDSP necdsp;

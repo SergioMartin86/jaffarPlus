@@ -7,4 +7,4 @@ struct DSP1 {
   auto serialize(serializer&) -> void;
 };
 
-extern DSP1 dsp1;
+thread_local extern DSP1 dsp1;

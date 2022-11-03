@@ -10,7 +10,7 @@
 
 EXTERN_C_BEGIN
 
-extern UInt64 g_Crc64Table[];
+thread_local extern UInt64 g_Crc64Table[];
 
 void MY_FAST_CALL Crc64GenerateTable(void);
 

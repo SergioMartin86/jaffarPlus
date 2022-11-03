@@ -6,7 +6,7 @@ namespace SuperFamicom {
 #include "memory.cpp"
 #include "serialization.cpp"
 #include "data-rom.cpp"
-HitachiDSP hitachidsp;
+thread_local HitachiDSP hitachidsp;
 
 auto HitachiDSP::synchronizeCPU() -> void {
   if(clock >= 0) scheduler.resume(cpu.thread);

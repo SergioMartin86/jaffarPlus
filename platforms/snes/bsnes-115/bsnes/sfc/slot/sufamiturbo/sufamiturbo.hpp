@@ -8,5 +8,5 @@ struct SufamiTurboCartridge {
   WritableMemory ram;
 };
 
-extern SufamiTurboCartridge sufamiturboA;
-extern SufamiTurboCartridge sufamiturboB;
+thread_local extern SufamiTurboCartridge sufamiturboA;
+thread_local extern SufamiTurboCartridge sufamiturboB;

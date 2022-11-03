@@ -23,7 +23,7 @@ Dsp1 dsp1emu;
 #undef uint32
 #undef uint64
 
-DSP1 dsp1;
+thread_local DSP1 dsp1;
 #include "serialization.cpp"
 
 auto DSP1::power() -> void {

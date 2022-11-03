@@ -3,7 +3,7 @@
 namespace SuperFamicom {
 
 #include "serialization.cpp"
-OBC1 obc1;
+thread_local OBC1 obc1;
 
 auto OBC1::unload() -> void {
   ram.reset();

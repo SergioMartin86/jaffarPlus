@@ -11,4 +11,4 @@ struct DIP {
   uint8 value = 0x00;
 };
 
-extern DIP dip;
+thread_local extern DIP dip;

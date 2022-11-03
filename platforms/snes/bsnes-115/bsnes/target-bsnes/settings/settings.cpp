@@ -8,18 +8,18 @@
 #include "enhancements.cpp"
 #include "compatibility.cpp"
 #include "drivers.cpp"
-Settings settings;
-VideoSettings videoSettings;
-AudioSettings audioSettings;
-InputSettings inputSettings;
-HotkeySettings hotkeySettings;
-PathSettings pathSettings;
-EmulatorSettings emulatorSettings;
-EnhancementSettings enhancementSettings;
-CompatibilitySettings compatibilitySettings;
-DriverSettings driverSettings;
-namespace Instances { Instance<SettingsWindow> settingsWindow; }
-SettingsWindow& settingsWindow = Instances::settingsWindow();
+thread_local Settings settings;
+thread_local VideoSettings videoSettings;
+thread_local AudioSettings audioSettings;
+thread_local InputSettings inputSettings;
+thread_local HotkeySettings hotkeySettings;
+thread_local PathSettings pathSettings;
+thread_local EmulatorSettings emulatorSettings;
+thread_local EnhancementSettings enhancementSettings;
+thread_local CompatibilitySettings compatibilitySettings;
+thread_local DriverSettings driverSettings;
+namespace Instances { thread_local Instance<SettingsWindow> settingsWindow; }
+thread_local SettingsWindow& settingsWindow = Instances::settingsWindow();
 
 auto Settings::load() -> void {
   Markup::Node::operator=(BML::unserialize(string::read(location), " "));

@@ -4,7 +4,7 @@ namespace SuperFamicom {
 
 #include "memory.cpp"
 #include "serialization.cpp"
-ArmDSP armdsp;
+thread_local ArmDSP armdsp;
 
 auto ArmDSP::synchronizeCPU() -> void {
   if(clock >= 0) scheduler.resume(cpu.thread);

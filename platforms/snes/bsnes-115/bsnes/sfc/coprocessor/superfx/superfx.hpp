@@ -74,4 +74,4 @@ private:
   uint ramMask;
 };
 
-extern SuperFX superfx;
+thread_local extern SuperFX superfx;

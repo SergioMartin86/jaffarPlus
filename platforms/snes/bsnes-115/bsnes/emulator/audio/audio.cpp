@@ -1,7 +1,7 @@
 namespace Emulator {
 
 #include "stream.cpp"
-Audio audio;
+thread_local Audio audio;
 
 Audio::~Audio() {
   reset(nullptr);

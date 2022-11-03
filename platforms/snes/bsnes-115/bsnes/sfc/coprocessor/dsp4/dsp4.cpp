@@ -36,7 +36,7 @@ namespace DSP4i {
   #undef uint64
 }
 
-DSP4 dsp4;
+thread_local DSP4 dsp4;
 #include "serialization.cpp"
 
 auto DSP4::power() -> void {

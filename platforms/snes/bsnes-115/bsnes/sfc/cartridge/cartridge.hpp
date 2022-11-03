@@ -123,4 +123,4 @@ private:
   friend class ICD;
 };
 
-extern Cartridge cartridge;
+thread_local extern Cartridge cartridge;
