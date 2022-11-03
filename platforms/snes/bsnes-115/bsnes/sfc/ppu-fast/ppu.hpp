@@ -342,12 +342,12 @@ public:
     bool windowBelow[256];
 
     //flush()
-    static uint start;
-    static uint count;
+    thread_local static uint start;
+    thread_local static uint count;
   };
 
 //unserialized:
-  Line lines[240];
+  Line* lines;
 
   //used to help detect when the video output size changes between frames to clear overscan area.
   struct Frame {

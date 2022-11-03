@@ -2,7 +2,7 @@
 
 namespace SuperFamicom {
 
-PPU& ppubase = ppu;
+thread_local PPU& ppubase = ppu;
 
 #define PPU PPUfast
 #define ppu ppufast
@@ -35,7 +35,7 @@ auto PPU::noVRAMBlocking() const -> bool { return configuration.hacks.ppu.noVRAM
 
 PPU::PPU() {
   output = new uint16_t[2304 * 2160]();
-
+  lines = (Line*) calloc(sizeof(Line), 240);
   for(uint l : range(16)) {
     lightTable[l] = new uint16_t[32768];
     for(uint r : range(32)) {

@@ -1,5 +1,5 @@
-uint PPU::Line::start = 0;
-uint PPU::Line::count = 0;
+thread_local uint PPU::Line::start = 0;
+thread_local uint PPU::Line::count = 0;
 
 auto PPU::Line::flush() -> void {
   if(Line::count) {
