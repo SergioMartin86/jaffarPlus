@@ -36,6 +36,12 @@ auto PPU::noVRAMBlocking() const -> bool { return configuration.hacks.ppu.noVRAM
 PPU::PPU() {
   output = new uint16_t[2304 * 2160]();
   lines = (Line*) calloc(sizeof(Line), 240);
+
+//  vram.resize(32*1024);
+//  cgram = (uint16*) calloc(sizeof(uint16), 256);
+//  objects = (Object*) new Object(128);
+//  lightTable = (uint16*) calloc(sizeof(uint16), 16);
+
   for(uint l : range(16)) {
     lightTable[l] = new uint16_t[32768];
     for(uint r : range(32)) {

@@ -17,7 +17,7 @@ auto locate(string name) -> string {
 }
 
 #include <nall/main.hpp>
-auto nall::main(Arguments arguments) -> void {
+auto nall::_MAIN(Arguments arguments) -> void {
   settings.location = locate("settings.bml");
 
   for(auto argument : arguments) {
@@ -61,10 +61,10 @@ auto nall::main(Arguments arguments) -> void {
    program.updateStatus();
    video.poll();
 //   program.main();
-   auto state = emulator->serialize(0);
-   printf("State Size: %u\n", state.size());
-   state.setMode(serializer::Mode::Load);
-   emulator->unserialize(state);
+//   auto state = emulator->serialize(0);
+//   printf("State Size: %u\n", state.size());
+//   state.setMode(serializer::Mode::Load);
+//   emulator->unserialize(state);
 
    emulator->run();
   }

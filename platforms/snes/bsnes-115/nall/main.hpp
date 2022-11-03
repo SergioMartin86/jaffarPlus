@@ -4,10 +4,16 @@
 #include <nall/arguments.hpp>
 #include <nall/string.hpp>
 
-namespace nall {
-  auto main(Arguments arguments) -> void;
+#ifndef _NO_MAIN
+#define _MAIN main
+#else
+#define _MAIN __main
+#endif
 
-  auto main(int argc, char** argv) -> int {
+namespace nall {
+  auto _MAIN(Arguments arguments) -> void;
+
+  auto _MAIN(int argc, char** argv) -> int {
     #if defined(PLATFORM_WINDOWS)
     CoInitialize(0);
     WSAData wsaData{0};
@@ -17,7 +23,7 @@ namespace nall {
     _setmode(_fileno(stderr), O_BINARY);
     #endif
 
-    main(move(Arguments{argc, argv}));
+    _MAIN(move(Arguments{argc, argv}));
 
     //when a program is running, input on the terminal queues in stdin
     //when terminating the program, the shell proceeds to try and execute all stdin data
@@ -37,6 +43,6 @@ namespace nall {
   }
 }
 
-auto main(int argc, char** argv) -> int {
-  return nall::main(argc, argv);
+auto _MAIN(int argc, char** argv) -> int {
+  return nall::_MAIN(argc, argv);
 }
