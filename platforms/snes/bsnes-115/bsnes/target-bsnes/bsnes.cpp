@@ -58,7 +58,16 @@ auto nall::main(Arguments arguments) -> void {
 
   while(true)
   {
-   program.main();
+   program.updateStatus();
+   video.poll();
+//   program.main();
+   auto state = emulator->serialize(0);
+   printf("State Size: %u\n", state.size());
+   state.setMode(serializer::Mode::Load);
+   emulator->unserialize(state);
+
+
+   emulator->run();
   }
 
   Instances::presentation.destruct();
