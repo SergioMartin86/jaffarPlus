@@ -1,0 +1,27 @@
+Various software and tools are required to compile Snes9x on Windows:
+
+NOTE: Unicode support requires a special zlib build - see the end of the zlib entry
+
+- The current official binary is compiled with Visual Studio 2017, you'll have to create
+  your own project file for earlier MSVC versions. VS2017 will automatically ask to install
+  the correct Windows SDK Version (7.1A)
+
+- A recent DirectX SDK. The official binary is compiled against the August 2009 SDK.
+  Note that as of the June 2010 release of the DirectX SDK, DirectDraw has been removed
+  (DirectDraw is disabled by default, DIRECTDRAW_SUPPORT enables it)
+  https://www.microsoft.com/en-us/download/details.aspx?id=23549
+
+- zlib (optional, ZLIB define, enabled by default) - the default solution includes a zlib
+  project that builds appropriately (force includes _tfwopen.h for unicode support in s9x).
+  (the zlib directory should reside at win32/../../zlib, i.e. 2 directories up)
+
+- libpng (optional, HAVE_LIBPNG define, enabled by default) - the default solution includes
+  a libpng project that builds appropriately.
+  (the libpng directory should reside at win32/../../libpng, i.e. 2 directories up)
+
+- To compile Snes9x:
+    Start up VS2017.
+    Load the Snes9x solution.
+    Select the desired configuration and build.
+    The Release configuration may build significantly slower than Debug.
+    Then you can run it.
