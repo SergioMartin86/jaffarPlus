@@ -194,8 +194,8 @@
 #include "missing.h"
 #endif
 
-uint8	(*GetDSP) (uint16)        = NULL;
-void	(*SetDSP) (uint8, uint16) = NULL;
+thread_local uint8	(*GetDSP) (uint16)        = NULL;
+  thread_local void	(*SetDSP) (uint8, uint16) = NULL;
 
 
 void S9xResetDSP (void)

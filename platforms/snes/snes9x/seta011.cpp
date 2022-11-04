@@ -192,8 +192,8 @@
 #include "memmap.h"
 #include "seta.h"
 
-static uint8	board[9][9];	// shougi playboard
-static int		line = 0;		// line counter
+thread_local static uint8	board[9][9];	// shougi playboard
+                             thread_local static int		line = 0;		// line counter
 
 
 uint8 S9xGetST011 (uint32 Address)

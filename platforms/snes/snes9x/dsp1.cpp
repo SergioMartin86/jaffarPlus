@@ -217,7 +217,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifdef DebugDSP1
 #include <stdarg.h>
-static FILE	*LogFile = NULL;
+thread_local static FILE	*LogFile = NULL;
 #endif
 
 static const uint16	DSP1ROM[1024] =

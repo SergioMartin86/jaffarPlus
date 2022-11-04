@@ -208,7 +208,7 @@ bool ConfigFile::niceAlignment = false;
 bool ConfigFile::showComments = true;
 bool ConfigFile::alphaSort = true;
 bool ConfigFile::timeSort = false;
-static ConfigFile* curConfigFile = NULL; // for section_then_key_less
+static thread_local ConfigFile* curConfigFile = NULL; // for section_then_key_less
 
 ConfigFile::ConfigFile(void) {
 	Clear();

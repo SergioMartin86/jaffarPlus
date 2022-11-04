@@ -200,11 +200,11 @@
 #include "debug.h"
 #include "missing.h"
 
-extern SDMA	DMA[8];
-extern FILE	*apu_trace;
-FILE		*trace = NULL, *trace2 = NULL;
+extern thread_local SDMA	DMA[8];
+extern thread_local FILE	*apu_trace;
+thread_local FILE		*trace = NULL, *trace2 = NULL;
 
-struct SBreakPoint	S9xBreakpoint[6];
+struct thread_local SBreakPoint	S9xBreakpoint[6];
 
 struct SDebug
 {
@@ -221,7 +221,7 @@ struct SDebug
 	}	Unassemble;
 };
 
-static struct SDebug	Debug = { { 0, 0 }, { 0, 0 } };
+static thread_local struct SDebug	Debug = { { 0, 0 }, { 0, 0 } };
 
 static const char	*HelpMessage[] =
 {

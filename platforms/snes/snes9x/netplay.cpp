@@ -248,7 +248,7 @@ bool8 S9xNPGetROMImage (uint32 len);
 void S9xNPGetSRAMData (uint32 len);
 void S9xNPGetFreezeFile (uint32 len);
 
-unsigned long START = 0;
+thread_local unsigned long START = 0;
 
 bool8 S9xNPConnect ();
 

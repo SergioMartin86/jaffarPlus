@@ -358,7 +358,7 @@ void S9xSetPPU (uint8 Byte, uint16 Address)
 			case 0x2100: // INIDISP
 				if (Byte != Memory.FillRAM[0x2100])
 				{
-					FLUSH_REDRAW();
+//					FLUSH_REDRAW();
 
 					if (PPU.Brightness != (Byte & 0xf))
 					{

@@ -255,6 +255,7 @@ __thread uint16	DirectColourMaps[8][256];
 thread_local SnesModel	M1SNES = { 1, 3, 2 };
 thread_local SnesModel	M2SNES = { 2, 4, 3 };
 thread_local SnesModel	*Model = &M1SNES;
+thread_local bool doRendering = false;
 
 #ifdef GFX_MULTI_FORMAT
 uint32	RED_LOW_BIT_MASK           = RED_LOW_BIT_MASK_RGB565;

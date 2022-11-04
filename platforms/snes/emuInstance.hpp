@@ -7,6 +7,22 @@
 #include <utils.hpp>
 #include <state.hpp>
 
+#include "snes9x.h"
+#include "memmap.h"
+#include "apu/apu.h"
+#include "gfx.h"
+#include "snapshot.h"
+#include "controls.h"
+#include "cheats.h"
+#include "movie.h"
+#include "logger.h"
+#include "display.h"
+#include "conffile.h"
+#include "statemanager.h"
+
+#include "unix.hpp"
+extern thread_local bool doRendering;
+
 class EmuInstance : public EmuInstanceBase
 {
  public:
@@ -21,6 +37,13 @@ class EmuInstance : public EmuInstanceBase
   if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
   std::string stateFilePath = config["State File"].get<std::string>();
 
+  int argc = 2;
+  char romPath[4096];
+  strcpy(romPath, romFilePath.c_str());
+  char* argv[2] = { "./snes9x", romPath };
+
+  doRendering = true;
+  initSnes9x(argc, argv);
  }
 
  void loadStateFile(const std::string& stateFilePath) override

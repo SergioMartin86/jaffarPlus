@@ -205,7 +205,7 @@ extern __thread struct SLineMatrixData	LineMatrixData[240];
 
 void S9xComputeClipWindows (void);
 
-static int	font_width = 8, font_height = 9;
+static thread_local int	font_width = 8, font_height = 9;
 
 static void SetupOBJ (void);
 static void DrawOBJS (int);

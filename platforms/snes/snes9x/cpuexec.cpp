@@ -201,7 +201,7 @@
 #endif
 
 static inline void S9xReschedule (void);
-
+extern thread_local bool doRendering;
 
 void S9xMainLoop (void)
 {
@@ -243,38 +243,7 @@ void S9xMainLoop (void)
 			}
 		}
 
-	#ifdef DEBUGGER
-		if ((CPU.Flags & BREAK_FLAG) && !(CPU.Flags & SINGLE_STEP_FLAG))
-		{
-			for (int Break = 0; Break != 6; Break++)
-			{
-				if (S9xBreakpoint[Break].Enabled &&
-					S9xBreakpoint[Break].Bank == Registers.PB &&
-					S9xBreakpoint[Break].Address == Registers.PCw)
-				{
-					if (S9xBreakpoint[Break].Enabled == 2)
-						S9xBreakpoint[Break].Enabled = TRUE;
-					else
-						CPU.Flags |= DEBUG_MODE_FLAG;
-				}
-			}
-		}
-
-		if (CPU.Flags & DEBUG_MODE_FLAG)
-			break;
-
-		if (CPU.Flags & TRACE_FLAG)
-			S9xTrace();
-
-		if (CPU.Flags & SINGLE_STEP_FLAG)
-		{
-			CPU.Flags &= ~SINGLE_STEP_FLAG;
-			CPU.Flags |= DEBUG_MODE_FLAG;
-		}
-	#endif
-
-		if (CPU.Flags & SCAN_KEYS_FLAG)
-			break;
+		if (CPU.Flags & SCAN_KEYS_FLAG)	break;
 
 		register uint8				Op;
 		register struct	SOpcodes	*Opcodes;
@@ -310,13 +279,11 @@ void S9xMainLoop (void)
 			S9xSA1MainLoop();
 	}
 
+	printf("%u\n", Memory.RAM[0x0]);
 	S9xPackStatus();
 
 	if (CPU.Flags & SCAN_KEYS_FLAG)
 	{
-	#ifdef DEBUGGER
-		if (!(CPU.Flags & FRAME_ADVANCE_FLAG))
-	#endif
 		S9xSyncSpeed();
 		CPU.Flags &= ~SCAN_KEYS_FLAG;
 	}
@@ -471,7 +438,7 @@ void S9xDoHEventProcessing (void)
 
 			if (CPU.V_Counter == PPU.ScreenHeight + FIRST_VISIBLE_LINE)	// VBlank starts from V=225(240).
 			{
-				S9xEndScreenRefresh();
+			 if (doRendering)	S9xEndScreenRefresh();
 				PPU.HDMA = 0;
 				// Bits 7 and 6 of $4212 are computed when read in S9xGetPPU.
 			#ifdef DEBUGGER

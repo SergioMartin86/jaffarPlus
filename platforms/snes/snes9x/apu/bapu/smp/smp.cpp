@@ -11,7 +11,7 @@ namespace SNES {
   #include "debugger/disassembler.cpp"
   SMPDebugger smp;
 #else
-  SMP smp;
+  SMP thread_local smp;
 #endif
 
 #include "algorithms.cpp"

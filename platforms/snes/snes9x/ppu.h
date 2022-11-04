@@ -381,6 +381,7 @@ struct SPPU
 extern __thread uint16				SignExtend[2];
 extern __thread struct SPPU			PPU;
 extern __thread struct InternalPPU	IPPU;
+extern bool thread_local doRendering;
 
 void S9xResetPPU (void);
 void S9xSoftResetPPU (void);
@@ -412,8 +413,11 @@ extern __thread SnesModel	M2SNES;
 
 static inline void FLUSH_REDRAW (void)
 {
-	if (IPPU.PreviousLine != IPPU.CurrentLine)
-		S9xUpdateScreen();
+ if (doRendering)
+ {
+	 if (IPPU.PreviousLine != IPPU.CurrentLine)
+	 	S9xUpdateScreen();
+ }
 }
 
 static inline void REGISTER_2104 (uint8 Byte)

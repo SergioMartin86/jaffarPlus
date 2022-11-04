@@ -197,12 +197,12 @@
 #include <fstream>
 #include <sys/stat.h>
 
-std::ifstream dataFile, audioFile;
-uint32 audioLoopPos;
-uint32 partial_samples;
+thread_local std::ifstream dataFile, audioFile;
+thread_local uint32 audioLoopPos;
+thread_local uint32 partial_samples;
 
 // Sample buffer
-int16 *bufPos, *bufBegin, *bufEnd;
+thread_local int16 *bufPos, *bufBegin, *bufEnd;
 
 bool AudioOpen()
 {

@@ -303,10 +303,10 @@ struct GUIData
 #endif
 };
 
-static struct GUIData	GUI;
+static thread_local struct GUIData	GUI;
 
 typedef	std::pair<std::string, std::string>	strpair_t;
-extern	std::vector<strpair_t>				keymaps;
+extern	thread_local std::vector<strpair_t>				keymaps;
 
 typedef	void (* Blitter) (uint8 *, int, uint8 *, int, int, int);
 

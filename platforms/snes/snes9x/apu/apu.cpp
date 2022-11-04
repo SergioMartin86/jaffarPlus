@@ -209,7 +209,7 @@ namespace SNES
 {
 #include "bapu/dsp/blargg_endian.h"
 
-	CPU	cpu;
+  thread_local CPU	cpu;
 }
 
 namespace spc

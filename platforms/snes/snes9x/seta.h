@@ -245,7 +245,7 @@ void S9xSetST018 (uint8, uint32);
 uint8 S9xGetSetaDSP (uint32);
 void S9xSetSetaDSP (uint8, uint32);
 
-extern uint8 (*GetSETA) (uint32);
-extern void (*SetSETA) (uint32, uint8);
+extern thread_local uint8 (*GetSETA) (uint32);
+extern thread_local void (*SetSETA) (uint32, uint8);
 
 #endif

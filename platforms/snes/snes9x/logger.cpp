@@ -192,10 +192,10 @@
 #include "movie.h"
 #include "logger.h"
 
-static int	resetno = 0;
-static int	framecounter = 0;
-static FILE	*video = NULL;
-static FILE	*audio = NULL;
+static thread_local int	resetno = 0;
+static thread_local int	framecounter = 0;
+static thread_local FILE	*video = NULL;
+static thread_local FILE	*audio = NULL;
 
 
 void S9xResetLogger (void)

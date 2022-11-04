@@ -229,7 +229,7 @@ struct SBSX_RTC
 	int	ticks;
 };
 
-static struct SBSX_RTC	BSX_RTC;
+static thread_local  struct SBSX_RTC	BSX_RTC;
 
 // flash card vendor information
 static const uint8	flashcard[20] =
@@ -253,9 +253,9 @@ static const uint8	init2192[32] =	// FIXME
 	00, 00, 00, 00, 00, 00, 00, 00, 00
 };
 
-static bool8	FlashMode;
-static uint32	FlashSize;
-static uint8	*MapROM, *FlashROM;
+static thread_local bool8	FlashMode;
+static thread_local uint32	FlashSize;
+static thread_local uint8	*MapROM, *FlashROM;
 
 static void BSX_Map_SNES (void);
 static void BSX_Map_LoROM (void);

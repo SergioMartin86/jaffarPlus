@@ -205,18 +205,18 @@
 #include "port.h"
 #include "sdd1emu.h"
 
-static int valid_bits;
-static uint16 in_stream;
-static uint8 *in_buf;
-static uint8 bit_ctr[8];
-static uint8 context_states[32];
-static int context_MPS[32];
-static int bitplane_type;
-static int high_context_bits;
-static int low_context_bits;
-static int prev_bits[8];
+thread_local static int valid_bits;
+  thread_local static uint16 in_stream;
+  thread_local static uint8 *in_buf;
+  thread_local static uint8 bit_ctr[8];
+  thread_local static uint8 context_states[32];
+  thread_local static int context_MPS[32];
+  thread_local static int bitplane_type;
+  thread_local static int high_context_bits;
+  thread_local static int low_context_bits;
+  thread_local static int prev_bits[8];
 
-static struct {
+  thread_local static struct {
     uint8 code_size;
     uint8 MPS_next;
     uint8 LPS_next;
@@ -256,7 +256,7 @@ static struct {
     /* 32 */ { 7,24,22}
 };
 
-static uint8 run_table[128] = {
+thread_local static uint8 run_table[128] = {
     128,  64,  96,  32, 112,  48,  80,  16, 120,  56,  88,  24, 104,  40,  72,
       8, 124,  60,  92,  28, 108,  44,  76,  12, 116,  52,  84,  20, 100,  36,
      68,   4, 126,  62,  94,  30, 110,  46,  78,  14, 118,  54,  86,  22, 102,

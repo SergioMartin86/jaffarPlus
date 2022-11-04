@@ -3,7 +3,7 @@
 #define DSP_CPP
 namespace SNES {
 
-DSP dsp;
+thread_local DSP dsp;
 
 #include "SPC_DSP.cpp"
 

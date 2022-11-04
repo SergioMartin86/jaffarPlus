@@ -192,7 +192,7 @@
 #include "memmap.h"
 #include "seta.h"
 
-static int	line;	// line counter
+thread_local static int	line;	// line counter
 
 
 uint8 S9xGetST018 (uint32 Address)

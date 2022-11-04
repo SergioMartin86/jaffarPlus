@@ -230,8 +230,8 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
-static bool8	stopMovie = TRUE;
-static char		LastRomFilename[PATH_MAX + 1] = "";
+static thread_local bool8	stopMovie = TRUE;
+static thread_local char		LastRomFilename[PATH_MAX + 1] = "";
 
 // from NSRT
 static const char	*nintendo_licensees[] =

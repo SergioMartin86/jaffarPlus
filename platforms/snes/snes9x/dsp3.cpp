@@ -191,7 +191,7 @@
 #include "snes9x.h"
 #include "memmap.h"
 
-static void (*SetDSP3) (void);
+static thread_local void (*SetDSP3) (void);
 
 static const uint16	DSP3_DataROM[1024] =
 {

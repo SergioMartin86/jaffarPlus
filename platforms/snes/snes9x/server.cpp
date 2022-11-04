@@ -243,9 +243,9 @@
 #define NP_ONE_CLIENT 0
 #endif
 
-struct SNPServer NPServer;
+  thread_local struct SNPServer NPServer;
 
-extern unsigned long START;
+extern thread_local unsigned long START;
 
 void S9xNPSendToAllClients (uint8 *data, int len);
 bool8 S9xNPLoadFreezeFile (const char *fname, uint8 *&data, uint32 &len);

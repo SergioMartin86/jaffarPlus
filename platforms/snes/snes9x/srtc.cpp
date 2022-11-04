@@ -217,7 +217,7 @@ static inline unsigned min (unsigned a, unsigned b)
 #include "srtcemu.h"
 #include "srtcemu.cpp"
 
-static SRTC	srtcemu;
+static thread_local SRTC	srtcemu;
 
 
 void S9xInitSRTC (void)

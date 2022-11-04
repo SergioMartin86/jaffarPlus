@@ -194,22 +194,22 @@
 
 #define	C4_PI	3.14159265
 
-int16	C4WFXVal;
-int16	C4WFYVal;
-int16	C4WFZVal;
-int16	C4WFX2Val;
-int16	C4WFY2Val;
-int16	C4WFDist;
-int16	C4WFScale;
-int16	C41FXVal;
-int16	C41FYVal;
-int16	C41FAngleRes;
-int16	C41FDist;
-int16	C41FDistVal;
+thread_local int16	C4WFXVal;
+  thread_local int16	C4WFYVal;
+  thread_local int16	C4WFZVal;
+  thread_local int16	C4WFX2Val;
+  thread_local int16	C4WFY2Val;
+  thread_local int16	C4WFDist;
+  thread_local int16	C4WFScale;
+  thread_local int16	C41FXVal;
+  thread_local int16	C41FYVal;
+  thread_local int16	C41FAngleRes;
+  thread_local int16	C41FDist;
+  thread_local int16	C41FDistVal;
 
-static double	tanval;
-static double	c4x, c4y, c4z;
-static double	c4x2, c4y2, c4z2;
+static thread_local double	tanval;
+static thread_local double	c4x, c4y, c4z;
+static thread_local double	c4x2, c4y2, c4z2;
 
 
 void C4TransfWireFrame (void)

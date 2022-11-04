@@ -201,9 +201,9 @@
 #include "ppu.h"
 #include "tile.h"
 
-static uint32	pixbit[8][16];
-static uint8	hrbit_odd[256];
-static uint8	hrbit_even[256];
+static thread_local uint32	pixbit[8][16];
+static thread_local uint8	hrbit_odd[256];
+static thread_local uint8	hrbit_even[256];
 
 
 void S9xInitTileRenderer (void)

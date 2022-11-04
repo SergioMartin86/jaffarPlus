@@ -191,8 +191,8 @@
 #include "snes9x.h"
 #include "seta.h"
 
-uint8	(*GetSETA) (uint32)        = &S9xGetST010;
-void	(*SetSETA) (uint32, uint8) = &S9xSetST010;
+thread_local uint8	(*GetSETA) (uint32)        = &S9xGetST010;
+  thread_local void	(*SetSETA) (uint32, uint8) = &S9xSetST010;
 
 
 uint8 S9xGetSetaDSP (uint32 Address)

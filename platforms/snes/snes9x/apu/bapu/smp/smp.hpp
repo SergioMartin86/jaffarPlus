@@ -128,5 +128,5 @@ public:
   #include "debugger/debugger.hpp"
   extern SMPDebugger smp;
 #else
-  extern SMP smp;
+  extern thread_local SMP smp;
 #endif

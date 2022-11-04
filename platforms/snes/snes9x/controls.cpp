@@ -249,8 +249,8 @@ using namespace	std;
 #define FLAG_IOBIT1				(Memory.FillRAM[0x4213] & 0x80)
 #define FLAG_IOBIT(n)			((n) ? (FLAG_IOBIT1) : (FLAG_IOBIT0))
 
-bool8	pad_read = 0, pad_read_last = 0;
-uint8	read_idx[2 /* ports */][2 /* per port */];
+thread_local bool8	pad_read = 0, pad_read_last = 0;
+thread_local uint8	read_idx[2 /* ports */][2 /* per port */];
 
 struct exemulti
 {
@@ -266,7 +266,7 @@ struct crosshair
 	uint8				fg, bg;
 };
 
-static struct
+static thread_local struct
 {
 	int16				x, y;
 	int16				V_adj;

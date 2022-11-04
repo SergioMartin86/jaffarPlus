@@ -212,7 +212,7 @@ extern FILE	*trace;
 
 #define S9X_CONF_FILE_NAME	"snes9x.conf"
 
-static char	*rom_filename = NULL;
+static thread_local char	*rom_filename = NULL;
 
 static bool parse_controller_spec (int, const char *);
 static void parse_crosshair_spec (enum crosscontrols, const char *);

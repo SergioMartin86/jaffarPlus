@@ -625,7 +625,7 @@ uint8 DSP4GetByte (uint16);
 void DSP4SetByte (uint8, uint16);
 void DSP3_Reset (void);
 
-extern uint8 (*GetDSP) (uint16);
-extern void (*SetDSP) (uint8, uint16);
+extern thread_local uint8 (*GetDSP) (uint16);
+extern thread_local void (*SetDSP) (uint8, uint16);
 
 #endif

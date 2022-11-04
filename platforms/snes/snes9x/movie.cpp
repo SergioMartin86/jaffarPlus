@@ -256,11 +256,11 @@ struct SMovie
 	uint32	InputBufferSize;
 };
 
-static struct SMovie	Movie;
+static thread_local struct SMovie	Movie;
 
-static uint8	prevPortType[2];
-static int8		prevPortIDs[2][4];
-static bool8	prevMouseMaster, prevSuperScopeMaster, prevJustifierMaster, prevMultiPlayer5Master;
+static thread_local uint8	prevPortType[2];
+static thread_local int8		prevPortIDs[2][4];
+static thread_local bool8	prevMouseMaster, prevSuperScopeMaster, prevJustifierMaster, prevMultiPlayer5Master;
 
 static uint8	Read8 (uint8 *&);
 static uint16	Read16 (uint8 *&);
@@ -1203,7 +1203,7 @@ void S9xMovieToggleFrameDisplay (void)
 
 void S9xUpdateFrameCounter (int offset)
 {
-	extern bool8	pad_read;
+	extern bool8	thread_local pad_read;
 
 	offset++;
 

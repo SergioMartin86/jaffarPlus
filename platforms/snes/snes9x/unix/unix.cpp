@@ -244,9 +244,9 @@
 
 typedef std::pair<std::string, std::string>	strpair_t;
 
-ConfigFile::secvec_t	keymaps;
+thread_local ConfigFile::secvec_t	keymaps;
 
-StateManager stateMan;
+thread_local StateManager stateMan;
 
 #define FIXED_POINT				0x10000
 #define FIXED_POINT_SHIFT		16
@@ -254,20 +254,20 @@ StateManager stateMan;
 #define SOUND_BUFFER_SIZE		(1024 * 16)
 #define SOUND_BUFFER_SIZE_MASK	(SOUND_BUFFER_SIZE - 1)
 
-static volatile bool8	block_signal         = FALSE;
-static volatile bool8	block_generate_sound = FALSE;
+static thread_local volatile bool8	block_signal         = FALSE;
+static thread_local volatile bool8	block_generate_sound = FALSE;
 
-static const char	*sound_device = NULL;
+static thread_local const char	*sound_device = NULL;
 
-static const char	*s9x_base_dir        = NULL,
+static thread_local const char	*s9x_base_dir        = NULL,
 					*rom_filename        = NULL,
 					*snapshot_filename   = NULL,
 					*play_smv_filename   = NULL,
 					*record_smv_filename = NULL;
 
-static char		default_dir[PATH_MAX + 1];
+static thread_local char		default_dir[PATH_MAX + 1];
 
-static const char	dirNames[13][32] =
+static thread_local const char	dirNames[13][32] =
 {
 	"",				// DEFAULT_DIR
 	"",				// HOME_DIR
@@ -283,6 +283,8 @@ static const char	dirNames[13][32] =
 	"log",			// LOG_DIR
 	""
 };
+
+extern thread_local bool doRendering;
 
 struct SUnixSettings
 {
@@ -304,30 +306,30 @@ struct SoundStatus
 	int32	play_position;
 };
 
-static SUnixSettings	unixSettings;
-static SoundStatus		so;
+static thread_local SUnixSettings	unixSettings;
+static thread_local SoundStatus		so;
 
-static bool8	rewinding;
+static thread_local bool8	rewinding;
 
 #ifndef NOSOUND
-static uint8			Buf[SOUND_BUFFER_SIZE];
+static thread_local uint8			Buf[SOUND_BUFFER_SIZE];
 #endif
 
 #ifdef USE_THREADS
-static pthread_t		thread;
-static pthread_mutex_t	mutex;
+static thread_local pthread_t		thread;
+static thread_local pthread_mutex_t	mutex;
 #endif
 
 #ifdef JOYSTICK_SUPPORT
-static uint8		js_mod[8]     = { 0, 0, 0, 0, 0, 0, 0, 0 };
-static int			js_fd[8]      = { -1, -1, -1, -1, -1, -1, -1, -1 };
-static const char	*js_device[8] = { "/dev/js0", "/dev/js1", "/dev/js2", "/dev/js3", "/dev/js4", "/dev/js5", "/dev/js6", "/dev/js7" };
-static bool8		js_unplugged[8] = { FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE };
+static thread_local uint8		js_mod[8]     = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static thread_local int			js_fd[8]      = { -1, -1, -1, -1, -1, -1, -1, -1 };
+static thread_local const char	*js_device[8] = { "/dev/js0", "/dev/js1", "/dev/js2", "/dev/js3", "/dev/js4", "/dev/js5", "/dev/js6", "/dev/js7" };
+static thread_local bool8		js_unplugged[8] = { FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE };
 #endif
 
 #ifdef NETPLAY_SUPPORT
-static uint32	joypads[8];
-static uint32	old_joypads[8];
+static thread_local uint32	joypads[8];
+static thread_local uint32	old_joypads[8];
 #endif
 
 bool8 S9xMapDisplayInput (const char *, s9xcommand_t *);
@@ -1983,4 +1985,141 @@ int __MAIN (int argc, char **argv)
 	}
 
 	return (0);
+}
+
+int initSnes9x (int argc, char **argv)
+{
+  if (argc < 2)
+   S9xUsage();
+
+  s9x_base_dir = default_dir;
+
+  memset(&Settings, 0, sizeof(Settings));
+  Settings.MouseMaster = FALSE;
+  Settings.SuperScopeMaster = FALSE;
+  Settings.JustifierMaster = FALSE;
+  Settings.MultiPlayer5Master = FALSE;
+  Settings.FrameTimePAL = 20000;
+  Settings.FrameTimeNTSC = 16667;
+  Settings.SixteenBitSound = FALSE;
+  Settings.Stereo = FALSE;
+  Settings.SoundPlaybackRate = 32000;
+  Settings.SoundInputRate = 32000;
+  Settings.SupportHiRes = FALSE;
+  Settings.Transparency = FALSE;
+  Settings.AutoDisplayMessages = FALSE;
+  Settings.InitialInfoStringTimeout = 120;
+  Settings.HDMATimingHack = 100;
+  Settings.BlockInvalidVRAMAccessMaster = TRUE;
+  Settings.StopEmulation = TRUE;
+  Settings.WrongMovieStateProtection = TRUE;
+  Settings.DumpStreamsMaxFrames = -1;
+  Settings.StretchScreenshots = 1;
+  Settings.SnapshotScreenshots = FALSE;
+  Settings.SkipFrames = AUTO_FRAMERATE;
+  Settings.TurboSkipFrames = 15;
+  Settings.CartAName[0] = 0;
+  Settings.CartBName[0] = 0;
+
+  unixSettings.JoystickEnabled = FALSE;
+  unixSettings.ThreadSound = FALSE;
+  unixSettings.SoundBufferSize = 100;
+  unixSettings.SoundFragmentSize = 2048;
+
+  unixSettings.rewindBufferSize = 0;
+  unixSettings.rewindGranularity = 1;
+
+  memset(&so, 0, sizeof(so));
+
+  rewinding = false;
+
+  CPU.Flags = 0;
+
+  S9xLoadConfigFiles(argv, argc);
+  rom_filename = S9xParseArgs(argv, argc);
+
+  make_snes9x_dirs();
+
+  if (!Memory.Init() || !S9xInitAPU())
+  {
+   fprintf(stderr, "Snes9x: Memory allocation failure - not enough RAM/virtual memory available.\nExiting...\n");
+   Memory.Deinit();
+   S9xDeinitAPU();
+   exit(1);
+  }
+
+  S9xInitSound(unixSettings.SoundBufferSize, 0);
+  S9xSetSoundMute(TRUE);
+
+  S9xReportControllers();
+
+  #ifdef GFX_MULTI_FORMAT
+  S9xSetRenderPixelFormat(RGB565);
+  #endif
+
+  uint32 saved_flags = CPU.Flags;
+  bool8 loaded = FALSE;
+
+  if (rom_filename)
+  {
+   loaded = Memory.LoadROM(rom_filename);
+
+   if (!loaded && rom_filename[0])
+   {
+    char s[PATH_MAX + 1];
+    char drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], fname[_MAX_FNAME + 1], ext[_MAX_EXT + 1];
+
+    _splitpath(rom_filename, drive, dir, fname, ext);
+    snprintf(s, PATH_MAX + 1, "%s%s%s", S9xGetDirectory(ROM_DIR), SLASH_STR, fname);
+    if (ext[0] && (strlen(s) <= PATH_MAX - 1 - strlen(ext)))
+    {
+     strcat(s, ".");
+     strcat(s, ext);
+    }
+
+    loaded = Memory.LoadROM(s);
+   }
+  }
+
+  if (!loaded)
+  {
+   fprintf(stderr, "Error opening the ROM file.\n");
+   exit(1);
+  }
+
+  NSRTControllerSetup();
+  Memory.LoadSRAM(S9xGetFilename(".srm", SRAM_DIR));
+  S9xLoadCheatFile(S9xGetFilename(".cht", CHEAT_DIR));
+
+  CPU.Flags = saved_flags;
+  Settings.StopEmulation = FALSE;
+
+  if (doRendering)
+  {
+   S9xInitInputDevices();
+   S9xInitDisplay(argc, argv);
+   S9xSetupDefaultKeymap();
+   S9xTextMode();
+  }
+
+  if (Settings.Port < 0)
+   Settings.Port = -Settings.Port;
+
+  if (doRendering) S9xGraphicsMode();
+
+  sprintf(String, "\"%s\" %s: %s", Memory.ROMName, TITLE, VERSION);
+  if (doRendering) S9xSetTitle(String);
+
+  if (doRendering)  InitTimer();
+//  S9xSetSoundMute(FALSE);
+
+
+  while (1)
+  {
+
+   S9xMainLoop();
+
+  }
+
+  return (0);
 }

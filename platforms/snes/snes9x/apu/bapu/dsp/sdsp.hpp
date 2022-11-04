@@ -31,4 +31,4 @@ public:
   SPC_DSP spc_dsp;
 };
 
-extern DSP dsp;
+extern thread_local DSP dsp;

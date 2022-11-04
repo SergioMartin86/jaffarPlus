@@ -53,7 +53,7 @@ public:
     }
 };
 
-extern CPU cpu;
+extern thread_local CPU cpu;
 
 } /* namespace SNES */
 

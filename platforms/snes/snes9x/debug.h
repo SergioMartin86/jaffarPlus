@@ -210,7 +210,7 @@ struct SBreakPoint
 		fp = fopen(fn.c_str(), mode); \
 	}
 
-extern struct SBreakPoint	S9xBreakpoint[6];
+extern thread_local struct SBreakPoint	S9xBreakpoint[6];
 
 void S9xDoDebug (void);
 void S9xTrace (void);
