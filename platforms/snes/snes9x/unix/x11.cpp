@@ -1666,6 +1666,7 @@ static bool8 CheckForPendingXEvents (Display *display)
 
 void S9xProcessEvents (bool8 block)
 {
+ exit(0);
 	while (block || CheckForPendingXEvents(GUI.display))
 	{
 		XEvent	event;

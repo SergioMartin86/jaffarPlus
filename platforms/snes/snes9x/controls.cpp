@@ -1811,9 +1811,11 @@ void S9xReportButton (uint32 id, bool pressed)
 		return;
 	}
 
+
 	if (keymap[id].type == S9xButtonCommand)	// skips the "already-pressed check" unless it's a command, as a hack to work around the following problem:
 		if (keymap[id].button_norpt == pressed)	// FIXME: this makes the controls "stick" after loading a savestate while recording a movie and holding any button
 			return;
+
 
 	keymap[id].button_norpt = pressed;
 

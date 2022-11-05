@@ -1299,6 +1299,8 @@ static void ReadJoysticks (void)
 		}
 	}
 #endif
+
+	exit(0);
 }
 
 #endif

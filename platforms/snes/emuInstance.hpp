@@ -27,6 +27,8 @@ class EmuInstance : public EmuInstanceBase
 {
  public:
 
+ uint8_t* _baseMem;
+
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
   // Checking whether configuration contains the rom file
@@ -45,16 +47,26 @@ class EmuInstance : public EmuInstanceBase
 
   doRendering = false;
   initSnes9x(argc, argv);
+
+  _baseMem = Memory.RAM;
  }
 
  void loadStateFile(const std::string& stateFilePath) override
  {
+  // Loading state data
+  std::string stateData;
+  if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: %s\n", stateFilePath.c_str());
 
+  // Loading state object into the emulator
+//  deserializeState((uint8_t*)stateData.c_str());
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
  {
-
+  std::string stateBuffer;
+  stateBuffer.resize(_STATE_DATA_SIZE_TRAIN);
+  serializeState((uint8_t*)stateBuffer.c_str());
+  saveStringToFile(stateBuffer, stateFilePath.c_str());
  }
 
  void serializeState(uint8_t* state) const override
@@ -73,6 +85,24 @@ class EmuInstance : public EmuInstanceBase
  {
   INPUT_TYPE moveCode = 0;
 
+  for (size_t i = 0; i < move.size(); i++) switch(move[i])
+  {
+   case 'U': moveCode |= SNES_UP_MASK; break;
+   case 'D': moveCode |= SNES_DOWN_MASK; break;
+   case 'L': moveCode |= SNES_LEFT_MASK; break;
+   case 'R': moveCode |= SNES_RIGHT_MASK; break;
+   case 'A': moveCode |= SNES_A_MASK; break;
+   case 'B': moveCode |= SNES_B_MASK; break;
+   case 'X': moveCode |= SNES_X_MASK; break;
+   case 'Y': moveCode |= SNES_Y_MASK; break;
+   case 'l': moveCode |= SNES_TL_MASK; break;
+   case 'r': moveCode |= SNES_TR_MASK; break;
+   case 'S': moveCode |= SNES_START_MASK; break;
+   case 's': moveCode |= SNES_SELECT_MASK; break;
+   case '.': break;
+   case '|': break;
+  }
+
   return moveCode;
  }
 
@@ -80,11 +110,25 @@ class EmuInstance : public EmuInstanceBase
  {
   std::string moveString;
 
+  if (move & SNES_UP_MASK)     moveString += 'U'; else moveString += '.';
+  if (move & SNES_DOWN_MASK)   moveString += 'D'; else moveString += '.';
+  if (move & SNES_LEFT_MASK)   moveString += 'L'; else moveString += '.';
+  if (move & SNES_RIGHT_MASK)  moveString += 'R'; else moveString += '.';
+  if (move & SNES_A_MASK)      moveString += 'A'; else moveString += '.';
+  if (move & SNES_B_MASK)      moveString += 'B'; else moveString += '.';
+  if (move & SNES_X_MASK)      moveString += 'X'; else moveString += '.';
+  if (move & SNES_Y_MASK)      moveString += 'Y'; else moveString += '.';
+  if (move & SNES_TL_MASK)     moveString += 'l'; else moveString += '.';
+  if (move & SNES_TR_MASK)     moveString += 'r'; else moveString += '.';
+  if (move & SNES_START_MASK)  moveString += 'S'; else moveString += '.';
+  if (move & SNES_SELECT_MASK) moveString += 's'; else moveString += '.';
+
   return moveString;
  }
 
  void advanceState(const INPUT_TYPE move) override
  {
+  MovieSetJoypad(0, move);
   S9xMainLoop();
  }
 

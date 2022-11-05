@@ -776,98 +776,97 @@ int S9xMovieUnfreeze (uint8 *buf, uint32 size)
 
 int S9xMovieOpen (const char *filename, bool8 read_only)
 {
-	FILE	*fd;
-	STREAM	stream;
-	int		result;
-	int		fn;
-
-	if (!(fd = fopen(filename, "rb+")))
-	{
-		if (!(fd = fopen(filename, "rb")))
-			return (FILE_NOT_FOUND);
-		else
-			read_only = TRUE;
-	}
-
-	change_state(MOVIE_STATE_NONE);
-
-	result = read_movie_header(fd, &Movie);
-	if (result != SUCCESS)
-	{
-		fclose(fd);
-		return (result);
-	}
-
-	read_movie_extrarominfo(fd, &Movie);
-
-	fflush(fd);
-	fn = fileno(fd);
-
-	store_previous_settings();
-	restore_movie_settings();
-
-	lseek(fn, Movie.SaveStateOffset, SEEK_SET);
-
-    // reopen stream to access as gzipped data
-    stream = REOPEN_STREAM(fn, "rb");
-	if (!stream)
-		return (FILE_NOT_FOUND);
-
-	if (Movie.Opts & MOVIE_OPT_FROM_RESET)
-	{
-		S9xReset();
-		reset_controllers();
-		result = (READ_STREAM(Memory.SRAM, 0x20000, stream) == 0x20000) ? SUCCESS : WRONG_FORMAT;
-	}
-	else
-		result = S9xUnfreezeFromStream(stream);
-
-    // do not close stream but close FILE *
-    // (msvcrt will try to close all open FILE *handles on exit - if we do CLOSE_STREAM here
-    //  the underlying file will be closed by zlib, causing problems when msvcrt tries to do it)
-    delete stream;
-    fclose(fd);
-
-	if (result != SUCCESS)
-		return (result);
-
-	if (!(fd = fopen(filename, "rb+")))
-	{
-		if (!(fd = fopen(filename, "rb")))
-			return (FILE_NOT_FOUND);
-		else
-			read_only = TRUE;
-	}
-
-	if (fseek(fd, Movie.ControllerDataOffset, SEEK_SET))
-	{
-		fclose(fd);
-		return (WRONG_FORMAT);
-	}
-
-	Movie.File           = fd;
-	Movie.BytesPerSample = bytes_per_sample();
-	Movie.InputBufferPtr = Movie.InputBuffer;
-	reserve_buffer_space(Movie.BytesPerSample * (Movie.MaxSample + 1));
-
-	size_t	ignore;
-	ignore = fread(Movie.InputBufferPtr, 1, Movie.BytesPerSample * (Movie.MaxSample + 1), fd);
-
-	// read "baseline" controller data
-	if (Movie.MaxSample && Movie.MaxFrame)
-		read_frame_controller_data(true);
-
-	Movie.CurrentFrame  = 0;
-	Movie.CurrentSample = 0;
-	Movie.ReadOnly      = read_only;
-	strncpy(Movie.Filename, filename, PATH_MAX + 1);
-	Movie.Filename[PATH_MAX] = 0;
+//	STREAM	stream;
+//	int		result;
+//	int		fn;
+//
+//	if (!(fd = fopen(filename, "rb+")))
+//	{
+//		if (!(fd = fopen(filename, "rb")))
+//			return (FILE_NOT_FOUND);
+//		else
+//			read_only = TRUE;
+//	}
+//
+//	change_state(MOVIE_STATE_NONE);
+//
+//	result = read_movie_header(fd, &Movie);
+//	if (result != SUCCESS)
+//	{
+//		fclose(fd);
+//		return (result);
+//	}
+//
+//	read_movie_extrarominfo(fd, &Movie);
+//
+//	fflush(fd);
+//	fn = fileno(fd);
+//
+//	store_previous_settings();
+//	restore_movie_settings();
+//
+//	lseek(fn, Movie.SaveStateOffset, SEEK_SET);
+//
+//    // reopen stream to access as gzipped data
+//    stream = REOPEN_STREAM(fn, "rb");
+//	if (!stream)
+//		return (FILE_NOT_FOUND);
+//
+//	if (Movie.Opts & MOVIE_OPT_FROM_RESET)
+//	{
+//		S9xReset();
+//		reset_controllers();
+//		result = (READ_STREAM(Memory.SRAM, 0x20000, stream) == 0x20000) ? SUCCESS : WRONG_FORMAT;
+//	}
+//	else
+//		result = S9xUnfreezeFromStream(stream);
+//
+//    // do not close stream but close FILE *
+//    // (msvcrt will try to close all open FILE *handles on exit - if we do CLOSE_STREAM here
+//    //  the underlying file will be closed by zlib, causing problems when msvcrt tries to do it)
+//    delete stream;
+//    fclose(fd);
+//
+//	if (result != SUCCESS)
+//		return (result);
+//
+//	if (!(fd = fopen(filename, "rb+")))
+//	{
+//		if (!(fd = fopen(filename, "rb")))
+//			return (FILE_NOT_FOUND);
+//		else
+//			read_only = TRUE;
+//	}
+//
+//	if (fseek(fd, Movie.ControllerDataOffset, SEEK_SET))
+//	{
+//		fclose(fd);
+//		return (WRONG_FORMAT);
+//	}
+//
+//	Movie.File           = fd;
+//	Movie.BytesPerSample = bytes_per_sample();
+//	Movie.InputBufferPtr = Movie.InputBuffer;
+//	reserve_buffer_space(Movie.BytesPerSample * (Movie.MaxSample + 1));
+//
+//	size_t	ignore;
+//	ignore = fread(Movie.InputBufferPtr, 1, Movie.BytesPerSample * (Movie.MaxSample + 1), fd);
+//
+//	// read "baseline" controller data
+//	if (Movie.MaxSample && Movie.MaxFrame)
+//		read_frame_controller_data(true);
+//
+//	Movie.CurrentFrame  = 0;
+//	Movie.CurrentSample = 0;
+//	Movie.ReadOnly      = read_only;
+//	strncpy(Movie.Filename, filename, PATH_MAX + 1);
+//	Movie.Filename[PATH_MAX] = 0;
 
 	change_state(MOVIE_STATE_PLAY);
 
 	S9xUpdateFrameCounter(-1);
 
-	S9xMessage(S9X_INFO, S9X_MOVIE_INFO, MOVIE_INFO_REPLAY);
+//	S9xMessage(S9X_INFO, S9X_MOVIE_INFO, MOVIE_INFO_REPLAY);
 
 	return (SUCCESS);
 }

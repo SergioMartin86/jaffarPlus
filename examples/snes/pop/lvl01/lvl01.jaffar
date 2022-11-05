@@ -5,7 +5,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
-    "State File": "lvl01a.state"
+    "State File": "lvl01.state"
   },
   
   "Game Configuration": 
