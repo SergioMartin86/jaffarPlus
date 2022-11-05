@@ -934,143 +934,6 @@ void S9xAutoSaveSRAM (void)
 
 void S9xSyncSpeed (void)
 {
-#ifndef NOSOUND
-	if (Settings.SoundSync)
-	{
-		while (!S9xSyncSound())
-			usleep(0);
-	}
-#endif
-
-	if (Settings.DumpStreams)
-		return;
-
-#ifdef NETPLAY_SUPPORT
-	if (Settings.NetPlay && NetPlay.Connected)
-	{
-	#if defined(NP_DEBUG) && NP_DEBUG == 2
-		printf("CLIENT: SyncSpeed @%d\n", S9xGetMilliTime());
-	#endif
-
-		S9xNPSendJoypadUpdate(old_joypads[0]);
-		for (int J = 0; J < 8; J++)
-			joypads[J] = S9xNPGetJoypad(J);
-
-		if (!S9xNPCheckForHeartBeat())
-		{
-			NetPlay.PendingWait4Sync = !S9xNPWaitForHeartBeatDelay(100);
-		#if defined(NP_DEBUG) && NP_DEBUG == 2
-			if (NetPlay.PendingWait4Sync)
-				printf("CLIENT: PendingWait4Sync1 @%d\n", S9xGetMilliTime());
-		#endif
-
-			IPPU.RenderThisFrame = TRUE;
-			IPPU.SkippedFrames = 0;
-		}
-		else
-		{
-			NetPlay.PendingWait4Sync = !S9xNPWaitForHeartBeatDelay(200);
-		#if defined(NP_DEBUG) && NP_DEBUG == 2
-			if (NetPlay.PendingWait4Sync)
-				printf("CLIENT: PendingWait4Sync2 @%d\n", S9xGetMilliTime());
-		#endif
-
-			if (IPPU.SkippedFrames < NetPlay.MaxFrameSkip)
-			{
-				IPPU.RenderThisFrame = FALSE;
-				IPPU.SkippedFrames++;
-			}
-			else
-			{
-				IPPU.RenderThisFrame = TRUE;
-				IPPU.SkippedFrames = 0;
-			}
-		}
-
-		if (!NetPlay.PendingWait4Sync)
-		{
-			NetPlay.FrameCount++;
-			S9xNPStepJoypadHistory();
-		}
-
-		return;
-	}
-#endif
-
-	if (Settings.HighSpeedSeek > 0)
-		Settings.HighSpeedSeek--;
-
-	if (Settings.TurboMode)
-	{
-		if ((++IPPU.FrameSkip >= Settings.TurboSkipFrames) && !Settings.HighSpeedSeek)
-		{
-			IPPU.FrameSkip = 0;
-			IPPU.SkippedFrames = 0;
-			IPPU.RenderThisFrame = TRUE;
-		}
-		else
-		{
-			IPPU.SkippedFrames++;
-			IPPU.RenderThisFrame = FALSE;
-		}
-
-		return;
-	}
-
-	static struct timeval	next1 = { 0, 0 };
-	struct timeval			now;
-
-	while (gettimeofday(&now, NULL) == -1) ;
-
-	// If there is no known "next" frame, initialize it now.
-	if (next1.tv_sec == 0)
-	{
-		next1 = now;
-		next1.tv_usec++;
-	}
-
-	// If we're on AUTO_FRAMERATE, we'll display frames always only if there's excess time.
-	// Otherwise we'll display the defined amount of frames.
-	unsigned	limit = (Settings.SkipFrames == AUTO_FRAMERATE) ? (timercmp(&next1, &now, <) ? 10 : 1) : Settings.SkipFrames;
-
-	IPPU.RenderThisFrame = (++IPPU.SkippedFrames >= limit) ? TRUE : FALSE;
-
-	if (IPPU.RenderThisFrame)
-		IPPU.SkippedFrames = 0;
-	else
-	{
-		// If we were behind the schedule, check how much it is.
-		if (timercmp(&next1, &now, <))
-		{
-			unsigned	lag = (now.tv_sec - next1.tv_sec) * 1000000 + now.tv_usec - next1.tv_usec;
-			if (lag >= 500000)
-			{
-				// More than a half-second behind means probably pause.
-				// The next line prevents the magic fast-forward effect.
-				next1 = now;
-			}
-		}
-	}
-
-	// Delay until we're completed this frame.
-	// Can't use setitimer because the sound code already could be using it. We don't actually need it either.
-	while (timercmp(&next1, &now, >))
-	{
-		// If we're ahead of time, sleep a while.
-		unsigned	timeleft = (next1.tv_sec - now.tv_sec) * 1000000 + next1.tv_usec - now.tv_usec;
-		usleep(timeleft);
-
-		while (gettimeofday(&now, NULL) == -1) ;
-		// Continue with a while-loop because usleep() could be interrupted by a signal.
-	}
-
-	// Calculate the timestamp of the next frame.
-	next1.tv_usec += Settings.FrameTime;
-	if (next1.tv_usec >= 1000000)
-	{
-		next1.tv_sec += next1.tv_usec / 1000000;
-		next1.tv_usec %= 1000000;
-	}
 }
 
 bool8 S9xMapInput (const char *n, s9xcommand_t *cmd)
@@ -2114,12 +1977,12 @@ int initSnes9x (int argc, char **argv)
 //  S9xSetSoundMute(FALSE);
 
 
-  while (1)
-  {
-
-   S9xMainLoop();
-
-  }
+//  while (1)
+//  {
+//
+//   S9xMainLoop();
+//
+//  }
 
   return (0);
 }

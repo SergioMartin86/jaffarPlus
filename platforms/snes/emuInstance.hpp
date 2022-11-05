@@ -39,10 +39,11 @@ class EmuInstance : public EmuInstanceBase
 
   int argc = 2;
   char romPath[4096];
+  char bin[] = "./snes9x";
   strcpy(romPath, romFilePath.c_str());
-  char* argv[2] = { "./snes9x", romPath };
+  char* argv[2] = { bin, romPath };
 
-  doRendering = true;
+  doRendering = false;
   initSnes9x(argc, argv);
  }
 
@@ -53,14 +54,19 @@ class EmuInstance : public EmuInstanceBase
 
  void saveStateFile(const std::string& stateFilePath) const override
  {
+
  }
 
  void serializeState(uint8_t* state) const override
  {
+  memStream stream(state, _STATE_DATA_SIZE_TRAIN);
+  S9xFreezeToStream(&stream);
  }
 
  void deserializeState(const uint8_t* state) override
  {
+  memStream stream(state, _STATE_DATA_SIZE_TRAIN);
+  S9xUnfreezeFromStream(&stream);
  }
 
  static INPUT_TYPE moveStringToCode(const std::string& move)
@@ -79,6 +85,7 @@ class EmuInstance : public EmuInstanceBase
 
  void advanceState(const INPUT_TYPE move) override
  {
+  S9xMainLoop();
  }
 
 };

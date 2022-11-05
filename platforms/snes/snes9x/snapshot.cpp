@@ -1412,54 +1412,54 @@ void S9xFreezeToStream (STREAM stream)
 	if (Settings.MSU1)
 		FreezeStruct(stream, "MSU", &MSU1, SnapMSU1, COUNT(SnapMSU1));
 
-	if (Settings.SnapshotScreenshots)
-	{
-		SnapshotScreenshotInfo	*ssi = new SnapshotScreenshotInfo;
-
-		ssi->Width  = min(IPPU.RenderedScreenWidth,  MAX_SNES_WIDTH);
-		ssi->Height = min(IPPU.RenderedScreenHeight, MAX_SNES_HEIGHT);
-		ssi->Interlaced = GFX.DoInterlace;
-
-		uint8	*rowpix = ssi->Data;
-		uint16	*screen = GFX.Screen;
-
-		for (int y = 0; y < ssi->Height; y++, screen += GFX.RealPPL)
-		{
-			for (int x = 0; x < ssi->Width; x++)
-			{
-				uint32	r, g, b;
-
-				DECOMPOSE_PIXEL(screen[x], r, g, b);
-				*(rowpix++) = r;
-				*(rowpix++) = g;
-				*(rowpix++) = b;
-			}
-		}
-
-		memset(rowpix, 0, sizeof(ssi->Data) + ssi->Data - rowpix);
-
-		FreezeStruct(stream, "SHO", ssi, SnapScreenshot, COUNT(SnapScreenshot));
-
-		delete ssi;
-	}
-
-	if (S9xMovieActive())
-	{
-		uint8	*movie_freeze_buf;
-		uint32	movie_freeze_size;
-
-		S9xMovieFreeze(&movie_freeze_buf, &movie_freeze_size);
-		if (movie_freeze_buf)
-		{
-			struct SnapshotMovieInfo mi;
-
-			mi.MovieInputDataSize = movie_freeze_size;
-			FreezeStruct(stream, "MOV", &mi, SnapMovie, COUNT(SnapMovie));
-			FreezeBlock (stream, "MID", movie_freeze_buf, movie_freeze_size);
-
-			delete [] movie_freeze_buf;
-		}
-	}
+//	if (Settings.SnapshotScreenshots)
+//	{
+//		SnapshotScreenshotInfo	*ssi = new SnapshotScreenshotInfo;
+//
+//		ssi->Width  = min(IPPU.RenderedScreenWidth,  MAX_SNES_WIDTH);
+//		ssi->Height = min(IPPU.RenderedScreenHeight, MAX_SNES_HEIGHT);
+//		ssi->Interlaced = GFX.DoInterlace;
+//
+//		uint8	*rowpix = ssi->Data;
+//		uint16	*screen = GFX.Screen;
+//
+//		for (int y = 0; y < ssi->Height; y++, screen += GFX.RealPPL)
+//		{
+//			for (int x = 0; x < ssi->Width; x++)
+//			{
+//				uint32	r, g, b;
+//
+//				DECOMPOSE_PIXEL(screen[x], r, g, b);
+//				*(rowpix++) = r;
+//				*(rowpix++) = g;
+//				*(rowpix++) = b;
+//			}
+//		}
+//
+//		memset(rowpix, 0, sizeof(ssi->Data) + ssi->Data - rowpix);
+//
+//		FreezeStruct(stream, "SHO", ssi, SnapScreenshot, COUNT(SnapScreenshot));
+//
+//		delete ssi;
+//	}
+//
+//	if (S9xMovieActive())
+//	{
+//		uint8	*movie_freeze_buf;
+//		uint32	movie_freeze_size;
+//
+//		S9xMovieFreeze(&movie_freeze_buf, &movie_freeze_size);
+//		if (movie_freeze_buf)
+//		{
+//			struct SnapshotMovieInfo mi;
+//
+//			mi.MovieInputDataSize = movie_freeze_size;
+//			FreezeStruct(stream, "MOV", &mi, SnapMovie, COUNT(SnapMovie));
+//			FreezeBlock (stream, "MID", movie_freeze_buf, movie_freeze_size);
+//
+//			delete [] movie_freeze_buf;
+//		}
+//	}
 
 	delete [] soundsnapshot;
 }
@@ -1834,64 +1834,64 @@ int S9xUnfreezeFromStream (STREAM stream)
 			pad_read = pad_read_temp;
 		}
 
-		if (local_screenshot)
-		{
-			SnapshotScreenshotInfo	*ssi = new SnapshotScreenshotInfo;
-
-			UnfreezeStructFromCopy(ssi, SnapScreenshot, COUNT(SnapScreenshot), local_screenshot, version);
-
-			IPPU.RenderedScreenWidth  = min(ssi->Width,  IMAGE_WIDTH);
-			IPPU.RenderedScreenHeight = min(ssi->Height, IMAGE_HEIGHT);
-			const bool8 scaleDownX = IPPU.RenderedScreenWidth  < ssi->Width;
-			const bool8 scaleDownY = IPPU.RenderedScreenHeight < ssi->Height && ssi->Height > SNES_HEIGHT_EXTENDED;
-			GFX.DoInterlace = Settings.SupportHiRes ? ssi->Interlaced : 0;
-
-			uint8	*rowpix = ssi->Data;
-			uint16	*screen = GFX.Screen;
-
-			for (int y = 0; y < IPPU.RenderedScreenHeight; y++, screen += GFX.RealPPL)
-			{
-				for (int x = 0; x < IPPU.RenderedScreenWidth; x++)
-				{
-					uint32	r, g, b;
-
-					r = *(rowpix++);
-					g = *(rowpix++);
-					b = *(rowpix++);
-
-					if (scaleDownX)
-					{
-						r = (r + *(rowpix++)) >> 1;
-						g = (g + *(rowpix++)) >> 1;
-						b = (b + *(rowpix++)) >> 1;
-
-						if (x + x + 1 >= ssi->Width)
-							break;
-					}
-
-					screen[x] = BUILD_PIXEL(r, g, b);
-				}
-
-				if (scaleDownY)
-				{
-					rowpix += 3 * ssi->Width;
-					if (y + y + 1 >= ssi->Height)
-						break;
-				}
-			}
-
-			// black out what we might have missed
-			for (uint32 y = IPPU.RenderedScreenHeight; y < (uint32) (IMAGE_HEIGHT); y++)
-				memset(GFX.Screen + y * GFX.RealPPL, 0, GFX.RealPPL * 2);
-
-			delete ssi;
-		}
-		else
-		{
-			// couldn't load graphics, so black out the screen instead
-			for (uint32 y = 0; y < (uint32) (IMAGE_HEIGHT); y++)
-				memset(GFX.Screen + y * GFX.RealPPL, 0, GFX.RealPPL * 2);
-		}
+//		if (local_screenshot)
+//		{
+//			SnapshotScreenshotInfo	*ssi = new SnapshotScreenshotInfo;
+//
+//			UnfreezeStructFromCopy(ssi, SnapScreenshot, COUNT(SnapScreenshot), local_screenshot, version);
+//
+//			IPPU.RenderedScreenWidth  = min(ssi->Width,  IMAGE_WIDTH);
+//			IPPU.RenderedScreenHeight = min(ssi->Height, IMAGE_HEIGHT);
+//			const bool8 scaleDownX = IPPU.RenderedScreenWidth  < ssi->Width;
+//			const bool8 scaleDownY = IPPU.RenderedScreenHeight < ssi->Height && ssi->Height > SNES_HEIGHT_EXTENDED;
+//			GFX.DoInterlace = Settings.SupportHiRes ? ssi->Interlaced : 0;
+//
+//			uint8	*rowpix = ssi->Data;
+//			uint16	*screen = GFX.Screen;
+//
+//			for (int y = 0; y < IPPU.RenderedScreenHeight; y++, screen += GFX.RealPPL)
+//			{
+//				for (int x = 0; x < IPPU.RenderedScreenWidth; x++)
+//				{
+//					uint32	r, g, b;
+//
+//					r = *(rowpix++);
+//					g = *(rowpix++);
+//					b = *(rowpix++);
+//
+//					if (scaleDownX)
+//					{
+//						r = (r + *(rowpix++)) >> 1;
+//						g = (g + *(rowpix++)) >> 1;
+//						b = (b + *(rowpix++)) >> 1;
+//
+//						if (x + x + 1 >= ssi->Width)
+//							break;
+//					}
+//
+//					screen[x] = BUILD_PIXEL(r, g, b);
+//				}
+//
+//				if (scaleDownY)
+//				{
+//					rowpix += 3 * ssi->Width;
+//					if (y + y + 1 >= ssi->Height)
+//						break;
+//				}
+//			}
+//
+//			// black out what we might have missed
+//			for (uint32 y = IPPU.RenderedScreenHeight; y < (uint32) (IMAGE_HEIGHT); y++)
+//				memset(GFX.Screen + y * GFX.RealPPL, 0, GFX.RealPPL * 2);
+//
+//			delete ssi;
+//		}
+//		else
+//		{
+//			// couldn't load graphics, so black out the screen instead
+//			for (uint32 y = 0; y < (uint32) (IMAGE_HEIGHT); y++)
+//				memset(GFX.Screen + y * GFX.RealPPL, 0, GFX.RealPPL * 2);
+//		}
 	}
 
 	if (local_cpu)				delete [] local_cpu;
