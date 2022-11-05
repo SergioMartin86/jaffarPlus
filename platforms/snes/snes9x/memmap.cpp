@@ -1443,13 +1443,13 @@ uint32 CMemory::FileLoader (uint8 *buffer, const char *filename, uint32 maxsize)
 		#ifdef UNZIP_SUPPORT
 			if (!LoadZip(fname, &totalSize, buffer))
 			{
-			 	S9xMessage(S9X_ERROR, S9X_ROM_INFO, "Invalid Zip archive.");
+			 	//S9xMessage(S9X_ERROR, S9X_ROM_INFO, "Invalid Zip archive.");
 				return (0);
 			}
 
 			strcpy(ROMFilename, fname);
 		#else
-			S9xMessage(S9X_ERROR, S9X_ROM_INFO, "This binary was not created with Zip support.");
+			//S9xMessage(S9X_ERROR, S9X_ROM_INFO, "This binary was not created with Zip support.");
 			return (0);
 		#endif
 			break;
@@ -1461,7 +1461,7 @@ uint32 CMemory::FileLoader (uint8 *buffer, const char *filename, uint32 maxsize)
 			size_t	size = load_jma_file(fname, buffer);
 			if (!size)
 			{
-			 	S9xMessage(S9X_ERROR, S9X_ROM_INFO, "Invalid JMA archive.");
+			 	//S9xMessage(S9X_ERROR, S9X_ROM_INFO, "Invalid JMA archive.");
 				return (0);
 			}
 
@@ -1469,7 +1469,7 @@ uint32 CMemory::FileLoader (uint8 *buffer, const char *filename, uint32 maxsize)
 
 			strcpy(ROMFilename, fname);
 		#else
-			S9xMessage(S9X_ERROR, S9X_ROM_INFO, "This binary was not created with JMA support.");
+			//S9xMessage(S9X_ERROR, S9X_ROM_INFO, "This binary was not created with JMA support.");
 			return (0);
 		#endif
 			break;
@@ -1526,13 +1526,13 @@ uint32 CMemory::FileLoader (uint8 *buffer, const char *filename, uint32 maxsize)
 		}
 	}
 
-    if (HeaderCount == 0)
-		S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "No ROM file header found.");
-    else
-    if (HeaderCount == 1)
-		S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "Found ROM file header (and ignored it).");
-	else
-		S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "Found multiple ROM file headers (and ignored them).");
+//    if (HeaderCount == 0)
+//		//S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "No ROM file header found.");
+//    else
+//    if (HeaderCount == 1)
+//		//S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "Found ROM file header (and ignored it).");
+//	else
+//		//S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "Found multiple ROM file headers (and ignored them).");
 
 	return ((uint32) totalSize);
 }
@@ -1598,7 +1598,7 @@ bool8 CMemory::LoadROMInt (int32 ROMfillSize)
 	{
 		memmove(ROM, ROM + 512, ROMfillSize - 512);
 		ROMfillSize -= 512;
-		S9xMessage(S9X_INFO, S9X_HEADER_WARNING, "Try 'force no-header' option if the game doesn't work");
+		//S9xMessage(S9X_INFO, S9X_HEADER_WARNING, "Try 'force no-header' option if the game doesn't work");
 		// modifying ROM, so we need to rescore
 		hi_score = ScoreHiROM(FALSE);
 		lo_score = ScoreLoROM(FALSE);
@@ -1706,7 +1706,7 @@ bool8 CMemory::LoadROMInt (int32 ROMfillSize)
 
 	if (!Settings.ForceNotInterleaved && interleaved)
 	{
-		S9xMessage(S9X_INFO, S9X_ROM_INTERLEAVED_INFO, "ROM image is in interleaved format - converting...");
+		//S9xMessage(S9X_INFO, S9X_ROM_INTERLEAVED_INFO, "ROM image is in interleaved format - converting...");
 
 		if (tales)
 		{
@@ -1749,7 +1749,7 @@ bool8 CMemory::LoadROMInt (int32 ROMfillSize)
 		if ((HiROM && (lo_score >= hi_score || hi_score < 0)) ||
 			(LoROM && (hi_score >  lo_score || lo_score < 0)))
 		{
-			S9xMessage(S9X_INFO, S9X_ROM_CONFUSING_FORMAT_INFO, "ROM lied about its type! Trying again.");
+			//S9xMessage(S9X_INFO, S9X_ROM_CONFUSING_FORMAT_INFO, "ROM lied about its type! Trying again.");
 			Settings.ForceNotInterleaved = TRUE;
 			Settings.ForceInterleaved = FALSE;
             return (FALSE);
@@ -1764,7 +1764,7 @@ bool8 CMemory::LoadROMInt (int32 ROMfillSize)
 		uint8	*tmp = (uint8 *) malloc(CalculatedSize - 0x400000);
 		if (tmp)
 		{
-			S9xMessage(S9X_INFO, S9X_ROM_INTERLEAVED_INFO, "Fixing swapped ExHiROM...");
+			//S9xMessage(S9X_INFO, S9X_ROM_INTERLEAVED_INFO, "Fixing swapped ExHiROM...");
 			memmove(tmp, ROM, CalculatedSize - 0x400000);
 			memmove(ROM, ROM + CalculatedSize - 0x400000, 0x400000);
 			memmove(ROM + 0x400000, tmp, CalculatedSize - 0x400000);
@@ -2150,12 +2150,12 @@ bool8 CMemory::LoadSRAM (const char *filename)
 				if (len - size == 512)
 					memmove(SRAM, SRAM + 512, size);
 
-				S9xMessage(S9X_INFO, S9X_ROM_INFO, "The SRAM file wasn't found: BS-X.srm was read instead.");
+				//S9xMessage(S9X_INFO, S9X_ROM_INFO, "The SRAM file wasn't found: BS-X.srm was read instead.");
 				return (TRUE);
 			}
 			else
 			{
-				S9xMessage(S9X_INFO, S9X_ROM_INFO, "The SRAM file wasn't found, BS-X.srm wasn't found either.");
+				//S9xMessage(S9X_INFO, S9X_ROM_INFO, "The SRAM file wasn't found, BS-X.srm wasn't found either.");
 				return (FALSE);
 			}
 		}
@@ -2778,7 +2778,7 @@ void CMemory::InitROM (void)
 	sprintf(String, "\"%s\" [%s] %s, %s, %s, %s, SRAM:%s, ID:%s, CRC32:%08X",
 		displayName, isChecksumOK ? "checksum ok" : ((Multi.cartType == 4) ? "no checksum" : "bad checksum"),
 		MapType(), Size(), KartContents(), Settings.PAL ? "PAL" : "NTSC", StaticRAMSize(), ROMId, ROMCRC32);
-	S9xMessage(S9X_INFO, S9X_ROM_INFO, String);
+	//S9xMessage(S9X_INFO, S9X_ROM_INFO, String);
 
 	Settings.ForceLoROM = FALSE;
 	Settings.ForceHiROM = FALSE;
@@ -3048,7 +3048,7 @@ void CMemory::Map_Initialize (void)
 
 void CMemory::Map_LoROMMap (void)
 {
-	printf("Map_LoROMMap\n");
+//	printf("Map_LoROMMap\n");
 	map_System();
 
 	map_lorom(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize);
@@ -3076,7 +3076,7 @@ void CMemory::Map_LoROMMap (void)
 
 void CMemory::Map_NoMAD1LoROMMap (void)
 {
-	printf("Map_NoMAD1LoROMMap\n");
+//	printf("Map_NoMAD1LoROMMap\n");
 	map_System();
 
 	map_lorom(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize);
@@ -3095,7 +3095,7 @@ void CMemory::Map_NoMAD1LoROMMap (void)
 void CMemory::Map_JumboLoROMMap (void)
 {
 	// XXX: Which game uses this?
-	printf("Map_JumboLoROMMap\n");
+//	printf("Map_JumboLoROMMap\n");
 	map_System();
 
 	map_lorom_offset(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize - 0x400000, 0x400000);
@@ -3112,7 +3112,7 @@ void CMemory::Map_JumboLoROMMap (void)
 void CMemory::Map_ROM24MBSLoROMMap (void)
 {
 	// PCB: BSC-1A5M-01, BSC-1A7M-10
-	printf("Map_ROM24MBSLoROMMap\n");
+//	printf("Map_ROM24MBSLoROMMap\n");
 	map_System();
 
 	map_lorom_offset(0x00, 0x1f, 0x8000, 0xffff, 0x100000, 0);
@@ -3128,7 +3128,7 @@ void CMemory::Map_ROM24MBSLoROMMap (void)
 
 void CMemory::Map_SRAM512KLoROMMap (void)
 {
-	printf("Map_SRAM512KLoROMMap\n");
+//	printf("Map_SRAM512KLoROMMap\n");
 	map_System();
 
 	map_lorom(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize);
@@ -3148,7 +3148,7 @@ void CMemory::Map_SRAM512KLoROMMap (void)
 
 void CMemory::Map_SufamiTurboLoROMMap (void)
 {
-	printf("Map_SufamiTurboLoROMMap\n");
+//	printf("Map_SufamiTurboLoROMMap\n");
 	map_System();
 
 	map_lorom_offset(0x00, 0x1f, 0x8000, 0xffff, 0x40000, 0);
@@ -3178,7 +3178,7 @@ void CMemory::Map_SufamiTurboLoROMMap (void)
 void CMemory::Map_SufamiTurboPseudoLoROMMap (void)
 {
 	// for combined images
-	printf("Map_SufamiTurboPseudoLoROMMap\n");
+//	printf("Map_SufamiTurboPseudoLoROMMap\n");
 	map_System();
 
 	map_lorom_offset(0x00, 0x1f, 0x8000, 0xffff, 0x40000, 0);
@@ -3201,7 +3201,7 @@ void CMemory::Map_SufamiTurboPseudoLoROMMap (void)
 
 void CMemory::Map_SuperFXLoROMMap (void)
 {
-	printf("Map_SuperFXLoROMMap\n");
+//	printf("Map_SuperFXLoROMMap\n");
 	map_System();
 
 	// Replicate the first 2Mb of the ROM at ROM + 2MB such that each 32K
@@ -3230,7 +3230,7 @@ void CMemory::Map_SuperFXLoROMMap (void)
 
 void CMemory::Map_SetaDSPLoROMMap (void)
 {
-	printf("Map_SetaDSPLoROMMap\n");
+//	printf("Map_SetaDSPLoROMMap\n");
 	map_System();
 
 	map_lorom(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize);
@@ -3248,7 +3248,7 @@ void CMemory::Map_SetaDSPLoROMMap (void)
 
 void CMemory::Map_SDD1LoROMMap (void)
 {
-	printf("Map_SDD1LoROMMap\n");
+//	printf("Map_SDD1LoROMMap\n");
 	map_System();
 
 	map_lorom(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize);
@@ -3308,7 +3308,7 @@ void CMemory::Map_SA1LoROMMap (void)
 
 void CMemory::Map_BSSA1LoROMMap(void)
 {
-	printf("Map_BSSA1LoROMMap\n");
+//	printf("Map_BSSA1LoROMMap\n");
 	map_System();
 
 	map_lorom_offset(0x00, 0x3f, 0x8000, 0xffff, Multi.cartSizeA, Multi.cartOffsetA);
@@ -3350,7 +3350,7 @@ void CMemory::Map_BSSA1LoROMMap(void)
 
 void CMemory::Map_HiROMMap (void)
 {
-	printf("Map_HiROMMap\n");
+//	printf("Map_HiROMMap\n");
 	map_System();
 
 	map_hirom(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize);
@@ -3369,7 +3369,7 @@ void CMemory::Map_HiROMMap (void)
 
 void CMemory::Map_ExtendedHiROMMap (void)
 {
-	printf("Map_ExtendedHiROMMap\n");
+//	printf("Map_ExtendedHiROMMap\n");
 	map_System();
 
 	map_hirom_offset(0x00, 0x3f, 0x8000, 0xffff, CalculatedSize - 0x400000, 0x400000);
@@ -3385,7 +3385,7 @@ void CMemory::Map_ExtendedHiROMMap (void)
 
 void CMemory::Map_SPC7110HiROMMap (void)
 {
-	printf("Map_SPC7110HiROMMap\n");
+//	printf("Map_SPC7110HiROMMap\n");
 	map_System();
 
 	map_index(0x00, 0x00, 0x6000, 0x7fff, MAP_HIROM_SRAM, MAP_TYPE_RAM);
@@ -3403,7 +3403,7 @@ void CMemory::Map_SPC7110HiROMMap (void)
 
 void CMemory::Map_BSCartLoROMMap(uint8 mapping)
 {
-	printf("Map_BSCartLoROMMap\n");
+//	printf("Map_BSCartLoROMMap\n");
 
 	BSX.MMC[0x02] = 0x00;
 	BSX.MMC[0x0C] = 0x80;
@@ -3434,7 +3434,7 @@ void CMemory::Map_BSCartLoROMMap(uint8 mapping)
 
 void CMemory::Map_BSCartHiROMMap(void)
 {
-	printf("Map_BSCartHiROMMap\n");
+//	printf("Map_BSCartHiROMMap\n");
 
 	BSX.MMC[0x02] = 0x80;
 	BSX.MMC[0x0C] = 0x80;

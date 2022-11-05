@@ -1155,7 +1155,7 @@ void S9xSetupDefaultKeymap (void)
 			{
 				std::string	s("Unrecognized command '");
 				s += i->second + "'";
-				perror(s.c_str());
+//				perror(s.c_str());
 				continue;
 			}
 		}
@@ -1164,7 +1164,7 @@ void S9xSetupDefaultKeymap (void)
 		{
 			std::string	s("Could not map '");
 			s += i->second + "' to '" + i->first + "'";
-			perror(s.c_str());
+//			perror(s.c_str());
 			continue;
 		}
 	}
@@ -1189,13 +1189,13 @@ static void InitJoysticks (void)
 
 	if ((js_fd[0] = open(js_device[0], O_RDONLY | O_NONBLOCK)) == -1)
 	{
-		fprintf(stderr, "joystick: No joystick found.\n");
+//		fprintf(stderr, "joystick: No joystick found.\n");
 		return;
 	}
 
 	if (ioctl(js_fd[0], JSIOCGVERSION, &version) == -1)
 	{
-		fprintf(stderr, "joystick: You need at least driver version 1.0 for joystick support.\n");
+//		fprintf(stderr, "joystick: You need at least driver version 1.0 for joystick support.\n");
 		close(js_fd[0]);
 		return;
 	}
@@ -1210,14 +1210,14 @@ static void InitJoysticks (void)
 
 	if (ioctl(js_fd[0], JSIOCGNAME(128), name) > 0)
 	{
-		printf("Using %s (%s) as joystick1\n", name, js_device[0]);
+//		printf("Using %s (%s) as joystick1\n", name, js_device[0]);
 
 		for (int i = 1; i < 8; i++)
 		{
 			if (js_fd[i] > 0)
 			{
 				ioctl(js_fd[i], JSIOCGNAME(128), name);
-				printf ("  and %s (%s) as joystick%d\n", name, js_device[i], i + 1);
+//				printf ("  and %s (%s) as joystick%d\n", name, js_device[i], i + 1);
 			}
 		}
 	}
@@ -1226,7 +1226,7 @@ static void InitJoysticks (void)
 	{
 		ioctl(js_fd[0], JSIOCGAXES, &axes);
 		ioctl(js_fd[0], JSIOCGBUTTONS, &buttons);
-		printf("Using %d-axis %d-button joystick (%s) as joystick1\n", axes, buttons, js_device[0]);
+//		printf("Using %d-axis %d-button joystick (%s) as joystick1\n", axes, buttons, js_device[0]);
 
 		for (int i = 1; i < 8; i++)
 		{
@@ -1234,7 +1234,7 @@ static void InitJoysticks (void)
 			{
 				ioctl(js_fd[i], JSIOCGAXES, &axes);
 				ioctl(js_fd[i], JSIOCGBUTTONS, &buttons);
-				printf("  and %d-axis %d-button joystick (%s) as joystick%d\n", axes, buttons, js_device[i], i + 1);
+//				printf("  and %d-axis %d-button joystick (%s) as joystick%d\n", axes, buttons, js_device[i], i + 1);
 			}
 		}
 	}
@@ -1282,7 +1282,7 @@ static void ReadJoysticks (void)
 		/* EAGAIN is returned when the queue is empty */
 		if (errno != EAGAIN) {
 			// Error reading joystick.
-			fprintf(stderr,"Error reading joystick %d!\n",i);
+//			fprintf(stderr,"Error reading joystick %d!\n",i);
 
 			// Mark for reconnect attempt.
 			js_unplugged[i] = TRUE;
@@ -1970,7 +1970,7 @@ int initSnes9x (int argc, char **argv)
 
   if (doRendering) S9xGraphicsMode();
 
-  sprintf(String, "\"%s\" %s: %s", Memory.ROMName, TITLE, VERSION);
+  //sprintf(String, "\"%s\" %s: %s", Memory.ROMName, TITLE, VERSION);
   if (doRendering) S9xSetTitle(String);
 
   if (doRendering)  InitTimer();

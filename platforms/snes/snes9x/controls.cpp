@@ -967,7 +967,7 @@ void S9xReportControllers (void)
 		}
 	}
 
-	S9xMessage(S9X_INFO, S9X_CONFIG_INFO, mes);
+	//S9xMessage(S9X_INFO, S9X_CONFIG_INFO, mes);
 }
 
 char * S9xGetCommandName (s9xcommand_t command)

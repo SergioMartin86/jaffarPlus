@@ -279,7 +279,6 @@ void S9xMainLoop (void)
 			S9xSA1MainLoop();
 	}
 
-	printf("%u\n", Memory.RAM[0x0]);
 	S9xPackStatus();
 
 	if (CPU.Flags & SCAN_KEYS_FLAG)

@@ -212,6 +212,7 @@
 #define FOURCC_YUY2 0x32595559
 #endif
 
+#undef MITSHM
 #ifdef MITSHM
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -1040,7 +1041,7 @@ void S9xInitDisplay (int argc, char **argv)
 			break;
 	}
 
-	printf("Using internal pixel format %d\n",GUI.pixel_format);
+//	printf("Using internal pixel format %d\n",GUI.pixel_format);
 }
 
 void S9xDeinitDisplay (void)
@@ -1105,7 +1106,7 @@ static void SetupImage (void)
 		GUI.blit_screen       = GUI.filter_buffer;
 		GUI.need_convert      = TRUE;
 	}
-	if (GUI.need_convert) { printf("\tImage conversion needed before blit.\n"); }
+//	if (GUI.need_convert) { printf("\tImage conversion needed before blit.\n"); }
 
 	S9xGraphicsInit();
 }
@@ -1199,7 +1200,7 @@ static void SetupXImage (void)
 
 	if (!GUI.use_shared_memory)
 	{
-		fprintf(stderr, "use_shared_memory failed, switching to XPutImage.\n");
+//		fprintf(stderr, "use_shared_memory failed, switching to XPutImage.\n");
 #endif
 		GUI.image->ximage = XCreateImage(GUI.display, GUI.visual, GUI.depth, ZPixmap, 0, NULL, SNES_WIDTH * 2, SNES_HEIGHT_EXTENDED * 2, BitmapUnit(GUI.display), 0);
 		// set main Image struct vars
@@ -1210,7 +1211,7 @@ static void SetupXImage (void)
 		GUI.image->ximage->data = (char *) malloc(GUI.image->data_size);
 		if (!GUI.image->ximage || !GUI.image->ximage->data)
 			FatalError("XCreateImage failed.");
-		printf("Created XImage, size %d\n",GUI.image->data_size);
+//		printf("Created XImage, size %d\n",GUI.image->data_size);
 #ifdef MITSHM
 	}
 #endif
@@ -1900,11 +1901,11 @@ bool8 S9xMapDisplayInput (const char *n, s9xcommand_t *cmd)
 	}
 
 unrecog:
-	char	*err = new char[strlen(n) + 34];
-
-	sprintf(err, "Unrecognized input device name '%s'", n);
-	perror(err);
-	delete [] err;
+//	char	*err = new char[strlen(n) + 34];
+//
+//	sprintf(err, "Unrecognized input device name '%s'", n);
+//	perror(err);
+//	delete [] err;
 
 	return (false);
 }
