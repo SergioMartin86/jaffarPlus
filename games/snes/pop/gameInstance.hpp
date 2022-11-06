@@ -1,14 +1,28 @@
 #pragma once
 
-#define _INVERSE_FRAME_RATE 16667
+#define ROOM_COUNT 256
+//#define _INVERSE_FRAME_RATE 16667
+#define _INVERSE_FRAME_RATE 4166
 
 #include "gameInstanceBase.hpp"
 #include <set>
 
-// Datatype to describe a magnet
-struct magnetSet_t {
+// Datatype to describe a generic magnet
+struct genericMagnet_t {
+ float intensity; // How strong the magnet is
+ uint8_t room; // Which room does the magnet correspond to
+ float center;  // What is the central point of attraction
+ float min;  // What is the minimum input value to the calculation.
+ float max;  // What is the maximum input value to the calculation.
+ bool active; // Indicates whether the value for this magnet has specified
 };
 
+// Datatype to describe a magnet
+struct magnetSet_t {
+ // Relevant simon magnets
+ genericMagnet_t kidHorizontalMagnet;
+ genericMagnet_t kidVerticalMagnet;
+};
 class GameInstance : public GameInstanceBase
 {
  public:

@@ -32,8 +32,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 2000
     },
     
     "Hash Database":
@@ -60,6 +60,35 @@
   
   "Rules":
   [
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 22, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 22, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
    
+   {
+    "Label": 1002,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 }
+    ],
+    
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win", "Value": 10000.0 }
+    ]
+   }
   ]  
 }

@@ -49,6 +49,7 @@ class EmuInstance : public EmuInstanceBase
   initSnes9x(argc, argv);
 
   _baseMem = Memory.RAM;
+  loadStateFile(stateFilePath);
  }
 
  void loadStateFile(const std::string& stateFilePath) override
@@ -58,7 +59,7 @@ class EmuInstance : public EmuInstanceBase
   if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: %s\n", stateFilePath.c_str());
 
   // Loading state object into the emulator
-//  deserializeState((uint8_t*)stateData.c_str());
+  deserializeState((uint8_t*)stateData.c_str());
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
