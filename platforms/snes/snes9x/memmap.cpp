@@ -234,7 +234,7 @@ static thread_local bool8	stopMovie = TRUE;
 static thread_local char		LastRomFilename[PATH_MAX + 1] = "";
 
 // from NSRT
-static const char	*nintendo_licensees[] =
+static __thread const char	*nintendo_licensees[] =
 {
 	"Unlicensed",
 	"Nintendo",
@@ -904,7 +904,7 @@ static const char	*nintendo_licensees[] =
 	"Yojigen"
 };
 
-static const uint32	crc32Table[256] =
+static __thread const uint32	crc32Table[256] =
 {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 	0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -1062,10 +1062,10 @@ static void S9xDeinterleaveGD24 (int size, uint8 *base)
 }
 
 // allocation and deallocation
-static uint8 z_ram[0x20000];
-static uint8 z_sram[0x20000];
-static uint8 z_vram[0x10000];
-static uint8 f_ram[0x8000];
+static __thread uint8 z_ram[0x20000];
+static __thread uint8 z_sram[0x20000];
+static __thread uint8 z_vram[0x10000];
+static __thread uint8 f_ram[0x8000];
 
 bool8 CMemory::Init (void)
 {
@@ -2262,8 +2262,8 @@ static uint32 caCRC32 (uint8 *array, uint32 size, uint32 crc32)
 
 char * CMemory::Safe (const char *s)
 {
-	static char	*safe = NULL;
-	static int	safe_len = 0;
+	static __thread char	*safe = NULL;
+	static __thread  int	safe_len = 0;
 
 	if (s == NULL)
 	{
@@ -2301,8 +2301,8 @@ char * CMemory::Safe (const char *s)
 
 char * CMemory::SafeANK (const char *s)
 {
-	static char	*safe = NULL;
-	static int	safe_len = 0;
+	static __thread char	*safe = NULL;
+	static __thread int	safe_len = 0;
 
 	if (s == NULL)
 	{
@@ -3541,7 +3541,7 @@ const char * CMemory::MapType (void)
 
 const char * CMemory::StaticRAMSize (void)
 {
-	static char	str[20];
+	static __thread char	str[20];
 
 	if (SRAMSize > 16)
 		strcpy(str, "Corrupt");
@@ -3553,7 +3553,7 @@ const char * CMemory::StaticRAMSize (void)
 
 const char * CMemory::Size (void)
 {
-	static char	str[20];
+	static __thread char	str[20];
 
 	if (Multi.cartType == 4)
 		strcpy(str, "N/A");
@@ -3568,7 +3568,7 @@ const char * CMemory::Size (void)
 
 const char * CMemory::Revision (void)
 {
-	static char	str[20];
+	static __thread char	str[20];
 
 	sprintf(str, "1.%d", HiROM ? ((ExtendedFormat != NOPE) ? ROM[0x40ffdb] : ROM[0xffdb]) : ROM[0x7fdb]);
 
@@ -3577,8 +3577,8 @@ const char * CMemory::Revision (void)
 
 const char * CMemory::KartContents (void)
 {
-	static char			str[64];
-	static const char	*contents[3] = { "ROM", "ROM+RAM", "ROM+RAM+BAT" };
+	static __thread char			str[64];
+	static __thread const char	*contents[3] = { "ROM", "ROM+RAM", "ROM+RAM+BAT" };
 
 	char	chip[20];
 

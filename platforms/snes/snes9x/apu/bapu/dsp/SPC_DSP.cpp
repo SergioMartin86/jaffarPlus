@@ -31,7 +31,7 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 #define GET_LE16A( addr )       GET_LE16( addr )
 #define SET_LE16A( addr, data ) SET_LE16( addr, data )
 
-static BOOST::uint8_t const initial_regs [SPC_DSP::register_count] =
+static thread_local BOOST::uint8_t const initial_regs [SPC_DSP::register_count] =
 {
 	0x45,0x8B,0x5A,0x9A,0xE4,0x82,0x1B,0x78,0x00,0x00,0xAA,0x96,0x89,0x0E,0xE0,0x80,
 	0x2A,0x49,0x3D,0xBA,0x14,0xA0,0xAC,0xC5,0x00,0x00,0x51,0xBB,0x9C,0x4E,0x7B,0xFF,
@@ -90,7 +90,7 @@ void SPC_DSP::set_output( sample_t* out, int size )
 
 // Gaussian interpolation
 
-static short const gauss [512] =
+static thread_local short const gauss [512] =
 {
    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
    1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,
@@ -151,7 +151,7 @@ inline int SPC_DSP::interpolate( voice_t const* v )
 
 int const simple_counter_range = 2048 * 5 * 3; // 30720
 
-static unsigned const counter_rates [32] =
+static thread_local unsigned const counter_rates [32] =
 {
    simple_counter_range + 1, // never fires
           2048, 1536,
@@ -168,7 +168,7 @@ static unsigned const counter_rates [32] =
 	         1
 };
 
-static unsigned const counter_offsets [32] =
+static thread_local unsigned const counter_offsets [32] =
 {
 	  1, 0, 1040,
 	536, 0, 1040,

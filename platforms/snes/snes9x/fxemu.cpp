@@ -401,8 +401,8 @@ static void FxReset (struct FxInfo_s *psFxInfo)
 
 static void fx_readRegisterSpace (void)
 {
-	static uint32	avHeight[] = { 128, 160, 192, 256 };
-	static uint32	avMult[]   = {  16,  32,  32,  64 };
+	static __thread uint32	avHeight[] = { 128, 160, 192, 256 };
+	static __thread uint32	avMult[]   = {  16,  32,  32,  64 };
 
 	uint8	*p;
 	int		n;

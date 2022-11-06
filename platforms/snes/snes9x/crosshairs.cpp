@@ -194,7 +194,7 @@
 #include "port.h"
 #include "crosshairs.h"
 
-static const char	*crosshairs[32] =
+static __thread const char	*crosshairs[32] =
 {
 	"`              "  // Crosshair 0 (no image)
 	"               "

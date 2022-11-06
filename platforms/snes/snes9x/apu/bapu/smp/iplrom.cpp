@@ -5,7 +5,7 @@
 //all writes are instead mapped to the extended
 //RAM region, accessible when $f1.d7 is clear.
 
-const uint8 SMP::iplrom[64] = {
+const thread_local uint8 SMP::iplrom[64] = {
 /*ffc0*/  0xcd, 0xef,        //mov   x,#$ef
 /*ffc2*/  0xbd,              //mov   sp,x
 /*ffc3*/  0xe8, 0x00,        //mov   a,#$00

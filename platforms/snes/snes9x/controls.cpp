@@ -266,7 +266,7 @@ struct crosshair
 	uint8				fg, bg;
 };
 
-static thread_local struct
+static __thread  struct
 {
 	int16				x, y;
 	int16				V_adj;
@@ -276,7 +276,7 @@ static thread_local struct
 	bool8				mapped;
 }	pseudopointer[8];
 
-static struct
+static __thread struct
 {
 	uint16				buttons;
 	uint16				turbos;
@@ -285,7 +285,7 @@ static struct
 	uint8				turbo_ct;
 }	joypad[8];
 
-static struct
+static __thread struct
 {
 	uint8				delta_x, delta_y;
 	int16				old_x, old_y;
@@ -295,7 +295,7 @@ static struct
 	struct crosshair	crosshair;
 }	mouse[2];
 
-static struct
+static __thread struct
 {
 	int16				x, y;
 	uint8				phys_buttons;
@@ -305,7 +305,7 @@ static struct
 	struct crosshair	crosshair;
 }	superscope;
 
-static struct
+static __thread struct
 {
 	int16				x[2], y[2];
 	uint8				buttons;
@@ -314,23 +314,23 @@ static struct
 	struct crosshair	crosshair[2];
 }	justifier;
 
-static struct
+static __thread  struct
 {
 	int8				pads[4];
 }	mp5[2];
 
-static set<struct exemulti *>		exemultis;
-static set<uint32>					pollmap[NUMCTLS + 1];
-static map<uint32, s9xcommand_t>	keymap;
-static vector<s9xcommand_t *>		multis;
-static uint8						turbo_time;
-static uint8						pseudobuttons[256];
-static bool8						FLAG_LATCH = FALSE;
-static int32						curcontrollers[2] = { NONE,    NONE };
-static int32						newcontrollers[2] = { JOYPAD0, NONE };
-static char							buf[256];
+static thread_local set<struct exemulti *>		exemultis;
+static thread_local set<uint32>					pollmap[NUMCTLS + 1];
+static thread_local map<uint32, s9xcommand_t>	keymap;
+static thread_local vector<s9xcommand_t *>		multis;
+static __thread uint8						turbo_time;
+static __thread uint8						pseudobuttons[256];
+static __thread bool8						FLAG_LATCH = FALSE;
+static __thread int32						curcontrollers[2] = { NONE,    NONE };
+static __thread  int32						newcontrollers[2] = { JOYPAD0, NONE };
+static __thread char							buf[256];
 
-static const char	*color_names[32] =
+static __thread const char	*color_names[32] =
 {
 	"Trans",
 	"Black",
@@ -366,7 +366,7 @@ static const char	*color_names[32] =
 	"tPurple"
 };
 
-static const char	*speed_names[4] =
+static __thread const char	*speed_names[4] =
 {
 	"Var",
 	"Slow",
@@ -374,7 +374,7 @@ static const char	*speed_names[4] =
 	"Fast"
 };
 
-static const int	ptrspeeds[4] = { 1, 1, 4, 8 };
+static __thread const int	ptrspeeds[4] = { 1, 1, 4, 8 };
 
 // Note: these should be in asciibetical order!
 #define THE_COMMANDS \
@@ -453,7 +453,7 @@ enum command_numbers
 #undef S
 #define S(x)	#x
 
-static const char	*command_names[LAST_COMMAND + 1] =
+static __thread const char	*command_names[LAST_COMMAND + 1] =
 {
 	THE_COMMANDS,
 	NULL

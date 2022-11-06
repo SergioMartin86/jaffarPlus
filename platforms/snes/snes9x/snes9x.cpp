@@ -343,7 +343,7 @@ static bool try_load_config_file (const char *fname, ConfigFile &conf)
 
 void S9xLoadConfigFiles (char **argv, int argc)
 {
-	static ConfigFile	conf; // static because some of its functions return pointers
+	static __thread ConfigFile	conf; // static because some of its functions return pointers
 	conf.Clear();
 
 	bool	skip = false;

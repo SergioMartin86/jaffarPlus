@@ -215,7 +215,7 @@
 */
 
 /*
-static const char	*fx_apvMnemonicTable[] =
+static __thread const char	*fx_apvMnemonicTable[] =
 {
 	// ALT0 Table
 

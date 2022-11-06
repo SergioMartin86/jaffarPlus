@@ -219,7 +219,7 @@ uint8 S9xGetST011 (uint32 Address)
 
 void S9xSetST011 (uint32 Address, uint8 Byte)
 {
-	static bool	reset   = false;
+	static __thread bool	reset   = false;
 	uint16		address = (uint16) Address & 0xFFFF;
 
 	line++;

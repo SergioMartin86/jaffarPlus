@@ -783,7 +783,7 @@ void S9xNPAcceptClient (int Listen, bool8 block)
     S9xNPSetAction ("SERVER: Waiting for HELLO message from new client...");
 }
 
-static bool8 server_continue = TRUE;
+static __thread bool8 server_continue = TRUE;
 
 static bool8 S9xNPServerInit (int port)
 {
@@ -874,7 +874,7 @@ void S9xNPServerLoop (void *)
     BOOL success = FALSE;
 #else
     bool8 success = FALSE;
-    static struct timeval next1 = {0, 0};
+    static __thread struct timeval next1 = {0, 0};
     struct timeval now;
 #endif
 
@@ -1055,7 +1055,7 @@ void S9xNPServerLoop (void *)
 
 bool8 S9xNPStartServer (int port)
 {
-    static int p;
+    static __thread int p;
 
 #ifdef NP_DEBUG
     printf ("SERVER: Starting server on port %d @%ld\n", port, S9xGetMilliTime () - START);
@@ -1462,8 +1462,8 @@ void S9xNPServerQueueSendingLoadROMRequest (const char *filename)
 #ifndef __WIN32__
 uint32 S9xGetMilliTime ()
 {
-    static bool8 first = TRUE;
-    static long start_sec;
+    static __thread bool8 first = TRUE;
+    static __thread long start_sec;
     struct timeval tv;
 
     gettimeofday (&tv, NULL);

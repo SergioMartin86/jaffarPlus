@@ -2027,8 +2027,8 @@ static void DisplayStringFromBottom (const char *string, int linesFromBottom, in
 static void DisplayFrameRate (void)
 {
 	char	string[10];
-	static uint32 lastFrameCount = 0, calcFps = 0;
-	static time_t lastTime = time(NULL);
+	static __thread uint32 lastFrameCount = 0, calcFps = 0;
+	static __thread time_t lastTime = time(NULL);
 
 	time_t currTime = time(NULL);
 	if (lastTime != currTime) {
@@ -2054,8 +2054,8 @@ static void DisplayFrameRate (void)
 
 static void DisplayPressedKeys (void)
 {
-	static char	KeyMap[]   = { '0', '1', '2', 'R', 'L', 'X', 'A', '>', '<', 'v', '^', 'S', 's', 'Y', 'B' };
-	static int	KeyOrder[] = { 8, 10, 7, 9, 0, 6, 14, 13, 5, 1, 4, 3, 2, 11, 12 }; // < ^ > v   A B Y X  L R  S s
+	static __thread char	KeyMap[]   = { '0', '1', '2', 'R', 'L', 'X', 'A', '>', '<', 'v', '^', 'S', 's', 'Y', 'B' };
+	static __thread int	KeyOrder[] = { 8, 10, 7, 9, 0, 6, 14, 13, 5, 1, 4, 3, 2, 11, 12 }; // < ^ > v   A B Y X  L R  S s
 
 	enum controllers	controller;
     int					line = Settings.DisplayMovieFrame && S9xMovieActive() ? 2 : 1;

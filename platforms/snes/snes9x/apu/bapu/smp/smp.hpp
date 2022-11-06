@@ -1,6 +1,6 @@
 class SMP : public Processor {
 public:
-  static const uint8 iplrom[64];
+  static thread_local const uint8 iplrom[64];
   uint8 *apuram;
 
   enum { Threaded = false };
@@ -102,7 +102,7 @@ public:
   debugvirtual alwaysinline uint8 op_read(uint16 addr);
   debugvirtual alwaysinline void op_write(uint16 addr, uint8 data);
   debugvirtual alwaysinline void op_step();
-  static const unsigned cycle_count_table[256];
+  static thread_local const unsigned cycle_count_table[256];
   uint64 cycle_table_cpu[256];
   unsigned cycle_table_dsp[256];
   uint64 cycle_step_cpu;

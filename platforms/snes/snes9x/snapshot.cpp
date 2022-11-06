@@ -353,14 +353,14 @@ struct SnapshotScreenshotInfo
 	uint8	Data[MAX_SNES_WIDTH * MAX_SNES_HEIGHT * 3];
 };
 
-static struct Obsolete
+static thread_local struct Obsolete
 {
 	uint8	CPU_IRQActive;
 }	Obsolete;
 
 #define STRUCT	struct SCPUState
 
-static FreezeData	SnapCPU[] =
+static __thread FreezeData	SnapCPU[] =
 {
 	INT_ENTRY(6, Cycles),
 	INT_ENTRY(6, PrevCycles),
@@ -392,7 +392,7 @@ static FreezeData	SnapCPU[] =
 #undef STRUCT
 #define STRUCT	struct SRegisters
 
-static FreezeData	SnapRegisters[] =
+static __thread FreezeData	SnapRegisters[] =
 {
 	INT_ENTRY(6, PB),
 	INT_ENTRY(6, DB),
@@ -408,7 +408,7 @@ static FreezeData	SnapRegisters[] =
 #undef STRUCT
 #define STRUCT	struct SPPU
 
-static FreezeData	SnapPPU[] =
+static __thread FreezeData	SnapPPU[] =
 {
 	INT_ENTRY(6, VMA.High),
 	INT_ENTRY(6, VMA.Increment),
@@ -533,7 +533,7 @@ static FreezeData	SnapPPU[] =
 #undef STRUCT
 #define STRUCT	struct SDMASnapshot
 
-static FreezeData	SnapDMA[] =
+static __thread FreezeData	SnapDMA[] =
 {
 #define O(N) \
 	INT_ENTRY(6, dma[N].ReverseTransfer), \
@@ -559,7 +559,7 @@ static FreezeData	SnapDMA[] =
 #undef STRUCT
 #define STRUCT	struct SControlSnapshot
 
-static FreezeData	SnapControls[] =
+static __thread FreezeData	SnapControls[] =
 {
 	INT_ENTRY(6, ver),
 	ARRAY_ENTRY(6, port1_read_idx, 2, uint8_ARRAY_V),
@@ -577,7 +577,7 @@ static FreezeData	SnapControls[] =
 #undef STRUCT
 #define STRUCT	struct STimings
 
-static FreezeData	SnapTimings[] =
+static __thread FreezeData	SnapTimings[] =
 {
 	INT_ENTRY(6, H_Max_Master),
 	INT_ENTRY(6, H_Max),
@@ -602,7 +602,7 @@ static FreezeData	SnapTimings[] =
 #undef STRUCT
 #define STRUCT	struct FxRegs_s
 
-static FreezeData	SnapFX[] =
+static __thread FreezeData	SnapFX[] =
 {
 	ARRAY_ENTRY(6, avReg, 16, uint32_ARRAY_V),
 	INT_ENTRY(6, vColorReg),
@@ -663,7 +663,7 @@ static FreezeData	SnapFX[] =
 #undef STRUCT
 #define STRUCT	struct SSA1
 
-static FreezeData	SnapSA1[] =
+static __thread FreezeData	SnapSA1[] =
 {
 	DELETED_INT_ENTRY(6, 7, CPUExecuting, 1),
 	INT_ENTRY(6, ShiftedPB),
@@ -699,7 +699,7 @@ static FreezeData	SnapSA1[] =
 #undef STRUCT
 #define STRUCT	struct SSA1Registers
 
-static FreezeData	SnapSA1Registers[] =
+static __thread FreezeData	SnapSA1Registers[] =
 {
 	INT_ENTRY(6, PB),
 	INT_ENTRY(6, DB),
@@ -715,7 +715,7 @@ static FreezeData	SnapSA1Registers[] =
 #undef STRUCT
 #define STRUCT	struct SDSP1
 
-static FreezeData	SnapDSP1[] =
+static __thread FreezeData	SnapDSP1[] =
 {
 	INT_ENTRY(6, waiting4command),
 	INT_ENTRY(6, first_parameter),
@@ -913,7 +913,7 @@ static FreezeData	SnapDSP1[] =
 #undef STRUCT
 #define STRUCT	struct SDSP2
 
-static FreezeData	SnapDSP2[] =
+static __thread FreezeData	SnapDSP2[] =
 {
 	INT_ENTRY(6, waiting4command),
 	INT_ENTRY(6, command),
@@ -938,7 +938,7 @@ static FreezeData	SnapDSP2[] =
 #undef STRUCT
 #define STRUCT	struct SDSP4
 
-static FreezeData	SnapDSP4[] =
+static __thread FreezeData	SnapDSP4[] =
 {
 	INT_ENTRY(6, waiting4command),
 	INT_ENTRY(6, half_command),
@@ -1011,7 +1011,7 @@ static FreezeData	SnapDSP4[] =
 #undef STRUCT
 #define STRUCT	struct SST010
 
-static FreezeData	SnapST010[] =
+static __thread FreezeData	SnapST010[] =
 {
 	ARRAY_ENTRY(6, input_params, 16, uint8_ARRAY_V),
 	ARRAY_ENTRY(6, output_params, 16, uint8_ARRAY_V),
@@ -1023,7 +1023,7 @@ static FreezeData	SnapST010[] =
 #undef STRUCT
 #define STRUCT	struct SOBC1
 
-static FreezeData	SnapOBC1[] =
+static __thread FreezeData	SnapOBC1[] =
 {
 	INT_ENTRY(6, address),
 	INT_ENTRY(6, basePtr),
@@ -1033,7 +1033,7 @@ static FreezeData	SnapOBC1[] =
 #undef STRUCT
 #define STRUCT	struct SSPC7110Snapshot
 
-static FreezeData	SnapSPC7110Snap[] =
+static __thread FreezeData	SnapSPC7110Snap[] =
 {
 	INT_ENTRY(6, r4801),
 	INT_ENTRY(6, r4802),
@@ -1107,7 +1107,7 @@ static FreezeData	SnapSPC7110Snap[] =
 #undef STRUCT
 #define STRUCT	struct SSRTCSnapshot
 
-static FreezeData	SnapSRTCSnap[] =
+static __thread FreezeData	SnapSRTCSnap[] =
 {
 	INT_ENTRY(6, rtc_mode),
 	INT_ENTRY(6, rtc_index)
@@ -1116,7 +1116,7 @@ static FreezeData	SnapSRTCSnap[] =
 #undef STRUCT
 #define STRUCT	struct SBSX
 
-static FreezeData	SnapBSX[] =
+static __thread FreezeData	SnapBSX[] =
 {
 	INT_ENTRY(6, dirty),
 	INT_ENTRY(6, dirty2),
@@ -1138,7 +1138,7 @@ static FreezeData	SnapBSX[] =
 #undef STRUCT
 #define STRUCT	struct SMSU1
 
-static FreezeData	SnapMSU1[] =
+static __thread FreezeData	SnapMSU1[] =
 {
 	INT_ENTRY(9, MSU1_STATUS),
 	INT_ENTRY(9, MSU1_DATA_SEEK),
@@ -1155,7 +1155,7 @@ static FreezeData	SnapMSU1[] =
 #undef STRUCT
 #define STRUCT	struct SnapshotScreenshotInfo
 
-static FreezeData	SnapScreenshot[] =
+static __thread FreezeData	SnapScreenshot[] =
 {
 	INT_ENTRY(6, Width),
 	INT_ENTRY(6, Height),
@@ -1166,7 +1166,7 @@ static FreezeData	SnapScreenshot[] =
 #undef STRUCT
 #define STRUCT	struct SnapshotMovieInfo
 
-static FreezeData	SnapMovie[] =
+static __thread FreezeData	SnapMovie[] =
 {
 	INT_ENTRY(6, MovieInputDataSize)
 };
@@ -1182,7 +1182,7 @@ static void FreezeStruct (STREAM, const char *, void *, FreezeData *, int);
 
 void S9xResetSaveTimer (bool8 dontsave)
 {
-	static time_t	t = -1;
+	static __thread time_t	t = -1;
 
 	if (!Settings.DontSaveOopsSnapshot && !dontsave && t != -1 && time(NULL) - t > 300)
 	{

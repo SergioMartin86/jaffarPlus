@@ -130,7 +130,7 @@ public:
   enum RTC_Mode  { RTCM_Linear = 0x03, RTCM_Indexed = 0x0c } rtc_mode;
   unsigned rtc_index;
 
-  static const unsigned months[12];
+  static __thread  const unsigned months[12];
 };
 
 #endif

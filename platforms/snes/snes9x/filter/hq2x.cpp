@@ -200,7 +200,7 @@
 #define	trV		0x000006
 
 #ifdef GFX_MULTI_FORMAT
-static uint16	Mask_2 = 0, Mask13 = 0;
+static __thread uint16	Mask_2 = 0, Mask13 = 0;
 #else
 #define	Mask_2	SECOND_COLOR_MASK
 #define	Mask13	FIRST_THIRD_COLOR_MASK
@@ -515,7 +515,7 @@ static uint16	Mask_2 = 0, Mask13 = 0;
 #define Absolute(c) \
 (!(c & (1 << 31)) ? c : (~c + 1))
 
-static int	*RGBtoYUV = NULL;
+static __thread int	*RGBtoYUV = NULL;
 
 static void InitLUTs (void);
 static inline bool Diff (int, int);

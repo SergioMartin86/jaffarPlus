@@ -230,7 +230,7 @@ uint8 S9xGetST018 (uint32 Address)
 
 void S9xSetST018 (uint8 Byte, uint32 Address)
 {
-	static bool	reset   = false;
+	static __thread bool	reset   = false;
 	uint16		address = (uint16) Address & 0xFFFF;
 
 #ifdef DEBUGGER

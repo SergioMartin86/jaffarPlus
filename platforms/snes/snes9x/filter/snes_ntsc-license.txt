@@ -70,7 +70,7 @@ is quite different from the ordinary General Public License.  We use
 this license for certain libraries in order to permit linking those
 libraries into non-free programs.
 
-  When a program is linked with a library, whether statically or using
+  When a program is linked with a library, whether st atically or using
 a shared library, the combination of the two is legally speaking a
 combined work, a derivative of the original library.  The ordinary
 General Public License therefore permits such linking only if the

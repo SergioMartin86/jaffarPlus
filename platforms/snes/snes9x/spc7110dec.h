@@ -45,8 +45,8 @@ public:
   void mode1(bool init);
   void mode2(bool init);
 
-  static const uint8 evolution_table[53][4];
-  static const uint8 mode2_context_table[32][2];
+  static __thread const uint8 evolution_table[53][4];
+  static __thread const uint8 mode2_context_table[32][2];
 
   struct ContextState {
     uint8 index;

@@ -74,8 +74,8 @@ void SPC7110Decomp::init(unsigned mode, unsigned offset, unsigned index) {
 //
 
 void SPC7110Decomp::mode0(bool init) {
-  static uint8 val, in, span;
-  static int out, inverts, lps, in_count;
+  static __thread uint8 val, in, span;
+  static __thread int out, inverts, lps, in_count;
 
   if(init == true) {
     out = inverts = lps = 0;
@@ -141,9 +141,9 @@ void SPC7110Decomp::mode0(bool init) {
 }
 
 void SPC7110Decomp::mode1(bool init) {
-  static unsigned pixelorder[4], realorder[4];
-  static uint8 in, val, span;
-  static int out, inverts, lps, in_count;
+  static __thread unsigned pixelorder[4], realorder[4];
+  static __thread uint8 in, val, span;
+  static __thread int out, inverts, lps, in_count;
 
   if(init == true) {
     for(unsigned i = 0; i < 4; i++) pixelorder[i] = i;
@@ -244,10 +244,10 @@ void SPC7110Decomp::mode1(bool init) {
 }
 
 void SPC7110Decomp::mode2(bool init) {
-  static unsigned pixelorder[16], realorder[16];
-  static uint8 bitplanebuffer[16], buffer_index;
-  static uint8 in, val, span;
-  static int out0, out1, inverts, lps, in_count;
+  static __thread unsigned pixelorder[16], realorder[16];
+  static __thread uint8 bitplanebuffer[16], buffer_index;
+  static __thread  uint8 in, val, span;
+  static __thread int out0, out1, inverts, lps, in_count;
 
   if(init == true) {
     for(unsigned i = 0; i < 16; i++) pixelorder[i] = i;
@@ -360,7 +360,7 @@ void SPC7110Decomp::mode2(bool init) {
 
 //
 
-const uint8 SPC7110Decomp::evolution_table[53][4] = {
+const __thread uint8 SPC7110Decomp::evolution_table[53][4] = {
 //{ prob, nextlps, nextmps, toggle invert },
 
   { 0x5a,  1,  1, 1 },
@@ -422,7 +422,7 @@ const uint8 SPC7110Decomp::evolution_table[53][4] = {
   { 0x37, 51, 43, 0 },
 };
 
-const uint8 SPC7110Decomp::mode2_context_table[32][2] = {
+const __thread  uint8 SPC7110Decomp::mode2_context_table[32][2] = {
 //{ next 0, next 1 },
 
   {  1,  2 },

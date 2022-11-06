@@ -6,7 +6,7 @@
 
 #define _SRTCEMU_CPP_
 
-const unsigned SRTC::months[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+thread_local const unsigned SRTC::months[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 
 void SRTC::power() {

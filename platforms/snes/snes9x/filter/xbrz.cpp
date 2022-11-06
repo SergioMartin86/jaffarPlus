@@ -128,15 +128,15 @@ struct MatrixRotation;
 template <size_t I, size_t J, size_t N>
 struct MatrixRotation<ROT_0, I, J, N>
 {
-    static const size_t I_old = I;
-    static const size_t J_old = J;
+    static __thread const size_t I_old = I;
+    static __thread const size_t J_old = J;
 };
 
 template <RotationDegree rotDeg, size_t I, size_t J, size_t N> //(i, j) = (row, col) indices, N = size of (square) matrix
 struct MatrixRotation
 {
-    static const size_t I_old = N - 1 - MatrixRotation<static_cast<RotationDegree>(rotDeg - 1), I, J, N>::J_old; //old coordinates before rotation!
-    static const size_t J_old =         MatrixRotation<static_cast<RotationDegree>(rotDeg - 1), I, J, N>::I_old; //
+    static __thread const size_t I_old = N - 1 - MatrixRotation<static_cast<RotationDegree>(rotDeg - 1), I, J, N>::J_old; //old coordinates before rotation!
+    static __thread const size_t J_old =         MatrixRotation<static_cast<RotationDegree>(rotDeg - 1), I, J, N>::I_old; //
 };
 
 
@@ -151,8 +151,8 @@ public:
     template <size_t I, size_t J>
     uint32_t& ref() const
     {
-        static const size_t I_old = MatrixRotation<rotDeg, I, J, N>::I_old;
-        static const size_t J_old = MatrixRotation<rotDeg, I, J, N>::J_old;
+        static __thread const size_t I_old = MatrixRotation<rotDeg, I, J, N>::I_old;
+        static __thread const size_t J_old = MatrixRotation<rotDeg, I, J, N>::J_old;
         return *(out_ + J_old + I_old * outWidth_);
     }
 
@@ -212,9 +212,9 @@ public:
     static double dist(uint32_t pix1, uint32_t pix2)
     {
 #if defined _MSC_VER && _MSC_VER < 1900
-#error function scope static initialization is not yet thread-safe!
+#error function scope sta tic initialization is not yet thread-safe!
 #endif
-        static const DistYCbCrBuffer inst;
+        static __thread const DistYCbCrBuffer inst;
         return inst.distImpl(pix1, pix2);
     }
 
@@ -677,7 +677,7 @@ void scaleImage(const uint32_t* src, uint32_t* trg, int srcWidth, int srcHeight,
 template <class ColorGradient>
 struct Scaler2x : public ColorGradient
 {
-    static const int scale = 2;
+    static __thread const int scale = 2;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }
@@ -723,7 +723,7 @@ struct Scaler2x : public ColorGradient
 template <class ColorGradient>
 struct Scaler3x : public ColorGradient
 {
-    static const int scale = 3;
+    static __thread const int scale = 3;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }
@@ -781,7 +781,7 @@ struct Scaler3x : public ColorGradient
 template <class ColorGradient>
 struct Scaler4x : public ColorGradient
 {
-    static const int scale = 4;
+    static __thread const int scale = 4;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }
@@ -850,7 +850,7 @@ struct Scaler4x : public ColorGradient
 template <class ColorGradient>
 struct Scaler5x : public ColorGradient
 {
-    static const int scale = 5;
+    static __thread const int scale = 5;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }
@@ -938,7 +938,7 @@ struct Scaler5x : public ColorGradient
 template <class ColorGradient>
 struct Scaler6x : public ColorGradient
 {
-    static const int scale = 6;
+    static __thread const int scale = 6;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }

@@ -1152,7 +1152,7 @@ bool8 S9xNPGetData (int socket, uint8 *data, int length)
 bool8 S9xNPInitialise ()
 {
 #ifdef __WIN32__
-    static bool8 initialised = FALSE;
+    static __thread bool8 initialised = FALSE;
 
     if (!initialised)
     {

@@ -194,7 +194,7 @@
 #define ALL_COLOR_MASK	(FIRST_COLOR_MASK | SECOND_COLOR_MASK | THIRD_COLOR_MASK)
 
 #ifdef GFX_MULTI_FORMAT
-static uint32	colorMask = 0, qcolorMask = 0, lowPixelMask = 0, qlowpixelMask = 0;
+static __thread uint32	colorMask = 0, qcolorMask = 0, lowPixelMask = 0, qlowpixelMask = 0;
 #else
 #define colorMask		(((~RGB_LOW_BITS_MASK & ALL_COLOR_MASK) << 16) | (~RGB_LOW_BITS_MASK & ALL_COLOR_MASK))
 #define qcolorMask		(((~TWO_LOW_BITS_MASK & ALL_COLOR_MASK) << 16) | (~TWO_LOW_BITS_MASK & ALL_COLOR_MASK))

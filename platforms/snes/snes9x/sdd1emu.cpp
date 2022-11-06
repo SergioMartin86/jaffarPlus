@@ -418,9 +418,9 @@ void SDD1_decompress(uint8 *out, uint8 *in, int len){
 }
 
 #if 0
-static uint8 cur_plane;
-static uint8 num_bits;
-static uint8 next_byte;
+static __thread uint8 cur_plane;
+static __thread uint8 num_bits;
+static __thread uint8 next_byte;
 
 void SDD1_init(uint8 *in){
     bitplane_type=in[0]>>6;

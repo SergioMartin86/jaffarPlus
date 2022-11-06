@@ -22,7 +22,7 @@ public:
 
   SRTC();
 
-  static const unsigned months[12];
+  thread_local static const unsigned months[12];
   enum RTC_Mode { RTCM_Ready, RTCM_Command, RTCM_Read, RTCM_Write } rtc_mode;
   signed rtc_index;
 };

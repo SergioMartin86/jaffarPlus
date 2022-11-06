@@ -192,7 +192,7 @@ static void init_filters( init_t* impl, snes_ntsc_setup_t const* setup )
 	#endif
 }
 
-static float const default_decoder [6] =
+static __thread float const default_decoder [6] =
 	{ 0.956f, 0.621f, -0.272f, -0.647f, -1.105f, 1.702f };
 
 static void init( init_t* impl, snes_ntsc_setup_t const* setup )

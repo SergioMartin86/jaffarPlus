@@ -223,7 +223,7 @@ struct SDebug
 
 static thread_local struct SDebug	Debug = { { 0, 0 }, { 0, 0 } };
 
-static const char	*HelpMessage[] =
+static __thread const char	*HelpMessage[] =
 {
 	"Command Help:",
 	"?, help                - Shows this command help",
@@ -273,7 +273,7 @@ static const char	*HelpMessage[] =
 	NULL
 };
 
-static const char	*S9xMnemonics[256] =
+static __thread const char	*S9xMnemonics[256] =
 {
 	"BRK", "ORA", "COP", "ORA", "TSB", "ORA", "ASL", "ORA",
 	"PHP", "ORA", "ASL", "PHD", "TSB", "ORA", "ASL", "ORA",
@@ -309,7 +309,7 @@ static const char	*S9xMnemonics[256] =
 	"SED", "SBC", "PLX", "XCE", "JSR", "SBC", "INC", "SBC"
 };
 
-static int	AddrModes[256] =
+static __thread  int	AddrModes[256] =
 {
   // 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
 	 3, 10,  3, 19,  6,  6,  6, 12,  0,  1, 24,  0, 14, 14, 14, 17, // 0

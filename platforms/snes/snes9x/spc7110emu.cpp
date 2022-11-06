@@ -20,7 +20,7 @@
 
 #include "spc7110dec.cpp"
 
-const unsigned SPC7110::months[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+const __thread unsigned SPC7110::months[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 
 void SPC7110::power() {

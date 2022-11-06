@@ -750,7 +750,7 @@ static int make_snes9x_dirs (void)
 
 const char * S9xGetDirectory (enum s9x_getdirtype dirtype)
 {
-	static char	s[PATH_MAX + 1];
+	static thread_local char	s[PATH_MAX + 1];
 
 	if (dirNames[dirtype][0])
 		snprintf(s, PATH_MAX + 1, "%s%s%s", s9x_base_dir, SLASH_STR, dirNames[dirtype]);
@@ -794,7 +794,7 @@ const char * S9xGetDirectory (enum s9x_getdirtype dirtype)
 
 const char * S9xGetFilename (const char *ex, enum s9x_getdirtype dirtype)
 {
-	static char	s[PATH_MAX + 1];
+	static thread_local char	s[PATH_MAX + 1];
 	char		drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], fname[_MAX_FNAME + 1], ext[_MAX_EXT + 1];
 
 	_splitpath(Memory.ROMFilename, drive, dir, fname, ext);
@@ -805,7 +805,7 @@ const char * S9xGetFilename (const char *ex, enum s9x_getdirtype dirtype)
 
 const char * S9xGetFilenameInc (const char *ex, enum s9x_getdirtype dirtype)
 {
-	static char	s[PATH_MAX + 1];
+	static thread_local char	s[PATH_MAX + 1];
 	char		drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], fname[_MAX_FNAME + 1], ext[_MAX_EXT + 1];
 
 	unsigned int	i = 0;
@@ -917,7 +917,7 @@ bool8 S9xContinueUpdate (int width, int height)
 
 void S9xToggleSoundChannel (int c)
 {
-	static uint8	sound_switch = 255;
+	static thread_local uint8	sound_switch = 255;
 
 	if (c == 8)
 		sound_switch = 255;

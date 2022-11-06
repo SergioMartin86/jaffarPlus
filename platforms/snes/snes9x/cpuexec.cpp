@@ -327,7 +327,7 @@ static inline void S9xReschedule (void)
 void S9xDoHEventProcessing (void)
 {
 #ifdef DEBUGGER
-	static char	eventname[7][32] =
+	static __thread char	eventname[7][32] =
 	{
 		"",
 		"HC_HBLANK_START_EVENT",

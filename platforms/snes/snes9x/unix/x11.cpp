@@ -932,8 +932,8 @@ void S9xInitDisplay (int argc, char **argv)
 	}
 
 	/* Load UI cursors */
-	static XColor	bg, fg;
-	static char		data[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	static thread_local XColor	bg, fg;
+	static thread_local  char		data[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	Pixmap			bitmap;
 
 	bitmap = XCreateBitmapFromData(GUI.display, GUI.window, data, 8, 8);
@@ -1363,7 +1363,7 @@ static void TakedownXvImage (void)
 
 void S9xPutImage (int width, int height)
 {
-	static int	prevWidth = 0, prevHeight = 0;
+	static thread_local int	prevWidth = 0, prevHeight = 0;
 	int			copyWidth, copyHeight;
 	Blitter		blitFn = NULL;
 
@@ -1715,8 +1715,8 @@ void S9xProcessEvents (bool8 block)
 
 const char * S9xSelectFilename (const char *def, const char *dir1, const char *ext1, const char *title)
 {
-	static char	s[PATH_MAX + 1];
-	char		buffer[PATH_MAX + 1];
+	static thread_local char	s[PATH_MAX + 1];
+	char		thread_local  buffer[PATH_MAX + 1];
 
 	SetXRepeat(TRUE);
 
@@ -1754,8 +1754,8 @@ const char * S9xSelectFilename (const char *def, const char *dir1, const char *e
 
 void S9xMessage (int type, int number, const char *message)
 {
-	const int	max = 36 * 3;
-	static char	buffer[max + 1];
+	const thread_local int	max = 36 * 3;
+	static thread_local char	buffer[max + 1];
 
 	fprintf(stdout, "%s\n", message);
 	strncpy(buffer, message, max + 1);
@@ -1765,7 +1765,7 @@ void S9xMessage (int type, int number, const char *message)
 
 const char * S9xStringInput (const char *message)
 {
-	static char	buffer[256];
+	static thread_local char	buffer[256];
 
 	printf("%s: ", message);
 	fflush(stdout);
