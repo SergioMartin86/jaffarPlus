@@ -413,11 +413,11 @@ class ConfigFile {
     std::set<ConfigEntry, ConfigEntry::key_less> data;
 	SectionSizes sectionSizes;
 	int linectr;
-	static bool defaultAutoAdd;
-	static bool niceAlignment;
-	static bool showComments;
-	static bool alphaSort;
-	static bool timeSort;
+	static __thread bool defaultAutoAdd;
+	static __thread bool niceAlignment;
+	static __thread bool showComments;
+	static __thread bool alphaSort;
+	static __thread bool timeSort;
 };
 
 /* Config file format:

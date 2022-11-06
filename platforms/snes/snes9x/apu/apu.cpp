@@ -214,37 +214,37 @@ namespace SNES
 
 namespace spc
 {
-	static apu_callback	sa_callback     = NULL;
-	static void			*extra_data     = NULL;
+	static __thread apu_callback	sa_callback     = NULL;
+	static __thread void			*extra_data     = NULL;
 
-	static bool8		sound_in_sync   = TRUE;
-	static bool8		sound_enabled   = FALSE;
+	static __thread bool8		sound_in_sync   = TRUE;
+	static __thread bool8		sound_enabled   = FALSE;
 
-	static int			buffer_size;
-	static int			lag_master      = 0;
-	static int			lag             = 0;
+	static __thread int			buffer_size;
+	static __thread int			lag_master      = 0;
+	static __thread int			lag             = 0;
 
-	static uint8		*landing_buffer = NULL;
-	static uint8		*shrink_buffer  = NULL;
+	static __thread uint8		*landing_buffer = NULL;
+	static __thread uint8		*shrink_buffer  = NULL;
 
-	static Resampler	*resampler      = NULL;
+	static __thread Resampler	*resampler      = NULL;
 
-	static int32		reference_time;
-	static uint32		remainder;
+	static __thread int32		reference_time;
+	static __thread uint32		remainder;
 
-	static const int	timing_hack_numerator   = 256;
-	static int			timing_hack_denominator = 256;
+	static __thread const int	timing_hack_numerator   = 256;
+	static __thread int			timing_hack_denominator = 256;
 	/* Set these to NTSC for now. Will change to PAL in S9xAPUTimingSetSpeedup
 	   if necessary on game load. */
-	static uint32		ratio_numerator = APU_NUMERATOR_NTSC;
-	static uint32		ratio_denominator = APU_DENOMINATOR_NTSC;
+	static __thread uint32		ratio_numerator = APU_NUMERATOR_NTSC;
+	static __thread uint32		ratio_denominator = APU_DENOMINATOR_NTSC;
 }
 
 namespace msu
 {
-	static int			buffer_size;
-	static uint8		*landing_buffer = NULL;
-	static Resampler	*resampler		= NULL;
+	static __thread int			buffer_size;
+	static __thread uint8		*landing_buffer = NULL;
+	static __thread Resampler	*resampler		= NULL;
 }
 
 static void EightBitize (uint8 *, int);
@@ -292,7 +292,7 @@ static void ReverseStereo (uint8 *src_buffer, int sample_count)
 
 bool8 S9xMixSamples (uint8 *buffer, int sample_count)
 {
-	static int	shrink_buffer_size = -1;
+	static __thread int	shrink_buffer_size = -1;
 	uint8		*dest;
 
 	if (!Settings.SixteenBitSound || !Settings.Stereo)

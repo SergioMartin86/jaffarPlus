@@ -901,7 +901,7 @@ void S9xGetController (int port, enum controllers *controller, int8 *id1, int8 *
 
 void S9xReportControllers (void)
 {
-	static char	mes[128];
+	static __thread char	mes[128];
 	char		*c = mes;
 
 	S9xVerifyControllers();

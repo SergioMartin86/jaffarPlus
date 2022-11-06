@@ -191,7 +191,7 @@
 #include "snes9x.h"
 #include "memmap.h"
 
-static uint8	region_map[6][6] =
+static __thread uint8	region_map[6][6] =
 {
 	{ 0, 0x01, 0x03, 0x07, 0x0f, 0x1f },
 	{ 0,    0, 0x02, 0x06, 0x0e, 0x1e },

@@ -193,7 +193,7 @@
 #include "memmap.h"
 #include "sar.h"
 
-static int16	C4SinTable[512] =
+static __thread int16	C4SinTable[512] =
 {
 	     0,    402,    804,   1206,   1607,   2009,   2410,   2811,
 	  3211,   3611,   4011,   4409,   4808,   5205,   5602,   5997,
@@ -261,7 +261,7 @@ static int16	C4SinTable[512] =
 	 -3211,  -2811,  -2410,  -2009,  -1607,  -1206,   -804,   -402
 };
 
-static int16	C4CosTable[512] =
+static __thread int16	C4CosTable[512] =
 {
 	 32767,  32765,  32758,  32745,  32728,  32706,  32679,  32647,
 	 32610,  32568,  32521,  32469,  32413,  32351,  32285,  32214,
@@ -329,7 +329,7 @@ static int16	C4CosTable[512] =
 	 32610,  32647,  32679,  32706,  32728,  32745,  32758,  32765
 };
 
-static uint8	C4TestPattern[12 * 4] =
+static __thread uint8	C4TestPattern[12 * 4] =
 {
 	0x00, 0x00, 0x00, 0xff,
 	0xff, 0xff, 0x00, 0xff,
@@ -747,7 +747,7 @@ static void C4TransformLines (void)
 
 static void C4BitPlaneWave (void)
 {
-	static uint16 bmpdata[] =
+	static __thread uint16 bmpdata[] =
 	{
 		0x0000, 0x0002, 0x0004, 0x0006, 0x0008, 0x000A, 0x000C, 0x000E,
 		0x0200, 0x0202, 0x0204, 0x0206, 0x0208, 0x020A, 0x020C, 0x020E,

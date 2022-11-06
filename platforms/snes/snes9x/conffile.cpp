@@ -203,11 +203,11 @@
 
 using namespace std;
 
-bool ConfigFile::defaultAutoAdd = false;
-bool ConfigFile::niceAlignment = false;
-bool ConfigFile::showComments = true;
-bool ConfigFile::alphaSort = true;
-bool ConfigFile::timeSort = false;
+bool __thread ConfigFile::defaultAutoAdd = false;
+bool __thread ConfigFile::niceAlignment = false;
+bool __thread  ConfigFile::showComments = true;
+bool __thread ConfigFile::alphaSort = true;
+bool __thread ConfigFile::timeSort = false;
 static thread_local ConfigFile* curConfigFile = NULL; // for section_then_key_less
 
 ConfigFile::ConfigFile(void) {

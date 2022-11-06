@@ -232,7 +232,7 @@ struct SBSX_RTC
 static thread_local  struct SBSX_RTC	BSX_RTC;
 
 // flash card vendor information
-static const uint8	flashcard[20] =
+static __thread const uint8	flashcard[20] =
 {
 	0x4D, 0x00, 0x50, 0x00,	// vendor id
 	0x00, 0x00,				// ?
@@ -241,7 +241,7 @@ static const uint8	flashcard[20] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static const uint8	init2192[32] =	// FIXME
+static __thread const uint8	init2192[32] =	// FIXME
 {
 	00, 00, 00, 00, 00,		// unknown
 	01, 01, 00, 00, 00,

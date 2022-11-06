@@ -19,8 +19,7 @@ class HermiteResampler : public Resampler
         float r_frac;
         int   r_left[4], r_right[4];
 
-        static inline float
-        hermite (float mu1, float a, float b, float c, float d)
+        static inline float  hermite (float mu1, float a, float b, float c, float d)
         {
             float mu2, mu3, m0, m1, a0, a1, a2, a3;
 

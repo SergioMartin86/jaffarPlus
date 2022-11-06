@@ -3,7 +3,7 @@
 #include <nall/string.hpp>
 using namespace nall;
 
-static bool cycle_accurate;
+static __thread bool cycle_accurate;
 
 struct opcode_t {
   string name;
