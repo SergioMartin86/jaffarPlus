@@ -68,7 +68,6 @@ emuInstanceIncludes = include_directories([
     'snes9x/unix',
     'snes9x/apu',
     'snes9x/apu/bapu',
-    'snes9x/jma',
     'snes9x/filter', 
    ])
 
