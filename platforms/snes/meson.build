@@ -80,8 +80,7 @@ commonCFlags = [
                   '-DHAVE_STDINT_H',
                   '-DRIGHTSHIFT_IS_SAR',
                   '-DUSE_XVIDEO',
-                  '-DNOSOUND',
-                  '-DMITSHM'
+                  '-DNOSOUND'
                ]
                         
 
