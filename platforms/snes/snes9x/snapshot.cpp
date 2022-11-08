@@ -2377,7 +2377,7 @@ void S9xFreezeToStreamFast (STREAM stream)
 
  FreezeBlock (stream, "RAM", Memory.RAM, 0x20000);
 
- FreezeBlock (stream, "SRA", Memory.SRAM, 0x20000);
+// FreezeBlock (stream, "SRA", Memory.SRAM, 0x20000);
 
  FreezeBlock (stream, "FIL", Memory.FillRAM, 0x8000);
 
@@ -2573,9 +2573,9 @@ int S9xUnfreezeFromStreamFast (STREAM stream)
   if (result != SUCCESS)
    break;
 
-  result = UnfreezeBlockCopy (stream, "SRA", &local_sram, 0x20000);
-  if (result != SUCCESS)
-   break;
+//  result = UnfreezeBlockCopy (stream, "SRA", &local_sram, 0x20000);
+//  if (result != SUCCESS)
+//   break;
 
   result = UnfreezeBlockCopy (stream, "FIL", &local_fillram, 0x8000);
   if (result != SUCCESS)
@@ -2709,7 +2709,7 @@ int S9xUnfreezeFromStreamFast (STREAM stream)
 
   memcpy(Memory.RAM, local_ram, 0x20000);
 
-  memcpy(Memory.SRAM, local_sram, 0x20000);
+//  memcpy(Memory.SRAM, local_sram, 0x20000);
 
   memcpy(Memory.FillRAM, local_fillram, 0x8000);
 
