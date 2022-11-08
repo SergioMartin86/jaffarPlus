@@ -1885,6 +1885,7 @@ int initSnes9x (int argc, char **argv)
   Settings.TurboSkipFrames = 15;
   Settings.CartAName[0] = 0;
   Settings.CartBName[0] = 0;
+  Settings.Mute = TRUE;
 
   unixSettings.JoystickEnabled = FALSE;
   unixSettings.ThreadSound = FALSE;

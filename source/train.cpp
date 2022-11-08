@@ -9,11 +9,11 @@
 //#define _DETECT_POSSIBLE_MOVES
 
 auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
-auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return countButtonsPressedNumber8(a) < countButtonsPressedNumber8(b); };
+auto moveCountComparerNumber = [](const INPUT_TYPE a, const INPUT_TYPE b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ playerAnimation
+ #define _KEY_VALUE_ kidFrame
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -74,7 +74,7 @@ void Train::run()
      std::vector<std::string> vec(key.second.begin(), key.second.end());
      std::sort(vec.begin(), vec.end(), moveCountComparerString);
      auto itr = vec.begin();
-     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "playerAnimation", key.first, itr->c_str());
+     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "kidFrame", key.first, itr->c_str());
      itr++;
      for (; itr != vec.end(); itr++)
      {
@@ -243,13 +243,19 @@ void Train::computeStates()
         fullMoves.push_back(actualMove);
        }
 
-       for (uint64_t i = 0; i < 256*sizeof(INPUT_TYPE); i++)
+       size_t maxInput = 1;
+       for (size_t i = 0; i < sizeof(INPUT_TYPE); i++) maxInput *= 256;
+       for (uint64_t i = 0; i < maxInput; i++)
        {
         if (possibleMoveSet.contains(i) == false)
-        if ((i & 0b00001000) == 0) // NES
-        if ((i & 0b00000100) == 0) // NES Select
-//          if ((i & 0b01000000) == 0) // SDLPOP
-//          if ((i & 0b00100000) == 0) // SDLPOP
+
+        if ((i & SNES_X_MASK) == 0)
+        if ((i & SNES_Y_MASK) == 0)
+        if ((i & SNES_TL_MASK) == 0)
+        if ((i & SNES_TR_MASK) == 0)
+        if ((i & SNES_START_MASK) == 0)
+        if ((i & SNES_SELECT_MASK) == 0)
+        if (*_gameInstances[threadId]->gameFrame == 3)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
@@ -262,7 +268,7 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t keyValue = 0; //*_gameInstances[threadId]->_KEY_VALUE_;
+       moveKeyTemplate keyValue = *_gameInstances[threadId]->_KEY_VALUE_;
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -845,19 +851,6 @@ void Train::showSavingLoop()
       double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - bestStateSaveTimer).count();
       if (bestStateTimerElapsed / 1.0e+9 > _outputSaveFrequency)
       {
-//       _bestStateMutex.lock();
-//
-//       // Storing best and worst states
-//       uint8_t bestStateData[_STATE_DATA_SIZE_TRAIN];
-//       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
-//       _showGameInstance->pushState(bestStateData);
-//       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
-//
-//       uint8_t worstStateData[_STATE_DATA_SIZE_TRAIN];
-//       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
-//       _showGameInstance->pushState(worstStateData);
-//       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
-//       _bestStateMutex.unlock();
 
        // Storing the best and worst solution sequences
        if (_storeMoveHistory)

@@ -86,6 +86,7 @@ void loadSolutionFile(
  // Getting sequence size
  sequenceLength = moveList.size();
  moveList.push_back(".");
+ moveList.push_back(".");
 
  // Flag to indicate whether a fail condition was met
  failConditionFound = false;

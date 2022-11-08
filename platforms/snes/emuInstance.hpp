@@ -49,7 +49,14 @@ class EmuInstance : public EmuInstanceBase
   initSnes9x(argc, argv);
 
   _baseMem = Memory.RAM;
+//  saveStateFile("boot.state");
+//  exit(0);
+
   loadStateFile(stateFilePath);
+
+  // Printing State size
+//  printf("State Size: %u\n", S9xFreezeSizeFast());
+//  exit(0);
  }
 
  void loadStateFile(const std::string& stateFilePath) override
@@ -59,27 +66,41 @@ class EmuInstance : public EmuInstanceBase
   if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: %s\n", stateFilePath.c_str());
 
   // Loading state object into the emulator
-  deserializeState((uint8_t*)stateData.c_str());
+  memStream stream((uint8_t*)stateData.data(), S9xFreezeSize());
+  S9xUnfreezeFromStream(&stream);
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
  {
   std::string stateBuffer;
-  stateBuffer.resize(_STATE_DATA_SIZE_TRAIN);
-  serializeState((uint8_t*)stateBuffer.c_str());
+  stateBuffer.resize(S9xFreezeSize());
+
+  memStream stream((uint8_t*)stateBuffer.data(), S9xFreezeSize());
+  S9xFreezeToStream(&stream);
+
   saveStringToFile(stateBuffer, stateFilePath.c_str());
  }
 
  void serializeState(uint8_t* state) const override
  {
+#ifdef PREVENT_RENDERING
   memStream stream(state, _STATE_DATA_SIZE_TRAIN);
+  S9xFreezeToStreamFast(&stream);
+#else
+  memStream stream(state, _STATE_DATA_SIZE_PLAY);
   S9xFreezeToStream(&stream);
+#endif
  }
 
  void deserializeState(const uint8_t* state) override
  {
+#ifdef PREVENT_RENDERING
   memStream stream(state, _STATE_DATA_SIZE_TRAIN);
+  S9xUnfreezeFromStreamFast(&stream);
+#else
+  memStream stream(state, _STATE_DATA_SIZE_PLAY);
   S9xUnfreezeFromStream(&stream);
+#endif
  }
 
  static INPUT_TYPE moveStringToCode(const std::string& move)
@@ -104,6 +125,8 @@ class EmuInstance : public EmuInstanceBase
    case '|': break;
   }
 
+  //printf("move %s - %u\n", move.c_str(), moveCode);
+
   return moveCode;
  }
 
@@ -124,6 +147,8 @@ class EmuInstance : public EmuInstanceBase
   if (move & SNES_START_MASK)  moveString += 'S'; else moveString += '.';
   if (move & SNES_SELECT_MASK) moveString += 's'; else moveString += '.';
 
+//  printf("move %u - %s\n", move, moveString.c_str());
+
   return moveString;
  }
 
@@ -131,6 +156,7 @@ class EmuInstance : public EmuInstanceBase
  {
   MovieSetJoypad(0, move);
   S9xMainLoop();
+  //printf("move %u -> %u\n", move, *((uint16*)&_baseMem[0x0272]));
  }
 
 };

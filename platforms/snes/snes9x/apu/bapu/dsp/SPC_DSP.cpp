@@ -804,7 +804,7 @@ void SPC_DSP::run( int clocks_remain )
 	loop:
 
 		#define PHASE( n ) if ( n && !--clocks_remain ) break; case n:
-		GEN_DSP_TIMING
+		//GEN_DSP_TIMING
 		#undef PHASE
 
 		if ( --clocks_remain )

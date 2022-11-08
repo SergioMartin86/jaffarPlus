@@ -122,13 +122,15 @@ class State
   }
 
   // Move r/w operations
-  inline void setMove(const size_t idx, const uint8_t move)
+  inline void setMove(const size_t idx, const INPUT_TYPE move)
   {
-    *((INPUT_TYPE*)((uint8_t*)this + _moveHistoryOffset + idx)) = move;
+   INPUT_TYPE* basePos = (INPUT_TYPE*)((uint8_t*)this + _moveHistoryOffset);
+   basePos[idx] = move;
   }
 
-  inline uint8_t getMove(const size_t idx) const
+  inline INPUT_TYPE getMove(const size_t idx) const
   {
-   return *((INPUT_TYPE*)((uint8_t*)this + _moveHistoryOffset + idx));
+   INPUT_TYPE* basePos = (INPUT_TYPE*)((uint8_t*)this + _moveHistoryOffset);
+   return basePos[idx];
   }
 };

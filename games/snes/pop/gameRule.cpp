@@ -53,6 +53,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Kid HP") return dt_uint8;
   if (propertyName == "Kid Frame") return dt_uint8;
 
+  if (propertyName == "Exit Door State") return dt_uint8;
+
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
   return dt_uint8;
@@ -69,6 +71,8 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Kid Direction") return gameInstance->kidDirection;
   if (propertyName == "Kid HP") return gameInstance->kidHP;
   if (propertyName == "Kid Frame") return gameInstance->kidFrame;
+
+  if (propertyName == "Exit Door State") return gameInstance->exitDoorState;
 
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());

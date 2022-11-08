@@ -30,16 +30,22 @@ class GameInstance : public GameInstanceBase
   uint16_t* gameTimer;
   uint8_t* gameFrame;
   uint8_t* isLagFrame;
+  uint16_t* inputCode;
 
   uint8_t* kidRoom;
   uint8_t* kidPosX;
   uint8_t* kidPosY;
   uint8_t* kidDirection;
+  uint8_t* kidBuffered;
   uint8_t* kidHP;
   uint8_t* kidFrame;
   uint8_t* kidAction;
   uint8_t* kidCol;
   uint8_t* kidRow;
+  uint8_t* kidHangingState;
+  uint8_t* kidCrouchState;
+
+  uint8_t* exitDoorState;
 
   uint16_t advanceState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);

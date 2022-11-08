@@ -648,11 +648,11 @@ void S9xAPUExecute (void)
 
 void S9xAPUEndScanline (void)
 {
-	S9xAPUExecute();
-	SNES::dsp.synchronize();
-
-	if (SNES::dsp.spc_dsp.sample_count() >= APU_MINIMUM_SAMPLE_BLOCK || !spc::sound_in_sync)
-		S9xLandSamples();
+//	S9xAPUExecute();
+//	SNES::dsp.synchronize();
+//
+//	if (SNES::dsp.spc_dsp.sample_count() >= APU_MINIMUM_SAMPLE_BLOCK || !spc::sound_in_sync)
+//		S9xLandSamples();
 }
 
 void S9xAPUTimingSetSpeedup (int ticks)
