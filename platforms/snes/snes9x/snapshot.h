@@ -215,6 +215,6 @@ bool8 S9xUnfreezeGame (const char *);
 int S9xUnfreezeGameMem (const uint8 *,uint32);
 void S9xFreezeToStream (STREAM);
 int	 S9xUnfreezeFromStream (STREAM);
-void S9xFreezeToStreamFast (STREAM);
-int  S9xUnfreezeFromStreamFast (STREAM);
+void S9xFreezeToStreamFast (memStream* stream);
+int  S9xUnfreezeFromStreamFast (memStream* stream);
 #endif

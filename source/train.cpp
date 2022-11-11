@@ -74,13 +74,15 @@ void Train::run()
      std::vector<std::string> vec(key.second.begin(), key.second.end());
      std::sort(vec.begin(), vec.end(), moveCountComparerString);
      auto itr = vec.begin();
-     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "kidFrame", key.first, itr->c_str());
+     std::string simpleMove = simplifyMove(*itr);
+     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "kidFrame", key.first, simpleMove.c_str());
      itr++;
      for (; itr != vec.end(); itr++)
      {
-       printf(", \"%s\"", itr->c_str());
+      std::string simpleMove = simplifyMove(*itr);
+       printf(", \"%s\"", simpleMove.c_str());
      }
-     printf("});\n");
+     printf(" });\n");
      //printf("Size: %lu\n", vec.size());
     }
 

@@ -34,7 +34,7 @@ class PlaybackInstance : public PlaybackInstanceBase
 
   doRendering = true;
   S9xMainLoop();
-  doRendering = false;
+//  doRendering = false;
 
   // Reload game state
   _game->_emu->deserializeState(emuState);

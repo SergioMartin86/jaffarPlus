@@ -145,7 +145,7 @@ void loadSolutionFile(
 
   // Storing full sequence
   unpackedMoveSequence.push_back(moveList[i]);
-  for (uint16_t f = 0; f < skippedFrames; f++) unpackedMoveSequence.push_back(".");
+  for (uint16_t f = 0; f < skippedFrames; f++) unpackedMoveSequence.push_back(EmuInstance::moveCodeToString(0));
 
   // Adding current hash to the set
   _uint128_t curHash = gameInstance.computeHash();

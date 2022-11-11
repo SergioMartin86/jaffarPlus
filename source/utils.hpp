@@ -85,7 +85,7 @@ inline std::string simplifyMove(const std::string& move)
  std::string simpleMove;
 
  bool isEmptyMove = true;
- for (size_t i = 0; i < move.size(); i++) if (move[i] != '.') { simpleMove += move[i]; isEmptyMove = false; }
+ for (size_t i = 0; i < move.size(); i++) if (move[i] != '.' && move[i] != '|') { simpleMove += move[i]; isEmptyMove = false; }
  if (isEmptyMove) return ".";
  return simpleMove;
 }

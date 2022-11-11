@@ -275,7 +275,6 @@ class memStream : public Stream
         virtual int revert (size_t from, size_t offset);
         virtual void closeStream();
 
-	private:
 		uint8   *mem;
         size_t  msize;
         size_t  remaining;

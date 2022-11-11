@@ -1,7 +1,4 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
- 
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
@@ -10,7 +7,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 0,
+   "Timer Tolerance": 1,
    "Hash Includes": [  ]
   },
   
@@ -23,23 +20,23 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 5500,
+      "Max Move Count": 2000,
       "Store Move History": true,
       "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 5000,
+      "XDelta3 Max Differences": 3500,
       "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 15000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Save Intermediate Results":
@@ -89,7 +86,7 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 0, "Center": 0, "Min": 0, "Max": 25 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 1, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.2, "Room": 1, "Center": 0, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.5, "Room": 1, "Center": 0, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -127,8 +124,28 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 2, "Center": 0, "Min": 0, "Max": 25 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 2, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 91, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.5, "Room": 3, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1104,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Kid Pos X", "Op": "<", "Value":  95 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value":  70 }
+    ],
+    
+    "Satisfies": [ 1004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.3, "Room": 3, "Center": 0, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -137,18 +154,18 @@
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  4 }
+     { "Property": "Kid Room", "Op": "==", "Value":  4 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value":  150 }
     ],
     
-    "Satisfies": [ 1004 ],
+    "Satisfies": [ 1104 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 25 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 0, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 4, "Center": 0, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 0, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -176,7 +193,7 @@
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Kid Room", "Op": "!=", "Value":  0 },
      { "Property": "Exit Door State", "Op": ">", "Value":  0 }
     ],
     
@@ -203,25 +220,8 @@
     [
      { "Type": "Trigger Win" }
     ]
-   },
-   
-   {
-    "Label": 1999,
-    
-    "Conditions":
-    [
-     { "Property": "Kid Room", "Op": "==", "Value": 3 },
-     { "Property": "Kid Pos X", "Op": "<", "Value": 75 },
-     { "Property": "Kid Pos Y", "Op": ">", "Value": 180 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
    }
    
+
   ]  
 }

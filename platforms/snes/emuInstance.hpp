@@ -63,7 +63,7 @@ class EmuInstance : public EmuInstanceBase
  {
   // Loading state data
   std::string stateData;
-  if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: %s\n", stateFilePath.c_str());
+  if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: '%s'\n", stateFilePath.c_str());
 
   // Loading state object into the emulator
   memStream stream((uint8_t*)stateData.data(), S9xFreezeSize());
@@ -132,7 +132,7 @@ class EmuInstance : public EmuInstanceBase
 
  static std::string moveCodeToString(const INPUT_TYPE move)
  {
-  std::string moveString;
+  std::string moveString = "|..|";
 
   if (move & SNES_UP_MASK)     moveString += 'U'; else moveString += '.';
   if (move & SNES_DOWN_MASK)   moveString += 'D'; else moveString += '.';
@@ -149,6 +149,7 @@ class EmuInstance : public EmuInstanceBase
 
 //  printf("move %u - %s\n", move, moveString.c_str());
 
+  moveString += "|............|";
   return moveString;
  }
 
