@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <set>
 
-//#define _DETECT_POSSIBLE_MOVES
+#define _DETECT_POSSIBLE_MOVES
 
 auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
 auto moveCountComparerNumber = [](const INPUT_TYPE a, const INPUT_TYPE b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };

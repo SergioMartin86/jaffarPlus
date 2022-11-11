@@ -167,9 +167,9 @@ uint16_t GameInstance::advanceState(const INPUT_TYPE &move)
 
   if (skipFrames)
   {
-   while (*gameFrame != 0)
+   _emu->advanceState(0);
+   while (*gameFrame != 1)
    {
-    _emu->advanceState(0);
     if (*gameFrame == 3 || *gameFrame == 4) _emu->advanceState(move);
     else _emu->advanceState(0);
 

@@ -61,6 +61,8 @@ class EmuInstance : public EmuInstanceBase
 
  void loadStateFile(const std::string& stateFilePath) override
  {
+  if (stateFilePath == "") { S9xReset(); return; }
+
   // Loading state data
   std::string stateData;
   if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: '%s'\n", stateFilePath.c_str());
