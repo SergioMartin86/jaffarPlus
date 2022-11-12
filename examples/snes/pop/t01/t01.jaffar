@@ -8,7 +8,7 @@
   "Game Configuration": 
   {
    "Skip Frames": true,
-   "Timer Tolerance": 1,
+   "Timer Tolerance": 4,
    "Hash Includes": [  ]
   },
   
@@ -30,8 +30,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":

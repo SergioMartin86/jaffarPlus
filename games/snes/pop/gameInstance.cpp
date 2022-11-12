@@ -159,26 +159,41 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  return moveList;
 }
 
-uint16_t GameInstance::advanceState(const INPUT_TYPE &move)
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
-  uint16_t skippedFrames = 0;
+  size_t skippedFrames = 0;
+  std::vector<INPUT_TYPE> moves;
 
-  if (skipFrames == false) _emu->advanceState(move);
+  if (skipFrames == false)
+  {
+   _emu->advanceState(move);
+   moves.push_back(move);
+  }
 
-  if (skipFrames)
+  if (skipFrames == true)
   {
    _emu->advanceState(0);
+   moves.push_back(0);
+
    while (*gameFrame != 1)
    {
-    if (*gameFrame == 3 || *gameFrame == 4) _emu->advanceState(move);
-    else _emu->advanceState(0);
+    if (*gameFrame == 3 || *gameFrame == 4)
+    {
+     _emu->advanceState(move);
+     moves.push_back(move);
+    }
+    else
+    {
+     _emu->advanceState(0);
+     moves.push_back(0);
+    }
 
     skippedFrames++;
     if (skippedFrames > 64) EXIT_WITH_ERROR("Exceeded skip frames\n");
    }
   }
 
-  return skippedFrames;
+  return moves;
 }
 
 // Function to get magnet information

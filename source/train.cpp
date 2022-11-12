@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <set>
 
-#define _DETECT_POSSIBLE_MOVES
+//#define _DETECT_POSSIBLE_MOVES
 
 auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
 auto moveCountComparerNumber = [](const INPUT_TYPE a, const INPUT_TYPE b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
@@ -121,7 +121,7 @@ void Train::run()
    {
     std::string solutionString;
     solutionString += EmuInstance::moveCodeToString(lastState->getMove(0));
-    for (ssize_t i = 1; i < _currentStep-1; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->getMove(i));
+    for (ssize_t i = 1; i < _currentStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->getMove(i));
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    }
   }
@@ -302,7 +302,7 @@ void Train::computeStates()
 
         // Perform the selected move
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
-        _gameInstances[threadId]->advanceState(moveId);
+        _gameInstances[threadId]->advanceGameState(moveId);
         tf = std::chrono::high_resolution_clock::now();
         threadStateAdvanceTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 

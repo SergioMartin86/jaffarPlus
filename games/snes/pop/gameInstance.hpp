@@ -59,7 +59,7 @@ class GameInstance : public GameInstanceBase
   uint8_t timerTolerance;
   bool skipFrames;
 
-  uint16_t advanceState(const INPUT_TYPE &move) override;
+  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   _uint128_t computeHash() const override;
   void updateDerivedValues() override;

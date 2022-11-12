@@ -140,14 +140,14 @@ class EmuInstance : public EmuInstanceBase
   if (move & SNES_DOWN_MASK)   moveString += 'D'; else moveString += '.';
   if (move & SNES_LEFT_MASK)   moveString += 'L'; else moveString += '.';
   if (move & SNES_RIGHT_MASK)  moveString += 'R'; else moveString += '.';
-  if (move & SNES_A_MASK)      moveString += 'A'; else moveString += '.';
+  if (move & SNES_SELECT_MASK) moveString += 's'; else moveString += '.';
+  if (move & SNES_START_MASK)  moveString += 'S'; else moveString += '.';
+  if (move & SNES_Y_MASK)      moveString += 'Y'; else moveString += '.';
   if (move & SNES_B_MASK)      moveString += 'B'; else moveString += '.';
   if (move & SNES_X_MASK)      moveString += 'X'; else moveString += '.';
-  if (move & SNES_Y_MASK)      moveString += 'Y'; else moveString += '.';
+  if (move & SNES_A_MASK)      moveString += 'A'; else moveString += '.';
   if (move & SNES_TL_MASK)     moveString += 'l'; else moveString += '.';
   if (move & SNES_TR_MASK)     moveString += 'r'; else moveString += '.';
-  if (move & SNES_START_MASK)  moveString += 'S'; else moveString += '.';
-  if (move & SNES_SELECT_MASK) moveString += 's'; else moveString += '.';
 
 //  printf("move %u - %s\n", move, moveString.c_str());
 

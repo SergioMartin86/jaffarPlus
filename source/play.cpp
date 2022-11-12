@@ -124,7 +124,7 @@ void loadSolutionFile(
  hashMap[curHash] = 0;
 
  // Iterating move list in the sequence
- for (ssize_t i = 0; i < moveList.size(); i++)
+ for (ssize_t i = 0; i < (ssize_t)moveList.size(); i++)
  {
   // Getting possible moves
   auto possibleMoves = gameInstance.getPossibleMoves();
@@ -139,13 +139,12 @@ void loadSolutionFile(
   }
 
   // Advancing state
-  auto skippedFrames = gameInstance.advanceStateString(moveList[i]);
-  refresh();
-  gameInstance.updateDerivedValues();
+  auto newMoveList = gameInstance.advanceStateString(moveList[i]);
+  std::vector<std::string> newMoveListString;
+  for (const auto& move : newMoveList) newMoveListString.push_back(EmuInstance::moveCodeToString(move));
 
-  // Storing full sequence
-  unpackedMoveSequence.push_back(moveList[i]);
-  for (uint16_t f = 0; f < skippedFrames; f++) unpackedMoveSequence.push_back(EmuInstance::moveCodeToString(0));
+  // Storing full unpacked sequence
+  unpackedMoveSequence.insert(unpackedMoveSequence.end(), newMoveListString.begin(), newMoveListString.end());
 
   // Adding current hash to the set
   _uint128_t curHash = gameInstance.computeHash();
