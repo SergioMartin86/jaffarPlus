@@ -2,14 +2,14 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
-    "State File": "t01.state"
+    "State File": "t01a.state"
   },
   
   "Game Configuration": 
   {
    "Skip Frames": true,
-   "Timer Tolerance": 4,
-   "Hash Includes": [  ]
+   "Exit Jingle Mode": false,
+   "Timer Tolerance": 0
   },
   
   
@@ -30,8 +30,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":

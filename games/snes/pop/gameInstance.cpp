@@ -1,37 +1,45 @@
 #include "gameInstance.hpp"
 #include "gameRule.hpp"
+#define TILE_STATE_BASE 0x1E9E0
 
 GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 {
  // Setting emulator
  _emu = emu;
 
- gameTimer        = (uint16_t*)  &_emu->_baseMem[0x0002];
- gameFrame        = (uint8_t*)   &_emu->_baseMem[0x0000];
- isLagFrame       = (uint8_t*)   &_emu->_baseMem[0x020C];
- inputCode        = (uint16_t*)  &_emu->_baseMem[0x0272];
+ gameTimer        = (uint16_t*)  &_emu->_baseMem[0x00002];
+ gameFrame        = (uint8_t*)   &_emu->_baseMem[0x00000];
+ isLagFrame       = (uint8_t*)   &_emu->_baseMem[0x0020C];
+ inputCode        = (uint16_t*)  &_emu->_baseMem[0x00272];
 
- kidRoom          = (uint8_t*)   &_emu->_baseMem[0x0472];
- kidPosX          = (uint8_t*)   &_emu->_baseMem[0x0468];
- kidPosY          = (uint8_t*)   &_emu->_baseMem[0x0469];
- kidDirection     = (uint8_t*)   &_emu->_baseMem[0x045A];
- kidHP            = (uint8_t*)   &_emu->_baseMem[0x0508];
- kidFrame         = (uint8_t*)   &_emu->_baseMem[0x0457];
- kidAction        = (uint8_t*)   &_emu->_baseMem[0x045D];
- kidBuffered      = (uint8_t*)   &_emu->_baseMem[0x0512];
- kidCol           = (uint8_t*)   &_emu->_baseMem[0x045B];
- kidRow           = (uint8_t*)   &_emu->_baseMem[0x045C];
- kidHangingState  = (uint8_t*)   &_emu->_baseMem[0x0522];
- kidGrabState     = (uint8_t*)   &_emu->_baseMem[0x05B5];
- kidCrouchState   = (uint8_t*)   &_emu->_baseMem[0x0470];
- kidClimbingType1 = (uint8_t*)   &_emu->_baseMem[0x04CA];
- kidClimbingType2 = (uint8_t*)   &_emu->_baseMem[0x04CB];
- kidSequenceStep  = (uint8_t*)   &_emu->_baseMem[0x0595];
+ kidRoom          = (uint8_t*)   &_emu->_baseMem[0x00472];
+ kidPosX          = (uint8_t*)   &_emu->_baseMem[0x00468];
+ kidPosY          = (uint8_t*)   &_emu->_baseMem[0x00469];
+ kidDirection     = (uint8_t*)   &_emu->_baseMem[0x0046A];
+ kidHP            = (uint8_t*)   &_emu->_baseMem[0x00508];
+ kidFrame         = (uint8_t*)   &_emu->_baseMem[0x00467];
+ kidAction        = (uint8_t*)   &_emu->_baseMem[0x0046D];
+ kidBuffered      = (uint8_t*)   &_emu->_baseMem[0x00512];
+ kidCol           = (uint8_t*)   &_emu->_baseMem[0x0046B];
+ kidRow           = (uint8_t*)   &_emu->_baseMem[0x0046C];
+ kidHangingState  = (uint8_t*)   &_emu->_baseMem[0x00522];
+ kidGrabState     = (uint8_t*)   &_emu->_baseMem[0x005B5];
+ kidCrouchState   = (uint8_t*)   &_emu->_baseMem[0x00470];
+ kidClimbingType1 = (uint8_t*)   &_emu->_baseMem[0x004CA];
+ kidClimbingType2 = (uint8_t*)   &_emu->_baseMem[0x004CB];
+ kidSequenceStep  = (uint8_t*)   &_emu->_baseMem[0x00595];
+ exitDoorState    = (uint8_t*)   &_emu->_baseMem[0x0066A];
 
- exitDoorState    = (uint8_t*)   &_emu->_baseMem[0x066A];
-
+ tileStateBase    = (uint8_t*)   &_emu->_baseMem[TILE_STATE_BASE];
  kidPrevFrame     = (uint8_t*)   &_emu->_baseMem[0x1FF00];
  kidFrameDiff     = (int8_t*)    &_emu->_baseMem[0x1FF01];
+
+ jingleState      = (uint8_t*)   &_emu->_baseMem[0x0215];
+ exitJingleTimer  = (uint16_t*)  &_emu->_apuMem[0x0030];
+ isPaused         = (uint8_t*)  &_emu->_baseMem[0x0455];
+ menuMode         = (uint8_t*)  &_emu->_baseMem[0x001A];
+ menuOption       = (uint8_t*)  &_emu->_baseMem[0x0855];
+ exitLevelMode    = (uint8_t*)  &_emu->_baseMem[0x0D77];
 
  // Timer tolerance
  if (isDefined(config, "Timer Tolerance") == true)
@@ -42,6 +50,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  if (isDefined(config, "Skip Frames") == true)
   skipFrames = config["Skip Frames"].get<bool>();
  else EXIT_WITH_ERROR("[Error] Game Configuration 'Skip Frames' was not defined\n");
+
+ // Skip frames?
+ if (isDefined(config, "Exit Jingle Mode") == true)
+  exitJingleMode = config["Exit Jingle Mode"].get<bool>();
+ else EXIT_WITH_ERROR("[Error] Game Configuration 'Exit Jingle Mode' was not defined\n");
 
  // Initialize derivative values
  updateDerivedValues();
@@ -62,37 +75,53 @@ _uint128_t GameInstance::computeHash() const
    hash.Update(actualTimer % (timerTolerance+1));
   }
 
-  if (*isLagFrame != 15)
-  {
-   hash.Update(*gameTimer);
-   hash.Update( &_emu->_baseMem[0x0000], 0x100);
-  }
+//  if (*isLagFrame != 15)
+//  {
+//   hash.Update(*gameTimer);
+//   hash.Update( &_emu->_baseMem[0x0000], 0x100);
+//  }
 
   if (*exitDoorState > 0) hash.Update(*gameTimer);
 
   // If kid is hurting, wait for him to recover
   if (*kidFrame == 109 && *kidCrouchState < 89) hash.Update(*kidCrouchState);
 
-
   // Kid Info:
-//  hash.Update(*kidRoom);
-//  hash.Update(*kidPosX);
-//  hash.Update(*kidPosY);
-//  hash.Update(*kidDirection);
-//  hash.Update(*kidHP);
-//  hash.Update(*kidFrame);
-//  hash.Update(*kidAction);
-//  hash.Update(*kidCol);
-//  hash.Update(*kidRow);
-    hash.Update(&_emu->_baseMem[0x0400], 0xC0);
-    hash.Update(&_emu->_baseMem[0x04D0], 0x20);
+  hash.Update(*kidRoom);
+  hash.Update(*kidPosX);
+  hash.Update(*kidPosY);
+  hash.Update(*kidDirection);
+  hash.Update(*kidHP);
+  hash.Update(*kidFrame);
+  hash.Update(*kidAction);
+  hash.Update(*kidCol);
+  hash.Update(*kidRow);
+//    hash.Update(&_emu->_baseMem[0x0400], 0xC0);
+  hash.Update(&_emu->_baseMem[0x04D0], 0x20);
 
-    hash.Update(*kidGrabState);
-    hash.Update(*kidHangingState);
-    hash.Update(*kidClimbingType1);
-    hash.Update(*kidClimbingType2);
-    hash.Update(*kidSequenceStep);
-    hash.Update(*kidPrevFrame);
+  hash.Update(*kidGrabState);
+  hash.Update(*kidHangingState);
+  hash.Update(*kidClimbingType1);
+  hash.Update(*kidClimbingType2);
+  hash.Update(*kidSequenceStep);
+  hash.Update(*kidPrevFrame);
+
+  // Partially hashing all possible tile states
+  for (size_t i = 0; i < 24*30; i++) hash.Update(tileStateBase[i] % 4);
+
+  if (exitJingleMode == true)
+  {
+   hash.Update(*jingleState);
+   hash.Update(*exitJingleTimer);
+   hash.Update(*isPaused);
+   hash.Update(*menuMode);
+   hash.Update(*menuOption);
+   hash.Update(*exitLevelMode);
+   hash.Update(&_emu->_baseMem[0x0010], 0x04);
+   hash.Update(&_emu->_baseMem[0x0530], 0x70);
+   hash.Update(&_emu->_baseMem[0x0D77], 0x10);
+   hash.Update(*inputCode);
+  }
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -102,11 +131,8 @@ _uint128_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
- if (*gameFrame == 0)
- {
   *kidFrameDiff = *kidFrame - *kidPrevFrame;
   *kidPrevFrame = *kidFrame;
- }
 }
 
 // Function to determine the current possible moves
@@ -114,47 +140,63 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 {
  std::vector<std::string> moveList = {"."};
 
+ if (exitJingleMode)
+ {
+  if (*exitLevelMode > 26) return { ".", "s", "A", "B", "U", "D" };
+  else return {"."};
+ }
+
 // if (*gameFrame < 3) return moveList;
 
- if (*kidFrame == 0x0001) moveList.insert(moveList.end(), { "B"});
- if (*kidFrame == 0x0002) moveList.insert(moveList.end(), { "B"});
- if (*kidFrame == 0x0003) moveList.insert(moveList.end(), { "B"});
- if (*kidFrame == 0x0004) moveList.insert(moveList.end(), { "R", "L", "DR", "DL"});
- if (*kidFrame == 0x0005) moveList.insert(moveList.end(), { "R", "L", "DR", "DL"});
- if (*kidFrame == 0x0006) moveList.insert(moveList.end(), { "R", "L", "DR", "DL"});
- if (*kidFrame == 0x0007) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL"});
- if (*kidFrame == 0x0008) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL"});
- if (*kidFrame == 0x0009) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL"});
- if (*kidFrame == 0x000A) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UL"});
- if (*kidFrame == 0x000B) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UL"});
- if (*kidFrame == 0x000C) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL"});
- if (*kidFrame == 0x000D) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL"});
- if (*kidFrame == 0x000E) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL"});
- if (*kidFrame == 0x000F) moveList.insert(moveList.end(), { "B", "A", "R", "L", "D", "U", "RA", "LA"});
- if (*kidFrame == 0x0030) moveList.insert(moveList.end(), { "R", "L"});
- if (*kidFrame == 0x0032) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "UR", "UL"});
- if (*kidFrame == 0x0033) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "UR", "UL"});
- if (*kidFrame == 0x0034) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "UR", "UL"});
- if (*kidFrame == 0x0043) moveList.insert(moveList.end(), { "R", "L"});
- if (*kidFrame == 0x0044) moveList.insert(moveList.end(), { "R", "L"});
- if (*kidFrame == 0x0045) moveList.insert(moveList.end(), { "R", "L"});
- if (*kidFrame == 0x0057) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x0058) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x0059) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x005A) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x005B) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x005C) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x005D) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x005E) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x005F) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x0060) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x0061) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x0062) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x0063) moveList.insert(moveList.end(), { "B", "U"});
- if (*kidFrame == 0x0069) moveList.insert(moveList.end(), { "B"});
- if (*kidFrame == 0x006A) moveList.insert(moveList.end(), { "B"});
- if (*kidFrame == 0x006D) moveList.insert(moveList.end(), { "A", "D", "DA", "DR", "DL", "DRA", "DLA"});
- if (*kidFrame == 0x006E) moveList.insert(moveList.end(), { "R", "L", "D", "U", "AB", "LB", "LA", "UB", "UR", "UL", "UD", "RAB", "LAB", "URB", "ULB", "URAB", "ULAB", "UDRAB", "UDLAB"});
+ if (*kidFrame == 0x0001) moveList.insert(moveList.end(), { "B" });
+ if (*kidFrame == 0x0002) moveList.insert(moveList.end(), { "B" });
+ if (*kidFrame == 0x0003) moveList.insert(moveList.end(), { "B", "R", "L", "DR", "DL" });
+ if (*kidFrame == 0x0004) moveList.insert(moveList.end(), { "R", "L", "DR", "DL" });
+ if (*kidFrame == 0x0005) moveList.insert(moveList.end(), { "R", "L", "DR", "DL" });
+ if (*kidFrame == 0x0006) moveList.insert(moveList.end(), { "R", "L", "DR", "DL" });
+ if (*kidFrame == 0x0007) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
+ if (*kidFrame == 0x0008) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
+ if (*kidFrame == 0x0009) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL", "RA", "UDRA", "LA", "UDLA" });
+ if (*kidFrame == 0x000A) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
+ if (*kidFrame == 0x000B) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
+ if (*kidFrame == 0x000C) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
+ if (*kidFrame == 0x000D) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
+ if (*kidFrame == 0x000E) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
+ if (*kidFrame == 0x000F) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "BA", "RA", "LA", "UA", "UR", "UL" });
+ if (*kidFrame == 0x0022) moveList.insert(moveList.end(), { "R", "L" });
+ if (*kidFrame == 0x0030) moveList.insert(moveList.end(), { "R", "L" });
+ if (*kidFrame == 0x0032) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "UR", "UL", "RBA", "LBA" });
+ if (*kidFrame == 0x0033) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "LA", "UR", "UL", "RBA", "LBA" });
+ if (*kidFrame == 0x0034) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "UR", "UL", "RBA", "LBA" });
+ if (*kidFrame == 0x0036) moveList.insert(moveList.end(), { "R", "L" });
+ if (*kidFrame == 0x0038) moveList.insert(moveList.end(), { "R", "L", "UR", "UL", "LBA", "RBA" });
+ if (*kidFrame == 0x0043) moveList.insert(moveList.end(), { "R", "L" });
+ if (*kidFrame == 0x0044) moveList.insert(moveList.end(), { "R", "L" });
+ if (*kidFrame == 0x0045) moveList.insert(moveList.end(), { "R", "L" });
+ if (*kidFrame == 0x0051) moveList.insert(moveList.end(), { "B" });
+ if (*kidFrame == 0x0057) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x0058) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x0059) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x005A) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x005B) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x005C) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x005D) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x005E) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x005F) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x0060) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x0061) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x0062) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x0063) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x0066) moveList.insert(moveList.end(), { "ULB", "URB" });
+ if (*kidFrame == 0x0069) moveList.insert(moveList.end(), { "B" });
+ if (*kidFrame == 0x006A) moveList.insert(moveList.end(), { "B" });
+ if (*kidFrame == 0x006B) moveList.insert(moveList.end(), { "R", "L", "UBA" });
+ if (*kidFrame == 0x006C) moveList.insert(moveList.end(), { "DR", "DL" });
+ if (*kidFrame == 0x006D) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "DA", "DR", "DL", "DRA", "DLA" });
+ if (*kidFrame == 0x006F) moveList.insert(moveList.end(), { "R", "L", "D", "U" });
+ if (*kidFrame == 0x0076) moveList.insert(moveList.end(), { "R", "L" });
+ if (*kidFrame == 0x0077) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "LA" });
+
 
  return moveList;
 }
@@ -175,19 +217,11 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
    _emu->advanceState(0);
    moves.push_back(0);
 
-   while (*gameFrame != 1)
+   while (*gameFrame != 1 || *isLagFrame != 15)
    {
-    if (*gameFrame == 3 || *gameFrame == 4)
-    {
-     _emu->advanceState(move);
-     moves.push_back(move);
-    }
-    else
-    {
-     _emu->advanceState(0);
-     moves.push_back(0);
-    }
-
+    INPUT_TYPE newMove = *gameFrame == 3 || *gameFrame == 4 ? move : 0;
+    _emu->advanceState(newMove);
+    moves.push_back(newMove);
     skippedFrames++;
     if (skippedFrames > 64) EXIT_WITH_ERROR("Exceeded skip frames\n");
    }
@@ -291,6 +325,14 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Kid Climbing Type:      %02u / %02u\n", *kidClimbingType1, *kidClimbingType2);
  LOG("[Jaffar]  + Exit Door State:        %02u\n", *exitDoorState);
 
+ if (exitJingleMode == true)
+ {
+  LOG("[Jaffar]  + Jingle State / Timer:   %02u (%05u)\n", *jingleState, *exitJingleTimer);
+  LOG("[Jaffar]  + Is Paused:              %02u\n", *isPaused);
+  LOG("[Jaffar]  + Menu Mode / Option:     %02u %02u\n", *menuMode, *menuOption);
+  LOG("[Jaffar]  + Exit Level Mode:        %02u\n", *exitLevelMode);
+ }
+
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
  LOG("\n");
@@ -299,5 +341,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Kid Horizontal Magnet - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center, magnets.kidHorizontalMagnet.min, magnets.kidHorizontalMagnet.max);
  LOG("[Jaffar]  + Kid Vertical Magnet   - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center, magnets.kidVerticalMagnet.min, magnets.kidVerticalMagnet.max);
 
+ for (const auto& tile : tileWatchList)
+ LOG("[Jaffar]  + Tile State            - Room: %02u, Row: %02u, Col: %02u, Index: %03u, Mem: 0x%05X, Value: %03u\n", tile.room, tile.row, tile.col, tile.index, TILE_STATE_BASE + tile.index, tileStateBase[tile.index]);
 }
 

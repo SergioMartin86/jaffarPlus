@@ -3,6 +3,7 @@
 *.sfc
 *.rom
 *.bin
+callgrind*
 jaffar.best.sav
 jaffar.current.sav
 subprojects/abseil-cpp*

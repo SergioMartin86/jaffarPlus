@@ -23,6 +23,15 @@ struct magnetSet_t {
  genericMagnet_t kidHorizontalMagnet;
  genericMagnet_t kidVerticalMagnet;
 };
+
+struct tileWatch_t
+{
+ int room;
+ int row;
+ int col;
+ int index;
+};
+
 class GameInstance : public GameInstanceBase
 {
  public:
@@ -51,6 +60,15 @@ class GameInstance : public GameInstanceBase
 
   uint8_t* exitDoorState;
 
+  uint8_t* jingleState;
+  uint16_t* exitJingleTimer;
+  uint8_t* isPaused;
+  uint8_t* menuMode;
+  uint8_t* menuOption;
+  uint8_t* exitLevelMode;
+
+  uint8_t* tileStateBase;
+
   // Artificial memory positions
   uint8_t* kidPrevFrame;
   int8_t* kidFrameDiff;
@@ -58,6 +76,11 @@ class GameInstance : public GameInstanceBase
   // Settings
   uint8_t timerTolerance;
   bool skipFrames;
+  bool exitJingleMode;
+
+  // Tile watch list
+  std::vector<tileWatch_t> tileWatchList;
+
 
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
