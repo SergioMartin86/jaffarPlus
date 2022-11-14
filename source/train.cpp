@@ -257,7 +257,7 @@ void Train::computeStates()
         if ((i & SNES_TR_MASK) == 0)
         if ((i & SNES_START_MASK) == 0)
         if ((i & SNES_SELECT_MASK) == 0)
-        if (*_gameInstances[threadId]->gameFrame == 3)
+//        if (countButtonsPressedNumber(i) > 2 == false)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
@@ -272,6 +272,8 @@ void Train::computeStates()
        // Store key values
        moveKeyTemplate keyValue = *_gameInstances[threadId]->_KEY_VALUE_;
 
+       // printf("possibleMove size: %lu\n", possibleMoves.size());
+
       #endif // _DETECT_POSSIBLE_MOVES
 
       // Making copy of base state data and pointer
@@ -282,6 +284,7 @@ void Train::computeStates()
       threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
       // Running possible moves
+
       for (size_t idx = 0; idx < possibleMoves.size(); idx++)
       {
         // Increasing  states processed counter

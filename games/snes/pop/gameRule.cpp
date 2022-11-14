@@ -52,7 +52,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Kid Direction") return dt_uint8;
   if (propertyName == "Kid HP") return dt_uint8;
   if (propertyName == "Kid Frame") return dt_uint8;
-
+  if (propertyName == "Jingle State") return dt_uint8;
+  if (propertyName == "Tile State") return dt_uint8;
   if (propertyName == "Exit Door State") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
@@ -71,9 +72,36 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Kid Direction") return gameInstance->kidDirection;
   if (propertyName == "Kid HP") return gameInstance->kidHP;
   if (propertyName == "Kid Frame") return gameInstance->kidFrame;
+  if (propertyName == "Jingle State") return gameInstance->jingleState;
 
   if (propertyName == "Exit Door State") return gameInstance->exitDoorState;
 
+
+  int room = -1;
+  if (isDefined(condition, "Room") == true)
+  {
+   if (condition["Room"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Rule %lu tile room must be an integer.\n", _label);
+   room = condition["Room"].get<int>();
+  }
+
+  int row = -1;
+  if (isDefined(condition, "Row") == true)
+  {
+   if (condition["Row"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Rule %lu row must be an integer.\n", _label);
+   row = condition["Row"].get<int>();
+  }
+
+  int col = -1;
+  if (isDefined(condition, "Col") == true)
+  {
+   if (condition["Col"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Rule %lu col must be an integer.\n", _label);
+   col = condition["Col"].get<int>();
+  }
+
+  int index = room * 30 + row * 10 + col;
+  gameInstance->tileWatchList.push_back(tileWatch_t {.room = room, .row = row, .col = col, .index = index} );
+
+  if (propertyName == "Tile State") return &gameInstance->tileStateBase[index];
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

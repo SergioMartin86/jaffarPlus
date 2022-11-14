@@ -21,6 +21,7 @@
 #include "statemanager.h"
 
 #include "unix.hpp"
+#include "snes/snes.hpp"
 extern thread_local bool doRendering;
 
 class EmuInstance : public EmuInstanceBase
@@ -28,6 +29,7 @@ class EmuInstance : public EmuInstanceBase
  public:
 
  uint8_t* _baseMem;
+ uint8_t* _apuMem;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
@@ -49,6 +51,7 @@ class EmuInstance : public EmuInstanceBase
   initSnes9x(argc, argv);
 
   _baseMem = Memory.RAM;
+  _apuMem = SNES::smp.apuram;
 //  saveStateFile("boot.state");
 //  exit(0);
 
