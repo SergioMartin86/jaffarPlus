@@ -257,7 +257,7 @@ void Train::computeStates()
         if ((i & SNES_TR_MASK) == 0)
         if ((i & SNES_START_MASK) == 0)
         if ((i & SNES_SELECT_MASK) == 0)
-//        if (countButtonsPressedNumber(i) > 2 == false)
+        if (countButtonsPressedNumber(i) > 2 == false)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
@@ -284,7 +284,6 @@ void Train::computeStates()
       threadStateDeserializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
       // Running possible moves
-
       for (size_t idx = 0; idx < possibleMoves.size(); idx++)
       {
         // Increasing  states processed counter
