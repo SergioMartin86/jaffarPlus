@@ -72,11 +72,13 @@ class GameInstance : public GameInstanceBase
   // Artificial memory positions
   uint8_t* kidPrevFrame;
   int8_t* kidFrameDiff;
+  uint16_t* rawFrameCount;
 
   // Settings
   uint8_t timerTolerance;
   bool skipFrames;
   bool exitJingleMode;
+  float frameCountDiscount;
 
   // Tile watch list
   std::vector<tileWatch_t> tileWatchList;

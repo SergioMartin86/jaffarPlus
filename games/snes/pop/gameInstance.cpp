@@ -33,6 +33,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  tileStateBase    = (uint8_t*)   &_emu->_baseMem[TILE_STATE_BASE];
  kidPrevFrame     = (uint8_t*)   &_emu->_baseMem[0x1FF00];
  kidFrameDiff     = (int8_t*)    &_emu->_baseMem[0x1FF01];
+ rawFrameCount    = (uint16_t*)  &_emu->_baseMem[0x1FF50];
 
  jingleState      = (uint8_t*)   &_emu->_baseMem[0x0215];
  exitJingleTimer  = (uint16_t*)  &_emu->_apuMem[0x0030];
@@ -51,10 +52,18 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   skipFrames = config["Skip Frames"].get<bool>();
  else EXIT_WITH_ERROR("[Error] Game Configuration 'Skip Frames' was not defined\n");
 
- // Skip frames?
+ // Exit jingle mode
  if (isDefined(config, "Exit Jingle Mode") == true)
   exitJingleMode = config["Exit Jingle Mode"].get<bool>();
  else EXIT_WITH_ERROR("[Error] Game Configuration 'Exit Jingle Mode' was not defined\n");
+
+ // Discount for lag frames
+ if (isDefined(config, "Frame Count Discount") == true)
+  frameCountDiscount = config["Frame Count Discount"].get<float>();
+ else EXIT_WITH_ERROR("[Error] Game Configuration 'Frame Count Discount' was not defined\n");
+
+ // Resetting frame count
+ *rawFrameCount = 0;
 
  // Initialize derivative values
  updateDerivedValues();
@@ -75,16 +84,19 @@ _uint128_t GameInstance::computeHash() const
    hash.Update(actualTimer % (timerTolerance+1));
   }
 
-//  if (*isLagFrame != 15)
-//  {
-//   hash.Update(*gameTimer);
-//   hash.Update( &_emu->_baseMem[0x0000], 0x100);
-//  }
+  if (*isLagFrame != 15)
+  {
+   hash.Update(*gameTimer);
+   hash.Update( &_emu->_baseMem[0x0000], 0x100);
+  }
 
   if (*exitDoorState > 0) hash.Update(*gameTimer);
 
   // If kid is hurting, wait for him to recover
   if (*kidFrame == 109 && *kidCrouchState < 89) hash.Update(*kidCrouchState);
+
+  // If not skipping non-playable frames, hash the buffered input
+  if (skipFrames == false) hash.Update(*inputCode);
 
   // Kid Info:
   hash.Update(*kidRoom);
@@ -96,7 +108,7 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*kidAction);
   hash.Update(*kidCol);
   hash.Update(*kidRow);
-//    hash.Update(&_emu->_baseMem[0x0400], 0xC0);
+  hash.Update(&_emu->_baseMem[0x0467], 0x40);
   hash.Update(&_emu->_baseMem[0x04D0], 0x20);
 
   hash.Update(*kidGrabState);
@@ -107,7 +119,7 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*kidPrevFrame);
 
   // Partially hashing all possible tile states
-  for (size_t i = 0; i < 24*30; i++) hash.Update(tileStateBase[i] % 4);
+  for (size_t i = 0; i < 24*30; i++) hash.Update(tileStateBase[i] % 16);
 
   if (exitJingleMode == true)
   {
@@ -146,7 +158,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
   else return {"."};
  }
 
-// if (*gameFrame < 3) return moveList;
+ if (skipFrames == false) if (*gameFrame < 3 || *isLagFrame != 15) return moveList;
 
  if (*kidFrame == 0x0001) moveList.insert(moveList.end(), { "B" });
  if (*kidFrame == 0x0002) moveList.insert(moveList.end(), { "B" });
@@ -156,7 +168,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0006) moveList.insert(moveList.end(), { "R", "L", "DR", "DL" });
  if (*kidFrame == 0x0007) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
  if (*kidFrame == 0x0008) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
- if (*kidFrame == 0x0009) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL", "RA", "UDRA", "LA", "UDLA" });
+ if (*kidFrame == 0x0009) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL", "RA", "LA" });
  if (*kidFrame == 0x000A) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
  if (*kidFrame == 0x000B) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
  if (*kidFrame == 0x000C) moveList.insert(moveList.end(), { "R", "L", "DR", "DL", "UR", "UL" });
@@ -165,11 +177,11 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x000F) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "BA", "RA", "LA", "UA", "UR", "UL" });
  if (*kidFrame == 0x0022) moveList.insert(moveList.end(), { "R", "L" });
  if (*kidFrame == 0x0030) moveList.insert(moveList.end(), { "R", "L" });
- if (*kidFrame == 0x0032) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "UR", "UL", "RBA", "LBA" });
- if (*kidFrame == 0x0033) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "LA", "UR", "UL", "RBA", "LBA" });
- if (*kidFrame == 0x0034) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "UR", "UL", "RBA", "LBA" });
+ if (*kidFrame == 0x0032) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "UR", "UL", "RB", "LB" });
+ if (*kidFrame == 0x0033) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "LA", "UR", "UL", "RB", "LB" });
+ if (*kidFrame == 0x0034) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "UR", "UL", "RB", "LB" });
  if (*kidFrame == 0x0036) moveList.insert(moveList.end(), { "R", "L" });
- if (*kidFrame == 0x0038) moveList.insert(moveList.end(), { "R", "L", "UR", "UL", "LBA", "RBA" });
+ if (*kidFrame == 0x0038) moveList.insert(moveList.end(), { "R", "L", "UR", "UL", "LB", "RB" });
  if (*kidFrame == 0x0043) moveList.insert(moveList.end(), { "R", "L" });
  if (*kidFrame == 0x0044) moveList.insert(moveList.end(), { "R", "L" });
  if (*kidFrame == 0x0045) moveList.insert(moveList.end(), { "R", "L" });
@@ -187,12 +199,11 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0061) moveList.insert(moveList.end(), { "B", "U" });
  if (*kidFrame == 0x0062) moveList.insert(moveList.end(), { "B", "U" });
  if (*kidFrame == 0x0063) moveList.insert(moveList.end(), { "B", "U" });
- if (*kidFrame == 0x0066) moveList.insert(moveList.end(), { "ULB", "URB" });
  if (*kidFrame == 0x0069) moveList.insert(moveList.end(), { "B" });
  if (*kidFrame == 0x006A) moveList.insert(moveList.end(), { "B" });
- if (*kidFrame == 0x006B) moveList.insert(moveList.end(), { "R", "L", "UBA" });
+ if (*kidFrame == 0x006B) moveList.insert(moveList.end(), { "R", "L" });
  if (*kidFrame == 0x006C) moveList.insert(moveList.end(), { "DR", "DL" });
- if (*kidFrame == 0x006D) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "DA", "DR", "DL", "DRA", "DLA" });
+ if (*kidFrame == 0x006D) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "DA", "DR", "DL" });
  if (*kidFrame == 0x006F) moveList.insert(moveList.end(), { "R", "L", "D", "U" });
  if (*kidFrame == 0x0076) moveList.insert(moveList.end(), { "R", "L" });
  if (*kidFrame == 0x0077) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "LA" });
@@ -227,6 +238,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
    }
   }
 
+  *rawFrameCount += moves.size();
   return moves;
 }
 
@@ -292,6 +304,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 
  reward += magnets.kidVerticalMagnet.intensity * -diff;
 
+ // Subtract frame count punishment to account for lag
+ reward -= (float)*gameTimer * frameCountDiscount;
+
  // Returning reward
  return reward;
 }
@@ -305,6 +320,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Game Timer:             %05u (Tolerance: %02u)\n", *gameTimer, timerTolerance);
+ LOG("[Jaffar]  + Raw Frame Count:        %05u\n", *rawFrameCount);
  LOG("[Jaffar]  + Game Frame:             %02u\n", *gameFrame);
  LOG("[Jaffar]  + Is Lag Frame:           %02u\n", *isLagFrame);
  LOG("[Jaffar]  + Input Code:             %05u\n", *inputCode);

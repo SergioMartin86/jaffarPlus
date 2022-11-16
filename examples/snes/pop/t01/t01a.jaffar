@@ -7,9 +7,10 @@
   
   "Game Configuration": 
   {
-   "Skip Frames": true,
+   "Skip Frames": false,
    "Exit Jingle Mode": false,
-   "Timer Tolerance": 0
+   "Timer Tolerance": 1,
+   "Frame Count Discount": 0.0
   },
   
   

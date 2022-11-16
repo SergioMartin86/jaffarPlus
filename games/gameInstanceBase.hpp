@@ -29,7 +29,7 @@ class GameInstanceBase
 
   // Function to advance state. Returns the number of skipped frames
   virtual std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) = 0;
-  virtual std::vector<INPUT_TYPE> advanceStateString(const std::string& move) {  return advanceGameState(_emu->moveStringToCode(move)); }
+  std::vector<INPUT_TYPE> advanceStateString(const std::string& move) {  return advanceGameState(_emu->moveStringToCode(move)); }
 
   // Serialization/Deserialization Routines
   void popState(uint8_t* __restrict__ outputStateData) const { _emu->serializeState(outputStateData); }
