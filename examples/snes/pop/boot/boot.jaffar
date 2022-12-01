@@ -9,8 +9,12 @@
   {
    "Skip Frames": false,
    "Exit Jingle Mode": false,
-   "Timer Tolerance": 0
-  },
+   "Timer Tolerance": 0,
+   "Frame Count Discount": 0.0,
+   "Fight Mode Discount": 0.0,
+   "Game Property Hashes": [ ],
+   "Tile Hashes":  [  ]
+   },
   
   
   "Jaffar Configuration": 

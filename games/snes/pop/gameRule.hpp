@@ -7,6 +7,8 @@ class GameRule : public Rule
 {
  public:
 
+ uint8_t _customValue = 0;
+ bool _customValueActive = false;
  magnetSet_t _magnets[ROOM_COUNT];
 
  GameRule();
