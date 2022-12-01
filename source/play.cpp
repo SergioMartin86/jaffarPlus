@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
    if (command == 'd')
    {
      // Storing replay file
-     std::string sequenceFileName = "jaffar.sol";
+     std::string sequenceFileName = solutionFile + std::string(".translated");
 
      // Unpacking full move sequence
      std::string unpackedSequence;

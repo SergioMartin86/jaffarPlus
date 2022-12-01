@@ -161,7 +161,7 @@ inline bool getBitFlag(const uint8_t value, const uint8_t idx)
 inline size_t countButtonsPressedString(const std::string& input) { size_t count = 0; for (size_t i = 0; i < input.size(); i++) if (input[i] != '.') count++; return count; };
 
 template<typename T> inline uint16_t countButtonsPressedNumber(const T& input) {
- uint16_t count = input;
+ uint16_t count = 0;
  if (input & 0b0000000000000001) count++;
  if (input & 0b0000000000000010) count++;
  if (input & 0b0000000000000100) count++;
@@ -180,3 +180,7 @@ template<typename T> inline uint16_t countButtonsPressedNumber(const T& input) {
  if (input & 0b1000000000000000) count++;
  return count;
 };
+
+static auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
+static auto moveCountComparerNumber = [](const INPUT_TYPE a, const INPUT_TYPE b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
+

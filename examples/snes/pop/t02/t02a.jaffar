@@ -13,7 +13,6 @@
    "Frame Count Discount": 0.0
   },
   
-  
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
@@ -24,15 +23,15 @@
     {
       "Max Move Count": 3000,
       "Store Move History": true,
-      "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 5000,
-      "XDelta3 Use Zlib Compression": true
+      "XDelta3 Enabled": true,
+      "XDelta3 Max Differences": 8000,
+      "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 120000,
-     "Max Size Upper Bound (Mb)": 220000
+     "Max Size Lower Bound (Mb)": 40000,
+     "Max Size Upper Bound (Mb)": 160000
     },
     
     "Hash Database":

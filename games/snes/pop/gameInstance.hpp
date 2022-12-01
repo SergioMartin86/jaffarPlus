@@ -1,11 +1,12 @@
 #pragma once
 
-#define ROOM_COUNT 256
+#define ROOM_COUNT 24
 //#define _INVERSE_FRAME_RATE 16667
 #define _INVERSE_FRAME_RATE 4166
 
 #include "gameInstanceBase.hpp"
 #include <set>
+#include <map>
 
 // Datatype to describe a generic magnet
 struct genericMagnet_t {
@@ -22,6 +23,10 @@ struct magnetSet_t {
  // Relevant simon magnets
  genericMagnet_t kidHorizontalMagnet;
  genericMagnet_t kidVerticalMagnet;
+ genericMagnet_t guardHorizontalMagnet;
+ genericMagnet_t guardVerticalMagnet;
+ float kidDirectionMagnet = 0.0f;
+ float guardHPMagnet = 0.0f;
 };
 
 struct tileWatch_t
@@ -42,6 +47,7 @@ class GameInstance : public GameInstanceBase
   uint16_t* inputCode;
 
   uint8_t* kidRoom;
+  uint8_t* kidFightMode;
   uint8_t* kidPosX;
   uint8_t* kidPosY;
   uint8_t* kidDirection;
@@ -58,6 +64,14 @@ class GameInstance : public GameInstanceBase
   uint8_t* kidClimbingType1;
   uint8_t* kidClimbingType2;
 
+  uint8_t* guardRoom;
+  uint8_t* guardPosX;
+  uint8_t* guardPosY;
+  uint8_t* guardDirection;
+  uint8_t* guardHP;
+  uint8_t* guardMaxHP;
+  uint8_t* guardFrame;
+
   uint8_t* exitDoorState;
 
   uint8_t* jingleState;
@@ -68,22 +82,37 @@ class GameInstance : public GameInstanceBase
   uint8_t* exitLevelMode;
 
   uint8_t* tileStateBase;
+  uint8_t* tileTypeBase;
+
+  // Derivative values
+  float kidPosYActual;
 
   // Artificial memory positions
   uint8_t* kidPrevFrame;
   int8_t* kidFrameDiff;
   uint16_t* rawFrameCount;
+  uint8_t* kidPrevRoom;
+  uint8_t* customValue;
+  uint16_t* lagFrameCounter;
 
   // Settings
   uint8_t timerTolerance;
   bool skipFrames;
   bool exitJingleMode;
-  float frameCountDiscount;
+  float lagDiscount;
+  float fightModeDiscount;
 
   // Tile watch list
-  std::vector<tileWatch_t> tileWatchList;
+  std::map<int, tileWatch_t> tileFullHashList;
+  std::map<int, tileWatch_t> tileModuloHashList;
+  std::map<int, tileWatch_t> tileBooleanHashList;
+  std::map<int, tileWatch_t> tileTypeHashList;
+  std::map<int, tileWatch_t> tileWatchList;
 
+  // Game element hash list
+  std::set<std::string> gamePropertyHashList;
 
+  void printFullMoveList();
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   _uint128_t computeHash() const override;

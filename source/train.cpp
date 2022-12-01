@@ -8,9 +8,6 @@
 
 //#define _DETECT_POSSIBLE_MOVES
 
-auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
-auto moveCountComparerNumber = [](const INPUT_TYPE a, const INPUT_TYPE b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
-
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
  #define _KEY_VALUE_ kidFrame
@@ -257,7 +254,7 @@ void Train::computeStates()
         if ((i & SNES_TR_MASK) == 0)
         if ((i & SNES_START_MASK) == 0)
         if ((i & SNES_SELECT_MASK) == 0)
-        if (countButtonsPressedNumber(i) > 2 == false)
+         if (countButtonsPressedNumber(i) > 2 == false)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
@@ -808,6 +805,9 @@ void Train::reset()
 
  // Evaluating Rules on initial state
  _gameInstances[0]->evaluateRules(_firstState->getRuleStatus());
+
+ // Print full move list
+ // _gameInstances[0]->printFullMoveList();
 
  // Evaluating Score on initial state
  _firstState->reward = _gameInstances[0]->getStateReward(_firstState->getRuleStatus());
