@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <utility>
 
-typedef std::pair<uint64_t, uint64_t> uint128_t;
+typedef std::pair<uint64_t, uint64_t> _uint128_t;
 
 class MetroHash128
 {

@@ -8,12 +8,9 @@
 
 //#define _DETECT_POSSIBLE_MOVES
 
-auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
-auto moveCountComparerNumber = [](const uint8_t a, const uint8_t b) { return countButtonsPressedNumber8(a) < countButtonsPressedNumber8(b); };
-
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ playerAnimation
+ #define _KEY_VALUE_ kidFrame
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -21,6 +18,7 @@ void Train::run()
 {
   auto searchTimeBegin = std::chrono::high_resolution_clock::now();      // Profiling
   auto currentStepTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
+  uint16_t firstWinStep = 0;
 
   while (_hasFinalized == false)
   {
@@ -38,9 +36,6 @@ void Train::run()
     /// Main state processing cycle begin
     computeStates();
 
-    // Advancing step
-    _currentStep++;
-
     // Terminate if all DBs are depleted and no winning rule was found
     _databaseSize = _stateDB.size();
     if (_databaseSize == 0)
@@ -50,10 +45,29 @@ void Train::run()
     }
 
     // Terminate if a winning rule was found
-    if (_winStateFound)
+    if (_winStateHistory.empty() == false)
     {
-      printf("[Jaffar] Winning state reached in %u moves (%.3fs), finishing...\n", _currentStep-1, _searchTotalTime / 1.0e+9);
-      _hasFinalized = true;
+     _totalWinStatesFound = 0;
+     for (const auto& step : _winStateHistory)
+     {
+      _totalWinStatesFound += step.second.size();
+      _winStateHistoryStepBestRewards[step.first] = -std::numeric_limits<float>::infinity();
+      for (const auto& state : step.second)
+      {
+       if (state->reward > _winStateHistoryStepBestRewards[step.first]) _winStateHistoryStepBestRewards[step.first] = state->reward;
+       if (state->reward > _winStateHistoryBestReward)
+       {
+        _winStateHistoryBestReward = state->reward;
+        _bestWinState = state;
+        _bestWinStateStep = step.first;
+        _bestWinState->getStateDataFromDifference(_referenceStateData, _bestWinStateData);
+       }
+      }
+     }
+
+     // Now considering whether the tolerance was met
+     firstWinStep = _winStateHistory.begin()->first;
+     if (_currentStep >= firstWinStep + _winStateStepTolerance) _hasFinalized = true;
     }
 
     // Terminate if maximum number of states was reached
@@ -74,34 +88,38 @@ void Train::run()
      std::vector<std::string> vec(key.second.begin(), key.second.end());
      std::sort(vec.begin(), vec.end(), moveCountComparerString);
      auto itr = vec.begin();
-     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "playerAnimation", key.first, itr->c_str());
+     std::string simpleMove = simplifyMove(*itr);
+     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "kidFrame", key.first, simpleMove.c_str());
      itr++;
      for (; itr != vec.end(); itr++)
      {
-       printf(", \"%s\"", itr->c_str());
+      std::string simpleMove = simplifyMove(*itr);
+       printf(", \"%s\"", simpleMove.c_str());
      }
-     printf("});\n");
+     printf(" });\n");
      //printf("Size: %lu\n", vec.size());
     }
 
     #endif // _DETECT_POSSIBLE_MOVES
+
+    // Advancing step if not finished
+    if (_hasFinalized == false) _currentStep++;
   }
 
   // Print winning state if found
-  if (_showWinStateInfo == true && _winStateFound == true)
+  if (_showWinStateInfo == true && _winStateHistory.empty() == false)
   {
+   printf("[Jaffar] Winning state reached in %u moves (%.3fs), finishing...\n", _bestWinStateStep, _searchTotalTime / 1.0e+9);
    printf("[Jaffar]  + Winning Frame Info:\n");
 
-   uint8_t winStateData[_STATE_DATA_SIZE_TRAIN];
-   _winState->getStateDataFromDifference(_referenceStateData, winStateData);
-   _gameInstances[0]->pushState(winStateData);
-   _gameInstances[0]->printStateInfo(_winState->getRuleStatus());
+   _gameInstances[0]->pushState(_bestWinStateData);
+   _gameInstances[0]->printStateInfo(_bestWinState->getRuleStatus());
 
     if (_storeMoveHistory)
     {
      printf("[Jaffar]  + Win Move List: ");
-     for (uint16_t i = 0; i < _currentStep; i++)
-      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState->getMove(i))).c_str());
+     for (uint16_t i = 0; i < _bestWinStateStep; i++)
+      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_bestWinState->getMove(i))).c_str());
      printf("\n");
     }
   }
@@ -112,14 +130,15 @@ void Train::run()
    pthread_join(_showThreadId, NULL);
 
    // If it has finalized with a win, save the winning state
-   auto lastState = _winStateFound ? _winState : _bestState;
+   auto lastState = _winStateHistory.empty() ? _bestState : _bestWinState;
+   auto lastStep = _winStateHistory.empty() ? _currentStep : _bestWinStateStep+1;
 
    // Storing the solution sequence
    if (_storeMoveHistory)
    {
     std::string solutionString;
     solutionString += EmuInstance::moveCodeToString(lastState->getMove(0));
-    for (ssize_t i = 1; i < _currentStep-1; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->getMove(i));
+    for (ssize_t i = 1; i < lastStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->getMove(i));
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    }
   }
@@ -147,13 +166,13 @@ size_t Train::hashGetTotalCount() const
 double Train::hashSizeFromEntries(const ssize_t entries) const
 {
  // Just an approximation of how much the hash table requires
- return (((double)sizeof(uint128_t) + (double)sizeof(void*) ) *(double)entries) / (512.0 * 1024.0);
+ return (((double)sizeof(_uint128_t) + (double)sizeof(void*) ) *(double)entries) / (512.0 * 1024.0);
 };
 
 size_t Train::hashEntriesFromSize(const double size) const
 {
   // Just an approximation of how much the hash table requires
-  return (size_t)((size * (512.0 * 1024.0)) / ((double)sizeof(uint128_t) + (double)sizeof(void*)));
+  return (size_t)((size * (512.0 * 1024.0)) / ((double)sizeof(_uint128_t) + (double)sizeof(void*)));
 };
 
 void Train::computeStates()
@@ -214,9 +233,6 @@ void Train::computeStates()
     ssize_t threadStateCreationTime = 0;
     ssize_t threadStateEvaluationTime = 0;
 
-    // Setting initial win state reward
-    float winStateReward = -std::numeric_limits<float>::infinity();
-
     // Computing always the last state while resizing the database to reduce memory footprint
     #pragma omp for
     for (auto& baseState : _stateDB)
@@ -243,13 +259,19 @@ void Train::computeStates()
         fullMoves.push_back(actualMove);
        }
 
-       for (uint64_t i = 0; i < 256*sizeof(INPUT_TYPE); i++)
+       size_t maxInput = 1;
+       for (size_t i = 0; i < sizeof(INPUT_TYPE); i++) maxInput *= 256;
+       for (uint64_t i = 0; i < maxInput; i++)
        {
         if (possibleMoveSet.contains(i) == false)
-        if ((i & 0b00001000) == 0) // NES
-        if ((i & 0b00000100) == 0) // NES Select
-//          if ((i & 0b01000000) == 0) // SDLPOP
-//          if ((i & 0b00100000) == 0) // SDLPOP
+
+        if ((i & SNES_X_MASK) == 0)
+        if ((i & SNES_Y_MASK) == 0)
+        if ((i & SNES_TL_MASK) == 0)
+        if ((i & SNES_TR_MASK) == 0)
+        if ((i & SNES_START_MASK) == 0)
+        if ((i & SNES_SELECT_MASK) == 0)
+         if (countButtonsPressedNumber(i) > 2 == false)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
@@ -262,7 +284,9 @@ void Train::computeStates()
        possibleMoves = fullMoves;
 
        // Store key values
-       uint8_t keyValue = 0; //*_gameInstances[threadId]->_KEY_VALUE_;
+       moveKeyTemplate keyValue = *_gameInstances[threadId]->_KEY_VALUE_;
+
+       // printf("possibleMove size: %lu\n", possibleMoves.size());
 
       #endif // _DETECT_POSSIBLE_MOVES
 
@@ -294,7 +318,7 @@ void Train::computeStates()
 
         // Perform the selected move
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
-        _gameInstances[threadId]->advanceState(moveId);
+        _gameInstances[threadId]->advanceGameState(moveId);
         tf = std::chrono::high_resolution_clock::now();
         threadStateAdvanceTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -337,7 +361,7 @@ void Train::computeStates()
         else
         {
          // Grabbing lock from free state queue
-         _freeStateQueueLock.lock();
+         _freeStateQueueMutex.lock();
 
          // If we ran out of free states, gotta check if we can free up the worst states from the next state db
          if (_freeStateQueue.empty())
@@ -359,7 +383,7 @@ void Train::computeStates()
          _freeStateQueue.pop();
 
          // Releasing lock
-         _freeStateQueueLock.unlock();
+         _freeStateQueueMutex.unlock();
         }
 
         // Getting rule status from the base state
@@ -387,9 +411,9 @@ void Train::computeStates()
         // If state type is failed, continue to the next possible move
         if (type == f_fail)
         {
-         _freeStateQueueLock.lock();
+         _freeStateQueueMutex.lock();
          _freeStateQueue.push(newState);
-         _freeStateQueueLock.unlock();
+         _freeStateQueueMutex.unlock();
          continue;
         }
 
@@ -419,15 +443,10 @@ void Train::computeStates()
         #pragma omp critical(newFrameDB)
         {
          // Storing new winning state
-         if (type == f_win && newState->reward > winStateReward)
-         {
-           _winState->copy(newState);
-           winStateReward = newState->reward;
-           _winStateFound = true;
-         }
+         if (type == f_win) _winStateHistory[_currentStep].push_back(newState);
 
          // Adding state to the new state database
-         newStates.push_back(newState);
+         if (type == f_regular) newStates.push_back(newState);
 
          // Increasing new state counter
          newStatesCounter++;
@@ -443,9 +462,9 @@ void Train::computeStates()
       // Adding used base state back into free state queue, if it wasn't recycled locally
       if (baseFramePointer != NULL)
       {
-       _freeStateQueueLock.lock();
+       _freeStateQueueMutex.lock();
        _freeStateQueue.push(baseState);
-       _freeStateQueueLock.unlock();
+       _freeStateQueueMutex.unlock();
       }
 
       // Increasing counter for base states processed
@@ -498,13 +517,13 @@ void Train::computeStates()
   // Looking for and storing best/worst state
   _bestStateReward = -std::numeric_limits<float>::infinity();
   _worstStateReward = std::numeric_limits<float>::infinity();
-  _bestStateLock.lock();
+  _bestStateMutex.lock();
   for (const auto& state : newStates)
   {
    if (state->reward > _bestStateReward) {  _bestState->copy(state); _bestStateReward = _bestState->reward; }
    if (state->reward < _worstStateReward) { _worstState->copy(state); _worstStateReward = _worstState->reward; }
   }
-  _bestStateLock.unlock();
+  _bestStateMutex.unlock();
 
   // Setting new states to be current states for the next step
   std::swap(newStates, _stateDB);
@@ -559,6 +578,16 @@ void Train::printTrainStatus()
   printf("[Jaffar] ----------------------------------------------------------------\n");
   printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _maxMoveCount);
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
+
+  if (_winStateStepTolerance > 0)
+  {
+   printf("[Jaffar] Win States Step Tolerance: %u\n", _winStateStepTolerance);
+   printf("[Jaffar] Win State Best Reward:     %f\n", _winStateHistoryBestReward);
+   printf("[Jaffar] Win States Found:          %lu\n", _totalWinStatesFound);
+   for (const auto& step : _winStateHistoryStepBestRewards)
+   printf("[Jaffar] + Step %5u: %lu  (Best: %f)\n", step.first, _winStateHistory[step.first].size(), _winStateHistoryStepBestRewards[step.first]);
+  }
+
   printf("[Jaffar] Base States Performance: %.3f States/s\n", (double)_stepBaseStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] State size: %lu bytes\n", _stateSize);
@@ -622,6 +651,10 @@ Train::Train(const nlohmann::json& config)
 
   // Parsing Jaffar configuration
   if (isDefined(_config, "Jaffar Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Jaffar Configuration' key.\n");
+
+  // Reading win state tolerance
+  if (isDefined(_config["Jaffar Configuration"], "Win State Step Tolerance") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Win State Step Tolerance' key.\n");
+  _winStateStepTolerance = _config["Jaffar Configuration"]["Win State Step Tolerance"].get<uint16_t>();
 
   // Parsing database sizes
   if (isDefined(_config["Jaffar Configuration"], "State Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database' key.\n");
@@ -716,7 +749,6 @@ Train::Train(const nlohmann::json& config)
   _gameInstances[0]->popState(_initialStateData);
 
   // Creating storage for win, best and worst states
-  _winState = (State*) malloc(_stateSize);
   _bestState = (State*) malloc(_stateSize);
   _worstState = (State*) malloc(_stateSize);
 
@@ -767,11 +799,11 @@ void Train::reset()
  _worstStateReward = 0.0;
  _bestStateReward = 0.0;
 
+ _winStateHistoryBestReward = -std::numeric_limits<float>::infinity();
+ _totalWinStatesFound = 0.0f;
+
  // Setting starting step
  _currentStep = 0;
-
- // Flag to determine if win state was found
- _winStateFound = false;
 
  // Clearing state database
  limitStateDatabase(_stateDB, 0);
@@ -779,9 +811,6 @@ void Train::reset()
  // Setting initial values
  _hasFinalized = false;
  _hashCollisions = 0;
-
- // Setting win status
- _winStateFound = false;
 
  // Computing initial hash
  const auto hash = _gameInstances[0]->computeHash();
@@ -798,6 +827,9 @@ void Train::reset()
 
  // Evaluating Rules on initial state
  _gameInstances[0]->evaluateRules(_firstState->getRuleStatus());
+
+ // Print full move list
+//  _gameInstances[0]->printFullMoveList();
 
  // Evaluating Score on initial state
  _firstState->reward = _gameInstances[0]->getStateReward(_firstState->getRuleStatus());
@@ -845,19 +877,6 @@ void Train::showSavingLoop()
       double bestStateTimerElapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - bestStateSaveTimer).count();
       if (bestStateTimerElapsed / 1.0e+9 > _outputSaveFrequency)
       {
-//       _bestStateLock.lock();
-//
-//       // Storing best and worst states
-//       uint8_t bestStateData[_STATE_DATA_SIZE_TRAIN];
-//       _bestState->getStateDataFromDifference(_referenceStateData, bestStateData);
-//       _showGameInstance->pushState(bestStateData);
-//       _showGameInstance->_emu->saveStateFile(_outputSolutionBestPath);
-//
-//       uint8_t worstStateData[_STATE_DATA_SIZE_TRAIN];
-//       _worstState->getStateDataFromDifference(_referenceStateData, worstStateData);
-//       _showGameInstance->pushState(worstStateData);
-//       _showGameInstance->_emu->saveStateFile(_outputSolutionWorstPath);
-//       _bestStateLock.unlock();
 
        // Storing the best and worst solution sequences
        if (_storeMoveHistory)

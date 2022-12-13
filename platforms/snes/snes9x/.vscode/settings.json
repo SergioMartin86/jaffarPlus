@@ -1,0 +1,26 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "filter": true,
+    "gtk": true,
+    "jma": true,
+    "libretro": true,
+    "macosx": true,
+    "obj": true,
+    "unix": true,
+    "unzip": true,
+    "win32": true,
+    "server.cpp": true,
+    "netplay.cpp": true
+  },
+  "files.associations": {
+    "vector": "cpp",
+    "xstring": "cpp",
+    "xutility": "cpp"
+  }
+}
