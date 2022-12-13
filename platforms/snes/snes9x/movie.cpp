@@ -1200,10 +1200,10 @@ void S9xMovieToggleFrameDisplay (void)
 	S9xReRefresh();
 }
 
+extern bool8 thread_local pad_read;
+
 void S9xUpdateFrameCounter (int offset)
 {
-	extern bool8	thread_local pad_read;
-
 	offset++;
 
 	if (!Settings.DisplayMovieFrame)

@@ -1465,6 +1465,8 @@ void S9xFreezeToStream (STREAM stream)
 	delete [] soundsnapshot;
 }
 
+extern thread_local bool8 pad_read, pad_read_last;
+
 int S9xUnfreezeFromStream (STREAM stream)
 {
 	int		result = SUCCESS;
@@ -1827,7 +1829,7 @@ int S9xUnfreezeFromStream (STREAM stream)
 		if (local_movie_data)
 		{
 			// restore last displayed pad_read status
-			extern thread_local bool8	pad_read, pad_read_last;
+
 			bool8			pad_read_temp = pad_read;
 
 			pad_read = pad_read_last;

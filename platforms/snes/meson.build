@@ -95,9 +95,9 @@ platformTrainLFlags = [
             '-lm',
             '-lncurses' ]
 platformTrainDependencies = [ 
-          dependency('x11'),
-          dependency('xext'),
-          dependency('xv'),
+          dependency('x11', required : false),
+          dependency('xext', required : false),
+          dependency('xv', required : false),
           ]
 
 # Platform's specific includes, source files and flags for playback
