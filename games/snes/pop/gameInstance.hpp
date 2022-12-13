@@ -1,6 +1,6 @@
 #pragma once
 
-#define ROOM_COUNT 24
+#define ROOM_COUNT 256
 //#define _INVERSE_FRAME_RATE 16667
 #define _INVERSE_FRAME_RATE 4166
 
@@ -45,6 +45,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* gameFrame;
   uint8_t* isLagFrame;
   uint16_t* inputCode;
+  uint16_t* IGTTicks;
 
   uint8_t* kidRoom;
   uint8_t* kidFightMode;

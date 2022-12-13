@@ -104,9 +104,15 @@ class Train
   // Per-step local hash collision counter
   size_t _newCollisionCounter;
 
-  // Storage for the position of win rules, for win detection
-  bool _winStateFound;
-  State* _winState;
+  // Win state management
+  uint16_t _winStateStepTolerance;
+  std::map<uint16_t, std::vector<State*>> _winStateHistory;
+  std::map<uint16_t, float> _winStateHistoryStepBestRewards;
+  float _winStateHistoryBestReward;
+  size_t _totalWinStatesFound;
+  State* _bestWinState;
+  uint16_t _bestWinStateStep;
+  uint8_t _bestWinStateData[_STATE_DATA_SIZE_TRAIN];
 
   // SDLPop instance and Id for the show thread
   pthread_t _showThreadId;
