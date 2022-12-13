@@ -351,6 +351,183 @@ static void Repaint (bool8);
 static void Convert16To24 (int, int);
 static void Convert16To24Packed (int, int);
 
+#ifdef PREVENT_RENDERING
+
+
+void S9xExtraDisplayUsage (void)
+{
+}
+
+void S9xParseDisplayArg (char **argv, int &i, int argc)
+{
+}
+
+const char * S9xParseDisplayConfig (ConfigFile &conf, int pass)
+{
+ return ("Unix/X11");
+}
+
+static void FatalError (const char *str)
+{
+}
+
+static int ErrorHandler (Display *display, XErrorEvent *event)
+{
+ return (0);
+}
+
+#ifdef USE_XVIDEO
+static int get_inv_shift (uint32 mask, int bpp)
+{
+    return (0);
+}
+
+static unsigned char CLAMP (int v, int min, int max)
+{
+ if (v < min) return min;
+ if (v > max) return max;
+ return v;
+}
+
+static bool8 SetupXvideo()
+{
+
+ return TRUE;
+}
+#endif
+
+void S9xInitDisplay (int argc, char **argv)
+{
+}
+
+void S9xDeinitDisplay (void)
+{
+}
+
+static void TakedownImage (void)
+{
+}
+
+static void SetupXImage (void)
+{
+}
+
+static void TakedownXImage (void)
+{
+}
+
+static void TakedownXvImage (void)
+{
+}
+
+void S9xPutImage (int width, int height)
+{
+}
+
+static void Convert16To24 (int width, int height)
+{
+}
+
+static void Convert16To24Packed (int width, int height)
+{
+}
+
+static void Repaint (bool8 isFrameBoundry)
+{
+}
+
+void S9xTextMode (void)
+{
+}
+
+void S9xGraphicsMode (void)
+{
+}
+
+static bool8 CheckForPendingXEvents (Display *display)
+{
+ return 0;
+}
+
+void S9xProcessEvents (bool8 block)
+{
+}
+
+const char * S9xSelectFilename (const char *def, const char *dir1, const char *ext1, const char *title)
+{
+ return (NULL);
+}
+
+void S9xMessage (int type, int number, const char *message)
+{
+}
+
+const char * S9xStringInput (const char *message)
+{
+ return (NULL);
+}
+
+void S9xSetTitle (const char *string)
+{
+}
+
+static void SetXRepeat (bool8 state)
+{
+}
+
+s9xcommand_t S9xGetDisplayCommandT (const char *n)
+{
+ s9xcommand_t cmd;
+
+ cmd.type         = S9xBadMapping;
+ cmd.multi_press  = 0;
+ cmd.button_norpt = 0;
+ cmd.port[0]      = 0xff;
+ cmd.port[1]      = 0;
+ cmd.port[2]      = 0;
+ cmd.port[3]      = 0;
+
+ return (cmd);
+}
+
+char * S9xGetDisplayCommandName (s9xcommand_t cmd)
+{
+ return (strdup("None"));
+}
+
+void S9xHandleDisplayCommand (s9xcommand_t cmd, int16 data1, int16 data2)
+{
+ return;
+}
+
+bool8 S9xMapDisplayInput (const char *n, s9xcommand_t *cmd)
+{
+ return (false);
+}
+
+bool S9xDisplayPollButton (uint32 id, bool *pressed)
+{
+ return (false);
+}
+
+bool S9xDisplayPollAxis (uint32 id, int16 *value)
+{
+ return (false);
+}
+
+bool S9xDisplayPollPointer (uint32 id, int16 *x, int16 *y)
+{
+ return (true);
+}
+
+void S9xSetPalette (void)
+{
+ return;
+}
+
+
+#else
+
 
 void S9xExtraDisplayUsage (void)
 {
@@ -1942,3 +2119,5 @@ void S9xSetPalette (void)
 {
 	return;
 }
+
+#endif
