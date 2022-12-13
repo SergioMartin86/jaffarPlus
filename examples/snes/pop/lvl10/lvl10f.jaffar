@@ -1,0 +1,212 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../pop.sfc",
+    "State File": "lvl10f.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Skip Frames": true,
+   "Exit Jingle Mode": false,
+   "Timer Tolerance": 6,
+   "Lag Discount": 0.01,
+   "Fight Mode Discount": 4.0,
+   "Game Property Hashes": [  ],
+   "Tile Hashes":
+    [
+      { "Room": 17, "Row": 1, "Col": 6, "Type": "Boolean" }
+    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 2000,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 8000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 100000,
+     "Max Size Upper Bound (Mb)": 200000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+     "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   
+   {
+    "Label": 1013,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 11 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 6, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 6, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 6 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 11, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 11, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 11 }
+    ]
+   },
+   
+   {
+    "Label": 1014,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 14 }
+    ],
+    
+    "Satisfies": [ 1013 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 11, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 11, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 11 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 14, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 14, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 14 }
+    ]
+   },
+   
+   {
+    "Label": 1015,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 15 }
+    ],
+    
+    "Satisfies": [ 1014 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 14, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 14, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 14 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 15, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 15, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 15 }
+    ]
+   },
+   
+   {
+    "Label": 1016,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 15 },
+     { "Property": "Tile State", "Room": 17, "Row": 1, "Col": 6, "Op": ">", "Value":  0 }
+    ],
+    
+    "Satisfies": [ 1015 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 15, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 15, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 15 }
+    ]
+   },
+   
+   {
+    "Label": 1017,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 14 },
+     { "Property": "Tile State", "Room": 17, "Row": 1, "Col": 6, "Op": ">", "Value":  0 }
+    ],
+    
+    "Satisfies": [ 1016 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 15, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 15, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 15 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 14, "Center": 81, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 14, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 5.0, "Room": 14 }
+    ]
+   },
+   
+   {
+    "Label": 1018,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 16 },
+     { "Property": "Tile State", "Room": 17, "Row": 1, "Col": 6, "Op": ">", "Value":  0 }
+    ],
+    
+    "Satisfies": [ 1017 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    
+    "Conditions":
+    [
+     { "Property": "Kid HP", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

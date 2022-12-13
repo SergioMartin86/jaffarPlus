@@ -2,48 +2,42 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
-    "State File": "lvl06f.state"
+    "State File": "lvl08c.state"
   },
   
   "Game Configuration": 
   {
    "Skip Frames": true,
    "Exit Jingle Mode": false,
-   "Timer Tolerance": 16,
-   "Lag Discount": 1.0,
-   "Fight Mode Discount": 4.0,
-   "Game Property Hashes": [  ],
+   "Timer Tolerance": 8,
+   "Lag Discount": 0.01,
+   "Fight Mode Discount": 5.0,
+   "Game Property Hashes": [ "Guard HP", "Kid HP" ],
    "Tile Hashes":
     [
-      { "Room": 20, "Row": 1, "Col": 6, "Type": "Full" },
-      { "Room": 20, "Row": 1, "Col": 0, "Type": "Full" },
-      { "Room": 20, "Row": 1, "Col": 1, "Type": "Full" }, 
-      { "Room": 20, "Row": 1, "Col": 2, "Type": "Full" },
-      { "Room": 18, "Row": 1, "Col": 9, "Type": "Full" }   
     ]
   },
-  
   
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
-    "Win State Step Tolerance": 0,
+    "Win State Step Tolerance": 5,
     
     "State Configuration": 
     {
-      "Max Move Count": 2000,
+      "Max Move Count": 500,
       "Store Move History": true,
-      "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 8000,
+      "XDelta3 Enabled": true,
+      "XDelta3 Max Differences": 12000,
       "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
     {
      "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Upper Bound (Mb)": 92000
     },
     
     "Hash Database":
@@ -64,52 +58,55 @@
   },
   
   "Playback Configuration": 
-  {
+  { 
      "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
   [
    {
-    "Label": 1000,
-    
-    "Conditions":
-    [
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 18, "Center": 255, "Min": 0, "Max": 255 }
-    ]
-   },
-
-   {
     "Label": 1001,
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 20 }
     ],
     
-    "Satisfies": [ 1000 ],
+    "Satisfies": [  ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 18, "Center": 255, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 20, "Center": 138, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 255, "Min": 0, "Max": 255 }
     ]
    },
    
    {
-    "Label": 1012,
+    "Label": 1002,
     
     "Conditions":
     [
-     { "Property": "Kid Frame", "Op": "==", "Value": 217 },
-     { "Property": "Lag Counter", "Op": "<", "Value": 38 }
+     { "Property": "Kid Room", "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 3, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 2, "Center": 118, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 2, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": -5.0, "Room": 2 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 2 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value": 62 }
     ],
     
     "Satisfies": [ ],
@@ -119,7 +116,6 @@
      { "Type": "Trigger Win" }
     ]
    },
-      
    
    {
     "Label": 1999,
@@ -127,6 +123,23 @@
     "Conditions":
     [
      { "Property": "Kid HP", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1998,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 },
+     { "Property": "Kid Pos X", "Op": "<", "Value": 160 }
     ],
     
     "Satisfies": [ ],

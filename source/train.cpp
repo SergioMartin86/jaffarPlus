@@ -18,6 +18,7 @@ void Train::run()
 {
   auto searchTimeBegin = std::chrono::high_resolution_clock::now();      // Profiling
   auto currentStepTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
+  uint16_t firstWinStep = 0;
 
   while (_hasFinalized == false)
   {
@@ -35,9 +36,6 @@ void Train::run()
     /// Main state processing cycle begin
     computeStates();
 
-    // Advancing step
-    _currentStep++;
-
     // Terminate if all DBs are depleted and no winning rule was found
     _databaseSize = _stateDB.size();
     if (_databaseSize == 0)
@@ -47,10 +45,29 @@ void Train::run()
     }
 
     // Terminate if a winning rule was found
-    if (_winStateFound)
+    if (_winStateHistory.empty() == false)
     {
-      printf("[Jaffar] Winning state reached in %u moves (%.3fs), finishing...\n", _currentStep-1, _searchTotalTime / 1.0e+9);
-      _hasFinalized = true;
+     _totalWinStatesFound = 0;
+     for (const auto& step : _winStateHistory)
+     {
+      _totalWinStatesFound += step.second.size();
+      _winStateHistoryStepBestRewards[step.first] = -std::numeric_limits<float>::infinity();
+      for (const auto& state : step.second)
+      {
+       if (state->reward > _winStateHistoryStepBestRewards[step.first]) _winStateHistoryStepBestRewards[step.first] = state->reward;
+       if (state->reward > _winStateHistoryBestReward)
+       {
+        _winStateHistoryBestReward = state->reward;
+        _bestWinState = state;
+        _bestWinStateStep = step.first;
+        _bestWinState->getStateDataFromDifference(_referenceStateData, _bestWinStateData);
+       }
+      }
+     }
+
+     // Now considering whether the tolerance was met
+     firstWinStep = _winStateHistory.begin()->first;
+     if (_currentStep >= firstWinStep + _winStateStepTolerance) _hasFinalized = true;
     }
 
     // Terminate if maximum number of states was reached
@@ -84,23 +101,25 @@ void Train::run()
     }
 
     #endif // _DETECT_POSSIBLE_MOVES
+
+    // Advancing step if not finished
+    if (_hasFinalized == false) _currentStep++;
   }
 
   // Print winning state if found
-  if (_showWinStateInfo == true && _winStateFound == true)
+  if (_showWinStateInfo == true && _winStateHistory.empty() == false)
   {
+   printf("[Jaffar] Winning state reached in %u moves (%.3fs), finishing...\n", _bestWinStateStep, _searchTotalTime / 1.0e+9);
    printf("[Jaffar]  + Winning Frame Info:\n");
 
-   uint8_t winStateData[_STATE_DATA_SIZE_TRAIN];
-   _winState->getStateDataFromDifference(_referenceStateData, winStateData);
-   _gameInstances[0]->pushState(winStateData);
-   _gameInstances[0]->printStateInfo(_winState->getRuleStatus());
+   _gameInstances[0]->pushState(_bestWinStateData);
+   _gameInstances[0]->printStateInfo(_bestWinState->getRuleStatus());
 
     if (_storeMoveHistory)
     {
      printf("[Jaffar]  + Win Move List: ");
-     for (uint16_t i = 0; i < _currentStep; i++)
-      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_winState->getMove(i))).c_str());
+     for (uint16_t i = 0; i < _bestWinStateStep; i++)
+      printf("%s ", simplifyMove(EmuInstance::moveCodeToString(_bestWinState->getMove(i))).c_str());
      printf("\n");
     }
   }
@@ -111,14 +130,15 @@ void Train::run()
    pthread_join(_showThreadId, NULL);
 
    // If it has finalized with a win, save the winning state
-   auto lastState = _winStateFound ? _winState : _bestState;
+   auto lastState = _winStateHistory.empty() ? _bestState : _bestWinState;
+   auto lastStep = _winStateHistory.empty() ? _currentStep : _bestWinStateStep+1;
 
    // Storing the solution sequence
    if (_storeMoveHistory)
    {
     std::string solutionString;
     solutionString += EmuInstance::moveCodeToString(lastState->getMove(0));
-    for (ssize_t i = 1; i < _currentStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->getMove(i));
+    for (ssize_t i = 1; i < lastStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->getMove(i));
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    }
   }
@@ -212,9 +232,6 @@ void Train::computeStates()
     ssize_t threadStateEncodingTime = 0;
     ssize_t threadStateCreationTime = 0;
     ssize_t threadStateEvaluationTime = 0;
-
-    // Setting initial win state reward
-    float winStateReward = -std::numeric_limits<float>::infinity();
 
     // Computing always the last state while resizing the database to reduce memory footprint
     #pragma omp for
@@ -426,15 +443,10 @@ void Train::computeStates()
         #pragma omp critical(newFrameDB)
         {
          // Storing new winning state
-         if (type == f_win && newState->reward > winStateReward)
-         {
-           _winState->copy(newState);
-           winStateReward = newState->reward;
-           _winStateFound = true;
-         }
+         if (type == f_win) _winStateHistory[_currentStep].push_back(newState);
 
          // Adding state to the new state database
-         newStates.push_back(newState);
+         if (type == f_regular) newStates.push_back(newState);
 
          // Increasing new state counter
          newStatesCounter++;
@@ -566,6 +578,16 @@ void Train::printTrainStatus()
   printf("[Jaffar] ----------------------------------------------------------------\n");
   printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _maxMoveCount);
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
+
+  if (_winStateStepTolerance > 0)
+  {
+   printf("[Jaffar] Win States Step Tolerance: %u\n", _winStateStepTolerance);
+   printf("[Jaffar] Win State Best Reward:     %f\n", _winStateHistoryBestReward);
+   printf("[Jaffar] Win States Found:          %lu\n", _totalWinStatesFound);
+   for (const auto& step : _winStateHistoryStepBestRewards)
+   printf("[Jaffar] + Step %5u: %lu  (Best: %f)\n", step.first, _winStateHistory[step.first].size(), _winStateHistoryStepBestRewards[step.first]);
+  }
+
   printf("[Jaffar] Base States Performance: %.3f States/s\n", (double)_stepBaseStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] State size: %lu bytes\n", _stateSize);
@@ -629,6 +651,10 @@ Train::Train(const nlohmann::json& config)
 
   // Parsing Jaffar configuration
   if (isDefined(_config, "Jaffar Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Jaffar Configuration' key.\n");
+
+  // Reading win state tolerance
+  if (isDefined(_config["Jaffar Configuration"], "Win State Step Tolerance") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Win State Step Tolerance' key.\n");
+  _winStateStepTolerance = _config["Jaffar Configuration"]["Win State Step Tolerance"].get<uint16_t>();
 
   // Parsing database sizes
   if (isDefined(_config["Jaffar Configuration"], "State Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database' key.\n");
@@ -723,7 +749,6 @@ Train::Train(const nlohmann::json& config)
   _gameInstances[0]->popState(_initialStateData);
 
   // Creating storage for win, best and worst states
-  _winState = (State*) malloc(_stateSize);
   _bestState = (State*) malloc(_stateSize);
   _worstState = (State*) malloc(_stateSize);
 
@@ -774,11 +799,11 @@ void Train::reset()
  _worstStateReward = 0.0;
  _bestStateReward = 0.0;
 
+ _winStateHistoryBestReward = -std::numeric_limits<float>::infinity();
+ _totalWinStatesFound = 0.0f;
+
  // Setting starting step
  _currentStep = 0;
-
- // Flag to determine if win state was found
- _winStateFound = false;
 
  // Clearing state database
  limitStateDatabase(_stateDB, 0);
@@ -786,9 +811,6 @@ void Train::reset()
  // Setting initial values
  _hasFinalized = false;
  _hashCollisions = 0;
-
- // Setting win status
- _winStateFound = false;
 
  // Computing initial hash
  const auto hash = _gameInstances[0]->computeHash();
@@ -807,7 +829,7 @@ void Train::reset()
  _gameInstances[0]->evaluateRules(_firstState->getRuleStatus());
 
  // Print full move list
- // _gameInstances[0]->printFullMoveList();
+//  _gameInstances[0]->printFullMoveList();
 
  // Evaluating Score on initial state
  _firstState->reward = _gameInstances[0]->getStateReward(_firstState->getRuleStatus());

@@ -2,27 +2,21 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
-    "State File": "lvl06f.state"
+    "State File": "lvl10b.state"
   },
   
   "Game Configuration": 
   {
    "Skip Frames": true,
    "Exit Jingle Mode": false,
-   "Timer Tolerance": 16,
-   "Lag Discount": 1.0,
+   "Timer Tolerance": 6,
+   "Lag Discount": 0.01,
    "Fight Mode Discount": 4.0,
    "Game Property Hashes": [  ],
    "Tile Hashes":
     [
-      { "Room": 20, "Row": 1, "Col": 6, "Type": "Full" },
-      { "Room": 20, "Row": 1, "Col": 0, "Type": "Full" },
-      { "Room": 20, "Row": 1, "Col": 1, "Type": "Full" }, 
-      { "Room": 20, "Row": 1, "Col": 2, "Type": "Full" },
-      { "Room": 18, "Row": 1, "Col": 9, "Type": "Full" }   
     ]
   },
-  
   
   "Jaffar Configuration": 
   {
@@ -42,8 +36,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 100000,
+     "Max Size Upper Bound (Mb)": 220000
     },
     
     "Hash Database":
@@ -71,7 +65,7 @@
   "Rules":
   [
    {
-    "Label": 1000,
+    "Label": 1002,
     
     "Conditions":
     [
@@ -81,35 +75,41 @@
     
     "Actions":
     [
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 18, "Center": 255, "Min": 0, "Max": 255 }
-    ]
-   },
-
-   {
-    "Label": 1001,
-    
-    "Conditions":
-    [
-     { "Property": "Kid Room", "Op": "==", "Value": 20 }
-    ],
-    
-    "Satisfies": [ 1000 ],
-    
-    "Actions":
-    [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 18, "Center": 255, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 20, "Center": 138, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 0, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 0, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 0 }
     ]
    },
    
    {
-    "Label": 1012,
+    "Label": 1003,
     
     "Conditions":
     [
-     { "Property": "Kid Frame", "Op": "==", "Value": 217 },
-     { "Property": "Lag Counter", "Op": "<", "Value": 38 }
+     { "Property": "Kid Room", "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 0, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 0, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": 0.0, "Room": 0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 2, "Center": 94, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 2, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Direction Magnet", "Intensity": -5.0, "Room": 2 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 4 }
     ],
     
     "Satisfies": [ ],
@@ -119,7 +119,7 @@
      { "Type": "Trigger Win" }
     ]
    },
-      
+
    
    {
     "Label": 1999,

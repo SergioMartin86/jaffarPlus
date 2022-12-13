@@ -9,6 +9,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  _emu = emu;
 
  gameTimer        = (uint16_t*)  &_emu->_baseMem[0x00002];
+ IGTTicks         = (uint16_t*)  &_emu->_baseMem[0x0052D];
  gameFrame        = (uint8_t*)   &_emu->_baseMem[0x00000];
  isLagFrame       = (uint8_t*)   &_emu->_baseMem[0x0020C];
  inputCode        = (uint16_t*)  &_emu->_baseMem[0x00272];
@@ -32,13 +33,13 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  kidSequenceStep  = (uint8_t*)   &_emu->_baseMem[0x00595];
  exitDoorState    = (uint8_t*)   &_emu->_baseMem[0x0066A];
 
- guardRoom        = (uint8_t*)   &_emu->_baseMem[0x00482];
- guardPosX        = (uint8_t*)   &_emu->_baseMem[0x00488];
- guardPosY        = (uint8_t*)   &_emu->_baseMem[0x00489];
- guardDirection   = (uint8_t*)   &_emu->_baseMem[0x0048A];
+ guardRoom        = (uint8_t*)   &_emu->_baseMem[0x00472];
+ guardPosX        = (uint8_t*)   &_emu->_baseMem[0x00478];
+ guardPosY        = (uint8_t*)   &_emu->_baseMem[0x00479];
+ guardDirection   = (uint8_t*)   &_emu->_baseMem[0x0047A];
  guardHP          = (uint8_t*)   &_emu->_baseMem[0x0050B];
  guardMaxHP       = (uint8_t*)   &_emu->_baseMem[0x0050D];
- guardFrame       = (uint8_t*)   &_emu->_baseMem[0x00487];
+ guardFrame       = (uint8_t*)   &_emu->_baseMem[0x00477];
 
  tileStateBase    = (uint8_t*)   &_emu->_baseMem[TILE_STATE_BASE];
  tileTypeBase     = (uint8_t*)   &_emu->_baseMem[TILE_TYPE_BASE];
@@ -280,8 +281,8 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 
  if (skipFrames == false) if (*gameFrame < 3 || *isLagFrame != 15) return moveList;
 
- if (*kidFrame == 0x0001) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB" });
- if (*kidFrame == 0x0002) moveList.insert(moveList.end(), { "B", "L", "R" });
+ if (*kidFrame == 0x0001) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB", "UL", "UR" });
+ if (*kidFrame == 0x0002) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB" });
  if (*kidFrame == 0x0003) moveList.insert(moveList.end(), { "B", "L", "R", "DL", "DR", "LB", "RB", "UL", "UR" });
  if (*kidFrame == 0x0004) moveList.insert(moveList.end(), { "L", "R", "DL", "DR" });
  if (*kidFrame == 0x0005) moveList.insert(moveList.end(), { "L", "R", "DL", "DR" });
@@ -289,18 +290,18 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0007) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "LB", "RB", "UL", "UR" });
  if (*kidFrame == 0x0008) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "UL", "UR" });
  if (*kidFrame == 0x0009) moveList.insert(moveList.end(), { "D", "L", "R", "U", "DL", "DR", "LA", "LB", "RA", "RB", "UA", "UB", "UL", "UR" });
- if (*kidFrame == 0x000A) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "LB", "RB", "UL", "UR" });
+ if (*kidFrame == 0x000A) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "LA", "LB", "RA", "RB", "UL", "UR" });
  if (*kidFrame == 0x000B) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "LB", "RB", "UL", "UR" });
- if (*kidFrame == 0x000C) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "UL", "UR" });
+ if (*kidFrame == 0x000C) moveList.insert(moveList.end(), { "L", "R", "U", "DL", "DR", "UL", "UR" });
  if (*kidFrame == 0x000D) moveList.insert(moveList.end(), { "D", "L", "R", "DB", "DL", "DR", "LA", "LB", "RA", "RB", "UL", "UR" });
  if (*kidFrame == 0x000E) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "UL", "UR" });
- if (*kidFrame == 0x000F) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "UR", "UL", "UB", "UA", "RA", "LR", "LA", "DR", "DL", "DA", "BA" });
+ if (*kidFrame == 0x000F) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LR", "LB", "LA", "DR", "DL", "DA", "BA" });
  if (*kidFrame == 0x0010) moveList.insert(moveList.end(), { "L", "R", "LB", "RB", "UB" });
  if (*kidFrame == 0x0011) moveList.insert(moveList.end(), { "L", "R", "U", "LB", "RB" });
  if (*kidFrame == 0x0012) moveList.insert(moveList.end(), { "D", "L", "R", "LB", "RB" });
  if (*kidFrame == 0x0013) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x0014) moveList.insert(moveList.end(), { "B", "L", "R" });
- if (*kidFrame == 0x001A) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB" });
+ if (*kidFrame == 0x001A) moveList.insert(moveList.end(), { "B", "D", "L", "R", "U", "LB", "RB", "UB" });
  if (*kidFrame == 0x001B) moveList.insert(moveList.end(), { "D", "L", "R" });
  if (*kidFrame == 0x001E) moveList.insert(moveList.end(), { "LB", "RB" });
  if (*kidFrame == 0x0022) moveList.insert(moveList.end(), { "L", "R", "LB", "RB", "UA", "UB", "UL", "UR" });
@@ -322,18 +323,20 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0033) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "DA", "LA", "LB", "RA", "RB", "UA", "UL", "UR" });
  if (*kidFrame == 0x0034) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "DA", "LA", "LB", "RA", "RB", "UA", "UL", "UR" });
  if (*kidFrame == 0x0035) moveList.insert(moveList.end(), { "B", "L", "R", "U", "DB", "DL", "DR", "LB", "RB", "UA", "UB", "UL", "UR" });
- if (*kidFrame == 0x0036) moveList.insert(moveList.end(), { "D", "L", "R", "DL", "DR", "LB", "RB", "LA", "RA","UA", "UB", "BA" });
- if (*kidFrame == 0x0037) moveList.insert(moveList.end(), { "B", "L", "R", "U" });
+ if (*kidFrame == 0x0036) moveList.insert(moveList.end(), { "D", "L", "R", "BA", "DL", "DR", "LA", "LB", "RA", "RB", "UA", "UB" });
+ if (*kidFrame == 0x0037) moveList.insert(moveList.end(), { "B", "L", "R", "U", "LB", "RB" });
  if (*kidFrame == 0x0038) moveList.insert(moveList.end(), { "D", "L", "R", "U", "LB", "RB", "UL", "UR" });
  if (*kidFrame == 0x0039) moveList.insert(moveList.end(), { "B", "L", "R" });
  if (*kidFrame == 0x003A) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
+ if (*kidFrame == 0x003B) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x003C) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
  if (*kidFrame == 0x003D) moveList.insert(moveList.end(), { "B", "D", "L", "R", "LB", "RB", "UA" });
  if (*kidFrame == 0x003E) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x003F) moveList.insert(moveList.end(), { "A", "L", "R" });
  if (*kidFrame == 0x0041) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "LB", "RB" });
  if (*kidFrame == 0x0043) moveList.insert(moveList.end(), { "D", "L", "R", "LB", "RB" });
  if (*kidFrame == 0x0044) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
- if (*kidFrame == 0x0045) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0045) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
  if (*kidFrame == 0x0046) moveList.insert(moveList.end(), { "LB", "RB" });
  if (*kidFrame == 0x0047) moveList.insert(moveList.end(), { "B", "LB", "RB" });
  if (*kidFrame == 0x0048) moveList.insert(moveList.end(), { "L", "R", "UB" });
@@ -342,7 +345,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x004F) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "LB", "RB", "UB" });
  if (*kidFrame == 0x0051) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB" });
  if (*kidFrame == 0x0052) moveList.insert(moveList.end(), { "L", "R" });
- if (*kidFrame == 0x0057) moveList.insert(moveList.end(), { "B", "U" });
+ if (*kidFrame == 0x0057) moveList.insert(moveList.end(), { "B", "L", "R", "U", "UL", "UR" });
  if (*kidFrame == 0x0058) moveList.insert(moveList.end(), { "B", "U" });
  if (*kidFrame == 0x0059) moveList.insert(moveList.end(), { "B", "U" });
  if (*kidFrame == 0x005A) moveList.insert(moveList.end(), { "B", "U" });
@@ -355,11 +358,11 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0061) moveList.insert(moveList.end(), { "B", "U" });
  if (*kidFrame == 0x0062) moveList.insert(moveList.end(), { "B", "U" });
  if (*kidFrame == 0x0063) moveList.insert(moveList.end(), { "B", "U" });
- if (*kidFrame == 0x0066) moveList.insert(moveList.end(), { "L", "R" });
- if (*kidFrame == 0x0067) moveList.insert(moveList.end(), { "B", "L", "R" });
+ if (*kidFrame == 0x0066) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB" });
+ if (*kidFrame == 0x0067) moveList.insert(moveList.end(), { "B", "D", "L", "R", "U" });
  if (*kidFrame == 0x0068) moveList.insert(moveList.end(), { "B", "LB", "RB" });
- if (*kidFrame == 0x0069) moveList.insert(moveList.end(), { "B" });
- if (*kidFrame == 0x006A) moveList.insert(moveList.end(), { "B", "L", "R" });
+ if (*kidFrame == 0x0069) moveList.insert(moveList.end(), { "B", "D", "L", "R", "UB", "UL", "UR" });
+ if (*kidFrame == 0x006A) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "DL", "DR", "LB", "RB", "UL", "UR" });
  if (*kidFrame == 0x006B) moveList.insert(moveList.end(), { "B", "L", "R", "BA", "LB", "RB", "UA", "UL", "UR" });
  if (*kidFrame == 0x006C) moveList.insert(moveList.end(), { "A", "D", "DA", "DL", "DR", "LA", "LB", "RA", "RB" });
  if (*kidFrame == 0x006D) moveList.insert(moveList.end(), { "A", "D", "L", "R", "U", "DA", "DL", "DR", "LA", "LB", "RA", "RB", "UL", "UR" });
@@ -367,32 +370,36 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x006F) moveList.insert(moveList.end(), { "D", "L", "R", "U", "UB", "UL", "UR" });
  if (*kidFrame == 0x0070) moveList.insert(moveList.end(), { "D", "L", "R", "LB", "RB", "UL", "UR" });
  if (*kidFrame == 0x0071) moveList.insert(moveList.end(), { "L", "R", "UL", "UR" });
- if (*kidFrame == 0x0072) moveList.insert(moveList.end(), { "B" });
- if (*kidFrame == 0x0074) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0072) moveList.insert(moveList.end(), { "B", "L", "R" });
+ if (*kidFrame == 0x0074) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
+ if (*kidFrame == 0x0075) moveList.insert(moveList.end(), { "L", "R", "DL", "DR" });
  if (*kidFrame == 0x0076) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x0077) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "LA", "RA" });
  if (*kidFrame == 0x0079) moveList.insert(moveList.end(), { "B", "L", "R", "U", "LB", "RB", "UB", "UL", "UR" });
- if (*kidFrame == 0x007A) moveList.insert(moveList.end(), { "B", "L", "R" });
+ if (*kidFrame == 0x007A) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB" });
  if (*kidFrame == 0x007B) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x007C) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x007F) moveList.insert(moveList.end(), { "B", "L", "R" });
+ if (*kidFrame == 0x0083) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x0086) moveList.insert(moveList.end(), { "L", "R", "U" });
  if (*kidFrame == 0x0096) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "BA", "LA", "LB", "RA", "RB" });
- if (*kidFrame == 0x0097) moveList.insert(moveList.end(), { "D", "L", "R" });
- if (*kidFrame == 0x0098) moveList.insert(moveList.end(), { "B", "L", "R", "DL", "DR", "LA", "RA" });
+ if (*kidFrame == 0x0097) moveList.insert(moveList.end(), { "D", "L", "R", "LB", "RB" });
+ if (*kidFrame == 0x0098) moveList.insert(moveList.end(), { "B", "D", "L", "R", "DL", "DR", "LA", "RA", "UB" });
  if (*kidFrame == 0x0099) moveList.insert(moveList.end(), { "B", "D", "L", "R", "BA", "DB", "LA", "LB", "RA", "RB", "UL", "UR" });
- if (*kidFrame == 0x009A) moveList.insert(moveList.end(), { "D", "LA", "RA" });
+ if (*kidFrame == 0x009A) moveList.insert(moveList.end(), { "D", "L", "R", "BA", "LA", "LB", "RA", "RB" });
+ if (*kidFrame == 0x009C) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x009D) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "LA", "LB", "RA", "RB" });
  if (*kidFrame == 0x009E) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "DB", "DL", "DR", "UA" });
+ if (*kidFrame == 0x009F) moveList.insert(moveList.end(), { "LB", "RB" });
  if (*kidFrame == 0x00A0) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "DL", "DR", "LA", "RA", "UD" });
  if (*kidFrame == 0x00A1) moveList.insert(moveList.end(), { "A", "D", "L", "R", "U", "BA", "LA", "LB", "RA", "RB", "UB" });
  if (*kidFrame == 0x00A2) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x00A4) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA" });
- if (*kidFrame == 0x00A5) moveList.insert(moveList.end(), { "A", "B", "L", "R", "BA", "DL", "DR" });
- if (*kidFrame == 0x00A7) moveList.insert(moveList.end(), { "B", "L", "R", "LA", "RA" });
+ if (*kidFrame == 0x00A5) moveList.insert(moveList.end(), { "A", "B", "L", "R", "BA", "DL", "DR", "LB", "RB" });
+ if (*kidFrame == 0x00A7) moveList.insert(moveList.end(), { "B", "L", "R", "U", "LA", "RA" });
  if (*kidFrame == 0x00A9) moveList.insert(moveList.end(), { "A", "D", "L", "R", "LA", "LB", "RA", "RB" });
  if (*kidFrame == 0x00AA) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "DB", "DL", "DR", "LA", "LB", "RA", "RB", "UA", "UD" });
- if (*kidFrame == 0x00AB) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "DB", "DL", "DR", "LB", "RB" });
+ if (*kidFrame == 0x00AB) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "DB", "DL", "DR", "LA", "LB", "LR", "RA", "RB" });
  if (*kidFrame == 0x00AC) moveList.insert(moveList.end(), { "B", "L", "R", "U", "BA", "LB", "RB" });
  if (*kidFrame == 0x00B3) moveList.insert(moveList.end(), { "B", "L", "R", "U", "BA", "LB", "RB", "UB" });
  if (*kidFrame == 0x00B4) moveList.insert(moveList.end(), { "B", "BA" });
@@ -405,6 +412,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x00EA) moveList.insert(moveList.end(), { "B", "D", "L", "R", "BA", "LA", "LB", "RA", "RB", "UA", "UB" });
  if (*kidFrame == 0x00EC) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
  if (*kidFrame == 0x00EE) moveList.insert(moveList.end(), { "L", "R", "U", "LB", "RB" });
+ if (*kidFrame == 0x00F0) moveList.insert(moveList.end(), { "B" });
 
  return moveList;
 }
@@ -463,7 +471,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
     _emu->advanceState(newMove);
     moves.push_back(newMove);
     skippedFrames++;
-    if (skippedFrames > 64) EXIT_WITH_ERROR("Exceeded skip frames\n");
+    if (skippedFrames > 128) EXIT_WITH_ERROR("Exceeded skip frames\n");
    }
   }
 
@@ -502,6 +510,10 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 // Obtains the score of a given frame
 float GameInstance::getStateReward(const bool* rulesStatus) const
 {
+ // We calculate a different reward if this is a winning frame
+ auto stateType = getStateType(rulesStatus);
+ if (stateType == f_win) return -1.0f * (float)*rawFrameCount;
+
  // Getting rewards from rules
  float reward = 0.0;
  for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
@@ -567,7 +579,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
- LOG("[Jaffar]  + Game Timer:             %05u (Tolerance: %02u)\n", *gameTimer, timerTolerance);
+ LOG("[Jaffar]  + Game Timer:             %05u (Tolerance: %02u) - IGT: %05u\n", *gameTimer, timerTolerance, *IGTTicks);
  LOG("[Jaffar]  + Raw Frame Count:        %05u (Lag: %05u)\n", *rawFrameCount, *lagFrameCounter);
  LOG("[Jaffar]  + Game Frame:             %02u\n", *gameFrame);
  LOG("[Jaffar]  + Is Lag Frame:           %02u\n", *isLagFrame);
@@ -582,6 +594,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Kid Col:                %02u\n", *kidCol);
  LOG("[Jaffar]  + Kid Row:                %02u\n", *kidRow);
  LOG("[Jaffar]  + Kid Crouch State:       %02u\n", *kidCrouchState);
+ LOG("[Jaffar]  + Kid Fight Mode:         %02u\n", *kidFightMode);
  LOG("[Jaffar]  + Kid Grab State:         %02u\n", *kidGrabState);
  LOG("[Jaffar]  + Kid Hanging State:      %02u\n", *kidHangingState);
  LOG("[Jaffar]  + Kid Climbing Type:      %02u / %02u\n", *kidClimbingType1, *kidClimbingType2);

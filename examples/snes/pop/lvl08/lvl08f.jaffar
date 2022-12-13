@@ -2,34 +2,32 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
-    "State File": "lvl06f.state"
+    "State File": "lvl08f.state"
   },
   
   "Game Configuration": 
   {
    "Skip Frames": true,
    "Exit Jingle Mode": false,
-   "Timer Tolerance": 16,
-   "Lag Discount": 1.0,
+   "Timer Tolerance": 4,
+   "Lag Discount": 0.01,
    "Fight Mode Discount": 4.0,
    "Game Property Hashes": [  ],
    "Tile Hashes":
     [
-      { "Room": 20, "Row": 1, "Col": 6, "Type": "Full" },
-      { "Room": 20, "Row": 1, "Col": 0, "Type": "Full" },
-      { "Room": 20, "Row": 1, "Col": 1, "Type": "Full" }, 
-      { "Room": 20, "Row": 1, "Col": 2, "Type": "Full" },
-      { "Room": 18, "Row": 1, "Col": 9, "Type": "Full" }   
+      { "Room": 13, "Row": 1, "Col": 1, "Type": "Full" },
+      { "Room": 13, "Row": 1, "Col": 2, "Type": "Full" },
+      { "Room": 18, "Row": 1, "Col": 9, "Type": "Full" },
+      { "Room": 20, "Row": 1, "Col": 4, "Type": "Full" }
     ]
   },
-  
   
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
-    "Win State Step Tolerance": 0,
+    "Win State Step Tolerance": 5,
     
     "State Configuration": 
     {
@@ -42,8 +40,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 40000,
+     "Max Size Upper Bound (Mb)": 120000
     },
     
     "Hash Database":
@@ -58,7 +56,7 @@
      "Frequency (s)": 1.0,
      "Best Solution Path": "/tmp/jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
-     "Best State Path": "/tmp/jaffar.best.state",
+     "Best State Path": "/tmp/jaffar.best.state", 
      "Worst State Path": "/tmp/jaffar.worst.state"
      }
   },
@@ -81,7 +79,7 @@
     
     "Actions":
     [
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 18, "Center": 255, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 0, "Center": 255, "Min": 0, "Max": 255 }
     ]
    },
 
@@ -90,7 +88,7 @@
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 20 }
+     { "Property": "Kid Room", "Op": "==", "Value": 13 }
     ],
     
     "Satisfies": [ 1000 ],
@@ -98,8 +96,9 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 18, "Center": 255, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 20, "Center": 138, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 0, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 13, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.1, "Room": 13, "Center": 0, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -108,8 +107,9 @@
     
     "Conditions":
     [
-     { "Property": "Kid Frame", "Op": "==", "Value": 217 },
-     { "Property": "Lag Counter", "Op": "<", "Value": 38 }
+     { "Property": "Kid Room", "Op": "==", "Value": 13 },
+     { "Property": "Kid Pos X", "Op": ">", "Value": 158 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value": 126 }
     ],
     
     "Satisfies": [ ],
@@ -120,7 +120,6 @@
     ]
    },
       
-   
    {
     "Label": 1999,
     
