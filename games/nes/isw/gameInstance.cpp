@@ -48,7 +48,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
   MetroHash128 hash;
@@ -89,7 +89,7 @@ uint128_t GameInstance::computeHash() const
   hash.Update(*attackY2 % 4  );
   hash.Update(*inventoryHasEgg   );
 
-  uint128_t result;
+  _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
 }

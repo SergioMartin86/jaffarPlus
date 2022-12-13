@@ -46,7 +46,7 @@ int getKeyPress()
 
 
 void loadSolutionFile(
-                      std::map<uint128_t, uint16_t>& hashMap,
+                      std::map<_uint128_t, uint16_t>& hashMap,
                       bool& hashCollisionFound,
                       uint16_t& hashCollisionStep,
                       uint16_t& hashCollisionPrev,
@@ -86,6 +86,7 @@ void loadSolutionFile(
  // Getting sequence size
  sequenceLength = moveList.size();
  moveList.push_back(".");
+ moveList.push_back(".");
 
  // Flag to indicate whether a fail condition was met
  failConditionFound = false;
@@ -119,11 +120,11 @@ void loadSolutionFile(
  }
 
  // Adding current hash to the set
- uint128_t curHash = gameInstance.computeHash();
+ _uint128_t curHash = gameInstance.computeHash();
  hashMap[curHash] = 0;
 
  // Iterating move list in the sequence
- for (ssize_t i = 0; i < moveList.size(); i++)
+ for (ssize_t i = 0; i < (ssize_t)moveList.size(); i++)
  {
   // Getting possible moves
   auto possibleMoves = gameInstance.getPossibleMoves();
@@ -138,15 +139,15 @@ void loadSolutionFile(
   }
 
   // Advancing state
-  auto skippedFrames = gameInstance.advanceStateString(moveList[i]);
-  gameInstance.updateDerivedValues();
+  auto newMoveList = gameInstance.advanceStateString(moveList[i]);
+  std::vector<std::string> newMoveListString;
+  for (const auto& move : newMoveList) newMoveListString.push_back(EmuInstance::moveCodeToString(move));
 
-  // Storing full sequence
-  unpackedMoveSequence.push_back(moveList[i]);
-  for (uint16_t f = 0; f < skippedFrames; f++) unpackedMoveSequence.push_back(".");
+  // Storing full unpacked sequence
+  unpackedMoveSequence.insert(unpackedMoveSequence.end(), newMoveListString.begin(), newMoveListString.end());
 
   // Adding current hash to the set
-  uint128_t curHash = gameInstance.computeHash();
+  _uint128_t curHash = gameInstance.computeHash();
   if (hashCollisionFound == false && hashMap.contains(curHash))
   {
    hashCollisionStep = i;
@@ -244,7 +245,7 @@ int main(int argc, char *argv[])
   scrollok(stdscr, TRUE);
 
   // This storage will indicate whether a repeated hash was found
-  std::map<uint128_t, uint16_t> hashMap;
+  std::map<_uint128_t, uint16_t> hashMap;
   bool hashCollisionFound;
   uint16_t hashCollisionStep;
   uint16_t hashCollisionPrev;
@@ -388,7 +389,7 @@ int main(int argc, char *argv[])
    if (command == 'd')
    {
      // Storing replay file
-     std::string sequenceFileName = "jaffar.sol";
+     std::string sequenceFileName = solutionFile + std::string(".translated");
 
      // Unpacking full move sequence
      std::string unpackedSequence;

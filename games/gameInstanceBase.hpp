@@ -28,8 +28,8 @@ class GameInstanceBase
   stateType getStateType(const bool* rulesStatus) const;
 
   // Function to advance state. Returns the number of skipped frames
-  virtual uint16_t advanceState(const INPUT_TYPE &move) { _emu->advanceState(move); updateDerivedValues(); return 0; };
-  uint16_t advanceStateString(const std::string& move) { return advanceState(_emu->moveStringToCode(move)); }
+  virtual std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) = 0;
+  std::vector<INPUT_TYPE> advanceStateString(const std::string& move) {  return advanceGameState(_emu->moveStringToCode(move)); }
 
   // Serialization/Deserialization Routines
   void popState(uint8_t* __restrict__ outputStateData) const { _emu->serializeState(outputStateData); }
@@ -45,7 +45,7 @@ class GameInstanceBase
   void satisfyRule(bool* rulesStatus, const size_t ruleId) const;
 
   // This function computes the hash for the current state
-  virtual uint128_t computeHash() const = 0;
+  virtual _uint128_t computeHash() const = 0;
 
   // This function updates derivate values (those who require calculation from raw values) after a state is re-loaded
   virtual void updateDerivedValues() = 0;

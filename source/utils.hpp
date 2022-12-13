@@ -85,7 +85,7 @@ inline std::string simplifyMove(const std::string& move)
  std::string simpleMove;
 
  bool isEmptyMove = true;
- for (size_t i = 0; i < move.size(); i++) if (move[i] != '.') { simpleMove += move[i]; isEmptyMove = false; }
+ for (size_t i = 0; i < move.size(); i++) if (move[i] != '.' && move[i] != '|') { simpleMove += move[i]; isEmptyMove = false; }
  if (isEmptyMove) return ".";
  return simpleMove;
 }
@@ -112,18 +112,18 @@ T swap_endian(T u)
 
 
 // Class for pthread lock implementation
-class Lock
+class Mutex
 {
  pthread_mutex_t _lock;
 
  public:
 
- Lock()
+ Mutex()
  {
   pthread_mutex_init(&_lock, 0);
  }
 
- ~Lock()
+ ~Mutex()
  {
   pthread_mutex_destroy(&_lock);
  }
@@ -159,7 +159,8 @@ inline bool getBitFlag(const uint8_t value, const uint8_t idx)
 
 
 inline size_t countButtonsPressedString(const std::string& input) { size_t count = 0; for (size_t i = 0; i < input.size(); i++) if (input[i] != '.') count++; return count; };
-inline uint16_t countButtonsPressedNumber16(const uint16_t& input) {
+
+template<typename T> inline uint16_t countButtonsPressedNumber(const T& input) {
  uint16_t count = 0;
  if (input & 0b0000000000000001) count++;
  if (input & 0b0000000000000010) count++;
@@ -180,14 +181,6 @@ inline uint16_t countButtonsPressedNumber16(const uint16_t& input) {
  return count;
 };
 
-inline uint8_t countButtonsPressedNumber8(const uint8_t& input) {
- uint8_t count = 0;
- if (input & 0b00000001) count++;
- if (input & 0b00000010) count++;
- if (input & 0b00000100) count++;
- if (input & 0b00001000) count++;
- if (input & 0b00010000) count++;
- if (input & 0b00100000) count++;
- if (input & 0b01000000) count++;
- return count;
-};
+static auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
+static auto moveCountComparerNumber = [](const INPUT_TYPE a, const INPUT_TYPE b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
+
