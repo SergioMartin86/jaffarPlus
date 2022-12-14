@@ -1,0 +1,147 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../pop.sfc",
+    "State File": "lvl12a_alt.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Skip Frames": true,
+   "Exit Jingle Mode": false,
+   "Timer Tolerance": 6,
+   "Lag Discount": 0.01,
+   "Fight Mode Discount": 4.0,
+   "Game Property Hashes": [  ],
+   "Tile Hashes":
+    [
+       { "Room": 0, "Row": 0, "Col": 4, "Type": "Full" },
+       { "Room": 0, "Row": 0, "Col": 4, "Type": "Type" },
+       { "Room": 2, "Row": 0, "Col": 8, "Type": "Full" },
+       { "Room": 7, "Row": 0, "Col": 8, "Type": "Full" },
+       { "Room": 7, "Row": 0, "Col": 8, "Type": "Type" }
+    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 2000,
+      "Store Move History": true,
+      "XDelta3 Enabled": true,
+      "XDelta3 Max Differences": 8000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 50000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+     "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   
+   {
+    "Label": 1002,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 2, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Guard Horizontal Magnet", "Intensity": 10.0, "Room": 2, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 2 },
+     { "Property": "Guard Room", "Op": "==", "Value": 2 },
+     { "Property": "Guard Pos X", "Op": ">", "Value": 195 },
+     { "Property": "Kid Pos X", "Op": ">", "Value": 195 }
+    ],
+    
+    "Satisfies": [ 1002 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 0 },
+     { "Property": "Guard Room", "Op": "==", "Value": 0 },
+     { "Property": "Guard HP", "Op": ">", "Value": 0 },
+     { "Property": "Guard Pos Y", "Op": "==", "Value": 190 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    
+    "Conditions":
+    [
+     { "Property": "Kid HP", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+      
+  ]  
+}
