@@ -1,4 +1,8 @@
 *.bk
+*.o*
+*.e*
+core
+test.sbatch
 *.nes
 *.sfc
 *.rom
