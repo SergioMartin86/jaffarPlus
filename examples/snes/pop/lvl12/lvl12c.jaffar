@@ -15,6 +15,16 @@
    "Game Property Hashes": [ "Guard HP" ],
    "Tile Hashes":
     [
+      { "Room": 6, "Row": 1, "Col": 8, "Type": "Full" },
+      { "Room": 23, "Row": 1, "Col": 2, "Type": "Full" },
+      { "Room": 23, "Row": 1, "Col": 3, "Type": "Full" },
+      { "Room": 23, "Row": 1, "Col": 4, "Type": "Full" },
+      { "Room": 23, "Row": 1, "Col": 5, "Type": "Full" },
+      { "Room": 23, "Row": 1, "Col": 6, "Type": "Full" },
+      { "Room": 23, "Row": 1, "Col": 7, "Type": "Full" },
+      { "Room": 23, "Row": 1, "Col": 8, "Type": "Full" },
+      { "Room": 23, "Row": 1, "Col": 9, "Type": "Full" },
+      { "Room": 4, "Row": 2, "Col": 5, "Type": "Full" }
     ]
   },
   
