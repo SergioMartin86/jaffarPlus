@@ -309,7 +309,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0024) moveList.insert(moveList.end(), { "L", "R", "U", "LB", "RB", "UA" });
  if (*kidFrame == 0x0026) moveList.insert(moveList.end(), { "L", "R", "LB", "RB", "UB" });
  if (*kidFrame == 0x0027) moveList.insert(moveList.end(), { "L", "R", "U", "LB", "RB", "UB" });
- if (*kidFrame == 0x0028) moveList.insert(moveList.end(), { "L", "R", "U" });
+ if (*kidFrame == 0x0028) moveList.insert(moveList.end(), { "L", "R", "U", "LB", "RB" });
  if (*kidFrame == 0x0029) moveList.insert(moveList.end(), { "LB", "RB" });
  if (*kidFrame == 0x002A) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
  if (*kidFrame == 0x002B) moveList.insert(moveList.end(), { "B", "L", "R" });
@@ -326,7 +326,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0036) moveList.insert(moveList.end(), { "D", "L", "R", "BA", "DL", "DR", "LA", "LB", "RA", "RB", "UA", "UB" });
  if (*kidFrame == 0x0037) moveList.insert(moveList.end(), { "B", "L", "R", "U", "LB", "RB" });
  if (*kidFrame == 0x0038) moveList.insert(moveList.end(), { "D", "L", "R", "U", "LB", "RB", "UL", "UR" });
- if (*kidFrame == 0x0039) moveList.insert(moveList.end(), { "B", "L", "R" });
+ if (*kidFrame == 0x0039) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB" });
  if (*kidFrame == 0x003A) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
  if (*kidFrame == 0x003B) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x003C) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
@@ -345,6 +345,8 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x004F) moveList.insert(moveList.end(), { "L", "R", "DL", "DR", "LB", "RB", "UB" });
  if (*kidFrame == 0x0051) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB" });
  if (*kidFrame == 0x0052) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0054) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0055) moveList.insert(moveList.end(), { "B", "D", "L", "R", "U", "RA", "RB", "LA", "LB", "UL", "UR" });
  if (*kidFrame == 0x0057) moveList.insert(moveList.end(), { "B", "L", "R", "U", "UL", "UR" });
  if (*kidFrame == 0x0058) moveList.insert(moveList.end(), { "B", "U" });
  if (*kidFrame == 0x0059) moveList.insert(moveList.end(), { "B", "U" });
@@ -361,16 +363,17 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0066) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "RB" });
  if (*kidFrame == 0x0067) moveList.insert(moveList.end(), { "B", "D", "L", "R", "U" });
  if (*kidFrame == 0x0068) moveList.insert(moveList.end(), { "B", "LB", "RB" });
- if (*kidFrame == 0x0069) moveList.insert(moveList.end(), { "B", "D", "L", "R", "UB", "UL", "UR" });
+ if (*kidFrame == 0x0069) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "BA", "LA", "LB", "RA", "RB", "UA", "UB", "UL", "UR" });
  if (*kidFrame == 0x006A) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "DL", "DR", "LB", "RB", "UL", "UR" });
  if (*kidFrame == 0x006B) moveList.insert(moveList.end(), { "B", "L", "R", "BA", "LB", "RB", "UA", "UL", "UR" });
  if (*kidFrame == 0x006C) moveList.insert(moveList.end(), { "A", "D", "DA", "DL", "DR", "LA", "LB", "RA", "RB" });
- if (*kidFrame == 0x006D) moveList.insert(moveList.end(), { "A", "D", "L", "R", "U", "DA", "DL", "DR", "LA", "LB", "RA", "RB", "UL", "UR" });
+ if (*kidFrame == 0x006D) moveList.insert(moveList.end(), { "A", "D", "L", "R", "U", "BA", "DA", "DL", "DR", "LA", "LB", "RA", "RB", "UL", "UR" });
  if (*kidFrame == 0x006E) moveList.insert(moveList.end(), { "B", "D", "L", "R", "LB", "RB", "UB", "UL", "UR" });
  if (*kidFrame == 0x006F) moveList.insert(moveList.end(), { "D", "L", "R", "U", "UB", "UL", "UR" });
  if (*kidFrame == 0x0070) moveList.insert(moveList.end(), { "D", "L", "R", "LB", "RB", "UL", "UR" });
  if (*kidFrame == 0x0071) moveList.insert(moveList.end(), { "L", "R", "UL", "UR" });
  if (*kidFrame == 0x0072) moveList.insert(moveList.end(), { "B", "L", "R" });
+ if (*kidFrame == 0x0073) moveList.insert(moveList.end(), { "U" });
  if (*kidFrame == 0x0074) moveList.insert(moveList.end(), { "L", "R", "LB", "RB" });
  if (*kidFrame == 0x0075) moveList.insert(moveList.end(), { "L", "R", "DL", "DR" });
  if (*kidFrame == 0x0076) moveList.insert(moveList.end(), { "L", "R" });
@@ -381,6 +384,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x007C) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x007F) moveList.insert(moveList.end(), { "B", "L", "R" });
  if (*kidFrame == 0x0083) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0084) moveList.insert(moveList.end(), { "B", "L", "R" });
  if (*kidFrame == 0x0086) moveList.insert(moveList.end(), { "L", "R", "U" });
  if (*kidFrame == 0x0096) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "BA", "LA", "LB", "RA", "RB" });
  if (*kidFrame == 0x0097) moveList.insert(moveList.end(), { "D", "L", "R", "LB", "RB" });

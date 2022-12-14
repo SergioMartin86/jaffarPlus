@@ -51,8 +51,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 10000
     },
     
     "Hash Database":
@@ -162,7 +162,7 @@
     [
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 2, "Center": 255, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 1, "Center": 101, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 1, "Center": 108, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -180,7 +180,27 @@
     [
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 1, "Center": 255, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 105, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 108, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 5, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1105,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 5 },
+     { "Property": "Kid HP", "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 1, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 108, "Min": 0, "Max": 255 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 5, "Center": 255, "Min": 0, "Max": 255 }
     ]
    },
@@ -190,17 +210,18 @@
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 6 }
+     { "Property": "Kid Room", "Op": "==", "Value": 6 },
+     { "Property": "Kid HP", "Op": "==", "Value": 2 }
     ],
     
-    "Satisfies": [ 1005 ],
+    "Satisfies": [ 1105 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 5, "Center": 105, "Min": 0, "Max": 255 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 255, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 6, "Center": 105, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 6, "Center": 108, "Min": 0, "Max": 255 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 6, "Center": 255, "Min": 0, "Max": 255 }
      
     ]
@@ -212,7 +233,8 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value": 6 },
-     { "Property": "Kid Frame", "Op": "==", "Value": 15 }
+     { "Property": "Kid Frame", "Op": "==", "Value": 15 },
+     { "Property": "Kid HP", "Op": "==", "Value": 1 }
     ],
     
     "Satisfies": [  ],
