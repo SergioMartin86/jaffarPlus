@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
-    "State File": "jaffar.state"
+    "State File": "lvl12b_alt.state"
   },
   
   "Game Configuration": 
@@ -12,7 +12,7 @@
    "Timer Tolerance": 6,
    "Lag Discount": 0.01,
    "Fight Mode Discount": 0.0,
-   "Game Property Hashes": [  ],
+   "Game Property Hashes": [ "Kid HP"  ],
    "Tile Hashes":
     [
        { "Room": 7, "Row": 0, "Col": 8, "Type": "Full" },
@@ -38,8 +38,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 150000
+     "Max Size Lower Bound (Mb)": 200000,
+     "Max Size Upper Bound (Mb)": 600000
     },
     
     "Hash Database":
@@ -52,10 +52,10 @@
     {
      "Enabled": true,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol",
-     "Best State Path": "/tmp/jaffar.best.state",
-     "Worst State Path": "/tmp/jaffar.worst.state"
+     "Best Solution Path": "sol/jaffar.best.sol",
+     "Worst Solution Path": "sol/jaffar.worst.sol",
+     "Best State Path": "sol/jaffar.best.state",
+     "Worst State Path": "sol/jaffar.worst.state"
      }
   },
   
@@ -191,6 +191,24 @@
     "Conditions":
     [
      { "Property": "Kid HP", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1998,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 },
+     { "Property": "Kid Room", "Op": "==", "Value": "Guard Room" },
+     { "Property": "Guard HP", "Op": "==", "Value": 0 }
     ],
     
     "Satisfies": [ ],
