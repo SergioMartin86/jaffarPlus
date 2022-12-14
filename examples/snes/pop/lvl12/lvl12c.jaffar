@@ -38,13 +38,8 @@
      
     "State Database": 
     {
-<<<<<<< HEAD
      "Max Size Lower Bound (Mb)": 5000,
      "Max Size Upper Bound (Mb)": 25000
-=======
-     "Max Size Lower Bound (Mb)": 500000,
-     "Max Size Upper Bound (Mb)": 900000
->>>>>>> 9568211 (Updating script)
     },
     
     "Hash Database":
