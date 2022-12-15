@@ -9,7 +9,7 @@
   {
    "Skip Frames": true,
    "Exit Jingle Mode": false,
-   "Timer Tolerance": 10,
+   "Timer Tolerance": 12,
    "Lag Discount": 0.01,
    "Fight Mode Discount": 4.0,
    "Game Property Hashes": [  ],
