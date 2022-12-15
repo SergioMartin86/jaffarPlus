@@ -16,7 +16,9 @@
    "Tile Hashes":
     [
        { "Room": 4, "Row": 1, "Col": 3, "Type": "Full" },
-       { "Room": 9, "Row": 1, "Col": 2, "Type": "Boolean" }
+       { "Room": 9, "Row": 1, "Col": 2, "Type": "Modulo" },
+       { "Room": 8, "Row": 0, "Col": 5, "Type": "Full" },
+       { "Room": 8, "Row": 0, "Col": 5, "Type": "Type" }
     ]
   },
   
@@ -38,8 +40,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 3000,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 100000
     },
     
     "Hash Database":
@@ -189,7 +191,8 @@
     [
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 5, "Center": 145, "Min": 0, "Max": 255 },
-     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 255, "Min": 0, "Max": 255 }
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 5, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 9, "Center": 0, "Min": 0, "Max": 255 } 
     ]
    },
    
@@ -198,13 +201,90 @@
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 9 },
-     { "Property": "Tile State", "Room": 9, "Row": 1, "Col": 2, "Op": ">", "Value":  0 },
-     { "Property": "Kid Frame", "Op": "==", "Value": 15 },
-     { "Property": "Kid Pos Y", "Op": "==", "Value": 126 }
+     { "Property": "Kid Room", "Op": "==", "Value": 8 },
+     { "Property": "Tile State", "Room": 9, "Row": 1, "Col": 2, "Op": ">", "Value":  0 }
     ],
     
     "Satisfies": [ 1004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 9, "Center": 145, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 8, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 8, "Center": 0, "Min": 0, "Max": 255 } 
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 8 },
+     { "Property": "Tile Type", "Room": 8, "Row": 0, "Col": 5, "Op": "!=", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 1005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 8, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 8, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1007,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 9 },
+     { "Property": "Tile Type", "Room": 8, "Row": 0, "Col": 5, "Op": "!=", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 1006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 8, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 9, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1008,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 10 },
+     { "Property": "Tile Type", "Room": 8, "Row": 0, "Col": 5, "Op": "!=", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 1007 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 9, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 10, "Center": 255, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 10, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1009,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 10 },
+     { "Property": "Tile Type", "Room": 8, "Row": 0, "Col": 5, "Op": "!=", "Value":  2 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value":  126 }
+    ],
+    
+    "Satisfies": [  ],
     
     "Actions":
     [
