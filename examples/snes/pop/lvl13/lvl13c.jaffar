@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
-    "State File": "lvl13b.state"
+    "State File": "lvl13c.state"
   },
   
   "Game Configuration": 
@@ -15,8 +15,6 @@
    "Game Property Hashes": [  ],
    "Tile Hashes":
     [
-       { "Room": 4, "Row": 1, "Col": 3, "Type": "Full" },
-       { "Room": 9, "Row": 1, "Col": 2, "Type": "Modulo" },
        { "Room": 8, "Row": 0, "Col": 5, "Type": "Full" },
        { "Room": 8, "Row": 0, "Col": 5, "Type": "Type" }
     ]
@@ -40,8 +38,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 10000
     },
     
     "Hash Database":
