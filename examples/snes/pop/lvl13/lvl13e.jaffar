@@ -39,7 +39,7 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Lower Bound (Mb)": 10000,
      "Max Size Upper Bound (Mb)": 50000
     },
     
