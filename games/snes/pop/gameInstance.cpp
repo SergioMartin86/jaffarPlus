@@ -471,7 +471,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 
    while (*gameFrame != 1 || *isLagFrame != 15)
    {
-    INPUT_TYPE newMove = *gameFrame == 3 || *gameFrame == 4 ? move : 0;
+    INPUT_TYPE newMove = *gameFrame >= 3 ? move : 0;
     _emu->advanceState(newMove);
     moves.push_back(newMove);
     skippedFrames++;
