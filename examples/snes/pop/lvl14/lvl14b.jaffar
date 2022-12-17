@@ -11,7 +11,7 @@
    "Exit Jingle Mode": false,
    "Timer Tolerance": 6,
    "Lag Discount": 0.01,
-   "Fight Mode Discount": 0.0,
+   "Fight Mode Discount": 4.0,
    "Game Property Hashes": [  ],
    "Tile Hashes":
     [
