@@ -31,14 +31,14 @@
     {
       "Max Move Count": 2000,
       "Store Move History": true,
-      "XDelta3 Enabled": false,
+      "XDelta3 Enabled": true,
       "XDelta3 Max Differences": 8000,
       "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
+     "Max Size Lower Bound (Mb)": 30000,
      "Max Size Upper Bound (Mb)": 150000
     },
     
