@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <set>
 
-//#define _DETECT_POSSIBLE_MOVES
+#define _DETECT_POSSIBLE_MOVES
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
@@ -830,7 +830,7 @@ void Train::reset()
  _gameInstances[0]->evaluateRules(_firstState->getRuleStatus());
 
  // Print full move list
-//  _gameInstances[0]->printFullMoveList();
+  _gameInstances[0]->printFullMoveList();
 
  // Evaluating Score on initial state
  _firstState->reward = _gameInstances[0]->getStateReward(_firstState->getRuleStatus());
