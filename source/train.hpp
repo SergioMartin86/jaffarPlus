@@ -31,6 +31,7 @@ class Train
 
   // Configuration
   nlohmann::json _config;
+  std::string _configFile;
 
   // Storage for current step
   uint16_t _currentStep;

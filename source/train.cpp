@@ -576,6 +576,7 @@ void Train::printTrainStatus()
   ssize_t totalStepTime = _stepHashCalculationTime + _stepHashCheckingTime + _stepHashFilteringTime + _stepStateAdvanceTime + _stepStateDeserializationTime + _stepStateEncodingTime + _stepStateDecodingTime + _stepStateEvaluationTime + _stepStateCreationTime + _stepStateDBSortingTime;
 
   printf("[Jaffar] ----------------------------------------------------------------\n");
+  printf("[Jaffar] Config File: %s\n", _configFile.c_str());
   printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _maxMoveCount);
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
 
@@ -928,6 +929,7 @@ int main(int argc, char *argv[])
 
  printf("[Jaffar] Initializing Jaffar...\n");
  Train train(config);
+ train._configFile = configFile;
  train.reset();
 
   // Running Search
