@@ -109,6 +109,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Tile State") return dt_uint8;
   if (propertyName == "Tile Type") return dt_uint8;
   if (propertyName == "Exit Door State") return dt_uint8;
+  if (propertyName == "Kid Teleporting") return dt_uint8;
 
   if (propertyName == "Guard Room") return dt_uint8;
   if (propertyName == "Guard Pos X") return dt_uint8;
@@ -135,7 +136,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Kid HP") return gameInstance->kidHP;
   if (propertyName == "Kid Frame") return gameInstance->kidFrame;
   if (propertyName == "Jingle State") return gameInstance->jingleState;
-
+  if (propertyName == "Kid Teleporting") return gameInstance->kidTeleporting;
 
   if (propertyName == "Guard Room") return gameInstance->guardRoom;
   if (propertyName == "Guard Pos X") return gameInstance->guardPosX;
