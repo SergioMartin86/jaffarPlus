@@ -2,14 +2,14 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
-    "State File": "lvl15d.state"
+    "State File": "jaffar.state"
   },
   
   "Game Configuration": 
   {
    "Skip Frames": true,
    "Exit Jingle Mode": false,
-   "Timer Tolerance": 6,
+   "Timer Tolerance": 12,
    "Lag Discount": 0.01,
    "Fight Mode Discount": 4.0,
    "Game Property Hashes": [  ],
@@ -37,8 +37,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 500,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 30000
     },
     
     "Hash Database":
@@ -205,6 +205,23 @@
     "Conditions":
     [
      { "Property": "Kid Teleporting", "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [  1006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 }
+    ]
+   },
+   
+   {
+    "Label": 1008,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Teleporting", "Op": ">", "Value": 0 },
+     { "Property": "Kid Frame", "Op": "==", "Value": 0 }
     ],
     
     "Satisfies": [  ],
