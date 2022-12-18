@@ -11,7 +11,7 @@
    "Exit Jingle Mode": false,
    "Timer Tolerance": 6,
    "Lag Discount": 0.01,
-   "Fight Mode Discount": -1.0,
+   "Fight Mode Discount": -3.0,
    "Game Property Hashes": [  ],
    "Tile Hashes":
     [
@@ -36,8 +36,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 2000,
-     "Max Size Upper Bound (Mb)": 15000
+     "Max Size Lower Bound (Mb)": 100000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -86,8 +86,8 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value": 1 },
-     { "Property": "Guard Room", "Op": "==", "Value": 1 },
-     { "Property": "Guard HP", "Op": ">", "Value": 0 }
+     { "Property": "Kid Frame", "Op": ">=", "Value": 233 },
+     { "Property": "Kid Frame", "Op": "<=", "Value": 240 }
     ],
     
     "Satisfies": [ 1000 ],
