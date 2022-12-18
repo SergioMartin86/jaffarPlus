@@ -30,6 +30,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  kidCrouchState   = (uint8_t*)   &_emu->_baseMem[0x00470];
  kidClimbingType1 = (uint8_t*)   &_emu->_baseMem[0x004CA];
  kidClimbingType2 = (uint8_t*)   &_emu->_baseMem[0x004CB];
+ kidTeleporting   = (uint8_t*)   &_emu->_baseMem[0x00474];
  kidSequenceStep  = (uint8_t*)   &_emu->_baseMem[0x00595];
  exitDoorState    = (uint8_t*)   &_emu->_baseMem[0x0066A];
 
@@ -213,6 +214,7 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*kidHangingState);
   hash.Update(*kidClimbingType1);
   hash.Update(*kidClimbingType2);
+  hash.Update(*kidTeleporting);
   hash.Update(*kidSequenceStep);
   if (skipFrames == false) hash.Update(*kidPrevFrame);
 
@@ -626,6 +628,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Kid Climbing Type:      %02u / %02u\n", *kidClimbingType1, *kidClimbingType2);
  LOG("[Jaffar]  + Exit Door State:        %02u\n", *exitDoorState);
  LOG("[Jaffar]  + Custom Value:           %02u\n", *customValue);
+ LOG("[Jaffar]  + Kid Teleporting:        %02u\n", *kidTeleporting);
 
  if (exitJingleMode == true)
  {

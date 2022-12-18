@@ -64,6 +64,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* kidSequenceStep;
   uint8_t* kidClimbingType1;
   uint8_t* kidClimbingType2;
+  uint8_t* kidTeleporting;
 
   uint8_t* guardRoom;
   uint8_t* guardPosX;
