@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.sfc",
-    "State File": "jaffar.state"
+    "State File": "lvl15d.state"
   },
   
   "Game Configuration": 
@@ -37,8 +37,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":
