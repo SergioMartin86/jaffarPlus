@@ -88,7 +88,8 @@
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 2 }
+     { "Property": "Kid Room", "Op": "==", "Value": 2 },
+     { "Property": "Kid HP", "Op": ">", "Value": 1 }
     ],
     
     "Satisfies": [ 1002 ],
