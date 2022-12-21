@@ -593,7 +593,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  reward += *kidDirection == 0 ? 1.0 : -1.0  * magnets.kidDirectionMagnet;
 
  // Guard HP Magnet
- if (*kidRoom == *guardRoom) reward += (float)(*guardMaxHP - *guardHP)  * magnets.guardHPMagnet;
+ if (*kidRoom == *guardRoom && *guardHP > 0) reward += (float)(*guardMaxHP - *guardHP)  * magnets.guardHPMagnet;
 
  // Returning reward
  return reward;
