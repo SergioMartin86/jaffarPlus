@@ -56,7 +56,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  isPaused         = (uint8_t*)  &_emu->_baseMem[0x0455];
  menuMode         = (uint8_t*)  &_emu->_baseMem[0x001A];
  menuOption       = (uint8_t*)  &_emu->_baseMem[0x0855];
- exitLevelMode    = (uint8_t*)  &_emu->_baseMem[0x0D77];
+ exitLevelMode    = (uint8_t*)  &_emu->_baseMem[0x0541];
 
  // Timer tolerance
  if (isDefined(config, "Timer Tolerance") == true)
@@ -595,6 +595,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  // Guard HP Magnet
  if (*kidRoom == *guardRoom && *guardHP > 0) reward += (float)(*guardMaxHP - *guardHP)  * magnets.guardHPMagnet;
 
+ // Kid HP Magnet
+ reward += *kidHP * magnets.kidHPMagnet;
+
  // Returning reward
  return reward;
 }
@@ -629,6 +632,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Exit Door State:        %02u\n", *exitDoorState);
  LOG("[Jaffar]  + Custom Value:           %02u\n", *customValue);
  LOG("[Jaffar]  + Kid Teleporting:        %02u\n", *kidTeleporting);
+ LOG("[Jaffar]  + Exit Level Mode:        %02u\n", *exitLevelMode);
 
  if (exitJingleMode == true)
  {
@@ -649,6 +653,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.guardHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Guard Horizontal Magnet - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.guardHorizontalMagnet.intensity, magnets.guardHorizontalMagnet.center, magnets.guardHorizontalMagnet.min, magnets.guardHorizontalMagnet.max);
  if (std::abs(magnets.guardVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Guard Vertical Magnet   - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.guardVerticalMagnet.intensity, magnets.guardVerticalMagnet.center, magnets.guardVerticalMagnet.min, magnets.guardVerticalMagnet.max);
  if (std::abs(magnets.guardHPMagnet) > 0.0f)                   LOG("[Jaffar]  + Guard HP Magnet         - Intensity: %.1f\n", magnets.guardHPMagnet);
+ if (std::abs(magnets.kidHPMagnet) > 0.0f)                     LOG("[Jaffar]  + Kid HP Magnet           - Intensity: %.1f\n", magnets.kidHPMagnet);
 
  for (const auto& tile : tileWatchList)
    LOG("[Jaffar]  + Tile Info            - Room: %02u, Row: %02u, Col: %02u, Index: %03u, Mem: 0x%05X / 0x%05X, Type: %03u, State: %03u\n", tile.second.room, tile.second.row, tile.second.col, tile.second.index, TILE_TYPE_BASE + tile.second.index, TILE_STATE_BASE + tile.second.index, tileTypeBase[tile.second.index], tileStateBase[tile.second.index]);

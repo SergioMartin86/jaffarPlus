@@ -73,6 +73,15 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Kid HP Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+   uint8_t room = actionJs["Room"].get<uint8_t>();
+   _magnets[room].kidHPMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
   if (actionType == "Set Guard HP Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -119,6 +128,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Custom Value") return dt_uint8;
   if (propertyName == "Lag Counter") return dt_uint16;
 
+  if (propertyName == "Exit Level Mode") return dt_uint8;
+
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
   return dt_uint8;
@@ -149,6 +160,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Lag Counter") return gameInstance->lagFrameCounter;
 
   if (propertyName == "Exit Door State") return gameInstance->exitDoorState;
+  if (propertyName == "Exit Level Mode") return gameInstance->exitLevelMode;
 
 
   int room = -1;
