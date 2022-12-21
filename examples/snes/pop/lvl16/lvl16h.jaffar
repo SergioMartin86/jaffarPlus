@@ -129,7 +129,27 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value": 21 },
-     { "Property": "Kid Col", "Op": "==", "Value": 255 }
+     { "Property": "Tile State", "Room": 23, "Row": 1, "Col": 9, "Op": ">", "Value":  0 },
+     { "Property": "Kid Col", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 1002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Custom Value", "Value": 1 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 21 },
+     { "Property": "Kid Col", "Op": "==", "Value": 255 },
+     { "Property": "Custom Value", "Op": "==", "Value": 1 }
     ],
     
     "Satisfies": [  ],
