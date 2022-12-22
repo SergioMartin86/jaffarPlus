@@ -326,7 +326,7 @@ int main(int argc, char *argv[])
      printw("[Jaffar]  + Fail State Found:       %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep+1);
      printw("[Jaffar]  + Unsupported Move Found: %s (%u)\n", unsupportedMoveFound ? "True" : "False", unsupportedMoveStep+1);
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
-     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | g: set RNG | s: quicksave | p: play | d: unpack | q: quit\n");
+     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | g: set RNG | s: quicksave | p: play | d: unpack | q: quit\n");
      playbackInstance.printPlaybackCommands();
      refresh();
    }
@@ -368,6 +368,8 @@ int main(int argc, char *argv[])
    if (command == 'j') currentStep = currentStep + 10;
    if (command == 'y') currentStep = currentStep - 100;
    if (command == 'u') currentStep = currentStep + 100;
+   if (command == 'k') currentStep = currentStep - 1000;
+   if (command == 'i') currentStep = currentStep + 1000;
 
    // Correct current step if requested more than possible
    if (currentStep < 0) currentStep = 0;
