@@ -25,7 +25,6 @@
       { "Room": 3, "Row": 0, "Col": 5, "Type": "Type" },
       { "Room": 3, "Row": 0, "Col": 7, "Type": "Full" },
       { "Room": 3, "Row": 0, "Col": 9, "Type": "Boolean" },
-      { "Room": 3, "Row": 0, "Col": 9, "Type": "Modulo" },
       { "Room": 18, "Row": 1, "Col": 7, "Type": "Full" },
       { "Room": 18, "Row": 1, "Col": 7, "Type": "Type" },
       { "Room": 18, "Row": 2, "Col": 8, "Type": "Full" },
@@ -51,8 +50,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 150000
+     "Max Size Lower Bound (Mb)": 100000,
+     "Max Size Upper Bound (Mb)": 220000
     },
     
     "Hash Database":
