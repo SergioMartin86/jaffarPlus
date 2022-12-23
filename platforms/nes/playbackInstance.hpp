@@ -135,7 +135,7 @@ class PlaybackInstance : public PlaybackInstanceBase
   if (move.find("D") != std::string::npos) overlayButtonDownSurface = _overlayButtonDownSurface;
 
   // Since renderer is off by one frame, we need to emulate an additional frame
-  _game->advanceState(0);
+  _game->advanceGameState(0);
   int32_t curImage[BLIT_SIZE];
   _hqnState.blit(curImage, hqn::HQNState::NES_VIDEO_PALETTE, 0, 0, 0, 0);
   _hqnGUI->update_blit(curImage, _overlayBaseSurface, overlayButtonASurface, overlayButtonBSurface, overlayButtonSelectSurface, overlayButtonStartSurface, overlayButtonLeftSurface, overlayButtonRightSurface, overlayButtonUpSurface, overlayButtonDownSurface);
@@ -166,7 +166,7 @@ class PlaybackInstance : public PlaybackInstanceBase
    LOG("Loading low memory file '%s'...\n", str);
    std::string lowMemData;
    bool status = loadStringFromFile(lowMemData, str);
-   if (status == false) { printw("Could not read from file.\n", str); return false; }
+   if (status == false) { printw("Could not read from file %s.\n", str); return false; }
    memcpy(_game->_emu->_baseMem, (uint8_t*) lowMemData.data(), 2048);
 
    // Replacing current sequence

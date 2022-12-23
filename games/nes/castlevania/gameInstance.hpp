@@ -186,6 +186,7 @@ class GameInstance : public GameInstanceBase
   bool allowB;
 
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
+  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   _uint128_t computeHash() const override;
   void updateDerivedValues() override;
   std::vector<std::string> getPossibleMoves() const override;
