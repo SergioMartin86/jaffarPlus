@@ -370,6 +370,16 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  return moveList;
 }
 
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
+{
+  std::vector<INPUT_TYPE> moves;
+
+  _emu->advanceState(move);
+  moves.push_back(move);
+
+  return moves;
+}
+
 // Function to get magnet information
 magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 {
