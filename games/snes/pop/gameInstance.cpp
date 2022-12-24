@@ -13,6 +13,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  gameFrame        = (uint8_t*)   &_emu->_baseMem[0x00000];
  isLagFrame       = (uint8_t*)   &_emu->_baseMem[0x0020C];
  inputCode        = (uint16_t*)  &_emu->_baseMem[0x00272];
+ soundEffectActive = (uint8_t*)   &_emu->_baseMem[0x01D3EB];
 
  kidRoom          = (uint8_t*)   &_emu->_baseMem[0x00472];
  kidFightMode     = (uint8_t*)   &_emu->_baseMem[0x00475];
@@ -167,6 +168,7 @@ _uint128_t GameInstance::computeHash() const
 
   hash.Update(*gameFrame);
   hash.Update(*isLagFrame);
+  hash.Update(*soundEffectActive);
 
   if (timerTolerance > 0)
   {
