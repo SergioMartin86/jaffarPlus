@@ -4,7 +4,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../castlevania_prg0.nes",
-    "State File": "jaffar.state"
+    "State File": "stage1701a.state"
   },
   
   "Game Configuration": 
@@ -56,8 +56,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":
@@ -211,7 +211,7 @@
     [
       { "Property": "Simon Facing Direction", "Op": "==", "Value":  1 },
       { "Property": "Simon Position Y", "Op": ">", "Value":  200 },
-      { "Property": "Simon Position Y", "Op": "<", "Value":  210 }
+      { "Property": "Simon Position Y", "Op": "<", "Value":  230 }
     ],
     
     "Satisfies": [ ],

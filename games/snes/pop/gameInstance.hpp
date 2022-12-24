@@ -47,6 +47,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* isLagFrame;
   uint16_t* inputCode;
   uint16_t* IGTTicks;
+  uint8_t* soundEffectActive;
 
   uint8_t* kidRoom;
   uint8_t* kidFightMode;
