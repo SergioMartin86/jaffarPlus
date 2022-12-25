@@ -12,7 +12,7 @@
    "Timer Tolerance": 6,
    "Lag Discount": 0.01,
    "Fight Mode Discount": 0.0,
-   "Game Property Hashes": [  ],
+   "Game Property Hashes": [ "Guard HP", "Kid HP" ],
    "Tile Hashes":
     [
     ]
