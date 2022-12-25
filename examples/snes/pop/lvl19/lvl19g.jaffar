@@ -15,8 +15,8 @@
    "Game Property Hashes": [  ],
    "Tile Hashes":
     [
-      { "Room": 10, "Row": 1, "Col": 6, "Type": "Full" },
-      { "Room": 9, "Row": 1, "Col": 9, "Type": "Full" },
+      { "Room": 10, "Row": 1, "Col": 6, "Type": "Boolean" },
+      { "Room": 9, "Row": 1, "Col": 9, "Type": "Boolean" },
       { "Room": 11, "Row": 1, "Col": 2, "Type": "Full" },
       { "Room": 11, "Row": 1, "Col": 2, "Type": "Type" }
     ]
@@ -267,6 +267,23 @@
     [
      { "Property": "Tile State", "Room": 10, "Row": 1, "Col": 6, "Op": "==", "Value":  0 },
      { "Property": "Kid Room", "Op": "==", "Value":  11 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1997,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Pos Y", "Op": ">", "Value":  130 },
+     { "Property": "Kid Room", "Op": ">", "Value":  7 }
     ],
     
     "Satisfies": [ ],
