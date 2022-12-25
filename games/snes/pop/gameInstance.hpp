@@ -28,6 +28,7 @@ struct magnetSet_t {
  float kidDirectionMagnet = 0.0f;
  float guardHPMagnet = 0.0f;
  float kidHPMagnet = 0.0f;
+ float kidGuardDistanceMagnet = 0.0f;
 };
 
 struct tileWatch_t
@@ -77,6 +78,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* guardFrame;
 
   uint8_t* exitDoorState;
+  uint8_t* bossSequence;
 
   uint8_t* jingleState;
   uint16_t* exitJingleTimer;

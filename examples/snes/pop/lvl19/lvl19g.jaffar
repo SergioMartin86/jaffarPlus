@@ -16,7 +16,7 @@
    "Tile Hashes":
     [
       { "Room": 10, "Row": 1, "Col": 6, "Type": "Boolean" },
-      { "Room": 9, "Row": 1, "Col": 9, "Type": "Boolean" },
+      { "Room": 9, "Row": 1, "Col": 9, "Type": "Full" },
       { "Room": 11, "Row": 1, "Col": 2, "Type": "Full" },
       { "Room": 11, "Row": 1, "Col": 2, "Type": "Type" }
     ]
@@ -40,8 +40,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Max Size Lower Bound (Mb)": 15000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":

@@ -91,6 +91,15 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Kid Guard Distance Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+   uint8_t room = actionJs["Room"].get<uint8_t>();
+   _magnets[room].kidGuardDistanceMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
   if (actionType == "Set Custom Value")
   {
    if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
@@ -120,6 +129,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Exit Door State") return dt_uint8;
   if (propertyName == "Kid Teleporting") return dt_uint8;
   if (propertyName == "Kid Col") return dt_uint8;
+  if (propertyName == "Boss Sequence") return dt_uint8;
 
   if (propertyName == "Guard Room") return dt_uint8;
   if (propertyName == "Guard Pos X") return dt_uint8;
@@ -150,6 +160,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Jingle State") return gameInstance->jingleState;
   if (propertyName == "Kid Teleporting") return gameInstance->kidTeleporting;
   if (propertyName == "Kid Col") return gameInstance->kidCol;
+  if (propertyName == "Boss Sequence") return gameInstance->bossSequence;
 
   if (propertyName == "Guard Room") return gameInstance->guardRoom;
   if (propertyName == "Guard Pos X") return gameInstance->guardPosX;

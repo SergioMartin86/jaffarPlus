@@ -34,6 +34,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
  kidTeleporting   = (uint8_t*)   &_emu->_baseMem[0x00474];
  kidSequenceStep  = (uint8_t*)   &_emu->_baseMem[0x00595];
  exitDoorState    = (uint8_t*)   &_emu->_baseMem[0x0066A];
+ bossSequence     = (uint8_t*)   &_emu->_baseMem[0x009EE];
 
  guardRoom        = (uint8_t*)   &_emu->_baseMem[0x00472];
  guardPosX        = (uint8_t*)   &_emu->_baseMem[0x00478];
@@ -146,6 +147,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
    bool recognized = false;
    if (property == "Kid HP") recognized = true;
    if (property == "Guard HP") recognized = true;
+   if (property == "Boss Sequence") recognized = true;
    if (recognized == false) EXIT_WITH_ERROR("[ERROR] Unrecognized Game Property '%s'.\n", property.c_str());
    gamePropertyHashList.insert(property);
   }
@@ -197,6 +199,7 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*kidPosY);
   hash.Update(*kidDirection);
   if (gamePropertyHashList.contains("Kid HP")) hash.Update(*kidHP);
+  if (gamePropertyHashList.contains("Boss Sequence")) hash.Update(*bossSequence);
   hash.Update(*kidFrame);
   hash.Update(*kidAction);
   hash.Update(*kidCol);
@@ -526,6 +529,7 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
     if (_rules[ruleId]->_magnets[*kidRoom].kidVerticalMagnet.active == true) magnets.kidVerticalMagnet = _rules[ruleId]->_magnets[*kidRoom].kidVerticalMagnet;
     if (_rules[ruleId]->_magnets[*kidRoom].guardHorizontalMagnet.active == true) magnets.guardHorizontalMagnet = _rules[ruleId]->_magnets[*kidRoom].guardHorizontalMagnet;
     if (_rules[ruleId]->_magnets[*kidRoom].guardVerticalMagnet.active == true) magnets.guardVerticalMagnet = _rules[ruleId]->_magnets[*kidRoom].guardVerticalMagnet;
+    magnets.kidGuardDistanceMagnet = _rules[ruleId]->_magnets[*kidRoom].kidGuardDistanceMagnet;
     magnets.kidDirectionMagnet = _rules[ruleId]->_magnets[*kidRoom].kidDirectionMagnet;
     magnets.guardHPMagnet = _rules[ruleId]->_magnets[*kidRoom].guardHPMagnet;
   }
@@ -595,7 +599,10 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  reward += *kidDirection == 0 ? 1.0 : -1.0  * magnets.kidDirectionMagnet;
 
  // Guard HP Magnet
- if (*kidRoom == *guardRoom && *guardHP > 0) reward += (float)(*guardMaxHP - *guardHP)  * magnets.guardHPMagnet;
+ if (*kidRoom == *guardRoom) reward += (float)(*guardMaxHP - *guardHP)  * magnets.guardHPMagnet;
+
+ // Guard Distance
+  if (*kidRoom == *guardRoom) reward += (256.0f - std::abs((float)(*guardPosX) - (float)(*kidPosX))) * magnets.kidGuardDistanceMagnet;
 
  // Kid HP Magnet
  reward += *kidHP * magnets.kidHPMagnet;
@@ -635,6 +642,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Custom Value:           %02u\n", *customValue);
  LOG("[Jaffar]  + Kid Teleporting:        %02u\n", *kidTeleporting);
  LOG("[Jaffar]  + Exit Level Mode:        %02u\n", *exitLevelMode);
+ LOG("[Jaffar]  + Boss Sequence:          %02u\n", *bossSequence);
 
  if (exitJingleMode == true)
  {
@@ -649,13 +657,14 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("\n");
 
  auto magnets = getMagnetValues(rulesStatus);
- if (std::abs(magnets.kidHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Kid Horizontal Magnet   - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center, magnets.kidHorizontalMagnet.min, magnets.kidHorizontalMagnet.max);
- if (std::abs(magnets.kidVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Kid Vertical Magnet     - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center, magnets.kidVerticalMagnet.min, magnets.kidVerticalMagnet.max);
- if (std::abs(magnets.kidDirectionMagnet) > 0.0f)              LOG("[Jaffar]  + Kid Direction Magnet    - Intensity: %.1f\n", magnets.kidDirectionMagnet);
- if (std::abs(magnets.guardHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Guard Horizontal Magnet - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.guardHorizontalMagnet.intensity, magnets.guardHorizontalMagnet.center, magnets.guardHorizontalMagnet.min, magnets.guardHorizontalMagnet.max);
- if (std::abs(magnets.guardVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Guard Vertical Magnet   - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.guardVerticalMagnet.intensity, magnets.guardVerticalMagnet.center, magnets.guardVerticalMagnet.min, magnets.guardVerticalMagnet.max);
- if (std::abs(magnets.guardHPMagnet) > 0.0f)                   LOG("[Jaffar]  + Guard HP Magnet         - Intensity: %.1f\n", magnets.guardHPMagnet);
- if (std::abs(magnets.kidHPMagnet) > 0.0f)                     LOG("[Jaffar]  + Kid HP Magnet           - Intensity: %.1f\n", magnets.kidHPMagnet);
+ if (std::abs(magnets.kidHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Kid Horizontal Magnet     - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center, magnets.kidHorizontalMagnet.min, magnets.kidHorizontalMagnet.max);
+ if (std::abs(magnets.kidVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Kid Vertical Magnet       - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center, magnets.kidVerticalMagnet.min, magnets.kidVerticalMagnet.max);
+ if (std::abs(magnets.kidDirectionMagnet) > 0.0f)              LOG("[Jaffar]  + Kid Direction Magnet      - Intensity: %.1f\n", magnets.kidDirectionMagnet);
+ if (std::abs(magnets.guardHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Guard Horizontal Magnet   - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.guardHorizontalMagnet.intensity, magnets.guardHorizontalMagnet.center, magnets.guardHorizontalMagnet.min, magnets.guardHorizontalMagnet.max);
+ if (std::abs(magnets.guardVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Guard Vertical Magnet     - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.guardVerticalMagnet.intensity, magnets.guardVerticalMagnet.center, magnets.guardVerticalMagnet.min, magnets.guardVerticalMagnet.max);
+ if (std::abs(magnets.guardHPMagnet) > 0.0f)                   LOG("[Jaffar]  + Guard HP Magnet           - Intensity: %.1f\n", magnets.guardHPMagnet);
+ if (std::abs(magnets.kidHPMagnet) > 0.0f)                     LOG("[Jaffar]  + Kid HP Magnet             - Intensity: %.1f\n", magnets.kidHPMagnet);
+ if (std::abs(magnets.kidGuardDistanceMagnet) > 0.0f)          LOG("[Jaffar]  + Kid Guard Distance Magnet - Intensity: %.1f\n", magnets.kidGuardDistanceMagnet);
 
  for (const auto& tile : tileWatchList)
    LOG("[Jaffar]  + Tile Info            - Room: %02u, Row: %02u, Col: %02u, Index: %03u, Mem: 0x%05X / 0x%05X, Type: %03u, State: %03u\n", tile.second.room, tile.second.row, tile.second.col, tile.second.index, TILE_TYPE_BASE + tile.second.index, TILE_STATE_BASE + tile.second.index, tileTypeBase[tile.second.index], tileStateBase[tile.second.index]);
