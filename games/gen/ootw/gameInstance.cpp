@@ -226,15 +226,14 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  return moveList;
 }
 
-uint16_t GameInstance::advanceState(const INPUT_TYPE &move)
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
-   _emu->advanceState(move);
-  uint16_t skippedFrames = 0;
+  std::vector<INPUT_TYPE> moves;
 
-//  while(*inputFrame != 0 || *animationFrame != 0) { _emu->advanceState(0); skippedFrames++; }
+  _emu->advanceState(move);
+  moves.push_back(move);
 
-  updateDerivedValues();
-  return skippedFrames;
+  return moves;
 }
 
 // Function to get magnet information
@@ -318,7 +317,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + RNG:                               %04u\n", *gameRNG);
  LOG("[Jaffar]  + Current Stage:                     %02u\n", *currentStage);
  LOG("[Jaffar]  + Reward:                            %f\n", getStateReward(rulesStatus));
- LOG("[Jaffar]  + Hash:                              0x%lX\n", computeHash());
+ LOG("[Jaffar]  + Hash:                              0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Game Mode:                         %02u\n", *gameMode);
  LOG("[Jaffar]  + Animation Frame:                   %02u\n", *animationFrame);
  LOG("[Jaffar]  + Lester Room:                       %02u, Next: %02u\n", *lesterRoom, *lesterNextRoom);

@@ -3,8 +3,8 @@
  
   "Emulator Configuration": 
   {
-    "Rom File": "ootw.md",
-    "State File": "boot.state"
+    "Rom File": "../ootw.md",
+    "State File": ""
   },
   
   "State Configuration": 
@@ -22,7 +22,8 @@
     "Show Timing Information": false,
     "Show Hash Information": false,
     "Show Winning State Information": true,
-    
+    "Win State Step Tolerance": 0, 
+
     "State Database":
     {
      "Max Size Lower Bound (Mb)": 100,

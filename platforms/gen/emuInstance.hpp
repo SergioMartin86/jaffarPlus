@@ -40,7 +40,7 @@ class EmuInstance : public EmuInstanceBase
   // Checking whether configuration contains the state file
   if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
   std::string stateFilePath = config["State File"].get<std::string>();
-  loadStateFile(stateFilePath);
+  if (stateFilePath != "") loadStateFile(stateFilePath);
 
   // Getting pointer to 68K and Z80 Ram
   _68KRam = work_ram;

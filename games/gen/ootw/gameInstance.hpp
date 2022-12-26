@@ -113,7 +113,7 @@ class GameInstance : public GameInstanceBase
   // Derivative Values
   uint16_t lesterAbsolutePosX;
 
-  uint16_t advanceState(const INPUT_TYPE &move) override;
+  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   _uint128_t computeHash() const override;
   void updateDerivedValues() override;
