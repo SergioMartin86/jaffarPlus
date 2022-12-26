@@ -129,11 +129,10 @@
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 12 },
-     { "Property": "Kid Pos X", "Op": ">", "Value": 180 }
+     { "Property": "Kid Room", "Op": "==", "Value": 13 }
     ],
     
-    "Satisfies": [ 1002 ],
+    "Satisfies": [  ],
     
     "Actions":
     [

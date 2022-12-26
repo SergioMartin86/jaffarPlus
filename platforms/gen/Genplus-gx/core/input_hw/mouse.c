@@ -1,8 +1,8 @@
 /***************************************************************************************
  *  Genesis Plus
- *  Sega/Mega Mouse support
+ *  Sega Mouse support
  *
- *  Copyright (C) 2007-2017  Eke-Eke (Genesis Plus GX)
+ *  Copyright (C) 2007-2011  Eke-Eke (Genesis Plus GX)
  *
  *  Redistribution and use of this code or any derivative works are permitted
  *  provided that the following conditions are met:
@@ -38,7 +38,7 @@
 
 #include "shared.h"
 
-static struct
+struct
 {
   uint8 State;
   uint8 Counter;
@@ -113,15 +113,15 @@ unsigned char mouse_read()
   /* TL = busy status */
   if (mouse.Wait)
   {
-    /* wait before acknowledging handshake request */
-    mouse.Wait--; 
+    /* wait before ACK, fix some buggy mouse routine (Cannon Fodder, Shangai 2, Wack World,...) */
+    mouse.Wait = 0;
 
-    /* TL = !TR (handshake in progress) */
-    temp |= (~mouse.State & 0x20) >> 1;;
+    /* TL = !TR */
+    temp |= (~mouse.State & 0x20) >> 1;
   }
   else
   {
-    /* TL = TR (handshake completed) */
+    /* TL = TR (data is ready) */
     temp |= (mouse.State & 0x20) >> 1;
   }
 
@@ -133,25 +133,25 @@ void mouse_write(unsigned char data, unsigned char mask)
   /* update bits set as output only */
   data = (mouse.State & ~mask) | (data & mask);
 
+  /* TH transition */
+  if ((mouse.State ^ data) & 0x40)
+  {
+    /* start (TH=0) or stop (TH=1) acquisition */
+    mouse.Counter = 1 - ((data & 0x40) >> 6);
+  }
+
   /* TR transition */
   if ((mouse.State ^ data) & 0x20)
   {
-    /* check if acquisition is started */
-    if ((mouse.Counter > 0) && (mouse.Counter < 9))
+    /* acquisition in progress */
+    if ((mouse.Counter > 0) && (mouse.Counter < 10))
     {
       /* increment phase */
       mouse.Counter++;
     }
 
-    /* TL handshake latency (fix buggy mouse routine in Cannon Fodder, Shangai 2, Wacky World, Star Blade, ...) */
-    mouse.Wait = 2;
-  }
-
-  /* TH transition  */
-  if ((mouse.State ^ data) & 0x40)
-  {
-    /* start (TH=1->0) or stop (TH=0->1) data acquisition */
-    mouse.Counter = (mouse.State >> 6) & 1;
+    /* TL handshake latency */
+    mouse.Wait = 1;
   }
 
   /* update internal state */

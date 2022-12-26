@@ -43,6 +43,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   guardPresent           = (uint8_t*)   &_emu->_baseMem[0x06E0];
   guardDisappearMode     = (uint8_t*)   &_emu->_baseMem[0x04F8];
 
+  rawFrameCount          = (uint16_t*)   &_emu->_highMem[0x1000];
+  lagFrameCounter        = (uint16_t*)   &_emu->_highMem[0x1002];
+
   // Level-specific tiles
   lvl1FirstTileBG          = (uint8_t*)   &_emu->_baseMem[0x06A4];
   lvl1FirstTileFG          = (uint8_t*)   &_emu->_baseMem[0x06B0];
@@ -69,6 +72,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
 
+  // Skip frames?
+  if (isDefined(config, "Skip Frames") == true)
+   skipFrames = config["Skip Frames"].get<bool>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Skip Frames' was not defined\n");
+
   updateDerivedValues();
 }
 
@@ -79,7 +87,6 @@ _uint128_t GameInstance::computeHash() const
   MetroHash128 hash;
 
   if (timerTolerance > 0) hash.Update(*globalTimer % (timerTolerance+1));
-  if (*isPaused != 2 || *screenDrawn != 0) hash.Update(*globalTimer);
 
   hash.Update(*currentLevel);
   hash.Update(*framePhase);
@@ -87,6 +94,7 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*currentDoorState);
   hash.Update(*exitDoorState);
   hash.Update(*bottomTextTimer);
+  hash.Update(*bufferedCommand);
   hash.Update(*gameState);
 
   hash.Update(*kidPosX);
@@ -99,8 +107,6 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*kidRoom);
   hash.Update(*kidFightMode);
   hash.Update(*kidJumpingState);
-
-  hash.Update(*bufferedCommand);
 
   hash.Update(*guardPosX);
   hash.Update(*guardHP);
@@ -166,8 +172,8 @@ _uint128_t GameInstance::computeHash() const
 
   // Keypad input: (0x0040:0x40A), [0x0000:0x0037), 0x003A,
   // Timer: 0x0791
-  hash.Update( &_emu->_baseMem[0x0000], 0x0036);
-  hash.Update( &_emu->_baseMem[0x0042], 0x03C7);
+//  hash.Update( &_emu->_baseMem[0x0000], 0x0036);
+//  hash.Update( &_emu->_baseMem[0x0042], 0x03C7);
 //  hash.Update( &_emu->_baseMem[0x040C], 0x0384);
 //  hash.Update( &_emu->_baseMem[0x0793], 0x006D);
 
@@ -187,18 +193,43 @@ void GameInstance::updateDerivedValues()
  if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
 }
 
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
+{
+  size_t skippedFrames = 0;
+  std::vector<INPUT_TYPE> moves;
+
+  if (skipFrames == false)
+  {
+   _emu->advanceState(move);
+   moves.push_back(move);
+  }
+
+  if (skipFrames == true)
+  {
+   _emu->advanceState(0);
+   moves.push_back(0);
+
+   while (*framePhase != 1 || *isPaused != 2 || *screenTransition == 255)
+   {
+    INPUT_TYPE newMove = *framePhase == 2 || *framePhase == 3 ? move : 0;
+    _emu->advanceState(newMove);
+    moves.push_back(newMove);
+    skippedFrames++;
+    if (skippedFrames > 128) break;
+    if (_emu->_nes->emu.isCorrectExecution == false) { *kidHP = 0; break; }
+   }
+  }
+
+  *rawFrameCount += moves.size();
+  *lagFrameCounter += moves.size() - 4;
+  updateDerivedValues();
+
+  return moves;
+}
+
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves() const
 {
-  // If end level try everything
-  if (*gameState == 8 && *passwordTimer == 0) return { ".", "A", "S" };
-  if (*gameState == 8) return { "." };
-  if (*gameState == 1 && *kidFrame == 0 && *kidMovement == 91) return { ".", "A", "S" };
-
-  if (framesPerState == 5 && *framePhase != 3) return { "." };
-  if (*kidJumpingState == 28 && *framePhase == 4) return { ".", "U" };
-  if (framesPerState == 4 && *framePhase != 2) return { "." };
-
   if (*kidFrame == 1)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 2)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
   if (*kidFrame == 3)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
@@ -444,7 +475,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Current Level:          %u\n", *currentLevel);
-  LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
+  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
   LOG("[Jaffar]  + RNG State:              0x%X\n", *RNGState);
   LOG("[Jaffar]  + Global Timer:           %02u\n", *globalTimer);
   LOG("[Jaffar]  + Kid Frame / Direction:  %02u %02u\n", *kidFrame, *kidDirection);

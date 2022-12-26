@@ -7,10 +7,15 @@
   
   "Game Configuration": 
   {
-   "Skip Frames": false,
+   "Skip Frames": true,
    "Exit Jingle Mode": false,
-   "Timer Tolerance": 4,
-   "Frame Count Discount": 0.0
+   "Timer Tolerance": 6,
+   "Lag Discount": 0.01,
+   "Fight Mode Discount": 0.0,
+   "Game Property Hashes": [ "Guard HP", "Kid HP" ],
+   "Tile Hashes":
+    [
+    ]
   },
   
   "Jaffar Configuration": 
@@ -18,6 +23,7 @@
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
+    "Win State Step Tolerance": 3,
     
     "State Configuration": 
     {
@@ -30,8 +36,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 40000,
-     "Max Size Upper Bound (Mb)": 160000
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 1600
     },
 
     "Hash Database":
@@ -58,7 +64,8 @@
   
   "Rules":
   [
-   {
+
+  {
     "Label": 1001,
     "Conditions":
     [
@@ -96,8 +103,123 @@
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  1 },
-     { "Property": "Kid Pos Y", "Op": "==", "Value":  62 }
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 1002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 1, "Center": 0, "Min": 0, "Max": 25 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 2, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 2, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ 1003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 2, "Center": 0, "Min": 0, "Max": 25 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 2, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 91, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.5, "Room": 3, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1104,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Kid Pos X", "Op": "<", "Value":  95 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value":  70 }
+    ],
+    
+    "Satisfies": [ 1004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 3, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value":  150 }
+    ],
+    
+    "Satisfies": [ 1104 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 25 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 3, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 }
+    ],
+    
+    "Satisfies": [ 1005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 4, "Center": 0, "Min": 0, "Max": 25 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 4, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 123, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1007,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "!=", "Value":  0 },
+     { "Property": "Exit Door State", "Op": ">", "Value":  0 }
+    ],
+    
+    "Satisfies": [ 1006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 5, "Center": 123, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1008,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
     ],
     
     "Satisfies": [ ],
