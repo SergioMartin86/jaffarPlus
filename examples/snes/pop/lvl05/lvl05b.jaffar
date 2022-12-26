@@ -9,20 +9,22 @@
   {
    "Skip Frames": true,
    "Exit Jingle Mode": false,
-   "Timer Tolerance": 4,
+   "Timer Tolerance": 6,
+   "Lag Discount": 0.01,
    "Frame Count Discount": 1.0,
    "Fight Mode Discount": 5.0,
+   "Game Property Hashes": [ "Guard HP", "Kid HP" ],
    "Tile Hashes":
    [
-     { "Room": 5, "Row": 1, "Col": 9 },
-     { "Room": 6, "Row": 1, "Col": 9 },
-     { "Room": 7, "Row": 1, "Col": 9 },
-     { "Room": 7, "Row": 1, "Col": 1 },
-     { "Room": 7, "Row": 1, "Col": 7 },
-     { "Room": 8, "Row": 0, "Col": 9 },
-     { "Room": 8, "Row": 0, "Col": 3 },
-     { "Room": 13, "Row": 0, "Col": 4 },
-     { "Room": 13, "Row": 0, "Col": 9 }
+     { "Room": 5, "Row": 1, "Col": 9, "Type": "Full" },
+     { "Room": 6, "Row": 1, "Col": 9, "Type": "Full" },
+     { "Room": 7, "Row": 1, "Col": 9, "Type": "Full" },
+     { "Room": 7, "Row": 1, "Col": 1, "Type": "Full" },
+     { "Room": 7, "Row": 1, "Col": 7, "Type": "Full" },
+     { "Room": 8, "Row": 0, "Col": 9, "Type": "Full" },
+     { "Room": 8, "Row": 0, "Col": 3, "Type": "Full" },
+     { "Room": 13, "Row": 0, "Col": 4, "Type": "Full" },
+     { "Room": 13, "Row": 0, "Col": 9, "Type": "Full" }
    ]
   },
   
