@@ -1,7 +1,4 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
- 
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
@@ -494,26 +491,7 @@
    },
 
    {
-    "Label": 1021,
-    
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": ">", "Value": 0 },
-     { "Property": "Is Paused", "Op": "==", "Value": 2 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Win" }
-    ]
-   },
-      
-   {
     "Label": 1120,
-    "Description": "Fail on Kid's death",
-    
     "Conditions":
     [
      { "Property": "Kid HP", "Op": "==", "Value":  0 }
@@ -525,7 +503,36 @@
     [
      { "Type": "Trigger Fail" }
     ]
-   }
+   },
    
+   {
+    "Label": 1121,
+    "Conditions":
+    [
+     { "Property": "Is Correct Render", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+
+   {
+    "Label": 1124,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": ">", "Value":  1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
   ]  
 }

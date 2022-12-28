@@ -1,36 +1,45 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
- 
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl02.state"
-  },
-  
-  "State Configuration": 
-  {
-    "Max Difference Count": 0,
-    "Max Move Count": 1500
+    "State File": "lvl02a.state"
   },
   
   "Game Configuration": 
   {
-   "Hash Includes": [  ]
+   "Skip Frames": true,
+   "Timer Tolerance": 8,
+   "Hash Includes": [  ],
+   "Enable Pause": false
   },
+  
   
   "Jaffar Configuration": 
   {
-    "State Database":
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 40000,
-     "Max Size Upper Bound (Mb)": 90000
+      "Max Move Count": 5500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 5000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 4000,
+     "Max Size Upper Bound (Mb)": 20000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Save Intermediate Results":
@@ -38,19 +47,21 @@
      "Enabled": true,
      "Frequency (s)": 1.0,
      "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol"
-    }
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
   },
   
   "Playback Configuration": 
   {
+     "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
   [
    {
     "Label": 1001,
-    "Description": "Setting magnet to make Kid go to the right",
     "Conditions":
     [
     ],
@@ -65,12 +76,10 @@
    
    {
     "Label": 1002,
-    "Description": "Got to the next room",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  3 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  3 }
+     { "Property": "Kid Room", "Op": "==", "Value":  3 }
     ],
     
     "Satisfies": [ 1001 ],
@@ -85,12 +94,10 @@
    
    {
     "Label": 1003,
-    "Description": "Got to the next room",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  5 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  5 }
+     { "Property": "Kid Room", "Op": "==", "Value":  5 }
     ],
     
     "Satisfies": [ 1002 ],
@@ -106,12 +113,10 @@
    
    {
     "Label": 1013,
-    "Description": "Got to the next room",
     
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  5 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  5 },
      { "Property": "Kid Position Y", "Op": "==", "Value":  65 }
     ],
     
@@ -127,12 +132,10 @@
    
    {
     "Label": 1004,
-    "Description": "Got to the next room",
     
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  0 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  0 },
      { "Property": "Kid Position Y", "Op": "<", "Value":  100 }
     ],
     
@@ -149,12 +152,10 @@
 
    {
     "Label": 1005,
-    "Description": "Got to the next room",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  21 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  21 }
+     { "Property": "Kid Room", "Op": "==", "Value":  21 }
     ],
     
     "Satisfies": [ 1004 ],
@@ -171,12 +172,10 @@
    
    {
     "Label": 1006,
-    "Description": "Got to the next room",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  10 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  10 }
+     { "Property": "Kid Room", "Op": "==", "Value":  10 }
     ],
     
     "Satisfies": [ 1005 ],
@@ -193,12 +192,10 @@
    
    {
     "Label": 1007,
-    "Description": "Got to the next room",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  17 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  17 }
+     { "Property": "Kid Room", "Op": "==", "Value":  17 }
     ],
     
     "Satisfies": [ 1006 ],
@@ -214,12 +211,10 @@
    
    {
     "Label": 1008,
-    "Description": "Got to the next room",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  6 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  6 }
+     { "Property": "Kid Room", "Op": "==", "Value":  6 }
     ],
     
     "Satisfies": [ 1007 ],
@@ -236,12 +231,10 @@
    
    {
     "Label": 1009,
-    "Description": "Get Sword",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  12 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  12 }
+     { "Property": "Kid Room", "Op": "==", "Value":  12 }
     ],
     
     "Satisfies": [ 1008 ],
@@ -258,12 +251,10 @@
    
    {
     "Label": 1010,
-    "Description": "Get Sword",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  14 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  14 }
+     { "Property": "Kid Room", "Op": "==", "Value":  14 }
     ],
     
     "Satisfies": [ 1009 ],
@@ -280,12 +271,10 @@
    
    {
     "Label": 1011,
-    "Description": "Get Sword",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  15 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  15 }
+     { "Property": "Kid Room", "Op": "==", "Value":  15 }
     ],
     
     "Satisfies": [ 1010 ],
@@ -302,12 +291,10 @@
    
    {
     "Label": 1012,
-    "Description": "Get Sword",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  18 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  18 }
+     { "Property": "Kid Room", "Op": "==", "Value":  18 }
     ],
     
     "Satisfies": [ 1011 ],
@@ -324,16 +311,14 @@
    
    {
     "Label": 1014,
-    "Description": "Get Sword",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  20 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  20 }
+     { "Property": "Kid Room", "Op": "==", "Value":  20 }
     ],
     
     "Satisfies": [ 1012 ],
-    
+     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
@@ -346,12 +331,10 @@
    
    {
     "Label": 1015,
-    "Description": "Get Sword",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  1 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  1 }
+     { "Property": "Kid Room", "Op": "==", "Value":  1 }
     ],
     
     "Satisfies": [ 1014 ],
@@ -368,12 +351,10 @@
    
    {
     "Label": 1016,
-    "Description": "Get Sword",
     
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  8 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  8 }
+     { "Property": "Kid Room", "Op": "==", "Value":  8 }
     ],
     
     "Satisfies": [ 1015 ],
@@ -390,12 +371,10 @@
    
    {
     "Label": 1017,
-    "Description": "Get Sword and meet guard",
     
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  8 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  8 },
      { "Property": "Level 2 Exit Door State", "Op": "<", "Value": 21 } 
     ],
     
@@ -411,12 +390,10 @@
    
    {
     "Label": 1018,
-    "Description": "Get to end room",
     
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  22 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  22 },
      { "Property": "Level 2 Exit Door State", "Op": "<", "Value": 21 } 
     ],
     
@@ -456,8 +433,7 @@
     [
      { "Property": "Kid Frame", "Op": "==", "Value":  220 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
-     { "Property": "Kid Room", "Op": "==", "Value":  22 },
-     { "Property": "Drawn Room", "Op": "==", "Value": 22 }
+     { "Property": "Kid Room", "Op": "==", "Value":  22 }
     ],
     
     "Satisfies": [ ],
@@ -497,34 +473,20 @@
      { "Type": "Trigger Fail" }
     ]
    },
-   
-   {
-    "Label": 1121,
-    "Conditions":
-    [
-     { "Property": "Is Correct Render", "Op": "==", "Value":  0 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
 
    {
     "Label": 1124,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": ">", "Value":  2 }
+     { "Property": "Current Level", "Op": ">", "Value":  1 },
+      { "Property": "Is Correct Render", "Op": "==", "Value":  1 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Trigger Fail" }
+     { "Type": "Trigger Win" }
     ]
    }
    
