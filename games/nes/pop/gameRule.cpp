@@ -60,6 +60,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Drawn Room") return dt_uint8;
   if (propertyName == "Guard Pos X") return dt_uint8;
   if (propertyName == "Guard HP") return dt_uint8;
+  if (propertyName == "Current Door State") return dt_uint8;
   if (propertyName == "Exit Door State") return dt_uint8;
   if (propertyName == "Level 2 Exit Door State") return dt_uint8;
   if (propertyName == "Level 3 Checkpoint Gate Timer") return dt_uint8;
@@ -95,6 +96,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Kid HP") return gameInstance->kidHP;
   if (propertyName == "Kid Room") return gameInstance->kidRoom;
   if (propertyName == "Kid Fight Mode") return gameInstance->kidFightMode;
+  if (propertyName == "Current Door State") return gameInstance->currentDoorState;
   if (propertyName == "Drawn Room") return gameInstance->drawnRoom;
   if (propertyName == "Guard Pos X") return gameInstance->guardPosX;
   if (propertyName == "Guard HP") return gameInstance->guardHP;

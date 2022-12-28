@@ -265,13 +265,16 @@ void Train::computeStates()
        {
         if (possibleMoveSet.contains(i) == false)
 
-        if ((i & SNES_X_MASK) == 0)
-        if ((i & SNES_Y_MASK) == 0)
-        if ((i & SNES_TL_MASK) == 0)
-        if ((i & SNES_TR_MASK) == 0)
-        if ((i & SNES_START_MASK) == 0)
-        if ((i & SNES_SELECT_MASK) == 0)
-         if (countButtonsPressedNumber(i) > 2 == false)
+//        if ((i & SNES_X_MASK) == 0)
+//        if ((i & SNES_Y_MASK) == 0)
+//        if ((i & SNES_TL_MASK) == 0)
+//        if ((i & SNES_TR_MASK) == 0)
+//        if ((i & SNES_START_MASK) == 0)
+//        if ((i & SNES_SELECT_MASK) == 0)
+//
+         if ((i & 0b00001000) == 0)
+         if ((i & 0b00000100) == 0)
+//         if (countButtonsPressedNumber(i) > 2 == false)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
