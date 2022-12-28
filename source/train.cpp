@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <set>
 
-//#define _DETECT_POSSIBLE_MOVES
+#define _DETECT_POSSIBLE_MOVES
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
