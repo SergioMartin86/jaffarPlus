@@ -19,6 +19,7 @@ class EmuInstance : public EmuInstanceBase
  // Base low-memory pointer
  uint8_t* _baseMem;
  uint8_t* _ppuNameTableMem;
+ uint8_t* _highMem;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
@@ -53,6 +54,7 @@ class EmuInstance : public EmuInstanceBase
   // Setting base memory pointer
   _baseMem = _nes->low_mem();
   _ppuNameTableMem = _nes->nametable_mem();
+  _highMem = _nes->high_mem();
  }
 
  void loadStateFile(const std::string& stateFilePath) override
@@ -113,10 +115,10 @@ class EmuInstance : public EmuInstanceBase
 
   for (size_t i = 0; i < move.size(); i++) switch(move[i])
   {
-    case 'R': moveCode |= 0b10000000; break;
-    case 'L': moveCode |= 0b01000000; break;
-    case 'D': moveCode |= 0b00100000; break;
     case 'U': moveCode |= 0b00010000; break;
+    case 'D': moveCode |= 0b00100000; break;
+    case 'L': moveCode |= 0b01000000; break;
+    case 'R': moveCode |= 0b10000000; break;
     case 'S': moveCode |= 0b00001000; break;
     case 's': moveCode |= 0b00000100; break;
     case 'B': moveCode |= 0b00000010; break;
@@ -131,17 +133,18 @@ class EmuInstance : public EmuInstanceBase
 
  static inline std::string moveCodeToString(const INPUT_TYPE move)
  {
-  std::string moveString;
+  std::string moveString = "|..|";
 
-  if (move & 0b10000000) moveString += 'R'; else moveString += '.';
-  if (move & 0b01000000) moveString += 'L'; else moveString += '.';
-  if (move & 0b00100000) moveString += 'D'; else moveString += '.';
   if (move & 0b00010000) moveString += 'U'; else moveString += '.';
+  if (move & 0b00100000) moveString += 'D'; else moveString += '.';
+  if (move & 0b01000000) moveString += 'L'; else moveString += '.';
+  if (move & 0b10000000) moveString += 'R'; else moveString += '.';
   if (move & 0b00001000) moveString += 'S'; else moveString += '.';
   if (move & 0b00000100) moveString += 's'; else moveString += '.';
   if (move & 0b00000010) moveString += 'B'; else moveString += '.';
   if (move & 0b00000001) moveString += 'A'; else moveString += '.';
 
+  moveString += "|";
   return moveString;
  }
 

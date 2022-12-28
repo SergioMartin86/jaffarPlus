@@ -43,6 +43,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   guardPresent           = (uint8_t*)   &_emu->_baseMem[0x06E0];
   guardDisappearMode     = (uint8_t*)   &_emu->_baseMem[0x04F8];
 
+  rawFrameCount          = (uint16_t*)   &_emu->_highMem[0x1000];
+  lagFrameCounter        = (uint16_t*)   &_emu->_highMem[0x1002];
+
   // Level-specific tiles
   lvl1FirstTileBG          = (uint8_t*)   &_emu->_baseMem[0x06A4];
   lvl1FirstTileFG          = (uint8_t*)   &_emu->_baseMem[0x06B0];
@@ -69,6 +72,16 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
 
+  // Skip frames?
+  if (isDefined(config, "Skip Frames") == true)
+   skipFrames = config["Skip Frames"].get<bool>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Skip Frames' was not defined\n");
+
+  // Enable Pause
+  if (isDefined(config, "Enable Pause") == true)
+   enablePause = config["Enable Pause"].get<bool>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Enable Pause' was not defined\n");
+
   updateDerivedValues();
 }
 
@@ -79,7 +92,6 @@ _uint128_t GameInstance::computeHash() const
   MetroHash128 hash;
 
   if (timerTolerance > 0) hash.Update(*globalTimer % (timerTolerance+1));
-  if (*isPaused != 2 || *screenDrawn != 0) hash.Update(*globalTimer);
 
   hash.Update(*currentLevel);
   hash.Update(*framePhase);
@@ -87,6 +99,7 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*currentDoorState);
   hash.Update(*exitDoorState);
   hash.Update(*bottomTextTimer);
+  hash.Update(*bufferedCommand);
   hash.Update(*gameState);
 
   hash.Update(*kidPosX);
@@ -99,8 +112,6 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*kidRoom);
   hash.Update(*kidFightMode);
   hash.Update(*kidJumpingState);
-
-  hash.Update(*bufferedCommand);
 
   hash.Update(*guardPosX);
   hash.Update(*guardHP);
@@ -166,8 +177,8 @@ _uint128_t GameInstance::computeHash() const
 
   // Keypad input: (0x0040:0x40A), [0x0000:0x0037), 0x003A,
   // Timer: 0x0791
-  hash.Update( &_emu->_baseMem[0x0000], 0x0036);
-  hash.Update( &_emu->_baseMem[0x0042], 0x03C7);
+//  hash.Update( &_emu->_baseMem[0x0000], 0x0036);
+//  hash.Update( &_emu->_baseMem[0x0042], 0x03C7);
 //  hash.Update( &_emu->_baseMem[0x040C], 0x0384);
 //  hash.Update( &_emu->_baseMem[0x0793], 0x006D);
 
@@ -187,195 +198,135 @@ void GameInstance::updateDerivedValues()
  if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
 }
 
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
+{
+  size_t skippedFrames = 0;
+  std::vector<INPUT_TYPE> moves;
+
+  if (skipFrames == false)
+  {
+   _emu->advanceState(move);
+   moves.push_back(move);
+  }
+
+  if (skipFrames == true)
+  {
+   _emu->advanceState(0);
+   moves.push_back(0);
+
+   while (*framePhase != 1 || *isPaused != 2 || *screenTransition == 255)
+   {
+    INPUT_TYPE newMove = *framePhase == 2 || *framePhase == 3 ? move : 0;
+    if (move == 0b00010000 && *framePhase == 4) newMove = move;
+    _emu->advanceState(newMove);
+    moves.push_back(newMove);
+    skippedFrames++;
+    if (skippedFrames > 128) break;
+    if (_emu->_nes->emu.isCorrectExecution == false) { *kidHP = 0; break; }
+   }
+  }
+
+  *rawFrameCount += moves.size();
+  *lagFrameCounter += moves.size() - 4;
+  updateDerivedValues();
+
+  return moves;
+}
+
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves() const
 {
-  // If end level try everything
-  if (*gameState == 8 && *passwordTimer == 0) return { ".", "A", "S" };
-  if (*gameState == 8) return { "." };
-  if (*gameState == 1 && *kidFrame == 0 && *kidMovement == 91) return { ".", "A", "S" };
+ std::vector<std::string> moveList({"."});
 
-  if (framesPerState == 5 && *framePhase != 3) return { "." };
-  if (*kidJumpingState == 28 && *framePhase == 4) return { ".", "U" };
-  if (framesPerState == 4 && *framePhase != 2) return { "." };
-
-  if (*kidFrame == 1)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 2)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 3)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 4)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 5)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 6)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 7)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 8)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA", "LDB", "RDB", "LB", "RB" }; // Running
-  if (*kidFrame == 9)  return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA", "LD", "RD" }; // Running
-  if (*kidFrame == 10) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 11) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA", "LDB", "RDB", "LB", "RB" }; // Running
-  if (*kidFrame == 12) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 13) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA", "LB", "RB" }; // Running
-  if (*kidFrame == 14) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "DA", "DB", "LDA", "RDA" }; // Running
-  if (*kidFrame == 15) return { ".", "L", "R", "U", "A", "D", "B", "LA", "RA", "RB", "LB", "UD", "DRA", "DLA", "UB", "DA", "DB", "RD", "LD", "DUB", "DUBA", "UBA"}; // Normal Standing
-
-  if (*kidFrame == 16) return { ".", "A", "L", "R" }; // Standing Jump
-  if (*kidFrame == 17) return { "." }; // Standing Jump
-  if (*kidFrame == 18) return { "." }; // Standing Jump
-  if (*kidFrame == 19) return { "." }; // Standing Jump
-  if (*kidFrame == 20) return { ".", "DB", "B", "DA", "LA", "RA", "RDA", "LDA", "L", "R" }; // Standing Jump
-  if (*kidFrame == 21) return { ".", "LA", "RA", "A", "DA", "DB", "B", "RDA", "LDA" }; // Standing Jump
-  if (*kidFrame == 22) return { "." }; // Standing Jump
-  if (*kidFrame == 23) return { ".", "LA", "RA", "DB", "DA", "RDA", "LDA", "A", "B", "L", "R" }; // Standing Jump
-  if (*kidFrame == 24) return { ".", "RA", "LA", "A", "RDA", "LDA", "DB", "DA", "B", "L", "R" }; // Standing Jump
-  if (*kidFrame == 25) return { ".", "RA", "LA", "B", "L", "R" }; // Standing Jump
-  if (*kidFrame == 26) return { ".", "A", "R", "L", "LD", "RD" }; // Standing Jump
-  if (*kidFrame == 27) return { ".", "DB", "RDA", "LDA", "A" }; // Standing Jump
-  if (*kidFrame == 28) return { ".", "A", "UA", "L", "RBA"}; // Standing Jump
-  if (*kidFrame == 29) return { "." }; // Standing Jump
-  if (*kidFrame == 30) return { "." }; // Standing Jump
-  if (*kidFrame == 31) return { "." }; // Standing Jump
-  if (*kidFrame == 32) return { "." }; // Standing Jump
-  if (*kidFrame == 33) return { "." }; // Standing Jump
-
-  if (*kidFrame == 34) return { ".", "A", "B", "DA", "LA", "RA", "DB", "RDA", "RDB", "LDA", "LDB" }; // Jumping Animation
-  if (*kidFrame == 35) return { "." }; // Jumping Animation
-  if (*kidFrame == 37) return { ".", "DB", "A", "B", "LA", "RA", "DA", "RDA", "LDA", "L", "R" }; // Jumping Animation
-  if (*kidFrame == 38) return { ".", "A", "L", "R" }; // Jumping Animation
-  if (*kidFrame == 39) return { ".", "DA", "B", "LA", "RA", "DB", "A", "RDA", "LDA", "L", "R" }; // Jumping Animation
-  if (*kidFrame == 40) return { ".", "A", "B", "RDA", "LDA", "DB", "DA", "LA", "RA", "L", "R" }; // Jumping Animation
-  if (*kidFrame == 41) return { ".", "DA", "RDA", "B", "LDA", "RA", "LA", "A", "DB", "L", "R" }; // Jumping Animation
-  if (*kidFrame == 42) return { ".", "A", "B", "LA", "RA", "DA", "RDA", "LDA", "L", "R", "D" }; // Jumping Animation
-  if (*kidFrame == 43) return { ".", "A", "R", "L", "DA", "RA", "LA" }; // Jumping Animation
-  if (*kidFrame == 44) return { ".", "A", "RDA", "LDA", "L", "R", "LA", "RA" }; // Jumping Animation
-
-  if (*kidFrame == 45) return { ".", "A", "RB", "RA", "LB", "LA", "DB", "R", "L", "RDA", "LDA", "DA" }; // Turning Animation
-  if (*kidFrame == 46) return { ".", "B", "A", "RB", "R", "L", "LB", "DB", "LA", "RA", "DA" }; // Turning Animation
-  if (*kidFrame == 47) return { "." }; // Turning Animation
-  if (*kidFrame == 48) return { "." }; // Turning Animation
-
-  if (*kidFrame == 49) return { ".", "RDA", "LDA", "RA", "LA", "D" }; // Slowing Down from Running
-  if (*kidFrame == 50) return { "." }; // Slowing Down from Running
-  if (*kidFrame == 51) return { "." }; // Slowing Down from Running
-  if (*kidFrame == 52) return { "." }; // Slowing Down from Running
-  if (*kidFrame == 53) return { ".", "A", "B", "DB", "DA", "RA", "LA", "LDA", "RDA", "L", "R" }; // Slowing Down from Running
-  if (*kidFrame == 54) return { "." }; // Slowing Down from Running
-  if (*kidFrame == 55) return { ".", "B", "DA", "A", "RDA", "LDA", "LA", "RA", "DB", "L", "R" }; // Slowing Down from Running
-  if (*kidFrame == 56) return { ".", "A", "LA", "RA", "DA", "DB", "LDA", "RDA", "B" }; // Slowing Down from Running
-  if (*kidFrame == 57) return { ".", "DB", "B", "DA", "RDA", "LDA", "A", "LA", "RA", "L", "R" }; // Slowing Down from Running
-  if (*kidFrame == 58) return { ".", "DB", "B", "DA", "RDA", "LDA", "A", "LA", "RA", "L", "R" }; // Slowing Down from Running
-  if (*kidFrame == 59) return { ".", "DB", "DA", "LA", "RA", "B", "A", "RDA", "LDA" }; // Slowing Down from Running
-  if (*kidFrame == 60) return { ".", "DB", "DA", "B", "RA", "LA", "A", "RDA", "LDA" }; // Slowing Down from Running
-  if (*kidFrame == 61) return { ".", "A", "L", "R" }; // Slowing Down from Running
-  if (*kidFrame == 62) return { "." }; // Slowing Down from Running
-  if (*kidFrame == 63) return { "." }; // Slowing Down from Running
-  if (*kidFrame == 64) return { "." }; // Slowing Down from Running
-  if (*kidFrame == 65) return { ".", "A", "B", "LA", "RA", "DA", "RDA", "LDA", "DB" }; // Running / Turning
-
-  if (*kidFrame == 67) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 68) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 69) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 70) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 71) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 72) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 73) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 74) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 75) return { ".", "A", "RA", "LA", "RDA", "LDA", "DB" }; // Climbing/Getting Down
-  if (*kidFrame == 76) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 77) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 78) return { ".", "U", "A", "UA" }; // Climbing/Getting Down
-  if (*kidFrame == 79) return { ".", "A", "U" }; // Climbing/Getting down
-  if (*kidFrame == 80) return { ".", "A", "U" }; // Climbing/Getting down
-
-  if (*kidFrame == 83) return { ".", "L", "R" }; // Climbing/Getting Down Cancel
-  if (*kidFrame == 84) return { ".", "L", "R" }; // Climbing/Getting Down Cancel
-  if (*kidFrame == 85) return { ".", "L", "R", "DA" }; // Climbing/Getting Down Cancel
-
-  if (*kidFrame == 87) return { ".", "A", "U" }; // Climbing/Hanging
-  if (*kidFrame == 88) return { ".", "A", "U" }; // Climbing/Hanging
-  if (*kidFrame == 89) return { ".", "A", "U" }; // Climbing/Hanging
-  if (*kidFrame == 90) return { ".", "L", "A", "U", "R" }; // Climbing/Hanging
-  if (*kidFrame == 91) return { ".", "L", "A", "U", "R" }; // Climbing/Hanging
-  if (*kidFrame == 92) return { ".", "A", "U" }; // Climbing/Hanging
-  if (*kidFrame == 93) return { ".", "L", "A", "U", "R" }; // Climbing/Hanging
-  if (*kidFrame == 94) return { ".", "A", "U" }; // Climbing/Hanging
-  if (*kidFrame == 95) return { ".", "A", "U" }; // Climbing/Hanging
-  if (*kidFrame == 96) return { ".", "A", "U" }; // Climbing/Hanging
-  if (*kidFrame == 97) return { ".", "A", "U" }; // Climbing/Hanging
-  if (*kidFrame == 98) return { ".", "A", "U" }; // Climbing/Hanging
-  if (*kidFrame == 99) return { ".", "A", "U" }; // Climbing/Hanging
-
-  if (*kidFrame == 102) return { ".", "A" }; // Falling Animation
-  if (*kidFrame == 103) return { ".", "A" }; // Falling Animation
-  if (*kidFrame == 104) return { ".", "A" }; // Falling Animation
-  if (*kidFrame == 105) return { ".", "A", "LD", "RD", "LA", "RA", "R", "L", "D" }; // Falling Animation
-
-  if (*kidFrame == 106) return { ".", "U", "A", "UA" }; // Clinging From Wall
-
-  if (*kidFrame == 107) return { ".", "L", "R", "LA", "RA", "A", "LDA", "RDA", "DA" }; // Fall landing -- Can accelerate run
-  if (*kidFrame == 108) return { ".", "L", "R" }; // Crouching/Falling
-  if (*kidFrame == 109) return { ".", "D", "LD", "RD", "A", "DB", "RA", "LA", "RDA", "LDA" }; // Crouching/Falling
-  if (*kidFrame == 110) return { ".", "L", "R" }; // Crouching/Falling
-  if (*kidFrame == 111) return { ".", "L", "R" }; // Getting up
-  if (*kidFrame == 112) return { ".", "L", "R" }; // Getting up
-  if (*kidFrame == 113) return { ".", "L", "R" }; // Getting up
-  if (*kidFrame == 114) return { ".", "L", "R" }; // Getting up
-  if (*kidFrame == 115) return { ".", "L", "R" }; // Getting up
-  if (*kidFrame == 116) return { ".", "L", "R" }; // Getting up
-  if (*kidFrame == 117) return { ".", "L", "R", "LD", "RD" }; // Getting up
-  if (*kidFrame == 118) return { ".", "L", "R" }; // Getting up
-  if (*kidFrame == 119) return { ".", "L", "R" }; // Getting up
-
-  if (*kidFrame == 121) return { "." }; // Careful Step
-  if (*kidFrame == 122) return { ".", "A", "DB", "DA", "RDA", "LDA", "B", "RA", "LA" }; // Careful Step
-  if (*kidFrame == 123) return { ".", "RDA", "A", "B", "RA", "LDA", "RDA", "LA", "DB", "DA" }; // Careful Step
-  if (*kidFrame == 124) return { ".", "DA", "LA", "RA", "A", "DB", "RDA", "LDA" }; // Careful Step
-  if (*kidFrame == 125) return { ".", "A", "L", "R" }; // Careful Step
-  if (*kidFrame == 126) return { "." }; // Careful Step
-  if (*kidFrame == 127) return { "." }; // Careful Step
-  if (*kidFrame == 128) return { "." }; // Careful Step
-  if (*kidFrame == 129) return { ".", "DA", "RDA", "LDA" }; // Careful Step
-  if (*kidFrame == 130) return { "." }; // Careful Step
-  if (*kidFrame == 131) return { ".", "LA", "RA", "B" }; // Careful Step
-
-  if (*kidFrame == 135) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 136) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 137) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 138) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 139) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 140) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 141) return { ".", "RA", "LA", "DA", "A", "D", "RDA", "LDA" }; // Climbing/Getting Down
-  if (*kidFrame == 142) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 143) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 144) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 145) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 146) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 147) return { ".", "A" }; // Climbing/Getting Down
-  if (*kidFrame == 148) return { "." }; // Climbing/Getting Down
-  if (*kidFrame == 149) return { "." }; // Climbing/Getting Down
-
-  if (*kidFrame == 150) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 151) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 152) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 153) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 154) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 155) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 156) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 157) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 158) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 159) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 160) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 161) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 162) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 163) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 164) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 165) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 170) return { ".", "A", "B", "BA", "L", "R" }; // Combat
-  if (*kidFrame == 171) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 172) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 173) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 174) return { ".", "A", "B", "L", "R" }; // Combat
-  if (*kidFrame == 216) return { ".", "A", "B", "BA", "L", "R" }; // Combat
-
+ if (*kidFrame == 0x0001) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0002) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0003) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0004) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0005) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0006) moveList.insert(moveList.end(), { "L", "R", "LA", "RA" });
+ if (*kidFrame == 0x0007) moveList.insert(moveList.end(), { "L", "R", "LA", "RA" });
+ if (*kidFrame == 0x0008) moveList.insert(moveList.end(), { "L", "R", "LA", "RA" });
+ if (*kidFrame == 0x0009) moveList.insert(moveList.end(), { "L", "R", "LA", "RA" });
+ if (*kidFrame == 0x000A) moveList.insert(moveList.end(), { "L", "R", "LA", "RA" });
+ if (*kidFrame == 0x000B) moveList.insert(moveList.end(), { "L", "R", "LA", "RA" });
+ if (*kidFrame == 0x000C) moveList.insert(moveList.end(), { "L", "R", "LA", "RA" });
+ if (*kidFrame == 0x000D) moveList.insert(moveList.end(), { "L", "R", "LA", "RA" });
+ if (*kidFrame == 0x000E) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x000F) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "DB", "LB", "RB", "UB", "UD", "UBA", "UDB", "UDBA" });
+ if (*kidFrame == 0x0014) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x001A) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0023) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0025) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0026) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0027) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0028) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0029) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x002A) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x002B) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x002C) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0035) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0036) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0037) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0039) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x004E) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x004F) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x0050) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x0053) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0054) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0055) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0057) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x0058) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x0059) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x005A) moveList.insert(moveList.end(), { "A", "L", "R", "U" });
+ if (*kidFrame == 0x005B) moveList.insert(moveList.end(), { "A", "L", "R", "U" });
+ if (*kidFrame == 0x005C) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x005D) moveList.insert(moveList.end(), { "A", "L", "R", "U" });
+ if (*kidFrame == 0x005E) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x005F) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x0060) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x0061) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x0062) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x0063) moveList.insert(moveList.end(), { "A", "U" });
+ if (*kidFrame == 0x0066) moveList.insert(moveList.end(), { "A" });
+ if (*kidFrame == 0x0067) moveList.insert(moveList.end(), { "A" });
+ if (*kidFrame == 0x0068) moveList.insert(moveList.end(), { "A" });
+ if (*kidFrame == 0x0069) moveList.insert(moveList.end(), { "A" });
+ if (*kidFrame == 0x006A) moveList.insert(moveList.end(), { "A", "B", "L", "R" });
+ if (*kidFrame == 0x006B) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x006C) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x006D) moveList.insert(moveList.end(), { "D", "L", "R", "DL", "DR" });
+ if (*kidFrame == 0x006E) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x006F) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0070) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0071) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0072) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0073) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0074) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0075) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0076) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x0077) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x007D) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0096) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0097) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0098) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0099) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x009A) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x009B) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x009C) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x009D) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x009E) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x00A0) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x00A4) moveList.insert(moveList.end(), { "A" });
+ if (*kidFrame == 0x00A5) moveList.insert(moveList.end(), { "A" });
+ if (*kidFrame == 0x00AA) moveList.insert(moveList.end(), { "A", "L", "R", "BA" });
+ if (*kidFrame == 0x00AB) moveList.insert(moveList.end(), { "A", "B", "L", "R" });
+ if (*kidFrame == 0x00AC) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x00AD) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x00AE) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x00D8) moveList.insert(moveList.end(), { "A", "L", "R" });
 
  // Nothing to do
- return { "." };
+ return moveList;
 }
 
 // Function to get magnet information
@@ -396,6 +347,35 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
   }
 
  return magnets;
+}
+
+void GameInstance::printFullMoveList()
+{
+ for (uint16_t i = 0; i <= 0xFF; i++)
+ {
+  *kidFrame = (uint8_t)i;
+  auto moves = getPossibleMoves();
+  if (moves.size() == 1) continue;
+
+  size_t vecSize = moves.size();
+  for (size_t j = 0; j < vecSize; j++)
+  {
+   INPUT_TYPE code = EmuInstance::moveStringToCode(moves[j]);
+   if ( ((code & 0b01000000) > 0) && ((code & 0b10000000) == 0)) moves.push_back(simplifyMove(EmuInstance::moveCodeToString((code & ~0b01000000) | 0b10000000)));
+   if ( ((code & 0b10000000) > 0) && ((code & 0b01000000) == 0)) moves.push_back(simplifyMove(EmuInstance::moveCodeToString((code & ~0b10000000) | 0b01000000)));
+  }
+
+  std::set<std::string> moveSet( moves.begin(), moves.end() );
+  moves.assign( moveSet.begin(), moveSet.end() );
+  std::sort(moves.begin(), moves.end(), moveCountComparerString);
+
+  printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "kidFrame", *kidFrame, moves[1].c_str());
+  for (size_t j = 2; j < moves.size(); j++)
+   printf(", \"%s\"", moves[j].c_str());
+  printf(" });\n");
+ }
+
+ exit(0);
 }
 
 // Obtains the score of a given frame
@@ -444,7 +424,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Current Level:          %u\n", *currentLevel);
-  LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
+  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
   LOG("[Jaffar]  + RNG State:              0x%X\n", *RNGState);
   LOG("[Jaffar]  + Global Timer:           %02u\n", *globalTimer);
   LOG("[Jaffar]  + Kid Frame / Direction:  %02u %02u\n", *kidFrame, *kidDirection);
@@ -525,6 +505,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("\n");
 
   auto magnets = getMagnetValues(rulesStatus);
-  LOG("[Jaffar]  + Kid Horizontal Magnet - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center, magnets.kidHorizontalMagnet.min, magnets.kidHorizontalMagnet.max);
-  LOG("[Jaffar]  + Kid Vertical Magnet   - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center, magnets.kidVerticalMagnet.min, magnets.kidVerticalMagnet.max);
+  if (std::abs(magnets.kidHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Kid Horizontal Magnet - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center, magnets.kidHorizontalMagnet.min, magnets.kidHorizontalMagnet.max);
+  if (std::abs(magnets.kidVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Kid Vertical Magnet   - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center, magnets.kidVerticalMagnet.min, magnets.kidVerticalMagnet.max);
 }

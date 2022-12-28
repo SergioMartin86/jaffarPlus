@@ -87,14 +87,22 @@ class GameInstance : public GameInstanceBase
   uint8_t* screenTransition2;
 
 
+  // Settings
+  uint8_t timerTolerance;
+  bool skipFrames;
+  bool enablePause;
+
   // Hash-specific configuration
   std::set<std::string> hashIncludes;
-  uint8_t timerTolerance;
 
   // Derivative values
   uint8_t isCorrectRender;
   uint8_t framesPerState;
+  uint16_t* rawFrameCount;
+  uint16_t* lagFrameCounter;
 
+  void printFullMoveList();
+  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   _uint128_t computeHash() const override;
   void updateDerivedValues() override;

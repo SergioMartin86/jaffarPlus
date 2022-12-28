@@ -3,6 +3,9 @@
 *.sfc
 *.rom
 *.bin
+jaffar.state
+*.sol.translated
+test.state
 callgrind*
 jaffar.best.sav
 jaffar.current.sav
