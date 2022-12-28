@@ -146,7 +146,7 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 5, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 },
-     { "Type": "Set Kid Vertical Magnet", "Intensity": 10.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 }
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 0, "Center": 0, "Min": 0, "Max": 400 }
     ]
    },
 
