@@ -254,6 +254,8 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x000E) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x000F) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "DB", "LB", "RB", "UB", "UD", "UBA", "UDB", "UDBA" });
  if (*kidFrame == 0x0014) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x0017) moveList.insert(moveList.end(), { "A", "R", "L" });
+ if (*kidFrame == 0x0018) moveList.insert(moveList.end(), { "A", "R", "L" });
  if (*kidFrame == 0x001A) moveList.insert(moveList.end(), { "A", "L", "R" });
  if (*kidFrame == 0x0023) moveList.insert(moveList.end(), { "A", "L", "R" });
  if (*kidFrame == 0x0025) moveList.insert(moveList.end(), { "A", "L", "R" });
@@ -268,6 +270,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0036) moveList.insert(moveList.end(), { "A", "L", "R" });
  if (*kidFrame == 0x0037) moveList.insert(moveList.end(), { "A", "L", "R" });
  if (*kidFrame == 0x0039) moveList.insert(moveList.end(), { "A", "L", "R" });
+ if (*kidFrame == 0x003A) moveList.insert(moveList.end(), { "A", "R", "L" });
  if (*kidFrame == 0x004E) moveList.insert(moveList.end(), { "A", "U" });
  if (*kidFrame == 0x004F) moveList.insert(moveList.end(), { "A", "U" });
  if (*kidFrame == 0x0050) moveList.insert(moveList.end(), { "A", "U" });
@@ -293,7 +296,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*kidFrame == 0x0069) moveList.insert(moveList.end(), { "A" });
  if (*kidFrame == 0x006A) moveList.insert(moveList.end(), { "A", "B", "L", "R" });
  if (*kidFrame == 0x006B) moveList.insert(moveList.end(), { "L", "R" });
- if (*kidFrame == 0x006C) moveList.insert(moveList.end(), { "L", "R" });
+ if (*kidFrame == 0x006C) moveList.insert(moveList.end(), { "A", "L", "R" });
  if (*kidFrame == 0x006D) moveList.insert(moveList.end(), { "D", "L", "R", "DL", "DR" });
  if (*kidFrame == 0x006E) moveList.insert(moveList.end(), { "L", "R" });
  if (*kidFrame == 0x006F) moveList.insert(moveList.end(), { "L", "R" });
