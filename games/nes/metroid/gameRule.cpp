@@ -25,6 +25,22 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
   }
 
+  if (actionType == "Set Bullet 1 Horizontal Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+   _magnets.bullet1HorizontalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>() };
+    recognizedActionType = true;
+  }
+
+  if (actionType == "Set Bullet 1 Vertical Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+   _magnets.bullet1VerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>() };
+    recognizedActionType = true;
+  }
+
   return recognizedActionType;
 }
 
@@ -40,6 +56,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Door 2 State") return dt_uint8;
   if (propertyName == "Door 3 State") return dt_uint8;
   if (propertyName == "Door 4 State") return dt_uint8;
+  if (propertyName == "Bullet Count") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -58,6 +75,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Door 2 State") return gameInstance->door2State;
   if (propertyName == "Door 3 State") return gameInstance->door3State;
   if (propertyName == "Door 4 State") return gameInstance->door4State;
+  if (propertyName == "Bullet Count") return &gameInstance->bulletCount;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

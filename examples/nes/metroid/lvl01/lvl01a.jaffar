@@ -126,7 +126,7 @@
     "Conditions":
     [
       { "Property": "Equipment Flags", "Op": "==", "Value":  16 },
-      { "Property": "Samus Pos X", "Op": ">", "Value": 1650 }
+      { "Property": "Samus Pos X", "Op": ">", "Value": 1650.0 }
     ],
     
     "Satisfies": [ 1003 ],
@@ -134,8 +134,10 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 4000.0 },
-     { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 0.0 }
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 5.0, "Center": 4000.0 },
+     { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 3945.0 },
+     { "Type": "Set Bullet 1 Horizontal Magnet", "Intensity": 1.0, "Center": 233.0 },
+     { "Type": "Set Bullet 1 Vertical Magnet", "Intensity": 3.0, "Center": 107.0 }
     ]
    },
    
@@ -170,6 +172,37 @@
     "Actions":
     [
      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Conditions":
+    [
+      { "Property": "Bullet Count", "Op": ">", "Value": 0 },
+      { "Property": "Samus Pos X", "Op": "<", "Value": 1650.0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1998,
+    "Conditions":
+    [
+      { "Property": "Bullet Count", "Op": ">", "Value": 1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
   ]  
