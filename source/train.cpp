@@ -245,7 +245,7 @@ void Train::computeStates()
       // Getting possible moves for the current state
       t0 = std::chrono::high_resolution_clock::now(); // Profiling
       _gameInstances[threadId]->pushState(baseStateData);
-      std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves();
+      std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves(baseState->getRuleStatus());
 
       #ifdef _DETECT_POSSIBLE_MOVES
 
@@ -833,7 +833,7 @@ void Train::reset()
  _gameInstances[0]->evaluateRules(_firstState->getRuleStatus());
 
  // Print full move list
-//  _gameInstances[0]->printFullMoveList();
+//  _gameInstances[0]->printFullMoveList(_firstState->getRuleStatus());
 
  // Evaluating Score on initial state
  _firstState->reward = _gameInstances[0]->getStateReward(_firstState->getRuleStatus());

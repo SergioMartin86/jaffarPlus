@@ -10,6 +10,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   // https://datacrystal.romhacking.net/wiki/Metroid:RAM_map
 
+  frameCounter                     = (uint8_t*)   &_emu->_baseMem[0x002D];
   NMIFlag                          = (uint8_t*)   &_emu->_baseMem[0x001A];
   gameMode                         = (uint8_t*)   &_emu->_baseMem[0x001E];
   samusPosXRaw                     = (uint8_t*)   &_emu->_baseMem[0x0051];
@@ -29,6 +30,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   door3State                       = (uint8_t*)   &_emu->_baseMem[0x03A0];
   door4State                       = (uint8_t*)   &_emu->_baseMem[0x03B0];
 
+  door1Timer                       = (uint8_t*)   &_emu->_baseMem[0x038F];
+  door2Timer                       = (uint8_t*)   &_emu->_baseMem[0x039F];
+  door3Timer                       = (uint8_t*)   &_emu->_baseMem[0x03AF];
+  door4Timer                       = (uint8_t*)   &_emu->_baseMem[0x03BF];
+
   bullet1State                     = (uint8_t*)   &_emu->_baseMem[0x03D0];
   bullet2State                     = (uint8_t*)   &_emu->_baseMem[0x03E0];
   bullet3State                     = (uint8_t*)   &_emu->_baseMem[0x03F0];
@@ -41,8 +47,15 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   bullet2PosY                      = (uint8_t*)   &_emu->_baseMem[0x03ED];
   bullet3PosY                      = (uint8_t*)   &_emu->_baseMem[0x03FD];
 
+  customValue                      = (uint8_t*)   &_emu->_highMem[0x1FFF];
+
   // Initialize derivative values
   updateDerivedValues();
+
+  // Timer tolerance
+  if (isDefined(config, "Timer Tolerance") == true)
+   timerTolerance = config["Timer Tolerance"].get<uint8_t>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
 }
 
 // This function computes the hash for the current state
@@ -50,6 +63,8 @@ _uint128_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
   MetroHash128 hash;
+
+  if (timerTolerance > 0)  hash.Update(*frameCounter % (timerTolerance+1));
 
   hash.Update(*gameMode);
   hash.Update(*NMIFlag);
@@ -70,6 +85,11 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*door3State);
   hash.Update(*door4State);
 
+  hash.Update(*door1Timer);
+  hash.Update(*door2Timer);
+  hash.Update(*door3Timer);
+  hash.Update(*door4Timer);
+
   hash.Update(*bullet1State);
   hash.Update(*bullet2State);
   hash.Update(*bullet3State);
@@ -79,6 +99,8 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*bullet1PosY);
   hash.Update(*bullet2PosY);
   hash.Update(*bullet3PosY);
+
+  hash.Update(*customValue);
 
   // Samus-specific hashes
   hash.Update(&_emu->_baseMem[0x0300], 0x0020);
@@ -101,16 +123,21 @@ void GameInstance::updateDerivedValues()
 }
 
 // Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  std::vector<std::string> moveList = {"."};
+
+ // Evaluating custom value
+ bool disableB = false;
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
+  if (rulesStatus[ruleId] == true) if (_rules[ruleId]->_disableBActive == true) disableB = _rules[ruleId]->_disableBValue;
 
  if (*samusAnimation == 0x01) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "LB", "BA", "RA", "RB", "UA", "UL", "UR", "URB", "RBA", "URA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
  if (*samusAnimation == 0x02) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "LB", "BA", "RA", "RB", "UA", "UL", "UR", "URB", "RBA", "URA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
  if (*samusAnimation == 0x03) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
  if (*samusAnimation == 0x05) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "UA", "UR", "UL", "UD", "UB", "RB", "RA", "LB", "LA", "BA", "LBA", "UBA", "UDB", "RBA", "URB", "ULA", "ULB", "URA", "URBA", "ULBA", "UDRB", "UDLB" });
- if (*samusAnimation == 0x07) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "RA", "UR", "UL", "UD", "UB", "UA", "RB", "LB", "LA", "DB", "BA", "LBA", "RBA", "DRB", "UBA", "DLB", "UDB", "ULA", "URA" });
- if (*samusAnimation == 0x08) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "UB", "UR", "UL", "UD", "DB", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "UBA", "LBA", "UDB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
+ if (*samusAnimation == 0x07) moveList.insert(moveList.end(), { "A", "B", "D", "U", "L", "R", "UL", "UD", "UB", "UA", "RB", "RA", "UR", "LB", "LA", "DB", "BA", "URA", "URB", "ULB", "ULA", "RBA", "UDB", "UBA", "LBA", "DRB", "DLB", "ULBA", "URBA" });
+ if (*samusAnimation == 0x08) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "RB", "UR", "UL", "UD", "UB", "UA", "RA", "LB", "LA", "BA", "DB", "LBA", "URB", "URA", "ULB", "ULA", "UDB", "DLB", "UBA", "DRB", "RBA", "LRB", "ULBA", "URBA" });
  if (*samusAnimation == 0x0A) moveList.insert(moveList.end(), { "A", "B", "D", "U", "L", "R", "UL", "UD", "UB", "UA", "RB", "RA", "UR", "LB", "LA", "DB", "BA", "URA", "URB", "ULB", "ULA", "RBA", "UDB", "UBA", "LBA", "DRB", "DLB", "ULBA", "URBA" });
  if (*samusAnimation == 0x0B) moveList.insert(moveList.end(), { "B", "L", "R", "U", "LB", "RB", "UB", "UL", "UR", "ULB", "URB" });
  if (*samusAnimation == 0x0C) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "UBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
@@ -131,27 +158,34 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*samusAnimation == 0x23) moveList.insert(moveList.end(), { "A", "B", "U", "L", "R", "RA", "UR", "UL", "UA", "RB", "LB", "LA", "DR", "DL", "BA", "LBA", "DRB", "RBA", "DLB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
  if (*samusAnimation == 0x24) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "LA", "LB", "RA", "RB", "UA", "UL", "UR" });
  if (*samusAnimation == 0x25) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "LA", "LB", "RA", "RB", "UA", "UL", "UR", "ULB", "URB" });
- if (*samusAnimation == 0x27) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "DB", "LA", "LB", "BA", "RA", "RB", "UA", "UB", "UR", "UD", "UL", "URA", "URB", "ULB", "ULA", "UDB", "UBA", "RBA", "LBA" });
- if (*samusAnimation == 0x28) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "UB", "UR", "UL", "UD", "DB", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "UBA", "LBA", "UDB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
+ if (*samusAnimation == 0x27) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "UA", "UR", "UL", "UD", "UB", "RA", "LB", "LA", "RB", "DB", "BA", "RBA", "LBA", "UBA", "UDB", "URB", "ULA", "ULB", "URA", "URBA", "ULRB", "ULBA", "UDRB", "UDLB" });
+ if (*samusAnimation == 0x28) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "UA", "UR", "UL", "UD", "UB", "RA", "LB", "LA", "RB", "DB", "BA", "RBA", "LBA", "UBA", "UDB", "URB", "ULA", "ULB", "URA", "URBA", "ULRB", "ULBA", "UDRB", "UDLB" });
  if (*samusAnimation == 0x34) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "LR", "RB", "UL", "UR", "ULB", "URB" });
  if (*samusAnimation == 0x35) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "RB", "UR", "UL", "UD", "UB", "UA", "RA", "LB", "LA", "BA", "DB", "LBA", "URB", "URA", "ULB", "ULA", "UDB", "DBA", "UBA", "RBA", "DLBA", "ULBA", "DRBA", "LRBA", "URBA" });
  if (*samusAnimation == 0x36) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "UB", "UR", "UL", "UD", "DB", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "UBA", "LBA", "UDB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x38) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "RA", "UR", "UL", "UA", "RB", "LB", "LA", "BA", "RBA", "URB", "URA", "ULR", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x39) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "LA", "LB", "RA", "RB", "UA", "UL", "UR", "RBA", "URB", "URA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
+ if (*samusAnimation == 0x38) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "LBA", "ULA", "ULB", "ULR", "URA", "URB", "ULBA", "URBA" });
+ if (*samusAnimation == 0x39) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LB", "UR", "UL", "UB", "UA", "RB", "RA", "LA", "RBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
  if (*samusAnimation == 0x3A) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "LB", "BA", "RA", "RB", "UA", "UL", "UR", "URB", "RBA", "URA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x3C) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UA", "UR", "UL", "RB", "RA", "LB", "LA", "BA", "RBA", "LBA", "ULA", "ULB", "ULR", "URA", "URB", "UDLB", "UDRB", "ULBA", "ULRB", "URBA" });
- if (*samusAnimation == 0x3E) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UL", "UR", "UA", "RB", "RA", "LB", "LA", "BA", "URA", "URB", "ULR", "ULB", "UDL", "ULA", "UDR", "RBA", "LBA", "UDRB", "ULBA", "ULRB", "UDLB", "URBA" });
+ if (*samusAnimation == 0x3C) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "UA", "UR", "UL", "UB", "RB", "RA", "LB", "BA", "LA", "RBA", "URB", "URA", "ULR", "ULB", "ULA", "LBA", "ULBA", "ULRB", "UDRB", "UDLB", "URBA" });
+ if (*samusAnimation == 0x3E) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "UB", "UR", "UL", "UA", "RB", "RA", "LB", "BA", "LA", "RBA", "URB", "URA", "ULR", "ULB", "ULA", "UDR", "UDL", "LBA", "UDRB", "ULBA", "ULRB", "UDLB", "URBA" });
  if (*samusAnimation == 0x40) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "UR", "UL", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "LBA", "URB", "ULA", "ULB", "URA", "URBA", "ULRB", "ULBA", "UDRB", "UDLB" });
+
+ if (disableB == true)
+ {
+  std::vector<std::string> newMoveList;
+  for (const auto& move : moveList) if (move.find('B') == std::string::npos) newMoveList.push_back(move);
+  std::swap(moveList, newMoveList);
+ }
 
  return moveList;
 }
 
-void GameInstance::printFullMoveList()
+void GameInstance::printFullMoveList(const bool* rulesStatus)
 {
  for (uint16_t i = 0; i <= 0xFF; i++)
  {
   *samusAnimation = (uint8_t)i;
-  auto moves = getPossibleMoves();
+  auto moves = getPossibleMoves(rulesStatus);
   if (moves.size() == 1) continue;
 
   size_t vecSize = moves.size();
@@ -206,6 +240,10 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
   if (rulesStatus[ruleId] == true)
     magnets = _rules[ruleId]->_magnets;
 
+ // Evaluating custom value
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
+  if (rulesStatus[ruleId] == true) if (_rules[ruleId]->_customValueActive == true) *customValue = _rules[ruleId]->_customValue;
+
  return magnets;
 }
 
@@ -250,6 +288,7 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
+  LOG("[Jaffar]  + Frame Counter:          %03u\n", *frameCounter);
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second );
   LOG("[Jaffar]  + Game Mode:              %02u\n", *gameMode);
@@ -261,11 +300,13 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Samus Door Side:        %03u\n", *samusDoorSide);
   LOG("[Jaffar]  + Samus Door State:       %03u\n", *samusDoorState);
   LOG("[Jaffar]  + Door States:            [ %02u, %02u, %02u, %02u ]\n", *door1State, *door2State, *door3State, *door4State);
+  LOG("[Jaffar]  + Door Timers:            [ %02u, %02u, %02u, %02u ]\n", *door1Timer, *door2Timer, *door3Timer, *door4Timer);
   LOG("[Jaffar]  + Bullet Count:           %02u\n", bulletCount);
   LOG("[Jaffar]  + Bullet States:          [ %02u, %02u, %02u ]\n", *bullet1State, *bullet2State, *bullet3State);
   LOG("[Jaffar]  + Bullet Pos X:           [ %02u, %02u, %02u ]\n", *bullet1PosX, *bullet2PosX, *bullet3PosX);
   LOG("[Jaffar]  + Bullet Pos Y:           [ %02u, %02u, %02u ]\n", *bullet1PosY, *bullet2PosY, *bullet3PosY);
   LOG("[Jaffar]  + Equipment Flags:        %03u\n", *equipmentFlags);
+  LOG("[Jaffar]  + Custom Value:           %02u\n", *customValue);
 
   LOG("[Jaffar]  + Rule Status: ");
   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

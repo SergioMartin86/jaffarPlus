@@ -9,6 +9,12 @@ class GameRule : public Rule
 
  magnetSet_t _magnets;
 
+ uint8_t _customValue = 0;
+ bool _customValueActive = false;
+
+ bool _disableBValue = false;
+ bool _disableBActive = false;
+
  GameRule();
  ~GameRule() = default;
 

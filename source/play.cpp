@@ -127,7 +127,7 @@ void loadSolutionFile(
  for (ssize_t i = 0; i < (ssize_t)moveList.size(); i++)
  {
   // Getting possible moves
-  auto possibleMoves = gameInstance.getPossibleMoves();
+  auto possibleMoves = gameInstance.getPossibleMoves(rulesStatus);
   bool moveFound = false;
   for (const auto& move : possibleMoves) if (EmuInstance::moveStringToCode(move) == EmuInstance::moveStringToCode(moveList[i])) moveFound = true;
   if (moveFound == false)
@@ -301,18 +301,22 @@ int main(int argc, char *argv[])
   // Flag to display frame information
   bool showFrameInfo = true;
 
+  // Rule status
+  bool* rulesStatus = (bool*) calloc(ruleCount, sizeof(bool));
+
   // Interactive section
   int command;
   do
   {
    // Loading requested step
    gameInstance.pushState(stateSequence[currentStep]);
+   gameInstance.evaluateRules(rulesStatus);
 
    // Updating display
    if (disableRender == false) playbackInstance.renderFrame(currentStep, moveList[currentStep]);
 
    // Getting possible moves
-   auto possibleMoves = gameInstance.getPossibleMoves();
+   auto possibleMoves = gameInstance.getPossibleMoves(rulesStatus);
 
    // Showing frame information
    if (showFrameInfo)

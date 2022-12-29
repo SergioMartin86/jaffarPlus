@@ -7,6 +7,7 @@
   
   "Game Configuration": 
   {
+   "Timer Tolerance": 4
   },
   
   
@@ -28,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 3500
     },
     
     "Hash Database":
@@ -66,7 +67,8 @@
     
     "Actions":
     [
-     { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 616.0 }
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 616.0 },
+     { "Type": "Set Disable B", "Value": true }
     ]
    },
    
@@ -134,6 +136,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Disable B", "Value": false },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 5.0, "Center": 4000.0 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 3945.0 },
      { "Type": "Set Bullet 1 Horizontal Magnet", "Intensity": 1.0, "Center": 233.0 },
@@ -173,37 +176,7 @@
     [
      { "Type": "Trigger Win" }
     ]
-   },
-   
-   {
-    "Label": 1999,
-    "Conditions":
-    [
-      { "Property": "Bullet Count", "Op": ">", "Value": 0 },
-      { "Property": "Samus Pos X", "Op": "<", "Value": 1650.0 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1998,
-    "Conditions":
-    [
-      { "Property": "Bullet Count", "Op": ">", "Value": 1 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
    }
+   
   ]  
 }

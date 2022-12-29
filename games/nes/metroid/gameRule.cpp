@@ -41,6 +41,22 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
   }
 
+  if (actionType == "Set Custom Value")
+  {
+   if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
+   _customValue = actionJs["Value"].get<uint8_t>();
+   _customValueActive = true;
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Disable B")
+  {
+   if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
+   _disableBValue = actionJs["Value"].get<bool>();
+   _disableBActive = true;
+   recognizedActionType = true;
+  }
+
   return recognizedActionType;
 }
 
@@ -49,6 +65,12 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Equipment Flags") return dt_uint8;
+  if (propertyName == "Samus Pos Y Raw") return dt_uint8;
+  if (propertyName == "Screen Pos Y2") return dt_uint8;
+  if (propertyName == "Screen Pos Y1") return dt_uint8;
+  if (propertyName == "Samus Pos X Raw") return dt_uint8;
+  if (propertyName == "Screen Pos X2") return dt_uint8;
+  if (propertyName == "Screen Pos X1") return dt_uint8;
   if (propertyName == "Samus Pos X") return dt_float;
   if (propertyName == "Samus Pos Y") return dt_float;
   if (propertyName == "Samus Door State") return dt_uint8;
@@ -57,6 +79,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Door 3 State") return dt_uint8;
   if (propertyName == "Door 4 State") return dt_uint8;
   if (propertyName == "Bullet Count") return dt_uint8;
+  if (propertyName == "Custom Value") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -68,6 +91,12 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Equipment Flags") return gameInstance->equipmentFlags;
+  if (propertyName == "Samus Pos Y Raw") return gameInstance->samusPosYRaw;
+  if (propertyName == "Screen Pos Y2") return gameInstance->screenPosY2;
+  if (propertyName == "Screen Pos Y1") return gameInstance->screenPosY1;
+  if (propertyName == "Samus Pos X Raw") return gameInstance->samusPosXRaw;
+  if (propertyName == "Screen Pos X2") return gameInstance->screenPosX2;
+  if (propertyName == "Screen Pos X1") return gameInstance->screenPosX1;
   if (propertyName == "Samus Pos X") return &gameInstance->samusPosX;
   if (propertyName == "Samus Pos Y") return &gameInstance->samusPosY;
   if (propertyName == "Samus Door State") return gameInstance->samusDoorState;
@@ -76,6 +105,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Door 3 State") return gameInstance->door3State;
   if (propertyName == "Door 4 State") return gameInstance->door4State;
   if (propertyName == "Bullet Count") return &gameInstance->bulletCount;
+  if (propertyName == "Custom Value") return &gameInstance->customValue;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
