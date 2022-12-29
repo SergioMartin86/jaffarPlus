@@ -24,6 +24,7 @@ class GameInstance : public GameInstanceBase
  public:
 
   // Container for game-specific values
+  uint8_t* frameCounter;
   uint8_t* gameMode;
   uint8_t* NMIFlag;
   uint8_t* samusPosXRaw;
@@ -43,6 +44,11 @@ class GameInstance : public GameInstanceBase
   uint8_t* door3State;
   uint8_t* door4State;
 
+  uint8_t* door1Timer;
+  uint8_t* door2Timer;
+  uint8_t* door3Timer;
+  uint8_t* door4Timer;
+
   uint8_t* bullet1State;
   uint8_t* bullet2State;
   uint8_t* bullet3State;
@@ -60,12 +66,19 @@ class GameInstance : public GameInstanceBase
   float samusPosY;
   uint8_t bulletCount;
 
-  void printFullMoveList();
+  // Custom conserved value
+  uint8_t* customValue;
+
+  // Settings
+  bool disableB;
+  uint8_t timerTolerance;
+
+  void printFullMoveList(const bool* rulesStatus);
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   _uint128_t computeHash() const override;
   void updateDerivedValues() override;
-  std::vector<std::string> getPossibleMoves() const override;
+  std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;

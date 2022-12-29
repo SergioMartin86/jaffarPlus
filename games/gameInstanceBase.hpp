@@ -38,7 +38,7 @@ class GameInstanceBase
   void saveStateFile(const std::string& outputFilePath) const { _emu->saveStateFile(outputFilePath); }
   void loadStateFile(const std::string& inputFilePath) { _emu->loadStateFile(inputFilePath);  updateDerivedValues(); }
 
-  // Evaluates the rule set on a given frame. Returns true if it is a fail.
+  // Evaluates the rule set on a given frame.
   void evaluateRules(bool* rulesStatus) const;
 
   // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules
@@ -51,7 +51,7 @@ class GameInstanceBase
   virtual void updateDerivedValues() = 0;
 
   // Function to determine the current possible moves
-  virtual std::vector<std::string> getPossibleMoves() const = 0;
+  virtual std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const = 0;
 
   // Obtains the score of a given frame
   virtual float getStateReward(const bool* rulesStatus) const = 0;
