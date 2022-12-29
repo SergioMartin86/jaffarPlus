@@ -29,6 +29,18 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   door3State                       = (uint8_t*)   &_emu->_baseMem[0x03A0];
   door4State                       = (uint8_t*)   &_emu->_baseMem[0x03B0];
 
+  bullet1State                     = (uint8_t*)   &_emu->_baseMem[0x03D0];
+  bullet2State                     = (uint8_t*)   &_emu->_baseMem[0x03E0];
+  bullet3State                     = (uint8_t*)   &_emu->_baseMem[0x03F0];
+
+  bullet1PosX                      = (uint8_t*)   &_emu->_baseMem[0x03DE];
+  bullet2PosX                      = (uint8_t*)   &_emu->_baseMem[0x03EE];
+  bullet3PosX                      = (uint8_t*)   &_emu->_baseMem[0x03FE];
+
+  bullet1PosY                      = (uint8_t*)   &_emu->_baseMem[0x03DD];
+  bullet2PosY                      = (uint8_t*)   &_emu->_baseMem[0x03ED];
+  bullet3PosY                      = (uint8_t*)   &_emu->_baseMem[0x03FD];
+
   // Initialize derivative values
   updateDerivedValues();
 }
@@ -39,16 +51,34 @@ _uint128_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash128 hash;
 
+  hash.Update(*gameMode);
   hash.Update(*NMIFlag);
   hash.Update(*samusPosXRaw);
   hash.Update(*screenPosX1);
   hash.Update(*screenPosX2);
+  hash.Update(*samusPosYRaw);
+  hash.Update(*screenPosY1);
+  hash.Update(*screenPosY2);
 
   hash.Update(*samusAnimation);
   hash.Update(*samusDirection);
   hash.Update(*samusDoorSide);
-
   hash.Update(*equipmentFlags);
+
+  hash.Update(*door1State);
+  hash.Update(*door2State);
+  hash.Update(*door3State);
+  hash.Update(*door4State);
+
+  hash.Update(*bullet1State);
+  hash.Update(*bullet2State);
+  hash.Update(*bullet3State);
+  hash.Update(*bullet1PosX);
+  hash.Update(*bullet2PosX);
+  hash.Update(*bullet3PosX);
+  hash.Update(*bullet1PosY);
+  hash.Update(*bullet2PosY);
+  hash.Update(*bullet3PosY);
 
   // Samus-specific hashes
   hash.Update(&_emu->_baseMem[0x0300], 0x0020);
@@ -66,6 +96,8 @@ void GameInstance::updateDerivedValues()
 
  uint8_t realScreenPosY1 = *screenPosY2 == 0 ? *screenPosY1+1 : *screenPosY1;
  samusPosY = (float)realScreenPosY1 * 256.0f + (float)*screenPosY2 + (float)*samusPosYRaw;
+
+ bulletCount = (uint8_t)(*bullet1State > 0) + (uint8_t)(*bullet2State > 0) + (uint8_t)(*bullet3State > 0);
 }
 
 // Function to determine the current possible moves
@@ -78,36 +110,37 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  if (*samusAnimation == 0x03) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
  if (*samusAnimation == 0x05) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "UA", "UR", "UL", "UD", "UB", "RB", "RA", "LB", "LA", "BA", "LBA", "UBA", "UDB", "RBA", "URB", "ULA", "ULB", "URA", "URBA", "ULBA", "UDRB", "UDLB" });
  if (*samusAnimation == 0x07) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "RA", "UR", "UL", "UD", "UB", "UA", "RB", "LB", "LA", "DB", "BA", "LBA", "RBA", "DRB", "UBA", "DLB", "UDB", "ULA", "URA" });
- if (*samusAnimation == 0x08) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "RB", "UR", "UL", "UD", "UB", "UA", "RA", "LB", "LA", "DB", "BA", "RBA", "LBA", "UBA", "UDB", "ULA", "URA" });
- if (*samusAnimation == 0x0A) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "RB", "UR", "UL", "UD", "UB", "UA", "RA", "LB", "LA", "DB", "BA", "LBA", "RBA", "DRB", "UBA", "DLB", "UDB", "ULA", "ULB", "URA", "URB" });
+ if (*samusAnimation == 0x08) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "UB", "UR", "UL", "UD", "DB", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "UBA", "LBA", "UDB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
+ if (*samusAnimation == 0x0A) moveList.insert(moveList.end(), { "A", "B", "D", "U", "L", "R", "UL", "UD", "UB", "UA", "RB", "RA", "UR", "LB", "LA", "DB", "BA", "URA", "URB", "ULB", "ULA", "RBA", "UDB", "UBA", "LBA", "DRB", "DLB", "ULBA", "URBA" });
  if (*samusAnimation == 0x0B) moveList.insert(moveList.end(), { "B", "L", "R", "U", "LB", "RB", "UB", "UL", "UR", "ULB", "URB" });
  if (*samusAnimation == 0x0C) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "UBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x0D) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "UBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x0F) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
+ if (*samusAnimation == 0x0D) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "RB", "UR", "UL", "UB", "UA", "RA", "LB", "LA", "BA", "LRA", "LBA", "RBA", "DRA", "UBA", "DLA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
+ if (*samusAnimation == 0x0F) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "UBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
  if (*samusAnimation == 0x10) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
  if (*samusAnimation == 0x11) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
  if (*samusAnimation == 0x12) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
  if (*samusAnimation == 0x13) moveList.insert(moveList.end(), { "A", "L", "R", "U", "UA" });
  if (*samusAnimation == 0x14) moveList.insert(moveList.end(), { "A", "L", "R", "U" });
- if (*samusAnimation == 0x17) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UL", "UR" });
+ if (*samusAnimation == 0x15) moveList.insert(moveList.end(), { "A", "L", "R", "U" });
+ if (*samusAnimation == 0x17) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UA", "UL", "UR" });
  if (*samusAnimation == 0x18) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UA", "UL", "UR" });
  if (*samusAnimation == 0x19) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UA", "UL", "UR" });
- if (*samusAnimation == 0x1A) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UL", "UR" });
+ if (*samusAnimation == 0x1A) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UA", "UL", "UR" });
  if (*samusAnimation == 0x20) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "UBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x21) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "UB", "UA", "UR", "DB", "LA", "LB", "UL", "BA", "RA", "RB", "ULA", "UBA", "DLB", "ULB", "URA", "URB", "RBA", "LBA", "DRB", "DBA", "LRBA", "DRBA", "ULBA", "DLBA", "URBA" });
- if (*samusAnimation == 0x23) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "RB", "UR", "UL", "UA", "RA", "LB", "LA", "BA", "LBA", "RBA", "DRB", "DLB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
+ if (*samusAnimation == 0x21) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "DB", "UB", "UA", "RB", "RA", "BA", "UL", "LB", "LA", "DA", "UR", "ULA", "ULB", "UBA", "URA", "URB", "DBA", "RBA", "LBA", "DRB", "DLB", "LRBA", "DRBA", "ULBA", "DLBA", "URBA" });
+ if (*samusAnimation == 0x23) moveList.insert(moveList.end(), { "A", "B", "U", "L", "R", "RA", "UR", "UL", "UA", "RB", "LB", "LA", "DR", "DL", "BA", "LBA", "DRB", "RBA", "DLB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
  if (*samusAnimation == 0x24) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "LA", "LB", "RA", "RB", "UA", "UL", "UR" });
  if (*samusAnimation == 0x25) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "LA", "LB", "RA", "RB", "UA", "UL", "UR", "ULB", "URB" });
  if (*samusAnimation == 0x27) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "DB", "LA", "LB", "BA", "RA", "RB", "UA", "UB", "UR", "UD", "UL", "URA", "URB", "ULB", "ULA", "UDB", "UBA", "RBA", "LBA" });
- if (*samusAnimation == 0x28) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "DB", "LA", "LB", "BA", "RA", "RB", "UA", "UB", "UR", "UD", "UL", "URA", "URB", "ULB", "ULA", "UDB", "UBA", "RBA", "LBA" });
+ if (*samusAnimation == 0x28) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "UB", "UR", "UL", "UD", "DB", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "UBA", "LBA", "UDB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
  if (*samusAnimation == 0x34) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "LR", "RB", "UL", "UR", "ULB", "URB" });
- if (*samusAnimation == 0x35) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "RA", "UR", "UL", "UD", "UB", "UA", "RB", "LB", "LA", "DB", "BA", "LBA", "RBA", "UBA", "DBA", "UDB", "ULA", "ULB", "URA", "URB", "LRBA", "DRBA", "DLBA" });
+ if (*samusAnimation == 0x35) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "RB", "UR", "UL", "UD", "UB", "UA", "RA", "LB", "LA", "BA", "DB", "LBA", "URB", "URA", "ULB", "ULA", "UDB", "DBA", "UBA", "RBA", "DLBA", "ULBA", "DRBA", "LRBA", "URBA" });
  if (*samusAnimation == 0x36) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "UB", "UR", "UL", "UD", "DB", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "UBA", "LBA", "UDB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
  if (*samusAnimation == 0x38) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "RA", "UR", "UL", "UA", "RB", "LB", "LA", "BA", "RBA", "URB", "URA", "ULR", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x39) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "RA", "UR", "UL", "UA", "RB", "LB", "LA", "RBA", "LBA", "ULB", "URB" });
+ if (*samusAnimation == 0x39) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "LA", "LB", "RA", "RB", "UA", "UL", "UR", "RBA", "URB", "URA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
  if (*samusAnimation == 0x3A) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "LB", "BA", "RA", "RB", "UA", "UL", "UR", "URB", "RBA", "URA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x3C) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "UR", "UL", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "LBA", "URB", "ULA", "ULB", "URA", "URBA", "ULRB", "ULBA", "UDRB", "UDLB" });
- if (*samusAnimation == 0x3E) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "UR", "UL", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "LBA", "URB", "ULA", "ULB", "URA", "URBA", "ULRB", "ULBA", "UDRB", "UDLB" });
+ if (*samusAnimation == 0x3C) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UA", "UR", "UL", "RB", "RA", "LB", "LA", "BA", "RBA", "LBA", "ULA", "ULB", "ULR", "URA", "URB", "UDLB", "UDRB", "ULBA", "ULRB", "URBA" });
+ if (*samusAnimation == 0x3E) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UL", "UR", "UA", "RB", "RA", "LB", "LA", "BA", "URA", "URB", "ULR", "ULB", "UDL", "ULA", "UDR", "RBA", "LBA", "UDRB", "ULBA", "ULRB", "UDLB", "URBA" });
  if (*samusAnimation == 0x40) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "UR", "UL", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "LBA", "URB", "ULA", "ULB", "URA", "URBA", "ULRB", "ULBA", "UDRB", "UDLB" });
 
  return moveList;
@@ -199,6 +232,14 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   diff = std::abs(magnets.samusVerticalMagnet.center - samusPosY);
   reward += magnets.samusVerticalMagnet.intensity * -diff;
 
+  // Evaluating bullet1 magnet's reward on position X
+  diff = std::abs(magnets.bullet1HorizontalMagnet.center - (float)*bullet1PosX);
+  reward += magnets.bullet1HorizontalMagnet.intensity * -diff;
+
+  // Evaluating bullet1 magnet's reward on position Y
+  diff = std::abs(magnets.bullet1VerticalMagnet.center - (float)*bullet1PosY);
+  reward += magnets.bullet1VerticalMagnet.intensity * -diff;
+
   // Returning reward
   return reward;
 }
@@ -220,6 +261,10 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Samus Door Side:        %03u\n", *samusDoorSide);
   LOG("[Jaffar]  + Samus Door State:       %03u\n", *samusDoorState);
   LOG("[Jaffar]  + Door States:            [ %02u, %02u, %02u, %02u ]\n", *door1State, *door2State, *door3State, *door4State);
+  LOG("[Jaffar]  + Bullet Count:           %02u\n", bulletCount);
+  LOG("[Jaffar]  + Bullet States:          [ %02u, %02u, %02u ]\n", *bullet1State, *bullet2State, *bullet3State);
+  LOG("[Jaffar]  + Bullet Pos X:           [ %02u, %02u, %02u ]\n", *bullet1PosX, *bullet2PosX, *bullet3PosX);
+  LOG("[Jaffar]  + Bullet Pos Y:           [ %02u, %02u, %02u ]\n", *bullet1PosY, *bullet2PosY, *bullet3PosY);
   LOG("[Jaffar]  + Equipment Flags:        %03u\n", *equipmentFlags);
 
   LOG("[Jaffar]  + Rule Status: ");
@@ -229,4 +274,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   auto magnets = getMagnetValues(rulesStatus);
   if (std::abs(magnets.samusHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Samus Horizontal Magnet        - Intensity: %.5f, Center: %3.3f\n", magnets.samusHorizontalMagnet.intensity, magnets.samusHorizontalMagnet.center);
   if (std::abs(magnets.samusVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Samus Vertical Magnet          - Intensity: %.5f, Center: %3.3f\n", magnets.samusVerticalMagnet.intensity, magnets.samusVerticalMagnet.center);
+  if (std::abs(magnets.bullet1HorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Bullet 1 Horizontal Magnet     - Intensity: %.5f, Center: %3.3f\n", magnets.bullet1HorizontalMagnet.intensity, magnets.bullet1HorizontalMagnet.center);
+  if (std::abs(magnets.bullet1VerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Bullet 1 Vertical Magnet       - Intensity: %.5f, Center: %3.3f\n", magnets.bullet1VerticalMagnet.intensity, magnets.bullet1VerticalMagnet.center);
 }

@@ -15,6 +15,8 @@ struct genericMagnet_t {
 struct magnetSet_t {
  genericMagnet_t samusHorizontalMagnet;
  genericMagnet_t samusVerticalMagnet;
+ genericMagnet_t bullet1HorizontalMagnet;
+ genericMagnet_t bullet1VerticalMagnet;
 };
 
 class GameInstance : public GameInstanceBase
@@ -41,9 +43,22 @@ class GameInstance : public GameInstanceBase
   uint8_t* door3State;
   uint8_t* door4State;
 
+  uint8_t* bullet1State;
+  uint8_t* bullet2State;
+  uint8_t* bullet3State;
+
+  uint8_t* bullet1PosX;
+  uint8_t* bullet2PosX;
+  uint8_t* bullet3PosX;
+
+  uint8_t* bullet1PosY;
+  uint8_t* bullet2PosY;
+  uint8_t* bullet3PosY;
+
   // Derivative Values
   float samusPosX;
   float samusPosY;
+  uint8_t bulletCount;
 
   void printFullMoveList();
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
