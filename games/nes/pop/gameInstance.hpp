@@ -86,6 +86,7 @@ class GameInstance : public GameInstanceBase
 
   uint8_t* screenTransition2;
 
+  uint8_t* isBadRender;
 
   // Settings
   uint8_t timerTolerance;
@@ -96,17 +97,16 @@ class GameInstance : public GameInstanceBase
   std::set<std::string> hashIncludes;
 
   // Derivative values
-  uint8_t isCorrectRender;
   uint8_t framesPerState;
   uint16_t* rawFrameCount;
   uint16_t* lagFrameCounter;
 
-  void printFullMoveList();
+  void printFullMoveList(const bool* rulesStatus);
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   _uint128_t computeHash() const override;
   void updateDerivedValues() override;
-  std::vector<std::string> getPossibleMoves() const override;
+  std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;

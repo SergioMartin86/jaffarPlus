@@ -8,7 +8,7 @@
   "Game Configuration": 
   {
    "Skip Frames": true,
-   "Timer Tolerance": 8,
+   "Timer Tolerance": 4,
    "Hash Includes": [  ],
    "Enable Pause": false
   },
@@ -32,7 +32,7 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 4000,
+     "Max Size Lower Bound (Mb)": 1000,
      "Max Size Upper Bound (Mb)": 20000
     },
     
@@ -478,15 +478,14 @@
     "Label": 1124,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": ">", "Value":  1 },
-      { "Property": "Is Correct Render", "Op": "==", "Value":  1 }
+      { "Property": "Is Bad Render", "Op": "==", "Value":  1 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Trigger Win" }
+     { "Type": "Trigger Fail" }
     ]
    }
    
