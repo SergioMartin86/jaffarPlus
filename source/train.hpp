@@ -61,6 +61,7 @@ class Train
   float _stepNewStateRatio;
   float _maxNewStateRatio;
   uint16_t _maxNewStateRatioStep;
+  size_t _invalidStateCount;
 
   // Storage for source state data for differential load/save
   uint8_t _referenceStateData[_STATE_DATA_SIZE_TRAIN];

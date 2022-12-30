@@ -466,10 +466,11 @@ void Train::computeStates()
            }
 
            //if (isCorrect == true)  LOG("Yes - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
-           if (isCorrect == false) LOG("No - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
+           //if (isCorrect == false) LOG("No - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
 
            if (isCorrect == false)
            {
+            _invalidStateCount++;
             _freeStateQueueMutex.lock();
             _freeStateQueue.push(newState);
             _freeStateQueueMutex.unlock();
@@ -633,7 +634,7 @@ void Train::printTrainStatus()
   printf("[Jaffar] Base States Performance: %.3f States/s\n", (double)_stepBaseStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] New States Performance:  %.3f States/s\n", (double)_stepNewStatesProcessedCounter / (_currentStepTime / 1.0e+9));
   printf("[Jaffar] State size: %lu bytes\n", _stateSize);
-  printf("[Jaffar] States Processed: (Step/Total): %lu / %lu\n", _stepNewStatesProcessedCounter, _totalStatesProcessedCounter);
+  printf("[Jaffar] States Processed: (Step/Total/Invalid): %lu / %lu / %lu\n", _stepNewStatesProcessedCounter, _totalStatesProcessedCounter, _invalidStateCount);
   printf("[Jaffar] State DB Entries (Total / Max): %lu (%.3fmb)\n", _databaseSize, (double)(_databaseSize * _stateSize) / (1024.0 * 1024.0));
   printf("[Jaffar] State DB Lower / Upper Bounds:  %lu (%.3fmb) / %lu (%.3fmb)\n", _maxDatabaseSizeLowerBound, (double)(_maxDatabaseSizeLowerBound * _stateSize) / (1024.0 * 1024.0), _maxDatabaseSizeUpperBound, (double)(_maxDatabaseSizeUpperBound * _stateSize) / (1024.0 * 1024.0));
   printf("[Jaffar] Elapsed Time (Step/Total):   %3.3fs / %3.3fs\n", _currentStepTime / 1.0e+9, _searchTotalTime / 1.0e+9);
@@ -822,6 +823,7 @@ void Train::reset()
  _stepMaxStatesInMemory = 0;
  _totalMaxStatesInMemory = 0;
  _newCollisionCounter = 0;
+ _invalidStateCount = 0;
  _hashEntriesTotal = 0;
  _hashEntriesStep = 0;
  _hashCurAge = 0;
