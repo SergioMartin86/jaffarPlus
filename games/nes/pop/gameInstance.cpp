@@ -62,6 +62,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lvl10Room0DoorState      = (uint8_t*)   &_emu->_baseMem[0x04B8];
   lvl10Room4DoorState      = (uint8_t*)   &_emu->_baseMem[0x0541];
 
+  isBadRender              = (uint8_t*)   &_emu->_highMem[0x0100];
+
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
     hashIncludes.insert(entry.get<std::string>());
@@ -190,10 +192,6 @@ _uint128_t GameInstance::computeHash() const
 
 void GameInstance::updateDerivedValues()
 {
- isCorrectRender = 1;
- if (_emu->_nes->emu.ppu.isCorrectRender == false) isCorrectRender = 0;
- if (_emu->_nes->emu.isCorrectExecution == false) isCorrectRender = 0;
-
  framesPerState = 4;
  if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
 }
@@ -214,15 +212,21 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
    _emu->advanceState(0);
    moves.push_back(0);
 
-   while (*framePhase != 1 || *isPaused != 2 || *screenTransition == 255)
+//   if (_emu->_nes->emu.ppu.isCorrectRender == false) *isBadRender = 1;
+   if (_emu->_nes->emu.isCorrectExecution == false) *isBadRender = 1;
+
+   if (*isBadRender != 1) while (*framePhase != 1 || *isPaused != 2 || *screenTransition == 255)
    {
     INPUT_TYPE newMove = *framePhase == 2 || *framePhase == 3 ? move : 0;
     if (move == 0b00010000 && *framePhase == 4) newMove = move;
     _emu->advanceState(newMove);
     moves.push_back(newMove);
+
+//    if (_emu->_nes->emu.ppu.isCorrectRender == false) {  *isBadRender = 1; break; }
+    if (_emu->_nes->emu.isCorrectExecution == false) { *isBadRender = 1; break; }
+
     skippedFrames++;
     if (skippedFrames > 128) break;
-    if (_emu->_nes->emu.isCorrectExecution == false) { *kidHP = 0; break; }
    }
   }
 
@@ -234,7 +238,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 }
 
 // Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  std::vector<std::string> moveList({"."});
 
@@ -352,12 +356,12 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
  return magnets;
 }
 
-void GameInstance::printFullMoveList()
+void GameInstance::printFullMoveList(const bool* rulesStatus)
 {
  for (uint16_t i = 0; i <= 0xFF; i++)
  {
   *kidFrame = (uint8_t)i;
-  auto moves = getPossibleMoves();
+  auto moves = getPossibleMoves(rulesStatus);
   if (moves.size() == 1) continue;
 
   size_t vecSize = moves.size();
@@ -436,6 +440,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Screen Trans / Drawn:   %02u / %02u\n", *screenTransition, *screenDrawn);
   LOG("[Jaffar]  + Bottom / Pass Timer:    %02u, %02u\n", *bottomTextTimer, *passwordTimer);
   LOG("[Jaffar]  + Game State:             %02u\n", *gameState);
+  LOG("[Jaffar]  + Is Bad Render:          %02u\n", *isBadRender);
 
   LOG("[Jaffar]  + Current Door State:     %02u\n", *currentDoorState);
   LOG("[Jaffar]  + Door Opening Timer:     %02u\n", *doorOpeningTimer);
