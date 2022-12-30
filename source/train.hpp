@@ -49,6 +49,7 @@ class Train
 
   // Creating game instances, one per openMP thread
   std::vector<GameInstance*> _gameInstances;
+  std::vector<std::vector<GameInstance*>> _verificationInstances;
   GameInstance* _showGameInstance;
 
   // State counter

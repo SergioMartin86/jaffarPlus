@@ -4,6 +4,7 @@
 #include <omp.h>
 #include <unistd.h>
 #include <algorithm>
+#include <string>
 #include <set>
 
 //#define _DETECT_POSSIBLE_MOVES
@@ -13,6 +14,8 @@
  #define _KEY_VALUE_ samusAnimation
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
+
+#define _VERIFICATION_INSTANCES 10
 
 void Train::run()
 {
@@ -442,6 +445,41 @@ void Train::computeStates()
         tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
+        ////////// VERIFICATION STEP START
+
+        if (_storeMoveHistory)
+        {
+         if (possibleMoves[idx] == "UB"  || possibleMoves[idx] == "UD" || possibleMoves[idx] == "UBA" || possibleMoves[idx] == "UDB" || possibleMoves[idx] == "UDBA")
+         {
+           auto newHash = hash;
+           bool isCorrect = true;
+
+           for (size_t i = 0; i < _VERIFICATION_INSTANCES && isCorrect == true; i++)
+           {
+            // _verificationInstances[threadId][i]->pushState(_initialStateData);
+            // for (size_t j = 0; j <= _currentStep; j++)  _verificationInstances[threadId][i]->advanceGameState(newState->getMove(j));
+            _verificationInstances[threadId][i]->pushState(baseStateData);
+            _verificationInstances[threadId][i]->advanceGameState(newState->getMove(_currentStep));
+
+            newHash = _verificationInstances[threadId][i]->computeHash();
+            if (newHash != hash) isCorrect = false;
+           }
+
+           //if (isCorrect == true)  LOG("Yes - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
+           if (isCorrect == false) LOG("No - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
+
+           if (isCorrect == false)
+           {
+            _freeStateQueueMutex.lock();
+            _freeStateQueue.push(newState);
+            _freeStateQueueMutex.unlock();
+            continue;
+           }
+         }
+        }
+
+        ////////// VERIFICATION STEP END
+
         // If state has succeded or is a regular state, adding it in the corresponding database
         #pragma omp critical(newFrameDB)
         {
@@ -708,6 +746,7 @@ Train::Train(const nlohmann::json& config)
 
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
+  _verificationInstances.resize(_threadCount);
 
   // Initializing thread-specific instances
   #pragma omp parallel
@@ -722,6 +761,14 @@ Train::Train(const nlohmann::json& config)
     auto emuInstance = new EmuInstance(_config["Emulator Configuration"]);
     _gameInstances[threadId] = new GameInstance(emuInstance, _config["Game Configuration"]);
     _gameInstances[threadId]->parseRules(_config["Rules"]);
+
+    _verificationInstances[threadId].resize(_VERIFICATION_INSTANCES);
+    for (size_t i = 0; i < _VERIFICATION_INSTANCES; i++)
+    {
+     emuInstance = new EmuInstance(_config["Emulator Configuration"]);
+     _verificationInstances[threadId][i] = new GameInstance(emuInstance, _config["Game Configuration"]);
+     _verificationInstances[threadId][i]->parseRules(_config["Rules"]);
+    }
    }
   }
 

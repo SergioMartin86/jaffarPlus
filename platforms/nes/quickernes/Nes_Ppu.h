@@ -44,7 +44,7 @@ public:
 	
 	int burst_phase;
 	
-	bool isCorrectRender;
+	bool isCorrectRender = true;
 private:
 	
 	Nes_Core& emu;
