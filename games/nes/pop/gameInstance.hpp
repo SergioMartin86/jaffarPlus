@@ -22,6 +22,7 @@ struct magnetSet_t {
  // Relevant simon magnets
  genericMagnet_t kidHorizontalMagnet;
  genericMagnet_t kidVerticalMagnet;
+ float kidDirectionMagnet = 0.0f;
 };
 
 class GameInstance : public GameInstanceBase
@@ -86,7 +87,10 @@ class GameInstance : public GameInstanceBase
 
   uint8_t* screenTransition2;
 
+  // Artificial memory positions
   uint8_t* isBadRender;
+  uint8_t* kidPrevFrame;
+  int8_t* kidFrameDiff;
 
   // Settings
   uint8_t timerTolerance;
@@ -100,6 +104,8 @@ class GameInstance : public GameInstanceBase
   uint8_t framesPerState;
   uint16_t* rawFrameCount;
   uint16_t* lagFrameCounter;
+  float kidPosYActual;
+
 
   void printFullMoveList(const bool* rulesStatus);
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;

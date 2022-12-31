@@ -2,13 +2,13 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl01a.state"
+    "State File": "lvl01b.state"
   },
   
   "Game Configuration": 
   {
    "Skip Frames": true,
-   "Timer Tolerance": 8,
+   "Timer Tolerance": 6,
    "Hash Includes": [  ],
    "Enable Pause": false
   },
@@ -32,8 +32,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 20000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 30000
     },
     
     "Hash Database":
@@ -509,7 +509,7 @@
     "Label": 1121,
     "Conditions":
     [
-     { "Property": "Is Correct Render", "Op": "==", "Value":  0 }
+     { "Property": "Is Bad Render", "Op": "==", "Value":  1 }
     ],
     
     "Satisfies": [ ],
