@@ -8,7 +8,7 @@
   "Game Configuration": 
   {
    "Skip Frames": true,
-   "Timer Tolerance": 4,
+   "Timer Tolerance": 6,
    "Hash Includes": [  ],
    "Enable Pause": false
   },

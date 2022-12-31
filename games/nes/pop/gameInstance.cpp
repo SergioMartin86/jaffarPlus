@@ -6,7 +6,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   // Setting emulator
   _emu = emu;
 
-  globalTimer            = (uint8_t*)   &_emu->_baseMem[0x0791];
+  globalTimer            = (uint8_t*)   &_emu->_baseMem[0x04EF];
   currentLevel           = (uint8_t*)   &_emu->_baseMem[0x0070];
   RNGState               = (uint8_t*)   &_emu->_baseMem[0x0060];
   framePhase             = (uint8_t*)   &_emu->_baseMem[0x002C];
@@ -63,6 +63,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lvl10Room4DoorState      = (uint8_t*)   &_emu->_baseMem[0x0541];
 
   isBadRender              = (uint8_t*)   &_emu->_highMem[0x0100];
+  kidPrevFrame             = (uint8_t*)   &_emu->_highMem[0x0101];
+  kidFrameDiff             = (int8_t*)    &_emu->_highMem[0x0102];
 
   if (isDefined(config, "Hash Includes") == true)
    for (const auto& entry : config["Hash Includes"])
@@ -194,12 +196,32 @@ void GameInstance::updateDerivedValues()
 {
  framesPerState = 4;
  if ( (*guardPresent > 0) && (*guardDisappearMode == 0) ) framesPerState = 5;
+
+ *kidFrameDiff = *kidFrame - *kidPrevFrame;
+
+ kidPosYActual = (float)*kidPosY;
+
+ // If climbing down, add pos y. Otherwise subtract
+ if (*kidFrame >= 0x8D && *kidFrame <= 0x94 && *kidFrameDiff < 0) kidPosYActual += (0x94 - *kidFrame);
+ if (*kidFrame >= 0x8D && *kidFrame <= 0x94 && *kidFrameDiff > 0) kidPosYActual += 7.0f - (*kidFrame - 0x8D);
+
+ // If jumpclimb up, subtract pos y
+ if (*kidFrame >= 0x43 && *kidFrame <= 0x4F) kidPosYActual -= 16.0f - (0x4F - *kidFrame);
+
+ // If hanging, subtract pos y
+ if (*kidFrame == 0x50) kidPosYActual -= 20.0f;
+ if (*kidFrame >= 0x57 && *kidFrame <= 0x5B) kidPosYActual -= 25.0f - (0x5B - *kidFrame);
+
+ // Climbing up
+ if (*kidFrame >= 0x87 && *kidFrame < 0x8D) kidPosYActual -= 32.0f + 7.0f - (0x8D - *kidFrame);
 }
 
 std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
   size_t skippedFrames = 0;
   std::vector<INPUT_TYPE> moves;
+
+  *kidPrevFrame = *kidFrame;
 
   if (skipFrames == false)
   {
@@ -351,6 +373,7 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
   {
     if (_rules[ruleId]->_magnets[*drawnRoom].kidHorizontalMagnet.active == true) magnets.kidHorizontalMagnet = _rules[ruleId]->_magnets[*drawnRoom].kidHorizontalMagnet;
     if (_rules[ruleId]->_magnets[*drawnRoom].kidVerticalMagnet.active == true) magnets.kidVerticalMagnet = _rules[ruleId]->_magnets[*drawnRoom].kidVerticalMagnet;
+    magnets.kidDirectionMagnet = _rules[ruleId]->_magnets[*kidRoom].kidDirectionMagnet;
   }
 
  return magnets;
@@ -409,7 +432,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.kidHorizontalMagnet.intensity * -diff;
 
   // Evaluating kid magnet's reward on position Y
-  boundedValue = (float)*kidPosY;
+  boundedValue = (float)kidPosYActual;
   boundedValue = std::min(boundedValue, magnets.kidVerticalMagnet.max);
   boundedValue = std::max(boundedValue, magnets.kidVerticalMagnet.min);
   diff = -255.0f + std::abs(magnets.kidVerticalMagnet.center - boundedValue);
@@ -417,6 +440,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 
   // Rewarding level skipping
   if (*currentLevel == 12 && *isPaused == 2) reward += *currentLevel * 5000000.0f;
+
+  // Kid Direction Magnet
+  reward += *kidDirection == 0 ? -1.0 : 1.0  * magnets.kidDirectionMagnet;
 
   // Returning reward
   return reward;
@@ -434,7 +460,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
   LOG("[Jaffar]  + RNG State:              0x%X\n", *RNGState);
   LOG("[Jaffar]  + Global Timer:           %02u\n", *globalTimer);
-  LOG("[Jaffar]  + Kid Frame / Direction:  %02u %02u\n", *kidFrame, *kidDirection);
   LOG("[Jaffar]  + Frame Phase:            %02u / %02u\n", *framePhase, framesPerState);
   LOG("[Jaffar]  + Is Paused:              %02u\n", *isPaused);
   LOG("[Jaffar]  + Screen Trans / Drawn:   %02u / %02u\n", *screenTransition, *screenDrawn);
@@ -448,8 +473,10 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Exit Door:              %02u\n", *exitDoorState);
 
   LOG("[Jaffar]  + Kid Room:               %02u\n", *kidRoom);
+  LOG("[Jaffar]  + Kid Frame:              0x%02X (Prev: 0x%02X, Diff: %02d)\n", *kidFrame, *kidPrevFrame, *kidFrameDiff);
+  LOG("[Jaffar]  + Kid Direction:          %s\n", *kidDirection == 0 ? "Left" : "Right");
   LOG("[Jaffar]  + Kid Pos X:              %04d\n", *kidPosX);
-  LOG("[Jaffar]  + Kid Pos Y:              %02u\n", *kidPosY);
+  LOG("[Jaffar]  + Kid Pos Y:              %f (Base: %02u)\n", kidPosYActual, *kidPosY);
   LOG("[Jaffar]  + Kid Movement:           %02u\n", *kidMovement);
   LOG("[Jaffar]  + Kid Fall Wait:          %02u\n", *kidFallWait);
   LOG("[Jaffar]  + Kid HP:                 %02u\n", *kidHP);
@@ -515,4 +542,5 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   auto magnets = getMagnetValues(rulesStatus);
   if (std::abs(magnets.kidHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Kid Horizontal Magnet - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center, magnets.kidHorizontalMagnet.min, magnets.kidHorizontalMagnet.max);
   if (std::abs(magnets.kidVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Kid Vertical Magnet   - Intensity: %.1f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center, magnets.kidVerticalMagnet.min, magnets.kidVerticalMagnet.max);
+  if (std::abs(magnets.kidDirectionMagnet) > 0.0f)            LOG("[Jaffar]  + Kid Direction Magnet  - Intensity: %.1f\n", magnets.kidDirectionMagnet);
 }
