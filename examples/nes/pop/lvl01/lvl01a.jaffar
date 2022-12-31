@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "lvl01b.state"
+    "State File": "lvl01a.state"
   },
   
   "Game Configuration": 

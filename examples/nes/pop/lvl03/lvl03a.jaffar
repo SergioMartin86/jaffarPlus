@@ -33,7 +33,7 @@
     "State Database": 
     {
      "Max Size Lower Bound (Mb)": 100,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
@@ -312,6 +312,44 @@
    },
    
    {
+    "Label": 1300,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  80 }
+    ],
+    
+    "Satisfies": [ 1010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 50000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 400, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 4, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1301,
+    
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  150 }
+    ],
+    
+    "Satisfies": [ 1300 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 50000.0 },
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 4, "Center": 0, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 4, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
     "Label": 1509,
     
     "Conditions":
@@ -320,7 +358,7 @@
      { "Property": "Kid Position Y", "Op": "<", "Value":  80 }
     ],
     
-    "Satisfies": [ 1010 ],
+    "Satisfies": [ 1301 ],
     
     "Actions":
     [

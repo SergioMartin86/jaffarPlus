@@ -15,7 +15,7 @@
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
-#define _VERIFICATION_INSTANCES 10
+#define _VERIFICATION_INSTANCES 0
 
 void Train::run()
 {
