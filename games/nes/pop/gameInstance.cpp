@@ -234,18 +234,19 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
    _emu->advanceState(0);
    moves.push_back(0);
 
-   if (_emu->_nes->emu.ppu.isCorrectRender == false) *isBadRender = 1;
-   if (_emu->_nes->emu.isCorrectExecution == false) *isBadRender = 1;
+//   if (_emu->_nes->emu.ppu.isCorrectRender == false) *isBadRender = 1;
+//   if (_emu->_nes->emu.isCorrectExecution == false) *isBadRender = 1;
 
-   if (*isBadRender != 1) while (*framePhase != 1 || *isPaused != 2 || *screenTransition == 255)
+   //if (*isBadRender != 1)
+   while (*framePhase != 1 || *isPaused != 2 || *screenTransition == 255)
    {
     INPUT_TYPE newMove = *framePhase == 2 || *framePhase == 3 ? move : 0;
     if (move == 0b00010000 && *framePhase == 4) newMove = move;
     _emu->advanceState(newMove);
     moves.push_back(newMove);
 
-    if (_emu->_nes->emu.ppu.isCorrectRender == false) {  *isBadRender = 1; break; }
-    if (_emu->_nes->emu.isCorrectExecution == false) { *isBadRender = 1; break; }
+//    if (_emu->_nes->emu.ppu.isCorrectRender == false) {  *isBadRender = 1; break; }
+//    if (_emu->_nes->emu.isCorrectExecution == false) { *isBadRender = 1; break; }
 
     skippedFrames++;
     if (skippedFrames > 128) break;
