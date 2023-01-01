@@ -1,36 +1,45 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
- 
   "Emulator Configuration": 
   {
     "Rom File": "../pop.nes",
-    "State File": "jaffar.state"
-  },
-  
-  "State Configuration": 
-  {
-    "Max Difference Count": 0,
-    "Max Move Count": 1500
+    "State File": "lvl05a.state"
   },
   
   "Game Configuration": 
   {
-   "Hash Includes": [  ]
+   "Skip Frames": true,
+   "Timer Tolerance": 4,
+   "Hash Includes": [  ],
+   "Enable Pause": false
   },
+  
   
   "Jaffar Configuration": 
   {
-    "State Database":
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 100000
+      "Max Move Count": 3000,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 5000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 65000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Save Intermediate Results":
@@ -38,12 +47,15 @@
      "Enabled": true,
      "Frequency (s)": 1.0,
      "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol"
-    }
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
   },
   
   "Playback Configuration": 
   {
+     "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
@@ -67,8 +79,7 @@
     "Label": 1002,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  8 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  8 }
+     { "Property": "Kid Room", "Op": "==", "Value":  8 }
     ],
     
     "Satisfies": [ 1001 ],
@@ -87,8 +98,7 @@
     "Label": 1003,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  10 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  10 }
+     { "Property": "Kid Room", "Op": "==", "Value":  10 }
     ],
     
     "Satisfies": [ 1002 ],
@@ -107,8 +117,7 @@
     "Label": 1004,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  23 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  23 }
+     { "Property": "Kid Room", "Op": "==", "Value":  23 }
     ],
     
     "Satisfies": [ 1003 ],
@@ -143,7 +152,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  23 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  23 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
@@ -162,7 +170,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  10 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  10 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
@@ -183,7 +190,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  9 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  9 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
@@ -203,7 +209,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  6 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  6 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
@@ -224,7 +229,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  6 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  6 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
      { "Property": "Level 5 Gate Timer", "Op": ">", "Value":  0 }
     ],
@@ -244,7 +248,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  8 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  8 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
      { "Property": "Level 5 Gate Timer", "Op": ">", "Value":  0 }
     ],
@@ -266,7 +269,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  8 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  8 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
      { "Property": "Level 5 Gate Timer", "Op": ">", "Value":  0 },
      { "Property": "Kid Position Y", "Op": "==", "Value":  65 }
@@ -303,7 +305,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  6 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  6 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
      { "Property": "Level 5 Gate Timer", "Op": ">", "Value":  0 },
      { "Property": "Kid Position Y", "Op": "==", "Value":  65 }
@@ -326,7 +327,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  7 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  7 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
      { "Property": "Kid Position Y", "Op": "==", "Value":  65 }
     ],
@@ -348,7 +348,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  7 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  7 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
      { "Property": "Kid Position X", "Op": "<", "Value":  190 }
     ],
@@ -370,7 +369,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  11 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  11 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
@@ -391,7 +389,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  1 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  1 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
@@ -412,7 +409,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  15 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  15 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
@@ -433,7 +429,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  14 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  14 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
@@ -454,7 +449,6 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  17 },
-     { "Property": "Drawn Room", "Op": "==", "Value":  17 },
      { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 }
     ],
     
@@ -474,10 +468,7 @@
     "Label": 1099,
     "Conditions":
     [
-     { "Property": "Game State", "Op": "==", "Value":  8 },
-     { "Property": "Current Level", "Op": "==", "Value": 5  },
-     { "Property": "Is Paused", "Op": "==", "Value":  2 },
-     { "Property": "Frame Phase", "Op": "==", "Value":  2 }
+     { "Property": "Current Level", "Op": ">", "Value": 4  }
     ],
     
     "Satisfies": [ ],
@@ -492,10 +483,7 @@
     "Label": 1199,
     "Conditions":
     [
-     { "Property": "Kid Frame", "Op": "==", "Value":  220 },
-     { "Property": "Level 4 Exit Door State", "Op": "==", "Value":  34 },
-     { "Property": "Kid Room", "Op": "==", "Value":  17 },
-     { "Property": "Drawn Room", "Op": "==", "Value": 17 }
+     { "Property": "Kid Frame", "Op": "==", "Value":  220 }
     ],
     
     "Satisfies": [ ],
@@ -540,37 +528,7 @@
     "Label": 1121,
     "Conditions":
     [
-     { "Property": "Is Correct Render", "Op": "==", "Value":  0 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-
-   {
-    "Label": 1122,
-    "Conditions":
-    [
-     { "Property": "Is Paused", "Op": "!=", "Value":  2 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1123,
-    "Conditions":
-    [
-     { "Property": "Kid Frame", "Op": "==", "Value": 193  }
+     { "Property": "Is Bad Render", "Op": "==", "Value":  1 }
     ],
     
     "Satisfies": [ ],
