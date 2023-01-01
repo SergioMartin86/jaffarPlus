@@ -32,8 +32,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000, 
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Lower Bound (Mb)": 20000, 
+     "Max Size Upper Bound (Mb)": 130000
     },
     
     "Hash Database":
@@ -470,22 +470,6 @@
     [
      { "Type": "Trigger Fail" }
     ]
-   },
-
-   {
-    "Label": 1124,
-    "Conditions":
-    [
-      { "Property": "Is Bad Render", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
    }
-   
   ]  
 }
