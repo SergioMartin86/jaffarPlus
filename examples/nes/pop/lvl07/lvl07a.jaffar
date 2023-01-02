@@ -32,8 +32,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 15000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
@@ -108,8 +108,8 @@
      { "Type": "Add Reward", "Value": 20000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 1, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 1, "Center": 0, "Min": 0, "Max": 400 },
-     { "Type": "Set Kid Horizontal Magnet", "Intensity": 0.0, "Room": 6, "Center": 200, "Min": 0, "Max": 400 },
-     { "Type": "Set Kid Vertical Magnet", "Intensity": 1.0, "Room": 6, "Center": 400, "Min": 0, "Max": 400 }
+     { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 6, "Center": 200, "Min": 0, "Max": 400 },
+     { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 6, "Center": 400, "Min": 0, "Max": 400 }
     ]
    },
    
@@ -126,7 +126,7 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Add Reward", "Value": 30000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 6, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 6,  "Center": 0, "Min": 0, "Max": 400 }
     ]
@@ -145,7 +145,7 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Add Reward", "Value": 30000.0 },
      { "Type": "Set Kid Horizontal Magnet", "Intensity": 1.0, "Room": 6, "Center": 0, "Min": 0, "Max": 400 },
      { "Type": "Set Kid Vertical Magnet", "Intensity": 0.0, "Room": 6,  "Center": 0, "Min": 0, "Max": 400 }
     ]

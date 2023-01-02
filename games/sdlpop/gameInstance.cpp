@@ -156,11 +156,11 @@ _uint128_t GameInstance::computeHash() const
  hash.Update(gameState.exit_room_timer);
 
  // Manual hashing
- //hash.Update(gameState.level.guards_x);
+ hash.Update(gameState.level.guards_x);
  hash.Update(gameState.level.guards_dir);
- //hash.Update(gameState.level.guards_seq_lo);
- //hash.Update(gameState.level.guards_seq_hi);
- //hash.Update(gameState.level.guards_tile);
+ hash.Update(gameState.level.guards_seq_lo);
+ hash.Update(gameState.level.guards_seq_hi);
+ hash.Update(gameState.level.guards_tile);
 
  if (_hashKidCurrentHp == true) hash.Update(gameState.hitp_curr);
  if (_hashGuardCurrentHp == true) hash.Update(gameState.guardhp_curr);
@@ -201,13 +201,23 @@ _uint128_t GameInstance::computeHash() const
  return result;
 }
 
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
+{
+ std::vector<INPUT_TYPE> moves;
+
+ _emu->advanceState(move);
+ moves.push_back(move);
+
+ return moves;
+}
+
 void GameInstance::updateDerivedValues()
 {
 
 }
 
 // Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  // For level 1, if kid touches ground and music plays, try restarting level
  if (gameState.Kid.frame == 109 && gameState.need_level1_music == 33)

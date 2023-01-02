@@ -1,29 +1,45 @@
 {
-   "Jaffar Configuration": 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../nm.nes",
+    "State File": "race00.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Skip Frames": true,
+   "Timer Tolerance": 6,
+   "Hash Includes": [  ],
+   "Enable Pause": false
+  },
+  
+  
+  "Jaffar Configuration": 
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
     
     "State Configuration": 
-    { 
-      "Max Move Count": 8000,
+    {
+      "Max Move Count": 5500,
       "Store Move History": true,
       "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 2000,
+      "XDelta3 Max Differences": 5000,
       "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 25000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 30000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 6000
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Save Intermediate Results":
@@ -37,20 +53,9 @@
      }
   },
   
-  "Emulator Configuration": 
-  {
-    "Rom File": "../nm.nes",
-    "State File": "race00.state"
-  },
-  
-  "Game Configuration": 
-  {
-   "Timer Tolerance": 0
-  },
-    
   "Playback Configuration": 
   {
-   "Overlay Path": "../../../../platforms/nes/overlay"
+     "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
