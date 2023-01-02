@@ -36,10 +36,11 @@ class GameInstance : public GameInstanceBase
   magnetInfo_t getKidMagnetValues(const bool* rulesStatus, const int room) const;
   magnetInfo_t getGuardMagnetValues(const bool* rulesStatus, const int room) const;
 
+  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   _uint128_t computeHash() const override;
   void updateDerivedValues() override;
-  std::vector<std::string> getPossibleMoves() const override;
+  std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
   void setRNGState(const uint64_t RNGState) override;

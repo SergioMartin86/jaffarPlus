@@ -11,7 +11,7 @@
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ samusAnimation
+ #define _KEY_VALUE_ gameState.kidFrame
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -92,7 +92,7 @@ void Train::run()
      std::sort(vec.begin(), vec.end(), moveCountComparerString);
      auto itr = vec.begin();
      std::string simpleMove = simplifyMove(*itr);
-     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "samusAnimation", key.first, simpleMove.c_str());
+     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "gameState.kidFrame", key.first, simpleMove.c_str());
      itr++;
      for (; itr != vec.end(); itr++)
      {

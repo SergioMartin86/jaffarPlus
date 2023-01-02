@@ -1,29 +1,38 @@
 {
-   "Jaffar Configuration": 
+  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
+ 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../contra.nes",
+    "State File": "jaffar.state"
+  },
+  
+   "State Configuration": 
+  {
+    "Max Difference Count": 1500,
+    "Max Move Count": 3500
+  },
+  
+  "Game Configuration": 
+  {
+  },
+  
+  "Jaffar Configuration": 
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
     
-    "State Configuration": 
-    { 
-      "Max Move Count": 8000,
-      "Store Move History": true,
-      "XDelta3 Enabled": false,
-      "XDelta3 Max Differences": 2000,
-      "XDelta3 Use Zlib Compression": true
-    },
-     
-    "State Database": 
+    "State Database":
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 60000
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 150000
     },
     
     "Hash Database":
     { 
      "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 6000
+     "Max Size Upper Bound (Mb)": 3000
     },
     
     "Save Intermediate Results":
@@ -34,20 +43,9 @@
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
-     }
+    }
   },
   
-  "Emulator Configuration": 
-  {
-    "Rom File": "../nm.nes",
-    "State File": "race00b.state"
-  },
-  
-  "Game Configuration": 
-  {
-   "Timer Tolerance": 0
-  },
-    
   "Playback Configuration": 
   {
    "Overlay Path": "../../../../platforms/nes/overlay"
