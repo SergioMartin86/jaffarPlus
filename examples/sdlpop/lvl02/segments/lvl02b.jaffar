@@ -40,7 +40,7 @@
     
     "Hash Database":
     { 
-     "Max Size Lower Bound (Mb)": 12000,
+     "Max Size Lower Bound (Mb)": 1000,
      "Max Size Upper Bound (Mb)": 20000
     },
     

@@ -402,7 +402,7 @@
     ]
    },
    
-{
+  {
     "Label": 2007,
     "Conditions":
     [
@@ -432,7 +432,8 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 11, "Intensity": 1.0, "Center": 55 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 11, "Intensity": 1.0, "Center": 55 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
@@ -441,7 +442,8 @@
     "Conditions":
     [
      { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Kid Room", "Op": "==", "Value":  11 }
+     { "Property": "Kid Room", "Op": "==", "Value":  11 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  60 }
     ],
     
     "Satisfies": [ 2008 ],
