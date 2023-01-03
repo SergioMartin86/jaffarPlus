@@ -2,7 +2,13 @@
 
 GameRule::GameRule() : Rule()
 {
- // Rule initialization
+ for(size_t i = 0; i < ROOM_COUNT; i++)
+ {
+  _magnets[i].kidHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .active = false };
+  _magnets[i].kidVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .active = false };
+  _magnets[i].guardHorizontalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .active = false };
+  _magnets[i].guardVerticalMagnet = genericMagnet_t { .intensity = 0.0f, .center = 0.0f, .active = false };
+ }
 }
 
 bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
@@ -14,92 +20,54 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
   // Running the action, depending on the type
   bool recognizedActionType = false;
 
-  if (actionType == "Add Reward")
-  {
-    if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-    _reward = actionJs["Value"].get<float>();
-    recognizedActionType = true;
-  }
+  if (actionType == "Set Kid Horizontal Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+    uint8_t room = actionJs["Room"].get<uint8_t>();
+    _magnets[room].kidHorizontalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .active = true };
+     recognizedActionType = true;
+   }
 
-  // Storing fail state
-  if (actionType == "Trigger Fail")
-  {
-    _isFailRule = true;
+   if (actionType == "Set Kid Vertical Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+    uint8_t room = actionJs["Room"].get<uint8_t>();
+    _magnets[room].kidVerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .active = true };
     recognizedActionType = true;
-  }
+   }
 
-  // Storing win state
-  if (actionType == "Trigger Win")
-  {
-    _isWinRule = true;
-    recognizedActionType = true;
-  }
+   if (actionType == "Set Guard Horizontal Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+    uint8_t room = actionJs["Room"].get<uint8_t>();
+    _magnets[room].guardHorizontalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .active = true };
+     recognizedActionType = true;
+   }
 
-  if (actionType == "Set Kid Horizontal Magnet Intensity")
-  {
-    magnet_t newMagnet;
-    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
-    if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-    newMagnet.value = actionJs["Value"].get<float>();
-    newMagnet.room = actionJs["Room"].get<byte>();
-    _kidMagnetIntensityX.push_back(newMagnet);
+   if (actionType == "Set Guard Vertical Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+    uint8_t room = actionJs["Room"].get<uint8_t>();
+    _magnets[room].guardVerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>(), .active = true };
     recognizedActionType = true;
-  }
+   }
 
-  if (actionType == "Set Kid Horizontal Magnet Position")
-  {
-    magnet_t newMagnet;
-    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
-    if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-    newMagnet.value = actionJs["Value"].get<float>();
-    newMagnet.room = actionJs["Room"].get<byte>();
-    _kidMagnetPositionX.push_back(newMagnet);
+   if (actionType == "Set Kid Direction Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+    uint8_t room = actionJs["Room"].get<uint8_t>();
+    _magnets[room].kidDirectionMagnet = actionJs["Intensity"].get<float>();
     recognizedActionType = true;
-  }
-
-  if (actionType == "Set Kid Vertical Magnet Intensity")
-  {
-    magnet_t newMagnet;
-    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
-    if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-    newMagnet.value = actionJs["Value"].get<float>();
-    newMagnet.room = actionJs["Room"].get<byte>();
-    _kidMagnetIntensityY.push_back(newMagnet);
-    recognizedActionType = true;
-  }
-
-  if (actionType == "Set Guard Horizontal Magnet Intensity")
-  {
-    magnet_t newMagnet;
-    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
-    if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-    newMagnet.value = actionJs["Value"].get<float>();
-    newMagnet.room = actionJs["Room"].get<byte>();
-    _guardMagnetIntensityX.push_back(newMagnet);
-    recognizedActionType = true;
-  }
-
-  if (actionType == "Set Guard Horizontal Magnet Position")
-  {
-    magnet_t newMagnet;
-    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
-    if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-    newMagnet.value = actionJs["Value"].get<float>();
-    newMagnet.room = actionJs["Room"].get<byte>();
-    _guardMagnetPositionX.push_back(newMagnet);
-    recognizedActionType = true;
-  }
-
-  if (actionType == "Set Guard Vertical Magnet Intensity")
-  {
-    magnet_t newMagnet;
-    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
-    if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-    newMagnet.value = actionJs["Value"].get<float>();
-    newMagnet.room = actionJs["Room"].get<byte>();
-    _guardMagnetIntensityY.push_back(newMagnet);
-    recognizedActionType = true;
-  }
+   }
 
   return recognizedActionType;
 }

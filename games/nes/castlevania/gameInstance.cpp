@@ -143,7 +143,6 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
    allowB = config["Allow B"].get<bool>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Allow B' was not defined\n");
 
-
   // Initialize derivative values
   updateDerivedValues();
 }

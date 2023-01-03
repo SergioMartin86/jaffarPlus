@@ -7,20 +7,17 @@
 struct magnet_t
 {
   byte room;
-  float value;
+  float intensity;
+  float center;
 };
 
 class GameRule : public Rule
 {
  public:
 
- // Stores magnet information
- std::vector<magnet_t> _kidMagnetPositionX;
- std::vector<magnet_t> _kidMagnetIntensityX;
- std::vector<magnet_t> _kidMagnetIntensityY;
- std::vector<magnet_t> _guardMagnetPositionX;
- std::vector<magnet_t> _guardMagnetIntensityX;
- std::vector<magnet_t> _guardMagnetIntensityY;
+ uint8_t _customValue = 0;
+ bool _customValueActive = false;
+ magnetSet_t _magnets[ROOM_COUNT];
 
  GameRule();
  ~GameRule() = default;

@@ -554,7 +554,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   if (rulesStatus[ruleId] == true)
    reward += _rules[ruleId]->_reward;
 
- // Getting magnet values for the kid
+ // Getting magnet value
  auto magnets = getMagnetValues(rulesStatus);
 
  // Container for bounded value and difference with center

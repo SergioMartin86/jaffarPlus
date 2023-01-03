@@ -8,6 +8,26 @@
 #include <vector>
 #include <utils.hpp>
 
+static std::vector<std::vector<uint8_t>> cutsceneDelays =
+ {
+/* 00 */  {},
+/* 01 */  {},
+/* 02 */  {},
+/* 03 */  {3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2},
+/* 04 */  {},
+/* 05 */  {3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2},
+/* 06 */  {},
+/* 07 */  {3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2},
+/* 08 */  {3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2},
+/* 09 */  {},
+/* 10 */  {},
+/* 11 */  {3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2},
+/* 12 */  {},
+/* 13 */  {},
+/* 14 */  {},
+/* 15 */  {3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2}
+ };
+
 class EmuInstance : public EmuInstanceBase
 {
  public:
@@ -16,9 +36,13 @@ class EmuInstance : public EmuInstanceBase
  std::string _levelsFilePath;
  std::string _stateFilePath;
 
+ std::vector<std::string> levelFiles;
+ std::vector<std::string> levelData;
+
  dword _overrideRNGValue;
  word _overrideLooseSound;
  bool _overrideRNGFlag;
+ bool _initializeCopyProt;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
@@ -57,7 +81,32 @@ class EmuInstance : public EmuInstanceBase
   // Setting levels.dat path
   sprintf(levels_file, "%s", _levelsFilePath.c_str());
 
-  init_copyprot();
+  levelFiles.resize(16);
+  levelFiles[1] = std::string("lvl01.sav");
+  levelFiles[2] = std::string("lvl02.sav");
+  levelFiles[3] = std::string("lvl03.sav");
+  levelFiles[4] = std::string("lvl04.sav");
+  levelFiles[5] = std::string("lvl05.sav");
+  levelFiles[6] = std::string("lvl06.sav");
+  levelFiles[7] = std::string("lvl07.sav");
+  levelFiles[8] = std::string("lvl08.sav");
+  levelFiles[9] = std::string("lvl09.sav");
+  levelFiles[10] = std::string("lvl10.sav");
+  levelFiles[11] = std::string("lvl11.sav");
+  levelFiles[12] = std::string("lvl12.sav");
+  levelFiles[13] = std::string("lvl13.sav");
+  levelFiles[14] = std::string("lvl13.sav");
+  levelFiles[15] = std::string("lvl15.sav");
+
+  levelData.resize(16);
+  for (size_t i = 1; i <= 15; i++)
+  {
+   levelData[i].resize(_STATE_DATA_SIZE_TRAIN);
+   memset(levelData[i].data(), 0, _STATE_DATA_SIZE_TRAIN);
+   loadStringFromFile(levelData[i], levelFiles[i].c_str());
+  }
+
+//  init_copyprot();
 //  prandom(1);
   // Setting argument config
   is_validate_mode = true;
@@ -117,6 +166,9 @@ class EmuInstance : public EmuInstanceBase
    _overrideRNGFlag = config["Override RNG Value"].get<bool>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Override RNG Value' was not defined\n");
 
+  if (isDefined(config, "Initialize Copyprot") == true)
+   _initializeCopyProt = config["Initialize Copyprot"].get<bool>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Initialize Copyprot' was not defined\n");
 
   // Loading state file
   loadStateFile(_stateFilePath);
@@ -190,6 +242,9 @@ class EmuInstance : public EmuInstanceBase
    gameState.random_seed = _overrideRNGValue;
    gameState.last_loose_sound = _overrideLooseSound;
   }
+
+  if (_initializeCopyProt) init_copyprot();
+
  }
 
  void saveStateFile(const std::string& _stateFilePath) const override
@@ -278,13 +333,26 @@ class EmuInstance : public EmuInstanceBase
   if (move & 0b00000010) key_states[SDL_SCANCODE_DOWN] = 1;
   if (move & 0b00000001) key_states[SDL_SCANCODE_RSHIFT] = 1;
 
-  guardhp_delta = 0;
-  hitp_delta = 0;
-  timers();
-  play_frame();
+  gameState.globalStepCounter++;
 
-  if (gameState.rem_tick == 0) gameState.rem_tick = 600;
-  gameState.rem_tick--;
+  if (gameState.current_level != gameState.next_level)
+  if (gameState.currentCutsceneDelay < cutsceneDelays[gameState.current_level].size())
+  if (move == 0)
+  {
+    for (int i = 0; i < cutsceneDelays[gameState.current_level][gameState.currentCutsceneDelay]; i++)  gameState.random_seed = advanceRNGState(gameState.random_seed);
+    gameState.currentCutsceneDelay++;
+    gameState.cumulativeCutsceneDelay++;
+    return;
+  }
+
+  if (gameState.current_level == 1 && gameState.next_level == 2) gameState.next_level = 15;
+  if (gameState.current_level != 15 && gameState.next_level != 15) gameState.rem_tick--;
+
+  if (gameState.rem_tick == 0)
+  {
+   gameState.rem_tick = 720;
+   gameState.rem_min--;
+  }
 
   if (is_restart_level == 1)
   {
@@ -302,19 +370,39 @@ class EmuInstance : public EmuInstanceBase
   // If level has changed, then load it
   if (gameState.current_level != gameState.next_level)
   {
-   if (gameState.current_level == custom->copyprot_level-1 && gameState.next_level == custom->copyprot_level)
-    gameState.next_level = 15;
+    if (gameState.current_level == 15) gameState.next_level = 2;
 
-   if (gameState.current_level == 15)
-    gameState.next_level = custom->copyprot_level;
+    gameState.currentCutsceneDelay = 0;
 
-   // Preventing changing level on win
-   // startLevel(gameState.next_level);
-   gameState.current_level = gameState.next_level;
+    // Preventing changing level on win
+    gameState.current_level = gameState.next_level;
+    auto tmpRng = gameState.random_seed;
+    auto tmpSound = gameState.last_loose_sound;
+    auto tmpRemTicks = gameState.rem_tick;
+    auto tmpRemMins = gameState.rem_min;
+    auto tmpCurrentCutsceneDelay = gameState.currentCutsceneDelay;
+    auto tmpCumulativeCutsceneDelay = gameState.cumulativeCutsceneDelay;
+    auto tmpKidPrevframe = gameState.kidPrevframe;
+    auto tmpGlobalStepCounter = gameState.globalStepCounter;
 
-   // Handle cutscenes
-   //if (gameState.next_level == 2) for (size_t i = 0; i < 3; i++) gameState.random_seed = advanceRNGState(gameState.random_seed);
+    deserializeState((uint8_t*)levelData[gameState.next_level].data());
+
+    gameState.random_seed = tmpRng;
+    gameState.last_loose_sound = tmpSound;
+    gameState.rem_tick = tmpRemTicks;
+    gameState.rem_min = tmpRemMins;
+    gameState.currentCutsceneDelay = tmpCurrentCutsceneDelay;
+    gameState.cumulativeCutsceneDelay = tmpCumulativeCutsceneDelay;
+    gameState.kidPrevframe = tmpKidPrevframe;
+    gameState.globalStepCounter = tmpGlobalStepCounter;
+
+    draw_level_first();
   }
+
+  guardhp_delta = 0;
+  hitp_delta = 0;
+  timers();
+  play_frame();
 
   is_restart_level = 0;
  }

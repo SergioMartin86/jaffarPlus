@@ -11,31 +11,24 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 8,
+   "Timer Tolerance": 4,
    "Property Hash Types": [ "Kid Current HP", "Guard Current HP"  ],
    "Static Tile Hash Types":
    [ 
-    { "Room": 1, "Tile": 21, "Comment": "Loose Tile on Top" },
-    { "Room": 5, "Tile": 1, "Comment": "Debris" }
+    { "Room": 1, "Tile": 27, "Comment": "Loose Tile on Top" },
+    { "Room": 2, "Tile": 17, "Comment": "Debris" }
    ],
    
    "Falling Tiles Hash Types": 
    [
-       { "Room": 11, "Column": 0, "Type": "Full", "Description": "Falling Tile" }
+     { "Room": 1, "Column": 24, "Type": "Full" },
+     { "Room": 2, "Column": 24, "Type": "Full" }
    ],
    
    "Active Objects Hash Types":
    [
-    { "Room": 5, "Tile": 10, "Type": "Full", "Description": "Last Gate" },
-    { "Room": 1, "Tile": 28, "Type": "Full", "Description": "First Gate" },
-    { "Room": 1, "Tile": 30, "Type": "Full", "Description": "Second Gate" },
-    { "Room": 1, "Tile": 10, "Type": "Full", "Description": "Third Gate" },
-    { "Room": 1, "Tile": 10, "Type": "Full", "Description": "Fourth Gate" },
-    { "Room": 2, "Tile": 30, "Type": "Full", "Description": "Tile" },
-    { "Room": 2, "Tile": 21, "Type": "Full", "Description": "Tile" },
-    { "Room": 1, "Tile": 9, "Type": "Full", "Description": "Tile" },
-    { "Room": 1, "Tile": 21, "Type": "Full", "Comment": "Loose Tile on Top" },
-    { "Room": 8, "Tile": 24, "Type": "Full", "Comment": "Exit Level Door" }
+    { "Room": 1, "Tile": 27, "Type": "Full" },
+    { "Room": 9, "Tile": 14, "Type": "Full" }
     
    ]
   },
