@@ -17,11 +17,12 @@
 
 #define _VERIFICATION_INSTANCES 0
 
-void Train::run()
+bool Train::run()
 {
   auto searchTimeBegin = std::chrono::high_resolution_clock::now();      // Profiling
   auto currentStepTimeBegin = std::chrono::high_resolution_clock::now(); // Profiling
   uint16_t firstWinStep = 0;
+  bool foundSolution = false;
 
   while (_hasFinalized == false)
   {
@@ -115,6 +116,7 @@ void Train::run()
    printf("[Jaffar] Winning state reached in %u moves (%.3fs), finishing...\n", _bestWinStateStep, _searchTotalTime / 1.0e+9);
    printf("[Jaffar]  + Winning Frame Info:\n");
 
+   foundSolution = true;
    _gameInstances[0]->pushState(_bestWinStateData);
    _gameInstances[0]->printStateInfo(_bestWinState->getRuleStatus());
 
@@ -145,6 +147,8 @@ void Train::run()
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    }
   }
+
+  return foundSolution;
 }
 
 void Train::limitStateDatabase(std::vector<State*>& stateDB, size_t limit)
@@ -986,7 +990,10 @@ int main(int argc, char *argv[])
 
   // Running Search
  printf("[Jaffar] Running...\n");
- train.run();
+ auto success = train.run();
+
+ if (success) return 0;
+ return 1;
 }
 
 #endif
