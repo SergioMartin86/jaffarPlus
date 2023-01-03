@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameInstanceBase.hpp"
+#define ROOM_COUNT 25
 
 enum hashType
 {
@@ -9,12 +10,28 @@ enum hashType
   FULL,
 };
 
-// Struct to hold all of the frame's magnet information
-struct magnetInfo_t
+// Datatype to describe a generic magnet
+struct genericMagnet_t {
+ float intensity = 0.0f; // How strong the magnet is
+ uint8_t room = 0; // Which room does the magnet correspond to
+ float center = 0.0f;  // What is the central point of attraction
+ bool active = false; // Indicates whether the value for this magnet has specified
+};
+
+// Datatype to describe a magnet
+struct magnetSet_t {
+ genericMagnet_t kidHorizontalMagnet;
+ genericMagnet_t kidVerticalMagnet;
+ genericMagnet_t guardHorizontalMagnet;
+ genericMagnet_t guardVerticalMagnet;
+ float kidDirectionMagnet = 0.0f;
+};
+
+struct tileWatch_t
 {
- float positionX;
- float intensityX;
- float intensityY;
+ std::map<int, hashType> _hashTypeTrobs;
+ std::vector<int> _hashTypeStatic;
+ std::map<std::pair<int, int>, hashType> _hashTypeMobs;
 };
 
 class GameInstance : public GameInstanceBase
@@ -27,14 +44,15 @@ class GameInstance : public GameInstanceBase
   bool _hashTrobCount;
 
   uint8_t timerTolerance;
+  float kidPosY;
+  int kidFrameDiff;
 
-  std::map<int, hashType> _hashTypeTrobs;
-  std::vector<int> _hashTypeStatic;
-  std::map<std::pair<int, int>, hashType> _hashTypeMobs;
+  std::vector<tileWatch_t> levelTileHashes;
+
+  bool initializeCopyprot;
 
   // Function to get magnet information
-  magnetInfo_t getKidMagnetValues(const bool* rulesStatus, const int room) const;
-  magnetInfo_t getGuardMagnetValues(const bool* rulesStatus, const int room) const;
+  magnetSet_t getMagnetValues(const bool* rulesStatus) const;
 
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);

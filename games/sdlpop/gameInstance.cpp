@@ -10,6 +10,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   _hashKidCurrentHp = false;
   _hashGuardCurrentHp = false;
   _hashTrobCount = false;
+
+  levelTileHashes.resize(16);
+
   if (isDefined(config, "Property Hash Types") == true)
   {
    for (const auto& entry : config["Property Hash Types"])
@@ -25,12 +28,20 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   {
    for (const auto& entry : config["Falling Tiles Hash Types"])
    {
+    int level = -1;
+    if (isDefined(entry, "Level") == true)
+    {
+     if (entry["Room"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Falling Tiles Hash Types level must be an integer.\n");
+     level = entry["Level"].get<int>();
+    }
+    else EXIT_WITH_ERROR("[Error] Game Configuration 'Falling Tiles Hash Types', 'Level' entry was not defined\n");
+
     std::string hashType = entry["Type"].get<std::string>();
     int room = entry["Room"].get<int>();
     int column = entry["Column"].get<int>();
     auto idx = std::make_pair(room, column);
-    if (hashType == "Index Only") _hashTypeMobs[idx] = INDEX_ONLY;
-    if (hashType == "Full") _hashTypeMobs[idx] = FULL;
+    if (hashType == "Index Only") levelTileHashes[level]._hashTypeMobs[idx] = INDEX_ONLY;
+    if (hashType == "Full") levelTileHashes[level]._hashTypeMobs[idx] = FULL;
    }
   }
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Falling Tiles Hash Types' was not defined\n");
@@ -40,6 +51,14 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
    for (const auto& entry : config["Active Objects Hash Types"])
    {
     std::string hashType = entry["Type"].get<std::string>();
+
+    int level = -1;
+    if (isDefined(entry, "Level") == true)
+    {
+     if (entry["Room"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Active Objects Hash Types level must be an integer.\n");
+     level = entry["Level"].get<int>();
+    }
+    else EXIT_WITH_ERROR("[Error] Game Configuration 'Active Objects Hash Types', 'Level' entry was not defined\n");
 
     int room = -1;
     if (isDefined(entry, "Room") == true)
@@ -58,8 +77,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
     else EXIT_WITH_ERROR("[Error] Game Configuration 'Active Objects Hash Types', 'Tile' entry was not defined\n");
 
     int idx = (room-1)*30 + (tile-1);
-    if (hashType == "Index Only") _hashTypeTrobs[idx] = INDEX_ONLY;
-    if (hashType == "Full") _hashTypeTrobs[idx] = FULL;
+    if (hashType == "Index Only") levelTileHashes[level]._hashTypeTrobs[idx] = INDEX_ONLY;
+    if (hashType == "Full") levelTileHashes[level]._hashTypeTrobs[idx] = FULL;
    }
 
   }
@@ -69,6 +88,14 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   {
    for (const auto& entry : config["Static Tile Hash Types"])
    {
+    int level = -1;
+    if (isDefined(entry, "Level") == true)
+    {
+     if (entry["Room"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Static Tile Hash Types level must be an integer.\n");
+     level = entry["Level"].get<int>();
+    }
+    else EXIT_WITH_ERROR("[Error] Game Configuration 'Static Tile Hash Types', 'Level' entry was not defined\n");
+
      int room = -1;
      if (isDefined(entry, "Room") == true)
      {
@@ -87,7 +114,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
      int idx = (room-1)*30 + (tile-1);
 
-    _hashTypeStatic.push_back(idx);
+     levelTileHashes[level]._hashTypeStatic.push_back(idx);
    }
   }
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Static Tile Hash Types' was not defined\n");
@@ -105,7 +132,7 @@ _uint128_t GameInstance::computeHash() const
  MetroHash128 hash;
 
  // If timer tolerance is set, use the game tick for hashing
- if (timerTolerance > 0) hash.Update(gameState.rem_tick % (timerTolerance+1));
+ if (timerTolerance > 0) hash.Update(gameState.globalStepCounter % (timerTolerance+1));
 
  // Adding fixed hash elements
  hash.Update(gameState.drawn_room);
@@ -113,7 +140,7 @@ _uint128_t GameInstance::computeHash() const
  hash.Update(gameState.Kid);
  if (gameState.Kid.room == gameState.Guard.room) hash.Update(gameState.Guard);
  if (gameState.Kid.room == gameState.Char.room) hash.Update(gameState.Char);
- if (gameState.Kid.room == gameState.Opp.room) hash.Update(gameState.Opp);
+// if (gameState.Kid.room == gameState.Opp.room) hash.Update(gameState.Opp);
  hash.Update(gameState.grab_timer);
  hash.Update(gameState.holding_sword);
  hash.Update(gameState.united_with_shadow);
@@ -156,11 +183,16 @@ _uint128_t GameInstance::computeHash() const
  hash.Update(gameState.exit_room_timer);
 
  // Manual hashing
- hash.Update(gameState.level.guards_x);
- hash.Update(gameState.level.guards_dir);
- hash.Update(gameState.level.guards_seq_lo);
- hash.Update(gameState.level.guards_seq_hi);
- hash.Update(gameState.level.guards_tile);
+// hash.Update(gameState.level.guards_x);
+// hash.Update(gameState.level.guards_dir);
+// hash.Update(gameState.level.guards_seq_lo);
+// hash.Update(gameState.level.guards_seq_hi);
+// hash.Update(gameState.level.guards_tile);
+
+ // Artificial items
+ hash.Update(gameState.currentCutsceneDelay);
+ hash.Update(gameState.cumulativeCutsceneDelay);
+ hash.Update(gameState.kidPrevframe);
 
  if (_hashKidCurrentHp == true) hash.Update(gameState.hitp_curr);
  if (_hashGuardCurrentHp == true) hash.Update(gameState.guardhp_curr);
@@ -171,9 +203,9 @@ _uint128_t GameInstance::computeHash() const
  {
   const auto &mob = gameState.mobs[i];
   const auto idx = std::make_pair(mob.room, mob.xh);
-  if (_hashTypeMobs.count(idx))
+  if (levelTileHashes[gameState.current_level]._hashTypeMobs.count(idx))
   {
-   const auto hashType = _hashTypeMobs.at(idx);
+   const auto hashType = levelTileHashes[gameState.current_level]._hashTypeMobs.at(idx);
    if (hashType == INDEX_ONLY) { hash.Update(mob.room); hash.Update(mob.xh); }
    if (hashType == FULL)  hash.Update(mob);
   }
@@ -185,16 +217,16 @@ _uint128_t GameInstance::computeHash() const
    const auto &trob = gameState.trobs[i];
    const auto idx = (trob.room - 1) * 30 + trob.tilepos;
 
-   if (_hashTypeTrobs.count(idx))
+   if (levelTileHashes[gameState.current_level]._hashTypeTrobs.count(idx))
    {
-    const auto hashType = _hashTypeTrobs.at(idx);
+    const auto hashType = levelTileHashes[gameState.current_level]._hashTypeTrobs.at(idx);
     if (hashType == INDEX_ONLY) hash.Update(idx * 255);
     if (hashType == FULL) { hash.Update(gameState.level.bg[idx] + idx * 255 ); }
    }
  }
 
  // Computing hash for static objects. They only change on tile type, hence we only read FG
- for (const auto idx : _hashTypeStatic)  hash.Update(gameState.level.fg[idx] + idx * 255);
+ for (const auto idx : levelTileHashes[gameState.current_level]._hashTypeStatic)  hash.Update(gameState.level.fg[idx] + idx * 255);
 
  _uint128_t result;
  hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -203,6 +235,8 @@ _uint128_t GameInstance::computeHash() const
 
 std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
+ gameState.kidPrevframe = gameState.Kid.frame;
+
  std::vector<INPUT_TYPE> moves;
 
  _emu->advanceState(move);
@@ -213,12 +247,31 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 
 void GameInstance::updateDerivedValues()
 {
+ kidFrameDiff = gameState.Kid.frame - gameState.kidPrevframe;
+ kidPosY = (float)gameState.Kid.y;
 
+ // If climbing down, add pos y. Otherwise subtract
+ if (gameState.Kid.frame >= 0x8D && gameState.Kid.frame <= 0x94 && kidFrameDiff < 0) kidPosY += (0x94 - gameState.Kid.frame);
+ if (gameState.Kid.frame >= 0x8D && gameState.Kid.frame <= 0x94 && kidFrameDiff > 0) kidPosY += 7.0f - (gameState.Kid.frame - 0x8D);
+
+ // If jumpclimb up, subtract pos y
+ if (gameState.Kid.frame >= 0x43 && gameState.Kid.frame <= 0x4F) kidPosY -= 16.0f - (0x4F - gameState.Kid.frame);
+
+ // If hanging, subtract pos y
+ if (gameState.Kid.frame == 0x50) kidPosY -= 20.0f;
+ if (gameState.Kid.frame >= 0x57 && gameState.Kid.frame <= 0x5B) kidPosY -= 25.0f - (0x5B - gameState.Kid.frame);
+
+ // Climbing up
+ if (gameState.Kid.frame >= 0x87 && gameState.Kid.frame < 0x8D) kidPosY -= 32.0f + 7.0f - (0x8D - gameState.Kid.frame);
 }
 
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
+ // If cutscene, then only allow pressing shift
+ if (gameState.current_level != gameState.next_level)
+  return {".", "S"};
+
  // For level 1, if kid touches ground and music plays, try restarting level
  if (gameState.Kid.frame == 109 && gameState.need_level1_music == 33)
    return {".", "CA"};
@@ -268,179 +321,64 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 }
 
 // Function to get magnet information
-magnetInfo_t GameInstance::getKidMagnetValues(const bool* rulesStatus, const int room) const
+magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 {
  // Storage for magnet information
- magnetInfo_t magnetInfo;
- magnetInfo.positionX = 0.0f;
- magnetInfo.intensityX = 0.0f;
- magnetInfo.intensityY = 0.0f;
+ magnetSet_t magnets;
+ bool ruleFound = false;
+ size_t lastRuleFound = 0;
 
- // Iterating rule vector
- for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
- {
-  if (rulesStatus[ruleId] == true)
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++) if (rulesStatus[ruleId] == true) { ruleFound = true; lastRuleFound = ruleId; }
+
+ if (ruleFound == true)
   {
-    const auto& rule = _rules[ruleId];
-
-    for (size_t i = 0; i < _rules[ruleId]->_kidMagnetPositionX.size(); i++)
-     if (rule->_kidMagnetPositionX[i].room == room)
-      magnetInfo.positionX = rule->_kidMagnetPositionX[i].value;
-
-    for (size_t i = 0; i < _rules[ruleId]->_kidMagnetIntensityX.size(); i++)
-     if (rule->_kidMagnetIntensityX[i].room == room)
-      magnetInfo.intensityX = rule->_kidMagnetIntensityX[i].value;
-
-    for (size_t i = 0; i < _rules[ruleId]->_kidMagnetIntensityY.size(); i++)
-     if (rule->_kidMagnetIntensityY[i].room == room)
-      magnetInfo.intensityY = rule->_kidMagnetIntensityY[i].value;
-  }
- }
-
- return magnetInfo;
-}
-
-// Function to get magnet information
-magnetInfo_t GameInstance::getGuardMagnetValues(const bool* rulesStatus, const int room) const
-{
-
- // Storage for magnet information
- magnetInfo_t magnetInfo;
- magnetInfo.positionX = 0.0f;
- magnetInfo.intensityX = 0.0f;
- magnetInfo.intensityY = 0.0f;
-
- // Iterating rule vector
- for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
-  if (rulesStatus[ruleId] == true)
-  {
-    const auto& rule = _rules[ruleId];
-
-    for (size_t i = 0; i < _rules[ruleId]->_guardMagnetPositionX.size(); i++)
-     if (rule->_guardMagnetPositionX[i].room == room)
-      magnetInfo.positionX = rule->_guardMagnetPositionX[i].value;
-
-    for (size_t i = 0; i < _rules[ruleId]->_guardMagnetIntensityX.size(); i++)
-     if (rule->_guardMagnetIntensityX[i].room == room)
-      magnetInfo.intensityX = rule->_guardMagnetIntensityX[i].value;
-
-    for (size_t i = 0; i < _rules[ruleId]->_guardMagnetIntensityY.size(); i++)
-     if (rule->_guardMagnetIntensityY[i].room == room)
-      magnetInfo.intensityY = rule->_guardMagnetIntensityY[i].value;
+    if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].kidHorizontalMagnet.active == true) magnets.kidHorizontalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidHorizontalMagnet;
+    if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].kidVerticalMagnet.active == true) magnets.kidVerticalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidVerticalMagnet;
+    if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].guardHorizontalMagnet.active == true) magnets.guardHorizontalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].guardHorizontalMagnet;
+    if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].guardVerticalMagnet.active == true) magnets.guardVerticalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].guardVerticalMagnet;
+    magnets.kidDirectionMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidDirectionMagnet;
   }
 
- return magnetInfo;
+ return magnets;
 }
 
 // Obtains the score of a given frame
 float GameInstance::getStateReward(const bool* rulesStatus) const
 {
+ // We calculate a different reward if this is a winning frame
+ auto stateType = getStateType(rulesStatus);
+ if (stateType == f_win) return ((gameState.rem_min-1) * 720 + gameState.rem_tick);
+
  // Getting rewards from rules
  float reward = 0.0;
  for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   if (rulesStatus[ruleId] == true)
    reward += _rules[ruleId]->_reward;
 
- // Getting kid room
- int kidCurrentRoom = gameState.Kid.room;
+ // Getting magnet value
+ auto magnets = getMagnetValues(rulesStatus);
 
- // Getting magnet values for the kid
- auto kidMagnet = getKidMagnetValues(rulesStatus, kidCurrentRoom);
+ // Container for bounded value and difference with center
+ float diff = 0.0;
 
- // Getting kid's current frame
- const auto curKidFrame = gameState.Kid.frame;
+ // Evaluating kid magnet's reward on position X
+ diff = -255.0f + std::abs(magnets.kidHorizontalMagnet.center - (float)gameState.Kid.x);
+ reward += magnets.kidHorizontalMagnet.intensity * -diff;
 
- // Evaluating kidMagnet's reward on the X axis
- const float kidDiffX = std::abs(gameState.Kid.x - kidMagnet.positionX);
- reward += (float) kidMagnet.intensityX * (256.0f - kidDiffX);
+ // Evaluating guard magnet's reward on position X
+ diff = -255.0f + std::abs(magnets.guardHorizontalMagnet.center - (float)gameState.Guard.x);
+ reward += magnets.guardHorizontalMagnet.intensity * -diff;
 
- // For positive Y axis kidMagnet, rewarding climbing frames
- if ((float) kidMagnet.intensityY > 0.0f)
- {
-   // Jumphang, because it preludes climbing (Score + 1-20)
-   if (curKidFrame >= 67 && curKidFrame <= 80)
-    reward += (float) kidMagnet.intensityY * (curKidFrame - 66);
+ // Evaluating kid magnet's reward on position Y
+ diff = -255.0f + std::abs(magnets.kidVerticalMagnet.center - (float)gameState.Kid.y);
+ reward += magnets.kidVerticalMagnet.intensity * -diff;
 
-   // Hang, because it preludes climbing (Score +21)
-   if (curKidFrame == 91) reward += 21.0f * (float) kidMagnet.intensityY;
+ // Evaluating guard magnet's reward on position Y
+ diff = -255.0f + std::abs(magnets.guardVerticalMagnet.center - (float)gameState.Guard.y);
+ reward += magnets.guardVerticalMagnet.intensity * -diff;
 
-   // Climbing (Score +22-38)
-   if (curKidFrame >= 135 && curKidFrame <= 149) reward += (float) kidMagnet.intensityY * (22.0f + (curKidFrame - 134));
-
-   // Adding absolute reward for Y position
-   reward += (float) kidMagnet.intensityY * (256.0f - gameState.Kid.y);
- }
-
- // For negative Y axis kidMagnet, rewarding falling/climbing down frames
- if ((float) kidMagnet.intensityY < 0.0f)
- {
-   // Turning around, because it generally preludes climbing down
-   if (curKidFrame >= 45 && curKidFrame <= 52) reward += -0.5f * (float) kidMagnet.intensityY;
-
-   // Hanging, because it preludes falling
-   if (curKidFrame >= 87 && curKidFrame <= 99) reward += -0.5f * (float) kidMagnet.intensityY;
-
-   // Hang drop, because it preludes falling
-   if (curKidFrame >= 81 && curKidFrame <= 85) reward += -1.0f * (float) kidMagnet.intensityY;
-
-   // Falling start
-   if (curKidFrame >= 102 && curKidFrame <= 105) reward += -1.0f * (float) kidMagnet.intensityY;
-
-   // Falling itself
-   if (curKidFrame == 106) reward += -2.0f + (float) kidMagnet.intensityY;
-
-   // Climbing down
-   if (curKidFrame == 148) reward += -2.0f + (float) kidMagnet.intensityY;
-
-   // Adding absolute reward for Y position
-   reward += (float) -1.0f * kidMagnet.intensityY * (gameState.Kid.y);
- }
-
- // Getting guard room
- int guardCurrentRoom = gameState.Guard.room;
-
- // Getting magnet values for the guard
- auto guardMagnet = getGuardMagnetValues(rulesStatus, guardCurrentRoom);
-
- // Getting guard's current frame
- const auto curGuardFrame = gameState.Guard.frame;
-
- // Evaluating guardMagnet's reward on the X axis
- const float guardDiffX = std::abs(gameState.Guard.x - guardMagnet.positionX);
- reward += (float) guardMagnet.intensityX * (256.0f - guardDiffX);
-
- // For positive Y axis guardMagnet
- if ((float) guardMagnet.intensityY > 0.0f)
- {
-  // Adding absolute reward for Y position
-  reward += (float) guardMagnet.intensityY * (256.0f - gameState.Guard.y);
- }
-
- // For negative Y axis guardMagnet, rewarding falling/climbing down frames
- if ((float) guardMagnet.intensityY < 0.0f)
- {
-   // Falling start
-   if (curGuardFrame >= 102 && curGuardFrame <= 105) reward += -1.0f * (float) guardMagnet.intensityY;
-
-   // Falling itself
-   if (curGuardFrame == 106) reward += -2.0f + (float) guardMagnet.intensityY;
-
-   // Adding absolute reward for Y position
-   reward += (float) -1.0f * guardMagnet.intensityY * (gameState.Guard.y);
- }
-
- // Apply bonus when kid is inside a non-visible room
- if (kidCurrentRoom == 0 || kidCurrentRoom >= 25) reward += 128.0f;
-
- // Apply bonus when kid is climbing exit stairs
- if (curKidFrame >= 217 && curKidFrame <= 228)
- {
-   reward += 1000.0f;
-   reward += 100.0f * ((float)curKidFrame - 217.0f);
- }
-
- // For some levels, keeping HP allows for later skips
- //reward += gameState.hitp_curr * 100.0f;
+ // Kid Direction Magnet
+ reward += gameState.Kid.direction == 0 ? 1.0 : -1.0  * magnets.kidDirectionMagnet;
 
  // Returning reward
  return reward;
@@ -448,16 +386,34 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
-  LOG("[Jaffar]  + Current/Next Level: %2d / %2d\n", gameState.current_level, gameState.next_level);
-  LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
-  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
-  LOG("[Jaffar]  + Game Tick: %d, Tolerance: %u\n", gameState.rem_tick, timerTolerance);
-  LOG("[Jaffar]  + [Kid]   Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.hitp_curr), int(gameState.hitp_max));
-  LOG("[Jaffar]  + [Guard] Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.guardhp_curr), int(gameState.guardhp_max));
-  LOG("[Jaffar]  + Exit Room Timer: %d\n", gameState.exit_room_timer);
-  LOG("[Jaffar]  + Reached Checkpoint: %s\n", gameState.checkpoint ? "Yes" : "No");
-  LOG("[Jaffar]  + Feather Fall: %d\n", gameState.is_feather_fall);
-  LOG("[Jaffar]  + RNG State: 0x%08X (Last Loose Tile Sound Id: %d)\n", gameState.random_seed, gameState.last_loose_sound);
+
+  // Calculating timing
+  size_t remMins = gameState.rem_min-1;
+  size_t remSecs = gameState.rem_tick / 12;
+  size_t remMilliSecs = floor((double)(gameState.rem_tick % 12) / 0.012);
+  char remainingIGTText[512];
+  sprintf(remainingIGTText, "%02lu:%02lu.%03lu", remMins, remSecs, remMilliSecs);
+
+  size_t cumMins = 60 - gameState.rem_min;
+  size_t cumSecs = (720 - gameState.rem_tick) / 12;
+  size_t cumMilliSecs = floor((double)( (720 - gameState.rem_tick) % 12) / 0.012);
+  char cumulativeIGTText[512];
+  sprintf(cumulativeIGTText, "%02lu:%02lu.%03lu", cumMins, cumSecs, cumMilliSecs);
+
+  LOG("[Jaffar]  + Global Step Counter:  %05d, (Tol: %02u)\n", gameState.globalStepCounter, timerTolerance);
+  LOG("[Jaffar]  + Current/Next Level:   %2d / %2d\n", gameState.current_level, gameState.next_level);
+  LOG("[Jaffar]  + Reward:               %f\n", getStateReward(rulesStatus));
+  LOG("[Jaffar]  + Hash:                 0x%lX%lX\n", computeHash().first, computeHash().second);
+  LOG("[Jaffar]  + [Kid]                 Room: %d, Pos.x: %3d, Pos.y: %f (%3d), Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), kidPosY, int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.hitp_curr), int(gameState.hitp_max));
+  LOG("[Jaffar]  + [Guard]               Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.guardhp_curr), int(gameState.guardhp_max));
+  LOG("[Jaffar]  + Cumulative IGT:       %s (%03lu %03u -> %05lu)\n", cumulativeIGTText, cumMins, (720 - gameState.rem_tick), cumMins * 720 + (720 - gameState.rem_tick));
+  LOG("[Jaffar]  + Remaining IGT:        %s (%03lu %03u -> %05lu)\n", remainingIGTText, remMins, gameState.rem_tick, remMins * 720 + gameState.rem_tick);
+  LOG("[Jaffar]  + Cutscene Delay        %03u, Total: %03u\n", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
+  LOG("[Jaffar]  + Exit Room Timer:      %d\n", gameState.exit_room_timer);
+  LOG("[Jaffar]  + Reached Checkpoint:   %s\n", gameState.checkpoint ? "Yes" : "No");
+  LOG("[Jaffar]  + Feather Fall:         %d\n", gameState.is_feather_fall);
+  LOG("[Jaffar]  + RNG State:            0x%08X (Last Loose Tile Sound Id: %d)\n", gameState.random_seed, gameState.last_loose_sound);
+  LOG("[Jaffar]  + Copy Protection       Place: %02u, Index: %02u\n", copyprot_plac, copyprot_idx);
 
   LOG("[Jaffar]  + Moving Objects:\n");
   for (int i = 0; i < gameState.mobs_count; ++i)
@@ -470,23 +426,12 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
   LOG("\n");
 
-  // Getting kid room
-  int kidCurrentRoom = gameState.Kid.room;
-
-  // Getting magnet values for the kid
-  auto kidMagnet = getKidMagnetValues(rulesStatus, kidCurrentRoom);
-
-  LOG("[Jaffar]  + Kid Horizontal Magnet Intensity / Position: %.1f / %.0f\n", kidMagnet.intensityX, kidMagnet.positionX);
-  LOG("[Jaffar]  + Kid Vertical Magnet Intensity: %.1f\n", kidMagnet.intensityY);
-
-  // Getting guard room
-  int guardCurrentRoom = gameState.Guard.room;
-
-  // Getting magnet values for the guard
-  auto guardMagnet = getGuardMagnetValues(rulesStatus, guardCurrentRoom);
-
-  LOG("[Jaffar]  + Guard Horizontal Magnet Intensity / Position: %.1f / %.0f\n", guardMagnet.intensityX, guardMagnet.positionX);
-  LOG("[Jaffar]  + Guard Vertical Magnet Intensity: %.1f\n", guardMagnet.intensityY);
+  auto magnets = getMagnetValues(rulesStatus);
+  if (std::abs(magnets.kidHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Kid Horizontal Magnet     - Intensity: %.1f, Center: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center);
+  if (std::abs(magnets.kidVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Kid Vertical Magnet       - Intensity: %.1f, Center: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center);
+  if (std::abs(magnets.kidDirectionMagnet) > 0.0f)              LOG("[Jaffar]  + Kid Direction Magnet      - Intensity: %.1f\n", magnets.kidDirectionMagnet);
+  if (std::abs(magnets.guardHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Guard Horizontal Magnet   - Intensity: %.1f, Center: %3.3f\n", magnets.guardHorizontalMagnet.intensity, magnets.guardHorizontalMagnet.center);
+  if (std::abs(magnets.guardVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Guard Vertical Magnet     - Intensity: %.1f, Center: %3.3f\n", magnets.guardVerticalMagnet.intensity, magnets.guardVerticalMagnet.center);
 }
 
 void GameInstance::setRNGState(const uint64_t RNGState)

@@ -585,8 +585,8 @@ class PlaybackInstance : public PlaybackInstanceBase
    *g_argc = 0;
    *g_argv = NULL;
 
-   // Fix feather fall problem when quickload/quicksaving
-//   init_copyprot();
+   if (game->_emu->_initializeCopyProt) init_copyprot();
+
    (*fixes)->fix_quicksave_during_feather = 1;
    (*fixes)->fix_quicksave_during_lvl1_music = 1;
 
@@ -737,12 +737,13 @@ class PlaybackInstance : public PlaybackInstanceBase
   draw_game_frame();
 
   // Calculating timing
-  size_t curMins = currentStep / 720;
-  size_t curSecs = (currentStep % 720) / 12;
-  size_t curMilliSecs = floor((double)(currentStep % 12) / 0.012);
+//  size_t curMins = currentStep / 720;
+//  size_t curSecs = (currentStep % 720) / 12;
+//  size_t curMilliSecs = floor((double)(currentStep % 12) / 0.012);
 
   char IGTText[512];
-  sprintf(IGTText, "IGT %2lu:%02lu.%03lu", curMins, curSecs, curMilliSecs);
+//  sprintf(IGTText, "IGT %2lu:%02lu.%03lu", curMins, curSecs, curMilliSecs);
+  sprintf(IGTText, "Cutscene: %02u / %04u", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
   display_text_bottom(IGTText);
 
   SDL_Surface* downSurface = _downSurface;
