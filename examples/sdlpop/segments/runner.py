@@ -26,11 +26,11 @@ else:
     print("Could not load script file: " + file_path)
     exit(-1)
 
-# Producing new RNG number
-RNGSeed = random.randint(0,4294967295)
-
 # Loop this forever
 while True:
+
+    # Producing new RNG number
+    RNGSeed = random.randint(0,4294967295)
     
     # Replacing number in script
     newScript = ""
@@ -48,13 +48,12 @@ while True:
     print("Running Seed: " + str(RNGSeed) + "... ", end="", flush=True)
     rc=1
     stdoutFile = open("/tmp/jaffar.log", "a")
-    result = subprocess.run(["jaffar", segment + ".jaffar"], stdout=stdoutFile, stderr=stdoutFile)
+    result = subprocess.run(["jaffar", newScriptPath], stdout=stdoutFile, stderr=stdoutFile)
     stdoutFile.close()
     rc = result.returncode
     
     # Report results
     if (rc == 0):
-      print("Success!")
       sourceSolutionFilePath = "/tmp/jaffar.best.sol"
       if os.path.isfile(sourceSolutionFilePath):
         num_lines = sum(1 for line in open(sourceSolutionFilePath))
