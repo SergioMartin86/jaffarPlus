@@ -412,7 +412,21 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Exit Room Timer:      %d\n", gameState.exit_room_timer);
   LOG("[Jaffar]  + Reached Checkpoint:   %s\n", gameState.checkpoint ? "Yes" : "No");
   LOG("[Jaffar]  + Feather Fall:         %d\n", gameState.is_feather_fall);
-  LOG("[Jaffar]  + RNG State:            0x%08X (Last Loose Tile Sound Id: %d)\n", gameState.random_seed, gameState.last_loose_sound);
+  LOG("[Jaffar]  + Last Sound Id:        %d\n", gameState.last_loose_sound);
+
+  auto prevRNG1 = _emu->reverseRNGState(gameState.random_seed);
+  auto prevRNG2 = _emu->reverseRNGState(prevRNG1);
+  auto prevRNG3 = _emu->reverseRNGState(prevRNG2);
+  auto prevRNG4 = _emu->reverseRNGState(prevRNG3);
+  auto prevRNG5 = _emu->reverseRNGState(prevRNG4);
+
+  auto postRNG1 = _emu->advanceRNGState(gameState.random_seed);
+  auto postRNG2 = _emu->advanceRNGState(postRNG1);
+  auto postRNG3 = _emu->advanceRNGState(postRNG2);
+  auto postRNG4 = _emu->advanceRNGState(postRNG3);
+  auto postRNG5 = _emu->advanceRNGState(postRNG4);
+
+  LOG("[Jaffar]  + RNG: [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ] 0x%08X [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ]\n", prevRNG5, prevRNG4, prevRNG3, prevRNG2, prevRNG1, gameState.random_seed, postRNG1, postRNG2, postRNG3, postRNG4, postRNG5);
   LOG("[Jaffar]  + Copy Protection       Place: %02u, Index: %02u\n", copyprot_plac, copyprot_idx);
 
   LOG("[Jaffar]  + Moving Objects:\n");

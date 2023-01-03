@@ -737,13 +737,13 @@ class PlaybackInstance : public PlaybackInstanceBase
   draw_game_frame();
 
   // Calculating timing
-//  size_t curMins = currentStep / 720;
-//  size_t curSecs = (currentStep % 720) / 12;
-//  size_t curMilliSecs = floor((double)(currentStep % 12) / 0.012);
+  size_t curMins = currentStep / 720;
+  size_t curSecs = (currentStep % 720) / 12;
+  size_t curMilliSecs = floor((double)(currentStep % 12) / 0.012);
 
   char IGTText[512];
-//  sprintf(IGTText, "IGT %2lu:%02lu.%03lu", curMins, curSecs, curMilliSecs);
-  sprintf(IGTText, "Cutscene: %02u / %04u", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
+  sprintf(IGTText, "IGT %2lu:%02lu.%03lu", curMins, curSecs, curMilliSecs);
+//  sprintf(IGTText, "Cutscene: %02u / %04u", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
   display_text_bottom(IGTText);
 
   SDL_Surface* downSurface = _downSurface;
