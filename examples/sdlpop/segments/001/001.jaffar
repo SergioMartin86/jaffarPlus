@@ -33,7 +33,7 @@
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
-    "Win State Step Tolerance": 10,
+    "Win State Step Tolerance": 0,
     
     "State Configuration": 
     {

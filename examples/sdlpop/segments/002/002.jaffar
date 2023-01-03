@@ -3,7 +3,7 @@
   {
     "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../../LEVELS.DAT",
-    "State File": "000.sav",
+    "State File": "002.sav",
     "Initialize Copyprot": false,
     "Override RNG Value": true,
     "RNG Value": 0,
@@ -12,24 +12,29 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 8,
+   "Timer Tolerance": 4,
    "Property Hash Types": [ "Kid Current HP", "Guard Current HP"  ],
    "Static Tile Hash Types":
    [ 
-     { "Level": 1, "Room": 1, "Tile": 27 },
-     { "Level": 1, "Room": 2, "Tile": 17 }
+     { "Level": 2, "Room": 4, "Tile": 18 },
+     { "Level": 2, "Room": 4, "Tile": 19 },
+     { "Level": 2, "Room": 4, "Tile": 28 },
+     { "Level": 2, "Room": 4, "Tile": 29 }
    ],
    
    "Falling Tiles Hash Types": 
    [
-     { "Level": 1, "Room": 1, "Column": 24, "Type": "Full" },
-     { "Level": 1, "Room": 2, "Column": 24, "Type": "Full" }
+     { "Level": 2, "Room": 9, "Column": 24, "Type": "Full" },
+     { "Level": 2, "Room": 2, "Column": 24, "Type": "Full" },
+     { "Level": 2, "Room": 18, "Column": 16, "Type": "Full" }
    ],
    
    "Active Objects Hash Types":
    [
-     { "Level": 1, "Room": 1, "Tile": 27, "Type": "Full" },
-     { "Level": 1, "Room": 9, "Tile": 14, "Type": "Full" }
+     { "Level": 2, "Room": 4, "Tile": 18, "Type": "Full" },
+     { "Level": 2, "Room": 4, "Tile": 19, "Type": "Full" },
+     { "Level": 2, "Room": 6, "Tile": 16, "Type": "Full" },
+     { "Level": 2, "Room": 6, "Tile": 14, "Type": "Full" }
    ]
   },
   
@@ -38,7 +43,7 @@
     "Show Timing Information": true,
     "Show Hash Information": true,
     "Show Winning State Information": true,
-    "Win State Step Tolerance": 10,
+    "Win State Step Tolerance": 0,
     
     "State Configuration": 
     {
@@ -51,8 +56,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 150000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
@@ -81,115 +86,85 @@
   "Rules":
   [
    {
-    "Label": 1001,
+    "Label": 2000,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  1 },    
-     { "Property": "Kid Room", "Op": "==", "Value":  1 }
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  5 }
     ],
-    
+   
     "Satisfies": [ ],
-    
+
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 1, "Intensity": 1.0, "Center": 255 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 200 }
+     { "Type": "Add Reward", "Value": 2000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
    {
-    "Label": 1002,
+    "Label": 2001,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  1 },
-     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  4 }
     ],
     
-    "Satisfies": [ 1001 ],
+    "Satisfies": [ 2000 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 55 }
     ]
    },
    
    {
-    "Label": 1003,
+    "Label": 2002,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  1 },
-     { "Property": "Kid Room", "Op": "==", "Value":  3 }
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  6 }
     ],
     
-    "Satisfies": [ 1002 ],
+    "Satisfies": [ 2001 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 6, "Intensity": 1.0, "Center": 0 }
     ]
    }, 
    
    {
-    "Label": 1004,
+    "Label": 2003,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value":  1 },    
-     { "Property": "Kid Room", "Op": "==", "Value":  9 }
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Kid Position X", "Op": "<", "Value":  98 }
     ],
     
-    "Satisfies": [ 1003 ],
+    "Satisfies": [ 2002 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 84 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 9, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Set Kid Vertical Magnet", "Room": 6, "Intensity": 2.0, "Center": 0 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 6, "Intensity": 1.0, "Center": 98 }
     ]
    },
    
    {
-    "Label": 1005,
+    "Label": 2004,
     "Conditions":
-    [ 
-     { "Property": "Current Level", "Op": "==", "Value":  1 },
-     { "Property": "Tile BG State", "Room": 9, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
-    ],
-    
-    "Satisfies": [ 1004 ],
-    
-    "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 128 }
-    ]
-   },
-   
-   {
-    "Label": 1006,
-    "Conditions": 
-    [ 
-     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+     { "Property": "Current Level", "Op": "==", "Value":  2 }, 
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 }
     ],
     
-    "Satisfies": [ 1005 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 }
-    ]
-   },
-   
-   {
-    "Label": 1999,
-    "Conditions":
-    [ 
-     { "Property": "Next Level", "Op": "==", "Value":  2 }
-    ],
-    
-    "Satisfies": [  ],
+    "Satisfies": [ 2003 ],
     
     "Actions":
     [
