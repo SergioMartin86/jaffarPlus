@@ -107,7 +107,7 @@ class EmuInstance : public EmuInstanceBase
   }
 
 //  init_copyprot();
-//  prandom(1);
+  prandom(1);
   // Setting argument config
   is_validate_mode = true;
   g_argc = 1;
@@ -335,17 +335,25 @@ class EmuInstance : public EmuInstanceBase
 
   gameState.globalStepCounter++;
 
-  if (gameState.current_level != gameState.next_level)
-  if (gameState.currentCutsceneDelay < cutsceneDelays[gameState.current_level].size())
-  if (move == 0)
-  {
-    for (int i = 0; i < cutsceneDelays[gameState.current_level][gameState.currentCutsceneDelay]; i++)  gameState.random_seed = advanceRNGState(gameState.random_seed);
-    gameState.currentCutsceneDelay++;
-    gameState.cumulativeCutsceneDelay++;
-    return;
-  }
+//  if (gameState.current_level != gameState.next_level)
+//  if (gameState.currentCutsceneDelay < cutsceneDelays[gameState.current_level].size())
+//  if (move == 0)
+//  {
+//    for (int i = 0; i < cutsceneDelays[gameState.current_level][gameState.currentCutsceneDelay]; i++)  gameState.random_seed = advanceRNGState(gameState.random_seed);
+//    gameState.currentCutsceneDelay++;
+//    gameState.cumulativeCutsceneDelay++;
+//    return;
+//  }
+
+  guardhp_delta = 0;
+  hitp_delta = 0;
+  timers();
+  play_frame();
+
+  is_restart_level = 0;
 
   if (gameState.current_level == 1 && gameState.next_level == 2) gameState.next_level = 15;
+  if (gameState.current_level == 15 && gameState.next_level == 16) gameState.next_level = 2;
   if (gameState.current_level != 15 && gameState.next_level != 15) gameState.rem_tick--;
 
   if (gameState.rem_tick == 0)
@@ -368,43 +376,34 @@ class EmuInstance : public EmuInstanceBase
   }
 
   // If level has changed, then load it
-  if (gameState.current_level != gameState.next_level)
-  {
-    if (gameState.current_level == 15) gameState.next_level = 2;
-
-    gameState.currentCutsceneDelay = 0;
-
-    // Preventing changing level on win
-    gameState.current_level = gameState.next_level;
-    auto tmpRng = gameState.random_seed;
-    auto tmpSound = gameState.last_loose_sound;
-    auto tmpRemTicks = gameState.rem_tick;
-    auto tmpRemMins = gameState.rem_min;
-    auto tmpCurrentCutsceneDelay = gameState.currentCutsceneDelay;
-    auto tmpCumulativeCutsceneDelay = gameState.cumulativeCutsceneDelay;
-    auto tmpKidPrevframe = gameState.kidPrevframe;
-    auto tmpGlobalStepCounter = gameState.globalStepCounter;
-
-    deserializeState((uint8_t*)levelData[gameState.next_level].data());
-
-    gameState.random_seed = tmpRng;
-    gameState.last_loose_sound = tmpSound;
-    gameState.rem_tick = tmpRemTicks;
-    gameState.rem_min = tmpRemMins;
-    gameState.currentCutsceneDelay = tmpCurrentCutsceneDelay;
-    gameState.cumulativeCutsceneDelay = tmpCumulativeCutsceneDelay;
-    gameState.kidPrevframe = tmpKidPrevframe;
-    gameState.globalStepCounter = tmpGlobalStepCounter;
-
-    draw_level_first();
-  }
-
-  guardhp_delta = 0;
-  hitp_delta = 0;
-  timers();
-  play_frame();
-
-  is_restart_level = 0;
+//  if (gameState.current_level != gameState.next_level)
+//  {
+//    gameState.currentCutsceneDelay = 0;
+//
+//    // Preventing changing level on win
+//    gameState.current_level = gameState.next_level;
+//    auto tmpRng = gameState.random_seed;
+//    auto tmpSound = gameState.last_loose_sound;
+//    auto tmpRemTicks = gameState.rem_tick;
+//    auto tmpRemMins = gameState.rem_min;
+//    auto tmpCurrentCutsceneDelay = gameState.currentCutsceneDelay;
+//    auto tmpCumulativeCutsceneDelay = gameState.cumulativeCutsceneDelay;
+//    auto tmpKidPrevframe = gameState.kidPrevframe;
+//    auto tmpGlobalStepCounter = gameState.globalStepCounter;
+//
+//    deserializeState((uint8_t*)levelData[gameState.next_level].data());
+//
+//    gameState.random_seed = tmpRng;
+//    gameState.last_loose_sound = tmpSound;
+//    gameState.rem_tick = tmpRemTicks;
+//    gameState.rem_min = tmpRemMins;
+//    gameState.currentCutsceneDelay = tmpCurrentCutsceneDelay;
+//    gameState.cumulativeCutsceneDelay = tmpCumulativeCutsceneDelay;
+//    gameState.kidPrevframe = tmpKidPrevframe;
+//    gameState.globalStepCounter = tmpGlobalStepCounter;
+//
+//    draw_level_first();
+//  }
  }
 
 };
