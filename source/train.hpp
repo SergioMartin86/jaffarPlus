@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <queue>
+#include <deque>
 #include <mutex>
 
 // Configuration for parallel hash sets
@@ -77,7 +77,7 @@ class Train
 
   // Queue for free states
   uint8_t* _mainStateStorage;
-  std::queue<State*> _freeStateQueue;
+  std::deque<State*> _freeStateQueue;
   Mutex _freeStateQueueMutex;
   State *_firstState;
 
