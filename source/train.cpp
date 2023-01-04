@@ -157,7 +157,7 @@ void Train::limitStateDatabase(std::vector<State*>& stateDB, size_t limit)
  std::nth_element(stateDB.begin(), stateDB.begin() + _maxDatabaseSizeLowerBound, stateDB.end(), [](const auto &a, const auto &b) { return a->reward > b->reward; });
 
  // Recycle excess states
- for (size_t i = limit; i < stateDB.size(); i++) _freeStateQueue.push(stateDB[i]);
+ _freeStateQueue.insert(_freeStateQueue.end(), stateDB.begin() + limit, stateDB.end());
 
  // Resizing new states database to lower bound
  stateDB.resize(limit);
@@ -376,7 +376,6 @@ void Train::computeStates()
          // If we ran out of free states, gotta check if we can free up the worst states from the next state db
          if (_freeStateQueue.empty())
          {
-
           // Trying to limit new states DB to lower bound size and recycling its states
           #pragma omp critical(newFrameDB)
           {
@@ -389,8 +388,8 @@ void Train::computeStates()
          }
 
          // Taking free state pointer
-          newState = _freeStateQueue.front();
-         _freeStateQueue.pop();
+          newState = _freeStateQueue.back();
+         _freeStateQueue.pop_back();
 
          // Releasing lock
          _freeStateQueueMutex.unlock();
@@ -422,7 +421,7 @@ void Train::computeStates()
         if (type == f_fail)
         {
          _freeStateQueueMutex.lock();
-         _freeStateQueue.push(newState);
+         _freeStateQueue.push_back(newState);
          _freeStateQueueMutex.unlock();
          continue;
         }
@@ -451,37 +450,37 @@ void Train::computeStates()
 
         ////////// VERIFICATION STEP START
 
-        if (_storeMoveHistory)
-        {
-         if (possibleMoves[idx] == "UB"  || possibleMoves[idx] == "UD" || possibleMoves[idx] == "UBA" || possibleMoves[idx] == "UDB" || possibleMoves[idx] == "UDBA")
-         {
-           auto newHash = hash;
-           bool isCorrect = true;
-
-           for (size_t i = 0; i < _VERIFICATION_INSTANCES && isCorrect == true; i++)
-           {
-            // _verificationInstances[threadId][i]->pushState(_initialStateData);
-            // for (size_t j = 0; j <= _currentStep; j++)  _verificationInstances[threadId][i]->advanceGameState(newState->getMove(j));
-            _verificationInstances[threadId][i]->pushState(baseStateData);
-            _verificationInstances[threadId][i]->advanceGameState(newState->getMove(_currentStep));
-
-            newHash = _verificationInstances[threadId][i]->computeHash();
-            if (newHash != hash) isCorrect = false;
-           }
-
-           //if (isCorrect == true)  LOG("Yes - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
-           //if (isCorrect == false) LOG("No - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
-
-           if (isCorrect == false)
-           {
-            _invalidStateCount++;
-            _freeStateQueueMutex.lock();
-            _freeStateQueue.push(newState);
-            _freeStateQueueMutex.unlock();
-            continue;
-           }
-         }
-        }
+//        if (_storeMoveHistory)
+//        {
+//         if (possibleMoves[idx] == "UB"  || possibleMoves[idx] == "UD" || possibleMoves[idx] == "UBA" || possibleMoves[idx] == "UDB" || possibleMoves[idx] == "UDBA")
+//         {
+//           auto newHash = hash;
+//           bool isCorrect = true;
+//
+//           for (size_t i = 0; i < _VERIFICATION_INSTANCES && isCorrect == true; i++)
+//           {
+//            // _verificationInstances[threadId][i]->pushState(_initialStateData);
+//            // for (size_t j = 0; j <= _currentStep; j++)  _verificationInstances[threadId][i]->advanceGameState(newState->getMove(j));
+//            _verificationInstances[threadId][i]->pushState(baseStateData);
+//            _verificationInstances[threadId][i]->advanceGameState(newState->getMove(_currentStep));
+//
+//            newHash = _verificationInstances[threadId][i]->computeHash();
+//            if (newHash != hash) isCorrect = false;
+//           }
+//
+//           //if (isCorrect == true)  LOG("Yes - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
+//           //if (isCorrect == false) LOG("No - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
+//
+//           if (isCorrect == false)
+//           {
+//            _invalidStateCount++;
+//            _freeStateQueueMutex.lock();
+//            _freeStateQueue.push_back(newState);
+//            _freeStateQueueMutex.unlock();
+//            continue;
+//           }
+//         }
+//        }
 
         ////////// VERIFICATION STEP END
 
@@ -509,7 +508,7 @@ void Train::computeStates()
       if (baseFramePointer != NULL)
       {
        _freeStateQueueMutex.lock();
-       _freeStateQueue.push(baseState);
+       _freeStateQueue.push_back(baseState);
        _freeStateQueueMutex.unlock();
       }
 
@@ -799,7 +798,7 @@ Train::Train(const nlohmann::json& config)
   _mainStateStorage = (uint8_t*)malloc(_maxDatabaseSizeUpperBound * _stateSize);
   #pragma omp parallel for
   for (size_t i = 0; i < _maxDatabaseSizeUpperBound * _stateSize; i += 1024) *(uint8_t*)&_mainStateStorage[i] = (uint8_t)0;
-  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push((State*)(_mainStateStorage + _stateSize * i));
+  for (size_t i = 0; i < _maxDatabaseSizeUpperBound; i++) _freeStateQueue.push_back((State*)(_mainStateStorage + _stateSize * i));
 
   // Storing initial state
   _gameInstances[0]->popState(_initialStateData);
