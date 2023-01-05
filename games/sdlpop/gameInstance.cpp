@@ -380,6 +380,10 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  // Kid Direction Magnet
  reward += gameState.Kid.direction == 0 ? 1.0 : -1.0  * magnets.kidDirectionMagnet;
 
+ // Rewarding climb stairs
+ if (gameState.Kid.frame >= 217 && gameState.Kid.frame <= 228) reward += (gameState.Kid.frame - 217 + 1) * 1000.f;
+ if (gameState.Kid.frame == 0 && gameState.hitp_curr > 0) reward += 12000.0f;
+
  // Returning reward
  return reward;
 }
