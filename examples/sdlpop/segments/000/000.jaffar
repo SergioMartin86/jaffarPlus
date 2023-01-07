@@ -51,14 +51,14 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 100,
-     "Max Size Upper Bound (Mb)": 15000
+     "Max Size Lower Bound (Mb)": 10,
+     "Max Size Upper Bound (Mb)": 100
     },
     
     "Hash Database":
     { 
      "Database Count": 2,
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Upper Bound (Mb)": 100 
     },
     
     "Save Intermediate Results":
