@@ -58,7 +58,7 @@ while True:
       if os.path.isfile(sourceSolutionFilePath):
         num_lines = sum(1 for line in open(sourceSolutionFilePath))
         print("Success! Moves: " + str(num_lines))
-        newSolutionPath = "sols/" + str(RNGSeed) + ".sol"
+        newSolutionPath = str(RNGSeed) + ".sol"
         shutil.copyfile(sourceSolutionFilePath, newSolutionPath)
       else:
         print("Could not load solution file: " + sourceSolutionFilePath)
