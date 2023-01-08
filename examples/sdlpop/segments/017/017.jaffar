@@ -1,0 +1,168 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../../LEVELS.DAT",
+    "State File": "017.sav",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 2543872016,
+    "Loose Tile Sound Id": 21 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP"],
+   "Static Tile Hash Types": 
+   [
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Level": 8, "Room": 16, "Tile": 4, "Type": "Full", "Comment": "Mouse Gate" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 1000,
+      "Store Move History": true,
+      "XDelta3 Enabled": true,
+      "XDelta3 Max Differences": 300,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 20,
+     "Max Size Upper Bound (Mb)": 1200
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size Upper Bound (Mb)": 400
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
+ 
+  "Rules":
+  [
+   
+    {
+    "Label": 8008,
+    "Description": "Wait for the mouse",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 118 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8009,
+    "Description": "Reward going down and then going back to the left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Kid Position Y", "Op": "==", "Value": 181 },
+     { "Property": "Kid Direction", "Op": "==", "Value": -1 }
+    ],
+   
+    "Satisfies": [ 8008 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 8010,
+    "Description": "Keep going to the left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  90 }
+    ],
+   
+    "Satisfies": [ 8009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8011,
+    "Description": "Go to exit door",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  90 }
+    ],
+   
+    "Satisfies": [ 8010 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+      
+   {
+    "Label": 8012,
+    "Description": "If Kid goes to the next level, then win.",
+    "Conditions":
+    [
+     { "Property": "Next Level", "Op": "==", "Value":  9 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}
