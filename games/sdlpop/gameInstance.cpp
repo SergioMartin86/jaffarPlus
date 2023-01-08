@@ -416,8 +416,10 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Remaining IGT:        %s (%03lu %03u -> %05lu)\n", remainingIGTText, remMins, gameState.rem_tick, remMins * 720 + gameState.rem_tick);
   LOG("[Jaffar]  + Cutscene Delay        %03u, Total: %03u\n", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
   LOG("[Jaffar]  + Exit Room Timer:      %d\n", gameState.exit_room_timer);
+  LOG("[Jaffar]  + Level Door Open:      %d\n", gameState.leveldoor_open);
   LOG("[Jaffar]  + Reached Checkpoint:   %s\n", gameState.checkpoint ? "Yes" : "No");
   LOG("[Jaffar]  + Feather Fall:         %d\n", gameState.is_feather_fall);
+  LOG("[Jaffar]  + Demo Index / Timer:   %03u / %03u\n", gameState.demo_index, gameState.demo_time);
   LOG("[Jaffar]  + Last Sound Id:        %d\n", gameState.last_loose_sound);
 
   auto prevRNG1 = _emu->reverseRNGState(gameState.random_seed);
