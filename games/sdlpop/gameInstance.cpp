@@ -10,6 +10,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   _hashKidCurrentHp = false;
   _hashGuardCurrentHp = false;
   _hashTrobCount = false;
+  _hashGuardPositionX = false;
 
   levelTileHashes.resize(16);
 
@@ -17,6 +18,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   {
    for (const auto& entry : config["Property Hash Types"])
    {
+    if (entry == "Guard Position X") _hashGuardPositionX = true;
     if (entry == "Kid Current HP") _hashKidCurrentHp = true;
     if (entry == "Guard Current HP") _hashGuardCurrentHp = true;
     if (entry == "Trob Count") _hashTrobCount = true;
@@ -183,7 +185,7 @@ _uint128_t GameInstance::computeHash() const
  hash.Update(gameState.exit_room_timer);
 
  // Manual hashing
-// hash.Update(gameState.level.guards_x);
+ if (_hashGuardPositionX == true) hash.Update(gameState.level.guards_x);
 // hash.Update(gameState.level.guards_dir);
 // hash.Update(gameState.level.guards_seq_lo);
 // hash.Update(gameState.level.guards_seq_hi);
