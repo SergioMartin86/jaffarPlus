@@ -42,6 +42,7 @@ class GameInstance : public GameInstanceBase
   bool _hashKidCurrentHp;
   bool _hashGuardCurrentHp;
   bool _hashTrobCount;
+  bool _hashGuardPositionX;
 
   uint8_t timerTolerance;
   float kidPosY;
