@@ -347,10 +347,9 @@ class EmuInstance : public EmuInstanceBase
 
   guardhp_delta = 0;
   hitp_delta = 0;
-
-  play_frame();
   timers();
-  
+  play_frame();
+
   is_restart_level = 0;
 
   if (gameState.current_level == 1 && gameState.next_level == 2) gameState.next_level = 15;
