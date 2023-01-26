@@ -1,0 +1,217 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../../LEVELS.DAT",
+    "State File": "state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 2543872016,
+    "Loose Tile Sound Id": 21 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4,
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types": 
+   [
+    { "Level": 9, "Room": 16, "Tile": 5, "Comment": "Loose Tile -> Empty" },
+    { "Level": 9, "Room": 16, "Tile": 6, "Comment": "Loose Tile -> Empty" },
+    { "Level": 9, "Room": 16, "Tile": 7, "Comment": "Loose Tile -> Empty" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Level": 9, "Room": 20, "Tile": 13, "Type": "Full" },
+    { "Level": 9, "Room": 12, "Tile": 20, "Type": "Index Only" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 500,
+      "Store Move History": true,
+      "XDelta3 Enabled": true,
+      "XDelta3 Max Differences": 300,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 1200
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size Upper Bound (Mb)": 400
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
+ 
+  "Rules":
+  [
+   
+   {
+    "Label": 9007,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 9008,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
+    ],
+   
+    "Satisfies": [ 9007 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 9009,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  20 },
+     { "Property": "Kid Position Y", "Op": "<=", "Value":  55 }
+    ],
+   
+    "Satisfies": [ 9008 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 20, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 9010,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  20 },
+     { "Property": "Tile BG State", "Level": 9, "Room": 12, "Tile": 20, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
+    ],
+   
+    "Satisfies": [ 9009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 20, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 9011,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Tile BG State", "Level": 9, "Room": 12, "Tile": 20, "Op": ">", "Value": 0, "Comment": "Gate Opened" }
+    ],
+   
+    "Satisfies": [ 9010 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 9012,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  12 }
+    ],
+   
+    "Satisfies": [ 9011 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 12, "Intensity": 1.0, "Center": 115 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 12, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 9013,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 }
+    ],
+   
+    "Satisfies": [ 9012 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 18, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 9014,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Kid Position Y", "Op": "==", "Value": 118  }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+   
+  ]  
+}
