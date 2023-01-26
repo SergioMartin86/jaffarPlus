@@ -205,7 +205,7 @@ _uint128_t GameInstance::computeHash() const
  {
   const auto &mob = gameState.mobs[i];
   const auto idx = std::make_pair(mob.room, mob.xh);
-  if (levelTileHashes[gameState.current_level]._hashTypeMobs.count(idx))
+  if (levelTileHashes[gameState.current_level]._hashTypeMobs.contains(idx))
   {
    const auto hashType = levelTileHashes[gameState.current_level]._hashTypeMobs.at(idx);
    if (hashType == INDEX_ONLY) { hash.Update(mob.room); hash.Update(mob.xh); }
@@ -219,7 +219,7 @@ _uint128_t GameInstance::computeHash() const
    const auto &trob = gameState.trobs[i];
    const auto idx = (trob.room - 1) * 30 + trob.tilepos;
 
-   if (levelTileHashes[gameState.current_level]._hashTypeTrobs.count(idx))
+   if (levelTileHashes[gameState.current_level]._hashTypeTrobs.contains(idx))
    {
     const auto hashType = levelTileHashes[gameState.current_level]._hashTypeTrobs.at(idx);
     if (hashType == INDEX_ONLY) hash.Update(idx * 255);
@@ -448,6 +448,33 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   {
     const auto &mob = (gameState.mobs)[i];
     LOG("[Jaffar]    + Room: %d, X: %d, Y: %d, Speed: %d, Type: %d, Row: %d\n", mob.room, mob.xh, mob.y, mob.speed, mob.type, mob.row);
+  }
+
+  LOG("[Jaffar]  + TR Tile Object:\n");
+  for (int i = 0; i < gameState.trobs_count; i++)
+  {
+    const auto &trob = gameState.trobs[i];
+    const auto idx = (trob.room - 1) * 30 + trob.tilepos;
+
+    if (levelTileHashes[gameState.current_level]._hashTypeTrobs.contains(idx) || std::find( levelTileHashes[gameState.current_level]._hashTypeStatic.begin(),  levelTileHashes[gameState.current_level]._hashTypeStatic.end(), idx) !=  levelTileHashes[gameState.current_level]._hashTypeStatic.end())
+     LOG("[Jaffar]    + Type: %d, Room: %d, Pos: %d, FG: %d, BG: %d\n", trob.type, trob.room, trob.tilepos, gameState.level.fg[idx], gameState.level.bg[idx]);
+  }
+
+  LOG("[Jaffar]  + Hashed Tiles:\n");
+  for (const auto& tile : levelTileHashes[gameState.current_level]._hashTypeTrobs)
+  {
+    int idx = tile.first;
+    int room = (idx / 30) + 1;
+    int tileId = (idx % 30) + 1;
+    LOG("[Jaffar]   + Room: %02d, Tile: %02d, Idx: %03d, FG*: %03d, BG:  %03d\n", room, tileId, idx, gameState.level.fg[idx], gameState.level.bg[idx]);
+  }
+
+  for (const auto& tile : levelTileHashes[gameState.current_level]._hashTypeStatic)
+  {
+   int idx = tile;
+   int room = (idx / 30) + 1;
+   int tileId = (idx % 30) + 1;
+   LOG("[Jaffar]   + Room: %02d, Tile: %02d, Idx: %03d, FG:  %03d, BG*: %03d\n", room, tileId, idx, gameState.level.fg[idx], gameState.level.bg[idx]);
   }
 
   LOG("[Jaffar]  + Rule Status: ");
