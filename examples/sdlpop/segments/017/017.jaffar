@@ -13,7 +13,7 @@
   "Game Configuration": 
   {
    "Timer Tolerance": 4,
-   "Property Hash Types": [ "Kid Current HP", "Guard Current HP"],
+   "Property Hash Types": [ ],
    "Static Tile Hash Types": 
    [
    ],
@@ -24,7 +24,8 @@
    
    "Active Objects Hash Types":
    [
-    { "Level": 8, "Room": 16, "Tile": 4, "Type": "Full", "Comment": "Mouse Gate" }
+    { "Level": 9, "Room": 4, "Tile": 13, "Type": "Full" },
+    { "Level": 9, "Room": 4, "Tile": 20, "Type": "Full" }
    ]
   },
   
@@ -37,7 +38,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 1000,
+      "Max Move Count": 500,
       "Store Move History": true,
       "XDelta3 Enabled": true,
       "XDelta3 Max Differences": 300,
@@ -46,7 +47,7 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 20,
+     "Max Size Lower Bound (Mb)": 100,
      "Max Size Upper Bound (Mb)": 1200
     },
     
@@ -76,89 +77,64 @@
   "Rules":
   [
    
-    {
-    "Label": 8008,
-    "Description": "Wait for the mouse",
+   {
+    "Label": 9000,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  16 }
+     { "Property": "Kid Room", "Op": "==", "Value":  11 }
     ],
    
     "Satisfies": [ ],
 
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 118 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 }
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
    {
-    "Label": 8009,
-    "Description": "Reward going down and then going back to the left",
+    "Label": 9001,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  16 },
-     { "Property": "Kid Position Y", "Op": "==", "Value": 181 },
-     { "Property": "Kid Direction", "Op": "==", "Value": -1 }
+     { "Property": "Kid Room", "Op": "==", "Value":  9 }
     ],
    
-    "Satisfies": [ 8008 ],
+    "Satisfies": [ 9000 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 0 }
     ]
    },
-
+   
    {
-    "Label": 8010,
-    "Description": "Keep going to the left",
+    "Label": 9002,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  4 },
-     { "Property": "Kid Position Y", "Op": ">", "Value":  90 }
+     { "Property": "Kid Room", "Op": "==", "Value":  4 }
     ],
    
-    "Satisfies": [ 8009 ],
+    "Satisfies": [ 9001 ],
 
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 80 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
    {
-    "Label": 8011,
-    "Description": "Go to exit door",
+    "Label": 9003,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  3 },
-     { "Property": "Kid Position Y", "Op": ">", "Value":  90 }
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
     ],
    
-    "Satisfies": [ 8010 ],
+    "Satisfies": [ ],
 
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
-    ]
-   },
-      
-   {
-    "Label": 8012,
-    "Description": "If Kid goes to the next level, then win.",
-    "Conditions":
-    [
-     { "Property": "Next Level", "Op": "==", "Value":  9 }
-    ],
-    
-    "Satisfies": [  ],
-    
     "Actions":
     [
      { "Type": "Trigger Win" }

@@ -347,8 +347,8 @@ class EmuInstance : public EmuInstanceBase
 
   guardhp_delta = 0;
   hitp_delta = 0;
-  timers();
   play_frame();
+  timers();
 
   is_restart_level = 0;
 
