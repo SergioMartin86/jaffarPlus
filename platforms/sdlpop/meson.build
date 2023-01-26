@@ -46,7 +46,7 @@ SDLPoPIncludes = include_directories(['SDLPoP/src'])
 
 platformTrainSrc = [ emuInstanceSrc, miniPoPSrc ]
 platformTrainIncludes = [ emuInstanceIncludes, miniPoPIncludes ]
-platformTrainCFlags = [ '-DDISABLE_ALL_FIXES' ] 
+platformTrainCFlags = [ '-DDISABLE_ALL_FIXES', '-Wno-implicit-function-declaration' ] 
 platformTrainLibs = [ ] 
 platformTrainLFlags = [ ]
 platformTrainDependencies = [ dependency('sdl2'), dependency('SDL2_image') ]
@@ -55,7 +55,7 @@ platformTrainDependencies = [ dependency('sdl2'), dependency('SDL2_image') ]
 
 platformPlaySrc = [ emuInstanceSrc, miniPoPSrc ]
 platformPlayIncludes = [ emuInstanceIncludes, SDLPoPIncludes, miniPoPIncludes ]
-platformPlayCFlags = [ '-DDISABLE_ALL_FIXES' ]
+platformPlayCFlags = [ '-DDISABLE_ALL_FIXES', '-Wno-implicit-function-declaration' ]
 platformPlayLibs = [ sdlPopLib ] 
 platformPlayLFlags = [ '-ldl' ]
 platformPlayDependencies = [ dependency('sdl2'), dependency('SDL2_image') ]
