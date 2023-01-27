@@ -1,0 +1,358 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 2543872016,
+    "Loose Tile Sound Id": 21 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP", "Guard Position X"  ],
+   "Static Tile Hash Types": 
+   [
+    { "Level": 7, "Room": 7, "Tile": 5, "Comment": "Loose Tile" },
+    { "Level": 7, "Room": 7, "Tile": 25, "Comment": "Debris" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Level": 7, "Room": 7, "Column": 16, "Type": "Full" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Level": 7, "Room": 7, "Tile": 5, "Type": "Full", "Comment": "Loose Tile" },
+    { "Level": 7, "Room": 7, "Tile": 23, "Type": "Full", "Comment": "Gate" },
+    { "Level": 7, "Room": 2, "Tile": 8, "Type": "Full", "Comment": "Chomper" },
+    { "Level": 7, "Room": 3, "Tile": 27, "Type": "Full", "Comment": "Gate" },
+    { "Level": 7, "Room": 3, "Tile": 24, "Type": "Full", "Comment": "Exit Level Door" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 1000,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 300,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 550,
+     "Max Size Upper Bound (Mb)": 1500
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size Upper Bound (Mb)": 400
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../platforms/sdlpop/overlay"
+  },
+ 
+  "Rules":
+  [
+   
+   {
+    "Label": 7000,
+    "Description": "Setting magnet to make kid go to the right on the first screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 }
+    ],
+   
+    "Satisfies": [ ],
+   
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 7001,
+    "Description": "Setting magnet to make kid go advancing to the right screen while luring guard.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+   
+    "Satisfies": [ 7000 ],
+    
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 255 },
+     { "Type": "Set Guard Horizontal Magnet", "Room": 2, "Intensity": 10.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 7002,   
+    "Description": "Clearing magnets and rewarding when they get closed to the tile.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Kid Position X", "Op": ">", "Value":  220 },
+     { "Property": "Guard Room", "Op": "==", "Value":  2 },
+     { "Property": "Guard Position X", "Op": ">", "Value":  220 }
+    ],
+   
+    "Satisfies": [ 7001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Guard Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 120 },
+     { "Type": "Set Guard Vertical Magnet", "Room": 2, "Intensity": 10.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 7003,
+    "Description": "If Guard starts falling, then obtain reward",
+    "Conditions":
+    [
+     { "Property": "Guard Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Frame", "Op": "==", "Value": 102 } 
+    ],
+
+    "Satisfies": [ 7002 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+
+   {
+    "Label": 7004,
+    "Description": "Reward having the guard go down alive.",
+    "Conditions":
+    [
+     { "Property": "Guard Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Position Y", "Op": "==", "Value":  181 },
+     { "Property": "Guard Current HP", "Op": ">", "Value":  0 }
+    ],
+   
+    "Satisfies": [ 7003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 7, "Intensity": 1.0, "Center": 128 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 7, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 7005,
+    "Description": "If both Kid and Guard got to get down, then go to the left.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  181 },
+     { "Property": "Kid Current HP", "Op": ">", "Value":  0 },
+     { "Property": "Guard Room", "Op": "==", "Value":  7 },
+     { "Property": "Guard Position Y", "Op": "==", "Value":  181 },
+     { "Property": "Guard Current HP", "Op": ">", "Value":  0 }
+    ],
+   
+    "Satisfies": [ 7004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 7, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   
+   {
+    "Label": 7006,
+    "Description": "Keep going left",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Kid Position Y", "Op": ">", "Value":  120 }
+    ],
+   
+    "Satisfies": [ 7005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+ {
+    "Label": 7007,
+    "Description": "Keep going left and fall",
+    "Conditions":
+    [
+      { "Property": "Kid Room", "Op": "==", "Value":  1 },
+      { "Property": "Kid Position Y", "Op": "==", "Value":  181 }
+    ],
+   
+    "Satisfies": [ 7006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 1, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+  
+   {
+    "Label": 7008,
+    "Description": "Arrival on the exit door screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Is Feather Fall", "Op": ">", "Value":  0 }
+    ],
+   
+    "Satisfies": [ 7006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 7009,
+    "Description": "Arrival on the exit door screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Tile BG State", "Room": 3, "Tile": 27, "Op": ">", "Value": 0, "Comment": "Pre-Exit Gate" }
+    ],
+   
+    "Satisfies": [ 7008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 200 }
+    ]
+   },
+   
+   {
+    "Label": 7010,
+    "Description": "Arrival on the exit door screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Tile BG State", "Room": 3, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+   
+    "Satisfies": [ 7009 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 130 }
+    ]
+   },
+   
+   {
+    "Label": 7010,
+    "Conditions": 
+    [ 
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+    ],
+    
+    "Satisfies": [ 7010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint" }
+    ]
+   },
+   
+   {
+    "Label": 7999,
+    "Description": "If Kid exits to the next level, then win.",
+    "Conditions":
+    [
+     { "Property": "Next Level", "Op": "==", "Value":  8 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 7998,
+    "Description": "If Kid exits to the next level, then win.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": "Guard Room" },
+     { "Property": "Kid Room", "Op": "!=", "Value": 1 },
+     { "Property": "Guard Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 7997,
+    "Description": "If Kid exits to the next level, then win.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

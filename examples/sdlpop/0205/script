@@ -1,0 +1,218 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 2543872016,
+    "Loose Tile Sound Id": 21 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP"  ],
+   "Static Tile Hash Types":
+   [
+   { "Level": 2, "Room": 9, "Tile": 27 } 
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+     { "Level": 2, "Room": 9, "Column": 24, "Type": "Full" },
+     { "Level": 2, "Room": 2, "Column": 24, "Type": "Full" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Level": 2, "Room": 23, "Tile": 14, "Type": "Full" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 400,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 8000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10,
+     "Max Size Upper Bound (Mb)": 50
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size Upper Bound (Mb)": 300
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../platforms/sdlpop/overlay"
+  },
+ 
+  "Rules":
+  [
+   
+ {
+    "Label": 2017,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value": 21 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Room": 21, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2018,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 2017 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 130 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2019,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  9 }
+    ],
+    
+    "Satisfies": [ 2018 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 55 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 9, "Intensity": 2.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2888,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  9 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  20 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 2020,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
+    ],
+    
+    "Satisfies": [ 2019 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 2021,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" },
+     { "Property": "Kid Room", "Op": "==", "Value":  23 }
+    ],
+    
+    "Satisfies": [ 2020 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 }
+    ]
+   },
+   
+   {
+    "Label": 2022,
+    "Conditions": 
+    [ 
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+    ],
+    
+    "Satisfies": [ 2021 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint" }
+    ]
+   },
+   
+   {
+    "Label": 2999,
+    "Conditions":
+    [
+     { "Property": "Next Level", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+   
+  ]  
+}
