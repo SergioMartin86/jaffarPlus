@@ -310,6 +310,7 @@ int main(int argc, char *argv[])
   {
    // Loading requested step
    gameInstance.pushState(stateSequence[currentStep]);
+   memset(rulesStatus, 0, ruleCount * sizeof(bool));
    gameInstance.evaluateRules(rulesStatus);
    auto checkpointLevel = gameInstance.getCheckpointLevel(rulesStatus);
    auto stateType = gameInstance.getStateType(rulesStatus);

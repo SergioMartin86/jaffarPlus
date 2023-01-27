@@ -26,6 +26,7 @@ struct magnetSet_t {
  genericMagnet_t guardVerticalMagnet;
  float kidDirectionMagnet = 0.0f;
  float levelDoorOpenMagnet = 0.0f;
+ float unitedWithShadowMagnet = 0.0f;
 };
 
 struct tileWatch_t

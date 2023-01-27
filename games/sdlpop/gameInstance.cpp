@@ -340,6 +340,7 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
     if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].guardVerticalMagnet.active == true) magnets.guardVerticalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].guardVerticalMagnet;
     magnets.kidDirectionMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidDirectionMagnet;
     magnets.levelDoorOpenMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].levelDoorOpenMagnet;
+    magnets.unitedWithShadowMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].unitedWithShadowMagnet;
   }
 
  return magnets;
@@ -394,6 +395,8 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  // Rewarding level door open
  reward += (float)gameState.leveldoor_open * magnets.levelDoorOpenMagnet;
 
+ // Rewarding united with shadow
+ reward += (float)gameState.united_with_shadow * magnets.unitedWithShadowMagnet;
 
  // Returning reward
  return reward;
@@ -421,14 +424,15 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Hash:                 0x%lX%lX\n", computeHash().first, computeHash().second);
   LOG("[Jaffar]  + [Kid]                 Room: %d, Pos.x: %3d, Pos.y: %f (%3d), Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), kidPosY, int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.hitp_curr), int(gameState.hitp_max));
   LOG("[Jaffar]  + [Guard]               Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.guardhp_curr), int(gameState.guardhp_max));
-  LOG("[Jaffar]  + [Char]                Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Curr Seq: %d\n", int(gameState.Char.room), int(gameState.Char.x), int(gameState.Char.y), int(gameState.Char.frame), int(gameState.Char.action), int(gameState.Char.curr_seq));
-  LOG("[Jaffar]  + Cumulative IGT:       %s (%03lu %03u -> %05lu)\n", cumulativeIGTText, cumMins, (720 - gameState.rem_tick), cumMins * 720 + (720 - gameState.rem_tick));
-  LOG("[Jaffar]  + Remaining IGT:        %s (%03lu %03u -> %05lu)\n", remainingIGTText, remMins, gameState.rem_tick, remMins * 720 + gameState.rem_tick);
-  LOG("[Jaffar]  + Cutscene Delay        %03u, Total: %03u\n", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
+//  LOG("[Jaffar]  + [Char]                Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Curr Seq: %d\n", int(gameState.Char.room), int(gameState.Char.x), int(gameState.Char.y), int(gameState.Char.frame), int(gameState.Char.action), int(gameState.Char.curr_seq));
+//  LOG("[Jaffar]  + Cumulative IGT:       %s (%03lu %03u -> %05lu)\n", cumulativeIGTText, cumMins, (720 - gameState.rem_tick), cumMins * 720 + (720 - gameState.rem_tick));
+//  LOG("[Jaffar]  + Remaining IGT:        %s (%03lu %03u -> %05lu)\n", remainingIGTText, remMins, gameState.rem_tick, remMins * 720 + gameState.rem_tick);
+//  LOG("[Jaffar]  + Cutscene Delay        %03u, Total: %03u\n", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
   LOG("[Jaffar]  + Exit Room Timer:      %d\n", gameState.exit_room_timer);
-  LOG("[Jaffar]  + Level Door Open:      %d\n", gameState.leveldoor_open);
-  LOG("[Jaffar]  + Reached Checkpoint:   %s\n", gameState.checkpoint ? "Yes" : "No");
-  LOG("[Jaffar]  + Feather Fall:         %d\n", gameState.is_feather_fall);
+  if (gameState.current_level == 8) LOG("[Jaffar]  + Level Door Open:      %d\n", gameState.leveldoor_open);
+  if (gameState.current_level == 3) LOG("[Jaffar]  + Reached Checkpoint:   %s\n", gameState.checkpoint ? "Yes" : "No");
+  if (gameState.current_level == 7) LOG("[Jaffar]  + Feather Fall:         %d\n", gameState.is_feather_fall);
+  if (gameState.current_level == 12) LOG("[Jaffar]  + United With Shadow:   %d\n", gameState.united_with_shadow);
   LOG("[Jaffar]  + Demo Index / Timer:   %03u / %03u\n", gameState.demo_index, gameState.demo_time);
   LOG("[Jaffar]  + Last Sound Id:        %d\n", gameState.last_loose_sound);
 
@@ -497,6 +501,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   }
 
   if (std::abs(magnets.levelDoorOpenMagnet) > 0.0f)             LOG("[Jaffar]  + Level Door Open Magnet    - Intensity: %.1f\n", magnets.levelDoorOpenMagnet);
+  if (std::abs(magnets.unitedWithShadowMagnet) > 0.0f)          LOG("[Jaffar]  + United With Shadow Magnet - Intensity: %.1f\n", magnets.unitedWithShadowMagnet);
 }
 
 void GameInstance::setRNGState(const uint64_t RNGState)
