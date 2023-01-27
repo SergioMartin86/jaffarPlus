@@ -8,6 +8,15 @@
 
 class GameRule;
 
+struct checkPoint_t
+{
+ // Level: How deep is the checkpoint (how many others have been reached before)
+ int level;
+
+ // Tolerance: how many steps to run for before the frames that did not reach it are filtered out
+ int tolerance;
+};
+
 class GameInstanceBase
 {
  public:
@@ -28,7 +37,7 @@ class GameInstanceBase
   stateType getStateType(const bool* rulesStatus) const;
 
   // Function to return incresing checkpoint level
-  int getCheckpointLevel(const bool* rulesStatus) const;
+  checkPoint_t getCheckpointLevel(const bool* rulesStatus) const;
 
   // Function to advance state. Returns the number of skipped frames
   virtual std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) = 0;

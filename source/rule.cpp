@@ -11,6 +11,7 @@ Rule::Rule()
   _isWinRule = false;
   _isFailRule = false;
   _isCheckpointRule = false;
+  _checkPointTolerance = 0;
 }
 
 void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
@@ -139,6 +140,8 @@ void Rule::parseActions(nlohmann::json actionsJs)
    // Storing win state
    if (actionType == "Trigger Checkpoint")
    {
+    if (isDefined(actionJs, "Tolerance") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Checkpoint %lu missing 'Tolerance' key.\n", _label, actionId);
+    _checkPointTolerance = actionJs["Tolerance"].get<int>();
      _isCheckpointRule = true;
      recognizedActionType = true;
    }

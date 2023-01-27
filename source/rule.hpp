@@ -109,6 +109,7 @@ class Rule
   bool _isWinRule;
   bool _isFailRule;
   bool _isCheckpointRule;
+  int _checkPointTolerance;
 
   // Stores rules that also satisfied if this one is
   std::vector<size_t> _satisfiesLabels;

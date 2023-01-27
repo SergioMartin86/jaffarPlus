@@ -1,7 +1,7 @@
 {
   "Emulator Configuration": 
   {
-    "SDLPop Root Path": "../../platforms/sdlpop/SDLPoP/",
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "state",
     "Initialize Copyprot": false,
@@ -16,15 +16,19 @@
    "Property Hash Types": [ "Kid Current HP", "Guard Current HP"  ],
    "Static Tile Hash Types":
    [ 
+     { "Level": 2, "Room": 18, "Tile": 5 },
+     { "Level": 2, "Room": 18, "Tile": 25 }
    ],
    
    "Falling Tiles Hash Types": 
    [
+     { "Level": 2, "Room": 18, "Column": 16, "Type": "Full" }
    ],
    
    "Active Objects Hash Types":
    [
-     { "Level": 2, "Room": 18, "Tile": 10, "Type": "Full" }
+     { "Level": 2, "Room": 7, "Tile": 10, "Type": "Full" },
+     { "Level": 2, "Room": 18, "Tile": 5, "Type": "Full" }
    ]
   },
   
@@ -37,7 +41,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 1000,
+      "Max Move Count": 500,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 8000,
@@ -46,14 +50,14 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 10000
     },
     
     "Hash Database":
     { 
      "Database Count": 2,
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Upper Bound (Mb)": 20000 
     },
     
     "Save Intermediate Results":
@@ -69,64 +73,28 @@
   
   "Playback Configuration": 
   {
-    "SDLPop Library File": "../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../platforms/sdlpop/overlay"
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
   },
  
   "Rules":
   [
   
-   {
-    "Label": 2007,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Kid Room", "Op": "==", "Value":  22 },
-     { "Property": "Kid Position Y", "Op": "==", "Value": 118 }
-    ],
-    
-    "Satisfies": [  ],
-    
-    "Actions":
-    [
-     { "Type": "Set Kid Horizontal Magnet", "Room": 22, "Intensity": 1.0, "Center": 0 }
-    ]
-   },
-   
-      {
-    "Label": 2008,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Kid Room", "Op": "==", "Value":  11 }
-    ],
-    
-    "Satisfies": [ 2007 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 }
-    ]
-   },
-   
     {
     "Label": 2009,
     "Conditions":
     [
      { "Property": "Current Level", "Op": "==", "Value":  2 },
      { "Property": "Kid Room", "Op": "==", "Value":  11 },
-     { "Property": "Tile BG State", "Room": 18, "Tile": 10, "Op": ">", "Value": 0, "Comment": "Gate Open" }
+     { "Property": "Kid Position Y", "Op": "<", "Value":  60 }
     ],
     
-    "Satisfies": [ 2008 ],
+    "Satisfies": [ ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
@@ -135,11 +103,81 @@
     "Conditions":
     [
      { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Kid Room", "Op": "==", "Value":  11 },
-     { "Property": "Kid Position Y", "Op": "==", "Value":  55 }
+     { "Property": "Kid Room", "Op": "==", "Value":  18 }
     ],
     
-    "Satisfies": [  ],
+    "Satisfies": [ 2009 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 18, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2011,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Tile BG State", "Room": 7, "Tile": 10, "Op": ">", "Value": 0, "Comment": "Gate Open" }
+    ],
+    
+    "Satisfies": [ 2010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 18, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2012,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  7 }
+    ],
+    
+    "Satisfies": [ 2011 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 7, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2013,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  13 }
+    ],
+    
+    "Satisfies": [ 2012 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 13, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 13, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2014,
+    "Conditions":
+    [
+     { "Property": "Current Level", "Op": "==", "Value":  2 },
+     { "Property": "Kid Room", "Op": "==", "Value":  13 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  60 }
+    ],
+    
+    "Satisfies": [ 2013 ],
     
     "Actions":
     [

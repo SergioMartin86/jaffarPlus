@@ -326,6 +326,7 @@ class EmuInstance : public EmuInstanceBase
   key_states[SDL_SCANCODE_RIGHT] = 0;
   key_states[SDL_SCANCODE_RSHIFT] = 0;
 
+  is_restart_level = 0;
   if (move & 0b01000000 && move & 0b00100000) is_restart_level = 1;
   if (move & 0b00010000) key_states[SDL_SCANCODE_LEFT] = 1;
   if (move & 0b00001000) key_states[SDL_SCANCODE_RIGHT] = 1;
@@ -350,8 +351,6 @@ class EmuInstance : public EmuInstanceBase
   timers();
   play_frame();
 
-  is_restart_level = 0;
-
   if (gameState.current_level == 1 && gameState.next_level == 2) gameState.next_level = 15;
   if (gameState.current_level == 15 && gameState.next_level == 16) gameState.next_level = 2;
   if (gameState.current_level != 15 && gameState.next_level != 15) gameState.rem_tick--;
@@ -366,6 +365,7 @@ class EmuInstance : public EmuInstanceBase
   {
    startLevel(gameState.current_level);
    draw_level_first();
+   is_restart_level = 0;
   }
 
   // if we're on lvl 4, check mirror

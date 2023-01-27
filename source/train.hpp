@@ -77,6 +77,8 @@ class Train
 
   // Checkpoint Level
   int _checkpointLevel;
+  int _checkpointTolerance;
+  uint16_t _checkpointCutoffStep;
 
   // Queue for free states
   uint8_t* _mainStateStorage;
