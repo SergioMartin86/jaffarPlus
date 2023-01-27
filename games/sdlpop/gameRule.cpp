@@ -78,6 +78,15 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set United With Shadow Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+    uint8_t room = actionJs["Room"].get<uint8_t>();
+    _magnets[room].unitedWithShadowMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
   return recognizedActionType;
 }
 
