@@ -1,7 +1,7 @@
 {
   "Emulator Configuration": 
   {
-    "SDLPop Root Path": "../../platforms/sdlpop/SDLPoP/",
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "state",
     "Initialize Copyprot": false,
@@ -59,7 +59,7 @@
     "Hash Database":
     { 
      "Database Count": 2,
-     "Max Size Upper Bound (Mb)": 300
+     "Max Size Upper Bound (Mb)": 20000 
     },
     
     "Save Intermediate Results":
@@ -75,8 +75,8 @@
   
   "Playback Configuration": 
   {
-    "SDLPop Library File": "../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../platforms/sdlpop/overlay"
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
   },
  
   "Rules":

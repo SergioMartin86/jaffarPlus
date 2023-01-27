@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
    gameInstance.pushState(stateSequence[currentStep]);
    memset(rulesStatus, 0, ruleCount * sizeof(bool));
    gameInstance.evaluateRules(rulesStatus);
-   auto checkpointLevel = gameInstance.getCheckpointLevel(rulesStatus);
+   auto frameCheckpoint = gameInstance.getCheckpointLevel(rulesStatus);
    auto stateType = gameInstance.getStateType(rulesStatus);
 
    // Updating display
@@ -332,7 +332,7 @@ int main(int argc, char *argv[])
      printw("[Jaffar]  + Hash Collision Found:   %s (%u -> %u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep+1, hashCollisionPrev+1);
      printw("[Jaffar]  + Fail State Found:       %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep+1);
      printw("[Jaffar]  + Unsupported Move Found: %s (%u)\n", unsupportedMoveFound ? "True" : "False", unsupportedMoveStep+1);
-     printw("[Jaffar]  + Checkpoint Level: %u\n", checkpointLevel);
+     printw("[Jaffar]  + Checkpoint Level: %u\n", frameCheckpoint.level);
 
      std::string stateTypeString = "Regular";
      if (stateType == f_fail) stateTypeString = "Fail";

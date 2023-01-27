@@ -278,6 +278,9 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
  if (gameState.Kid.frame == 109 && gameState.need_level1_music == 33)
    return {".", "CA"};
 
+ if (gameState.current_level == 3 && gameState.Kid.room == 2 && gameState.Kid.frame == 15)
+   return {".", "CA", "S", "U", "L", "R", "D", "LU", "LD", "RU", "RD", "SR", "SL", "DS", "US", "RUS", "LUS"};
+
  // If bumped, nothing to do
  if (gameState.Kid.action == actions_5_bumped)
    return {".", "S"};
@@ -429,6 +432,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 //  LOG("[Jaffar]  + Remaining IGT:        %s (%03lu %03u -> %05lu)\n", remainingIGTText, remMins, gameState.rem_tick, remMins * 720 + gameState.rem_tick);
 //  LOG("[Jaffar]  + Cutscene Delay        %03u, Total: %03u\n", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
   LOG("[Jaffar]  + Exit Room Timer:      %d\n", gameState.exit_room_timer);
+  if (gameState.current_level == 1) LOG("[Jaffar]  + Level 1 Need Music:   %d\n", gameState.need_level1_music);
   if (gameState.current_level == 8) LOG("[Jaffar]  + Level Door Open:      %d\n", gameState.leveldoor_open);
   if (gameState.current_level == 3) LOG("[Jaffar]  + Reached Checkpoint:   %s\n", gameState.checkpoint ? "Yes" : "No");
   if (gameState.current_level == 7) LOG("[Jaffar]  + Feather Fall:         %d\n", gameState.is_feather_fall);
