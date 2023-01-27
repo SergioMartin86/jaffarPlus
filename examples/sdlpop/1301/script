@@ -1,0 +1,135 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 2543872016,
+    "Loose Tile Sound Id": 21 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 8,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP"  ],
+   "Static Tile Hash Types":
+   [ 
+     { "Level": 13, "Room": 1, "Tile": 3, "Type": "Full", "Description": "Loose Tile on Top" },
+     { "Level": 13, "Room": 16, "Tile": 13, "Type": "Full", "Description": "Loose Tile on Top" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+    { "Level": 13, "Room": 1, "Column": 8, "Type": "Full", "Description": "Falling Tile" },
+    { "Level": 13, "Room": 16, "Column": 8, "Type": "Full", "Description": "Falling Tile" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Level": 13, "Room": 1, "Tile": 3, "Type": "Full", "Description": "Loose Tile on Top" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 1100,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 300,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 12000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 4000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../platforms/sdlpop/overlay"
+  },
+ 
+  "Rules":
+  [
+   {
+    "Label": 13003,
+    "Description": "[Checkpoint] Keep going up and into jaffar's room.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+      { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 255 },
+      { "Type": "Set Kid Vertical Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 13004,
+    "Description": "Reward entering Jaffar's room.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ 13003 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 116 },
+     { "Type": "Set Guard Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 100 },
+     { "Type": "Set Guard Vertical Magnet", "Room": 1, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 13999,
+    "Description": "If Jaffar dies, then win.",
+    "Conditions":
+    [
+     { "Property": "Guard Room", "Op": "==", "Value": "Kid Room" },
+     { "Property": "Guard Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}
