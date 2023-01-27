@@ -1,0 +1,161 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../../LEVELS.DAT",
+    "State File": "state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 2543872016,
+    "Loose Tile Sound Id": 21 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 8,
+   "Property Hash Types": [  ],
+   "Static Tile Hash Types": 
+   [
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 1100,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 300,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 12000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 4000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../../platforms/sdlpop/overlay"
+  },
+ 
+  "Rules":
+  [
+   {
+    "Label": 13000,
+    "Description": "Go left, trying to avoid falling tiles .",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 23 }
+    ],
+    
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 13001,
+    "Description": "Keep going left, trying to avoid falling tiles .",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 16 }
+    ],
+    
+    "Satisfies": [ 13000 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 13002,
+    "Description": "Go up now.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 4 }
+    ],
+    
+    "Satisfies": [ 13001 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 13003,
+    "Description": "[Checkpoint] Keep going up and into jaffar's room.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ 13002 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 13004,
+    "Description": "Keep going up and into jaffar's room.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 },
+     { "Property": "Kid Position Y", "Op": "==", "Value": 118 }
+    ],
+    
+    "Satisfies": [  ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}
