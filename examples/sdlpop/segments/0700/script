@@ -46,9 +46,9 @@
     {
       "Max Move Count": 1000,
       "Store Move History": true,
-      "XDelta3 Enabled": true,
+      "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 300,
-      "XDelta3 Use Zlib Compression": true
+      "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
@@ -285,6 +285,22 @@
     [
      { "Type": "Add Reward", "Value": 1000 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 130 }
+    ]
+   },
+   
+   {
+    "Label": 7010,
+    "Conditions": 
+    [ 
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+    ],
+    
+    "Satisfies": [ 7010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint" }
     ]
    },
    

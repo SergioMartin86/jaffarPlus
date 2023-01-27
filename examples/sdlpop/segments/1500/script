@@ -79,7 +79,6 @@
     "Label": 15000,
     "Conditions":
     [ 
-     { "Property": "Current Level", "Op": "==", "Value":  15 },
      { "Property": "Kid Room", "Op": "==", "Value":  6 }
     ],
     
@@ -96,7 +95,6 @@
     "Label": 15001,
     "Conditions":
     [ 
-     { "Property": "Current Level", "Op": "==", "Value":  15 },
      { "Property": "Kid Room", "Op": "==", "Value": 3 }
     ],
     
@@ -113,7 +111,6 @@
     "Label": 15002,
     "Conditions":
     [ 
-     { "Property": "Current Level", "Op": "==", "Value":  15 },
      { "Property": "Tile BG State", "Room": 3, "Tile": 27, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
     ],
     
@@ -130,7 +127,6 @@
     "Label": 15003,
     "Conditions":
     [ 
-     { "Property": "Current Level", "Op": "==", "Value":  15 },
      { "Property": "Kid Frame", "Op": "==", "Value": 217 }
     ],
     
@@ -138,7 +134,8 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 }
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint" }
     ]
    },
    

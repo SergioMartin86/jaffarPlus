@@ -13,7 +13,7 @@
   "Game Configuration": 
   {
    "Timer Tolerance": 4,
-   "Property Hash Types": [ ],
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
    "Static Tile Hash Types": 
    [
     { "Level": 10, "Room": 2, "Tile": 30 }
@@ -28,7 +28,10 @@
    [
     { "Level": 10, "Room": 1, "Tile": 28, "Type": "Full" },
     { "Level": 10, "Room": 2, "Tile": 21, "Type": "Full" },
-    { "Level": 10, "Room": 2, "Tile": 30, "Type": "Full" }
+    { "Level": 10, "Room": 2, "Tile": 30, "Type": "Full" },
+    { "Level": 10, "Room": 5, "Tile": 10, "Type": "Full" },
+    { "Level": 10, "Room": 1, "Tile": 10, "Type": "Full" },
+    { "Level": 10, "Room": 1, "Tile": 8, "Type": "Full" }
    ]
   },
   
@@ -43,9 +46,9 @@
     {
       "Max Move Count": 500,
       "Store Move History": true,
-      "XDelta3 Enabled": true,
+      "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 300,
-      "XDelta3 Use Zlib Compression": true
+      "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
@@ -228,7 +231,80 @@
      { "Property": "Kid Frame", "Op": "==", "Value": 15 }
     ],
     
-    "Satisfies": [  ],
+    "Satisfies": [ 10006 ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Checkpoint" },
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 10008,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Tile BG State", "Room": 1, "Tile": 10, "Op": ">", "Value": 0 }
+    ],
+   
+    "Satisfies": [ 10007 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 10009,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Tile BG State", "Room": 5, "Tile": 10, "Op": ">", "Value": 0 }
+    ],
+   
+    "Satisfies": [ 10008 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 86 }
+    ]
+   },
+   
+   {
+    "Label": 10010,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Position X", "Op": "<", "Value": 128 },
+     { "Property": "Tile BG State", "Room": 5, "Tile": 10, "Op": ">", "Value": 0 }
+    ],
+   
+    "Satisfies": [ 10009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 86 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 10011,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Position Y", "Op": "==", "Value": 55 },
+     { "Property": "Kid Position X", "Op": "<", "Value": 128 },
+     { "Property": "Tile BG State", "Room": 5, "Tile": 10, "Op": ">", "Value": 0 }
+    ],
+   
+    "Satisfies": [ 10010 ],
 
     "Actions":
     [
@@ -237,7 +313,7 @@
    },
    
    {
-    "Label": 10008,
+    "Label": 10012,
     "Conditions":
     [
      { "Property": "Kid Current HP", "Op": "==", "Value": 0 }
@@ -249,22 +325,7 @@
     [
      { "Type": "Trigger Fail" }
     ]
-   },
-   
-   {
-    "Label": 19999,
-    "Conditions":
-    [
-     { "Property": "Kid Room", "Op": "==", "Value":  1 },
-     { "Property": "Kid Position Y", "Op": "==", "Value": 55 }
-    ],
-   
-    "Satisfies": [ ],
-
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
    }
+
   ]  
 }

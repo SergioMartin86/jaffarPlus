@@ -200,7 +200,8 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 }
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint" }
     ]
    },
       

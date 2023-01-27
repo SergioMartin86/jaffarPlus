@@ -27,6 +27,9 @@ class GameInstanceBase
   // Function to return frame type
   stateType getStateType(const bool* rulesStatus) const;
 
+  // Function to return incresing checkpoint level
+  int getCheckpointLevel(const bool* rulesStatus) const;
+
   // Function to advance state. Returns the number of skipped frames
   virtual std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) = 0;
   std::vector<INPUT_TYPE> advanceStateString(const std::string& move) {  return advanceGameState(_emu->moveStringToCode(move)); }

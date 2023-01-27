@@ -402,7 +402,10 @@ void Train::computeStates()
         _gameInstances[threadId]->evaluateRules(newState->getRuleStatus());
 
         // Getting state type
-        stateType type = _gameInstances[threadId]->getStateType(newState->getRuleStatus());
+        auto type = _gameInstances[threadId]->getStateType(newState->getRuleStatus());
+
+        // Getting checkpoint level
+        auto frameCheckpointLevel = _gameInstances[threadId]->getCheckpointLevel(newState->getRuleStatus());
 
         #ifdef _DETECT_POSSIBLE_MOVES
 
@@ -418,13 +421,16 @@ void Train::computeStates()
         threadStateEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
 
         // If state type is failed, continue to the next possible move
-        if (type == f_fail)
+        if (type == f_fail || frameCheckpointLevel < _checkpointLevel)
         {
          _freeStateQueueMutex.lock();
          _freeStateQueue.push_back(newState);
          _freeStateQueueMutex.unlock();
          continue;
         }
+
+        // Setting checkpoint found flag
+        if (frameCheckpointLevel > _checkpointLevel) _checkpointLevel = frameCheckpointLevel;
 
         // Storing the state data
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
@@ -617,12 +623,12 @@ void Train::computeStates()
 
 void Train::printTrainStatus()
 {
-
   ssize_t totalStepTime = _stepHashCalculationTime + _stepHashCheckingTime + _stepHashFilteringTime + _stepStateAdvanceTime + _stepStateDeserializationTime + _stepStateEncodingTime + _stepStateDecodingTime + _stepStateEvaluationTime + _stepStateCreationTime + _stepStateDBSortingTime;
 
   printf("[Jaffar] ----------------------------------------------------------------\n");
   printf("[Jaffar] Config File: %s\n", _configFile.c_str());
   printf("[Jaffar] Current Step #: %u (Max: %u)\n", _currentStep, _maxMoveCount);
+  printf("[Jaffar] Checkpoint Level: %u\n", _checkpointLevel);
   printf("[Jaffar] Worst Reward / Best Reward: %f / %f\n", _worstStateReward, _bestStateReward);
 
   if (_winStateStepTolerance > 0)
@@ -833,6 +839,7 @@ void Train::reset()
  _stepNewStateRatio = 0.0;
  _maxNewStateRatio = 0.0;
  _maxNewStateRatioStep = 0;
+ _checkpointLevel = 0;
 
  // Initializing step timers
  _stepHashCalculationTime = 0;

@@ -368,17 +368,21 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  diff = -255.0f + std::abs(magnets.kidHorizontalMagnet.center - (float)gameState.Kid.x);
  reward += magnets.kidHorizontalMagnet.intensity * -diff;
 
- // Evaluating guard magnet's reward on position X
- diff = -255.0f + std::abs(magnets.guardHorizontalMagnet.center - (float)gameState.Guard.x);
- reward += magnets.guardHorizontalMagnet.intensity * -diff;
-
  // Evaluating kid magnet's reward on position Y
  diff = -255.0f + std::abs(magnets.kidVerticalMagnet.center - (float)gameState.Kid.y);
  reward += magnets.kidVerticalMagnet.intensity * -diff;
 
- // Evaluating guard magnet's reward on position Y
- diff = -255.0f + std::abs(magnets.guardVerticalMagnet.center - (float)gameState.Guard.y);
- reward += magnets.guardVerticalMagnet.intensity * -diff;
+ // Guard magnets should be considered only if in the same room as the kid
+ if (gameState.Kid.room == gameState.Guard.room)
+ {
+  // Evaluating guard magnet's reward on position X
+  diff = -255.0f + std::abs(magnets.guardHorizontalMagnet.center - (float)gameState.Guard.x);
+  reward += magnets.guardHorizontalMagnet.intensity * -diff;
+
+  // Evaluating guard magnet's reward on position Y
+  diff = -255.0f + std::abs(magnets.guardVerticalMagnet.center - (float)gameState.Guard.y);
+  reward += magnets.guardVerticalMagnet.intensity * -diff;
+ }
 
  // Kid Direction Magnet
  reward += gameState.Kid.direction == 0 ? 1.0 : -1.0  * magnets.kidDirectionMagnet;
@@ -485,8 +489,13 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   if (std::abs(magnets.kidHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Kid Horizontal Magnet     - Intensity: %.1f, Center: %3.3f\n", magnets.kidHorizontalMagnet.intensity, magnets.kidHorizontalMagnet.center);
   if (std::abs(magnets.kidVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Kid Vertical Magnet       - Intensity: %.1f, Center: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center);
   if (std::abs(magnets.kidDirectionMagnet) > 0.0f)              LOG("[Jaffar]  + Kid Direction Magnet      - Intensity: %.1f\n", magnets.kidDirectionMagnet);
-  if (std::abs(magnets.guardHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Guard Horizontal Magnet   - Intensity: %.1f, Center: %3.3f\n", magnets.guardHorizontalMagnet.intensity, magnets.guardHorizontalMagnet.center);
-  if (std::abs(magnets.guardVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Guard Vertical Magnet     - Intensity: %.1f, Center: %3.3f\n", magnets.guardVerticalMagnet.intensity, magnets.guardVerticalMagnet.center);
+
+  if (gameState.Kid.room == gameState.Guard.room)
+  {
+   if (std::abs(magnets.guardHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Guard Horizontal Magnet   - Intensity: %.1f, Center: %3.3f\n", magnets.guardHorizontalMagnet.intensity, magnets.guardHorizontalMagnet.center);
+   if (std::abs(magnets.guardVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Guard Vertical Magnet     - Intensity: %.1f, Center: %3.3f\n", magnets.guardVerticalMagnet.intensity, magnets.guardVerticalMagnet.center);
+  }
+
   if (std::abs(magnets.levelDoorOpenMagnet) > 0.0f)             LOG("[Jaffar]  + Level Door Open Magnet    - Intensity: %.1f\n", magnets.levelDoorOpenMagnet);
 }
 

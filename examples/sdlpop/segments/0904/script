@@ -13,7 +13,7 @@
   "Game Configuration": 
   {
    "Timer Tolerance": 4,
-   "Property Hash Types": [ ],
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
    "Static Tile Hash Types": 
    [
    ],
@@ -42,9 +42,9 @@
     {
       "Max Move Count": 500,
       "Store Move History": true,
-      "XDelta3 Enabled": true,
+      "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 300,
-      "XDelta3 Use Zlib Compression": true
+      "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 

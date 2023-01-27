@@ -16,16 +16,19 @@
    "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
    "Static Tile Hash Types": 
    [
+    { "Level": 10, "Room": 1, "Tile": 21, "Comment": "Loose Tile on Top" },
+    { "Level": 10, "Room": 5, "Tile": 1, "Comment": "Debris" }
    ],
    
    "Falling Tiles Hash Types": 
    [
+     { "Level": 10, "Room": 11, "Column": 0, "Type": "Full", "Description": "Falling Tile" }
    ],
    
    "Active Objects Hash Types":
    [
-    { "Level": 9, "Room": 23, "Tile": 6, "Type": "Full" },
-    { "Level": 9, "Room": 5, "Tile": 24, "Type": "Index Only" }
+     { "Level": 10, "Room": 1, "Tile": 21, "Type": "Full", "Comment": "Loose Tile on Top" },
+     { "Level": 10, "Room": 8, "Tile": 24, "Type": "Full", "Comment": "Exit Level Door" }
    ]
   },
   
@@ -76,77 +79,84 @@
  
   "Rules":
   [
-    {
-    "Label": 9025,
+   {
+    "Label": 10007,
+    "Description": "Continue going through guard screen.",
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  1 }
+     { "Property": "Kid Room", "Op": "==", "Value": 1 }
     ],
-   
-    "Satisfies": [  ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
 
     "Actions":
     [
-      { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center":255 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
    {
-    "Label": 9026,
+    "Label": 10008,
+    "Description": "Continue going through guard screen.",
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  23 }
+     { "Property": "Kid Room", "Op": "==", "Value": 5 }
     ],
-   
-    "Satisfies": [ 9025 ],
+    
+    "Satisfies": [ 10007 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
    {
-    "Label": 9027,
+    "Label": 10009,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+     { "Property": "Kid Room", "Op": "==", "Value": 8 }
     ],
-   
-    "Satisfies": [ 9026 ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 10008 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 255 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 8, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
    {
-    "Label": 9028,
+    "Label": 10010,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  5 }
+     { "Property": "Kid Room", "Op": "==", "Value": 8 },
+     { "Property": "Tile BG State", "Room": 8, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Door" }
     ],
-   
-    "Satisfies": [ 9027 ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 10009 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 128 }
+     { "Type": "Set Kid Vertical Magnet", "Room": 8, "Intensity": 10.0, "Center": 255 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 8, "Intensity": 1.0, "Center": 128 }
     ]
-   },        
-     
+   },
+        
    {
-    "Label": 9029,
+    "Label": 10011,
     "Conditions":
     [ 
      { "Property": "Kid Frame", "Op": "==", "Value": 217 }
     ],
     
-    "Satisfies": [ 9028 ],
+    "Satisfies": [ 10010 ],
     
     "Actions":
     [
@@ -156,10 +166,10 @@
    },
    
    {
-    "Label": 9030,
+    "Label": 10012,
     "Conditions":
     [
-     { "Property": "Next Level", "Op": "==", "Value":  10 }
+     { "Property": "Next Level", "Op": "==", "Value":  11 }
     ],
     
     "Satisfies": [ ],

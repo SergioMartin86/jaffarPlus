@@ -311,6 +311,8 @@ int main(int argc, char *argv[])
    // Loading requested step
    gameInstance.pushState(stateSequence[currentStep]);
    gameInstance.evaluateRules(rulesStatus);
+   auto checkpointLevel = gameInstance.getCheckpointLevel(rulesStatus);
+   auto stateType = gameInstance.getStateType(rulesStatus);
 
    // Updating display
    if (disableRender == false) playbackInstance.renderFrame(currentStep, moveList[currentStep]);
@@ -329,6 +331,13 @@ int main(int argc, char *argv[])
      printw("[Jaffar]  + Hash Collision Found:   %s (%u -> %u)\n", hashCollisionFound ? "True" : "False", hashCollisionStep+1, hashCollisionPrev+1);
      printw("[Jaffar]  + Fail State Found:       %s (%u)\n", failConditionFound ? "True" : "False", failConditionStep+1);
      printw("[Jaffar]  + Unsupported Move Found: %s (%u)\n", unsupportedMoveFound ? "True" : "False", unsupportedMoveStep+1);
+     printw("[Jaffar]  + Checkpoint Level: %u\n", checkpointLevel);
+
+     std::string stateTypeString = "Regular";
+     if (stateType == f_fail) stateTypeString = "Fail";
+     if (stateType == f_win) stateTypeString = "Win";
+     printw("[Jaffar]  + State Type: %s\n", stateTypeString.c_str());
+
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
      printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | g: set RNG | s: quicksave | p: play | d: unpack | q: quit\n");
      playbackInstance.printPlaybackCommands();
