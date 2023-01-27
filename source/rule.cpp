@@ -10,6 +10,7 @@ Rule::Rule()
   // Setting default win/fail values
   _isWinRule = false;
   _isFailRule = false;
+  _isCheckpointRule = false;
 }
 
 void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
@@ -132,6 +133,13 @@ void Rule::parseActions(nlohmann::json actionsJs)
    if (actionType == "Trigger Win")
    {
      _isWinRule = true;
+     recognizedActionType = true;
+   }
+
+   // Storing win state
+   if (actionType == "Trigger Checkpoint")
+   {
+     _isCheckpointRule = true;
      recognizedActionType = true;
    }
 

@@ -185,9 +185,8 @@
    
    {
     "Label": 2022,
-    "Conditions":
+    "Conditions": 
     [ 
-     { "Property": "Current Level", "Op": "==", "Value": 2 },
      { "Property": "Kid Frame", "Op": "==", "Value": 217 }
     ],
     
@@ -195,7 +194,8 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 }
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint" }
     ]
    },
    

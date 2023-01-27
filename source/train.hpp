@@ -75,6 +75,9 @@ class Train
   size_t _maxDatabaseSizeUpperBound;
   std::vector<State*> _stateDB;
 
+  // Checkpoint Level
+  int _checkpointLevel;
+
   // Queue for free states
   uint8_t* _mainStateStorage;
   std::deque<State*> _freeStateQueue;

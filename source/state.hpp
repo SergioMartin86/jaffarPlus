@@ -12,7 +12,7 @@ enum stateType
   f_regular,
   f_win,
   f_fail,
-  f_skip
+  f_checkpoint
 };
 
 static size_t _ruleCount;

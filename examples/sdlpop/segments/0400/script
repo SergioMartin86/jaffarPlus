@@ -13,7 +13,7 @@
   "Game Configuration": 
   {
    "Timer Tolerance": 4,
-   "Property Hash Types": [ "Kid Current HP", "Guard Current HP", "Guard Position X"  ],
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP", "Guard Position X" ],
    "Static Tile Hash Types":
    [
    ],
@@ -81,7 +81,6 @@
    
    {
     "Label": 4000,
-    "Description": "Setting magnet to make kid go to the right on the first screen",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  1 }
@@ -97,7 +96,6 @@
    
    {
     "Label": 4100,
-    "Description": "Rewarding kid for triggering opening door",
     "Conditions":
     [
      { "Property": "Tile BG State", "Room": 1, "Tile": 20, "Op": ">", "Value": 0, "Comment": "Gate" }
@@ -113,7 +111,6 @@
    
    {
     "Label": 4001,
-    "Description": "Rewarding kid for advancing to screen 2",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  2 },
@@ -131,7 +128,6 @@
    
    {
     "Label": 4002,
-    "Description": "Rewarding kid for advancing to screen 5.",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  5 }
@@ -148,7 +144,6 @@
    
    {
     "Label": 4003,
-    "Description": "Rewarding kid for advancing to screen 6.",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  6 }
@@ -165,7 +160,6 @@
    
    {
     "Label": 4004,
-    "Description": "Rewarding kid for advancing to screen 24.",
     "Conditions":
     [ 
      { "Property": "Kid Room", "Op": "==", "Value":  24 }
@@ -182,7 +176,6 @@
    
    {
     "Label": 4005,
-    "Description": "Rewarding kid for advancing to screen 7.",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  7 }
@@ -199,7 +192,6 @@
    
    {
     "Label": 4006,
-    "Description": "Rewarding kid for advancing to screen 4 (mirror room).",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  4 }
@@ -216,7 +208,6 @@
    
    {
     "Label": 4007,
-    "Description": "Rewarding kid for advancing to screen 11 (chomper room).",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  11 }
@@ -233,7 +224,6 @@
    
    {
     "Label": 4008,
-    "Description": "Rewarding kid for going down and making it go left now.",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  11 },
@@ -252,7 +242,6 @@
    
    {
     "Label": 4108,
-    "Description": "Rewarding kid for going down and making it go left now.",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value":  4 },
@@ -271,7 +260,6 @@
    
    {
     "Label": 4009,
-    "Description": "Activate Exit door and then return.",
     "Conditions":
     [
      { "Property": "Tile BG State", "Room": 24, "Tile": 13, "Op": ">", "Value": 0, "Comment": "Exit Door" }
@@ -288,7 +276,6 @@
    
    {
     "Label": 4010,
-    "Description": "Keep returning.",
     "Conditions":
     [
      { "Property": "Tile BG State", "Room": 24, "Tile": 13, "Op": ">", "Value": 0, "Comment": "Exit Door" },
@@ -308,7 +295,6 @@
    
    {
     "Label": 4011,
-    "Description": "Making Kid go left after climbing on the chomper room",
     "Conditions":
     [
      { "Property": "Tile BG State", "Room": 24, "Tile": 13, "Op": ">", "Value": 0, "Comment": "Exit Door" },
@@ -328,7 +314,6 @@
    
    {
     "Label": 4012,
-    "Description": "Going back.",
     "Conditions":
     [
      { "Property": "Tile BG State", "Room": 24, "Tile": 13, "Op": ">", "Value": 0, "Comment": "Exit Door" },
@@ -347,7 +332,6 @@
    
    {
     "Label": 4013,
-    "Description": "Going back.",
     "Conditions":
     [
      { "Property": "Tile BG State", "Room": 24, "Tile": 13, "Op": ">", "Value": 0, "Comment": "Exit Door" },
@@ -365,7 +349,6 @@
    
    {
     "Label": 4014,
-    "Description": "Going back to exit room.",
     "Conditions":
     [
      { "Property": "Tile BG State", "Room": 24, "Tile": 13, "Op": ">", "Value": 0, "Comment": "Exit Door" },
@@ -383,23 +366,22 @@
 
    {
     "Label": 4015,
-    "Description": "If Kid gets to the next level to climb up the exit door (frame 217), then give reward.",
     "Conditions":
     [
-     { "Property": "Kid Frame", "Op": "==", "Value": 217}
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
     ],
     
     "Satisfies": [ 4014 ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 }
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint" }
     ]
    },
       
    {
     "Label": 4999,
-    "Description": "If Kid exits the level, then win.",
     "Conditions":
     [
      { "Property": "Next Level", "Op": "==", "Value":  5 }

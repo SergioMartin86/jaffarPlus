@@ -56,6 +56,18 @@ stateType GameInstanceBase::getStateType(const bool* rulesStatus) const
  return type;
 }
 
+// Function to return frame type
+int GameInstanceBase::getCheckpointLevel(const bool* rulesStatus) const
+{
+ int checkPointLevel = 0;
+
+ for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
+  if (rulesStatus[ruleId] == true)
+   if (_rules[ruleId]->_isCheckpointRule == true) checkPointLevel++;
+
+ return checkPointLevel;
+}
+
 // Evaluates the rule set on a given frame. Returns true if it is a fail.
 void GameInstanceBase::evaluateRules(bool* rulesStatus) const
 {

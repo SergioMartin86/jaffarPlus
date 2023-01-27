@@ -213,6 +213,22 @@
    },
    
    {
+    "Label": 4006,
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value": 217}
+    ],
+    
+    "Satisfies": [ 4005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint" }
+    ]
+   },
+   
+   {
     "Label": 4999,
     "Description": "If Kid exits the level, then win.",
     "Conditions":
