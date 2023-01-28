@@ -6,8 +6,8 @@
     "State File": "state",
     "Initialize Copyprot": false,
     "Override RNG Value": true,
-    "RNG Value": 2543872016,
-    "Loose Tile Sound Id": 21 
+    "RNG Value": 874088853,
+    "Loose Tile Sound Id": 22 
   },
   
   "Game Configuration": 
@@ -26,7 +26,9 @@
    "Active Objects Hash Types":
    [
     { "Level": 8, "Room": 3, "Tile": 22, "Type": "Full" },
-    { "Level": 8, "Room": 1, "Tile": 5, "Type": "Full" } 
+    { "Level": 8, "Room": 1, "Tile": 5, "Type": "Full" },
+    { "Level": 8, "Room": 4, "Tile": 1, "Type": "Full" },
+    { "Level": 8, "Room": 4, "Tile": 2, "Type": "Full" }
    ]
   },
   
@@ -48,8 +50,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 500,
-     "Max Size Upper Bound (Mb)": 2500
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 62500
     },
     
     "Hash Database":
@@ -107,7 +109,7 @@
     "Actions":
     [
       { "Type": "Add Reward", "Value": 10000 },
-      { "Type": "Trigger Checkpoint" }
+      { "Type": "Trigger Checkpoint", "Tolerance": 0 }
     ]
    },
       
@@ -196,7 +198,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-      { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
@@ -247,7 +249,7 @@
 
     "Actions":
     [
-     { "Type": "Trigger Checkpoint" },
+     { "Type": "Trigger Checkpoint", "Tolerance": 5 },
      { "Type": "Add Reward", "Value": 10000 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 118 },
      { "Type": "Set Kid Vertical Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 },
@@ -322,7 +324,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint" }
+     { "Type": "Trigger Checkpoint", "Tolerance": 0 }
     ]
    },
    
@@ -348,6 +350,21 @@
      { "Property": "Kid Room", "Op": "==", "Value":  4 },
      { "Property": "Kid Position Y", "Op": "<=", "Value":  55 },
      { "Property": "Exit Door Timer", "Op": ">", "Value":  1 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 8998,
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
     ],
     
     "Satisfies": [  ],

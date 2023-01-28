@@ -3,6 +3,7 @@
 *.sfc
 *.rom
 *.bin
+*.tmp
 jaffar.state
 *.sol.translated
 test.state

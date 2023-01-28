@@ -58,8 +58,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 25000
     },
     
     "Hash Database":
@@ -150,6 +150,21 @@
     "Actions":
     [
      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 11999,
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
   ]  
