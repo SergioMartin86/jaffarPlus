@@ -730,8 +730,8 @@ Train::Train(const nlohmann::json& config)
   _maxDBSizeMbUpperBound = _config["Jaffar Configuration"]["State Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
 
   if (isDefined(_config["Jaffar Configuration"], "Hash Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database' key.\n");
-  if (isDefined(_config["Jaffar Configuration"]["Hash Database"], "Max Size Upper Bound (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Max Size Upper Bound (Mb)' key.\n");
-  _hashSizeUpperBound = _config["Jaffar Configuration"]["Hash Database"]["Max Size Upper Bound (Mb)"].get<size_t>();
+  if (isDefined(_config["Jaffar Configuration"]["Hash Database"], "Max Size (Mb)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Max Size (Mb)' key.\n");
+  _hashSizeUpperBound = _config["Jaffar Configuration"]["Hash Database"]["Max Size (Mb)"].get<size_t>();
 
   if (isDefined(_config["Jaffar Configuration"]["Hash Database"], "Database Count") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Hash Database', 'Database Count' key.\n");
   _hashDBCount = _config["Jaffar Configuration"]["Hash Database"]["Database Count"].get<size_t>();
