@@ -828,7 +828,7 @@ Train::Train(const nlohmann::json& config)
   _worstState = (State*) malloc(_stateSize);
 
   // Initializing show thread
-  if (_outputEnabled)
+  if (_outputEnabled && _outputSaveFrequency > 0.0)
    if (pthread_create(&_showThreadId, NULL, showThreadFunction, this) != 0)
     EXIT_WITH_ERROR("[ERROR] Could not create show thread.\n");
 }
