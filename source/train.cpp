@@ -132,7 +132,7 @@ bool Train::run()
   // Stopping show thread
   if (_outputEnabled)
   {
-   pthread_join(_showThreadId, NULL);
+   if (_outputSaveFrequency > 0.0) pthread_join(_showThreadId, NULL);
 
    // If it has finalized with a win, save the winning state
    auto lastState = _winStateHistory.empty() ? _bestState : _bestWinState;
