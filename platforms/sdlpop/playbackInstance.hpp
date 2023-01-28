@@ -766,13 +766,13 @@ class PlaybackInstance : public PlaybackInstanceBase
 
   update_screen();
 
-//  if (Kid->sword == sword_2_drawn) set_timer_length(timer_1, 6);
-//  else set_timer_length(timer_1, 5);
-//  do_simple_wait(timer_1);
+  if (Kid->sword == sword_2_drawn) set_timer_length(timer_1, 6);
+  else set_timer_length(timer_1, 5);
+  do_simple_wait(timer_1);
 
-    if (Kid->sword == sword_2_drawn) set_timer_length(timer_1, 3);
-    else set_timer_length(timer_1, 2);
-    do_simple_wait(timer_1);
+//    if (Kid->sword == sword_2_drawn) set_timer_length(timer_1, 3);
+//    else set_timer_length(timer_1, 2);
+//    do_simple_wait(timer_1);
 
   SDL_RenderClear(*renderer_);
   SDL_RenderCopy(*renderer_, *target_texture, NULL, NULL);

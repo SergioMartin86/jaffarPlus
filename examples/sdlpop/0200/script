@@ -7,7 +7,7 @@
     "Initialize Copyprot": false,
     "Override RNG Value": true,
     "RNG Value": 0,
-    "Loose Tile Sound Id": 0
+    "Loose Tile Sound Id": 20
   },
   
   "Game Configuration": 

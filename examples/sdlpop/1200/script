@@ -144,7 +144,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 30 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 0 },
      { "Type": "Set Kid Vertical Magnet", "Room": 9, "Intensity": 1.0, "Center": 0 }
     ]
@@ -180,7 +179,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 1 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 7, "Intensity": 1.0, "Center": 220 },
      { "Type": "Set Kid Vertical Magnet", "Room": 7, "Intensity": 1.0, "Center": 0 }
     ]
@@ -233,7 +231,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 1 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 14, "Intensity": 1.0, "Center": 55 },
      { "Type": "Set Kid Vertical Magnet", "Room": 14, "Intensity": 1.0, "Center": 0 }
     ]
@@ -268,7 +265,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 1 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 19, "Intensity": 1.0, "Center": 0 }
     ]
    },

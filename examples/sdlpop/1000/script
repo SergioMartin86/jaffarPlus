@@ -53,8 +53,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 100,
-     "Max Size Upper Bound (Mb)": 1200
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 25000
     },
     
     "Hash Database":
@@ -235,7 +235,6 @@
 
     "Actions":
     [
-     { "Type": "Trigger Checkpoint" },
      { "Type": "Add Reward", "Value": 10000 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
     ]

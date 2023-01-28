@@ -125,7 +125,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 12, "Intensity": 1.0, "Center": 255 },
      { "Type": "Set Kid Vertical Magnet", "Room": 12, "Intensity": 1.0, "Center": 0 }
     ]
@@ -144,7 +143,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Kid Vertical Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 }
     ]
    },
@@ -279,7 +277,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
     ]
    },
@@ -332,7 +329,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 }
     ]
    },
@@ -437,7 +433,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 255 },
      { "Type": "Set Kid Vertical Magnet", "Room": 5, "Intensity": 10.0, "Center": 0 },
      { "Type": "Set Kid Direction Magnet", "Room": 5, "Intensity": -5.0 }
@@ -458,7 +453,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 0 },
      { "Type": "Set Kid Vertical Magnet", "Room": 5, "Intensity": 10.0, "Center": 0 },
      { "Type": "Set Kid Direction Magnet", "Room": 5, "Intensity": 5.0 }

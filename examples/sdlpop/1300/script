@@ -125,6 +125,25 @@
    },
    
    {
+    "Label": 13102,
+    "Description": "Go up now.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 4 },
+     { "Property": "Kid Position Y", "Op": "==", "Value": 55 }
+    ],
+    
+    "Satisfies": [ 13002 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
     "Label": 13003,
     "Description": "[Checkpoint] Keep going up and into jaffar's room.",
     "Conditions":
@@ -132,7 +151,7 @@
      { "Property": "Kid Room", "Op": "==", "Value": 3 }
     ],
     
-    "Satisfies": [ 13002 ],
+    "Satisfies": [ 13102 ],
 
     "Actions":
     [
