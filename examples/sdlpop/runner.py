@@ -26,13 +26,24 @@ else:
     print("Could not load script file: " + file_path)
     exit(-1)
 
+# Creating folder if not exists
+samplesDir="samples"
+if not os.path.exists(samplesDir): os.makedirs(samplesDir)
+
 # Loop this forever
 while True:
 
     # Producing new RNG number
     RNGSeed = random.randint(0,4294967295)
-    solutionFilePath = "jaffar." + str(RNGSeed) + ".best.sol"
-    newScriptPath = "script." + str(RNGSeed) + ".tmp"
+    
+    # Building base sample dir
+    sampleDir = samplesDir + "/" +  str(RNGSeed) 
+    if not os.path.exists(sampleDir): os.makedirs(sampleDir)
+
+    # Determining file paths    
+    solutionFilePath = sampleDir + "/jaffar.best.sol"
+    newScriptPath = sampleDir + "/script"
+    logFilePath = sampleDir + "/jaffar.log"
     
     # Replacing number in script
     newScript = ""
@@ -48,9 +59,9 @@ while True:
     newScriptFile.close()
     
     # Running new seed
-    print("Running Seed: " + str(RNGSeed) + "... ", end="", flush=True)
+    print("Running: " + newScriptPath + " ... ", end="", flush=True)
     rc=1
-    stdoutFile = open("jaffar.log", "a")
+    stdoutFile = open(logFilePath, "a")
     result = subprocess.run(["jaffar", newScriptPath], stdout=stdoutFile, stderr=stdoutFile)
     stdoutFile.close()
     rc = result.returncode
