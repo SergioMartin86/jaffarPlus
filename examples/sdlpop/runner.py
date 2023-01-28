@@ -38,7 +38,7 @@ while True:
     newScript = ""
     for line in sourceScript.splitlines():
      if '"RNG Value"' in line: line = '    "RNG Value": ' + str(RNGSeed) + ','
-     if '"Frequency (s)"' in line: line = '    "Frequency (s)": 9999999.0,'
+     if '"Frequency (s)"' in line: line = '    "Frequency (s)": 0.0,'
      if '"Best Solution Path"' in line: line = '    "Best Solution Path": "' + solutionFilePath + '",'
      newScript += line + '\n'
      
