@@ -8,6 +8,10 @@ import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('segment', help='Indicates the segment to run')
+parser.add_argument('--dbMinSize', help='Minimum state database size in Mb', required=True)
+parser.add_argument('--dbMaxSize', help='Maximum state database size in Mb', required=True)
+parser.add_argument('--hashDBCount', help='Number of hash DBs to use', required=True)
+parser.add_argument('--hashDBSize', help='Size of hash DBs to use', required=True)
 args = parser.parse_args()
 
 # Getting segment ID
@@ -51,6 +55,10 @@ while True:
      if '"RNG Value"' in line: line = '    "RNG Value": ' + str(RNGSeed) + ','
      if '"Frequency (s)"' in line: line = '    "Frequency (s)": 0.0,'
      if '"Best Solution Path"' in line: line = '    "Best Solution Path": "' + solutionFilePath + '",'
+     if '"Max Size Lower Bound (Mb)"' in line: line = '    "Max Size Lower Bound (Mb)": ' + args.dbMinSize + ','
+     if '"Max Size Upper Bound (Mb)"' in line: line = '    "Max Size Upper Bound (Mb)": ' + args.dbMaxSize
+     if '"Database Count"' in line: line = '    "Database Count": ' + args.hashDBCount + ','
+     if '"Max Size (Mb)"' in line: line = '    "Max Size (Mb)": ' + args.hashDBSize 
      newScript += line + '\n'
      
     # Storing new script
@@ -77,3 +85,4 @@ while True:
         
     else:
       print("Fail!")
+      exit(-1)
