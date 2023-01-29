@@ -3,10 +3,11 @@ folders=`ls -d */`
 
 for f in $folders; do
  echo "$f"
- for r in ${f}*.o*; do
+ resultFiles=`find $f -name jaffar.best.sol`
+ for r in ${resultFiles}; do
   if [ -f "${r}" ]; then 
-   cat $r | grep Moves
+   moveCount=`wc -l ${r} | head -n1 | cut -d' ' -f1`
+   echo "   + $moveCount  ${r}"
   fi
-  echo ""
  done
 done
