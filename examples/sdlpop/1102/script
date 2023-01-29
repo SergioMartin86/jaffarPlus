@@ -80,7 +80,7 @@
   "Rules":
   [
    {
-    "Label": 11010,
+    "Label": 11009,
     "Description": "Keep going to the right.",
     "Conditions":
     [
@@ -97,11 +97,29 @@
    },
 
    {
+    "Label": 11010,
+    "Description": "Keep going to the right.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 16 },
+     { "Property": "Guard Position Y", "Op": "==", "Value": 118 }
+    ],
+    
+    "Satisfies": [ 11009 ],
+
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
     "Label": 11011,
     "Description": "Keep going to the right.",
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 13 }
+     { "Property": "Kid Room", "Op": "==", "Value": 13 },
+     { "Property": "Guard Position Y", "Op": "==", "Value": 118 }
     ],
     
     "Satisfies": [ 11010 ],
