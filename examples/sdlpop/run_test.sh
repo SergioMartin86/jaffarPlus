@@ -1,1 +1,1 @@
-python3 ./runner.py 0905 --dbMinSize=60000 --dbMaxSize=120000 --hashDBCount=2 --hashDBSize=20000
+python3 ./runner.py 1102 --dbMinSize=100000 --dbMaxSize=150000 --hashDBCount=4 --hashDBSize=10000
