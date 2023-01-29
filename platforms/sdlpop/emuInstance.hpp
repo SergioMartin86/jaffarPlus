@@ -267,7 +267,7 @@ class EmuInstance : public EmuInstanceBase
 
   next_room = gameState.drawn_room = gameState.Kid.room;
   load_room_links();
-  gameState.curr_guard_color = 1;
+  if (gameState.current_level != 3) gameState.curr_guard_color = 1;
  }
 
  // Controller input bits
