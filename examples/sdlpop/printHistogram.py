@@ -1,5 +1,6 @@
 import os
 
+total=0
 histogram = dict()
 
 for r, d, f in os.walk('.'):
@@ -18,8 +19,10 @@ for r, d, f in os.walk('.'):
    if not segment in histogram: histogram[segment] = dict()
    if not lineCount in histogram[segment]: histogram[segment][lineCount] = 1
    else: histogram[segment][lineCount] = histogram[segment][lineCount] + 1
+   total = total + 1
 
 for s in sorted(histogram):
   print(s)
   for l in sorted(histogram[s], reverse=True):
       print("  + " + str(l) + ": " + str(histogram[s][l]))
+print("\nTotal: " + str(total))
