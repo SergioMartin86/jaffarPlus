@@ -37,7 +37,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 2000,
+      "Max Move Count": 300,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 8000,

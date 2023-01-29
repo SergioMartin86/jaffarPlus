@@ -38,7 +38,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 500,
+      "Max Move Count": 200,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 300,
@@ -47,8 +47,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
