@@ -269,7 +269,8 @@
     "Label": 3011,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  800 }
     ],
     
     "Satisfies": [ 3010 ],
