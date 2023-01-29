@@ -152,7 +152,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Kid Vertical Magnet", "Room": 15, "Intensity": 10.0, "Center": 0 }
     ]
    },
@@ -169,7 +168,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Kid Vertical Magnet", "Room": 16, "Intensity": 10.0, "Center": 0 }
     ]
    },
@@ -188,6 +186,21 @@
     "Actions":
     [
       { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 9999,
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "<", "Value":  3 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
   ]  
