@@ -244,6 +244,21 @@
     [
      { "Type": "Trigger Win" }
     ]
+   },
+   
+   {
+    "Label": 9999,
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "<", "Value":  3 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
    }
   ]  
 }
