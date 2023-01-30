@@ -42,9 +42,9 @@ void GameInstanceBase::parseRules(const nlohmann::json rulesConfig)
 }
 
 // Function to return frame type
-stateType GameInstanceBase::getStateType(const bool* rulesStatus) const
+stateType_t GameInstanceBase::getStateType(const bool* rulesStatus) const
 {
- stateType type = f_regular;
+ stateType_t type = f_regular;
 
  for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   if (rulesStatus[ruleId] == true)

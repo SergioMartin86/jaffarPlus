@@ -112,7 +112,7 @@ void loadSolutionFile(
  ruleStatusSequence.push_back(rulesStatus);
 
  // Checking if fail condition was met
- auto stateType = gameInstance.getStateType(rulesStatus);
+ stateType_t stateType = gameInstance.getStateType(rulesStatus);
  if (failConditionFound == false && stateType == f_fail)
  {
   failConditionFound = true;
@@ -313,7 +313,7 @@ int main(int argc, char *argv[])
    memset(rulesStatus, 0, ruleCount * sizeof(bool));
    gameInstance.evaluateRules(rulesStatus);
    auto frameCheckpoint = gameInstance.getCheckpointLevel(rulesStatus);
-   auto stateType = gameInstance.getStateType(rulesStatus);
+   stateType_t stateType = gameInstance.getStateType(rulesStatus);
 
    // Updating display
    if (disableRender == false) playbackInstance.renderFrame(currentStep, moveList[currentStep]);
