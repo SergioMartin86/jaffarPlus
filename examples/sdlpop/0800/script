@@ -12,7 +12,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4,
+   "Timer Tolerance": 6,
    "Property Hash Types": [ "Kid Current HP", "Guard Current HP", "Guard Position X"  ],
    "Static Tile Hash Types": 
    [
