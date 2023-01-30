@@ -34,7 +34,7 @@ class GameInstanceBase
   void parseRules(const nlohmann::json rulesConfig);
 
   // Function to return frame type
-  stateType getStateType(const bool* rulesStatus) const;
+  stateType_t getStateType(const bool* rulesStatus) const;
 
   // Function to return incresing checkpoint level
   checkPoint_t getCheckpointLevel(const bool* rulesStatus) const;

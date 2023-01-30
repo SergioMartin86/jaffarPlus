@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include "xdelta3.h"
 
-enum stateType
+enum stateType_t
 {
   f_regular,
   f_win,
