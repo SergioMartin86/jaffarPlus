@@ -1,0 +1,104 @@
+{
+ "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "../0100/state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": false,
+    "RNG Value": 0,
+    "Loose Tile Sound Id": 0
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 8,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP"  ],
+   "Static Tile Hash Types":
+   [ 
+     { "Level": 1, "Room": 1, "Tile": 27 },
+     { "Level": 1, "Room": 2, "Tile": 17 }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+     { "Level": 1, "Room": 1, "Column": 24, "Type": "Full" },
+     { "Level": 1, "Room": 2, "Column": 24, "Type": "Full" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Level": 1, "Room": 1, "Tile": 27, "Type": "Full" },
+     { "Level": 1, "Room": 9, "Tile": 14, "Type": "Full" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 300,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 8000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 1000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 50000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 5000000.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
+  },
+  
+  "Explorer Configuration": 
+  {
+    "Level Data":
+    [
+     { "Level Id":  1, "State File": "../0100/state", "Solution File": "../0100/full", "RNG Offset": 0},
+     { "Level Id": 15, "State File": "../1500/state", "Solution File": "../1500/full", "RNG Offset": 2},
+     { "Level Id":  2, "State File": "../0200/state", "Solution File": "../0200/full", "RNG Offset": 2}, 
+     { "Level Id":  3, "State File": "../0300/state", "Solution File": "../0300/full", "RNG Offset": 1},
+     { "Level Id":  4, "State File": "../0400/state", "Solution File": "../0400/full", "RNG Offset": 3},
+     { "Level Id":  5, "State File": "../0500/state", "Solution File": "../0500/full", "RNG Offset": 3},
+     { "Level Id":  6, "State File": "../0600/state", "Solution File": "../0600/full", "RNG Offset": 2},
+     { "Level Id":  7, "State File": "../0700/state", "Solution File": "../0700/full", "RNG Offset": 2},
+     { "Level Id":  8, "State File": "../0800/state", "Solution File": "../0800/full", "RNG Offset": 0},
+     { "Level Id":  9, "State File": "../0900/state", "Solution File": "../0900/full", "RNG Offset": 0},
+     { "Level Id": 10, "State File": "../1000/state", "Solution File": "../1000/full", "RNG Offset": 2},
+     { "Level Id": 11, "State File": "../1100/state", "Solution File": "../1100/full", "RNG Offset": 2},
+     { "Level Id": 12, "State File": "../1200/state", "Solution File": "../1200/full", "RNG Offset": 2}
+    ]
+  }, 
+ 
+  "Rules":
+  [
+  ]  
+}

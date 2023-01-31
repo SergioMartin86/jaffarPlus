@@ -76,7 +76,8 @@ extern word copyprot_plac;
 // data:3D16
 extern word copyprot_idx;
 // data:01CA
-extern const char copyprot_letter[] INIT(= {'A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'H', 'H', 'I', 'I', 'J', 'J', 'K', 'L', 'L', 'M', 'M', 'N', 'O', 'O', 'P', 'P', 'R', 'R', 'S', 'S', 'T', 'T', 'U', 'U', 'V', 'Y', 'W', 'Y'});
+//extern const char copyprot_letter[] INIT(= {'A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'H', 'H', 'I', 'I', 'J', 'J', 'K', 'L', 'L', 'M', 'M', 'N', 'O', 'O', 'P', 'P', 'R', 'R', 'S', 'S', 'T', 'T', 'U', 'U', 'V', 'Y', 'W', 'Y'});
+extern const char copyprot_letter[] INIT(= {'W', 'O', 'E', 'S', 'P', 'B', 'Y', 'S', 'K', 'J', 'T', 'B', 'C', 'F', 'E', 'S', 'K', 'M', 'M', 'T', 'P', 'Y', 'K', 'C', 'G', 'S', 'U', 'L', 'J', 'C', 'D', 'I', 'L', 'T', 'T', 'A', 'M', 'C', 'S', 'G'});
 // data:4620
 extern word cplevel_entr[14];
 #endif
