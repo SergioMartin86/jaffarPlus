@@ -5,3 +5,7 @@ pcem: https://github.com/TASEmulators/pcem/releases/tag/17%2Bst-1
 Bios/Roms: https://github.com/BaRRaKudaRain/PCem-ROMs
 early90 pack: https://files.tasvideos.org/common/Wiki/pcem/dos/PCem-Early90s.7z
 Info: https://tasvideos.org/EmulatorResources/PCem
+
+RNG Signature:
+00 00 00 b0 1d 2b 0f 00 00 00
+-0x0233
