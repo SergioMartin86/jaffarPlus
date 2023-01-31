@@ -1,3 +1,3 @@
-rm -f ${HOME}/.pcem/roms/pb570/flash.bin
+rm -f ${HOME}/.pcem/roms/*/flash.bin
 
-libTAS /usr/bin/pcem --config ${PWD}/early90s.cfg
+libTAS /usr/bin/pcem --config ${PWD}/late90s.cfg
