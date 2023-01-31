@@ -304,23 +304,29 @@ void explore(int argc, char *argv[])
   uint8_t h  = 12;
   uint8_t m  = 0;
   uint8_t s  = 0;
-  uint8_t ds = 10;
+  int64_t ns = 4200000;
   std::string ampm = "am";
 
-  uint32_t curRNG = 0x00EA8E0F;
+  const uint8_t posCopyProt = 4;
+  seed_was_init = 1;
+  hashMap_t goodRNGSet;
+  uint8_t maxLevel = 0;
+
+  uint32_t curRNG = 0x0071BA7E;
   for (size_t i = 0; i <= 1800000 && d == 0; i++)
 //  for (size_t i = 0; i < 350000; i++)
   {
     if (initialSet.contains(curRNG) == false) initialSet[curRNG] = solution_t { .initialRNG = curRNG, .timeStep = i };
-//    if (i == 1710000) { printf("+%02ud %02u:%02u:%02u.%02u %s - 0x%08X\n", d, h, m, s, ds, ampm.c_str(), curRNG); exit(0); }
+//    if (curRNG == 0x69b6329b)  { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); }
+//    if (curRNG == 0xbbe7e92)   { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); }
+//    if (curRNG == 0xd7fd5650)  { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); }
+//    if (curRNG == 0x8f8b548)  { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); exit(0); }
+    if (i == 662233) { printf("+%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); exit(0); }
     curRNG += 0x343FD;
-    if (i > 0 && i % 10 == 0) curRNG -= 0x343FD;
-    if (i > 0 && i % 96 == 0) curRNG += 0x343FD;
-    if (i > 0 && i % 11000 == 0) curRNG -= 0x343FD;
-    ds += 5;
-    if (ds >= 100)
+    ns += 5492550;
+    if (ns >= 100000000)
     {
-     ds = ds % 100;
+     ns = ns % 100000000;
      s++;
      if (s == 60 )
      {
@@ -343,12 +349,7 @@ void explore(int argc, char *argv[])
 //  exit(0);
 //  printf("Initial Set Size: %lu\n", initialSet.size());
 
-  const uint8_t posCopyProt = 4;
-  seed_was_init = 1;
-//  uint32_t maxRNG = 0xFFFFFFFF;
-//  uint32_t maxRNG = 0x000FFFFF;
-  hashMap_t goodRNGSet;
-  uint8_t maxLevel = 0;
+
 
 //  initialSet.clear();
 //  initialSet.push_back(solution_t { .initialRNG = 0x718D7F13, .timeStep = 212276 });
@@ -357,7 +358,15 @@ void explore(int argc, char *argv[])
    gameState.random_seed = solution.first;
    init_copyprot();
    init_copyprot();
-   if (copyprot_plac == posCopyProt)  goodRNGSet[std::make_pair(gameState.random_seed, 0)] = solution.second;
+   if (copyprot_plac == posCopyProt)
+   {
+    goodRNGSet[std::make_pair(gameState.random_seed, 0)] = solution.second;
+    if (solution.second.timeStep > 300)
+    {
+     printf("Found good copyprot place: %lu (RNG 0x%08lX -> 0x%08X)\n", solution.second.timeStep, solution.first, gameState.random_seed);
+     exit(0);
+    }
+   }
   }
   printf("Copyright Success Rate: %lu/%lu (%.2f%%)\n", goodRNGSet.size(), initialSet.size(), ((double)goodRNGSet.size() / (double)initialSet.size())*100.0);
 
