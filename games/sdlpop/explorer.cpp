@@ -31,7 +31,8 @@ struct level_t
  uint8_t levelId;
  std::string solutionFile;
  std::string moveSequence;
- std::vector<std::string> moveList;
+ std::vector<std::string> moveListStrings;
+ std::vector<uint8_t> moveList;
  uint16_t sequenceLength;
  std::string stateFile;
  uint8_t stateData[_STATE_DATA_SIZE_TRAIN];
@@ -118,8 +119,11 @@ void solve(int argc, char *argv[])
    lvlStruct.solutionFile = level["Solution File"].get<std::string>();
    auto statusSolution = loadStringFromFile(lvlStruct.moveSequence, lvlStruct.solutionFile.c_str());
    if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n", lvlStruct.solutionFile.c_str());
-   lvlStruct.moveList = split(lvlStruct.moveSequence, ' ');
-   lvlStruct.sequenceLength = lvlStruct.moveList.size();
+   lvlStruct.moveListStrings = split(lvlStruct.moveSequence, ' ');
+   lvlStruct.sequenceLength = lvlStruct.moveListStrings.size();
+
+   for (size_t i = 0; i < lvlStruct.sequenceLength; i++) lvlStruct.moveList.push_back(EmuInstance::moveStringToCode(lvlStruct.moveListStrings[i]));
+
    lvlStruct.stateFile = level["State File"].get<std::string>();
    _emuInstance->loadStateFile(lvlStruct.stateFile);
    _gameInstance->popState(lvlStruct.stateData);
@@ -202,7 +206,7 @@ void solve(int argc, char *argv[])
     ((uint8_t*)&bigEndianRNG)[1] = ((uint8_t*)&gameState.random_seed)[2];
     ((uint8_t*)&bigEndianRNG)[0] = ((uint8_t*)&gameState.random_seed)[3];
 
-    printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, Loose: %u, Move: '%s', Room: %u\n", gameState.current_level, j+1, levels[i].sequenceLength-1, bigEndianRNG, gameState.last_loose_sound, levels[i].moveList[j+1].c_str(), gameState.Kid.room);
+    printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, Loose: %u, Move: '%s', Room: %u\n", gameState.current_level, j+1, levels[i].sequenceLength-1, bigEndianRNG, gameState.last_loose_sound, levels[i].moveListStrings[j+1].c_str(), gameState.Kid.room);
    }
 
    if (gameState.current_level == levels[i].levelId) exit(0);
@@ -287,11 +291,18 @@ void explore(int argc, char *argv[])
   {
    const auto& level = config["Explorer Configuration"]["Level Data"][i];
    levels[i].levelId = level["Level Id"].get<uint8_t>();
+   printf("Loading Level %d...\n", levels[i].levelId);
    levels[i].solutionFile = level["Solution File"].get<std::string>();
    auto statusSolution = loadStringFromFile(levels[i].moveSequence, levels[i].solutionFile.c_str());
    if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n", levels[i].solutionFile.c_str());
-   levels[i].moveList = split(levels[i].moveSequence, ' ');
-   levels[i].sequenceLength = levels[i].moveList.size();
+   levels[i].moveListStrings = split(levels[i].moveSequence, ' ');
+   levels[i].sequenceLength = levels[i].moveListStrings.size();
+   //printf("sequenceLength: %lu\n", levels[i].sequenceLength);
+   for (size_t j = 0; j < levels[i].sequenceLength; j++)
+   {
+//    printf("Move %d, %s\n", j, levels[i].moveListStrings[j].c_str());
+    levels[i].moveList.push_back(EmuInstance::moveStringToCode(levels[i].moveListStrings[j]));
+   }
    levels[i].stateFile = level["State File"].get<std::string>();
    _emuInstances[0]->loadStateFile(levels[i].stateFile);
    _gameInstances[0]->popState(levels[i].stateData);
@@ -313,15 +324,15 @@ void explore(int argc, char *argv[])
   uint8_t maxLevel = 0;
 
   uint32_t curRNG = 0x0071BA7E;
-  for (size_t i = 0; i <= 1800000 && d == 0; i++)
-//  for (size_t i = 0; i < 350000; i++)
+  size_t curTime = 0;
+  for (; curTime <= 15800000; curTime++)
   {
-    if (initialSet.contains(curRNG) == false) initialSet[curRNG] = solution_t { .initialRNG = curRNG, .timeStep = i };
+    if (initialSet.contains(curRNG) == false) initialSet[curRNG] = solution_t { .initialRNG = curRNG, .timeStep = curTime };
 //    if (curRNG == 0x69b6329b)  { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); }
 //    if (curRNG == 0xbbe7e92)   { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); }
 //    if (curRNG == 0xd7fd5650)  { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); }
 //    if (curRNG == 0x8f8b548)  { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); exit(0); }
-    if (i == 662233) { printf("+%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); exit(0); }
+//    if (i == 4) { printf("+%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); exit(0); }
     curRNG += 0x343FD;
     ns += 5492550;
     if (ns >= 100000000)
@@ -346,32 +357,47 @@ void explore(int argc, char *argv[])
      }
     }
   }
+
+  printf("Last Timestep: %lu\n", curTime);
+  printf("Entries: %lu\n", initialSet.size());
 //  exit(0);
 //  printf("Initial Set Size: %lu\n", initialSet.size());
 
-
+//  curRNG = 0x00000DF3;
+//  for (size_t i = 0; i < 70; i++)
+//  {
+//   printf("%lu: 0x%08X", i , curRNG);
+//   if (curRNG == 0xDACDB1D4) printf(" <");
+//   if (curRNG == 0x1D5935EB) printf(" !1");
+//   if (curRNG == 0x152D1475) printf(" !2");
+//   printf("\n");
+//   curRNG = _emuInstances[0]->advanceRNGState(curRNG);
+//  }
 
 //  initialSet.clear();
-//  initialSet.push_back(solution_t { .initialRNG = 0x718D7F13, .timeStep = 212276 });
+//  initialSet[0x00000DF3] = solution_t { .initialRNG = 0x00000DF3, .timeStep = 662233 };
   for (const auto& solution : initialSet)
   {
    gameState.random_seed = solution.first;
+//   printf("R 0x%08X\n", gameState.random_seed);
    init_copyprot();
-   init_copyprot();
+//   printf("R 0x%08X\n", gameState.random_seed);
    if (copyprot_plac == posCopyProt)
    {
     goodRNGSet[std::make_pair(gameState.random_seed, 0)] = solution.second;
-    if (solution.second.timeStep > 300)
-    {
-     printf("Found good copyprot place: %lu (RNG 0x%08lX -> 0x%08X)\n", solution.second.timeStep, solution.first, gameState.random_seed);
-     exit(0);
-    }
+//    if (solution.second.timeStep < 300)
+//    {
+//     printf("Found good copyprot place: %lu (RNG 0x%08lX -> 0x%08X)\n", solution.second.timeStep, solution.first, gameState.random_seed);
+//     exit(0);
+//    }
    }
   }
   printf("Copyright Success Rate: %lu/%lu (%.2f%%)\n", goodRNGSet.size(), initialSet.size(), ((double)goodRNGSet.size() / (double)initialSet.size())*100.0);
 
 //  for (const auto& rng : goodRNGSet) printf("0x%08X\n", rng.second);
 //  exit(0);
+
+#define MAXDELAY 24
 
   for (size_t i = 0; i < levels.size(); i++)
   {
@@ -384,7 +410,7 @@ void explore(int argc, char *argv[])
      uint32_t curSeed = rng.first.first;
      auto newEntry = rng.second;
      newEntry.cutsceneDelays.push_back(0);
-     for (size_t q = 1; q < cutsceneDelays[i].size(); q++) // Cutscene frames to wait for
+     for (size_t q = 1; q < cutsceneDelays[i].size() && q < MAXDELAY; q++) // Cutscene frames to wait for
      {
       for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
       newEntry.cutsceneDelays[newEntry.cutsceneDelays.size()-1] = q;
@@ -422,11 +448,11 @@ void explore(int argc, char *argv[])
      size_t curMov = 0;
      for (; curMov < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; curMov++)
      {
-//      _gameInstances[threadId]->advanceState(levels[i].moveList[curMov]);
-      //printf("Step %u - Base Level: %u / Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", curMov, levels[i].levelId, gameState.current_level, levels[i].moveList[curMov].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
+      _gameInstances[threadId]->advanceGameState(levels[i].moveList[curMov]);
+      //printf("Step %lu - Base Level: %u / Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", curMov, levels[i].levelId, gameState.current_level, levels[i].moveListStrings[curMov].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
      }
 
-     if (gameState.current_level != levels[i].levelId)
+     if (gameState.next_level != levels[i].levelId)
      {
       if (i > curMaxLevel) curMaxLevel = i;
       #pragma omp critical
