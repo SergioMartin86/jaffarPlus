@@ -82,7 +82,7 @@
   {
     "Level Data":
     [
-     { "Level Id":  1, "State File": "../0100/state", "Solution File": "../0100/full", "RNG Offset": 0},
+     { "Level Id":  1, "State File": "../0100/state", "Solution File": "../0100/full", "RNG Offset": 2},
      { "Level Id": 15, "State File": "../1500/state", "Solution File": "../1500/full", "RNG Offset": 2},
      { "Level Id":  2, "State File": "../0200/state", "Solution File": "../0200/full", "RNG Offset": 2}, 
      { "Level Id":  3, "State File": "../0300/state", "Solution File": "../0300/full", "RNG Offset": 1},
