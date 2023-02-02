@@ -27,10 +27,10 @@ static std::vector<std::vector<uint8_t>> cutsceneDelays =
 /* 14 */  {}
  };
 
-static std::vector<std::vector<uint8_t>> startWaitDelays =
+static std::vector<std::vector<uint8_t>> endWaitDelays =
  {
 /* 01 */  {},
-/* 15 */  {7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7},
+/* 15 */  {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
 /* 02 */  {},
 /* 03 */  {},
 /* 04 */  {},
