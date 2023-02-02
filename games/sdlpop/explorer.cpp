@@ -14,8 +14,8 @@ struct solution_t
  uint32_t timeStep;
  uint8_t cutsceneDelays[16];
  uint16_t totalCutsceneDelay;
- uint8_t startDelays[16];
- uint16_t totalStartDelay;
+ uint8_t endDelays[16];
+ uint16_t totalEndDelay;
 };
 
 struct solutionFlat_t
@@ -251,7 +251,7 @@ void explore(int argc, char *argv[])
   for (size_t i = 0; i < levels.size(); i++)
   {
    // Flattening current set
-   printf("Starting Level: %u\n", levels[i].levelId);
+   printf("Ending Level: %u\n", levels[i].levelId);
 
    if (cutsceneDelays[i].size() > 0)
    {
@@ -291,68 +291,6 @@ void explore(int argc, char *argv[])
      for (size_t idx = 0; idx < newFlatSet.size(); idx++) goodRNGSet[std::make_pair(newFlatSet[idx].rng, newFlatSet[idx].looseSound)] = newFlatSet[idx].solution;
     }
    }
-
-   if (startWaitDelays[i].size() > 0)
-   {
-    printf("Adding start wait delays...\n");
-    printf("Flattening Set...\n");
-    std::vector<solutionFlat_t> flatSet;
-    flatSet.reserve(goodRNGSet.size());
-    for (const auto& x : goodRNGSet) flatSet.push_back(solutionFlat_t { .rng = x.first.first, .looseSound = x.first.second, .solution = x.second });
-    goodRNGSet.clear();
-
-    #pragma omp parallel
-    {
-     std::vector<solutionFlat_t> newFlatSet;
-
-     #pragma omp for
-     for (size_t idx = 0; idx < flatSet.size(); idx++)
-     {
-      uint32_t curSeed = flatSet[idx].rng;
-      auto newEntry = flatSet[idx].solution;
-
-      newEntry.startDelays[i] = 0;
-      newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
-
-      // Now adding cutscene delays (first one is mandatory)
-      for (size_t q = 0; q < startWaitDelays[i].size(); q++) // Cutscene frames to wait for
-      {
-       for (uint8_t k = 0; k < startWaitDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
-       newEntry.startDelays[i] = q+1;
-       newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
-      }
-     }
-
-     #pragma omp master
-     {
-      printf("Unflattening set...\n");
-      flatSet.clear();
-     }
-
-     #pragma omp critical
-     for (size_t idx = 0; idx < newFlatSet.size(); idx++) goodRNGSet[std::make_pair(newFlatSet[idx].rng, newFlatSet[idx].looseSound)] = newFlatSet[idx].solution;
-    }
-   }
-
-//   // Adding start wait rng delays
-//   printf("Adding start wait delays...")
-//   if (startWaitDelays[i].size() > 0)
-//   {
-//    hashMap_t tmpRNGSet;
-//    for (const auto& rng : goodRNGSet)
-//    {
-//     uint32_t curSeed = rng.first.first;
-//     auto newEntry = rng.second;
-//
-//     // Now adding start level delays
-//     for (size_t q = 0; q < startWaitDelays[i].size(); q++) // start frames to wait for
-//     {
-//      for (uint8_t k = 0; k < startWaitDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
-//      newEntry.startDelays[i] = q;
-//      tmpRNGSet[std::make_pair(curSeed, rng.first.second)] = newEntry;
-//     }
-//    }
-//   }
 
    std::vector<std::pair<std::pair<uint32_t, uint8_t>, solution_t>> currentSet(goodRNGSet.begin(), goodRNGSet.end());
 
@@ -404,6 +342,49 @@ void explore(int argc, char *argv[])
     printf("Level %u, Success Rate: %lu/%lu (%.2f%%)\n", levels[i].levelId, tmpRNGSet.size(), goodRNGSet.size(), ((double)tmpRNGSet.size() / (double)goodRNGSet.size())*100.0);
     if (tmpRNGSet.size() == 0) break;
     goodRNGSet = tmpRNGSet;
+
+    if (endWaitDelays[i].size() > 0)
+    {
+     printf("Adding start wait delays...\n");
+     printf("Flattening Set...\n");
+     std::vector<solutionFlat_t> flatSet;
+     flatSet.reserve(goodRNGSet.size());
+     for (const auto& x : goodRNGSet) flatSet.push_back(solutionFlat_t { .rng = x.first.first, .looseSound = x.first.second, .solution = x.second });
+     goodRNGSet.clear();
+
+     #pragma omp parallel
+     {
+      std::vector<solutionFlat_t> newFlatSet;
+
+      #pragma omp for
+      for (size_t idx = 0; idx < flatSet.size(); idx++)
+      {
+       uint32_t curSeed = flatSet[idx].rng;
+       auto newEntry = flatSet[idx].solution;
+
+       newEntry.endDelays[i] = 0;
+       newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
+
+       // Now adding cutscene delays (first one is mandatory)
+       for (size_t q = 0; q < endWaitDelays[i].size(); q++) // Cutscene frames to wait for
+       {
+        for (uint8_t k = 0; k < endWaitDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
+        newEntry.endDelays[i] = q+1;
+        newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
+       }
+      }
+
+      #pragma omp master
+      {
+       printf("Unflattening set...\n");
+       flatSet.clear();
+      }
+
+      #pragma omp critical
+      for (size_t idx = 0; idx < newFlatSet.size(); idx++) goodRNGSet[std::make_pair(newFlatSet[idx].rng, newFlatSet[idx].looseSound)] = newFlatSet[idx].solution;
+     }
+    }
+
     processing = false;
   }
 
@@ -413,19 +394,15 @@ void explore(int argc, char *argv[])
   {
     rng.second.totalCutsceneDelay = 0;
     for (size_t i = 0; i < 15; i++) rng.second.totalCutsceneDelay += rng.second.cutsceneDelays[i];
-    for (size_t i = 0; i < 15; i++) rng.second.totalStartDelay += rng.second.startDelays[i];
-    finalSet[rng.second.totalCutsceneDelay + rng.second.totalStartDelay] = rng.second;
+    for (size_t i = 0; i < 15; i++) rng.second.totalEndDelay += rng.second.endDelays[i];
+    finalSet[rng.second.totalCutsceneDelay + rng.second.totalEndDelay] = rng.second;
   }
 
   for (const auto& rng : finalSet)
   {
-    printf("0x%08X - Time: %u Cutscene Delays: [ ", rng.second.initialRNG, rng.second.timeStep);
-    for (size_t i = 0; i < 15; i++) printf(" %02u ", rng.second.cutsceneDelays[i]);
-    printf("] Total: %u - ", rng.second.totalCutsceneDelay);
-
-    printf("Start Delays: [ ");
-    for (size_t i = 0; i < 15; i++) printf(" %02u ", rng.second.startDelays[i]);
-    printf("] Total: %u\n", rng.second.totalStartDelay);
+    printf("0x%08X - Time: %u\n", rng.second.initialRNG, rng.second.timeStep);
+    printf(" + Cutscene Delays: [ %02u", rng.second.cutsceneDelays[0]); for (size_t i = 1; i < 15; i++) printf(", %02u", rng.second.cutsceneDelays[i]);  printf(" ] Total: %u\n", rng.second.totalCutsceneDelay);
+    printf(" + End Delays:      [ %02u", rng.second.endDelays[0]);      for (size_t i = 1; i < 15; i++) printf(", %02u", rng.second.endDelays[i]);     printf(" ] Total: %u\n", rng.second.totalEndDelay);
   }
 
   printf("Max Level: %u\n", levels[maxLevel].levelId);
@@ -473,21 +450,6 @@ void solve(int argc, char *argv[])
   // Creating game and emulator instances, and parsing rules
   _emuInstance = new EmuInstance(config["Emulator Configuration"]);
   _gameInstance = new GameInstance(_emuInstance, config["Game Configuration"]);
-
-//  uint32_t curRNG = 0x5973FFAB;
-//  for (size_t i = 0; i < 12; i++)
-//  {
-//   uint32_t bigEndianRNG;
-//   ((uint8_t*)&bigEndianRNG)[3] = ((uint8_t*)&curRNG)[0];
-//   ((uint8_t*)&bigEndianRNG)[2] = ((uint8_t*)&curRNG)[1];
-//   ((uint8_t*)&bigEndianRNG)[1] = ((uint8_t*)&curRNG)[2];
-//   ((uint8_t*)&bigEndianRNG)[0] = ((uint8_t*)&curRNG)[3];
-//
-//   curRNG = _emuInstance->advanceRNGState(curRNG);
-//
-//   printf("RNG: 0x%08x\n", bigEndianRNG);
-//  }
-//  exit(0);
 
   // Level solution storage
   std::vector<level_t> levels;
@@ -557,8 +519,8 @@ void solve(int argc, char *argv[])
   }
 
   seed_was_init = 1;
-  size_t curDelayIdx = 0;
-  std::vector<uint8_t> cutsceneDelayCounts({ 00, 00, 06, 00, 01, 00, 05, 00, 01, 01, 00, 00, 00, 00, 00 });
+  std::vector<uint8_t> cutsceneDelayCounts({ 00, 00, 07, 00, 12, 00, 41, 00, 15, 11, 00, 00, 00, 00, 00 });
+  std::vector<uint8_t> endDelayCounts({      00, 07, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00 });
   gameState.random_seed = initialRNG;
   printf("0x%08X\n", gameState.random_seed);
   init_copyprot();
@@ -576,19 +538,14 @@ void solve(int argc, char *argv[])
 
   for (size_t i = 0; i < levels.size(); i++)
   {
-//   // Adding cutscene rng states
-//   for (ssize_t q = 0; q < cutsceneDelayCounts[curDelayIdx]; q++)
-//   {
-//    uint32_t bigEndianRNG;
-//    ((uint8_t*)&bigEndianRNG)[3] = ((uint8_t*)&gameState.random_seed)[0];
-//    ((uint8_t*)&bigEndianRNG)[2] = ((uint8_t*)&gameState.random_seed)[1];
-//    ((uint8_t*)&bigEndianRNG)[1] = ((uint8_t*)&gameState.random_seed)[2];
-//    ((uint8_t*)&bigEndianRNG)[0] = ((uint8_t*)&gameState.random_seed)[3];
-//    for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
-//    printf("Do Delay: 0x%08x\n", bigEndianRNG);
-//   }
 
-   curDelayIdx++;
+   // Adding cutscene rng states
+   for (ssize_t q = 0; q < cutsceneDelayCounts[i]; q++)
+   {
+    auto prev = gameState.random_seed;
+    for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
+    printf("Do Wait Delay: 0x%08x -> 0x%08x\n", prev, gameState.random_seed);
+   }
 
    currentRNG = gameState.random_seed;
    currentLastLooseSound = gameState.last_loose_sound;
@@ -606,17 +563,27 @@ void solve(int argc, char *argv[])
 
    for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
    {
-    printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, Loose: %u, Move: '%s', Room: %u\n", gameState.current_level, j+1, levels[i].sequenceLength-1, gameState.random_seed, gameState.last_loose_sound, levels[i].moveListStrings[j].c_str(), gameState.Kid.room);
+    printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, Loose: %u, Move: '%s', Room: %u", gameState.current_level, j+1, levels[i].sequenceLength-1, gameState.random_seed, gameState.last_loose_sound, levels[i].moveListStrings[j].c_str(), gameState.Kid.room);
+    if (endDelayCounts[i] > 0) if (j - endDelayCounts[i] > 0) if (levels[i].moveListStrings[j-endDelayCounts[i]] == "....U..") printf(" <<---- New U");
+    printf("\n");
     _gameInstance->advanceGameState(levels[i].moveList[j]);
     //printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
    }
 
-   if (gameState.current_level == levels[i].levelId) exit(0);
+   // Adding end delays
+   for (ssize_t q = 0; q < endDelayCounts[i]; q++)
+   {
+    auto prev = gameState.random_seed;
+    for (uint8_t k = 0; k < endWaitDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
+    printf("Do End Delay: 0x%08x -> 0x%08x\n", prev, gameState.random_seed);
+   }
+
+   if (i == 2) exit(0);
   }
 }
 
 int main(int argc, char *argv[])
 {
  solve(argc, argv);
- explore(argc, argv);
+// explore(argc, argv);
 }
