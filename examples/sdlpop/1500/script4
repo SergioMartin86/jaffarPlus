@@ -128,7 +128,8 @@
     "Label": 15003,
     "Conditions":
     [ 
-     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 },
+     { "Property": "Tile BG State", "Room": 3, "Tile": 27, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
     ],
     
     "Satisfies": [ 15002 ],
@@ -144,7 +145,8 @@
     "Label": 15999,
     "Conditions":
     [
-     { "Property": "Next Level", "Op": "==", "Value":  2 }
+     { "Property": "Next Level", "Op": "==", "Value":  2 },
+     { "Property": "Tile BG State", "Room": 3, "Tile": 27, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
     ],
    
     "Satisfies": [ ],

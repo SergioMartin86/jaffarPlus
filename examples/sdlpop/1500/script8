@@ -25,7 +25,7 @@
    "Active Objects Hash Types":
    [
      { "Level": 15, "Room": 3, "Tile": 27, "Type": "Full" },
-     { "Level": 15, "Room": 4, "Tile": 2, "Type": "Full" }
+     { "Level": 15, "Room": 4, "Tile": 8, "Type": "Full" }
    ]
   },
   
@@ -139,7 +139,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 80 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 255 }
     ]
    },
    
@@ -147,7 +147,7 @@
     "Label": 15004,
     "Conditions":
     [ 
-     { "Property": "Tile FG State", "Room": 4, "Tile": 2, "Op": "==", "Value": 1 }
+     { "Property": "Tile FG State", "Room": 4, "Tile": 8, "Op": "==", "Value": 1 }
     ],
     
     "Satisfies": [ 15003 ],
@@ -165,7 +165,7 @@
     "Conditions":
     [ 
      { "Property": "Kid Room", "Op": "==", "Value": 3 },
-     { "Property": "Tile FG State", "Room": 4, "Tile": 2, "Op": "==", "Value": 1 }
+     { "Property": "Tile FG State", "Room": 4, "Tile": 8, "Op": "==", "Value": 1 }
     ],
     
     "Satisfies": [ 15004 ],
@@ -183,7 +183,7 @@
     "Conditions":
     [ 
      { "Property": "Kid Frame", "Op": "==", "Value": 217 },
-     { "Property": "Tile FG State", "Room": 4, "Tile": 2, "Op": "==", "Value": 1 }
+     { "Property": "Tile FG State", "Room": 4, "Tile": 8, "Op": "==", "Value": 1 }
     ],
     
     "Satisfies": [ 15005 ],
@@ -200,7 +200,7 @@
     "Conditions":
     [
      { "Property": "Next Level", "Op": "==", "Value":  2 },
-     { "Property": "Tile FG State", "Room": 4, "Tile": 2, "Op": "==", "Value": 1 }
+     { "Property": "Tile FG State", "Room": 4, "Tile": 8, "Op": "==", "Value": 1 }
     ],
    
     "Satisfies": [ ],
