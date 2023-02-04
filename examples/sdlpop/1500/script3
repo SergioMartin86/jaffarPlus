@@ -1,0 +1,177 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 0,
+    "Loose Tile Sound Id": 0
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4,
+   "Property Hash Types": [ ],
+   "Static Tile Hash Types":
+   [ 
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Level": 15, "Room": 3, "Tile": 27, "Type": "Full" },
+     { "Level": 15, "Room": 3, "Tile": 10, "Type": "Full" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 200,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 8000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 15000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay"
+  },
+ 
+  "Rules":
+  [
+   {
+    "Label": 15000,
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value":  6 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 6, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 15001,
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ 15000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 110 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 15002,
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value": 3 },
+     { "Property": "Kid Position Y", "Op": "==", "Value": 55 }
+    ],
+    
+    "Satisfies": [ 15001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 160 }
+    ]
+   },
+   
+   {
+    "Label": 15003,
+    "Conditions":
+    [ 
+     { "Property": "Tile FG State", "Room": 3, "Tile": 10, "Op": "==", "Value": 1 }
+    ],
+    
+    "Satisfies": [ 15002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 170 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 3, "Intensity": 5.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 15004,
+    "Conditions":
+    [ 
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+    ],
+    
+    "Satisfies": [ 15003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 0 }
+    ]
+   },
+   
+   {
+    "Label": 15999,
+    "Conditions":
+    [
+     { "Property": "Next Level", "Op": "==", "Value":  2 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}

@@ -1,53 +1,8 @@
 #include <unistd.h>
 #include <stdlib.h>
-#include <set>
 #include "argparse.hpp"
-#include "gameInstance.hpp"
-#include "emuInstance.hpp"
-#include "utils.hpp"
-#include <parallel_hashmap/phmap.h>
+#include <explorer.hpp>
 #include <omp.h>
-
-struct solution_t
-{
- uint32_t initialRNG;
- uint32_t timeStep;
- uint8_t cutsceneDelays[16];
- uint16_t totalCutsceneDelay;
- uint8_t endDelays[16];
- uint16_t totalEndDelay;
-};
-
-struct solutionFlat_t
-{
- uint32_t rng;
- uint8_t looseSound;
- solution_t solution;
-};
-
-// Configuration for parallel hash maps
-#define MAPNAME phmap::parallel_flat_hash_map
-#define MAPEXTRAARGS , phmap::priv::hash_default_hash<K>, phmap::priv::hash_default_eq<K>, std::allocator<std::pair<const K, V>>, 4, std::mutex
-template <class K, class V> using HashMapT = MAPNAME<K, V MAPEXTRAARGS>;
-using hashMap_t = HashMapT<std::pair<uint32_t, uint8_t>, solution_t>;
-
-uint64_t processedRNGs;
-uint64_t targetRNGs;
-uint64_t successRNGs;
-bool processing = false;
-
-struct level_t
-{
- uint8_t levelId;
- std::string solutionFile;
- std::string moveSequence;
- std::vector<std::string> moveListStrings;
- std::vector<uint8_t> moveList;
- uint16_t sequenceLength;
- std::string stateFile;
- uint8_t stateData[_STATE_DATA_SIZE_TRAIN];
- uint8_t RNGOffset;
-};
 
 // Functions for the show thread
 void* progressThreadFunction(void *ptr)
@@ -60,7 +15,7 @@ void* progressThreadFunction(void *ptr)
  return NULL;
 }
 
-void explore(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   // Parsing command line arguments
   argparse::ArgumentParser program("jaffar-Explorer", "2.0");
@@ -172,15 +127,10 @@ void explore(int argc, char *argv[])
 
   uint32_t curRNG = 0x0071BA7E;
   uint32_t curTime = 0;
-  //15800000
-  for (; curTime <= 158000; curTime++)
+  //1573040
+  for (; curTime <= 1573040 && d == 0; curTime++)
   {
     if (initialSet.contains(curRNG) == false) initialSet[curRNG] = solution_t { .initialRNG = curRNG, .timeStep = curTime };
-//    if (curRNG == 0x69b6329b)  { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); }
-//    if (curRNG == 0xbbe7e92)   { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); }
-//    if (curRNG == 0xd7fd5650)  { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); }
-//    if (curRNG == 0x8f8b548)  { printf("i: %ld -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", i, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); exit(0); }
-//    if (i == 4) { printf("+%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); exit(0); }
     curRNG += 0x343FD;
     ns += 5492550;
     if (ns >= 100000000)
@@ -208,51 +158,25 @@ void explore(int argc, char *argv[])
 
   printf("Last Timestep: %u\n", curTime);
   printf("Entries: %lu\n", initialSet.size());
-//  exit(0);
-//  printf("Initial Set Size: %lu\n", initialSet.size());
 
-//  curRNG = 0x00000DF3;
-//  for (size_t i = 0; i < 70; i++)
-//  {
-//   printf("%lu: 0x%08X", i , curRNG);
-//   if (curRNG == 0xDACDB1D4) printf(" <");
-//   if (curRNG == 0x1D5935EB) printf(" !1");
-//   if (curRNG == 0x152D1475) printf(" !2");
-//   printf("\n");
-//   curRNG = _emuInstances[0]->advanceRNGState(curRNG);
-//  }
-
-//  initialSet.clear();
-//  initialSet[0x00000DF3] = solution_t { .initialRNG = 0x00000DF3, .timeStep = 662233 };
   for (const auto& solution : initialSet)
   {
    gameState.random_seed = solution.first;
-//   printf("R 0x%08X\n", gameState.random_seed);
    init_copyprot();
-//   printf("R 0x%08X\n", gameState.random_seed);
    if (copyprot_plac == posCopyProt)
-   {
     goodRNGSet[std::make_pair(gameState.random_seed, 0)] = solution.second;
-//    if (solution.second.timeStep < 300)
-//    {
-//     printf("Found good copyprot place: %lu (RNG 0x%08lX -> 0x%08X)\n", solution.second.timeStep, solution.first, gameState.random_seed);
-//     exit(0);
-//    }
-   }
   }
   printf("Copyright Success Rate: %lu/%lu (%.2f%%)\n", goodRNGSet.size(), initialSet.size(), ((double)goodRNGSet.size() / (double)initialSet.size())*100.0);
 
-//  for (const auto& rng : goodRNGSet) printf("0x%08X\n", rng.second);
-//  exit(0);
 
-
-  // Adding cutscene rng delays
-#define MAX_CUTSCENE_DELAY 48
+  ////// Explorer Start
   for (size_t i = 0; i < levels.size(); i++)
   {
    // Flattening current set
-   printf("Ending Level: %u\n", levels[i].levelId);
+   printf("Starting Level: %u\n", levels[i].levelId);
 
+   // Adding cutscene rng delays
+   #define MAX_CUTSCENE_DELAY 44
    if (cutsceneDelays[i].size() > 0)
    {
     printf("Adding cutscene delays...\n");
@@ -261,6 +185,8 @@ void explore(int argc, char *argv[])
     flatSet.reserve(goodRNGSet.size());
     for (const auto& x : goodRNGSet) flatSet.push_back(solutionFlat_t { .rng = x.first.first, .looseSound = x.first.second, .solution = x.second });
     goodRNGSet.clear();
+
+    int currentUnflatteningStep = 0;
 
     #pragma omp parallel
     {
@@ -277,28 +203,43 @@ void explore(int argc, char *argv[])
       {
        for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
        newEntry.cutsceneDelays[i] = q+1;
+       newEntry.totalDelay++;
        newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
       }
      }
 
+     // Printing progress and clearing input set
      #pragma omp master
      {
       printf("Unflattening set...\n");
       flatSet.clear();
      }
 
+     // Pushing new states to RNG set
      #pragma omp critical
-     for (size_t idx = 0; idx < newFlatSet.size(); idx++) goodRNGSet[std::make_pair(newFlatSet[idx].rng, newFlatSet[idx].looseSound)] = newFlatSet[idx].solution;
+     {
+      if (currentUnflatteningStep % 10 == 0) printf("Unflatenning Step: %u/%u\n", currentUnflatteningStep, _threadCount);
+      for (size_t idx = 0; idx < newFlatSet.size(); idx++)
+      {
+       auto key = std::make_pair(newFlatSet[idx].rng, newFlatSet[idx].looseSound);
+       bool isKeyPresent = goodRNGSet.contains(key);
+       bool addEntry = false;
+       if (isKeyPresent == false) addEntry = true;
+       if ((isKeyPresent == true) &&  (goodRNGSet[key].totalDelay > newFlatSet[idx].solution.totalDelay)) addEntry = true;
+       if (addEntry == true) goodRNGSet[key] = newFlatSet[idx].solution;
+      }
+      currentUnflatteningStep++;
+     }
     }
    }
 
+   // Storage for new states
    std::vector<std::pair<std::pair<uint32_t, uint8_t>, solution_t>> currentSet(goodRNGSet.begin(), goodRNGSet.end());
 
    processedRNGs = 0;
    successRNGs = 0;
    targetRNGs = currentSet.size();
    uint8_t curMaxLevel = 0;
-
    hashMap_t tmpRNGSet;
 
    printf("Running solution...\n");
@@ -342,6 +283,7 @@ void explore(int argc, char *argv[])
     printf("Level %u, Success Rate: %lu/%lu (%.2f%%)\n", levels[i].levelId, tmpRNGSet.size(), goodRNGSet.size(), ((double)tmpRNGSet.size() / (double)goodRNGSet.size())*100.0);
     if (tmpRNGSet.size() == 0) break;
     goodRNGSet = tmpRNGSet;
+    processing = false;
 
     if (endWaitDelays[i].size() > 0)
     {
@@ -351,6 +293,7 @@ void explore(int argc, char *argv[])
      flatSet.reserve(goodRNGSet.size());
      for (const auto& x : goodRNGSet) flatSet.push_back(solutionFlat_t { .rng = x.first.first, .looseSound = x.first.second, .solution = x.second });
      goodRNGSet.clear();
+     int currentUnflatteningStep = 0;
 
      #pragma omp parallel
      {
@@ -370,220 +313,65 @@ void explore(int argc, char *argv[])
        {
         for (uint8_t k = 0; k < endWaitDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
         newEntry.endDelays[i] = q+1;
+        newEntry.totalDelay++;
+        if (levels[i].levelId != 15) newEntry.costlyDelay++; // Increase costly delay, except for copyright level, where it doesn't matter
         newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
        }
       }
 
+      // Clearing old set
       #pragma omp master
       {
        printf("Unflattening set...\n");
        flatSet.clear();
       }
 
+      // Pushing new states to RNG set
       #pragma omp critical
-      for (size_t idx = 0; idx < newFlatSet.size(); idx++) goodRNGSet[std::make_pair(newFlatSet[idx].rng, newFlatSet[idx].looseSound)] = newFlatSet[idx].solution;
-     }
-    }
-
-    processing = false;
-  }
-
-  std::map<uint16_t, solution_t> finalSet;
-
-  for (auto& rng : goodRNGSet)
-  {
-    rng.second.totalCutsceneDelay = 0;
-    for (size_t i = 0; i < 15; i++) rng.second.totalCutsceneDelay += rng.second.cutsceneDelays[i];
-    for (size_t i = 0; i < 15; i++) rng.second.totalEndDelay += rng.second.endDelays[i];
-    finalSet[rng.second.totalCutsceneDelay + rng.second.totalEndDelay] = rng.second;
-  }
-
-  for (const auto& rng : finalSet)
-  {
-    printf("0x%08X - Time: %u\n", rng.second.initialRNG, rng.second.timeStep);
-    printf(" + Cutscene Delays: [ %02u", rng.second.cutsceneDelays[0]); for (size_t i = 1; i < 15; i++) printf(", %02u", rng.second.cutsceneDelays[i]);  printf(" ] Total: %u\n", rng.second.totalCutsceneDelay);
-    printf(" + End Delays:      [ %02u", rng.second.endDelays[0]);      for (size_t i = 1; i < 15; i++) printf(", %02u", rng.second.endDelays[i]);     printf(" ] Total: %u\n", rng.second.totalEndDelay);
-  }
-
-  printf("Max Level: %u\n", levels[maxLevel].levelId);
-}
-
-void solve(int argc, char *argv[])
-{
-  // Parsing command line arguments
-  argparse::ArgumentParser program("jaffar-Explorer", "2.0");
-
-  program.add_argument("configFile")
-    .help("path to the Jaffar configuration script (.jaffar) file to run.")
-    .required();
-
-  // Try to parse arguments
-  try { program.parse_args(argc, argv);  }
-  catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
-
-  // Parsing config file
-  std::string configFile = program.get<std::string>("configFile");
-  std::string configFileString;
-  auto statusConfig = loadStringFromFile(configFileString, configFile.c_str());
-  if (statusConfig == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
-
-  nlohmann::json config;
-  try { config = nlohmann::json::parse(configFileString); }
-  catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
-
-  // Checking whether it contains the rules field
-  if (isDefined(config, "Rules") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Rules' key.\n");
-
-  // Checking whether it contains the emulator configuration field
-  if (isDefined(config, "Emulator Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Emulator Configuration' key.\n");
-
-  // Checking whether it contains the Game configuration field
-  if (isDefined(config, "Game Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Game Configuration' key.\n");
-
-  // Checking whether it contains the Explorer configuration field
-  if (isDefined(config, "Explorer Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Explorer Configuration' key.\n");
-
-  // Creating game instances, one per openMP thread
-  GameInstance* _gameInstance;
-  EmuInstance* _emuInstance;
-
-  // Creating game and emulator instances, and parsing rules
-  _emuInstance = new EmuInstance(config["Emulator Configuration"]);
-  _gameInstance = new GameInstance(_emuInstance, config["Game Configuration"]);
-
-  // Level solution storage
-  std::vector<level_t> levels;
-
-  // Loading solution files
-  for (const auto& level : config["Explorer Configuration"]["Level Data"])
-  {
-   level_t lvlStruct;
-   lvlStruct.levelId = level["Level Id"].get<uint8_t>();
-   lvlStruct.solutionFile = level["Solution File"].get<std::string>();
-   auto statusSolution = loadStringFromFile(lvlStruct.moveSequence, lvlStruct.solutionFile.c_str());
-   if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n", lvlStruct.solutionFile.c_str());
-   lvlStruct.moveListStrings = split(lvlStruct.moveSequence, ' ');
-   lvlStruct.sequenceLength = lvlStruct.moveListStrings.size();
-
-   for (size_t i = 0; i < lvlStruct.sequenceLength; i++) lvlStruct.moveList.push_back(EmuInstance::moveStringToCode(lvlStruct.moveListStrings[i]));
-
-   lvlStruct.stateFile = level["State File"].get<std::string>();
-   _emuInstance->loadStateFile(lvlStruct.stateFile);
-   _gameInstance->popState(lvlStruct.stateData);
-   lvlStruct.RNGOffset = level["RNG Offset"].get<uint8_t>();
-   levels.push_back(lvlStruct);
-  }
-
-
-  uint32_t initialRNG = 0xD90FCF97;
-
-  uint8_t d  = 0;
-  uint8_t h  = 12;
-  uint8_t m  = 0;
-  uint8_t s  = 0;
-  int64_t ns = 4200000;
-  std::string ampm = "am";
-
-  seed_was_init = 1;
-  hashMap_t goodRNGSet;
-
-  uint32_t curRNG = 0x0071BA7E;
-  uint32_t curTime = 0;
-  //15800000
-  for (; curTime <= 158000; curTime++)
-  {
-    if (curRNG == initialRNG)  { printf("i: %d -> +%02ud %02u:%02u:%02u.%02lu %s - 0x%08X\n", curTime, d, h, m, s, ns / 1000000, ampm.c_str(), curRNG); break; }
-    curRNG += 0x343FD;
-    ns += 5492550;
-    if (ns >= 100000000)
-    {
-     ns = ns % 100000000;
-     s++;
-     if (s == 60 )
-     {
-      s = 0;
-      m++;
-      if (m == 60 )
       {
-       m = 0;
-       if (h == 11)
+       if (currentUnflatteningStep % 10 == 0) printf("Unflatenning Step: %u/%u\n", currentUnflatteningStep, _threadCount);
+       for (size_t idx = 0; idx < newFlatSet.size(); idx++)
        {
-         if (ampm == "am") ampm = "pm";
-         else if (ampm == "pm") { ampm = "am"; d++; }
-         h = 12;
+
+        auto key = std::make_pair(newFlatSet[idx].rng, newFlatSet[idx].looseSound);
+        bool isKeyPresent = goodRNGSet.contains(key);
+        bool addEntry = false;
+        if (isKeyPresent == false) addEntry = true;
+        if ((isKeyPresent == true) &&  (goodRNGSet[key].costlyDelay > newFlatSet[idx].solution.costlyDelay)) addEntry = true;
+        if (addEntry == true) goodRNGSet[key] = newFlatSet[idx].solution;
+
        }
-       else { h++; h = h % 12;}
+       currentUnflatteningStep++;
       }
      }
     }
   }
 
-  seed_was_init = 1;
-  std::vector<uint8_t> cutsceneDelayCounts({ 00, 00, 07, 00, 12, 00, 41, 00, 15, 11, 00, 00, 00, 00, 00 });
-  std::vector<uint8_t> endDelayCounts({      00, 07, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00 });
-  gameState.random_seed = initialRNG;
-  printf("0x%08X\n", gameState.random_seed);
-  init_copyprot();
-  printf("0x%08X\n", gameState.random_seed);
-  printf("Copy Prot Place: %u\n", copyprot_plac);
-  if (copyprot_plac != 4)
+  // Printing Final Set
+  printf("Printing final set...\n");
+  std::map<uint32_t, solution_t> uniqueSet;
+  std::map<uint16_t, solution_t> sortedSet;
+
+  for (auto& rng : goodRNGSet)
   {
-   printf("Bad Seed!\n");
-   exit(0);
+   bool replaceEntry = false;
+   if (uniqueSet.contains(rng.second.timeStep) == false) replaceEntry = true;
+   if (uniqueSet.contains(rng.second.timeStep) == true && (uniqueSet[rng.second.timeStep].costlyDelay > rng.second.costlyDelay)) replaceEntry = true;
+   if (uniqueSet.contains(rng.second.timeStep) == true && (uniqueSet[rng.second.timeStep].costlyDelay == rng.second.costlyDelay && uniqueSet[rng.second.timeStep].totalDelay > rng.second.totalDelay)) replaceEntry = true;
+   if (replaceEntry == true) uniqueSet[rng.second.timeStep] = rng.second;
+  }
+  for (auto& rng : uniqueSet) sortedSet[rng.second.totalDelay] = rng.second;
+
+  for (const auto& rng : sortedSet)
+  {
+    printf("0x%08X - Time: %u\n", rng.second.initialRNG, rng.second.timeStep);
+    printf(" + Cutscene Delays: { %2u", rng.second.cutsceneDelays[0]); for (size_t i = 1; i < 15; i++) printf(", %2u", rng.second.cutsceneDelays[i]);  printf(" }\n");
+    printf(" + End Delays:      { %2u", rng.second.endDelays[0]);      for (size_t i = 1; i < 15; i++) printf(", %2u", rng.second.endDelays[i]);     printf(" }\n");
+    printf(" + Total Delay: %u\n", rng.second.totalDelay);
+    printf(" + Costly Delay: %u\n", rng.second.costlyDelay);
   }
 
-  uint32_t currentRNG;
-  uint8_t currentLastLooseSound = 0;
-  gameState.last_loose_sound = 0;
+  printf("Max Level: %u\n", levels[maxLevel].levelId);
 
-  for (size_t i = 0; i < levels.size(); i++)
-  {
-
-   // Adding cutscene rng states
-   for (ssize_t q = 0; q < cutsceneDelayCounts[i]; q++)
-   {
-    auto prev = gameState.random_seed;
-    for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
-    printf("Do Wait Delay: 0x%08x -> 0x%08x\n", prev, gameState.random_seed);
-   }
-
-   currentRNG = gameState.random_seed;
-   currentLastLooseSound = gameState.last_loose_sound;
-   _gameInstance->pushState(levels[i].stateData);
-   gameState.random_seed = currentRNG;
-   gameState.last_loose_sound = currentLastLooseSound;
-
-   printf("PreLevel00: 0x%08x <<<--- Press enter here\n", gameState.random_seed);
-
-   for (uint8_t k = 0; k < levels[i].RNGOffset; k++)
-   {
-    gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
-    printf("PreLevel%02u: 0x%08x\n", k+1, gameState.random_seed);
-   }
-
-   for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
-   {
-    printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, Loose: %u, Move: '%s', Room: %u", gameState.current_level, j+1, levels[i].sequenceLength-1, gameState.random_seed, gameState.last_loose_sound, levels[i].moveListStrings[j].c_str(), gameState.Kid.room);
-    if (endDelayCounts[i] > 0) if (j - endDelayCounts[i] > 0) if (levels[i].moveListStrings[j-endDelayCounts[i]] == "....U..") printf(" <<---- New U");
-    printf("\n");
-    _gameInstance->advanceGameState(levels[i].moveList[j]);
-    //printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
-   }
-
-   // Adding end delays
-   for (ssize_t q = 0; q < endDelayCounts[i]; q++)
-   {
-    auto prev = gameState.random_seed;
-    for (uint8_t k = 0; k < endWaitDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
-    printf("Do End Delay: 0x%08x -> 0x%08x\n", prev, gameState.random_seed);
-   }
-
-   if (i == 2) exit(0);
-  }
-}
-
-int main(int argc, char *argv[])
-{
- solve(argc, argv);
-// explore(argc, argv);
+  return 0;
 }

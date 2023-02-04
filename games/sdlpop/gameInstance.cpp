@@ -438,6 +438,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   if (gameState.current_level == 3) LOG("[Jaffar]  + Reached Checkpoint:   %s\n", gameState.checkpoint ? "Yes" : "No");
   if (gameState.current_level == 7) LOG("[Jaffar]  + Feather Fall:         %d\n", gameState.is_feather_fall);
   if (gameState.current_level == 12) LOG("[Jaffar]  + United With Shadow:   %d\n", gameState.united_with_shadow);
+
   LOG("[Jaffar]  + Demo Index / Timer:   %03u / %03u\n", gameState.demo_index, gameState.demo_time);
   LOG("[Jaffar]  + Last Sound Id:        %d\n", gameState.last_loose_sound);
 

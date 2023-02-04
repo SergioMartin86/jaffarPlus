@@ -39,7 +39,7 @@ jaffarSrc = [
 
 # Common Jaffar CFlags
 
-jaffarCFlags = [ '-Wfatal-errors', '-Wall', '-DINPUT_TYPE=' + inputType ]
+jaffarCPPFlags = [ '-Wfatal-errors', '-Wall', '-DINPUT_TYPE=' + inputType ]
 
 # Building main Jaffar training executable
 executable('jaffar',
@@ -49,7 +49,7 @@ executable('jaffar',
   dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
   link_with: [ platformTrainLibs ],
   link_args: [ platformTrainLFlags, xdelta3LFlags ],
-  cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags, xdelta3CFlags ],
+  cpp_args: [ jaffarCPPFlags, platformTrainCPPFlags, gameInstanceCPPFlags, xdelta3CFlags ],
   c_args: [ platformTrainCFlags, gameInstanceCFlags ]
 )
 
@@ -61,7 +61,7 @@ executable('jaffar-play',
   dependencies: [ platformPlayDependencies ],
   link_with: [ platformPlayLibs ],
   link_args: [ platformPlayLFlags, '-lncurses', xdelta3LFlags ],
-  cpp_args: [ jaffarCFlags, platformPlayCFlags, gameInstanceCFlags, '-DNCURSES', xdelta3CFlags, '-D_JAFFAR_PLAY' ],
+  cpp_args: [ jaffarCPPFlags, platformPlayCPPFlags, gameInstanceCPPFlags, '-DNCURSES', xdelta3CFlags, '-D_JAFFAR_PLAY' ],
   c_args: [ platformPlayCFlags, gameInstanceCFlags ] 
 )
 
@@ -74,7 +74,8 @@ foreach g : gameTools
     dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
     link_with: [ platformTrainLibs ],
     link_args: [ platformTrainLFlags ],
-    cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags ]
+    cpp_args: [ jaffarCPPFlags, platformTrainCPPFlags, gameInstanceCPPFlags ],
+    c_args: [ jaffarCPPFlags, platformTrainCFlags, gameInstanceCFlags ]
   )
 endforeach
 
@@ -100,7 +101,7 @@ executable('jaffar-rl',
   dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
   link_with: [ platformTrainLibs ],
   link_args: [ platformTrainLFlags, xdelta3LFlags, korali_cppLibs ],
-  cpp_args: [ jaffarCFlags, platformTrainCFlags, gameInstanceCFlags, xdelta3CFlags, korali_cppFlags, '-DDISABLE_MAIN' ],
+  cpp_args: [ jaffarCPPFlags, platformTrainCPPFlags, gameInstanceCPPFlags, xdelta3CFlags, korali_cppFlags, '-DDISABLE_MAIN' ],
   c_args: [ platformTrainCFlags, gameInstanceCFlags ]
 )
 
