@@ -4232,6 +4232,11 @@ void  do_pickup(int obj_type)
   gameState.pickup_obj_type = obj_type;
   control_shift2 = 1;
   // erase picked up item
+  if (gameState.current_level == 15)
+  {
+   gameState.level.fg[71] = tiles_1_floor;
+   gameState.level.bg[71] = 0;
+  }
   curr_room_tiles[curr_tilepos] = tiles_1_floor;
   curr_room_modif[curr_tilepos] = 0;
   redraw_height = 35;
