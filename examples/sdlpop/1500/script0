@@ -147,7 +147,8 @@
     "Label": 15004,
     "Conditions":
     [ 
-     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 },
+     { "Property": "Tile FG State", "Room": 3, "Tile": 2, "Op": "==", "Value": 1 }
     ],
     
     "Satisfies": [ 15003 ],
@@ -163,7 +164,8 @@
     "Label": 15999,
     "Conditions":
     [
-     { "Property": "Next Level", "Op": "==", "Value":  2 }
+     { "Property": "Next Level", "Op": "==", "Value":  2 },
+     { "Property": "Tile FG State", "Room": 3, "Tile": 2, "Op": "==", "Value": 1 }
     ],
    
     "Satisfies": [ ],
