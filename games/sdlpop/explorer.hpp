@@ -4,6 +4,8 @@
 #include "utils.hpp"
 #include <parallel_hashmap/phmap.h>
 
+#define COPYPROT_SOLUTION_COUNT 14
+
 static std::vector<std::vector<uint8_t>> cutsceneDelays =
  {
 /* 01 */  {},
@@ -26,7 +28,7 @@ static std::vector<std::vector<uint8_t>> cutsceneDelays =
 static std::vector<std::vector<uint8_t>> endWaitDelays =
  {
 /* 01 */  {},
-/* 15 */  {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
+/* 15 */  {2,2,2,2,2,2,2,2},
 /* 02 */  {},
 /* 03 */  {},
 /* 04 */  {},
@@ -50,6 +52,7 @@ struct solution_t
  uint8_t endDelays[16];
  uint16_t totalDelay = 0;
  uint16_t costlyDelay = 0;
+ uint8_t copyProtPlace = 0;
 };
 
 struct solutionFlat_t
