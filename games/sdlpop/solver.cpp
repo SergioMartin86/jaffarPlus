@@ -50,18 +50,36 @@ int main(int argc, char *argv[])
   // Level solution storage
   std::vector<level_t> levels;
 
+  // Copyprotection alternate solutions
+  std::vector<level_t> copyProtSolutions(COPYPROT_SOLUTION_COUNT);
+
   // Loading solution files
   for (const auto& level : config["Explorer Configuration"]["Level Data"])
   {
    level_t lvlStruct;
    lvlStruct.levelId = level["Level Id"].get<uint8_t>();
-   lvlStruct.solutionFile = level["Solution File"].get<std::string>();
-   auto statusSolution = loadStringFromFile(lvlStruct.moveSequence, lvlStruct.solutionFile.c_str());
-   if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n", lvlStruct.solutionFile.c_str());
-   lvlStruct.moveListStrings = split(lvlStruct.moveSequence, ' ');
-   lvlStruct.sequenceLength = lvlStruct.moveListStrings.size();
 
-   for (size_t i = 0; i < lvlStruct.sequenceLength; i++) lvlStruct.moveList.push_back(EmuInstance::moveStringToCode(lvlStruct.moveListStrings[i]));
+   if (lvlStruct.levelId != 15)
+   {
+    lvlStruct.solutionFile = level["Solution File"].get<std::string>();
+    auto statusSolution = loadStringFromFile(lvlStruct.moveSequence, lvlStruct.solutionFile.c_str());
+    if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n", lvlStruct.solutionFile.c_str());
+    lvlStruct.moveListStrings = split(lvlStruct.moveSequence, ' ');
+    lvlStruct.sequenceLength = lvlStruct.moveListStrings.size();
+    for (size_t i = 0; i < lvlStruct.sequenceLength; i++) lvlStruct.moveList.push_back(EmuInstance::moveStringToCode(lvlStruct.moveListStrings[i]));
+   }
+   else
+   {
+    for (uint8_t cidx = 0; cidx < COPYPROT_SOLUTION_COUNT; cidx++)
+    {
+     copyProtSolutions[cidx].solutionFile = level["Solution File"].get<std::string>() + std::to_string(cidx);
+     auto statusSolution = loadStringFromFile(copyProtSolutions[cidx].moveSequence, copyProtSolutions[cidx].solutionFile.c_str());
+     if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n", copyProtSolutions[cidx].solutionFile.c_str());
+     copyProtSolutions[cidx].moveListStrings = split(copyProtSolutions[cidx].moveSequence, ' ');
+     copyProtSolutions[cidx].sequenceLength = copyProtSolutions[cidx].moveListStrings.size();
+     for (size_t j = 0; j < copyProtSolutions[cidx].sequenceLength; j++)  copyProtSolutions[cidx].moveList.push_back(EmuInstance::moveStringToCode(copyProtSolutions[cidx].moveListStrings[j]));
+    }
+   }
 
    lvlStruct.stateFile = level["State File"].get<std::string>();
    _emuInstance->loadStateFile(lvlStruct.stateFile);
@@ -71,9 +89,9 @@ int main(int argc, char *argv[])
   }
 
 
-  uint32_t initialRNG = 0x4ED3A367;
-  std::vector<uint8_t> cutsceneDelayCounts({  0,  0, 25,  0, 39,  0, 12,  0, 14,  8,  0,  0,  0,  0,  0 });
-  std::vector<uint8_t> endDelayCounts(     {  0,  0,  0,  0,  0,  0,  0,  0,  3,  0,  0,  0,  0,  0,  0 });
+  uint32_t initialRNG = 0x7660576E;
+  std::vector<uint8_t> cutsceneDelayCounts({  0,  0, 43,  0,  4,  0, 11,  0,  9,  7,  0,  0,  0,  0,  0 });
+  std::vector<uint8_t> endDelayCounts(     {  0, 59,  0,  0,  0,  0,  0,  3,  0,  0,  0,  0,  0,  0,  0 });
 
   uint8_t d  = 0;
   uint8_t h  = 12;
@@ -138,9 +156,7 @@ int main(int argc, char *argv[])
   uint8_t currentLastLooseSound = 0;
   gameState.last_loose_sound = 0;
 
-
   // Solver Start
-
   for (size_t i = 0; i < levels.size(); i++)
   {
    // Adding cutscene rng states
@@ -170,18 +186,23 @@ int main(int argc, char *argv[])
     printf("PreLevel%02u: 0x%08x\n", k+1, gameState.random_seed);
    }
 
-   for (int j = 0; j < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; j++)
+   const auto& lvlSource = levels[i].levelId != 15 ? levels[i] : copyProtSolutions[copyprot_plac];
+   uint16_t lastUpPosition = 0; for (uint16_t pos = 0; pos < lvlSource.sequenceLength; pos++) if (lvlSource.moveListStrings[pos] == "....U..") lastUpPosition = pos;
+   uint16_t lastUpDiff = lvlSource.sequenceLength - lastUpPosition;
+
+   for (int j = 0; j < lvlSource.sequenceLength && gameState.current_level == levels[i].levelId; j++)
    {
-    printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, Loose: %u, Move: '%s', Room: %u", gameState.current_level, j+1, levels[i].sequenceLength-1, gameState.random_seed, gameState.last_loose_sound, levels[i].moveListStrings[j].c_str(), gameState.Kid.room);
-    if (endDelayCounts[i] > 0) if (j - endDelayCounts[i] > 0) if (levels[i].moveListStrings[j-endDelayCounts[i]] == "....U..") printf(" <<---- New U");
+    printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, Loose: %u, Move: '%s', Room: %u", gameState.current_level, j+1, lvlSource.sequenceLength-1, gameState.random_seed, gameState.last_loose_sound, lvlSource.moveListStrings[j].c_str(), gameState.Kid.room);
+    if (j == lastUpPosition + endDelayCounts[i] - 1) printf(" <<---- New U");
     printf("\n");
-    _gameInstance->advanceGameState(levels[i].moveList[j]);
+    _gameInstance->advanceGameState(lvlSource.moveList[j]);
+
     if (gameState.hitp_curr == 0)
     {
      printf("Death detected!\n");
      exit(0);
     }
-    //printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, levels[i].moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
+    //printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, lvlSource.moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
    }
 
    // Adding end delays
@@ -189,9 +210,7 @@ int main(int argc, char *argv[])
    {
     auto prev = gameState.random_seed;
     for (uint8_t k = 0; k < endWaitDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
-    printf("Do End Delay: 0x%08x -> 0x%08x", prev, gameState.random_seed);
-    if (levels[i].moveListStrings[levels[i].sequenceLength-q-1] == "....U..") printf(" <<---- New U");
-    printf("\n");
+    printf("Do End Delay: 0x%08x %s -> 0x%08x\n", prev, (q == endDelayCounts[i] - lastUpDiff) ? " <<---- New U" : "", gameState.random_seed);
    }
 
 //   if (i == 2) exit(0);

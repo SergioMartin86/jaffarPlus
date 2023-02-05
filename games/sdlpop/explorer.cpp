@@ -98,9 +98,8 @@ int main(int argc, char *argv[])
    levels[i].levelId = level["Level Id"].get<uint8_t>();
    printf("Loading Level %d...\n", levels[i].levelId);
 
-
    // Loading level solution
-   if (level != 15)
+   if (levels[i].levelId != 15)
    {
     levels[i].solutionFile = level["Solution File"].get<std::string>();
     auto statusSolution = loadStringFromFile(levels[i].moveSequence, levels[i].solutionFile.c_str());
@@ -113,12 +112,12 @@ int main(int argc, char *argv[])
    {
     for (uint8_t cidx = 0; cidx < COPYPROT_SOLUTION_COUNT; cidx++)
     {
-     copyProtSolutions[i].solutionFile = level["Solution File"].get<std::string>() + std::to_string(cidx);
-     auto statusSolution = loadStringFromFile(copyProtSolutions[i].moveSequence, copyProtSolutions[i].solutionFile.c_str());
-     if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n", copyProtSolutions[i].solutionFile.c_str());
-     copyProtSolutions[i].moveListStrings = split(copyProtSolutions[i].moveSequence, ' ');
-     copyProtSolutions[i].sequenceLength = copyProtSolutions[i].moveListStrings.size();
-     for (size_t j = 0; j < copyProtSolutions[i].sequenceLength; j++)  copyProtSolutions[i].moveList.push_back(EmuInstance::moveStringToCode(copyProtSolutions[i].moveListStrings[j]));
+     copyProtSolutions[cidx].solutionFile = level["Solution File"].get<std::string>() + std::to_string(cidx);
+     auto statusSolution = loadStringFromFile(copyProtSolutions[cidx].moveSequence, copyProtSolutions[cidx].solutionFile.c_str());
+     if (statusSolution == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from solution file: %s\n", copyProtSolutions[cidx].solutionFile.c_str());
+     copyProtSolutions[cidx].moveListStrings = split(copyProtSolutions[cidx].moveSequence, ' ');
+     copyProtSolutions[cidx].sequenceLength = copyProtSolutions[cidx].moveListStrings.size();
+     for (size_t j = 0; j < copyProtSolutions[cidx].sequenceLength; j++)  copyProtSolutions[cidx].moveList.push_back(EmuInstance::moveStringToCode(copyProtSolutions[cidx].moveListStrings[j]));
     }
    }
 
@@ -128,60 +127,31 @@ int main(int argc, char *argv[])
    levels[i].RNGOffset = level["RNG Offset"].get<uint8_t>();
   }
 
-  std::map<uint32_t, solution_t> initialSet;
-
-  uint8_t d  = 0;
-  uint8_t h  = 12;
-  uint8_t m  = 0;
-  uint8_t s  = 0;
-  int64_t ns = 4200000;
-  std::string ampm = "am";
+  std::map<rng_t, clockTick_t> initialSet;
 
   seed_was_init = 1;
   hashMap_t goodRNGSet;
   uint8_t maxLevel = 0;
 
-  uint32_t curRNG = 0x0071BA7E;
-  uint32_t curTime = 0;
-  //1573040
-  for (; curTime <= 1573040 && d == 0; curTime++)
+  clockTick_t currTick = 0;
+  for (; currTick <= MAX_CLOCK_TICKS; currTick++)
   {
-    if (initialSet.contains(curRNG) == false) initialSet[curRNG] = solution_t { .initialRNG = curRNG, .timeStep = curTime };
-    curRNG += 0x343FD;
-    ns += 5492550;
-    if (ns >= 100000000)
-    {
-     ns = ns % 100000000;
-     s++;
-     if (s == 60 )
-     {
-      s = 0;
-      m++;
-      if (m == 60 )
-      {
-       m = 0;
-       if (h == 11)
-       {
-         if (ampm == "am") ampm = "pm";
-         else if (ampm == "pm") { ampm = "am"; d++; }
-         h = 12;
-       }
-       else { h++; h = h % 12;}
-      }
-     }
-    }
+   const rng_t curRNG = getRNGFromClockTick(currTick);
+   if (initialSet.contains(curRNG) == false) initialSet[curRNG] = currTick;
   }
 
-  printf("Last Timestep: %u\n", curTime);
+  printf("Last clock tick: %u\n", currTick);
   printf("Entries: %lu\n", initialSet.size());
 
   // Processing copyright
+//  initialSet.clear();
+//  initialSet[0x01C21549] = 103;
   for (auto& solution : initialSet)
   {
    gameState.random_seed = solution.first;
    init_copyprot();
-   solution.second.copyProtPlace = copyprot_plac;
-   goodRNGSet[std::make_pair(gameState.random_seed, 0)] = solution.second;
+//   if (copyprot_plac == 4)
+    goodRNGSet[std::make_pair(gameState.random_seed, 0)] = solution_t { .clockTick = solution.second, .copyProtPlace = (uint8_t)copyprot_plac };
   }
 
   ////// Explorer Start
@@ -210,14 +180,18 @@ int main(int argc, char *argv[])
      #pragma omp for
      for (size_t idx = 0; idx < flatSet.size(); idx++)
      {
-      uint32_t curSeed = flatSet[idx].rng;
+      rng_t curSeed = flatSet[idx].rng;
       auto newEntry = flatSet[idx].solution;
 
       // Now adding cutscene delays (first one is mandatory)
       for (size_t q = 0; q < cutsceneDelays[i].size() && q < MAX_CUTSCENE_DELAY; q++) // Cutscene frames to wait for
       {
        for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
+
+       #ifdef STORE_DELAY_HISTORY
        newEntry.cutsceneDelays[i] = q+1;
+       #endif
+
        newEntry.totalDelay++;
        newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
       }
@@ -249,7 +223,7 @@ int main(int argc, char *argv[])
    }
 
    // Storage for new states
-   std::vector<std::pair<std::pair<uint32_t, uint8_t>, solution_t>> currentSet(goodRNGSet.begin(), goodRNGSet.end());
+   std::vector<std::pair<std::pair<rng_t, uint8_t>, solution_t>> currentSet(goodRNGSet.begin(), goodRNGSet.end());
 
    processedRNGs = 0;
    successRNGs = 0;
@@ -317,17 +291,24 @@ int main(int argc, char *argv[])
       #pragma omp for
       for (size_t idx = 0; idx < flatSet.size(); idx++)
       {
-       uint32_t curSeed = flatSet[idx].rng;
+       rng_t curSeed = flatSet[idx].rng;
        auto newEntry = flatSet[idx].solution;
 
+       #ifdef STORE_DELAY_HISTORY
        newEntry.endDelays[i] = 0;
+       #endif
+
        newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
 
        // Now adding cutscene delays (first one is mandatory)
        for (size_t q = 0; q < endWaitDelays[i].size(); q++) // Cutscene frames to wait for
        {
         for (uint8_t k = 0; k < endWaitDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
+
+        #ifdef STORE_DELAY_HISTORY
         newEntry.endDelays[i] = q+1;
+        #endif
+
         newEntry.totalDelay++;
         if (levels[i].levelId != 15) newEntry.costlyDelay++; // Increase costly delay, except for copyright level, where it doesn't matter
         newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
@@ -364,26 +345,31 @@ int main(int argc, char *argv[])
 
   // Printing Final Set
   printf("Printing final set...\n");
-  std::map<uint32_t, solution_t> uniqueSet;
-  std::map<uint16_t, solution_t> sortedSet;
+  std::map<rng_t, solution_t> uniqueSet;
+  std::map<rng_t, solution_t> sortedSet;
 
   for (auto& rng : goodRNGSet)
   {
    bool replaceEntry = false;
-   if (uniqueSet.contains(rng.second.timeStep) == false) replaceEntry = true;
-   if (uniqueSet.contains(rng.second.timeStep) == true && (uniqueSet[rng.second.timeStep].costlyDelay > rng.second.costlyDelay)) replaceEntry = true;
-   if (uniqueSet.contains(rng.second.timeStep) == true && (uniqueSet[rng.second.timeStep].costlyDelay == rng.second.costlyDelay && uniqueSet[rng.second.timeStep].totalDelay > rng.second.totalDelay)) replaceEntry = true;
-   if (replaceEntry == true) uniqueSet[rng.second.timeStep] = rng.second;
+   if (uniqueSet.contains(rng.second.clockTick) == false) replaceEntry = true;
+   if (uniqueSet.contains(rng.second.clockTick) == true && (uniqueSet[rng.second.clockTick].costlyDelay > rng.second.costlyDelay)) replaceEntry = true;
+   if (uniqueSet.contains(rng.second.clockTick) == true && (uniqueSet[rng.second.clockTick].costlyDelay == rng.second.costlyDelay && uniqueSet[rng.second.clockTick].totalDelay > rng.second.totalDelay)) replaceEntry = true;
+   if (replaceEntry == true) uniqueSet[rng.second.clockTick] = rng.second;
   }
-  for (auto& rng : uniqueSet) sortedSet[rng.second.totalDelay] = rng.second;
+  for (auto& rng : uniqueSet) sortedSet[rng.second.costlyDelay] = rng.second;
 
   for (const auto& rng : sortedSet)
   {
-    printf("0x%08X - Time: %u\n", rng.second.initialRNG, rng.second.timeStep);
+    printf("0x%08X - ClockTick: %u\n", getRNGFromClockTick(rng.second.clockTick), rng.second.clockTick);
+
+    #ifdef STORE_DELAY_HISTORY
     printf(" + Cutscene Delays: { %2u", rng.second.cutsceneDelays[0]); for (size_t i = 1; i < 15; i++) printf(", %2u", rng.second.cutsceneDelays[i]);  printf(" }\n");
     printf(" + End Delays:      { %2u", rng.second.endDelays[0]);      for (size_t i = 1; i < 15; i++) printf(", %2u", rng.second.endDelays[i]);     printf(" }\n");
+    #endif
+
     printf(" + Total Delay: %u\n", rng.second.totalDelay);
     printf(" + Costly Delay: %u\n", rng.second.costlyDelay);
+    printf(" + CopyProtPlace: %u\n", rng.second.copyProtPlace);
   }
 
   printf("Max Level: %u\n", levels[maxLevel].levelId);

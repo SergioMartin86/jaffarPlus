@@ -5,6 +5,16 @@
 #include <parallel_hashmap/phmap.h>
 
 #define COPYPROT_SOLUTION_COUNT 14
+//#define MAX_CLOCK_TICKS 1573040
+#define MAX_CLOCK_TICKS 1573040
+
+//#define STORE_DELAY_HISTORY
+
+typedef uint32_t rng_t;
+typedef uint32_t clockTick_t;
+
+#define BASE_RNG 0x0071BA7E
+#define RNG_CLOCK_TICK_INCREMENT 0x343FD
 
 static std::vector<std::vector<uint8_t>> cutsceneDelays =
  {
@@ -28,7 +38,7 @@ static std::vector<std::vector<uint8_t>> cutsceneDelays =
 static std::vector<std::vector<uint8_t>> endWaitDelays =
  {
 /* 01 */  {},
-/* 15 */  {2,2,2,2,2,2,2,2},
+/* 15 */  {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
 /* 02 */  {},
 /* 03 */  {},
 /* 04 */  {},
@@ -46,10 +56,13 @@ static std::vector<std::vector<uint8_t>> endWaitDelays =
 
 struct solution_t
 {
- uint32_t initialRNG;
- uint32_t timeStep;
+ clockTick_t clockTick;
+
+ #ifdef STORE_DELAY_HISTORY
  uint8_t cutsceneDelays[16];
  uint8_t endDelays[16];
+ #endif
+
  uint16_t totalDelay = 0;
  uint16_t costlyDelay = 0;
  uint8_t copyProtPlace = 0;
@@ -57,7 +70,7 @@ struct solution_t
 
 struct solutionFlat_t
 {
- uint32_t rng;
+ rng_t rng;
  uint8_t looseSound;
  solution_t solution;
 };
@@ -85,3 +98,6 @@ struct level_t
  uint8_t stateData[_STATE_DATA_SIZE_TRAIN];
  uint8_t RNGOffset;
 };
+
+inline rng_t getRNGFromClockTick(const clockTick_t tick) { return BASE_RNG + tick * RNG_CLOCK_TICK_INCREMENT; }
+inline clockTick_t getClockTickFromRNG(const rng_t rng) { return (rng - BASE_RNG) / RNG_CLOCK_TICK_INCREMENT; }
