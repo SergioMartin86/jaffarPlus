@@ -143,9 +143,13 @@ int main(int argc, char *argv[])
   printf("Last clock tick: %u\n", currTick);
   printf("Entries: %lu\n", initialSet.size());
 
+  // Logic for testing single entry
+  #ifdef TEST_SINGLE
+  initialSet.clear();
+  initialSet[SINGLE_RNG] = SINGLE_TICK;
+  #endif
+
   // Processing copyright
-//  initialSet.clear();
-//  initialSet[0x01C21549] = 103;
   for (auto& solution : initialSet)
   {
    gameState.random_seed = solution.first;
@@ -161,7 +165,6 @@ int main(int argc, char *argv[])
    printf("Starting Level: %u\n", levels[i].levelId);
 
    // Adding cutscene rng delays
-   #define MAX_CUTSCENE_DELAY 44
    if (cutsceneDelays[i].size() > 0)
    {
     printf("Adding cutscene delays...\n");
@@ -184,7 +187,7 @@ int main(int argc, char *argv[])
       auto newEntry = flatSet[idx].solution;
 
       // Now adding cutscene delays (first one is mandatory)
-      for (size_t q = 0; q < cutsceneDelays[i].size() && q < MAX_CUTSCENE_DELAY; q++) // Cutscene frames to wait for
+      for (size_t q = 0; q < cutsceneDelays[i].size(); q++) // Cutscene frames to wait for
       {
        for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
 
@@ -214,7 +217,7 @@ int main(int argc, char *argv[])
        bool isKeyPresent = goodRNGSet.contains(key);
        bool addEntry = false;
        if (isKeyPresent == false) addEntry = true;
-       if ((isKeyPresent == true) &&  (goodRNGSet[key].totalDelay > newFlatSet[idx].solution.totalDelay)) addEntry = true;
+       if ((isKeyPresent == true) &&  (goodRNGSet[key].costlyDelay > newFlatSet[idx].solution.costlyDelay)) addEntry = true;
        if (addEntry == true) goodRNGSet[key] = newFlatSet[idx].solution;
       }
       currentUnflatteningStep++;
@@ -224,6 +227,8 @@ int main(int argc, char *argv[])
 
    // Storage for new states
    std::vector<std::pair<std::pair<rng_t, uint8_t>, solution_t>> currentSet(goodRNGSet.begin(), goodRNGSet.end());
+   size_t currentStates = goodRNGSet.size();
+   goodRNGSet.clear();
 
    processedRNGs = 0;
    successRNGs = 0;
@@ -255,7 +260,11 @@ int main(int argc, char *argv[])
      else
        for (; curMov < copyProtSolutions[currentSet[rngIdx].second.copyProtPlace].sequenceLength && gameState.current_level == levels[i].levelId; curMov++)  _gameInstances[threadId]->advanceGameState(copyProtSolutions[currentSet[rngIdx].second.copyProtPlace].moveList[curMov]);
 
-     if (gameState.next_level != levels[i].levelId)
+     bool hasBeatenLevel = false;
+     if (gameState.next_level != levels[i].levelId) hasBeatenLevel = true;
+     if (levels[i].levelId == 13 && gameState.guardhp_curr == 0 && gameState.Kid.room == 1 && gameState.Guard.room == 1) hasBeatenLevel = true;
+
+     if (hasBeatenLevel)
      {
       if (i > curMaxLevel) curMaxLevel = i;
       #pragma omp critical
@@ -268,79 +277,51 @@ int main(int argc, char *argv[])
     }
    }
 
-    maxLevel = i;
-    printf("Level %u, Success Rate: %lu/%lu (%.2f%%)\n", levels[i].levelId, tmpRNGSet.size(), goodRNGSet.size(), ((double)tmpRNGSet.size() / (double)goodRNGSet.size())*100.0);
-    if (tmpRNGSet.size() == 0) break;
-    goodRNGSet = tmpRNGSet;
-    processing = false;
+   maxLevel = i;
+   printf("Level %u, Success Rate: %lu/%lu (%.2f%%)\n", levels[i].levelId, tmpRNGSet.size(), currentStates, ((double)tmpRNGSet.size() / (double)currentStates)*100.0);
+   std::swap(goodRNGSet, tmpRNGSet);
+   if (goodRNGSet.size() == 0) { for (const auto& x : currentSet) goodRNGSet[x.first] = x.second; break; }
+   processing = false;
 
-    if (endWaitDelays[i].size() > 0)
+   if (endWaitDelays[i].size() > 0)
+   {
+    printf("Adding start wait delays...\n");
+
+    for (const auto& entry : goodRNGSet)
     {
-     printf("Adding start wait delays...\n");
-     printf("Flattening Set...\n");
-     std::vector<solutionFlat_t> flatSet;
-     flatSet.reserve(goodRNGSet.size());
-     for (const auto& x : goodRNGSet) flatSet.push_back(solutionFlat_t { .rng = x.first.first, .looseSound = x.first.second, .solution = x.second });
-     goodRNGSet.clear();
-     int currentUnflatteningStep = 0;
+     rng_t curSeed = entry.first.first;
+     uint8_t looseSound = entry.first.second;
+     auto newEntry = entry.second;
 
-     #pragma omp parallel
+     #ifdef STORE_DELAY_HISTORY
+     newEntry.endDelays[i] = 0;
+     #endif
+
+     // Adding first
+     tmpRNGSet[std::make_pair(curSeed, looseSound)] = newEntry;
+
+     // Now adding cutscene delays (first one is mandatory)
+     for (size_t q = 0; q < endWaitDelays[i].size(); q++) // Cutscene frames to wait for
      {
-      std::vector<solutionFlat_t> newFlatSet;
+      for (uint8_t k = 0; k < endWaitDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
 
-      #pragma omp for
-      for (size_t idx = 0; idx < flatSet.size(); idx++)
-      {
-       rng_t curSeed = flatSet[idx].rng;
-       auto newEntry = flatSet[idx].solution;
+      #ifdef STORE_DELAY_HISTORY
+      newEntry.endDelays[i] = q+1;
+      #endif
 
-       #ifdef STORE_DELAY_HISTORY
-       newEntry.endDelays[i] = 0;
-       #endif
+      newEntry.totalDelay++;
+      if (levels[i].levelId != 15) newEntry.costlyDelay++; // Increase costly delay, except for copyright level, where it doesn't matter
 
-       newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
-
-       // Now adding cutscene delays (first one is mandatory)
-       for (size_t q = 0; q < endWaitDelays[i].size(); q++) // Cutscene frames to wait for
-       {
-        for (uint8_t k = 0; k < endWaitDelays[i][q]; k++) curSeed = _emuInstances[0]->advanceRNGState(curSeed);
-
-        #ifdef STORE_DELAY_HISTORY
-        newEntry.endDelays[i] = q+1;
-        #endif
-
-        newEntry.totalDelay++;
-        if (levels[i].levelId != 15) newEntry.costlyDelay++; // Increase costly delay, except for copyright level, where it doesn't matter
-        newFlatSet.push_back(solutionFlat_t { .rng = curSeed, .looseSound = flatSet[idx].looseSound, .solution = newEntry });
-       }
-      }
-
-      // Clearing old set
-      #pragma omp master
-      {
-       printf("Unflattening set...\n");
-       flatSet.clear();
-      }
-
-      // Pushing new states to RNG set
-      #pragma omp critical
-      {
-       if (currentUnflatteningStep % 10 == 0) printf("Unflatenning Step: %u/%u\n", currentUnflatteningStep, _threadCount);
-       for (size_t idx = 0; idx < newFlatSet.size(); idx++)
-       {
-
-        auto key = std::make_pair(newFlatSet[idx].rng, newFlatSet[idx].looseSound);
-        bool isKeyPresent = goodRNGSet.contains(key);
-        bool addEntry = false;
-        if (isKeyPresent == false) addEntry = true;
-        if ((isKeyPresent == true) &&  (goodRNGSet[key].costlyDelay > newFlatSet[idx].solution.costlyDelay)) addEntry = true;
-        if (addEntry == true) goodRNGSet[key] = newFlatSet[idx].solution;
-
-       }
-       currentUnflatteningStep++;
-      }
+      auto key = std::make_pair(curSeed, looseSound);
+      bool isKeyPresent = tmpRNGSet.contains(key);
+      bool addEntry = false;
+      if (isKeyPresent == false) addEntry = true;
+      if ((isKeyPresent == true) &&  (tmpRNGSet[key].costlyDelay > newEntry.costlyDelay)) addEntry = true;
+      if (addEntry == true) tmpRNGSet[key] = newEntry;
      }
     }
+    std::swap(goodRNGSet, tmpRNGSet);
+   }
   }
 
   // Printing Final Set

@@ -7,8 +7,10 @@ early90 pack: https://files.tasvideos.org/common/Wiki/pcem/dos/PCem-Early90s.7z
 Info: https://tasvideos.org/EmulatorResources/PCem
 
 RNG Signature:
-00 00 00 b0 1d 2b 0f 00 00 00
--0x0233
+Find: 00 00 00 b0 1d 2b 0f 00 00 00
+Then subtract: -0x0233
+1/12th Second Ticks: +0xCC3
+Minute Remaining: +0xCBD 
 
 Smallest Time: 12.00.00.00 am: RNG 7453310 (0x71BA7E)
 RNG Time Increments (00.00.00.10): 214013 (0x343FD)
