@@ -89,9 +89,102 @@ int main(int argc, char *argv[])
   }
 
 
-  uint32_t initialRNG = 0x7660576E;
-  std::vector<uint8_t> cutsceneDelayCounts({  0,  0, 43,  0,  4,  0, 11,  0,  9,  7,  0,  0,  0,  0,  0 });
-  std::vector<uint8_t> endDelayCounts(     {  0, 59,  0,  0,  0,  0,  0,  3,  0,  0,  0,  0,  0,  0,  0 });
+  std::vector<rng_t> sampleCutsceneRNGs({0x8d6453c7,
+  0x3e3fb958,
+  0xbad8ef0d,
+  0xaa5360f6,
+  0x3f056963,
+  0x1fd941e4,
+  0xbc7f9849,
+  0x85b5d7a2,
+  0x1a68753f,
+  0x9250d1b0,
+  0x89fa7dc5,
+  0x95fa0267,
+  0x9d79ce78,
+  0x997090b2,
+  0x205b08f,
+  0x116d5040,
+  0x629960ba,
+  0x7cb91fb7,
+  0xbcb003e9,
+  0x819fdc2,
+  0xd3204a4c,
+  0xa2b39551,
+  0x3fdcb653,
+  0xd5dd6494,
+  0x497c37ae,
+  0xd25e63fb,
+  0xfa2b0a4d,
+  0xa3598136,
+  0xff30960,
+  0x1cf0de35,
+  0xb610e657,
+  0xedbd0428,
+  0xc2dcf3e2,
+  0xb2237a7f,
+  0x372e74f1,
+  0x4e7171ea,
+  0x92c39fb4,
+  0x40677359,
+  0xb542c49b,
+  0x8ece42fc,
+  0x3aae4956,
+  0x105f6743,
+  0x546967d5,
+  0x911903de,
+  0xbe22e148,
+  0x2c40f8bd,
+  0xb089151f,
+  0x9f5a7510,
+  0x43a42c0a,
+  0x2076e47,
+  0xa21b46f9,
+  0xf9d0ab12,
+  0xf3b4e21c,
+  0x679f5261,
+  0x9cb4dbe3,
+  0x5a062e64,
+  0x79a7cffe,
+  0xca73138b,
+  0xfbf7b65d,
+  0x5cd61b86,
+  0xeac4f630,
+  0x3000a445,
+  0x51d55ce7,
+  0xb4e542f8,
+  0x418ba932,
+  0x93601b0f,
+  0xe14a9a01,
+  0x7858493a,
+  0x9619b184,
+  0xabe35269,
+  0xf2fc1c2b,
+  0x1fcec6cc,
+  0x99ff6ba6,
+  0x533688d3,
+  0x2d5c15e5,
+  0xb1eb682e,
+  0xed08e818,
+  0x25aa00cd,
+  0xa040ddaf,
+  0x6df10de0,
+  0x71c40b5a,
+  0xa58ca0d7,
+  0x23be58a8,
+  0x505fe19d,
+  0x67488bc6,
+  0xf705a573,
+  0xfea5ac34,
+  0xfdb621d9,
+  0x4d1a1572,
+  0xa7f5b04f,
+  0x5f125700,
+  0xeafb2e55});
+
+  uint32_t initialRNG = 0x273A9EBB;
+  std::vector<uint8_t> cutsceneDelayCounts({  0,  0, 40,  0, 18,  0,  1,  0,  1, 62,  0,  0,  6,  0,  0 });
+  std::vector<uint8_t> endDelayCounts(     {  0, 13,  0,  0,  0,  0,  0,  0,  1,  2,  0,  0,  0,  0,  0 });
 
   uint8_t d  = 0;
   uint8_t h  = 12;
@@ -146,11 +239,11 @@ int main(int argc, char *argv[])
   init_copyprot();
   printf("0x%08X\n", gameState.random_seed);
   printf("Copy Prot Place: %u\n", copyprot_plac);
-  if (copyprot_plac != 4)
-  {
-   printf("Bad Seed!\n");
-   exit(0);
-  }
+//  if (copyprot_plac != 4)
+//  {
+//   printf("Bad Seed!\n");
+//   exit(0);
+//  }
 
   uint32_t currentRNG;
   uint8_t currentLastLooseSound = 0;
@@ -163,12 +256,14 @@ int main(int argc, char *argv[])
    for (ssize_t q = 0; q < cutsceneDelayCounts[i]; q++)
    {
     auto prev = gameState.random_seed;
-//    if (prev != rngSet[q])
+    for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
+
+//    if (levels[i].levelId == 9) if (gameState.random_seed != sampleCutsceneRNGs[q])
 //    {
-//     printf("RNGs %lu do not coincide: 0x%08x should be 0x%08x\n", q, prev, rngSet[q]);
+//     printf("RNGs %u Diverge 0x%08X != 0x%08X\n", q+30, gameState.random_seed, sampleCutsceneRNGs[q]);
 //     exit(0);
 //    }
-    for (uint8_t k = 0; k < cutsceneDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
+
     printf("Do Cutscene Delay: 0x%08x -> 0x%08x\n", prev, gameState.random_seed);
    }
 
@@ -193,7 +288,7 @@ int main(int argc, char *argv[])
    for (int j = 0; j < lvlSource.sequenceLength && gameState.current_level == levels[i].levelId; j++)
    {
     printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, Loose: %u, Move: '%s', Room: %u", gameState.current_level, j+1, lvlSource.sequenceLength-1, gameState.random_seed, gameState.last_loose_sound, lvlSource.moveListStrings[j].c_str(), gameState.Kid.room);
-    if (j == lastUpPosition + endDelayCounts[i] - 1) printf(" <<---- New U");
+    if (endDelayCounts[i] > 0) if (j == lastUpPosition + endDelayCounts[i]) printf(" <<---- New U");
     printf("\n");
     _gameInstance->advanceGameState(lvlSource.moveList[j]);
 

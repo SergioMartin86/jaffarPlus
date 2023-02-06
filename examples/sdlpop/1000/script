@@ -6,7 +6,7 @@
     "State File": "state",
     "Initialize Copyprot": false,
     "Override RNG Value": true,
-    "RNG Value": 774,
+    "RNG Value": 2729740186,
     "Loose Tile Sound Id": 21 
   },
   
@@ -53,8 +53,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 400,
-     "Max Size Upper Bound (Mb)": 2500
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 25000
     },
     
     "Hash Database":

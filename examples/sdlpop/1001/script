@@ -3,16 +3,16 @@
   {
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
-    "State File": "state",
+    "State File": "jaffar.state",
     "Initialize Copyprot": false,
     "Override RNG Value": true,
-    "RNG Value": 3013518621,
-    "Loose Tile Sound Id": 21 
+    "RNG Value": 2344315894,
+    "Loose Tile Sound Id": 20 
   },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4,
+   "Timer Tolerance": 8,
    "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
    "Static Tile Hash Types": 
    [
@@ -50,8 +50,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 25000
+     "Max Size Lower Bound (Mb)": 100000,
+     "Max Size Upper Bound (Mb)": 160000
     },
     
     "Hash Database":
@@ -126,7 +126,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 10 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 8, "Intensity": 1.0, "Center": 0 }
     ]
    },

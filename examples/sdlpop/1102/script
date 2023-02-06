@@ -3,9 +3,9 @@
   {
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
-    "State File": "state",
+    "State File": "last.state",
     "Initialize Copyprot": false,
-    "Override RNG Value": true,
+    "Override RNG Value": false,
     "RNG Value": 1207306231,
     "Loose Tile Sound Id": 21 
   },
@@ -50,8 +50,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 300,
-     "Max Size Upper Bound (Mb)": 2500
+     "Max Size Lower Bound (Mb)": 120000,
+     "Max Size Upper Bound (Mb)": 180000
     },
     
     "Hash Database":
@@ -80,6 +80,21 @@
   "Rules":
   [
    {
+    "Label": 11008,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 24 }
+    ],
+    
+    "Satisfies": [  ],
+
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Room": 24, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
     "Label": 11009,
     "Description": "Keep going to the right.",
     "Conditions":
@@ -87,7 +102,7 @@
      { "Property": "Kid Room", "Op": "==", "Value": 16 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 11008 ],
 
     "Actions":
     [
