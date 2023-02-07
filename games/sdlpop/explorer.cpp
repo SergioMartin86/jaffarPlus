@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
      }
 
      currentRNG++;
-     if (currentRNG % (RNGSetSize / 10) == 0) printf("Progress %lu / %lu\n", currentRNG, RNGSetSize);
+     if (RNGSetSize > 10000) if (currentRNG % (RNGSetSize / 10) == 0) printf("Progress %lu / %lu\n", currentRNG, RNGSetSize);
     }
     std::swap(goodRNGSet, tmpRNGSet);
    }
@@ -305,7 +305,7 @@ int main(int argc, char *argv[])
      }
 
      currentRNG++;
-     if (currentRNG % (RNGSetSize / 10) == 0) printf("Progress %lu / %lu\n", currentRNG, RNGSetSize);
+     if (RNGSetSize > 10000) if (currentRNG % (RNGSetSize / 10) == 0) printf("Progress %lu / %lu\n", currentRNG, RNGSetSize);
     }
 
     std::swap(goodRNGSet, tmpRNGSet);
