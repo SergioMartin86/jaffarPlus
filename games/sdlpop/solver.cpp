@@ -297,7 +297,8 @@ int main(int argc, char *argv[])
      printf("Death detected!\n");
      exit(0);
     }
-    //printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, lvlSource.moveList[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
+//    if (levels[i].levelId == 13) printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, lvlSource.moveListStrings[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
+//    if (levels[i].levelId == 13) printf("Guard HP: %u\n", gameState.guardhp_curr);
    }
 
    // Adding end delays
