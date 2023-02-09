@@ -89,102 +89,20 @@ int main(int argc, char *argv[])
   }
 
 
-  std::vector<rng_t> sampleCutsceneRNGs({0x8d6453c7,
-  0x3e3fb958,
-  0xbad8ef0d,
-  0xaa5360f6,
-  0x3f056963,
-  0x1fd941e4,
-  0xbc7f9849,
-  0x85b5d7a2,
-  0x1a68753f,
-  0x9250d1b0,
-  0x89fa7dc5,
-  0x95fa0267,
-  0x9d79ce78,
-  0x997090b2,
-  0x205b08f,
-  0x116d5040,
-  0x629960ba,
-  0x7cb91fb7,
-  0xbcb003e9,
-  0x819fdc2,
-  0xd3204a4c,
-  0xa2b39551,
-  0x3fdcb653,
-  0xd5dd6494,
-  0x497c37ae,
-  0xd25e63fb,
-  0xfa2b0a4d,
-  0xa3598136,
-  0xff30960,
-  0x1cf0de35,
-  0xb610e657,
-  0xedbd0428,
-  0xc2dcf3e2,
-  0xb2237a7f,
-  0x372e74f1,
-  0x4e7171ea,
-  0x92c39fb4,
-  0x40677359,
-  0xb542c49b,
-  0x8ece42fc,
-  0x3aae4956,
-  0x105f6743,
-  0x546967d5,
-  0x911903de,
-  0xbe22e148,
-  0x2c40f8bd,
-  0xb089151f,
-  0x9f5a7510,
-  0x43a42c0a,
-  0x2076e47,
-  0xa21b46f9,
-  0xf9d0ab12,
-  0xf3b4e21c,
-  0x679f5261,
-  0x9cb4dbe3,
-  0x5a062e64,
-  0x79a7cffe,
-  0xca73138b,
-  0xfbf7b65d,
-  0x5cd61b86,
-  0xeac4f630,
-  0x3000a445,
-  0x51d55ce7,
-  0xb4e542f8,
-  0x418ba932,
-  0x93601b0f,
-  0xe14a9a01,
-  0x7858493a,
-  0x9619b184,
-  0xabe35269,
-  0xf2fc1c2b,
-  0x1fcec6cc,
-  0x99ff6ba6,
-  0x533688d3,
-  0x2d5c15e5,
-  0xb1eb682e,
-  0xed08e818,
-  0x25aa00cd,
-  0xa040ddaf,
-  0x6df10de0,
-  0x71c40b5a,
-  0xa58ca0d7,
-  0x23be58a8,
-  0x505fe19d,
-  0x67488bc6,
-  0xf705a573,
-  0xfea5ac34,
-  0xfdb621d9,
-  0x4d1a1572,
-  0xa7f5b04f,
-  0x5f125700,
-  0xeafb2e55});
+//  std::vector<rng_t> sampleCutsceneRNGs({0x8d6453c7,
+//  0x3e3fb958,
+//  0xbad8ef0d,
+//  0xaa5360f6,
+//  0x3f056963,
+//  0x1fd941e4,
+//  0xbc7f9849,
+//  0x85b5d7a2,
+//  0x1a68753f,
+//  0x9250d1b0});
 
-  uint32_t initialRNG = 0x273A9EBB;
-  std::vector<uint8_t> cutsceneDelayCounts({  0,  0, 40,  0, 18,  0,  1,  0,  1, 62,  0,  0,  6,  0,  0 });
-  std::vector<uint8_t> endDelayCounts(     {  0, 13,  0,  0,  0,  0,  0,  0,  1,  2,  0,  0,  0,  0,  0 });
+  uint32_t initialRNG = 0x5895B9AF;
+  std::vector<uint8_t> cutsceneDelayCounts({  0,  0, 45,  0,  3,  0,  9,  0, 45, 91,  0,  0,  0,  0,  0 });
+  std::vector<uint8_t> endDelayCounts(     {  0, 172,  0,  0,  0,  0,  0,  1,  0,  1,  0,  0,  0,  0,  0 });
 
   uint8_t d  = 0;
   uint8_t h  = 12;
@@ -249,6 +167,9 @@ int main(int argc, char *argv[])
   uint8_t currentLastLooseSound = 0;
   gameState.last_loose_sound = 0;
 
+  // IGT timer management
+  uint16_t IGTTimer = 0;
+
   // Solver Start
   for (size_t i = 0; i < levels.size(); i++)
   {
@@ -285,12 +206,19 @@ int main(int argc, char *argv[])
    uint16_t lastUpPosition = 0; for (uint16_t pos = 0; pos < lvlSource.sequenceLength; pos++) if (lvlSource.moveListStrings[pos] == "....U..") lastUpPosition = pos;
    uint16_t lastUpDiff = lvlSource.sequenceLength - lastUpPosition;
 
+   if (levels[i].levelId == 7) IGTTimer -= 1;
+
    for (int j = 0; j < lvlSource.sequenceLength && gameState.current_level == levels[i].levelId; j++)
    {
-    printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, Loose: %u, Move: '%s', Room: %u", gameState.current_level, j+1, lvlSource.sequenceLength-1, gameState.random_seed, gameState.last_loose_sound, lvlSource.moveListStrings[j].c_str(), gameState.Kid.room);
-    if (endDelayCounts[i] > 0) if (j == lastUpPosition + endDelayCounts[i]) printf(" <<---- New U");
-    printf("\n");
+    printf("Level %u, Step %04u/%04u: - RNG: 0x%08x, IGT: %02u:%03u, Loose: %u, Move: '%s', Room: %u", gameState.current_level, j+1, lvlSource.sequenceLength, gameState.random_seed, getMinutesFromIGT(IGTTimer), getTicksFromIGT(IGTTimer), gameState.last_loose_sound, lvlSource.moveListStrings[j].c_str(), gameState.Kid.room);
     _gameInstance->advanceGameState(lvlSource.moveList[j]);
+    if (levels[i].levelId != 15) IGTTimer++;
+    if (levels[i].levelId == 1 && lvlSource.moveListStrings[j] == "CA.....") IGTTimer -= 2;
+    if (levels[i].levelId == 3 && lvlSource.moveListStrings[j] == "CA") IGTTimer -= 1;
+
+    if (endDelayCounts[i] > 0) if (j == lastUpPosition + endDelayCounts[i]) printf(" <<---- New U");
+    if (levels[i].levelId == 13) printf(" Guard HP: %u", gameState.guardhp_curr);
+    printf("\n");
 
     if (gameState.hitp_curr == 0)
     {
@@ -298,7 +226,6 @@ int main(int argc, char *argv[])
      exit(0);
     }
 //    if (levels[i].levelId == 13) printf("Step %u - Level %u - Move: '%s' - KidRoom: %2u, KidFrame: %2u, RNG: 0x%08X, Loose: %u\n", j, gameState.current_level, lvlSource.moveListStrings[j].c_str(), gameState.Kid.room, gameState.Kid.frame, gameState.random_seed, gameState.last_loose_sound);
-//    if (levels[i].levelId == 13) printf("Guard HP: %u\n", gameState.guardhp_curr);
    }
 
    // Adding end delays
@@ -306,7 +233,8 @@ int main(int argc, char *argv[])
    {
     auto prev = gameState.random_seed;
     for (uint8_t k = 0; k < endWaitDelays[i][q]; k++) gameState.random_seed = _emuInstance->advanceRNGState(gameState.random_seed);
-    printf("Do End Delay: 0x%08x %s -> 0x%08x\n", prev, (q == endDelayCounts[i] - lastUpDiff) ? " <<---- New U" : "", gameState.random_seed);
+    printf("Timer: %02u:%03u - Do End Delay: 0x%08x %s -> 0x%08x\n",  getMinutesFromIGT(IGTTimer), getTicksFromIGT(IGTTimer), prev, (q == endDelayCounts[i] - lastUpDiff) ? " <<---- New U" : "", gameState.random_seed);
+    if (levels[i].levelId != 15) IGTTimer++;
    }
 
 //   if (i == 2) exit(0);

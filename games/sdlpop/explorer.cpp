@@ -167,10 +167,10 @@ int main(int argc, char *argv[])
 
    if (cutsceneDelays[i].size() > 0)
    {
-    printf("Adding start cutscene delays...\n");
-
     size_t RNGSetSize = goodRNGSet.size();
     size_t currentRNG = 0;
+
+    printf("Adding start cutscene delays... (Target: %lu)\n", RNGSetSize);
 
     for (const auto& entry : goodRNGSet)
     {
@@ -194,9 +194,12 @@ int main(int argc, char *argv[])
 
       auto key = std::make_pair(curSeed, looseSound);
       bool isKeyPresent = tmpRNGSet.contains(key);
+      uint16_t curCostlyDelay = 0;
+      uint16_t curTotalDelay = 0;
       bool addEntry = false;
-      if (isKeyPresent == false) addEntry = true;
-      if ((isKeyPresent == true) &&  (tmpRNGSet[key].costlyDelay > newEntry.costlyDelay)) addEntry = true;
+      if (isKeyPresent == false) addEntry = true; else { curCostlyDelay = tmpRNGSet[key].costlyDelay; curTotalDelay = tmpRNGSet[key].totalDelay; }
+      if ((isKeyPresent == true) &&  (curCostlyDelay > newEntry.costlyDelay)) addEntry = true;
+      if ((isKeyPresent == true) &&  (curCostlyDelay == newEntry.costlyDelay) && (curTotalDelay > newEntry.totalDelay)) addEntry = true;
       if (addEntry == true) tmpRNGSet[key] = newEntry;
      }
 
@@ -264,9 +267,10 @@ int main(int argc, char *argv[])
    if (goodRNGSet.size() == 0) { for (const auto& x : currentSet) goodRNGSet[x.first] = x.second; break; }
    processing = false;
 
+   // End wait delays
    if (endWaitDelays[i].size() > 0)
    {
-    printf("Adding start wait delays...\n");
+    printf("Adding end wait delays...\n");
 
     size_t RNGSetSize = goodRNGSet.size();
     size_t currentRNG = 0;
@@ -298,9 +302,12 @@ int main(int argc, char *argv[])
 
       auto key = std::make_pair(curSeed, looseSound);
       bool isKeyPresent = tmpRNGSet.contains(key);
+      uint16_t curCostlyDelay = 0;
+      uint16_t curTotalDelay = 0;
       bool addEntry = false;
-      if (isKeyPresent == false) addEntry = true;
-      if ((isKeyPresent == true) &&  (tmpRNGSet[key].costlyDelay > newEntry.costlyDelay)) addEntry = true;
+      if (isKeyPresent == false) addEntry = true; else { curCostlyDelay = tmpRNGSet[key].costlyDelay; curTotalDelay = tmpRNGSet[key].totalDelay; }
+      if ((isKeyPresent == true) &&  (curCostlyDelay > newEntry.costlyDelay)) addEntry = true;
+      if ((isKeyPresent == true) &&  (curCostlyDelay == newEntry.costlyDelay) && (curTotalDelay > newEntry.totalDelay)) addEntry = true;
       if (addEntry == true) tmpRNGSet[key] = newEntry;
      }
 
