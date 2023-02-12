@@ -1,5 +1,7 @@
 # JaffarPlus
 
+![](jaffar.png)
+
 High-performance bot for tool-assisted speedrunning, based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solver for the original Prince of Persia (DOS). JaffarPlus is:
 
 * High-Performance: Tailored for multi-core CPUs, especially for high core counts.
