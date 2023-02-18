@@ -4,10 +4,10 @@
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "state",
-    "Initialize Copyprot": false,
+    "Initialize Copyprot": true,
     "Override RNG Value": true,
-    "RNG Value": 6,
-    "Loose Tile Sound Id": 21 
+    "RNG Value": 0,
+    "Loose Tile Sound Id": 20 
   },
   
   "Game Configuration": 
@@ -16,14 +16,40 @@
    "Property Hash Types": [  ],
    "Static Tile Hash Types": 
    [
+     { "Level": 12, "Room": 1, "Tile": 10, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 9, "Tile": 1, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 9, "Tile": 2, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 8, "Tile": 13, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 8, "Tile": 16, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 14, "Tile": 23, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 15, "Tile": 2, "Type": "Full", "Description": "Sword" },
+     { "Level": 12, "Room": 15, "Tile": 6, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 15, "Tile": 7, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 24, "Tile": 13, "Type": "Full", "Description": "Debris" }
    ],
    
    "Falling Tiles Hash Types": 
    [
+    { "Level": 12, "Room": 9, "Column": 4, "Type": "Index Only", "Description": "Falling Tile" },
+    { "Level": 12, "Room": 9, "Column": 0, "Type": "Index Only", "Description": "Falling Tile" },
+    { "Level": 12, "Room": 1, "Column": 36, "Type": "Index Only", "Description": "Falling Tile" },
+    { "Level": 12, "Room": 8, "Column": 8, "Type": "Index Only", "Description": "Falling Tile" },
+    { "Level": 12, "Room": 8, "Column": 20, "Type": "Index Only", "Description": "Falling Tile" },
+    { "Level": 12, "Room": 24, "Column": 8, "Type": "Full", "Description": "Falling Tile" },
+    { "Level": 12, "Room": 14, "Column": 8, "Type": "Full", "Description": "Falling Tile" }
    ],
    
    "Active Objects Hash Types":
    [
+     { "Level": 12, "Room": 1, "Tile": 10, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 9, "Tile": 1, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 9, "Tile": 2, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 8, "Tile": 13, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 8, "Tile": 16, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 14, "Tile": 23, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 15, "Tile": 2, "Type": "Full", "Description": "Sword" },
+     { "Level": 12, "Room": 15, "Tile": 6, "Type": "Full", "Description": "Loose Tile" },
+     { "Level": 12, "Room": 15, "Tile": 7, "Type": "Full", "Description": "Loose Tile" }
    ]
   },
   
@@ -36,7 +62,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 200,
+      "Max Move Count": 1000,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 300,
@@ -45,8 +71,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 500,
-     "Max Size Upper Bound (Mb)": 2000
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 12000
     },
     
     "Hash Database":
@@ -75,102 +101,320 @@
   "Rules":
   [
    {
-    "Label": 13000,
-    "Description": "Go left, trying to avoid falling tiles .",
+    "Label": 12000,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 23 }
+     { "Property": "Kid Room", "Op": "==", "Value": 3 }
     ],
     
     "Satisfies": [ ],
 
     "Actions":
     [
-     { "Type": "Set Kid Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 255 }
     ]
    },
    
    {
-    "Label": 13001,
-    "Description": "Keep going left, trying to avoid falling tiles .",
-    "Conditions":
-    [
-     { "Property": "Kid Room", "Op": "==", "Value": 16 }
-    ],
-    
-    "Satisfies": [ 13000 ],
-
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
-    ]
-   },
-
-   {
-    "Label": 13002,
-    "Description": "Go up now.",
+    "Label": 12001,
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value": 4 }
     ],
     
-    "Satisfies": [ 13001 ],
+    "Satisfies": [ 12000 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 88 },
      { "Type": "Set Kid Vertical Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
    {
-    "Label": 13102,
-    "Description": "Go up now.",
+    "Label": 12002,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 4 },
+     { "Property": "Kid Room", "Op": "==", "Value": 9 }
+    ],
+    
+    "Satisfies": [ 12001 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 9, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+  
+   {
+    "Label": 12003,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 1 },
      { "Property": "Kid Position Y", "Op": "==", "Value": 55 }
     ],
     
-    "Satisfies": [ 13002 ],
+    "Satisfies": [ 12002 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 180 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
    {
-    "Label": 13003,
-    "Description": "[Checkpoint] Keep going up and into jaffar's room.",
+    "Label": 12004,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 3 }
+     { "Property": "Kid Room", "Op": "==", "Value": 7 }
     ],
     
-    "Satisfies": [ 13102 ],
+    "Satisfies": [ 12003 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 7, "Intensity": 1.0, "Center": 220 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 7, "Intensity": 1.0, "Center": 0 }
     ]
    },
    
    {
-    "Label": 13004,
-    "Description": "Keep going up and into jaffar's room.",
+    "Label": 12005,
     "Conditions":
     [
-     { "Property": "Kid Room", "Op": "==", "Value": 3 },
-     { "Property": "Kid Position Y", "Op": "==", "Value": 118 }
+     { "Property": "Kid Room", "Op": "==", "Value": 8 },
+     { "Property": "Kid Position Y", "Op": "<=", "Value": 118 }
     ],
     
-    "Satisfies": [  ],
+    "Satisfies": [ 12004 ],
 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 8, "Intensity": 1.0, "Center": 220 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 8, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 12006,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 24 }
+    ],
+    
+    "Satisfies": [ 12005 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 24, "Intensity": 1.0, "Center": 90 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 24, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+    
+   {
+    "Label": 12007,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 14 }
+    ],
+    
+    "Satisfies": [ 12006 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 14, "Intensity": 1.0, "Center": 55 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 14, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 12008,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 12 }
+    ],
+    
+    "Satisfies": [ 12007 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 12, "Intensity": 1.0, "Center": 127 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 12, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 12009,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 19 }
+    ],
+    
+    "Satisfies": [ 12008 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 19, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 12011,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 15 }
+    ],
+    
+    "Satisfies": [ 12009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 15, "Intensity": 1.0, "Center": 90 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 15, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 12111,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 15 },
+     { "Property": "Kid Position Y", "Op": ">", "Value": 40 },
+     { "Property": "Kid Position Y", "Op": "<=", "Value": 55 },
+     { "Property": "Kid Frame", "Op": "==", "Value": 15 }
+    ],
+    
+    "Satisfies": [ 12011 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 15, "Intensity": 1.0, "Center": 90 }
+    ]
+   },
+   
+   {
+    "Label": 12012,
+    "Conditions":
+    [
+     { "Property": "Tile FG State", "Room": 15, "Tile": 2, "Op": "!=", "Value": 54, "Comment": "Sword" }
+    ],
+    
+    "Satisfies": [ 12111 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 15, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 12013,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 2 },
+     { "Property": "Tile FG State", "Room": 15, "Tile": 2, "Op": "!=", "Value": 54, "Comment": "Sword" }
+    ],
+    
+    "Satisfies": [ 12012 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 12014,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 15 },
+     { "Property": "Guard Room", "Op": "==", "Value": 15 }
+    ],
+    
+    "Satisfies": [ 12013 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 74 }
+    ]
+   },
+   
+   {
+    "Label": 12015,
+    "Conditions":
+    [
+     { "Property": "United With Shadow", "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 12014 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 15, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set United With Shadow Magnet", "Room": 15, "Intensity": -10.0 }
+    ]
+   },
+   
+   {
+    "Label": 12016,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 2 },
+     { "Property": "United With Shadow", "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 12015 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set United With Shadow Magnet", "Room": 15, "Intensity": -10.0 }
+    ]
+   },
+   
+   {
+    "Label": 12017,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 13 }
+    ],
+    
+    "Satisfies": [ 12016 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 13, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 12018,
+    "Conditions":
+    [
+     { "Property": "Next Level", "Op": "==", "Value":  13 }
+    ],
+    
+    "Satisfies": [ ],
+    
     "Actions":
     [
      { "Type": "Trigger Win" }

@@ -335,6 +335,9 @@ class EmuInstance : public EmuInstanceBase
    play_frame();
   }
 
+  gameState.kidPrevframe = gameState.Kid.frame;
+  if (move != 0) gameState.lastInputStep = gameState.globalStepCounter;
+
   if (gameState.current_level == 1 && gameState.next_level == 2) gameState.next_level = 15;
   if (gameState.current_level == 15 && gameState.next_level == 16) gameState.next_level = 2;
   if (gameState.current_level != 15 && gameState.next_level != 15) gameState.rem_tick--;

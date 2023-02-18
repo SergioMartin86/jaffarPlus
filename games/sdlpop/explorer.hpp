@@ -12,8 +12,8 @@
 
 #define TEST_SINGLE
 #ifdef TEST_SINGLE
-#define SINGLE_RNG 0x273A9EBB
-#define SINGLE_TICK 685377
+#define SINGLE_RNG 0x5895B9AF
+#define SINGLE_TICK 990277
 #endif
 
 typedef uint32_t rng_t;
@@ -50,11 +50,11 @@ static std::vector<std::vector<uint8_t>> endWaitDelays =
 /* 04 */  {},
 /* 05 */  {},
 /* 06 */  {},
-/* 07 */  {2, 2, 2},
-/* 08 */  {3, 3, 3},
-/* 09 */  {4, 4, 4},
-/* 10 */  {1, 1, 1},
-/* 11 */  {2, 2, 2},
+/* 07 */  {2},
+/* 08 */  {3},
+/* 09 */  {4},
+/* 10 */  {1},
+/* 11 */  {2},
 /* 12 */  {},
 /* 13 */  {},
 /* 14 */  {}
