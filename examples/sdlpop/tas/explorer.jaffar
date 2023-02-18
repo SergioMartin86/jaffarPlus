@@ -94,7 +94,7 @@
      { "Level Id":  9, "State File": "../0900/state", "Solution File": "../0900/full", "RNG Offset": 0},
      { "Level Id": 10, "State File": "../1000/state", "Solution File": "../1000/full", "RNG Offset": 2},
      { "Level Id": 11, "State File": "../1100/state", "Solution File": "../1100/full", "RNG Offset": 2},
-     { "Level Id": 12, "State File": "../1200/state", "Solution File": "../1200/full", "RNG Offset": 2},
+     { "Level Id": 12, "State File": "../1200/state", "Solution File": "../1200/full", "RNG Offset": 5},
      { "Level Id": 13, "State File": "../1300/state", "Solution File": "../1300/full", "RNG Offset": 0}
     ]
   }, 

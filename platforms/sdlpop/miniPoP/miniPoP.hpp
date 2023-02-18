@@ -228,6 +228,7 @@ typedef void  free_peels_minipop_t(void);
 typedef int  play_level_2_minipop_t(void);
 typedef void  timers_minipop_t(void);
 typedef void  start_game_minipop_t(void);
+typedef void  check_fall_flo_t(void);
 typedef void  play_frame_minipop_t(void);
 typedef void  draw_game_frame_minipop_t(void);
 typedef void update_screen_minipop_t(void);
@@ -322,3 +323,5 @@ extern "C" display_minipop_text_bottom_minipop_t display_minipop_text_bottom;
 extern "C" redraw_screen_minipop_t redraw_screen;
 extern "C" anim_minipop_tile_modif_minipop_t anim_minipop_tile_modif;
 extern "C" void gen_palace_wall_colors_randomizer();
+extern "C" void check_fall_flo();
+

@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
    if (isReproduce)
    {
     currentStep++;
-    if (currentStep > sequenceLength)
+    if (currentStep >= sequenceLength)
     {
      if (refreshOnFinish)
      {

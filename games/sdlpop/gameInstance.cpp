@@ -237,8 +237,6 @@ _uint128_t GameInstance::computeHash() const
 
 std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
- gameState.kidPrevframe = gameState.Kid.frame;
-
  std::vector<INPUT_TYPE> moves;
 
  _emu->advanceState(move);
@@ -354,7 +352,8 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 {
  // We calculate a different reward if this is a winning frame
  auto stateType = getStateType(rulesStatus);
- if (stateType == f_win) return ((gameState.rem_min-1) * 720 + gameState.rem_tick);
+ //if (stateType == f_win) return ((gameState.rem_min-1) * 720 + gameState.rem_tick);
+ if (stateType == f_win) return -gameState.lastInputStep;
 
  // Getting rewards from rules
  float reward = 0.0;
@@ -422,6 +421,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   sprintf(cumulativeIGTText, "%02lu:%02lu.%03lu", cumMins, cumSecs, cumMilliSecs);
 
   LOG("[Jaffar]  + Global Step Counter:  %05d, (Tol: %02u)\n", gameState.globalStepCounter, timerTolerance);
+  LOG("[Jaffar]  + Last Input Step:  %05d\n", gameState.lastInputStep);
   LOG("[Jaffar]  + Current/Next Level:   %2d / %2d\n", gameState.current_level, gameState.next_level);
   LOG("[Jaffar]  + Reward:               %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                 0x%lX%lX\n", computeHash().first, computeHash().second);

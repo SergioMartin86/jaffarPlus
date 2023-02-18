@@ -1506,5 +1506,6 @@ struct sdlPopState_t {
  uint8_t cumulativeCutsceneDelay;
  byte kidPrevframe;
  uint16_t globalStepCounter;
+ uint16_t lastInputStep;
 };
 #pragma pack(pop)

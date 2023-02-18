@@ -236,9 +236,9 @@ int main(int argc, char *argv[])
      gameState.last_loose_sound = currentSet[rngIdx].first.second;
 
      for (uint8_t k = 0; k < levels[i].RNGOffset; k++) gameState.random_seed = _emuInstances[threadId]->advanceRNGState(gameState.random_seed);
+     check_fall_flo();
 
      size_t curMov = 0;
-
      if (levels[i].levelId != 15)
        for (; curMov < levels[i].sequenceLength && gameState.current_level == levels[i].levelId; curMov++)  _gameInstances[threadId]->advanceGameState(levels[i].moveList[curMov]);
      else

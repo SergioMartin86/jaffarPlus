@@ -6,6 +6,7 @@
 #include <string>
 #include <playbackInstanceBase.hpp>
 #include <dlfcn.h>
+#include <filesystem>
 
 char quick_control[] = "........";
 float replay_curr_tick = 0.0;
@@ -102,6 +103,7 @@ typedef void (*__pascal far start_replay_t)(void);
 typedef void (*__pascal far display_text_bottom_t)(const char near *text);
 typedef void (*__pascal far redraw_screen_t)(int drawing_different_room);
 typedef void (*__pascal far draw_image_transp_vga_t)(image_type far *image,int xpos,int ypos);
+typedef SDL_Surface* (*__pascal far get_final_surface_t)(void);
 
 typedef chtab_type *chtab_addrs_t[10];
 typedef mob_type mobs_t[14];
@@ -121,6 +123,8 @@ typedef char cachedFilePathTable_t[MAX_CACHED_FILES][POP_MAX_PATH];
 typedef size_t cachedFileCounter_t;
 typedef char levels_file_t[POP_MAX_PATH];
 
+
+
 class PlaybackInstance : public PlaybackInstanceBase
 {
  private:
@@ -133,6 +137,8 @@ class PlaybackInstance : public PlaybackInstanceBase
  size_t _IGTSecs;
  size_t _IGTMillisecs;
  std::string _overlayPath;
+ bool _outputImagesEnabled;
+ std::string _outputImagesPath;
 
  SDL_Surface* _downSurface;
  SDL_Surface* _upSurface;
@@ -217,6 +223,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  display_text_bottom_t display_text_bottom;
  redraw_screen_t redraw_screen;
  draw_image_transp_vga_t draw_image_transp_vga;
+ get_final_surface_t get_final_surface;
 
  // SDLPop State variables
  char_type *Kid;     //
@@ -360,6 +367,13 @@ class PlaybackInstance : public PlaybackInstanceBase
   if (isDefined(config, "Overlay Path") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Overlay Path' key.\n");
   _overlayPath = config["Overlay Path"].get<std::string>();
 
+  if (isDefined(config, "Output Images") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Overlay Images' key.\n");
+  if (isDefined(config["Output Images"], "Enabled") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Overlay Images / Enabled' key.\n");
+  _outputImagesEnabled = config["Output Images"]["Enabled"].get<bool>();
+  if (isDefined(config["Output Images"], "Path") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Overlay Images / Enabled' key.\n");
+  _outputImagesPath = config["Output Images"]["Path"].get<std::string>();
+
+  if (_outputImagesEnabled) std::filesystem::create_directories(_outputImagesPath);
   // Functions
   restore_room_after_quick_load = (restore_room_after_quick_load_t)dlsym(_dllHandle, "restore_room_after_quick_load");
   load_global_options = (load_global_options_t)dlsym(_dllHandle, "load_global_options");
@@ -433,6 +447,7 @@ class PlaybackInstance : public PlaybackInstanceBase
   display_text_bottom = (display_text_bottom_t) dlsym(_dllHandle, "display_text_bottom");
   redraw_screen = (redraw_screen_t) dlsym(_dllHandle, "redraw_screen");
   draw_image_transp_vga = (draw_image_transp_vga_t) dlsym(_dllHandle, "draw_image_transp_vga");
+  get_final_surface = (get_final_surface_t) dlsym(_dllHandle, "get_final_surface");
 
   // State variables
   Kid = (char_type *)dlsym(_dllHandle, "Kid");
@@ -777,6 +792,15 @@ class PlaybackInstance : public PlaybackInstanceBase
   SDL_RenderClear(*renderer_);
   SDL_RenderCopy(*renderer_, *target_texture, NULL, NULL);
   SDL_RenderPresent(*renderer_);
+
+  // Saving image file
+  if (_outputImagesEnabled)
+  {
+   char fileName[512];
+   sprintf(fileName, "%s/frame%05u.bmp", _outputImagesPath.c_str(), currentStep);
+   auto surface = get_final_surface();
+   SDL_SaveBMP(surface, fileName);
+  }
  }
 
  void startLevel(const word level)

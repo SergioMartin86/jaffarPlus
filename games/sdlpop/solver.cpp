@@ -207,6 +207,7 @@ int main(int argc, char *argv[])
    uint16_t lastUpDiff = lvlSource.sequenceLength - lastUpPosition;
 
    if (levels[i].levelId == 7) IGTTimer -= 1;
+   check_fall_flo();
 
    for (int j = 0; j < lvlSource.sequenceLength && gameState.current_level == levels[i].levelId; j++)
    {
