@@ -83,7 +83,7 @@
     "Overlay Path": "../../../platforms/sdlpop/overlay",
     "Output Images":
     {
-     "Enabled": false,
+     "Enabled": true,
      "Path": "images/new"
     }
   },
