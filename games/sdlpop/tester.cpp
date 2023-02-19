@@ -7,6 +7,23 @@
 #include "utils.hpp"
 #include <vector>
 #include <omp.h>
+#include <atomic>
+
+std::atomic<uint64_t> goodRNGFound;
+std::atomic<uint64_t> badRNGFound;
+
+// Functions for the show thread
+void* progressThreadFunction(void *ptr)
+{
+ while(true)
+ {
+  sleep(1);
+  uint64_t goodRNG = goodRNGFound;
+  uint64_t totalRNG = goodRNG + badRNGFound;
+  printf("[Progress] Ratio %lu:%lu (%f)\n", goodRNG, totalRNG, ((double)goodRNG/(double)totalRNG));
+ }
+ return NULL;
+}
 
 void tester(int argc, char *argv[])
 {
@@ -96,14 +113,28 @@ void tester(int argc, char *argv[])
   // Printing info
   printf("[Jaffar] Testing sequence file: %s (%u steps)\n", solutionFile.c_str(), sequenceLength);
 
+  // Flag to indicate a seed was found
+  bool seedFound = false;
+
+  // Creating progress reporting thread
+  pthread_t progressThread;
+  if (pthread_create(&progressThread, NULL, progressThreadFunction, NULL) != 0) EXIT_WITH_ERROR("[ERROR] Could not create show thread.\n");
+
+  // Resetting counters
+  goodRNGFound = 0;
+  badRNGFound = 0;
+
   // Running different RNGs
+  #pragma omp parallel for
   for (uint64_t seed = 0; seed < 0xFFFFFFFF; seed++)
   {
+   int threadId = omp_get_thread_num();
+
    // Reloading state
-   _emuInstances[0]->deserializeState(state);
+   _emuInstances[threadId]->deserializeState(state);
 
    // Setting RNG
-   _gameInstances[0]->setRNGState(seed);
+   _gameInstances[threadId]->setRNGState(seed);
 
    // Storage for rules
    bool rulesStatus[ruleCount];
@@ -115,14 +146,14 @@ void tester(int argc, char *argv[])
    for (int i = 0; i < sequenceLength; i++)
    {
     // Running move
-    _gameInstances[0]->advanceStateString(moveList[i]);
+    _gameInstances[threadId]->advanceStateString(moveList[i]);
 
     // Checking rules
     memset(rulesStatus, 0, ruleCount * sizeof(bool));
-    _gameInstances[0]->evaluateRules(rulesStatus);
+    _gameInstances[threadId]->evaluateRules(rulesStatus);
 
     // Checking rule type
-    stateType = _gameInstances[0]->getStateType(rulesStatus);
+    stateType = _gameInstances[threadId]->getStateType(rulesStatus);
 
     // Break if not regular
     if (stateType != f_regular) break;
@@ -131,9 +162,10 @@ void tester(int argc, char *argv[])
    // If winning RNG seed, print value and exit
    if (stateType == f_win)
    {
-    printf("Found seed: %lu\n", seed);
-    exit(0);
+    goodRNGFound++;
+    if (seedFound == false) { printf("Found seed: %lu\n", seed); seedFound = true; }
    }
+   else badRNGFound++;
   }
 
   // If no seeds were found, fail
