@@ -76,7 +76,12 @@
   "Playback Configuration": 
   {
     "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../platforms/sdlpop/overlay"
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Output Images":
+    {
+     "Enabled": true, 
+     "Path": "images/new"
+    }
   },
  
   "Rules":
@@ -216,27 +221,13 @@
    },
    
    {
-    "Label": 4006,
-    "Conditions":
-    [
-     { "Property": "Kid Frame", "Op": "==", "Value": 217}
-    ],
-    
-    "Satisfies": [ 4005 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 }
-    ]
-   },
-   
-   {
     "Label": 4999,
     "Description": "If Kid exits the level, then win.",
     "Conditions":
     [
-     { "Property": "Next Level", "Op": "==", "Value":  7 }
+     { "Property": "Kid Position Y", "Op": "==", "Value":  255 },
+     { "Property": "Kid Position X", "Op": "==", "Value":  151 },
+     { "Property": "Kid Room", "Op": "==", "Value":  1 }
     ],
      
     "Satisfies": [  ],
@@ -244,6 +235,24 @@
     "Actions":
     [
      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   
+   
+   {
+    "Label": 4998,
+    "Description": "If Kid exits the level, then win.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+     
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
   ]  

@@ -12,7 +12,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4,
+   "Timer Tolerance": 8,
    "Property Hash Types": [ "Kid Current HP", "Guard Current HP" ],
    "Static Tile Hash Types":
     [
@@ -50,8 +50,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 120000,
-     "Max Size Upper Bound (Mb)": 180000
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 28000
     },
     
     "Hash Database":
@@ -84,20 +84,6 @@
  
   "Rules":
   [
-   {
-    "Label": 11008,
-    "Conditions":
-    [
-     { "Property": "Kid Room", "Op": "==", "Value": 24 }
-    ],
-    
-    "Satisfies": [  ],
-
-    "Actions":
-    [
-     { "Type": "Set Kid Horizontal Magnet", "Room": 24, "Intensity": 1.0, "Center": 255 }
-    ]
-   },
    
    {
     "Label": 11009,
@@ -107,48 +93,32 @@
      { "Property": "Kid Room", "Op": "==", "Value": 16 }
     ],
     
-    "Satisfies": [ 11008 ],
+    "Satisfies": [  ],
 
     "Actions":
     [
      { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 },
-     { "Type": "Set Guard Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Set Guard Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 }
     ]
    },
 
-   {
-    "Label": 11010,
-    "Description": "Keep going to the right.",
-    "Conditions":
-    [
-     { "Property": "Kid Room", "Op": "==", "Value": 16 },
-     { "Property": "Guard Position Y", "Op": "==", "Value": 118 }
-    ],
-    
-    "Satisfies": [ 11009 ],
-
-    "Actions":
-    [
-     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 }
-    ]
-   },
-   
    {
     "Label": 11011,
     "Description": "Keep going to the right.",
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value": 13 },
-     { "Property": "Guard Position Y", "Op": "==", "Value": 118 }
+     { "Property": "Guard Room", "Op": "==", "Value": 13 }
     ],
     
-    "Satisfies": [ 11010 ],
+    "Satisfies": [ 11009 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 13, "Intensity": 1.0, "Center": 128 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 13, "Intensity": 1.0, "Center": 118 }
+     { "Type": "Set Guard Horizontal Magnet", "Room": 13, "Intensity": 3.0, "Center": 128 },
+     { "Type": "Set Guard Vertical Magnet", "Room": 13, "Intensity": 5.0, "Center": 118 }
     ]
    },
    
@@ -158,15 +128,18 @@
     "Conditions":
     [
      { "Property": "Kid Room", "Op": "==", "Value": 13 },
-     { "Property": "Kid Position Y", "Op": "==", "Value": 118 }
+     { "Property": "Guard Room", "Op": "==", "Value": 13 },
+     { "Property": "Guard Position Y", "Op": "==", "Value": 118 }
     ],
     
-    "Satisfies": [ 11010 ],
+    "Satisfies": [ 11011 ],
 
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 13, "Intensity": 1.0, "Center": 0 }
+     { "Type": "Set Kid Horizontal Magnet", "Room": 13, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 13, "Intensity": 5.0, "Center": 0 },
+     { "Type": "Set Guard Horizontal Magnet", "Room": 13, "Intensity": 5.0, "Center": 0 }
     ]
    },
 
@@ -175,10 +148,11 @@
     "Description": "Open exit door",
     "Conditions":
     [
-     { "Property": "Tile BG State", "Room": 24, "Tile": 17, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+     { "Property": "Tile BG State", "Room": 24, "Tile": 17, "Op": ">", "Value": 0, "Comment": "Exit Door" },
+     { "Property": "Guard Position Y", "Op": "==", "Value": 118 }
     ],
     
-    "Satisfies": [ 11011 ],
+    "Satisfies": [ 11012 ],
 
     "Actions":
     [

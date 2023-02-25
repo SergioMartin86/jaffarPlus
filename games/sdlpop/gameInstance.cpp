@@ -471,7 +471,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
     const auto idx = (trob.room - 1) * 30 + trob.tilepos;
 
     if (levelTileHashes[gameState.current_level]._hashTypeTrobs.contains(idx) || std::find( levelTileHashes[gameState.current_level]._hashTypeStatic.begin(),  levelTileHashes[gameState.current_level]._hashTypeStatic.end(), idx) !=  levelTileHashes[gameState.current_level]._hashTypeStatic.end())
-     LOG("[Jaffar]    + Type: %d, Room: %d, Pos: %d, FG: %d, BG: %d\n", trob.type, trob.room, trob.tilepos, gameState.level.fg[idx], gameState.level.bg[idx]);
+     LOG("[Jaffar]    + Type: %d, Room: %d, Idx: %d, Pos: %d, FG: %d, BG: %d\n", trob.type, trob.room, idx, trob.tilepos, gameState.level.fg[idx], gameState.level.bg[idx]);
   }
 
   LOG("[Jaffar]  + Hashed Tiles:\n");

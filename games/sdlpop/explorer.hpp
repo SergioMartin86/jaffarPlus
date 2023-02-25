@@ -5,16 +5,19 @@
 #include <parallel_hashmap/phmap.h>
 
 #define COPYPROT_SOLUTION_COUNT 14
-//#define MAX_CLOCK_TICKS 1573040
 #define MAX_CLOCK_TICKS 1573040
-
-#define STORE_DELAY_HISTORY
+//#define MAX_CLOCK_TICKS 15740
 
 #define TEST_SINGLE
 #ifdef TEST_SINGLE
 #define SINGLE_RNG 0x5895B9AF
 #define SINGLE_TICK 990277
+//#define SINGLE_RNG 0x0AD72CF1
+//#define SINGLE_TICK 815
 #endif
+
+#define STORE_DELAY_HISTORY
+//#define STORE_GRAPH
 
 typedef uint32_t rng_t;
 typedef uint32_t clockTick_t;

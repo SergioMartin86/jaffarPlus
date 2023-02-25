@@ -50,6 +50,13 @@ int main(int argc, char *argv[])
   // Checking whether it contains the Explorer configuration field
   if (isDefined(config, "Explorer Configuration") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Explorer Configuration' key.\n");
 
+  // Additional storage for edge map
+  #ifdef STORE_GRAPH
+  std::vector<std::string> edgeNames;
+  std::vector<std::map<rng_t, std::vector<rng_t>>> edges;
+  size_t curEdgeStep = 0;
+  #endif
+
   // Progress variables
   processedRNGs = 0;
   targetRNGs = 0;
@@ -149,6 +156,7 @@ int main(int argc, char *argv[])
   initialSet[SINGLE_RNG] = SINGLE_TICK;
   #endif
 
+
   // Processing copyright
   for (auto& solution : initialSet)
   {
@@ -170,8 +178,13 @@ int main(int argc, char *argv[])
     size_t RNGSetSize = goodRNGSet.size();
     size_t currentRNG = 0;
 
-    printf("Adding start cutscene delays... (Target: %lu)\n", RNGSetSize);
+    #ifdef STORE_GRAPH
+    edgeNames.push_back(std::string("Cutscene Level ") + std::to_string(levels[i].levelId));
+    edges.push_back(std::map<rng_t, std::vector<rng_t>>());
+    curEdgeStep = edgeNames.size();
+    #endif
 
+    printf("Adding start cutscene delays... (Target: %lu)\n", RNGSetSize);
     for (const auto& entry : goodRNGSet)
     {
      rng_t curSeed = entry.first.first;
@@ -180,6 +193,10 @@ int main(int argc, char *argv[])
 
      // Adding first
      tmpRNGSet[std::make_pair(curSeed, looseSound)] = newEntry;
+
+     #ifdef STORE_GRAPH
+     edges[curEdgeStep-1][entry.first.first].push_back(curSeed);
+     #endif
 
      // Now adding cutscene delays (first one is mandatory)
      for (size_t q = 0; q < cutsceneDelays[i].size(); q++) // Cutscene frames to wait for
@@ -200,7 +217,14 @@ int main(int argc, char *argv[])
       if (isKeyPresent == false) addEntry = true; else { curCostlyDelay = tmpRNGSet[key].costlyDelay; curTotalDelay = tmpRNGSet[key].totalDelay; }
       if ((isKeyPresent == true) &&  (curCostlyDelay > newEntry.costlyDelay)) addEntry = true;
       if ((isKeyPresent == true) &&  (curCostlyDelay == newEntry.costlyDelay) && (curTotalDelay > newEntry.totalDelay)) addEntry = true;
-      if (addEntry == true) tmpRNGSet[key] = newEntry;
+      if (addEntry == true)
+       {
+        tmpRNGSet[key] = newEntry;
+
+        #ifdef STORE_GRAPH
+        edges[curEdgeStep-1][entry.first.first].push_back(curSeed);
+        #endif
+       }
      }
 
      currentRNG++;
@@ -222,6 +246,13 @@ int main(int argc, char *argv[])
 
    printf("Running solution...\n");
    processing = true;
+
+   #ifdef STORE_GRAPH
+   edgeNames.push_back(std::string("Level ") + std::to_string(levels[i].levelId));
+   edges.push_back(std::map<rng_t, std::vector<rng_t>>());
+   curEdgeStep = edgeNames.size();
+   #endif
+
    #pragma omp parallel
    {
     // Getting thread id
@@ -252,7 +283,14 @@ int main(int argc, char *argv[])
      {
       if (i > curMaxLevel) curMaxLevel = i;
       #pragma omp critical
-      tmpRNGSet[std::make_pair(gameState.random_seed, gameState.last_loose_sound)] = currentSet[rngIdx].second;
+      {
+       tmpRNGSet[std::make_pair(gameState.random_seed, gameState.last_loose_sound)] = currentSet[rngIdx].second;
+
+       #ifdef STORE_GRAPH
+       edges[curEdgeStep-1][currentSet[rngIdx].first.first].push_back(gameState.random_seed);
+       #endif
+      }
+
       successRNGs = tmpRNGSet.size();
      }
 
@@ -270,6 +308,12 @@ int main(int argc, char *argv[])
    // End wait delays
    if (endWaitDelays[i].size() > 0)
    {
+    #ifdef STORE_GRAPH
+    edgeNames.push_back(std::string("End Wait Delay - Level ") + std::to_string(levels[i].levelId));
+    edges.push_back(std::map<rng_t, std::vector<rng_t>>());
+    curEdgeStep = edgeNames.size();
+    #endif
+
     printf("Adding end wait delays...\n");
 
     size_t RNGSetSize = goodRNGSet.size();
@@ -287,6 +331,10 @@ int main(int argc, char *argv[])
 
      // Adding first
      tmpRNGSet[std::make_pair(curSeed, looseSound)] = newEntry;
+
+     #ifdef STORE_GRAPH
+     edges[curEdgeStep-1][entry.first.first].push_back(curSeed);
+     #endif
 
      // Now adding cutscene delays (first one is mandatory)
      for (size_t q = 0; q < endWaitDelays[i].size(); q++) // Cutscene frames to wait for
@@ -308,7 +356,14 @@ int main(int argc, char *argv[])
       if (isKeyPresent == false) addEntry = true; else { curCostlyDelay = tmpRNGSet[key].costlyDelay; curTotalDelay = tmpRNGSet[key].totalDelay; }
       if ((isKeyPresent == true) &&  (curCostlyDelay > newEntry.costlyDelay)) addEntry = true;
       if ((isKeyPresent == true) &&  (curCostlyDelay == newEntry.costlyDelay) && (curTotalDelay > newEntry.totalDelay)) addEntry = true;
-      if (addEntry == true) tmpRNGSet[key] = newEntry;
+      if (addEntry == true)
+       {
+         tmpRNGSet[key] = newEntry;
+
+         #ifdef STORE_GRAPH
+         edges[curEdgeStep-1][entry.first.first].push_back(curSeed);
+         #endif
+       }
      }
 
      currentRNG++;
@@ -349,6 +404,33 @@ int main(int argc, char *argv[])
   }
 
   printf("Max Level: %u\n", levels[maxLevel].levelId);
+
+  #ifdef STORE_GRAPH
+  printf("{\n");
+  printf("  [\n");
+
+  for (size_t i = 0; i < curEdgeStep; i++)
+  {
+   printf("    {\n");
+   printf("      \"Stage\": \"%s\",\n", edgeNames[i].c_str());
+   printf("      \"Edges\": \n");
+   printf("        [ \n");
+
+   for (auto it = edges[i].begin(); it != edges[i].end(); it++)
+   {
+    for (size_t j = 0; j < it->second.size(); j++)
+    {
+     printf("                     [ %u, %u ],\n", it->first, it->second[j]);
+    }
+   }
+
+   printf("        ]\n");
+   printf("    },\n");
+  }
+
+  printf("  ]\n");
+  printf("}\n");
+  #endif
 
   return 0;
 }
