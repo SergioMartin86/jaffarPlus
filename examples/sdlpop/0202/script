@@ -74,7 +74,12 @@
   "Playback Configuration": 
   {
     "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../platforms/sdlpop/overlay"
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Output Images":
+    {
+     "Enabled": true,
+     "Path": "images/new"
+    }
   },
  
   "Rules":

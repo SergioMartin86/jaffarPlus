@@ -19,8 +19,11 @@ void* progressThreadFunction(void *ptr)
  {
   sleep(1);
   uint64_t goodRNG = goodRNGFound;
-  uint64_t totalRNG = goodRNG + badRNGFound;
-  printf("[Progress] Ratio %lu:%lu (%f)\n", goodRNG, totalRNG, ((double)goodRNG/(double)totalRNG));
+  uint64_t badRNG = badRNGFound;
+  uint64_t totalRNG = goodRNG + badRNG;
+  printf("[Progress] Good RNG: %lu\n", goodRNG);
+  printf("[Progress] Bad RNG: %lu\n", badRNG);
+  printf("[Progress] Ratio %lu:%lu (%f)\n", goodRNG, totalRNG, ((double)totalRNG/(double)goodRNG));
  }
  return NULL;
 }
@@ -114,7 +117,8 @@ void tester(int argc, char *argv[])
   printf("[Jaffar] Testing sequence file: %s (%u steps)\n", solutionFile.c_str(), sequenceLength);
 
   // Flag to indicate a seed was found
-  bool seedFound = false;
+  bool goodSeedFound = false;
+  bool badSeedFound = false;
 
   // Creating progress reporting thread
   pthread_t progressThread;
@@ -163,9 +167,13 @@ void tester(int argc, char *argv[])
    if (stateType == f_win)
    {
     goodRNGFound++;
-    if (seedFound == false) { printf("Found seed: %lu\n", seed); seedFound = true; }
+    if (goodSeedFound == false) { printf("Found good seed: %lu\n", seed); goodSeedFound = true; }
    }
-   else badRNGFound++;
+   else
+   {
+    if (badSeedFound == false) { printf("Found bad seed: %lu\n", seed); badSeedFound = true; }
+    badRNGFound++;
+   }
   }
 
   // If no seeds were found, fail

@@ -3,10 +3,10 @@
   {
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
-    "State File": "jaffar.state",
+    "State File": "state",
     "Initialize Copyprot": false,
     "Override RNG Value": true,
-    "RNG Value": 2344315894,
+    "RNG Value": 4140742368,
     "Loose Tile Sound Id": 20 
   },
   
@@ -74,7 +74,12 @@
   "Playback Configuration": 
   {
     "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../platforms/sdlpop/overlay"
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Output Images":
+    {
+     "Enabled": true, 
+     "Path": "images/new"
+    }
   },
  
   "Rules":

@@ -3,7 +3,7 @@
   {
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
-    "State File": "post.state",
+    "State File": "state",
     "Initialize Copyprot": false,
     "Override RNG Value": true,
     "RNG Value": 298515393,
@@ -13,7 +13,7 @@
   "Game Configuration": 
   {
    "Timer Tolerance": 8,
-   "Property Hash Types": [ "Kid Current HP", "Guard Current HP"  ],
+   "Property Hash Types": [  ],
    "Static Tile Hash Types":
    [ 
    ],
@@ -69,7 +69,12 @@
   "Playback Configuration": 
   {
     "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
-    "Overlay Path": "../../../platforms/sdlpop/overlay"
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Output Images":
+    {
+     "Enabled": true, 
+     "Path": "images/new"
+    }
   },
  
   "Rules":
