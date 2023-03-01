@@ -2,6 +2,7 @@ option('game', type : 'combo', choices :
   [ 
     'gen/ootw',
     'nes/smb',
+    'nes/sfsmb',
     'nes/castlevania',
     'nes/pop',
     'nes/ebike',
