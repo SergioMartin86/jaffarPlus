@@ -76,7 +76,14 @@ class State
     usize_t* diffCount = ((usize_t*)((uint8_t*)this +_xdelta3DiffCountOffset));
     int ret = xd3_encode_memory(newStateData, _STATE_DATA_SIZE_TRAIN, baseStateData, _STATE_DATA_SIZE_TRAIN, (uint8_t*)this + _frameDataOffset, diffCount, _frameDataSize, _useXdelta3ZLibCompression ? 0 : XD3_NOCOMPRESS);
     if (*diffCount > _maxXDelta3Differences) EXIT_WITH_ERROR("[Error] Exceeded maximum frame difference: %d > %d.\n", *diffCount, _maxXDelta3Differences);
-    if (ret != 0) EXIT_WITH_ERROR("[Error] State Encode failure: %d: %s\n", ret, xd3_strerror(ret));
+    if (ret != 0)
+    {
+     fprintf(stderr, "[Error] State Encode failure: %d: %s\n", ret, xd3_strerror(ret));
+     const size_t newSize = 1048576;
+     uint8_t* newBuf = (uint8_t*)malloc(1048576 * sizeof(uint8_t));
+     xd3_encode_memory(newStateData, _STATE_DATA_SIZE_TRAIN, baseStateData, _STATE_DATA_SIZE_TRAIN, newBuf, diffCount, newSize, _useXdelta3ZLibCompression ? 0 : XD3_NOCOMPRESS);
+     if (*diffCount > _maxXDelta3Differences) EXIT_WITH_ERROR("[Error] Attempted encoding size: %d > %d.\n", *diffCount, _maxXDelta3Differences);
+    }
     if (*diffCount > _currentXDelta3DMaxDiff) _currentXDelta3DMaxDiff = *diffCount;
    }
    else

@@ -7,7 +7,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4,
+   "Timer Tolerance": 2,
    "Hash Includes": [  ]
   },
   
@@ -20,23 +20,23 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 1000,
+      "Max Move Count": 500,
       "Store Move History": true,
-      "XDelta3 Enabled": false,
+      "XDelta3 Enabled": true,
       "XDelta3 Max Differences": 5000,
-      "XDelta3 Use Zlib Compression": true
+      "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 70000,
-     "Max Size Upper Bound (Mb)": 220000
+     "Max Size Lower Bound (Mb)": 50000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
     { 
      "Database Count": 2,
-     "Max Size (Mb)": 10000 
+     "Max Size (Mb)": 20000 
     },
     
     "Save Intermediate Results":
