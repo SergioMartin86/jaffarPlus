@@ -7,7 +7,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 2,
+   "Timer Tolerance": 4,
    "Hash Includes": [  ]
   },
   
@@ -22,15 +22,15 @@
     {
       "Max Move Count": 500,
       "Store Move History": true,
-      "XDelta3 Enabled": true,
+      "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 5000,
-      "XDelta3 Use Zlib Compression": false
+      "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 70000,
+     "Max Size Upper Bound (Mb)": 210000
     },
     
     "Hash Database":
@@ -68,7 +68,8 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max":  6000 },
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 3026, "Min": 0, "Max":  6000 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 2.0, "Center": 2821, "Min": 0, "Max":  6000 },
      { "Type": "Set Mario Vertical Magnet", "Intensity": 0.1, "Center": 146, "Min": 0, "Max":  255 }
     ]
    },
@@ -84,8 +85,9 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max":  6000 },
-     { "Type": "Set Mario Vertical Magnet", "Intensity": 1.0, "Center": 46, "Min": 0, "Max":  255 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 3026, "Min": 0, "Max":  6000 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 2.0, "Center": 2821, "Min": 0, "Max":  6000 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": 0.2, "Center": 46, "Min": 0, "Max":  255 }
     ]
    },
    
@@ -121,6 +123,22 @@
     "Actions":
     [
      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Conditions":
+    [
+     { "Property": "Mario Disappear State", "Op": ">", "Value":  0 }
+     
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
   ]  

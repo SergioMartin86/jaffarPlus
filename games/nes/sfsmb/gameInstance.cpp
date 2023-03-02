@@ -13,6 +13,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   screenScroll         = (uint16_t*) &_emu->_baseMem[0x071B];
   marioAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
   marioState           = (uint8_t*)  &_emu->_baseMem[0x000E];
+  marioDisappearState  = (uint8_t*)  &_emu->_baseMem[0x009C];
 
   marioBasePosX        = (uint8_t*)  &_emu->_baseMem[0x006D];
   marioRelPosX         = (uint8_t*)  &_emu->_baseMem[0x0086];
@@ -119,6 +120,7 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*screenScroll);
   hash.Update(*marioAnimation);
   hash.Update(*marioState);
+  hash.Update(*marioDisappearState);
 
   hash.Update(*marioBasePosX);
   hash.Update(*marioRelPosX);
@@ -132,13 +134,13 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*marioMovingDirection);
   hash.Update(*marioFloatingMode);
   hash.Update(*marioWalkingMode);
-//  hash.Update(*marioWalkingDelay);
+  hash.Update(*marioWalkingDelay);
   hash.Update(*marioWalkingFrame);
-//    hash.Update(*marioMaxVelLeft);
-//    hash.Update(*marioMaxVelRight);
+    hash.Update(*marioMaxVelLeft);
+    hash.Update(*marioMaxVelRight);
   hash.Update(*marioVelX);
   hash.Update(*marioVelY);
-//  hash.Update(*marioFracVelY);
+  hash.Update(*marioFracVelY);
   hash.Update(*marioGravity);
   hash.Update(*marioFriction);
 
@@ -174,9 +176,9 @@ _uint128_t GameInstance::computeHash() const
 //  hash.Update(*hitDetectionFlag);
 
   // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
-  hash.Update(*animationTimer < 2 ? *animationTimer % (timerTolerance+1) : (uint8_t)2);
-  hash.Update(*jumpSwimTimer < 2 ? *jumpSwimTimer % (timerTolerance+1) : (uint8_t)2);
-  hash.Update(*runningTimer < 2 ? *runningTimer % (timerTolerance+1) : (uint8_t)2);
+  hash.Update(*animationTimer < 2 ? *animationTimer : (uint8_t)2);
+  hash.Update(*jumpSwimTimer < 2 ? *jumpSwimTimer : (uint8_t)2);
+  hash.Update(*runningTimer < 2 ? *runningTimer : (uint8_t)2);
 //  hash.Update(*blockBounceTimer < 2 ? *blockBounceTimer : (uint8_t)2);
 //   hash.Update(*sideCollisionTimer);
 //   hash.Update(*jumpspringTimer);
@@ -207,6 +209,7 @@ void GameInstance::updateDerivedValues()
  // Recalculating derived values
   marioPosY = *marioRelPosY + 46;
   marioPosX = (uint16_t)*marioBasePosX * 256 + (uint16_t)*marioRelPosX;
+  if (marioPosX > 60000) marioPosX = 0;
   screenPosX = (uint16_t)*screenBasePosX * 256 + (uint16_t)*screenRelPosX;
   marioScreenOffset = marioPosX - screenPosX;
   currentWorld = *currentWorldRaw + 1;
@@ -407,7 +410,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Time Left:              %1u%1u%1u\n", *timeLeft100, *timeLeft10, *timeLeft1);
  LOG("[Jaffar]  + Mario Animation:        %02u\n", *marioAnimation);
- LOG("[Jaffar]  + Mario State:            %02u\n", *marioState);
+ LOG("[Jaffar]  + Mario State:            %02u (D: %02u)\n", *marioState, *marioDisappearState);
  LOG("[Jaffar]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", screenPosX, *screenBasePosX, (uint16_t)*screenBasePosX * 255, *screenRelPosX);
  LOG("[Jaffar]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", marioPosX, *marioBasePosX, (uint16_t)*marioBasePosX * 255, *marioRelPosX);
  LOG("[Jaffar]  + Mario / Screen Offset:  %04d\n", marioScreenOffset);
