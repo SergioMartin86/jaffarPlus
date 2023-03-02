@@ -30,6 +30,7 @@ class GameInstance : public GameInstanceBase
   uint16_t* screenScroll;
   uint8_t* marioAnimation;
   uint8_t* marioState;
+  uint8_t* marioDisappearState;
 
   uint8_t* marioBasePosX;
   uint8_t* marioRelPosX;
