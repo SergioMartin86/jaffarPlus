@@ -56,6 +56,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Mario State") return dt_uint8;
+  if (propertyName == "Mario Sprite") return dt_uint8;
   if (propertyName == "Mario Disappear State") return dt_uint8;
   if (propertyName == "Mario Animation") return dt_uint8;
   if (propertyName == "Mario Walking Frame") return dt_uint8;
@@ -66,6 +67,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 
   if (propertyName == "Mario Position Y") return dt_uint8;
   if (propertyName == "Mario Velocity X") return dt_int8;
+  if (propertyName == "Mario Velocity Y") return dt_int8;
 
   if (propertyName == "Mario Base Position X") return dt_uint8;
   if (propertyName == "Mario Relative Position X") return dt_uint8;
@@ -84,6 +86,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Enemy 5 Type") return dt_uint8;
   if (propertyName == "Mario Screen Offset") return dt_int16;
   if (propertyName == "Warp Selector") return dt_uint8;
+  if (propertyName == "Lag Indicator") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -95,6 +98,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Mario State") return gameInstance->marioState;
+  if (propertyName == "Mario Sprite") return gameInstance->marioSprite;
   if (propertyName == "Mario Disappear State") return gameInstance->marioDisappearState;
   if (propertyName == "Mario Animation") return gameInstance->marioAnimation;
   if (propertyName == "Mario Walking Frame") return gameInstance->marioWalkingFrame;
@@ -109,6 +113,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
 
   if (propertyName == "Mario Position Y") return &gameInstance->marioPosY;
   if (propertyName == "Mario Velocity X") return gameInstance->marioVelX;
+  if (propertyName == "Mario Velocity Y") return gameInstance->marioVelY;
   if (propertyName == "Current World") return &gameInstance->currentWorld; // Derivative value
   if (propertyName == "Current Stage") return &gameInstance->currentStage; // Derivative value
   if (propertyName == "Current Screen") return gameInstance->screenBasePosX;
@@ -122,6 +127,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Enemy 5 Type") return gameInstance->enemy5Type;
   if (propertyName == "Mario Screen Offset") return &gameInstance->marioScreenOffset; // Derivative value
   if (propertyName == "Warp Selector") return gameInstance->warpSelector;
+  if (propertyName == "Lag Indicator") return gameInstance->lagIndicator;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
