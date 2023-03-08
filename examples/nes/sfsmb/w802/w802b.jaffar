@@ -2,12 +2,12 @@
   "Emulator Configuration": 
   {
     "Rom File": "../sfsmb.nes",
-    "State File": "w803a.state"
+    "State File": "w802b.state"
   },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 2,
+   "Timer Tolerance": 3,
    "Hash Includes": [  ]
   },
   
@@ -20,7 +20,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 500,
+      "Max Move Count": 800,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 3000,
@@ -29,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 70000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 20000
     },
     
     "Hash Database":
@@ -69,8 +69,7 @@
     
     "Actions":
     [
-      { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max":  6000 },
-      { "Type": "Set Mario Vertical Magnet", "Intensity": 0.01, "Center": 90, "Min": 0, "Max":  255 }
+      { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 1637, "Min": 0, "Max":  6000 }
     ]
    },
    
@@ -78,7 +77,7 @@
     "Label": 1001,
     "Conditions":
     [
-      { "Property": "Mario Sprite", "Op": "==", "Value":  160 }
+       { "Property": "Mario Position X", "Op": ">", "Value":  1630 }
     ],
     
     "Satisfies": [ 1000 ],
@@ -86,8 +85,25 @@
     "Actions":
     [
       { "Type": "Add Reward", "Value": 20000 },
+      { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 1897, "Min": 0, "Max":  6000 },
+      { "Type": "Set Mario Vertical Magnet", "Intensity": 0.1, "Center": 150, "Min": 0, "Max":  255 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Conditions":
+    [
+      { "Property": "Mario Sprite", "Op": "==", "Value":  160 }
+    ],
+    
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [
+      { "Type": "Add Reward", "Value": 20000 },
       { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max":  6000 },
-      { "Type": "Set Mario Vertical Magnet", "Intensity": 0.01, "Center": 90, "Min": 0, "Max":  255 }
+      { "Type": "Set Mario Vertical Magnet", "Intensity": 0.01, "Center": 200, "Min": 0, "Max":  255 }
     ]
    },
    
@@ -98,7 +114,7 @@
      { "Property": "Mario State", "Op": "==", "Value":  5 }
     ],
     
-    "Satisfies": [ 1001 ],
+    "Satisfies": [ 1002 ],
     
     "Actions":
     [

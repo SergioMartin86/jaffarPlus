@@ -31,6 +31,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* marioAnimation;
   uint8_t* marioState;
   uint8_t* marioDisappearState;
+  uint8_t* marioSprite;
 
   uint8_t* marioBasePosX;
   uint8_t* marioRelPosX;
@@ -114,6 +115,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* player1GamePad2;
 
   uint16_t* warpAreaOffset;
+  uint8_t* lagIndicator;
+  uint8_t* lastInputTime;
 
   // Derivative values
   uint8_t marioPosY;

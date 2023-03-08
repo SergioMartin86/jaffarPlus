@@ -14,6 +14,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   marioAnimation       = (uint8_t*)  &_emu->_baseMem[0x0001];
   marioState           = (uint8_t*)  &_emu->_baseMem[0x000E];
   marioDisappearState  = (uint8_t*)  &_emu->_baseMem[0x009C];
+  marioSprite          = (uint8_t*)  &_emu->_baseMem[0x06D5];
 
   marioBasePosX        = (uint8_t*)  &_emu->_baseMem[0x006D];
   marioRelPosX         = (uint8_t*)  &_emu->_baseMem[0x0086];
@@ -97,6 +98,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   warpSelector         = (uint8_t*)  &_emu->_baseMem[0x06D6];
   warpAreaOffset       = (uint16_t*) &_emu->_baseMem[0x0750];
+  lagIndicator         = (uint8_t*)  &_emu->_baseMem[0x01FB];
+  lastInputTime        = (uint8_t*) &_emu->_baseMem[0x07F0];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -120,6 +123,7 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*screenScroll);
   hash.Update(*marioAnimation);
   hash.Update(*marioState);
+  hash.Update(*marioSprite);
   hash.Update(*marioDisappearState);
 
   hash.Update(*marioBasePosX);
@@ -223,6 +227,8 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
  _emu->advanceState(move);
  moves.push_back(move);
  updateDerivedValues();
+
+ if (move != 0) *lastInputTime = *globalTimer;
 
  return moves;
 }
@@ -334,6 +340,21 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
   if (*marioAnimation == 0x00FA) moveList.insert(moveList.end(), { "LB" });
   if (*marioAnimation == 0x00FB) moveList.insert(moveList.end(), { "LB" });
 
+  if (*marioAnimation == 0x0091) moveList.insert(moveList.end(), { "R", "L", "D", "U", "LR", "DR", "DL", "UR", "UL", "DLR", "ULR" });
+  if (*marioAnimation == 0x0093) moveList.insert(moveList.end(), { "R", "L", "D", "U", "LR", "DR", "DL", "UR", "UL", "DLR", "ULR" });
+  if (*marioAnimation == 0x009F) moveList.insert(moveList.end(), { "R", "L", "D", "U", "LR", "DR", "DL", "UR", "UL", "DLR", "ULR" });
+
+  if (*marioAnimation == 0x0031) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x0032) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x0033) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x0034) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00E9) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "RB", "LA", "LR" });
+  if (*marioAnimation == 0x00EE) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00EF) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00F0) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00F1) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00FB) moveList.insert(moveList.end(), { "D" });
+
   return moveList;
 }
 
@@ -353,11 +374,16 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 // Obtains the score of a given frame
 float GameInstance::getStateReward(const bool* rulesStatus) const
 {
- // Getting rewards from rules
+  // If beaten the game, the best score is that which had the last input
+  if (currentWorld == 8 && currentStage == 4 && *gameMode == 2) return -*lastInputTime;
+
+  // Getting rewards from rules
   float reward = 0.0;
   for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
    if (rulesStatus[ruleId] == true)
     reward += _rules[ruleId]->_reward;
+
+  if (currentWorld == 8 && currentStage == 4) reward -= 0.001 * (*lastInputTime);
 
   // Getting magnet values for the kid
   auto magnets = getMagnetValues(rulesStatus);
@@ -404,13 +430,14 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
- LOG("[Jaffar]  + Global Timer:           %u\n", *globalTimer);
+ LOG("[Jaffar]  + Global Timer / Lag:     %u (%02u)\n", *globalTimer, *lagIndicator);
+ LOG("[Jaffar]  + Last Input Time:        %u\n", *lastInputTime);
  LOG("[Jaffar]  + Current World-Stage:    %1u-%1u\n", currentWorld, currentStage);
  LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Time Left:              %1u%1u%1u\n", *timeLeft100, *timeLeft10, *timeLeft1);
  LOG("[Jaffar]  + Mario Animation:        %02u\n", *marioAnimation);
- LOG("[Jaffar]  + Mario State:            %02u (D: %02u)\n", *marioState, *marioDisappearState);
+ LOG("[Jaffar]  + Mario State / Sprite:   %02u (D: %02u) / %02u\n", *marioState, *marioDisappearState, *marioSprite);
  LOG("[Jaffar]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", screenPosX, *screenBasePosX, (uint16_t)*screenBasePosX * 255, *screenRelPosX);
  LOG("[Jaffar]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", marioPosX, *marioBasePosX, (uint16_t)*marioBasePosX * 255, *marioRelPosX);
  LOG("[Jaffar]  + Mario / Screen Offset:  %04d\n", marioScreenOffset);
