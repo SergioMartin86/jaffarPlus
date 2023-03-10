@@ -12,6 +12,7 @@ emuInstanceIncludes = include_directories(['.'])
 
 platformTrainSrc = [ emuInstanceSrc, smbcSrc ]
 platformTrainIncludes = [ emuInstanceIncludes, smbcIncludes ]
+platformTrainCPPFlags = [ smbcCFlags ]
 platformTrainCFlags = [ smbcCFlags ]
 platformTrainLibs = [ ] 
 platformTrainLFlags = [ ]
@@ -21,7 +22,8 @@ platformTrainDependencies = [  ]
 
 platformPlayIncludes = [ emuInstanceIncludes, smbcIncludes ]
 platformPlaySrc = [ emuInstanceSrc, smbcSrc ]
+platformPlayCPPFlags = [ smbcCFlags, '-D_USE_SDL_' ]
 platformPlayCFlags = [ smbcCFlags, '-D_USE_SDL_' ]
 platformPlayLibs = [ ] 
 platformPlayLFlags = [ ]
-platformPlayDependencies = [ dependency('sdl2'), dependency('SDL2_image'),  dependency('boost')]
+platformPlayDependencies = [ dependency('sdl2'), dependency('SDL2_image'),  dependency('boost') ]

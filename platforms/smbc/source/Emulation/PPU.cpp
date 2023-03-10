@@ -205,6 +205,7 @@ uint8_t PPU::readRegister(uint16_t address)
 
 void PPU::renderTile(uint32_t* buffer, int index, int xOffset, int yOffset)
 {
+
     // Lookup the pattern table entry
     uint16_t tile = readByte(index) + (ppuCtrl & (1 << 4) ? 256 : 0);
     uint8_t attribute = getAttributeTableValue(index);

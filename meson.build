@@ -71,7 +71,7 @@ foreach g : gameTools
     g['mainSrc'],
     jaffarSrc + platformTrainSrc + gameInstanceSrc,
     include_directories: [ jaffarIncludes, platformTrainIncludes, gameInstanceIncludes ],
-    dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
+    dependencies: [  platformTrainDependencies, dependency('openmp', required: true), g['deps'] ],
     link_with: [ platformTrainLibs ],
     link_args: [ platformTrainLFlags ],
     cpp_args: [ jaffarCPPFlags, platformTrainCPPFlags, gameInstanceCPPFlags ],

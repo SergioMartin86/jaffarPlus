@@ -37,6 +37,7 @@ class EmuInstance : public EmuInstanceBase
   _nes->reset();
   _nes->update();
 
+
 //  size_t stateSize = _nes->getStateSize();
 //  printf("Size: %lu\n", stateSize);
 //  std::string bootState;
@@ -53,7 +54,7 @@ class EmuInstance : public EmuInstanceBase
  {
   std::string stateData;
   if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("[ERROR] Could not state file.\n"); ;
-  deserializeState((uint8_t*) stateData.data());
+  _nes->loadState((uint8_t*) stateData.data());
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
@@ -66,12 +67,12 @@ class EmuInstance : public EmuInstanceBase
 
  void serializeState(uint8_t* state) const override
  {
-  _nes->saveState(state);
+  _nes->saveStateFast(state);
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  _nes->loadState(state);
+  _nes->loadStateFast(state);
  }
 
  // Controller input bits

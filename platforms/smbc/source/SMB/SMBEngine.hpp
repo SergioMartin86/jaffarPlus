@@ -12,6 +12,8 @@ extern uint8_t* romImage;
 class Controller;
 class PPU;
 
+thread_local static uint8_t dataStorage[0x8000]; /**< 32kb of storage for constant data. */
+
 /**
  * Engine that runs Super Mario Bros.
  * Handles emulation of various NES subsystems for compatibility and accuracy.
@@ -79,7 +81,6 @@ public:
     MemoryAccess x;              /**< Wrapper for X register. */
     MemoryAccess y;              /**< Wrapper for Y register. */
     MemoryAccess s;              /**< Wrapper for S register. */
-    uint8_t dataStorage[0x8000]; /**< 32kb of storage for constant data. */
     uint8_t ram[0x800];          /**< 2kb of RAM. */
     uint8_t* chr;                /**< Pointer to CHR data from the ROM. */
     int returnIndexStack[100];   /**< Stack for managing JSR subroutines. */
@@ -179,6 +180,8 @@ public:
     size_t getStateSize();
     void saveState(uint8_t* state) const;
     void loadState(const uint8_t* state);
+    void saveStateFast(uint8_t* state) const;
+    void loadStateFast(const uint8_t* state);
 };
 
 #endif // SMBENGINE_HPP
