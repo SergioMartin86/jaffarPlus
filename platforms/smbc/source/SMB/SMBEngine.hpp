@@ -12,7 +12,7 @@ extern uint8_t* romImage;
 class Controller;
 class PPU;
 
-thread_local static uint8_t dataStorage[0x8000]; /**< 32kb of storage for constant data. */
+extern thread_local uint8_t dataStorage[0x8000]; /**< 32kb of storage for constant data. */
 
 /**
  * Engine that runs Super Mario Bros.
@@ -180,6 +180,8 @@ public:
     size_t getStateSize();
     void saveState(uint8_t* state) const;
     void loadState(const uint8_t* state);
+
+    size_t getStateSizeFast();
     void saveStateFast(uint8_t* state) const;
     void loadStateFast(const uint8_t* state);
 };
