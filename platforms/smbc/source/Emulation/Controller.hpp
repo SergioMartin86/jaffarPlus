@@ -24,23 +24,60 @@ enum ControllerButton
 class Controller
 {
 public:
-    Controller();
+    inline Controller()
+    {
+     for( auto& b : buttonStates )
+     {
+         b = false;
+     }
+     buttonIndex = 0;
+     strobe = 1;
+    }
 
     /**
      * Read from the controller register.
      */
-    uint8_t readByte();
+    inline uint8_t readByte()
+    {
+     uint8_t value = 1;
+
+     if( buttonIndex < 8 )
+     {
+         value = (buttonStates[buttonIndex] ? 0x41 : 0x40);
+     }
+
+     if( (strobe & (1 << 0)) == 0 )
+     {
+         buttonIndex++;
+     }
+
+     return value;
+    }
 
     /**
      * Set the state of a button on the controller.
      */
-    void setButtonState( ControllerButton button, bool state );
-    void setButtonStates(uint8_t states);
+    inline void setButtonState( ControllerButton button, bool state )
+    {
+     buttonStates[(int)button] = state;
+    }
+
+    inline void setButtonStates(uint8_t states)
+    {
+     *(uint8_t*)buttonStates = states;
+    }
 
     /**
      * Write a byte to the controller register.
      */
-    void writeByte( uint8_t value );
+    inline void writeByte( uint8_t value )
+    {
+     if( (value & (1 << 0)) == 0 && (strobe & (1 << 0)) == 1 )
+     {
+         buttonIndex = 0;
+     }
+     strobe = value;
+    }
 
 private:
     bool    buttonStates[8];

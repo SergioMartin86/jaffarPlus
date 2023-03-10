@@ -15,27 +15,29 @@ struct genericMagnet_t {
 
 // Datatype to describe a magnet
 struct magnetSet_t {
+ genericMagnet_t screenHorizontalMagnet;
+ genericMagnet_t marioScreenOffsetMagnet;
  genericMagnet_t marioHorizontalMagnet;
  genericMagnet_t marioVerticalMagnet;
 };
-
-
-
 
 class GameInstance : public GameInstanceBase
 {
  public:
 
  // Container for game-specific values
+  uint8_t* globalTimer;
   uint16_t* screenScroll;
   uint8_t* marioAnimation;
   uint8_t* marioState;
+  uint8_t* marioDisappearState;
+  uint8_t* marioSprite;
 
   uint8_t* marioBasePosX;
   uint8_t* marioRelPosX;
   uint8_t* marioSubpixelPosX;
 
-  uint8_t* marioPosY;
+  uint8_t* marioRelPosY;
   uint8_t* marioSubpixelPosY;
 
   uint8_t* marioMovingDirection;
@@ -105,6 +107,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* multiCoinBlockTimer;
   uint8_t* invincibleTimer;
   uint8_t* starTimer;
+  uint8_t* warpSelector;
 
   uint8_t* player1Input;
   uint8_t* player1Buttons;
@@ -112,8 +115,11 @@ class GameInstance : public GameInstanceBase
   uint8_t* player1GamePad2;
 
   uint16_t* warpAreaOffset;
+  uint8_t* lagIndicator;
+  uint8_t* lastInputTime;
 
   // Derivative values
+  uint8_t marioPosY;
   uint16_t marioPosX;
   uint16_t screenPosX;
   int16_t marioScreenOffset;
@@ -123,10 +129,11 @@ class GameInstance : public GameInstanceBase
   // Container for game-specific values
   uint8_t timerTolerance;
 
+  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
   _uint128_t computeHash() const override;
   void updateDerivedValues() override;
-  std::vector<std::string> getPossibleMoves() const override;
+  std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;

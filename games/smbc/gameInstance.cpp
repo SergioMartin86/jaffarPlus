@@ -9,15 +9,18 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   // Setting relevant SMB pointers
 
   // Thanks to https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
+  globalTimer          = (uint8_t*)  &_emu->_nes->ram[0x0009];
   screenScroll         = (uint16_t*) &_emu->_nes->ram[0x071B];
   marioAnimation       = (uint8_t*)  &_emu->_nes->ram[0x0001];
   marioState           = (uint8_t*)  &_emu->_nes->ram[0x000E];
+  marioDisappearState  = (uint8_t*)  &_emu->_nes->ram[0x009C];
+  marioSprite          = (uint8_t*)  &_emu->_nes->ram[0x06D5];
 
   marioBasePosX        = (uint8_t*)  &_emu->_nes->ram[0x006D];
   marioRelPosX         = (uint8_t*)  &_emu->_nes->ram[0x0086];
   marioSubpixelPosX    = (uint8_t*)  &_emu->_nes->ram[0x0400];
 
-  marioPosY            = (uint8_t*)  &_emu->_nes->ram[0x00CE];
+  marioRelPosY            = (uint8_t*)  &_emu->_nes->ram[0x00CE];
   marioSubpixelPosY    = (uint8_t*)  &_emu->_nes->ram[0x0416];
 
   marioMovingDirection = (uint8_t*)  &_emu->_nes->ram[0x0045];
@@ -93,7 +96,10 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   player1GamePad1      = (uint8_t*)  &_emu->_nes->ram[0x000A];
   player1GamePad2      = (uint8_t*)  &_emu->_nes->ram[0x000D];
 
+  warpSelector         = (uint8_t*)  &_emu->_nes->ram[0x06D6];
   warpAreaOffset       = (uint16_t*) &_emu->_nes->ram[0x0750];
+  lagIndicator         = (uint8_t*)  &_emu->_nes->ram[0x01FB];
+  lastInputTime        = (uint8_t*)  &_emu->_nes->ram[0x07F0];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -110,32 +116,37 @@ _uint128_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash128 hash;
 
+  // If timer tolerance is set, use the game tick for hashing
+  if (timerTolerance > 0) hash.Update(*globalTimer % (timerTolerance+1));
+
   // Adding fixed hash elements
   hash.Update(*screenScroll);
   hash.Update(*marioAnimation);
   hash.Update(*marioState);
+  hash.Update(*marioSprite);
+  hash.Update(*marioDisappearState);
 
   hash.Update(*marioBasePosX);
   hash.Update(*marioRelPosX);
-//    hash.Update(*marioSubpixelPosX);
+//  hash.Update(*marioSubpixelPosX);
 
-  hash.Update(*marioPosY);
-//    hash.Update(*marioSubpixelPosY);
+  hash.Update(*marioRelPosY);
+//  hash.Update(*marioSubpixelPosY);
 
   hash.Update(*marioXMoveForce);
   hash.Update(*marioFacingDirection);
   hash.Update(*marioMovingDirection);
   hash.Update(*marioFloatingMode);
   hash.Update(*marioWalkingMode);
-//    hash.Update(*marioWalkingDelay);
-//    hash.Update(*marioWalkingFrame);
-//    hash.Update(*marioMaxVelLeft);
-//    hash.Update(*marioMaxVelRight);
+  hash.Update(*marioWalkingDelay);
+  hash.Update(*marioWalkingFrame);
+    hash.Update(*marioMaxVelLeft);
+    hash.Update(*marioMaxVelRight);
   hash.Update(*marioVelX);
   hash.Update(*marioVelY);
   hash.Update(*marioFracVelY);
-//    hash.Update(*marioGravity);
-//    hash.Update(*marioFriction);
+  hash.Update(*marioGravity);
+  hash.Update(*marioFriction);
 
   hash.Update(*screenBasePosX);
   hash.Update(*screenRelPosX);
@@ -157,23 +168,24 @@ _uint128_t GameInstance::computeHash() const
   // hash.Update(*enemy4State);
   // hash.Update(*enemy5State);
 
-  hash.Update(*enemy1Type);
-  hash.Update(*enemy2Type);
-  hash.Update(*enemy3Type);
-  hash.Update(*enemy4Type);
-  hash.Update(*enemy5Type);
+//  hash.Update(*enemy1Type);
+//  hash.Update(*enemy2Type);
+//  hash.Update(*enemy3Type);
+//  hash.Update(*enemy4Type);
+//  hash.Update(*enemy5Type);
+  hash.Update(*warpSelector);
 
-  // hash.Update(*marioCollision);
-  // hash.Update(*enemyCollision);
-  hash.Update(*hitDetectionFlag);
+//  hash.Update(*marioCollision);
+//  hash.Update(*enemyCollision);
+//  hash.Update(*hitDetectionFlag);
 
   // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
   hash.Update(*animationTimer < 2 ? *animationTimer : (uint8_t)2);
   hash.Update(*jumpSwimTimer < 2 ? *jumpSwimTimer : (uint8_t)2);
   hash.Update(*runningTimer < 2 ? *runningTimer : (uint8_t)2);
-  hash.Update(*blockBounceTimer < 2 ? *blockBounceTimer : (uint8_t)2);
-  // hash.Update(*sideCollisionTimer);
-  // hash.Update(*jumpspringTimer);
+//  hash.Update(*blockBounceTimer < 2 ? *blockBounceTimer : (uint8_t)2);
+//   hash.Update(*sideCollisionTimer);
+//   hash.Update(*jumpspringTimer);
   // hash.Update(*gameControlTimer);
   // hash.Update(*climbSideTimer);
   // hash.Update(*enemyFrameTimer);
@@ -199,24 +211,154 @@ _uint128_t GameInstance::computeHash() const
 void GameInstance::updateDerivedValues()
 {
  // Recalculating derived values
+  marioPosY = *marioRelPosY + 46;
   marioPosX = (uint16_t)*marioBasePosX * 256 + (uint16_t)*marioRelPosX;
+  if (marioPosX > 60000) marioPosX = 0;
   screenPosX = (uint16_t)*screenBasePosX * 256 + (uint16_t)*screenRelPosX;
   marioScreenOffset = marioPosX - screenPosX;
   currentWorld = *currentWorldRaw + 1;
   currentStage = *currentStageRaw + 1;
 }
 
-// Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
- // If Mario's state is not normal (!= 8), there's nothing to do except wait
+ std::vector<INPUT_TYPE> moves;
+
+ _emu->advanceState(move);
+ moves.push_back(move);
+ updateDerivedValues();
+
+ if (move != 0) *lastInputTime = *globalTimer;
+
+ return moves;
+}
+
+// Function to determine the current possible moves
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
+{
   if (*marioState != 8) return { "." };
 
-  // If floating, B, D have no effect
-  if (*marioFloatingMode == 1) return { ".", "L", "R", "A", "LA", "RA", "LR", "LRA" };
+  std::vector<std::string> moveList = { "." };
 
-  // On the floor, try all possible combinations, prioritize jumping and right direction
-  return { ".", "R", "D", "LR", "A", "RA", "RB", "L", "LA", "LB", "LRA", "LRB" };
+  if (*marioAnimation == 0x0004) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x000C) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x0035) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.....BA", "RL......", "RL....B."});
+  if (*marioAnimation == 0x0039) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x003C) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x0040) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x0043) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", ".LD.....", "R......A", "R.D....."});
+  if (*marioAnimation == 0x004F) moveList.insert(moveList.end(), { ".......A", "......B.", "..D.....", ".L......", "R.......", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.....BA", "R.D.....", "RL......", "R.D...B.", "RL....B."});
+  if (*marioAnimation == 0x00F8) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A"});
+  if (*marioAnimation == 0x00F9) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A"});
+  if (*marioAnimation == 0x00FA) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A"});
+  if (*marioAnimation == 0x00FB) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x00FC) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A"});
+  if (*marioAnimation == 0x00FD) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A"});
+  if (*marioAnimation == 0x00FE) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "RL......"});
+  if (*marioAnimation == 0x00FF) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "R.....BA", "RL......"});
+
+  if (*marioAnimation == 0x0001) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x0002) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A"});
+  if (*marioAnimation == 0x0035) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x0039) moveList.insert(moveList.end(), { "...U....", "RL....B."});
+  if (*marioAnimation == 0x003C) moveList.insert(moveList.end(), { "...U....", "RL....B."});
+  if (*marioAnimation == 0x0040) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x004F) moveList.insert(moveList.end(), { "...U....", ".LD.....", ".LD...B."});
+  if (*marioAnimation == 0x0086) moveList.insert(moveList.end(), { ".L......", "R......."});
+  if (*marioAnimation == 0x00F8) moveList.insert(moveList.end(), { "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x00FA) moveList.insert(moveList.end(), { "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x00FC) moveList.insert(moveList.end(), { "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x00FD) moveList.insert(moveList.end(), { "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x00FE) moveList.insert(moveList.end(), { "R.....B."});
+
+  if (*marioAnimation == 0x0035) moveList.insert(moveList.end(), { "......B."});
+  if (*marioAnimation == 0x0039) moveList.insert(moveList.end(), { "......B."});
+  if (*marioAnimation == 0x003C) moveList.insert(moveList.end(), { "......B."});
+  if (*marioAnimation == 0x0040) moveList.insert(moveList.end(), { "......B.", ".L....B."});
+  if (*marioAnimation == 0x00F9) moveList.insert(moveList.end(), { "R.....B.", "R.....BA", "RL......"});
+
+  if (*marioAnimation == 0x0001) moveList.insert(moveList.end(), { "..D.....", ".L....B.", "RL....B."});
+  if (*marioAnimation == 0x0002) moveList.insert(moveList.end(), { "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x0003) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.....BA", "RL......", "RL....B."});
+  if (*marioAnimation == 0x0004) moveList.insert(moveList.end(), { "...U....", ".L....B.", "RL....B."});
+  if (*marioAnimation == 0x0006) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.....BA", "RL......", "RL....B."});
+  if (*marioAnimation == 0x000A) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x000C) moveList.insert(moveList.end(), { "...U....", ".L....B.", "RL....B."});
+  if (*marioAnimation == 0x0018) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.....BA", "RL......", "RL....B."});
+  if (*marioAnimation == 0x0086) moveList.insert(moveList.end(), { ".......A", "......B.", ".L.....A", ".L....B.", "R......A", "R.....B.", "R.....BA", "RL......", "RL....B."});
+  if (*marioAnimation == 0x00FD) moveList.insert(moveList.end(), { "..D.....", ".L....B."});
+  if (*marioAnimation == 0x00FE) moveList.insert(moveList.end(), { "..D.....", ".L....B.", "RL....B."});
+  if (*marioAnimation == 0x00FF) moveList.insert(moveList.end(), { "..D.....", ".L....B.", "RL....B."});
+
+  if (*marioAnimation == 0x0001) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x000C) moveList.insert(moveList.end(), { "......B."});
+  if (*marioAnimation == 0x0018) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x0086) moveList.insert(moveList.end(), { "..D....."});
+  if (*marioAnimation == 0x00FE) moveList.insert(moveList.end(), { "...U...."});
+
+  if (*marioAnimation == 0x0006) moveList.insert(moveList.end(), { ".LD.....", "R.D....."});
+  if (*marioAnimation == 0x000E) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x0016) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "R.....B.", "R.....BA", "RL......"});
+  if (*marioAnimation == 0x0006) moveList.insert(moveList.end(), { "...U...."});
+
+  if (*marioAnimation == 0x000E) moveList.insert(moveList.end(), { "..D.....", ".L....B.", "RL....B."});
+  if (*marioAnimation == 0x00FC) moveList.insert(moveList.end(), { "..D.....", ".L....B.", "RL....B."});
+
+  if (*marioAnimation == 0x0006) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x000C) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x0035) moveList.insert(moveList.end(), { "..D....A", "RL.....A"});
+  if (*marioAnimation == 0x0039) moveList.insert(moveList.end(), { "..D....A", "RL.....A"});
+  if (*marioAnimation == 0x003C) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x0040) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x0045) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", "......BA", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x0047) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", "......BA", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x0049) moveList.insert(moveList.end(), { ".......A", "..D.....", ".L......", "R.......", "......BA", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x004F) moveList.insert(moveList.end(), { "..D....A", "R.D....A", "RL.....A"});
+  if (*marioAnimation == 0x00F8) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00F9) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FC) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FD) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FE) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FF) moveList.insert(moveList.end(), { "RL.....A"});
+
+  if (*marioAnimation == 0x0012) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x0018) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x0020) moveList.insert(moveList.end(), { ".......A", ".L......", "R.......", ".L.....A", "R......A", "RL......", "RL.....A"});
+  if (*marioAnimation == 0x0035) moveList.insert(moveList.end(), { "...U...A"});
+  if (*marioAnimation == 0x0039) moveList.insert(moveList.end(), { "...U...A"});
+  if (*marioAnimation == 0x003C) moveList.insert(moveList.end(), { "..D....A"});
+  if (*marioAnimation == 0x0040) moveList.insert(moveList.end(), { "..D....A"});
+  if (*marioAnimation == 0x0045) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x0047) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x0049) moveList.insert(moveList.end(), { "...U...."});
+  if (*marioAnimation == 0x004F) moveList.insert(moveList.end(), { "...U...A", ".LD....A"});
+  if (*marioAnimation == 0x00FA) moveList.insert(moveList.end(), { "RL.....A"});
+  if (*marioAnimation == 0x00FB) moveList.insert(moveList.end(), { "RL.....A"});
+
+  if (*marioAnimation == 0x00F8) moveList.insert(moveList.end(), { "LB" });
+  if (*marioAnimation == 0x00F9) moveList.insert(moveList.end(), { "LB" });
+  if (*marioAnimation == 0x00FA) moveList.insert(moveList.end(), { "LB" });
+  if (*marioAnimation == 0x00FB) moveList.insert(moveList.end(), { "LB" });
+
+  if (*marioAnimation == 0x0091) moveList.insert(moveList.end(), { "R", "L", "D", "U", "LR", "DR", "DL", "UR", "UL", "DLR", "ULR" });
+  if (*marioAnimation == 0x0093) moveList.insert(moveList.end(), { "R", "L", "D", "U", "LR", "DR", "DL", "UR", "UL", "DLR", "ULR" });
+  if (*marioAnimation == 0x009F) moveList.insert(moveList.end(), { "R", "L", "D", "U", "LR", "DR", "DL", "UR", "UL", "DLR", "ULR" });
+
+  if (*marioAnimation == 0x0031) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x0032) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x0033) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x0034) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00E9) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "RB", "LA", "LR" });
+  if (*marioAnimation == 0x00EE) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00EF) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00F0) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00F1) moveList.insert(moveList.end(), { "R", "L" });
+  if (*marioAnimation == 0x00FB) moveList.insert(moveList.end(), { "D" });
+
+  if (*marioAnimation == 0x0004) moveList.insert(moveList.end(), { "LD", "RD" });
+  if (*marioAnimation == 0x000C) moveList.insert(moveList.end(), { "LD", "RD" });
+
+  return moveList;
 }
 
 // Function to get magnet information
@@ -235,11 +377,16 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 // Obtains the score of a given frame
 float GameInstance::getStateReward(const bool* rulesStatus) const
 {
- // Getting rewards from rules
+  // If beaten the game, the best score is that which had the last input
+  if (currentWorld == 8 && currentStage == 4 && *gameMode == 2) return -*lastInputTime;
+
+  // Getting rewards from rules
   float reward = 0.0;
   for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
    if (rulesStatus[ruleId] == true)
     reward += _rules[ruleId]->_reward;
+
+  if (currentWorld == 8 && currentStage == 4) reward -= 0.001 * (*lastInputTime);
 
   // Getting magnet values for the kid
   auto magnets = getMagnetValues(rulesStatus);
@@ -249,6 +396,20 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   float diff = 0.0;
 
   // Evaluating mario magnet's reward on position X
+  boundedValue = screenPosX;
+  boundedValue = std::min(boundedValue, magnets.screenHorizontalMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.screenHorizontalMagnet.min);
+  diff = std::abs(magnets.screenHorizontalMagnet.center - boundedValue);
+  reward += magnets.screenHorizontalMagnet.intensity * -diff;
+
+  // Evaluating mario magnet's reward on position X
+  boundedValue = marioScreenOffset;
+  boundedValue = std::min(boundedValue, magnets.marioScreenOffsetMagnet.max);
+  boundedValue = std::max(boundedValue, magnets.marioScreenOffsetMagnet.min);
+  diff = std::abs(magnets.marioScreenOffsetMagnet.center - boundedValue);
+  reward += magnets.marioScreenOffsetMagnet.intensity * -diff;
+
+  // Evaluating mario magnet's reward on position X
   boundedValue = marioPosX;
   boundedValue = std::min(boundedValue, magnets.marioHorizontalMagnet.max);
   boundedValue = std::max(boundedValue, magnets.marioHorizontalMagnet.min);
@@ -256,7 +417,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.marioHorizontalMagnet.intensity * -diff;
 
   // Evaluating mario magnet's reward on position Y
-  boundedValue = (float)*marioPosY;
+  boundedValue = (float)marioPosY;
   boundedValue = std::min(boundedValue, magnets.marioVerticalMagnet.max);
   boundedValue = std::max(boundedValue, magnets.marioVerticalMagnet.min);
   diff = std::abs(magnets.marioVerticalMagnet.center - boundedValue);
@@ -272,16 +433,18 @@ void GameInstance::setRNGState(const uint64_t RNGState)
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
+ LOG("[Jaffar]  + Global Timer / Lag:     %u (%02u)\n", *globalTimer, *lagIndicator);
+ LOG("[Jaffar]  + Last Input Time:        %u\n", *lastInputTime);
  LOG("[Jaffar]  + Current World-Stage:    %1u-%1u\n", currentWorld, currentStage);
  LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
- LOG("[Jaffar]  + Hash:                   0x%lX\n", computeHash());
+ LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Time Left:              %1u%1u%1u\n", *timeLeft100, *timeLeft10, *timeLeft1);
  LOG("[Jaffar]  + Mario Animation:        %02u\n", *marioAnimation);
- LOG("[Jaffar]  + Mario State:            %02u\n", *marioState);
+ LOG("[Jaffar]  + Mario State / Sprite:   %02u (D: %02u) / %02u\n", *marioState, *marioDisappearState, *marioSprite);
  LOG("[Jaffar]  + Screen Pos X:           %04u (%02u * 256 = %04u + %02u)\n", screenPosX, *screenBasePosX, (uint16_t)*screenBasePosX * 255, *screenRelPosX);
  LOG("[Jaffar]  + Mario Pos X:            %04u (%02u * 256 = %04u + %02u)\n", marioPosX, *marioBasePosX, (uint16_t)*marioBasePosX * 255, *marioRelPosX);
  LOG("[Jaffar]  + Mario / Screen Offset:  %04d\n", marioScreenOffset);
- LOG("[Jaffar]  + Mario Pos Y:            %02u\n", *marioPosY);
+ LOG("[Jaffar]  + Mario Pos Y:            %02u (%02u-XX)\n", marioPosY, *marioRelPosY);
  LOG("[Jaffar]  + Mario SubPixel X/Y:     %02u / %02u\n", *marioSubpixelPosX, *marioSubpixelPosY);
  LOG("[Jaffar]  + Mario Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *marioVelX, *marioXMoveForce, *marioMaxVelLeft, *marioMaxVelRight);
  LOG("[Jaffar]  + Mario Vel Y:            %02d (%02d)\n", *marioVelY, *marioFracVelY);
@@ -298,7 +461,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Enemy Type:             %02u %02u %02u %02u %02u\n", *enemy1Type, *enemy2Type, *enemy3Type, *enemy4Type, *enemy5Type);
  LOG("[Jaffar]  + Hit Detection Flags:    %02u %02u %02u\n", *marioCollision, *enemyCollision, *hitDetectionFlag);
  LOG("[Jaffar]  + LevelEntry / GameMode:  %02u / %02u\n", *levelEntryFlag, *gameMode);
- LOG("[Jaffar]  + Warp Area Offset:       %04u\n", *warpAreaOffset);
+ LOG("[Jaffar]  + Warp Selector / Offset: %02u / %04u\n", *warpSelector, *warpAreaOffset);
  LOG("[Jaffar]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *animationTimer, *jumpSwimTimer, *runningTimer, *blockBounceTimer, *sideCollisionTimer, *jumpspringTimer, *gameControlTimer, *climbSideTimer, *enemyFrameTimer, *frenzyEnemyTimer, *bowserFireTimer, *stompTimer, *airBubbleTimer, *multiCoinBlockTimer, *invincibleTimer, *starTimer);
 
  LOG("[Jaffar]  + Rule Status: ");
@@ -306,7 +469,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("\n");
 
  auto magnets = getMagnetValues(rulesStatus);
- if (std::abs(magnets.marioHorizontalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Mario Horizontal Magnet        - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.center, magnets.marioHorizontalMagnet.min, magnets.marioHorizontalMagnet.max);
- if (std::abs(magnets.marioVerticalMagnet.intensity) > 0.0f)       LOG("[Jaffar]  + Mario Vertical Magnet          - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.center, magnets.marioVerticalMagnet.min, magnets.marioVerticalMagnet.max);
+ if (std::abs(magnets.screenHorizontalMagnet.intensity) > 0.0f)    LOG("[Jaffar]  + Screen Horizontal Magnet     - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.screenHorizontalMagnet.intensity, magnets.screenHorizontalMagnet.center, magnets.screenHorizontalMagnet.min, magnets.screenHorizontalMagnet.max);
+ if (std::abs(magnets.marioScreenOffsetMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Screen Offset Magnet        - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.marioScreenOffsetMagnet.intensity, magnets.marioScreenOffsetMagnet.center, magnets.marioScreenOffsetMagnet.min, magnets.marioScreenOffsetMagnet.max);
+ if (std::abs(magnets.marioHorizontalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Mario Horizontal Magnet     - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.marioHorizontalMagnet.intensity, magnets.marioHorizontalMagnet.center, magnets.marioHorizontalMagnet.min, magnets.marioHorizontalMagnet.max);
+ if (std::abs(magnets.marioVerticalMagnet.intensity) > 0.0f)       LOG("[Jaffar]  + Mario Vertical Magnet       - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.marioVerticalMagnet.intensity, magnets.marioVerticalMagnet.center, magnets.marioVerticalMagnet.min, magnets.marioVerticalMagnet.max);
 }
 

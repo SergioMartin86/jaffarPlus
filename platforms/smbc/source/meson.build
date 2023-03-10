@@ -14,10 +14,12 @@ srcDir + '/SMB/SMBData.cpp',
 ]
 
 smbcIncludes = include_directories([
-  '.',
-  './Emulation',
-  './Util',
-  './SMB',
+ '.',
+ './Emulation',
+ './Util',
+ './SMB',
 ])
 
-smbcCFlags = [ '-Wno-deprecated-enum-enum-conversion', '-Wno-multichar' ]
+smbcCFlags = ['-Wno-deprecated-enum-enum-conversion','-Wno-multichar']
+
+
