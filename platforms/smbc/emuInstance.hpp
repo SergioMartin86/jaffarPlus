@@ -38,7 +38,7 @@ class EmuInstance : public EmuInstanceBase
   _nes->update();
 
 
-//  size_t stateSize = _nes->getStateSize();
+//  size_t stateSize = _nes->getStateSizeFast();
 //  printf("Size: %lu\n", stateSize);
 //  std::string bootState;
 //  bootState.resize(stateSize);
@@ -67,12 +67,20 @@ class EmuInstance : public EmuInstanceBase
 
  void serializeState(uint8_t* state) const override
  {
-  _nes->saveStateFast(state);
+  #ifdef _JAFFAR_PLAY
+   _nes->saveState(state);
+  #else
+   _nes->saveStateFast(state);
+  #endif
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  _nes->loadStateFast(state);
+  #ifdef _JAFFAR_PLAY
+   _nes->loadState(state);
+  #else
+   _nes->loadStateFast(state);
+ #endif
  }
 
  // Controller input bits

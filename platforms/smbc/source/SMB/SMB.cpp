@@ -882,6 +882,11 @@ SetupNumSpr: // get vertical coordinate
 //------------------------------------------------------------------------
 
 ScreenRoutines:
+
+    #ifndef _JAFFAR_PLAY
+    goto Return;
+    #endif
+
     a = M(ScreenRoutineTask); // run one of the following subroutines
     switch (a)
     {

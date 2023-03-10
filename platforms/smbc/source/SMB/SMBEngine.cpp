@@ -8,7 +8,7 @@
 #include "SMBEngine.hpp"
 
 #define DATA_STORAGE_OFFSET 0x8000 // Starting address for storing constant data
-
+thread_local uint8_t dataStorage[0x8000]; /**< 32kb of storage for constant data. */
 uint8_t* romImage;
 
 //---------------------------------------------------------------------
@@ -112,6 +112,41 @@ void SMBEngine::loadState(const uint8_t* state)
  memcpy(&ppu->vramBuffer, ptr, sizeof(ppu->vramBuffer)); ptr += sizeof(ppu->vramBuffer);
 }
 
+#define SUB_STACK_SIZE 32
+
+size_t SMBEngine::getStateSizeFast()
+{
+ size_t size = 0;
+ size += sizeof(c); printf("size: %lu\n", size);
+ size += sizeof(z); printf("size: %lu\n", size);
+ size += sizeof(n); printf("size: %lu\n", size);
+ size += sizeof(registerA); printf("size: %lu\n", size);
+ size += sizeof(registerX); printf("size: %lu\n", size);
+ size += sizeof(registerY); printf("size: %lu\n", size);
+ size += sizeof(registerS); printf("size: %lu\n", size);
+ size += sizeof(a.constant); printf("size: %lu\n", size);
+ size += sizeof(x.constant); printf("size: %lu\n", size);
+ size += sizeof(y.constant); printf("size: %lu\n", size);
+ size += sizeof(s.constant); printf("size: %lu\n", size);
+// size += sizeof(dataStorage);
+ size += sizeof(ram); printf("size: %lu\n", size);
+// size += sizeof(chr);
+ size += sizeof(int) * SUB_STACK_SIZE; printf("size: %lu\n", size);
+ size += sizeof(returnIndexStackTop); printf("size: %lu\n", size);
+ size += sizeof(ppu->ppuCtrl); printf("size: %lu\n", size);
+ size += sizeof(ppu->ppuMask); printf("size: %lu\n", size);
+ size += sizeof(ppu->ppuStatus); printf("size: %lu\n", size);
+ size += sizeof(ppu->oamAddress); printf("size: %lu\n", size);
+ size += sizeof(ppu->ppuScrollX); printf("size: %lu\n", size);
+ size += sizeof(ppu->ppuScrollY); printf("size: %lu\n", size);
+// size += sizeof(ppu->palette);
+// size += sizeof(ppu->nametable);
+ size += sizeof(ppu->currentAddress); printf("size: %lu\n", size);
+ size += sizeof(ppu->writeToggle); printf("size: %lu\n", size);
+ size += sizeof(ppu->vramBuffer);
+ return size;
+}
+
 void SMBEngine::saveStateFast(uint8_t* state) const
 {
  uint8_t* ptr = state;
@@ -129,7 +164,7 @@ void SMBEngine::saveStateFast(uint8_t* state) const
 // memcpy(ptr, &dataStorage, sizeof(dataStorage)); ptr += sizeof(dataStorage);
  memcpy(ptr, &ram, sizeof(ram)); ptr += sizeof(ram);
 // memcpy(ptr, &chr, sizeof(chr)); ptr += sizeof(chr);
- memcpy(ptr, &returnIndexStack, sizeof(returnIndexStack)); ptr += sizeof(returnIndexStack);
+ memcpy(ptr, &returnIndexStack, sizeof(int) * SUB_STACK_SIZE); ptr += sizeof(int) * SUB_STACK_SIZE;
  memcpy(ptr, &returnIndexStackTop, sizeof(returnIndexStackTop)); ptr += sizeof(returnIndexStackTop);
  memcpy(ptr, &ppu->ppuCtrl, sizeof(ppu->ppuCtrl)); ptr += sizeof(ppu->ppuCtrl);
  memcpy(ptr, &ppu->ppuMask, sizeof(ppu->ppuMask)); ptr += sizeof(ppu->ppuMask);
@@ -137,8 +172,8 @@ void SMBEngine::saveStateFast(uint8_t* state) const
  memcpy(ptr, &ppu->oamAddress, sizeof(ppu->oamAddress)); ptr += sizeof(ppu->oamAddress);
  memcpy(ptr, &ppu->ppuScrollX, sizeof(ppu->ppuScrollX)); ptr += sizeof(ppu->ppuScrollX);
  memcpy(ptr, &ppu->ppuScrollY, sizeof(ppu->ppuScrollY)); ptr += sizeof(ppu->ppuScrollY);
- memcpy(ptr, &ppu->palette, sizeof(ppu->palette)); ptr += sizeof(ppu->palette);
- memcpy(ptr, &ppu->nametable, sizeof(ppu->nametable)); ptr += sizeof(ppu->nametable);
+// memcpy(ptr, &ppu->palette, sizeof(ppu->palette)); ptr += sizeof(ppu->palette);
+// memcpy(ptr, &ppu->nametable, sizeof(ppu->nametable)); ptr += sizeof(ppu->nametable);
  memcpy(ptr, &ppu->currentAddress, sizeof(ppu->currentAddress)); ptr += sizeof(ppu->currentAddress);
  memcpy(ptr, &ppu->writeToggle, sizeof(ppu->writeToggle)); ptr += sizeof(ppu->writeToggle);
  memcpy(ptr, &ppu->vramBuffer, sizeof(ppu->vramBuffer)); ptr += sizeof(ppu->vramBuffer);
@@ -161,7 +196,7 @@ void SMBEngine::loadStateFast(const uint8_t* state)
 // memcpy(&dataStorage, ptr, sizeof(dataStorage)); ptr += sizeof(dataStorage);
  memcpy(&ram, ptr, sizeof(ram)); ptr += sizeof(ram);
 // memcpy(&chr, ptr, sizeof(chr)); ptr += sizeof(chr);
- memcpy(&returnIndexStack, ptr, sizeof(returnIndexStack)); ptr += sizeof(returnIndexStack);
+ memcpy(&returnIndexStack, ptr, sizeof(int) * SUB_STACK_SIZE); ptr += sizeof(int) * SUB_STACK_SIZE;
  memcpy(&returnIndexStackTop, ptr, sizeof(returnIndexStackTop)); ptr += sizeof(returnIndexStackTop);
  memcpy(&ppu->ppuCtrl, ptr, sizeof(ppu->ppuCtrl)); ptr += sizeof(ppu->ppuCtrl);
  memcpy(&ppu->ppuMask, ptr, sizeof(ppu->ppuMask)); ptr += sizeof(ppu->ppuMask);
@@ -169,8 +204,8 @@ void SMBEngine::loadStateFast(const uint8_t* state)
  memcpy(&ppu->oamAddress, ptr, sizeof(ppu->oamAddress)); ptr += sizeof(ppu->oamAddress);
  memcpy(&ppu->ppuScrollX, ptr, sizeof(ppu->ppuScrollX)); ptr += sizeof(ppu->ppuScrollX);
  memcpy(&ppu->ppuScrollY, ptr, sizeof(ppu->ppuScrollY)); ptr += sizeof(ppu->ppuScrollY);
- memcpy(&ppu->palette, ptr, sizeof(ppu->palette)); ptr += sizeof(ppu->palette);
- memcpy(&ppu->nametable, ptr, sizeof(ppu->nametable)); ptr += sizeof(ppu->nametable);
+// memcpy(&ppu->palette, ptr, sizeof(ppu->palette)); ptr += sizeof(ppu->palette);
+// memcpy(&ppu->nametable, ptr, sizeof(ppu->nametable)); ptr += sizeof(ppu->nametable);
  memcpy(&ppu->currentAddress, ptr, sizeof(ppu->currentAddress)); ptr += sizeof(ppu->currentAddress);
  memcpy(&ppu->writeToggle, ptr, sizeof(ppu->writeToggle)); ptr += sizeof(ppu->writeToggle);
  memcpy(&ppu->vramBuffer, ptr, sizeof(ppu->vramBuffer)); ptr += sizeof(ppu->vramBuffer);
