@@ -132,8 +132,10 @@ bool OSystem::initialize(const Settings::Options& options)
   // it may be needed to initialize the size of graphical objects
   try
   {
+    #ifdef _JAFFAR_PLAY
     myFrameBuffer = make_unique<FrameBuffer>(*this);
     myFrameBuffer->initialize();
+    #endif
   }
   catch(const runtime_error& e)
   {
@@ -157,32 +159,6 @@ bool OSystem::initialize(const Settings::Options& options)
 
   // Create random number generator
   myRandom = make_unique<Random>(static_cast<uInt32>(TimerManager::getTicks()));
-
-#ifdef CHEATCODE_SUPPORT
-  myCheatManager = make_unique<CheatManager>(*this);
-  myCheatManager->loadCheatDatabase();
-#endif
-
-#ifdef GUI_SUPPORT
-  // Create various subsystems (menu and launcher GUI objects, etc)
-  myOptionsMenu = make_unique<OptionsMenu>(*this);
-  myCommandMenu = make_unique<CommandMenu>(*this);
-  myHighScoresManager = make_unique<HighScoresManager>(*this);
-  myHighScoresMenu = make_unique<HighScoresMenu>(*this);
-  myMessageMenu = make_unique<MessageMenu>(*this);
-  myPlusRomMenu = make_unique<PlusRomsMenu>(*this);
-  myTimeMachine = make_unique<TimeMachine>(*this);
-  myLauncher = make_unique<Launcher>(*this);
-
-  myHighScoresManager->setRepository(getHighscoreRepository());
-#endif
-
-#ifdef IMAGE_SUPPORT
-  // Create PNG handler
-  myPNGLib = make_unique<PNGLibrary>(*this);
-  // Create JPG handler
-  myJPGLib = make_unique<JPGLibrary>(*this);
-#endif
 
   // Detect serial port for AtariVox-USB
   // If a previously set port is defined, use it;
@@ -705,14 +681,16 @@ float OSystem::frameRate() const
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-double OSystem::dispatchEmulation(EmulationWorker& _emulationWorker)
+double OSystem::dispatchEmulation()
 {
+
   if (!myConsole) return 0.;
 
   TIA& tia(myConsole->tia());
   const EmulationTiming& timing = myConsole->emulationTiming();
   DispatchResult dispatchResult;
 
+#ifdef _JAFFAR_PLAY
   // Check whether we have a frame pending for rendering...
   const bool framePending = tia.newFramePending();
   // ... and copy it to the frame buffer. It is important to do this before
@@ -721,142 +699,110 @@ double OSystem::dispatchEmulation(EmulationWorker& _emulationWorker)
     myFpsMeter.render(tia.framesSinceLastRender());
     tia.renderToFrameBuffer();
   }
+#endif
 
   // Start emulation on a dedicated thread. It will do its own scheduling to
   // sync 6507 and real time and will run until we stop the worker.
-  _emulationWorker.start(
-    timing.cyclesPerSecond(),
-    timing.maxCyclesPerTimeslice(),
-    timing.minCyclesPerTimeslice(),
-    &dispatchResult,
-    &tia
-  );
+  tia.update(timing.maxCyclesPerTimeslice());
 
+#ifdef _JAFFAR_PLAY
   // Render the frame. This may block, but emulation will continue to run on
   // the worker, so the audio pipeline is kept fed :)
   if (framePending) myFrameBuffer->updateInEmulationMode(myFpsMeter.fps());
-
-  // Stop the worker and wait until it has finished
-  const uInt64 totalCycles = _emulationWorker.stop();
-
-  // Handle the dispatch result
-  switch (dispatchResult.getStatus()) {
-    case DispatchResult::Status::ok:
-      break;
-
-    case DispatchResult::Status::debugger:
-      #ifdef DEBUGGER_SUPPORT
-       myDebugger->start(
-          dispatchResult.getMessage(),
-          dispatchResult.getAddress(),
-          dispatchResult.wasReadTrap(),
-          dispatchResult.getToolTip()
-        );
-      #endif
-
-      break;
-
-    case DispatchResult::Status::fatal:
-      #ifdef DEBUGGER_SUPPORT
-        myDebugger->startWithFatalError(dispatchResult.getMessage());
-      #else
-        cerr << dispatchResult.getMessage() << endl;
-      #endif
-        break;
-
-    default:
-      throw runtime_error("invalid emulation dispatch result");
-  }
+#endif
 
   // Handle frying
-  if (dispatchResult.getStatus() == DispatchResult::Status::ok &&
-      myEventHandler->frying())
-    myConsole->fry();
+  if (myEventHandler->frying())myConsole->fry();
 
   // Return the 6507 time used in seconds
-  return static_cast<double>(totalCycles) /
-      static_cast<double>(timing.cyclesPerSecond());
+  return 0;
 }
 
 void OSystem::advanceFrame()
 {
- dispatchEmulation(_emulationWorker);
+ dispatchEmulation();
+// const EmulationTiming& timing = myConsole->emulationTiming();
+// console().tia().update(timing.maxCyclesPerTimeslice());
+// printf("%u\n", console().riot().getRAM()[0x056]);
+// getchar();
 }
 
 void OSystem::renderFrame()
 {
- myFrameBuffer->update();
+ frameBuffer().renderToScreen = true;
+ dispatchEmulation();
+ frameBuffer().renderToScreen = false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void OSystem::mainLoop()
 {
-  // 6507 time
-  time_point<high_resolution_clock> virtualTime = high_resolution_clock::now();
-  // The emulation worker
-
-  myFpsMeter.reset(TIAConstants::initialGarbageFrames);
-
-  for(;;)
-  {
-    const bool wasEmulation = myEventHandler->state() == EventHandlerState::EMULATION;
-
-    myEventHandler->poll(TimerManager::getTicks());
-    if(myQuitLoop) break;  // Exit if the user wants to quit
-
-    if (!wasEmulation && myEventHandler->state() == EventHandlerState::EMULATION) {
-      myFpsMeter.reset();
-      virtualTime = high_resolution_clock::now();
-    }
-
-    double timesliceSeconds;  // NOLINT
-
-    if (myEventHandler->state() == EventHandlerState::EMULATION)
-      // Dispatch emulation and render frame (if applicable)
-      timesliceSeconds = dispatchEmulation(_emulationWorker);
-
-    else if(myEventHandler->state() == EventHandlerState::PLAYBACK)
-    {
-      // Playback at emulation speed
-      timesliceSeconds = static_cast<double>(myConsole->tia().scanlinesLastFrame() * 76) /
-        static_cast<double>(myConsole->emulationTiming().cyclesPerSecond());
-      myFrameBuffer->update();
-    }
-    else
-    {
-      // Render the GUI with 60 Hz in all other modes
-      timesliceSeconds = 1. / 60.;
-      myFrameBuffer->update();
-    }
-
-    const duration<double> timeslice(timesliceSeconds);
-    virtualTime += duration_cast<high_resolution_clock::duration>(timeslice);
-    const time_point<high_resolution_clock> now = high_resolution_clock::now();
-
-    // We allow 6507 time to lag behind by one frame max
-    const double maxLag = myConsole
-      ? (
-        static_cast<double>(myConsole->emulationTiming().cyclesPerFrame()) /
-        static_cast<double>(myConsole->emulationTiming().cyclesPerSecond())
-      )
-      : 0;
-
-    if (duration_cast<duration<double>>(now - virtualTime).count() > maxLag)
-      // If 6507 time is lagging behind more than one frame we reset it to real time
-      virtualTime = now;
-    else if (virtualTime > now) {
-      // Wait until we have caught up with 6507 time
-      std::this_thread::sleep_until(virtualTime);
-    }
-  }
-
-  // Cleanup time
-#ifdef CHEATCODE_SUPPORT
-  if(myConsole)
-    myCheatManager->saveCheats(myConsole->properties().get(PropType::Cart_MD5));
-
-  myCheatManager->saveCheatDatabase();
-#endif
+//  // 6507 time
+//  time_point<high_resolution_clock> virtualTime = high_resolution_clock::now();
+//  // The emulation worker
+//
+//  myFpsMeter.reset(TIAConstants::initialGarbageFrames);
+//
+//  for(;;)
+//  {
+//    const bool wasEmulation = myEventHandler->state() == EventHandlerState::EMULATION;
+//
+//    myEventHandler->poll(TimerManager::getTicks());
+//    if(myQuitLoop) break;  // Exit if the user wants to quit
+//
+//    if (!wasEmulation && myEventHandler->state() == EventHandlerState::EMULATION) {
+//      myFpsMeter.reset();
+//      virtualTime = high_resolution_clock::now();
+//    }
+//
+//    double timesliceSeconds;  // NOLINT
+//
+//    if (myEventHandler->state() == EventHandlerState::EMULATION)
+//      // Dispatch emulation and render frame (if applicable)
+////      timesliceSeconds = dispatchEmulation(_emulationWorker);
+//
+//    else if(myEventHandler->state() == EventHandlerState::PLAYBACK)
+//    {
+//      // Playback at emulation speed
+//      timesliceSeconds = static_cast<double>(myConsole->tia().scanlinesLastFrame() * 76) /
+//        static_cast<double>(myConsole->emulationTiming().cyclesPerSecond());
+//      myFrameBuffer->update();
+//    }
+//    else
+//    {
+//      // Render the GUI with 60 Hz in all other modes
+//      timesliceSeconds = 1. / 60.;
+//      myFrameBuffer->update();
+//    }
+//
+//    const duration<double> timeslice(timesliceSeconds);
+//    virtualTime += duration_cast<high_resolution_clock::duration>(timeslice);
+//    const time_point<high_resolution_clock> now = high_resolution_clock::now();
+//
+//    // We allow 6507 time to lag behind by one frame max
+//    const double maxLag = myConsole
+//      ? (
+//        static_cast<double>(myConsole->emulationTiming().cyclesPerFrame()) /
+//        static_cast<double>(myConsole->emulationTiming().cyclesPerSecond())
+//      )
+//      : 0;
+//
+//    if (duration_cast<duration<double>>(now - virtualTime).count() > maxLag)
+//      // If 6507 time is lagging behind more than one frame we reset it to real time
+//      virtualTime = now;
+//    else if (virtualTime > now) {
+//      // Wait until we have caught up with 6507 time
+//      std::this_thread::sleep_until(virtualTime);
+//    }
+//  }
+//
+//  // Cleanup time
+//#ifdef CHEATCODE_SUPPORT
+//  if(myConsole)
+//    myCheatManager->saveCheats(myConsole->properties().get(PropType::Cart_MD5));
+//
+//  myCheatManager->saveCheatDatabase();
+//#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -65,6 +65,8 @@ class FrameBuffer
     explicit FrameBuffer(OSystem& osystem);
     ~FrameBuffer();
 
+    bool renderToScreen = false;
+
     /**
       Initialize the framebuffer object (set up the underlying hardware).
       Throws an exception upon encountering any errors.

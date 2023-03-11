@@ -19,7 +19,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  // Function to render frame
  void renderFrame(const uint16_t currentStep, const std::string& move) override
  {
-  _game->_emu->_a2600->advanceFrame();
+  _game->_emu->_a2600->renderFrame();
  }
 
  // Function to render frame

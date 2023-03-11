@@ -12,6 +12,7 @@
 #include "Serializer.hxx"
 #include "StateManager.hxx"
 #include "Console.hxx"
+#include "M6532.hxx"
 
 class EmuInstance : public EmuInstanceBase
 {
@@ -19,6 +20,7 @@ class EmuInstance : public EmuInstanceBase
 
  std::string _romData;
  std::unique_ptr<OSystem> _a2600;
+ uint8_t* _ram;
 
  // Emulator instance
  //TBD
@@ -38,9 +40,9 @@ class EmuInstance : public EmuInstanceBase
   if(!_a2600->initialize(opts)) EXIT_WITH_ERROR("ERROR: Couldn't create A2600 System");
   const string romfile = romFilePath;
   const FSNode romnode(romfile);
-
   _a2600->createConsole(romnode);
-  //_a2600->mainLoop();
+
+  _ram = _a2600->console().riot().getRAM();
 
 //  Serializer state;
 //  _a2600->state().saveState(state);
