@@ -857,7 +857,6 @@ void Train::reset()
  _checkpointTolerance = 0;
  _checkpointCutoffStep = 0;
 
-
  // Initializing step timers
  _stepHashCalculationTime = 0;
  _stepHashCheckingTime = 0;

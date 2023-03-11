@@ -120,7 +120,6 @@ class NTSCFilter
     // Enable threading for the NTSC rendering
     inline void enableThreading(bool enable)
     {
-      myNTSC.enableThreading(enable);
     }
 
   private:
