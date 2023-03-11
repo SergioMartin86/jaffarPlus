@@ -207,20 +207,6 @@ int main(int ac, char* av[])
 
   std::ios_base::sync_with_stdio(false);
 
-  if (isProfilingRun(ac, av)) {
-    ProfilingRunner runner(ac, av);
-
-    try
-    {
-      return runner.run() ? 0 : 1;
-    }
-    catch(const runtime_error& e)
-    {
-      cerr << e.what() << endl;
-      return 0;
-    }
-  }
-
   unique_ptr<OSystem> theOSystem;
 
   const auto Cleanup = [&theOSystem]() {
@@ -313,17 +299,6 @@ int main(int ac, char* av[])
       const string& result = theOSystem->createConsole(romnode);
       if(result != EmptyString)
         return Cleanup();
-
-#if 0
-      TODO: Fix this to use functionality from OSystem::mainLoop
-      if(localOpts["takesnapshot"].toBool())
-      {
-        for(int i = 0; i < 30; ++i)  theOSystem->frameBuffer().update();
-//        theOSystem->frameBuffer().tiaSurface().saveSnapShot();
-        theOSystem->png().takeSnapshot();
-        return Cleanup();
-      }
-#endif
     }
     catch(const runtime_error& e)
     {
@@ -331,15 +306,6 @@ int main(int ac, char* av[])
       return Cleanup();
     }
 
-#ifdef DEBUGGER_SUPPORT
-    // Set up any breakpoint that was on the command line
-    if(!localOpts["break"].toString().empty())
-    {
-      Debugger& dbg = theOSystem->debugger();
-      const uInt16 bp = uInt16(dbg.stringToValue(localOpts["break"].toString()));
-      dbg.setBreakPoint(bp);
-    }
-#endif
   }
 
   // Start the main loop, and don't exit until the user issues a QUIT command
