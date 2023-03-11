@@ -40,8 +40,8 @@ class EmuInstance : public EmuInstanceBase
   if(!_a2600->initialize(opts)) EXIT_WITH_ERROR("ERROR: Couldn't create A2600 System");
   const string romfile = romFilePath;
   const FSNode romnode(romfile);
-  _a2600->createConsole(romnode);
 
+  _a2600->createConsole(romnode);
   _ram = _a2600->console().riot().getRAM();
 
 //  Serializer state;

@@ -23,17 +23,6 @@
 #include "bspf.hxx"
 #include "StaggeredLogger.hxx"
 
-/**
-  This class implements an audio queue that acts both like a ring buffer
-  and a pool of audio fragments. The TIA emulation core fills a fragment
-  with samples and then returns it to the queue, receiving a new fragment
-  in return. The sound driver removes fragments for playback from the
-  queue and returns the used fragment in this process.
-
-  The queue needs to be threadsafe as the (SDL) audio driver runs on a
-  separate thread. Samples are stored as signed 16 bit integers
-  (platform endian).
-*/
 class AudioQueue
 {
   public:

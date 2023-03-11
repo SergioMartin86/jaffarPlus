@@ -80,50 +80,10 @@ void AtariNTSC::generateKernels()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void AtariNTSC::enableThreading(bool enable)
-{
-  uInt32 systemThreads = enable ? std::thread::hardware_concurrency() : 0;
-  if(systemThreads <= 1)
-  {
-    myWorkerThreads = 0;
-    myTotalThreads  = 1;
-  }
-  else
-  {
-    systemThreads = std::max<uInt32>(1, std::min<uInt32>(4, systemThreads - 1));
-
-    myWorkerThreads = systemThreads - 1;
-    myTotalThreads  = systemThreads;
-
-    myThreads = make_unique<std::thread[]>(myWorkerThreads);  // NOLINT
-  }
-}
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void AtariNTSC::render(const uInt8* atari_in, const uInt32 in_width,
                        const uInt32 in_height, void* rgb_out,
                        const uInt32 out_pitch, uInt32* rgb_in)
 {
-  // Spawn the threads...
-  for(uInt32 i = 0; i < myWorkerThreads; ++i)
-  {
-    myThreads[i] = std::thread([=] {
-    rgb_in == nullptr ?
-      renderThread(atari_in, in_width, in_height, myTotalThreads, i+1, rgb_out, out_pitch) :
-      renderWithPhosphorThread(atari_in, in_width, in_height, myTotalThreads, i+1, rgb_in, rgb_out, out_pitch);
-    });
-  }
-  // Make the main thread busy too
-  rgb_in == nullptr ?
-    renderThread(atari_in, in_width, in_height, myTotalThreads, 0, rgb_out, out_pitch) :
-    renderWithPhosphorThread(atari_in, in_width, in_height, myTotalThreads, 0, rgb_in, rgb_out, out_pitch);
-  // ...and make them join again
-  for(uInt32 i = 0; i < myWorkerThreads; ++i)
-    myThreads[i].join();
-
-  // Copy phosphor values into out buffer
-  if(rgb_in != nullptr)
-    memcpy(rgb_out, rgb_in, static_cast<size_t>(in_height) * out_pitch);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

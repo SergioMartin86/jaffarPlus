@@ -41,7 +41,6 @@
 #define ATARI_NTSC_HXX
 
 #include <cmath>
-#include <thread>
 
 #include "FrameBufferConstants.hxx"
 #include "bspf.hxx"
@@ -50,7 +49,7 @@ class AtariNTSC
 {
   public:
     // By default, threading is turned off and palette is blank
-    AtariNTSC() { enableThreading(false); myRGBPalette.fill(0); }
+    AtariNTSC() { myRGBPalette.fill(0); }
 
     // Image parameters, ranging from -1.0 to 1.0. Actual internal values shown
     // in parenthesis and should remain fairly stable in future versions.
@@ -86,9 +85,6 @@ class AtariNTSC
 
     // Set palette for normal Blarrg mode
     void setPalette(const PaletteArray& palette);
-
-    // Set up threading
-    void enableThreading(bool enable);
 
     // Filters one or more rows of pixels. Input pixels are 8-bit Atari
     // palette colors.
@@ -156,10 +152,6 @@ class AtariNTSC
     std::array<uInt8, palette_size*3> myRGBPalette;
     BSPF::array2D<uInt32, palette_size, entry_size> myColorTable;
 
-    // Rendering threads
-    unique_ptr<std::thread[]> myThreads;  // NOLINT
-    // Number of rendering and total threads
-    uInt32 myWorkerThreads{0}, myTotalThreads{0};
 
     struct init_t
     {

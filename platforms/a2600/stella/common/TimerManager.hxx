@@ -24,22 +24,11 @@
 #include <unordered_map>
 #include <set>
 #include <cstdint>
-#include <thread>
 #include <mutex>
 #include <condition_variable>
 
 #include "bspf.hxx"
 
-/**
-  This class provides a portable periodic/one-shot timer infrastructure
-  using worker threads and generic C++11 code.
-
-  @author  Doug Gale (doug65536)
-           From "Code Review"
-           https://codereview.stackexchange.com/questions/127552/portable-periodic-one-shot-timer-thread-follow-up
-
-           Modifications and cleanup for Stella by Stephen Anthony
-*/
 class TimerManager
 {
   public:
@@ -192,4 +181,4 @@ class TimerManager
     TimerManager& operator=(TimerManager&&) = delete;
 };
 
-#endif // TIMERTHREAD_H
+#endif
