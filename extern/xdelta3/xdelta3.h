@@ -195,12 +195,12 @@ typedef uint32_t xoff_t;
 #define SIZEOF_USIZE_T 4
 
 #if SIZEOF_SIZE_T == 4
-#define Z "z"
+#define _Z_TYPE_ "z"
 #elif SIZEOF_SIZE_T == 8
 #ifdef _WIN32
-#define Z "I64"
+#define _Z_TYPE_ "I64"
 #else /* !_WIN32 */
-#define Z "z"
+#define _Z_TYPE_ "z"
 #endif /* Windows or not */
 #else
 #error Bad configure script

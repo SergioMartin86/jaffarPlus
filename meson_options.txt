@@ -1,5 +1,6 @@
 option('game', type : 'combo', choices : 
   [ 
+    'a2600/pacman',
     'gen/ootw',
     'nes/smb',
     'nes/sfsmb',
