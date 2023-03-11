@@ -12,7 +12,7 @@ emuInstanceIncludes = include_directories(['.'])
 
 platformTrainSrc = [ emuInstanceSrc, stellaSrc ]
 platformTrainIncludes = [ emuInstanceIncludes, stellaIncludes ]
-platformTrainCPPFlags = [ stellaCFlags ]
+platformTrainCPPFlags = [ stellaCFlags, '-DSDL_SUPPORT' ]
 platformTrainCFlags = [ stellaCFlags ]
 platformTrainLibs = [ ] 
 platformTrainLFlags = [ ]

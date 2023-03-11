@@ -1,8 +1,8 @@
 {
   "Emulator Configuration": 
   {
-    "Rom File": "pacman.bin",
-    "State File": "boot.state"
+    "Rom File": "../pacman.bin",
+    "State File": "lvl01.state"
   },
   
   "Game Configuration": 
@@ -60,7 +60,21 @@
     "Label": 1000,
     "Conditions":
     [
-     { "Property": "Game Mode", "Op": "==", "Value":  2 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Set Score Magnet", "Intensity": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+     { "Property": "Score", "Op": ">", "Value":  200 }
     ],
     
     "Satisfies": [ ],

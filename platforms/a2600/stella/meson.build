@@ -164,6 +164,6 @@ stellaIncludes = include_directories([
  
 ])
 
-stellaCFlags = ['-DSDL_SUPPORT', '-DUNIX', '-DBSPF_UNIX', '-D_REENTRANT']
+stellaCFlags = [ '-DUNIX', '-DBSPF_UNIX']
 
 

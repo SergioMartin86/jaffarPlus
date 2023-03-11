@@ -140,8 +140,6 @@ class EmuInstance : public EmuInstanceBase
   if (move & 0b00001000) _a2600->console().leftController().write(Controller::DigitalPin::Four,  false); else _a2600->console().leftController().write(Controller::DigitalPin::Four,  true);
   if (move & 0b00100000) _a2600->console().leftController().write(Controller::DigitalPin::Six,   false); else _a2600->console().leftController().write(Controller::DigitalPin::Six,   true);
 
-  bool value = false;
-
   _a2600->advanceFrame();
  }
 
