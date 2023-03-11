@@ -60,6 +60,7 @@ class AudioSettings;
 #include "Settings.hxx"
 #include "Logger.hxx"
 #include "bspf.hxx"
+#include "EmulationWorker.hxx"
 
 /**
   This class provides an interface for accessing operating system specific
@@ -72,9 +73,16 @@ class OSystem
 {
   friend class EventHandler;
 
+ private:
+
+  EmulationWorker _emulationWorker;
+
   public:
     OSystem();
     virtual ~OSystem();
+
+    void advanceFrame();
+    void renderFrame();
 
     /**
       Create all child objects which belong to this OSystem

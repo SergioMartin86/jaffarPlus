@@ -396,136 +396,17 @@ void OSystem::createSound()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string OSystem::createConsole(const FSNode& rom, string_view md5sum, bool newrom)
 {
-  bool showmessage = false;
-
-  // If same ROM has been given, we reload the current one (assuming one exists)
-  if(!newrom && rom == myRomFile)
-  {
-    showmessage = true;  // we show a message if a ROM is being reloaded
-  }
-  else
-  {
-    myRomFile = rom;
-    myRomMD5  = md5sum;
-
-    // Each time a new console is loaded, we simulate a cart removal
-    // Some carts need knowledge of this, as they behave differently
-    // based on how many power-cycles they've been through since plugged in
-    mySettings->setValue("romloadcount", -1); // we move to the next game initially
-  }
+  myRomFile = rom;
+  myRomMD5  = md5sum;
 
   // Create an instance of the 2600 game console
   ostringstream buf;
 
-  myEventHandler->handleConsoleStartupEvents();
+  myConsole = openConsole(myRomFile, myRomMD5);
+  myEventHandler->reset(EventHandlerState::EMULATION);
+  createFrameBuffer();
 
-  try
-  {
-    closeConsole();
-    myConsole = openConsole(myRomFile, myRomMD5);
-  }
-  catch(const runtime_error& e)
-  {
-    buf << "ERROR: " << e.what();
-    Logger::error(buf.str());
-    return buf.str();
-  }
-
-  if(myConsole)
-  {
-  #ifdef DEBUGGER_SUPPORT
-    myDebugger = make_unique<Debugger>(*this, *myConsole);
-    myDebugger->initialize();
-    myConsole->attachDebugger(*myDebugger);
-  #endif
-  #ifdef CHEATCODE_SUPPORT
-    myCheatManager->loadCheats(myRomMD5);
-  #endif
-    myEventHandler->reset(EventHandlerState::EMULATION);
-    myEventHandler->setMouseControllerMode(mySettings->getString("usemouse"));
-    if(createFrameBuffer() != FBInitStatus::Success)  // Takes care of initializeVideo()
-    {
-      Logger::error("ERROR: Couldn't create framebuffer for console");
-      myEventHandler->reset(EventHandlerState::LAUNCHER);
-      return "ERROR: Couldn't create framebuffer for console";
-    }
-    myConsole->initializeAudio();
-
-    const string saveOnExit = settings().getString("saveonexit");
-    const bool devSettings = settings().getBool("dev.settings");
-    const bool activeTM = settings().getBool(
-      devSettings ? "dev.timemachine" : "plr.timemachine");
-
-    if (saveOnExit == "all" && activeTM)
-      myEventHandler->handleEvent(Event::LoadAllStates);
-
-    if(showmessage)
-    {
-      const string& id = myConsole->cartridge().multiCartID();
-      if(id.empty())
-        myFrameBuffer->showTextMessage("New console created");
-      else
-        myFrameBuffer->showTextMessage("Multicart " +
-          myConsole->cartridge().detectedType() + ", loading ROM" + id);
-    }
-    buf << "Game console created:" << endl
-        << "  ROM file: " << myRomFile.getShortPath() << endl;
-    const FSNode propsFile(myRomFile.getPathWithExt(".pro"));
-    if(propsFile.exists())
-      buf << "  PRO file: " << propsFile.getShortPath() << endl;
-    buf << endl << getROMInfo(*myConsole);
-    Logger::info(buf.str());
-
-    myFrameBuffer->setCursorState();
-
-    myEventHandler->handleConsoleStartupEvents();
-    myConsole->riot().update();
-
-    #ifdef DEBUGGER_SUPPORT
-      if(mySettings->getBool("debug"))
-        myEventHandler->enterDebugMode();
-    #endif
-
-    if(!showmessage &&
-       settings().getBool(devSettings ? "dev.detectedinfo" : "plr.detectedinfo"))
-    {
-      ostringstream msg;
-
-      msg << myConsole->leftController().name() << "/" << myConsole->rightController().name()
-        << " - " << myConsole->cartridge().detectedType()
-        << (myConsole->cartridge().isPlusROM() ? " PlusROM " : "")
-        << " - " << myConsole->getFormatString();
-      myFrameBuffer->showTextMessage(msg.str());
-    }
-    // Check for first PlusROM start
-    if(myConsole->cartridge().isPlusROM())
-    {
-      if(settings().getString("plusroms.fixedid") == EmptyString)
-      {
-        // Make sure there always is an id
-        constexpr int ID_LEN = 32;
-        constexpr string_view HEX_DIGITS{ "0123456789ABCDEF" };
-        char id_chr[ID_LEN] = { 0 };
-        const Random rnd;
-
-        for(char& c : id_chr)
-          c = HEX_DIGITS[rnd.next() % 16];
-
-        settings().setValue("plusroms.fixedid", string(id_chr, ID_LEN));
-
-        myEventHandler->changeStateByEvent(Event::PlusRomsSetupMode);
-      }
-
-      string id = settings().getString("plusroms.id");
-
-      if(id == EmptyString)
-        id = settings().getString("plusroms.fixedid");
-
-      Logger::info("PlusROM Nick: " + settings().getString("plusroms.nick") + ", ID: " + id);
-    }
-  }
-
-  return EmptyString;
+  return "";
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -824,7 +705,7 @@ float OSystem::frameRate() const
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-double OSystem::dispatchEmulation(EmulationWorker& emulationWorker)
+double OSystem::dispatchEmulation(EmulationWorker& _emulationWorker)
 {
   if (!myConsole) return 0.;
 
@@ -843,7 +724,7 @@ double OSystem::dispatchEmulation(EmulationWorker& emulationWorker)
 
   // Start emulation on a dedicated thread. It will do its own scheduling to
   // sync 6507 and real time and will run until we stop the worker.
-  emulationWorker.start(
+  _emulationWorker.start(
     timing.cyclesPerSecond(),
     timing.maxCyclesPerTimeslice(),
     timing.minCyclesPerTimeslice(),
@@ -856,7 +737,7 @@ double OSystem::dispatchEmulation(EmulationWorker& emulationWorker)
   if (framePending) myFrameBuffer->updateInEmulationMode(myFpsMeter.fps());
 
   // Stop the worker and wait until it has finished
-  const uInt64 totalCycles = emulationWorker.stop();
+  const uInt64 totalCycles = _emulationWorker.stop();
 
   // Handle the dispatch result
   switch (dispatchResult.getStatus()) {
@@ -897,13 +778,22 @@ double OSystem::dispatchEmulation(EmulationWorker& emulationWorker)
       static_cast<double>(timing.cyclesPerSecond());
 }
 
+void OSystem::advanceFrame()
+{
+ dispatchEmulation(_emulationWorker);
+}
+
+void OSystem::renderFrame()
+{
+ myFrameBuffer->update();
+}
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void OSystem::mainLoop()
 {
   // 6507 time
   time_point<high_resolution_clock> virtualTime = high_resolution_clock::now();
   // The emulation worker
-  EmulationWorker emulationWorker;
 
   myFpsMeter.reset(TIAConstants::initialGarbageFrames);
 
@@ -923,7 +813,8 @@ void OSystem::mainLoop()
 
     if (myEventHandler->state() == EventHandlerState::EMULATION)
       // Dispatch emulation and render frame (if applicable)
-      timesliceSeconds = dispatchEmulation(emulationWorker);
+      timesliceSeconds = dispatchEmulation(_emulationWorker);
+
     else if(myEventHandler->state() == EventHandlerState::PLAYBACK)
     {
       // Playback at emulation speed

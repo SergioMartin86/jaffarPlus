@@ -941,8 +941,7 @@ void Console::changeRightController(int direction)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-unique_ptr<Controller> Console::getControllerPort(
-    const Controller::Type type, const Controller::Jack port, string_view romMd5)
+unique_ptr<Controller> Console::getControllerPort(const Controller::Type type, const Controller::Jack port, string_view romMd5)
 {
   unique_ptr<Controller> controller;
 

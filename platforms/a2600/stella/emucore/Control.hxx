@@ -173,7 +173,7 @@ class Controller : public Serializable
       @param pin The pin of the controller jack to write to
       @param value The value to write to the pin
     */
-    virtual void write(DigitalPin pin, bool value) { }
+    virtual void write(DigitalPin pin, bool value) { setPin(pin, value); }
 
     /**
       Called after *all* digital pins have been written on Port A.

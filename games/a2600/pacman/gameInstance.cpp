@@ -36,6 +36,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
  std::vector<INPUT_TYPE> moves;
 
+ _emu->advanceState(move);
 
  return moves;
 }
