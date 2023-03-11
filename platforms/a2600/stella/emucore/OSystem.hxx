@@ -28,7 +28,6 @@ class Sound;
 class StateManager;
 class TimerManager;
 class HighScoresManager;
-class EmulationWorker;
 class AudioSettings;
 #ifdef CHEATCODE_SUPPORT
   class CheatManager;
@@ -60,7 +59,6 @@ class AudioSettings;
 #include "Settings.hxx"
 #include "Logger.hxx"
 #include "bspf.hxx"
-#include "EmulationWorker.hxx"
 
 /**
   This class provides an interface for accessing operating system specific

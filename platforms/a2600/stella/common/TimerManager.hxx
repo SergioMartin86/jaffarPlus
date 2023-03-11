@@ -55,9 +55,6 @@ class TimerManager
     // Constructor does not start worker until there is a Timer.
     explicit TimerManager();
 
-    // Destructor is thread safe, even if a timer callback is running.
-    // All callbacks are guaranteed to have returned before this
-    // destructor returns.
     ~TimerManager();
 
     /**
@@ -89,20 +86,6 @@ class TimerManager
       return addTimer(timeout, 0, func);
     }
 
-    /**
-      Destroy the specified timer.
-
-      Synchronizes with the worker thread if the callback for this timer
-      is running, which guarantees that the handler for that callback is
-      not running before clear() returns.
-
-      You are not required to clear any timers. You can forget their
-      TimerId if you do not need to cancel them.
-
-      The only time you need this is when you want to stop a timer that
-      has a repetition period, or you want to cancel a timeout that has
-      not fired yet.
-    */
     bool clear(TimerId id);
 
     /**
@@ -183,7 +166,6 @@ class TimerManager
     using Queue = std::multiset<QueueValue, NextActiveComparator>;
     using TimerMap = std::unordered_map<TimerId, Timer>;
 
-    void timerThreadWorker();
     bool destroy_impl(ScopedLock& lock, TimerMap::iterator i, bool notify);
 
     // Inexhaustible source of unique IDs
@@ -195,13 +177,8 @@ class TimerManager
     // The ordering queue holds references to items in 'active'
     Queue queue;
 
-    // One worker thread for an unlimited number of timers is acceptable
-    // Lazily started when first timer is started
-    // TODO: Implement auto-stopping the timer thread when it is idle for
-    // a configurable period.
     mutable Lock sync;
     ConditionVar wakeUp;
-    std::thread worker;
     bool done{false};
 
     // Valid IDs are guaranteed not to be this value

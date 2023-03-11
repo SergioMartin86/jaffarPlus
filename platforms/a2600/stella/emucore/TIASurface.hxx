@@ -24,8 +24,6 @@ class OSystem;
 class FBSurface;
 class PaletteHandler;
 
-#include <thread>
-
 #include "Rect.hxx"
 #include "FrameBuffer.hxx"
 #include "NTSCFilter.hxx"

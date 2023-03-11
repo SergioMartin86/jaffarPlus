@@ -18,7 +18,6 @@
 #include <regex>
 #include <atomic>
 #include <sstream>
-#include <thread>
 
 #include "bspf.hxx"
 #include "PlusROM.hxx"
@@ -396,63 +395,6 @@ bool PlusROM::isValidPath(string_view path)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void PlusROM::send()
 {
-#if defined(HTTP_LIB_SUPPORT)
-  if (myPendingRequests.size() >= MAX_CONCURRENT_REQUESTS) {
-    // Try to make room by consuming any requests that have completed.
-    receive();
-  }
-
-  if (myPendingRequests.size() >= MAX_CONCURRENT_REQUESTS) {
-    Logger::error("PlusCart: max number of concurrent requests exceeded");
-
-    myTxPos = 0;
-    return;
-  }
-
-  string id = mySettings.getString("plusroms.id");
-
-  if(id == EmptyString)
-    id = mySettings.getString("plusroms.fixedid");
-
-  if(id != EmptyString)
-  {
-    const string nick = mySettings.getString("plusroms.nick");
-    auto request = make_shared<PlusROMRequest>(
-      PlusROMRequest::Destination(myHost, "/" + myPath),
-      PlusROMRequest::PlusStoreId(nick, id),
-      myTxBuffer.data(),
-      myTxPos
-      );
-
-    myTxPos = 0;
-
-    // We push to the back in order to avoid reverse_iterator in receive()
-    myPendingRequests.push_back(request);
-
-    // The lambda will retain a copy of the shared_ptr that is alive as long
-    // as the thread is running. Thus, the request can only be destructed once
-    // the thread has finished, and we can safely evict it from the deque at
-    // any time.
-    std::thread thread([=]() {
-      request->execute();
-      switch(request->getState())
-      {
-        case PlusROMRequest::State::failed:
-          myMsgCallback("PlusROM data sending failed!");
-          break;
-
-        case PlusROMRequest::State::done:
-          myMsgCallback("PlusROM data sent successfully");
-          break;
-
-        default:
-          break;
-      }
-    });
-
-    thread.detach();
-  }
-#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

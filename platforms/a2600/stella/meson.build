@@ -101,7 +101,6 @@ stellaSrc = [
   srcDir + '/emucore/Driving.cxx',
   srcDir + '/emucore/EventHandler.cxx',
   srcDir + '/emucore/EmulationTiming.cxx',
-  srcDir + '/emucore/EmulationWorker.cxx',
   srcDir + '/emucore/FrameBuffer.cxx',
   srcDir + '/emucore/FBSurface.cxx',
   srcDir + '/emucore/FSNode.cxx',
