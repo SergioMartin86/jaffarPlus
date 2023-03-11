@@ -70,7 +70,4 @@ class GameInstanceBase
 
   // Function to print
   virtual void printStateInfo(const bool* rulesStatus) const = 0;
-
-  // Function to set RNG state
-  virtual void setRNGState(const uint64_t RNGState) = 0;
 };
