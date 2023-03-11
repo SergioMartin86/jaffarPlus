@@ -2464,12 +2464,16 @@ void EventHandler::setState(EventHandlerState state)
       break;
   }
 
+#ifdef _JAFFAR_PLAY
   // Inform various subsystems about the new state
   myOSystem.stateChanged(myState); // does nothing
+
   myOSystem.frameBuffer().stateChanged(myState); // ignores state
   myOSystem.frameBuffer().setCursorState(); // en/disables cursor for UI and emulation states
-  if(myOSystem.hasConsole())
-    myOSystem.console().stateChanged(myState); // does nothing
+
+  if(myOSystem.hasConsole()) myOSystem.console().stateChanged(myState); // does nothingq
+
+#endif
 
   // Sometimes an extraneous mouse motion event is generated
   // after a state change, which should be supressed

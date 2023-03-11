@@ -593,20 +593,8 @@ void FrameBuffer::updateInEmulationMode(float framesPerSecond)
 
   clear();  // TODO - test this: it may cause slowdowns on older systems
   myTIASurface->render();
-
-  // Show frame statistics
-  if(myStatsMsg.enabled)
-    drawFrameStats(framesPerSecond);
-
   myLastScanlines = myOSystem.console().tia().frameBufferScanlinesLastFrame();
-  myPausedCount = 0;
-
-  // Draw any pending messages
-  if(myMsg.enabled)
-    drawMessage();
-
-  // Push buffers to screen
-  myBackend->renderToScreen();
+  if (renderToScreen) myBackend->renderToScreen();
 }
 
 #ifdef GUI_SUPPORT

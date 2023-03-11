@@ -173,7 +173,10 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
 
   // Pause audio and clear framebuffer while autodetection runs
   myOSystem.sound().pause(true);
+
+#ifdef _JAFFAR_PLAY
   myOSystem.frameBuffer().clear();
+#endif
 
   if(myDisplayFormat == "AUTO" || myOSystem.settings().getBool("rominfo"))
   {
@@ -677,13 +680,12 @@ FBInitStatus Console::initializeVideo(bool full)
     const bool devSettings = myOSystem.settings().getBool("dev.settings");
     const string title = string{"Stella "} + STELLA_VERSION +
                    ": \"" + myProperties.get(PropType::Cart_Name) + "\"";
-    fbstatus = myOSystem.frameBuffer().createDisplay(title,
-        BufferType::Emulator, size, false);
-    if(fbstatus != FBInitStatus::Success)
-      return fbstatus;
 
-    myOSystem.frameBuffer().showFrameStats(
-      myOSystem.settings().getBool(devSettings ? "dev.stats" : "plr.stats"));
+#ifdef _JAFFAR_PLAY
+    fbstatus = myOSystem.frameBuffer().createDisplay(title,  BufferType::Emulator, size, false);
+    if(fbstatus != FBInitStatus::Success)    return fbstatus;
+    myOSystem.frameBuffer().showFrameStats( myOSystem.settings().getBool(devSettings ? "dev.stats" : "plr.stats"));
+#endif();
   }
   return fbstatus;
 }

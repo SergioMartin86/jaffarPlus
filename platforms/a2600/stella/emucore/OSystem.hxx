@@ -75,8 +75,6 @@ class OSystem
 
  private:
 
-  EmulationWorker _emulationWorker;
-
   public:
     OSystem();
     virtual ~OSystem();
@@ -665,7 +663,7 @@ class OSystem
     */
     static string getROMInfo(const Console& console);
 
-    double dispatchEmulation(EmulationWorker& emulationWorker);
+    double dispatchEmulation();
 
     // Following constructors and assignment operators not supported
     OSystem(const OSystem&) = delete;
