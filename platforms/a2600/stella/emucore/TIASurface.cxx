@@ -78,8 +78,6 @@ TIASurface::TIASurface(OSystem& system)
 
   myRGBFramebuffer.fill(0);
 
-  // Enable/disable threading in the NTSC TV effects renderer
-  myNTSCFilter.enableThreading(myOSystem.settings().getBool("threads"));
 
   myPaletteHandler = make_unique<PaletteHandler>(myOSystem);
   myPaletteHandler->loadConfig(myOSystem.settings());
@@ -620,7 +618,6 @@ void TIASurface::renderForSnapshot()
   // Therefore the code could be simplified.
   // At some point, we will probably merge some of the functionality.
   // Furthermore, toggling the variable 'mySaveSnapFlag' in different places
-  // is brittle, especially since rendering can happen in a different thread.
 
   const uInt32 width = myTIA->width(), height = myTIA->height();
   uInt32 pos{0};

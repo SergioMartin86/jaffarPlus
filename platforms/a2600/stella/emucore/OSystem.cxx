@@ -65,7 +65,6 @@
 #include "Version.hxx"
 #include "TIA.hxx"
 #include "DispatchResult.hxx"
-#include "EmulationWorker.hxx"
 #include "AudioSettings.hxx"
 #include "M6532.hxx"
 
@@ -701,8 +700,6 @@ double OSystem::dispatchEmulation()
   }
 #endif
 
-  // Start emulation on a dedicated thread. It will do its own scheduling to
-  // sync 6507 and real time and will run until we stop the worker.
   tia.update(timing.maxCyclesPerTimeslice());
 
 #ifdef _JAFFAR_PLAY
@@ -737,72 +734,6 @@ void OSystem::renderFrame()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void OSystem::mainLoop()
 {
-//  // 6507 time
-//  time_point<high_resolution_clock> virtualTime = high_resolution_clock::now();
-//  // The emulation worker
-//
-//  myFpsMeter.reset(TIAConstants::initialGarbageFrames);
-//
-//  for(;;)
-//  {
-//    const bool wasEmulation = myEventHandler->state() == EventHandlerState::EMULATION;
-//
-//    myEventHandler->poll(TimerManager::getTicks());
-//    if(myQuitLoop) break;  // Exit if the user wants to quit
-//
-//    if (!wasEmulation && myEventHandler->state() == EventHandlerState::EMULATION) {
-//      myFpsMeter.reset();
-//      virtualTime = high_resolution_clock::now();
-//    }
-//
-//    double timesliceSeconds;  // NOLINT
-//
-//    if (myEventHandler->state() == EventHandlerState::EMULATION)
-//      // Dispatch emulation and render frame (if applicable)
-////      timesliceSeconds = dispatchEmulation(_emulationWorker);
-//
-//    else if(myEventHandler->state() == EventHandlerState::PLAYBACK)
-//    {
-//      // Playback at emulation speed
-//      timesliceSeconds = static_cast<double>(myConsole->tia().scanlinesLastFrame() * 76) /
-//        static_cast<double>(myConsole->emulationTiming().cyclesPerSecond());
-//      myFrameBuffer->update();
-//    }
-//    else
-//    {
-//      // Render the GUI with 60 Hz in all other modes
-//      timesliceSeconds = 1. / 60.;
-//      myFrameBuffer->update();
-//    }
-//
-//    const duration<double> timeslice(timesliceSeconds);
-//    virtualTime += duration_cast<high_resolution_clock::duration>(timeslice);
-//    const time_point<high_resolution_clock> now = high_resolution_clock::now();
-//
-//    // We allow 6507 time to lag behind by one frame max
-//    const double maxLag = myConsole
-//      ? (
-//        static_cast<double>(myConsole->emulationTiming().cyclesPerFrame()) /
-//        static_cast<double>(myConsole->emulationTiming().cyclesPerSecond())
-//      )
-//      : 0;
-//
-//    if (duration_cast<duration<double>>(now - virtualTime).count() > maxLag)
-//      // If 6507 time is lagging behind more than one frame we reset it to real time
-//      virtualTime = now;
-//    else if (virtualTime > now) {
-//      // Wait until we have caught up with 6507 time
-//      std::this_thread::sleep_until(virtualTime);
-//    }
-//  }
-//
-//  // Cleanup time
-//#ifdef CHEATCODE_SUPPORT
-//  if(myConsole)
-//    myCheatManager->saveCheats(myConsole->properties().get(PropType::Cart_MD5));
-//
-//  myCheatManager->saveCheatDatabase();
-//#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

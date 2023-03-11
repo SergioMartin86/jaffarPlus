@@ -48,6 +48,7 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
   std::vector<std::string> moveList = { "." };
 
 
+
   return moveList;
 }
 
