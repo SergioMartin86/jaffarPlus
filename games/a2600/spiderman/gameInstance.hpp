@@ -5,8 +5,15 @@
 #include "gameInstanceBase.hpp"
 #include <set>
 
+// Datatype to describe a generic magnet
+struct genericMagnet_t {
+ float intensity = 0.0; // How strong the magnet is
+ float center = 0.0;  // What is the central point of attraction
+};
+
 // Datatype to describe a magnet
 struct magnetSet_t {
+ genericMagnet_t verticalScrollMagnet;
 };
 
 class GameInstance : public GameInstanceBase
@@ -14,9 +21,17 @@ class GameInstance : public GameInstanceBase
  public:
 
   uint8_t* gameTimer;
+  uint8_t* verticalScroll1;
+  uint8_t* verticalScroll2;
+  uint8_t* playerState;
+  uint8_t* gameState;
 
   // Container for game-specific values
   uint8_t timerTolerance;
+
+
+  // Derivative Values
+  float verticalScroll;
 
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
