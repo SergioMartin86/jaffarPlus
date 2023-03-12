@@ -125,7 +125,7 @@ class EmuInstance : public EmuInstanceBase
 
   if (move & 0b10000000) moveString += 'r'; else moveString += '.';
 
-  moveString += ".....|";
+  moveString += "....|";
 
   if (move & 0b00000001) moveString += 'U'; else moveString += '.';
   if (move & 0b00000010) moveString += 'D'; else moveString += '.';
@@ -133,7 +133,7 @@ class EmuInstance : public EmuInstanceBase
   if (move & 0b00001000) moveString += 'R'; else moveString += '.';
   if (move & 0b00100000) moveString += 'B'; else moveString += '.';
 
-  moveString += "||";
+  moveString += "|";
   return moveString;
  }
 
