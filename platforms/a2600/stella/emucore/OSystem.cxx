@@ -67,6 +67,7 @@
 #include "DispatchResult.hxx"
 #include "AudioSettings.hxx"
 #include "M6532.hxx"
+#include "M6502.hxx"
 
 #include "OSystem.hxx"
 
@@ -151,12 +152,16 @@ bool OSystem::initialize(const Settings::Options& options)
   myStateManager = make_unique<StateManager>(*this);
   myTimerManager = make_unique<TimerManager>();
 
+#ifdef _JAFFAR_PLAY
   myAudioSettings = make_unique<AudioSettings>(*mySettings);
+#endif
 
   // Create the sound object; the sound subsystem isn't actually
   // opened until needed, so this is non-blocking (on those systems
   // that only have a single sound device (no hardware mixing))
+#ifdef _JAFFAR_PLAY
   createSound();
+#endif
 
   // Create random number generator
   myRandom = make_unique<Random>(static_cast<uInt32>(TimerManager::getTicks()));
@@ -672,8 +677,14 @@ double OSystem::dispatchEmulation()
 
 void OSystem::advanceFrame()
 {
+#ifdef _JAFFAR_PLAY
  dispatchEmulation();
-// const EmulationTiming& timing = myConsole->emulationTiming();
+#else
+ DispatchResult dispatchResult;
+ const EmulationTiming& timing = myConsole->emulationTiming();
+ myConsole->system().m6502().execute(timing.maxCyclesPerTimeslice(), dispatchResult);
+#endif
+
 // console().tia().update(timing.maxCyclesPerTimeslice());
 // printf("%u\n", console().riot().getRAM()[0x056]);
 // getchar();

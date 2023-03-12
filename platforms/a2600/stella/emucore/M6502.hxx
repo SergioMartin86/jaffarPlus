@@ -37,6 +37,7 @@ class DispatchResult;
 #include "bspf.hxx"
 #include "Device.hxx"
 #include "Serializable.hxx"
+#include "System.hxx"
 
 /**
   The 6502 is an 8-bit microprocessor that has a 64K addressing space.
@@ -283,7 +284,18 @@ class M6502 : public Serializable
 
       @return The byte at the specified address
     */
-    uInt8 peek(uInt16 address, Device::AccessFlags flags);
+    inline uInt8 peek(uInt16 address, Device::AccessFlags flags)
+    {
+      handleHalt();
+
+      mySystem->incrementCycles(SYSTEM_CYCLES_PER_CPU);
+      icycles += SYSTEM_CYCLES_PER_CPU;
+      myFlags = flags;
+      const uInt8 result = mySystem->peek(address, flags);
+      myLastPeekAddress = address;
+
+      return result;
+    }
 
     /**
       Change the byte at the specified address to the given value and
