@@ -12,6 +12,7 @@
 #include "Serializer.hxx"
 #include "StateManager.hxx"
 #include "Console.hxx"
+#include "Switches.hxx"
 #include "M6532.hxx"
 
 class EmuInstance : public EmuInstanceBase
@@ -88,10 +89,10 @@ class EmuInstance : public EmuInstanceBase
  // 4 - -- / 16
  // 5 - B / 32
  // 6 - -- / 64
- // 7 - -- / 128
+ // 7 - r / 128
 
  // Move Format:
- // --B-RLDU
+ // r-B-RLDU
  // ........
 
  static inline INPUT_TYPE moveStringToCode(const std::string& move)
@@ -105,6 +106,7 @@ class EmuInstance : public EmuInstanceBase
     case 'L': moveCode |= 0b00000100; break;
     case 'R': moveCode |= 0b00001000; break;
     case 'B': moveCode |= 0b00100000; break;
+    case 'r': moveCode |= 0b10000000; break;
     case '.': break;
     case '|': break;
     default: EXIT_WITH_ERROR("Move provided cannot be parsed: '%s', unrecognized character: '%c'\n", move.c_str(), move[i]);
@@ -115,7 +117,12 @@ class EmuInstance : public EmuInstanceBase
 
  static inline std::string moveCodeToString(const INPUT_TYPE move)
  {
-  std::string moveString = "|.....|";
+
+  std::string moveString = "|";
+
+  if (move & 0b10000000) moveString += 'r'; else moveString += '.';
+
+  moveString += ".....|";
 
   if (move & 0b00000001) moveString += 'U'; else moveString += '.';
   if (move & 0b00000010) moveString += 'D'; else moveString += '.';
@@ -140,6 +147,7 @@ class EmuInstance : public EmuInstanceBase
   if (move & 0b00000100) _a2600->console().leftController().write(Controller::DigitalPin::Three, false); else _a2600->console().leftController().write(Controller::DigitalPin::Three, true);
   if (move & 0b00001000) _a2600->console().leftController().write(Controller::DigitalPin::Four,  false); else _a2600->console().leftController().write(Controller::DigitalPin::Four,  true);
   if (move & 0b00100000) _a2600->console().leftController().write(Controller::DigitalPin::Six,   false); else _a2600->console().leftController().write(Controller::DigitalPin::Six,   true);
+  if (move & 0b10000000) _a2600->console().switches().values() &= ~0x01; else _a2600->console().switches().values() |= 0x01;
 
   _a2600->advanceFrame();
  }

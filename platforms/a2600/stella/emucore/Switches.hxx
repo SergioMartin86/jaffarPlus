@@ -121,6 +121,8 @@ class Switches : public Serializable
     */
     bool check7800Mode(const Settings& settings);
 
+    uint8_t& values() { return mySwitches; }
+
   private:
     // Reference to the event object to use
     const Event& myEvent;

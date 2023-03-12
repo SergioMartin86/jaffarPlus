@@ -58,7 +58,6 @@ Switches::Switches(const Event& event, const Properties& props,
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Switches::update()
 {
-#ifdef _JAFFAR_PLAY
   if(myIs7800)
   {
     if(myEvent.get(Event::Console7800Pause) != 0)
@@ -115,7 +114,6 @@ void Switches::update()
   {
     mySwitches |= 0x01;
   }
-#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
