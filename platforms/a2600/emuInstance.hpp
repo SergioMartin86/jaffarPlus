@@ -51,6 +51,9 @@ class EmuInstance : public EmuInstanceBase
 //  printf("Size: %lu\n", stateSize);
 //  exit(0);
 
+//    saveStateFile("boot.state");
+//    exit(0);
+
 //   Loading state file, if specified
   if (stateFilePath != "") loadStateFile(stateFilePath);
  }
