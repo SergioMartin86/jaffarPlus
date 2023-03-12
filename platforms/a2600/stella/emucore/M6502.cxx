@@ -190,15 +190,15 @@ inline void M6502::_execute(uInt64 cycles, DispatchResult& result)
   // Loop until execution is stopped or a fatal error occurs
   for(;;)
   {
+   // Reset the data poke address pointer
+   myDataAddressForPoke = 0;
+   uInt16 operandAddress = 0,
+   intermediateAddress = 0;
+   uInt8 operand = 0;
+   icycles = 0;
+
     while (!myExecutionStatus && currentCycles < cycles * SYSTEM_CYCLES_PER_CPU)
     {
-      // Reset the data poke address pointer
-      myDataAddressForPoke = 0;
-      uInt16 operandAddress = 0,
-      intermediateAddress = 0;
-      uInt8 operand = 0;
-      icycles = 0;
-
       // Fetch instruction at the program counter
       IR = peek(PC++, DISASM_CODE);  // This address represents a code section
 
