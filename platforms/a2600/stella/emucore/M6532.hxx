@@ -18,13 +18,15 @@
 #ifndef M6532_HXX
 #define M6532_HXX
 
-class ConsoleIO;
 class RiotDebug;
 class System;
 class Settings;
 
 #include "bspf.hxx"
 #include "Device.hxx"
+#include "ConsoleIO.hxx"
+#include "Switches.hxx"
+#include "Control.hxx"
 
 /**
   This class models the M6532 RAM-I/O-Timer (aka RIOT) chip in the 2600
@@ -38,6 +40,10 @@ class Settings;
 */
 class M6532 : public Device
 {
+private:
+  // Reference to the console
+  const ConsoleIO& myConsole;
+
   public:
     /**
       The RIOT debugger class is a friend who needs special access
@@ -106,7 +112,71 @@ class M6532 : public Device
 
       @return The byte at the specified address
     */
-    uInt8 peek(uInt16 address) override;
+    inline uInt8 peek(uInt16 addr)
+    {
+       updateEmulation();
+
+       // A9 distinguishes I/O registers from ZP RAM
+       // A9 = 1 is read from I/O
+       // A9 = 0 is read from RAM
+       if((addr & 0x0200) == 0x0000)
+         return myRAM[addr & 0x007f];
+
+       switch(addr & 0x07)
+       {
+         case 0x00:    // SWCHA - Port A I/O Register (Joystick)
+         {
+           const uInt8 value = (myConsole.leftController().read() << 4) |
+                                myConsole.rightController().read();
+
+           // Each pin is high (1) by default and will only go low (0) if either
+           //  (a) External device drives the pin low
+           //  (b) Corresponding bit in SWACNT = 1 and SWCHA = 0
+           // Thanks to A. Herbert for this info
+           return (myOutA | ~myDDRA) & value;
+         }
+
+         case 0x01:    // SWACNT - Port A Data Direction Register
+         {
+           return myDDRA;
+         }
+
+         case 0x02:    // SWCHB - Port B I/O Register (Console switches)
+         {
+           return (myOutB | ~myDDRB) & (myConsole.switches().read() | myDDRB);
+         }
+
+         case 0x03:    // SWBCNT - Port B Data Direction Register
+         {
+           return myDDRB;
+         }
+
+         case 0x04:    // INTIM - Timer Output
+         case 0x06:
+         {
+           // Timer Flag is always cleared when accessing INTIM
+           if (!myWrappedThisCycle) myInterruptFlag &= ~TimerBit;
+           return myTimer;
+         }
+
+         case 0x05:    // TIMINT/INSTAT - Interrupt Flag
+         case 0x07:
+         {
+           // PA7 Flag is always cleared after accessing TIMINT
+           const uInt8 result = myInterruptFlag;
+           myInterruptFlag &= ~PA7Bit;
+         #ifdef DEBUGGER_SUPPORT
+           myTimReadCycles += 7;
+         #endif
+           return result;
+         }
+
+         default:
+         {
+           return 0;
+         }
+       }
+    }
 
     /**
       Change the byte at the specified address to the given value
@@ -149,42 +219,8 @@ class M6532 : public Device
     void setTimerRegister(uInt8 value, uInt8 interval);
     void setPinState(bool swcha);
 
-  #ifdef DEBUGGER_SUPPORT
-    // The following are used by the debugger to read INTIM/TIMINT
-    // We need separate methods to do this, so the state of the system
-    // isn't changed
-    uInt8 intim();
-    uInt8 timint();
-    Int32 intimClocks();
-    uInt32 timerClocks() const;
-
-    void createAccessBases();
-
-    /**
-      Query the given address type for the associated access flags.
-
-      @param address  The address to query
-    */
-    Device::AccessFlags getAccessFlags(uInt16 address) const override;
-    /**
-      Change the given address to use the given access flags.
-
-      @param address  The address to modify
-      @param flags    A bitfield of AccessType directives for the given address
-    */
-    void setAccessFlags(uInt16 address, Device::AccessFlags flags) override;
-
-    /**
-      Increase the given address's access counter
-
-      @param address The address to modify
-    */
-    void increaseAccessCounter(uInt16 address, bool isWrite) override;
-  #endif // DEBUGGER_SUPPORT
 
   private:
-    // Reference to the console
-    const ConsoleIO& myConsole;
 
     // Reference to the settings
     const Settings& mySettings;
@@ -236,32 +272,6 @@ class M6532 : public Device
     // All other bits are always zeroed
     static constexpr uInt8 TimerBit = 0x80, PA7Bit = 0x40;
 
-#ifdef DEBUGGER_SUPPORT
-    static constexpr uInt16
-      RAM_SIZE = 0x80, RAM_MASK = RAM_SIZE - 1,
-      STACK_SIZE = RAM_SIZE, STACK_MASK = RAM_MASK, STACK_BIT = 0x100,
-      IO_SIZE = 0x20, IO_MASK = IO_SIZE - 1, IO_BIT = 0x200,
-      ZP_DELAY = 1 * 2;
-
-    // The arrays containing information about every byte of RIOT
-    // indicating whether and how (RW) it is used.
-    std::array<Device::AccessFlags, RAM_SIZE>   myRAMAccessBase;
-    std::array<Device::AccessFlags, STACK_SIZE> myStackAccessBase;
-    std::array<Device::AccessFlags, IO_SIZE>    myIOAccessBase;
-    // The arrays containing information about every byte of RIOT
-    // indicating how often it is accessed.
-    std::array<Device::AccessCounter, RAM_SIZE * 2>   myRAMAccessCounter;
-    std::array<Device::AccessCounter, STACK_SIZE * 2> myStackAccessCounter;
-    std::array<Device::AccessCounter, IO_SIZE * 2>    myIOAccessCounter;
-    // The array used to skip the first ZP access tracking
-    std::array<uInt8, RAM_SIZE>   myZPAccessDelay;
-
-    // Detect timer being accessed on wraparound
-    bool myTimWrappedOnRead{false};
-    bool myTimWrappedOnWrite{false};
-    // Timer read CPU cycles
-    uInt16 myTimReadCycles{0};
-#endif // DEBUGGER_SUPPORT
 
   private:
     // Following constructors and assignment operators not supported

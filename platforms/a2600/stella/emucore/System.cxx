@@ -99,38 +99,7 @@ void System::clearDirtyPages()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-uInt8 System::peek(uInt16 addr, Device::AccessFlags flags)
-{
-  const PageAccess& access = getPageAccess(addr);
 
-#ifdef DEBUGGER_SUPPORT
-  // Set access type
-  if(access.romAccessBase)
-    *(access.romAccessBase + (addr & PAGE_MASK)) |= (flags | (addr & Device::HADDR));
-  else
-    access.device->setAccessFlags(addr, flags);
-  // Increase access counter
-  if(flags != Device::NONE)
-  {
-    if(access.romPeekCounter)
-      *(access.romPeekCounter + (addr & PAGE_MASK)) += 1;
-    else
-      access.device->increaseAccessCounter(addr);
-  }
-#endif
-
-  // See if this page uses direct accessing or not
-  const uInt8 result = access.directPeekBase
-      ? *(access.directPeekBase + (addr & PAGE_MASK))
-      : access.device->peek(addr);
-
-#ifdef DEBUGGER_SUPPORT
-  if(!myDataBusLocked)
-#endif
-    myDataBusState = result;
-
-  return result;
-}
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void System::poke(uInt16 addr, uInt8 value, Device::AccessFlags flags)

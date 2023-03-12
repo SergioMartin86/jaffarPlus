@@ -179,7 +179,17 @@ class System : public Serializable
 
       @return The byte at the specified address
     */
-    uInt8 peek(uInt16 address, Device::AccessFlags flags = Device::NONE);
+    inline uInt8 peek(uInt16 address, Device::AccessFlags flags = Device::NONE)
+    {
+     const PageAccess& access = getPageAccess(address);
+
+     // See if this page uses direct accessing or not
+     const uInt8 result = access.directPeekBase  ? *(access.directPeekBase + (address & PAGE_MASK)) : access.device->peek(address);
+
+     myDataBusState = result;
+
+     return result;
+   }
 
     /**
       Change the byte at the specified address to the given value.

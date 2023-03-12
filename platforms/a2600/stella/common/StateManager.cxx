@@ -326,8 +326,6 @@ void StateManager::toggleAutoSlot()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool StateManager::loadState(Serializer& in)
 {
-  try
-  {
     if(myOSystem.hasConsole())
     {
       // Make sure the file can be opened for reading
@@ -339,11 +337,6 @@ bool StateManager::loadState(Serializer& in)
                myOSystem.console().load(in);
       }
     }
-  }
-  catch(...)
-  {
-    cerr << "ERROR: StateManager::loadState(Serializer&)" << endl;
-  }
   return false;
 }
 

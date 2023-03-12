@@ -48,6 +48,7 @@ class EmuInstance : public EmuInstanceBase
 //  _a2600->state().saveState(state);
 //  size_t stateSize = state.size();
 //  printf("Size: %lu\n", stateSize);
+//  exit(0);
 
 //   Loading state file, if specified
   if (stateFilePath != "") loadStateFile(stateFilePath);

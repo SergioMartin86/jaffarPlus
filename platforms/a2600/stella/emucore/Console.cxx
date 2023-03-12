@@ -132,8 +132,9 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
   mySwitches = make_unique<Switches>(myEvent, myProperties, myOSystem.settings());
 
   myTIA->setFrameManager(myFrameManager.get());
+#ifdef _JAFFAR_PLAY
   myOSystem.sound().stopWav();
-
+#endif
   // Reinitialize the RNG
   myOSystem.random().initSeed(static_cast<uInt32>(TimerManager::getTicks()));
 
@@ -172,7 +173,9 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
   setControllers(myProperties.get(PropType::Cart_MD5));
 
   // Pause audio and clear framebuffer while autodetection runs
+#ifdef _JAFFAR_PLAY
   myOSystem.sound().pause(true);
+#endif
 
 #ifdef _JAFFAR_PLAY
   myOSystem.frameBuffer().clear();
@@ -415,8 +418,6 @@ bool Console::save(Serializer& out) const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool Console::load(Serializer& in)
 {
-  try
-  {
     // First load state for the system
     if(!mySystem->load(in))
       return false;
@@ -425,12 +426,6 @@ bool Console::load(Serializer& in)
     if(!(myLeftControl->load(in) && myRightControl->load(in) &&
          mySwitches->load(in)))
       return false;
-  }
-  catch(...)
-  {
-    cerr << "ERROR: Console::load" << endl;
-    return false;
-  }
 
   return true;  // success
 }
@@ -701,6 +696,7 @@ FBInitStatus Console::initializeVideo(bool full)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Console::initializeAudio()
 {
+#ifdef _JAFFAR_PLAY
   myEmulationTiming
     .updatePlaybackRate(myAudioSettings.sampleRate())
     .updatePlaybackPeriod(myAudioSettings.fragmentSize())
@@ -715,6 +711,7 @@ void Console::initializeAudio()
   myTIA->setAudioRewindMode(myOSystem.state().mode() != StateManager::Mode::Off);
 
   myOSystem.sound().open(myAudioQueue, &myEmulationTiming);
+#endif
 }
 
 /* Original frying research and code by Fred Quimby.
@@ -835,6 +832,7 @@ void Console::setTIAProperties()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Console::createAudioQueue()
 {
+#ifdef _JAFFAR_PLAY
   const bool useStereo = myOSystem.settings().getBool(AudioSettings::SETTING_STEREO)
     || myProperties.get(PropType::Cart_Sound) == "STEREO";
 
@@ -843,6 +841,7 @@ void Console::createAudioQueue()
     myEmulationTiming.audioQueueCapacity(),
     useStereo
   );
+#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

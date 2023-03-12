@@ -98,45 +98,6 @@ void M6502::reset()
   myLastBreakCycle = ULLONG_MAX;
 }
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-inline uInt8 M6502::peek(uInt16 address, Device::AccessFlags flags)
-{
-  handleHalt();
-
-  ////////////////////////////////////////////////
-  // TODO - move this logic directly into CartAR
-  if(address != myLastAddress)
-  {
-    ++myNumberOfDistinctAccesses;
-    myLastAddress = address;
-  }
-  ////////////////////////////////////////////////
-  mySystem->incrementCycles(SYSTEM_CYCLES_PER_CPU);
-  icycles += SYSTEM_CYCLES_PER_CPU;
-  myFlags = flags;
-  const uInt8 result = mySystem->peek(address, flags);
-  myLastPeekAddress = address;
-
-#ifdef DEBUGGER_SUPPORT
-  if(myReadTraps.isInitialized() && myReadTraps.isSet(address)
-     && (myGhostReadsTrap || flags != DISASM_NONE))
-  {
-    myLastPeekBaseAddress = Debugger::getBaseAddress(myLastPeekAddress, true); // mirror handling
-    const int cond = evalCondTraps();
-    if(cond > -1)
-    {
-      myJustHitReadTrapFlag = true;
-      stringstream msg;
-      msg << "RTrap" << (flags == DISASM_NONE ? "G[" : "[") << Common::Base::HEX2 << cond << "]"
-        << (myTrapCondNames[cond].empty() ? ": " : "If: {" + myTrapCondNames[cond] + "} ");
-      myHitTrapInfo.message = msg.str();
-      myHitTrapInfo.address = address;
-    }
-  }
-#endif  // DEBUGGER_SUPPORT
-
-  return result;
-}
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 inline void M6502::poke(uInt16 address, uInt8 value, Device::AccessFlags flags)
@@ -223,11 +184,6 @@ inline void M6502::_execute(uInt64 cycles, DispatchResult& result)
 {
   myExecutionStatus = 0;
 
-#ifdef DEBUGGER_SUPPORT
-  TIA& tia = mySystem->tia();
-  M6532& riot = mySystem->m6532();
-#endif
-
   const uInt64 previousCycles = mySystem->cycles();
   uInt64 currentCycles = 0;
 
@@ -236,173 +192,27 @@ inline void M6502::_execute(uInt64 cycles, DispatchResult& result)
   {
     while (!myExecutionStatus && currentCycles < cycles * SYSTEM_CYCLES_PER_CPU)
     {
-  #ifdef DEBUGGER_SUPPORT
-      // Don't break if we haven't actually executed anything yet
-      if (myLastBreakCycle != mySystem->cycles()) {
-        if(myJustHitReadTrapFlag || myJustHitWriteTrapFlag)
-        {
-          const bool read = myJustHitReadTrapFlag;
-          myJustHitReadTrapFlag = myJustHitWriteTrapFlag = false;
-
-          myLastBreakCycle = mySystem->cycles();
-
-          if(myLogBreaks)
-            myDebugger->log(myHitTrapInfo.message);
-          else
-          {
-            result.setDebugger(currentCycles, myHitTrapInfo.message + " ",
-                               read ? "Read trap" : "Write trap",
-                               myHitTrapInfo.address, read);
-            return;
-          }
-        }
-
-        if(myBreakPoints.isInitialized())
-        {
-          const uInt8 bank = mySystem->cart().getBank(PC);
-
-          if(myBreakPoints.check(PC, bank))
-          {
-            myLastBreakCycle = mySystem->cycles();
-            const uInt32 flags = myBreakPoints.get(PC, bank);
-
-            // disable a one-shot breakpoint
-            if(flags & BreakpointMap::ONE_SHOT)
-            {
-              myBreakPoints.erase(PC, bank);
-              return;
-            }
-            else
-            {
-              if(myLogBreaks)
-              {
-                // Make sure that the TIA state matches the current system clock.
-                // Else Scanlines, Cycles and Pixels are not updated for logging.
-                mySystem->tia().updateEmulation();
-                myDebugger->log("BP:");
-              }
-              else
-              {
-                ostringstream msg;
-
-                msg << "BP: $" << Common::Base::HEX4 << PC << ", bank #"
-                    << std::dec << static_cast<int>(bank);
-                result.setDebugger(currentCycles, msg.str(), "Breakpoint");
-                return;
-              }
-            }
-          }
-        }
-
-        if(myTimer.isInitialized())
-          myTimer.update(PC, mySystem->cart().getBank(PC), mySystem->cycles());
-
-        const int cond = evalCondBreaks();
-        if(cond > -1)
-        {
-          ostringstream msg;
-
-          myLastBreakCycle = mySystem->cycles();
-
-          if(myLogBreaks)
-          {
-            msg << "CBP[" << Common::Base::HEX2 << cond << "]:";
-            myDebugger->log(msg.str());
-          }
-          else
-          {
-            msg << "CBP[" << Common::Base::HEX2 << cond << "]: " << myCondBreakNames[cond];
-            result.setDebugger(currentCycles, msg.str(), "Conditional breakpoint");
-            return;
-          }
-        }
-      }
-
-      const int cond = evalCondSaveStates();
-      if(cond > -1)
-      {
-        ostringstream msg;
-        msg << "conditional savestate [" << Common::Base::HEX2 << cond << "]";
-        myDebugger->addState(msg.str());
-      }
-
-      mySystem->cart().clearAllRAMAccesses();
-  #endif  // DEBUGGER_SUPPORT
-
       // Reset the data poke address pointer
       myDataAddressForPoke = 0;
+      uInt16 operandAddress = 0,
+      intermediateAddress = 0;
+      uInt8 operand = 0;
+      icycles = 0;
 
-      try {
-        uInt16 operandAddress = 0, intermediateAddress = 0;
-        uInt8 operand = 0;
+      // Fetch instruction at the program counter
+      IR = peek(PC++, DISASM_CODE);  // This address represents a code section
 
-        icycles = 0;
-    #ifdef DEBUGGER_SUPPORT
-        const uInt16 oldPC = PC;
+      // Call code to execute the instruction
+      switch(IR)
+      {
+        // 6502 instruction emulation is generated by an M4 macro file
+        #include "M6502.ins"
 
-        // Only check for code in RAM execution if we have debugger support
-        if(!mySystem->cart().canExecute(PC))
-          FatalEmulationError::raise("cannot run code from cart RAM");
-    #endif
-
-        // Fetch instruction at the program counter
-        IR = peek(PC++, DISASM_CODE);  // This address represents a code section
-
-        // Call code to execute the instruction
-        switch(IR)
-        {
-          // 6502 instruction emulation is generated by an M4 macro file
-          #include "M6502.ins"
-
-          default:
-            FatalEmulationError::raise("invalid instruction");
-        }
-
-    #ifdef DEBUGGER_SUPPORT
-        if(myReadFromWritePortBreak)
-        {
-          const uInt16 rwpAddr = mySystem->cart().getIllegalRAMReadAccess();
-          if(rwpAddr)
-          {
-            ostringstream msg;
-            msg << "RWP[@ $" << Common::Base::HEX4 << rwpAddr << "]: ";
-            result.setDebugger(currentCycles, msg.str(), "Read from write port", oldPC);
-            return;
-          }
-        }
-
-        if (myWriteToReadPortBreak)
-        {
-          const uInt16 wrpAddr = mySystem->cart().getIllegalRAMWriteAccess();
-          if (wrpAddr)
-          {
-            ostringstream msg;
-            msg << "WRP[@ $" << Common::Base::HEX4 << wrpAddr << "]: ";
-            result.setDebugger(currentCycles, msg.str(), "Write to read port", oldPC);
-            return;
-          }
-        }
-    #endif  // DEBUGGER_SUPPORT
-      } catch (const FatalEmulationError& e) {
-        myExecutionStatus |= FatalErrorBit;
-        result.setMessage(e.what());
-      } catch (const EmulationWarning& e) {
-        result.setDebugger(currentCycles, e.what(), "Emulation exception", PC);
-        return;
+        default:
+          FatalEmulationError::raise("invalid instruction");
       }
 
       currentCycles = (mySystem->cycles() - previousCycles);
-
-  #ifdef DEBUGGER_SUPPORT
-      if(myStepStateByInstruction)
-      {
-        // Check out M6502::execute for an explanation.
-        handleHalt();
-
-        tia.updateEmulation();
-        riot.updateEmulation();
-      }
-  #endif
     }
 
     // See if we need to handle an interrupt

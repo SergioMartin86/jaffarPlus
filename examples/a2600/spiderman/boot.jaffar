@@ -1,8 +1,8 @@
 {
   "Emulator Configuration": 
   {
-    "Rom File": "../pacman.bin",
-    "State File": "lvl01.state"
+    "Rom File": "spiderman.a26",
+    "State File": "boot.state"
   },
   
   "Game Configuration": 
@@ -20,7 +20,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 5000,
+      "Max Move Count": 100,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 700,
@@ -29,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 40000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
@@ -56,33 +56,5 @@
   
   "Rules":
   [
-   {
-    "Label": 1000,
-    "Conditions":
-    [
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-      { "Type": "Set Score Magnet", "Intensity": 1.0 }
-    ]
-   },
-   
-   {
-    "Label": 1001,
-    "Conditions":
-    [
-     { "Property": "Score", "Op": ">", "Value":  1000 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-      { "Type": "Trigger Win" }
-    ]
-   }
   ]  
 }
