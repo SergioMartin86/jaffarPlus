@@ -80,12 +80,14 @@ void Joystick::update()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Joystick::updateButtons()
 {
+#ifdef _JAFFAR_PLAY
   bool firePressed = myEvent.get(myFireEvent) != 0;
 
   // The joystick uses both mouse buttons for the single joystick button
   updateMouseButtons(firePressed, firePressed);
 
   setPin(DigitalPin::Six, !getAutoFireState(firePressed));
+#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -101,16 +103,19 @@ void Joystick::updateMouseButtons(bool& pressedLeft, bool& pressedRight)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Joystick::updateDigitalAxes()
 {
+#ifdef _JAFFAR_PLAY
   // Digital events (from keyboard or joystick hats & buttons)
   setPin(DigitalPin::One, myEvent.get(myUpEvent) == 0);
   setPin(DigitalPin::Two, myEvent.get(myDownEvent) == 0);
   setPin(DigitalPin::Three, myEvent.get(myLeftEvent) == 0);
   setPin(DigitalPin::Four, myEvent.get(myRightEvent) == 0);
+#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void Joystick::updateMouseAxes()
 {
+#ifdef _JAFFAR_PLAY
   // Mouse motion and button events
   if(myControlID > -1)
   {
@@ -138,6 +143,7 @@ void Joystick::updateMouseAxes()
       }
     }
   }
+#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

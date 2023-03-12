@@ -225,7 +225,10 @@ Console::Console(OSystem& osystem, unique_ptr<Cartridge>& cart,
   setTIAProperties();
 
   const bool joyallow4 = myOSystem.settings().getBool("joyallow4");
+
+#ifdef _JAFFAR_PLAY
   myOSystem.eventHandler().allowAllDirections(joyallow4);
+#endif
 
   // Reset the system to its power-on state
   mySystem->reset();
@@ -301,9 +304,14 @@ void Console::autodetectFrameLayout(bool reset)
   for(int i = 0; i < 20; ++i)
     myTIA->update();
 
+#ifdef _JAFFAR_PLAY
   FrameLayoutDetector::simulateInput(*myRiot, myOSystem.eventHandler(), true);
+#endif
   myTIA->update();
+
+#ifdef _JAFFAR_PLAY
   FrameLayoutDetector::simulateInput(*myRiot, myOSystem.eventHandler(), false);
+#endif
 
   for(int i = 0; i < 40; ++i)
     myTIA->update();
@@ -901,11 +909,6 @@ void Console::setControllers(string_view romMd5)
 
   myTIA->bindToControllers();
 
-  // now that we know the controllers, enable the event mappings
-  myOSystem.eventHandler().enableEmulationKeyMappings();
-  myOSystem.eventHandler().enableEmulationJoyMappings();
-
-  myOSystem.eventHandler().setMouseControllerMode(myOSystem.settings().getString("usemouse"));
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -947,8 +950,10 @@ unique_ptr<Controller> Console::getControllerPort(const Controller::Type type, c
 {
   unique_ptr<Controller> controller;
 
+#ifdef _JAFFAR_PLAY
   myOSystem.eventHandler().defineKeyControllerMappings(type, port, myProperties);
   myOSystem.eventHandler().defineJoyControllerMappings(type, port);
+#endif
 
   switch(type)
   {

@@ -15,6 +15,8 @@
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //============================================================================
 
+#ifdef SDL_SUPPORT
+
 #ifndef SDL_LIB_HXX
 #define SDL_LIB_HXX
 
@@ -71,3 +73,4 @@ static inline bool SDLOpenURL(const string& url)
 }
 
 #endif  // SDL_LIB_HXX
+#endif

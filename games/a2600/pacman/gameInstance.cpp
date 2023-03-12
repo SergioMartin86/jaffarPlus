@@ -68,8 +68,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
-  std::vector<std::string> moveList = { "." };
-
+  std::vector<std::string> moveList = { ".", "R", "L", "D", "U" };
 
   return moveList;
 }
