@@ -26,6 +26,13 @@ class FBSurfaceSDL2;
 #include "bspf.hxx"
 #include "FBBackend.hxx"
 
+#ifndef SDL_SUPPORT
+typedef int SDL_Renderer;
+typedef int SDL_PixelFormat;
+typedef int SDL_DisplayMode;
+typedef int SDL_Window;
+#endif
+
 /**
   This class implements a standard SDL2 2D, hardware accelerated framebuffer
   backend.  Behind the scenes, it may be using Direct3D, OpenGL(ES), etc.
@@ -99,7 +106,11 @@ class FBBackendSDL2 : public FBBackend
       @param b      The blue component of the color
     */
     FORCE_INLINE void getRGB(uInt32 pixel, uInt8* r, uInt8* g, uInt8* b) const override
-      { SDL_GetRGB(pixel, myPixelFormat, r, g, b); }
+      {
+#ifdef SDL_SUPPORT
+        SDL_GetRGB(pixel, myPixelFormat, r, g, b);
+#endif
+      }
 
     /**
       This method is called to map a given R/G/B triple to the screen palette.
@@ -109,7 +120,11 @@ class FBBackendSDL2 : public FBBackend
       @param b  The blue component of the color.
     */
     inline uInt32 mapRGB(uInt8 r, uInt8 g, uInt8 b) const override
-      { return SDL_MapRGB(myPixelFormat, r, g, b); }
+      {
+#ifdef SDL_SUPPORT
+     return SDL_MapRGB(myPixelFormat, r, g, b);
+#endif
+      }
 
     /**
       This method is called to get a copy of the specified ARGB data from the

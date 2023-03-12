@@ -75,6 +75,7 @@ FrameBuffer::~FrameBuffer()  // NOLINT (we need an empty d'tor)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void FrameBuffer::initialize()
 {
+#ifdef SDL_SUPPORT
   // First create the platform-specific backend; it is needed before anything
   // else can be used
   myBackend = MediaFactory::createVideoBackend(myOSystem);
@@ -125,6 +126,8 @@ void FrameBuffer::initialize()
 
   // Create a TIA surface; we need it for rendering TIA images
   myTIASurface = make_unique<TIASurface>(myOSystem);
+
+#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

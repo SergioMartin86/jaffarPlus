@@ -143,8 +143,10 @@ bool OSystem::initialize(const Settings::Options& options)
   }
 
   // Create the event handler for the system
+#ifdef _JAFFAR_PLAY
   myEventHandler = MediaFactory::createEventHandler(*this);
   myEventHandler->initialize();
+#endif
 
   myStateManager = make_unique<StateManager>(*this);
   myTimerManager = make_unique<TimerManager>();
@@ -322,39 +324,7 @@ FBInitStatus OSystem::createFrameBuffer()
 {
   // Re-initialize the framebuffer to current settings
   FBInitStatus fbstatus = FBInitStatus::FailComplete;
-  switch(myEventHandler->state())
-  {
-    case EventHandlerState::EMULATION:
-    case EventHandlerState::PAUSE:
-  #ifdef GUI_SUPPORT
-    case EventHandlerState::OPTIONSMENU:
-    case EventHandlerState::CMDMENU:
-    case EventHandlerState::TIMEMACHINE:
-  #endif
-    case EventHandlerState::PLAYBACK:
-      if((fbstatus = myConsole->initializeVideo()) != FBInitStatus::Success)
-        return fbstatus;
-      break;
-
-  #ifdef GUI_SUPPORT
-    case EventHandlerState::LAUNCHER:
-      if((fbstatus = myLauncher->initializeVideo()) != FBInitStatus::Success)
-        return fbstatus;
-      break;
-  #endif
-
-  #ifdef DEBUGGER_SUPPORT
-    case EventHandlerState::DEBUGGER:
-      if((fbstatus = myDebugger->initializeVideo()) != FBInitStatus::Success)
-        return fbstatus;
-      break;
-  #endif
-
-    case EventHandlerState::NONE:  // Should never happen
-    default:
-      Logger::error("ERROR: Unknown emulation state in createFrameBuffer()");
-      break;
-  }
+  if((fbstatus = myConsole->initializeVideo()) != FBInitStatus::Success)
   return fbstatus;
 }
 
@@ -378,7 +348,9 @@ string OSystem::createConsole(const FSNode& rom, string_view md5sum, bool newrom
   ostringstream buf;
 
   myConsole = openConsole(myRomFile, myRomMD5);
+#ifdef _JAFFAR_PLAY
   myEventHandler->reset(EventHandlerState::EMULATION);
+#endif
   createFrameBuffer();
 
   return "";
@@ -395,8 +367,7 @@ bool OSystem::reloadConsole(bool nextrom)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool OSystem::hasConsole() const
 {
-  return myConsole != nullptr &&
-         myEventHandler->state() != EventHandlerState::LAUNCHER;
+  return true;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -409,19 +380,6 @@ bool OSystem::createLauncher(string_view startdir)
 
   mySettings->setValue("tmpromdir", startdir);
   bool status = false;
-
-#ifdef GUI_SUPPORT
-  myEventHandler->reset(EventHandlerState::LAUNCHER);
-  if(createFrameBuffer() == FBInitStatus::Success)
-  {
-    myLauncher->reStack();
-    myFrameBuffer->setCursorState();
-
-    status = true;
-  }
-  else
-    Logger::error("ERROR: Couldn't create launcher");
-#endif
 
   myLauncherUsed = myLauncherUsed || status;
   myLauncherLostFocus = !status;
@@ -707,9 +665,6 @@ double OSystem::dispatchEmulation()
   // the worker, so the audio pipeline is kept fed :)
   if (framePending) myFrameBuffer->updateInEmulationMode(myFpsMeter.fps());
 #endif
-
-  // Handle frying
-  if (myEventHandler->frying())myConsole->fry();
 
   // Return the 6507 time used in seconds
   return 0;

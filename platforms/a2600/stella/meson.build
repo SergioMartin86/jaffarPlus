@@ -10,9 +10,6 @@ stellaSrc = [
   srcDir + '/common/AudioSettings.cxx',
   srcDir + '/common/Base.cxx',
   srcDir + '/common/DevSettingsHandler.cxx',
-  srcDir + '/common/EventHandlerSDL2.cxx',
-  srcDir + '/common/FBBackendSDL2.cxx',
-  srcDir + '/common/FBSurfaceSDL2.cxx',
   srcDir + '/common/FpsMeter.cxx',
   srcDir + '/common/FSNodeZIP.cxx',
   srcDir + '/common/JoyMap.cxx',
@@ -25,16 +22,12 @@ stellaSrc = [
   srcDir + '/common/PKeyboardHandler.cxx',
   srcDir + '/common/PNGLibrary.cxx',
   srcDir + '/common/RewindManager.cxx',
-  srcDir + '/common/SoundSDL2.cxx',
   srcDir + '/common/StaggeredLogger.cxx',
   srcDir + '/common/StateManager.cxx',
   srcDir + '/common/ThreadDebugging.cxx',
   srcDir + '/common/TimerManager.cxx',
   srcDir + '/common/VideoModeHandler.cxx',
   srcDir + '/common/ZipHandler.cxx',
-  srcDir + '/common/sdl_blitter/BilinearBlitter.cxx',
-  srcDir + '/common/sdl_blitter/QisBlitter.cxx',
-  srcDir + '/common/sdl_blitter/BlitterFactory.cxx',
   srcDir + '/common/audio/SimpleResampler.cxx',
   srcDir + '/common/audio/ConvolutionBuffer.cxx',
   srcDir + '/common/audio/LanczosResampler.cxx',
@@ -147,6 +140,16 @@ stellaSrc = [
   srcDir + '/emucore/tia/frame-manager/AbstractFrameManager.cxx',
   srcDir + '/emucore/tia/frame-manager/FrameLayoutDetector.cxx',
   srcDir + '/emucore/tia/frame-manager/JitterEmulation.cxx',
+]
+
+sdl2Source =  [
+  srcDir + '/common/EventHandlerSDL2.cxx',
+  srcDir + '/common/FBBackendSDL2.cxx',
+  srcDir + '/common/FBSurfaceSDL2.cxx',
+  srcDir + '/common/SoundSDL2.cxx',
+  srcDir + '/common/sdl_blitter/BilinearBlitter.cxx',
+  srcDir + '/common/sdl_blitter/QisBlitter.cxx',
+  srcDir + '/common/sdl_blitter/BlitterFactory.cxx',
 ]
 
 stellaIncludes = include_directories([

@@ -45,8 +45,6 @@
   }
 #elif defined(__LIB_RETRO__)
   #include "OSystemLIBRETRO.hxx"
-#else
-  #error Unsupported platform!
 #endif
 
 #if defined(__LIB_RETRO__)
@@ -55,8 +53,6 @@
 #elif defined(SDL_SUPPORT)
   #include "EventHandlerSDL2.hxx"
   #include "FBBackendSDL2.hxx"
-#else
-  #error Unsupported backend!
 #endif
 
 #if defined(SOUND_SUPPORT)
@@ -128,16 +124,16 @@ class MediaFactory
     #endif
     }
 
+#if defined(SDL_SUPPORT)
     static unique_ptr<FBBackend> createVideoBackend(OSystem& osystem)
     {
     #if defined(__LIB_RETRO__)
       return make_unique<FBBackendLIBRETRO>(osystem);
     #elif defined(SDL_SUPPORT)
       return make_unique<FBBackendSDL2>(osystem);
-    #else
-      #error Unsupported platform for FrameBuffer!
     #endif
     }
+#endif
 
     static unique_ptr<Sound> createAudio(OSystem& osystem, AudioSettings& audioSettings)
     {
@@ -160,8 +156,6 @@ class MediaFactory
       return make_unique<EventHandlerLIBRETRO>(osystem);
     #elif defined(SDL_SUPPORT)
       return make_unique<EventHandlerSDL2>(osystem);
-    #else
-      #error Unsupported platform for EventHandler!
     #endif
     }
 

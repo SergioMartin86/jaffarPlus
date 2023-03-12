@@ -18,7 +18,7 @@
 #include "EventHandler.hxx"
 #include "Logger.hxx"
 #include "M6532.hxx"
-
+#include <math.h>
 #include "FrameLayoutDetector.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
