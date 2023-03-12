@@ -23,7 +23,7 @@ _uint128_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash128 hash;
 
-  hash.Update(_emu->_ram + 0x00, 0x80);
+  hash.Update(_emu->_ram, 0x80);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
