@@ -1416,7 +1416,6 @@ void TIA::onHalt()
 void TIA::cycle(uInt32 colorClocks)
 {
 
-#ifdef _JAFFAR_PLAY
   for (uInt32 i = 0; i < colorClocks; ++i)
   {
     myDelayQueue.execute(
@@ -1446,13 +1445,6 @@ void TIA::cycle(uInt32 colorClocks)
 
     ++myTimestamp;
   }
-#else
-
-    myDelayQueue.execute(
-      [this] (uInt8 address, uInt8 value) {delayedWrite(address, value);}
-    );
-
-#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1522,8 +1514,10 @@ void TIA::tickHframe()
   myPlayer1.tick();
   myBall.tick();
 
+#ifdef _JAFFAR_PLAY
   if (myFrameManager->isRendering())
     renderPixel(x, y);
+#endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

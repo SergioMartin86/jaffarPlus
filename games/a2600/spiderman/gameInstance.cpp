@@ -70,6 +70,8 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 {
   std::vector<std::string> moveList = { "." };
 
+  if (*gameTimer % 2 == 0) return moveList; // The game does not read input on even time
+
   if (*playerState == 0x0000) moveList.insert(moveList.end(), { "RB", "LB", "DB", "UB" });
   if (*playerState == 0x0002) moveList.insert(moveList.end(), { "B" });
   if (*playerState == 0x0005) moveList.insert(moveList.end(), { "B" });
