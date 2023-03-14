@@ -266,7 +266,7 @@ class Playfield : public Serializable
 // ############################################################################
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void Playfield::tick(uInt32 x)
+inline void Playfield::tick(uInt32 x)
 {
   myX = x;
 
@@ -277,15 +277,10 @@ void Playfield::tick(uInt32 x)
 
   uInt32 currentPixel;
 
-  if (myEffectivePattern == 0) {
-      currentPixel = 0;
-  } else if (x < TIAConstants::H_PIXEL / 2 - 1) {
-      currentPixel = myEffectivePattern & (1 << (x >> 2));
-  } else if (myRefp) {
-      currentPixel = myEffectivePattern & (1 << (39 - (x >> 2)));
-  } else {
-      currentPixel = myEffectivePattern & (1 << ((x >> 2) - 20));
-  }
+  if (myEffectivePattern == 0) { currentPixel = 0;}
+  else if (x < TIAConstants::H_PIXEL / 2 - 1) { currentPixel = myEffectivePattern & (1 << (x >> 2));}
+  else if (myRefp) { currentPixel = myEffectivePattern & (1 << (39 - (x >> 2)));}
+  else { currentPixel = myEffectivePattern & (1 << ((x >> 2) - 20));}
 
   collision = currentPixel ? myCollisionMaskEnabled : myCollisionMaskDisabled;
 }

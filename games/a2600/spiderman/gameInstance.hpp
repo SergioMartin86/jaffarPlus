@@ -14,6 +14,7 @@ struct genericMagnet_t {
 // Datatype to describe a magnet
 struct magnetSet_t {
  genericMagnet_t verticalScrollMagnet;
+ float webLengthMagnet = 0.0f;
 };
 
 class GameInstance : public GameInstanceBase
@@ -25,6 +26,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* verticalScroll2;
   uint8_t* playerState;
   uint8_t* gameState;
+  uint8_t* playerWebLength;
+  uint8_t* playerDirection;
 
   // Container for game-specific values
   uint8_t timerTolerance;

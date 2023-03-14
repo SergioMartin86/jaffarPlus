@@ -1500,9 +1500,12 @@ void TIA::tickHblank()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void TIA::tickHframe()
+inline void TIA::tickHframe()
 {
+#ifdef _JAFFAR_PLAY
   const uInt32 y = myFrameManager->getY();
+#endif
+
   const uInt32 x = myHctr - TIAConstants::H_BLANK_CLOCKS - myHctrDelta;
 
   myCollisionUpdateRequired = true;
@@ -1515,8 +1518,7 @@ void TIA::tickHframe()
   myBall.tick();
 
 #ifdef _JAFFAR_PLAY
-  if (myFrameManager->isRendering())
-    renderPixel(x, y);
+  if (myFrameManager->isRendering())  renderPixel(x, y);
 #endif
 }
 
