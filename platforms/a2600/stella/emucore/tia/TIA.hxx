@@ -638,7 +638,7 @@ class TIA : public Device
     /**
      * Advance a single clock duing the visible part of the scanline.
      */
-    void tickHframe();
+    inline void tickHframe();
 
     /**
      * Update the collision bitfield.
