@@ -30,7 +30,32 @@ class PlaybackInstance : public PlaybackInstanceBase
  // Function to render frame
  bool parseCommand(const char command, uint8_t* state) override
  {
-  return true;
+ #ifdef NCURSES
+
+ if (command == 'o')
+ {
+  // Obtaining RNG state
+  LOG("Enter low memory file: ");
+
+  // Setting input as new rng
+  char str[80]; getstr(str);
+
+  LOG("Loading low memory file '%s'...\n", str);
+  std::string lowMemData;
+  bool status = loadStringFromFile(lowMemData, str);
+  if (status == false) { printw("Could not read from file %s.\n", str); return false; }
+  memcpy(_game->_emu->_ram, (uint8_t*) lowMemData.data(), 0x80);
+
+  // Replacing current sequence
+  _game->popState(state);
+
+  return false;
+ }
+
+ #endif
+
+ return true;
+
  }
 
 };
