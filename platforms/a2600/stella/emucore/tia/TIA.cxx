@@ -256,6 +256,8 @@ void TIA::installDelegate(System& system, Device& device)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool TIA::save(Serializer& out) const
 {
+ if (_isTiaEnabled == false) return true;
+
   try
   {
     if(!myDelayQueue.save(out))   return false;
@@ -331,6 +333,8 @@ bool TIA::save(Serializer& out) const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 bool TIA::load(Serializer& in)
 {
+ if (_isTiaEnabled == false) return true;
+
   try
   {
     if(!myDelayQueue.load(in))   return false;
@@ -1007,6 +1011,8 @@ void TIA::update(DispatchResult& result, uInt64 maxCycles)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void TIA::renderToFrameBuffer()
 {
+ if (_isTiaEnabled == false) return;
+
   if (myFramesSinceLastRender == 0) return;
 
   myFramesSinceLastRender = 0;
@@ -1415,6 +1421,7 @@ void TIA::onHalt()
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void TIA::cycle(uInt32 colorClocks)
 {
+  if (_isTiaEnabled == false) return;
 
   for (uInt32 i = 0; i < colorClocks; ++i)
   {
@@ -1446,6 +1453,7 @@ void TIA::cycle(uInt32 colorClocks)
     ++myTimestamp;
   }
 }
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 FORCE_INLINE void TIA::tickMovement()
@@ -1750,6 +1758,8 @@ void TIA::setBlInvertedPhaseClock(bool enable)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 void TIA::delayedWrite(uInt8 address, uInt8 value)
 {
+ if (_isTiaEnabled == false) return;
+
   if (address < 64)
     myShadowRegisters[address] = value;
 

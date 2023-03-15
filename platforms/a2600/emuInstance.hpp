@@ -14,6 +14,7 @@
 #include "Console.hxx"
 #include "Switches.hxx"
 #include "M6532.hxx"
+#include "TIA.hxx"
 
 class EmuInstance : public EmuInstanceBase
 {
@@ -22,9 +23,6 @@ class EmuInstance : public EmuInstanceBase
  std::string _romData;
  std::unique_ptr<OSystem> _a2600;
  uint8_t* _ram;
-
- // Emulator instance
- //TBD
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
@@ -35,6 +33,13 @@ class EmuInstance : public EmuInstanceBase
   // Checking whether configuration contains the state file
   if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
   std::string stateFilePath = config["State File"].get<std::string>();
+
+  bool enableTIA = true;
+#ifndef _JAFFAR_PLAY
+  // Checking whether configuration contains the state file
+  if (isDefined(config, "Enable TIA") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Enable TIA' key.\n");
+  enableTIA = config["Enable TIA"].get<bool>();
+#endif
 
   Settings::Options opts;
   _a2600 = MediaFactory::createOSystem();
@@ -49,13 +54,13 @@ class EmuInstance : public EmuInstanceBase
 //  _a2600->state().saveState(state);
 //  size_t stateSize = state.size();
 //  printf("Size: %lu\n", stateSize);
-//  exit(0);
-
 //    saveStateFile("boot.state");
 //    exit(0);
 
-//   Loading state file, if specified
+  // Loading state file, if specified
   if (stateFilePath != "") loadStateFile(stateFilePath);
+
+  _a2600->console().tia()._isTiaEnabled = enableTIA;
  }
 
  void loadStateFile(const std::string& stateFilePath) override
@@ -74,13 +79,24 @@ class EmuInstance : public EmuInstanceBase
  {
   Serializer gameState;
   _a2600->state().saveState(gameState);
+
+#ifdef _JAFFAR_PLAY
   gameState.getByteArray(state, _STATE_DATA_SIZE_PLAY);
+#else
+  gameState.getByteArray(state, _STATE_DATA_SIZE_TRAIN);
+#endif
  }
 
  void deserializeState(const uint8_t* state) override
  {
   Serializer gameState;
+
+#ifdef _JAFFAR_PLAY
   gameState.putByteArray(state, _STATE_DATA_SIZE_PLAY);
+#else
+  gameState.putByteArray(state, _STATE_DATA_SIZE_TRAIN);
+#endif
+
   _a2600->state().loadState(gameState);
  }
 

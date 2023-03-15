@@ -62,6 +62,9 @@ class DispatchResult;
 class TIA : public Device
 {
   public:
+
+    bool _isTiaEnabled = true;
+
     /**
      * These dummy register addresses are used to represent the delayed
      * old / new register swap on writing GRPx and ENABL in the DelayQueue (see below).
