@@ -11,7 +11,7 @@
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ playerPunching
+ #define _KEY_VALUE_ playerState
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
