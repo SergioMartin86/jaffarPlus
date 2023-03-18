@@ -4,6 +4,8 @@ option('game', type : 'combo', choices :
     'a2600/boxing', 
     'a2600/frogger', 
     'a2600/pacman',
+    'a2600/space',
+    'a2600/barn',
     'gen/ootw',
     'nes/smb',
     'nes/sfsmb',
