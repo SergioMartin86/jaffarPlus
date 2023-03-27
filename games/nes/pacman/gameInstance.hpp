@@ -38,7 +38,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* playerPosY2;
   uint8_t* playerFrame;
 
-  uint8_t* playerDirection;
+  uint8_t* playerDirection1;
+  uint8_t* playerDirection2;
   uint8_t* currentLevel;
   uint8_t* remainingPellets;
 
@@ -60,7 +61,28 @@ class GameInstance : public GameInstanceBase
   uint8_t* ghost3PosY1;
   uint8_t* ghost3PosY2;
 
+  uint8_t* ghost0Direction;
+  uint8_t* ghost1Direction;
+  uint8_t* ghost2Direction;
+  uint8_t* ghost3Direction;
+
+  uint8_t* captureCount;
+  uint8_t* captureCountPrev;
+  uint8_t* captureCountTotal;
+  float* captureCountReward;
+
+  uint8_t* ghost0State;
+  uint8_t* ghost1State;
+  uint8_t* ghost2State;
+  uint8_t* ghost3State;
+
   uint8_t* pelletMap;
+
+  uint8_t* score1;
+  uint8_t* score2;
+  uint8_t* score3;
+  uint8_t* score4;
+  uint8_t* score5;
 
   // Pathing
   std::vector<std::vector<int>> pelletPath;
@@ -76,15 +98,19 @@ class GameInstance : public GameInstanceBase
   float ghost2PosX;
   float ghost3PosY;
   float ghost3PosX;
+  float score;
 
   // Container for game-specific values
-  uint8_t timerTolerance;
   float   targetPelletDistance;
   uint8_t targetPelletRow;
   uint8_t targetPelletCol;
   uint8_t targetPelletPosX;
   uint8_t targetPelletPosY;
   uint8_t targetPelletsTaken;
+
+  // Configuration
+  uint8_t timerTolerance;
+  bool disableGhosts;
 
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
