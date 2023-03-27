@@ -7,8 +7,8 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4,
-   "Disable Ghosts": false,
+   "Timer Tolerance": 3,
+   "Disable Ghosts": true,
    "Hash Includes": [  ]
   },
   
@@ -21,7 +21,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 3500,
+      "Max Move Count": 3000,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 700,
@@ -30,14 +30,14 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 120000,
-     "Max Size Upper Bound (Mb)": 190000
+     "Max Size Lower Bound (Mb)": 500,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
     { 
      "Database Count": 2,
-     "Max Size (Mb)": 20000 
+     "Max Size (Mb)": 10000 
     },
     
     "Save Intermediate Results":
@@ -79,21 +79,6 @@
     "Conditions":
     [
      { "Property": "Player Frame", "Op": "==", "Value":  18 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1998,
-    "Conditions":
-    [
-     { "Property": "Player Frame", "Op": "==", "Value":  0 }
     ],
     
     "Satisfies": [ ],
