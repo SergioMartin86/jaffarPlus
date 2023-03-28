@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../pacman.nes",
-    "State File": "lvl01a.state"
+    "State File": "lvl01b.state"
   },
   
   "Game Configuration": 

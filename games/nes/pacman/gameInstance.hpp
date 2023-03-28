@@ -86,6 +86,7 @@ class GameInstance : public GameInstanceBase
 
   // Pathing
   std::vector<std::vector<int>> pelletPath;
+  std::vector<std::pair<int,int>> playPelletPath;
 
   // Derivative values
   float playerPosY;
