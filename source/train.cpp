@@ -146,6 +146,13 @@ bool Train::run()
     for (ssize_t i = 1; i < lastStep; i++) solutionString += std::string("\n") + EmuInstance::moveCodeToString(lastState->getMove(i));
     saveStringToFile(solutionString, _outputSolutionBestPath.c_str());
    }
+
+   // Storing the solution state
+   if (_storeMoveHistory)
+   {
+    std::string winStateString((char*)_bestWinStateData, _STATE_DATA_SIZE_TRAIN);
+    saveStringToFile(winStateString, _outputStateBestPath.c_str());
+   }
   }
 
   return foundSolution;

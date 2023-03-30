@@ -79,9 +79,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   playerPosY1         = (uint8_t*)  &_emu->_baseMem[0x001C];
   playerPosY2         = (uint8_t*)  &_emu->_baseMem[0x001D];
   playerFrame         = (uint8_t*)  &_emu->_baseMem[0x0032];
+  playerState         = (uint8_t*)  &_emu->_baseMem[0x003F];
   playerDirection1    = (uint8_t*)  &_emu->_baseMem[0x0050];
   playerDirection2    = (uint8_t*)  &_emu->_baseMem[0x0051];
-  currentLevel        = (uint8_t*)  &_emu->_baseMem[0x0068];
+  currentLevel        = (uint8_t*)  &_emu->_baseMem[0x0093];
+  currentDifficulty   = (uint8_t*)  &_emu->_baseMem[0x0068];
   remainingPellets    = (uint8_t*)  &_emu->_baseMem[0x006A];
   ghost0PosX1         = (uint8_t*)  &_emu->_baseMem[0x001E];
   ghost0PosX2         = (uint8_t*)  &_emu->_baseMem[0x001F];
@@ -128,10 +130,15 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
 
-  // Timer tolerance
+  // Disable Ghosts
   if (isDefined(config, "Disable Ghosts") == true)
    disableGhosts = config["Disable Ghosts"].get<bool>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Disable Ghosts' was not defined\n");
+
+  // Skip Intermission
+  if (isDefined(config, "Skip Intermission") == true)
+   skipIntermission = config["Skip Intermission"].get<bool>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Skip Intermission' was not defined\n");
 
   // Initialize derivative values
   updateDerivedValues();
@@ -142,6 +149,9 @@ _uint128_t GameInstance::computeHash() const
 {
   // Storage for hash calculation
   MetroHash128 hash;
+
+  //if (skipIntermission) hash.Update(_emu->_baseMem, 0x800);
+  if (skipIntermission) hash.Update(*globalTimer);
 
   // If timer tolerance is set, use the game tick for hashing
   if (timerTolerance > 0) hash.Update(*globalTimer % (timerTolerance+1));
@@ -157,7 +167,9 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*playerDirection1);
   hash.Update(*playerDirection2);
   hash.Update(*currentLevel);
+  hash.Update(*currentDifficulty);
   hash.Update(*remainingPellets);
+  hash.Update(*playerState);
 
   hash.Update(*score1);
   hash.Update(*score2);
@@ -257,8 +269,13 @@ void GameInstance::updateDerivedValues()
   auto pelletValue = pelletMap[pelletOffset];
 
   if (pelletValue == 7 || pelletValue == 8) targetPelletsTaken++;
-  if (pelletValue != 7 && pelletValue != 8) { targetPelletDistance = std::abs((float) *playerPosX1 - targetPelletPosX) + std::abs((float) *playerPosY1 - targetPelletPosY); break; }
+  if (pelletValue != 7 && pelletValue != 8) break;
  }
+
+ if (targetPelletRow == 7 && targetPelletCol == 10)
+   if (*playerPosX1 < 103) { targetPelletPosX = 120; targetPelletPosY = 88; }
+
+ targetPelletDistance = std::abs((float) *playerPosX1 - targetPelletPosX) + std::abs((float) *playerPosY1 - targetPelletPosY);
 
  score = *score1 * 10.0 + *score2 * 100.0 + *score3 * 1000.0 + *score4 * 10000.0 + *score5 * 100000.0;
 
@@ -300,6 +317,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
+  if (skipIntermission) return { "." };
   std::vector<std::string> moveList = { ".", "U", "D", "L", "R" };
 
 //  uint8_t relPosX = *playerPosX1 - 24;
@@ -369,12 +387,14 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Global Timer:                     %u\n", *globalTimer);
- LOG("[Jaffar]  + Current Stage:                    %2u\n", *currentLevel);
+ LOG("[Jaffar]  + Current Level:                    %2u\n", *currentLevel);
+ LOG("[Jaffar]  + Current Difficulty:               %2u\n", *currentDifficulty);
  LOG("[Jaffar]  + Reward:                           %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                             0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Score:                            %f (%01u%01u%01u%01u%01u)\n", score, *score5, *score4, *score3, *score2, *score1);
  LOG("[Jaffar]  + Remaining Pellets:                %u\n", *remainingPellets);
  LOG("[Jaffar]  + Capture Count / Prev / Total / R: %02u / %02u / %02u / %f\n", *captureCount, *captureCountPrev, *captureCountTotal, *captureCountReward);
+ LOG("[Jaffar]  + Player State:                     %02u\n", *playerState);
  LOG("[Jaffar]  + Player Frame:                     %02u\n", *playerFrame);
  LOG("[Jaffar]  + Player Direction:                 %02u %02u\n", *playerDirection1, *playerDirection2);
  LOG("[Jaffar]  + Player Pos X:                     %f (%02u %02u)\n", playerPosX, *playerPosX1, *playerPosX2);
