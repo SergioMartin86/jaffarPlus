@@ -19,6 +19,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 
   if (propertyName == "Remaining Pellets") return dt_uint8;
   if (propertyName == "Player Frame") return dt_uint8;
+  if (propertyName == "Player State") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -31,6 +32,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
 
   if (propertyName == "Remaining Pellets") return gameInstance->remainingPellets;
   if (propertyName == "Player Frame") return gameInstance->playerFrame;
+  if (propertyName == "Player State") return gameInstance->playerState;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

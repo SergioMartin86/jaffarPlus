@@ -37,10 +37,12 @@ class GameInstance : public GameInstanceBase
   uint8_t* playerPosY1;
   uint8_t* playerPosY2;
   uint8_t* playerFrame;
+  uint8_t* playerState;
 
   uint8_t* playerDirection1;
   uint8_t* playerDirection2;
   uint8_t* currentLevel;
+  uint8_t* currentDifficulty;
   uint8_t* remainingPellets;
 
   uint8_t* ghost0PosX1;
@@ -112,6 +114,7 @@ class GameInstance : public GameInstanceBase
   // Configuration
   uint8_t timerTolerance;
   bool disableGhosts;
+  bool skipIntermission;
 
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);

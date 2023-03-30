@@ -1,0 +1,79 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../pacman.nes",
+    "State File": "skip.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 2,
+   "Disable Ghosts": false,
+   "Skip Intermission": true,
+   "Hash Includes": [  ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": false,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 3500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 700,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 1000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+     "Disable Display": false,
+     "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1000,
+    "Conditions":
+    [
+     { "Property": "Remaining Pellets", "Op": "==", "Value":  192 },
+     { "Property": "Player State", "Op": "==", "Value": 4 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}
