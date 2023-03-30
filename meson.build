@@ -79,30 +79,3 @@ foreach g : gameTools
   )
 endforeach
 
-# Building RL Engine
-
-if get_option('buildRL') == true
-
-korali_cppFlags_raw =  run_command('python3', [ '-m', 'korali.cxx', '--cflags' ]).stdout().strip().split()
-korali_cppFlags = [ ]
-foreach item : korali_cppFlags_raw
- if item not in ['-std=c++17']
-  korali_cppFlags += item
- endif
-endforeach
-korali_cppLibs  =  run_command('python3', [ '-m', 'korali.cxx', '--libs' ]).stdout().strip().split()
-rlIncludes = include_directories(['rl/_environment'])
-rlSrc = [ 'rl/_environment/environment.cpp' ]
-
-executable('jaffar-rl',
-  'rl/run-vracer.cpp',
-  jaffarSrc + platformTrainSrc + gameInstanceSrc + xdelta3Src + rlSrc + 'source/train.cpp',
-  include_directories: [ jaffarIncludes, platformTrainIncludes, gameInstanceIncludes, rlIncludes ],
-  dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
-  link_with: [ platformTrainLibs ],
-  link_args: [ platformTrainLFlags, xdelta3LFlags, korali_cppLibs ],
-  cpp_args: [ jaffarCPPFlags, platformTrainCPPFlags, gameInstanceCPPFlags, xdelta3CFlags, korali_cppFlags, '-DDISABLE_MAIN' ],
-  c_args: [ platformTrainCFlags, gameInstanceCFlags ]
-)
-
-endif
