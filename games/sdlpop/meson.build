@@ -4,7 +4,7 @@ gameInstanceIncludes = include_directories(['.'])
 gameInstanceCPPFlags = [ '-D_STATE_DATA_SIZE_TRAIN=2742', '-D_STATE_DATA_SIZE_PLAY=2742' ]
 gameInstanceCFlags = [ ]
 gameTools =  [
-  {'name': 'tester', 'mainSrc': srcDir + '/tester.cpp' },
-  {'name': 'explorer', 'mainSrc': srcDir + '/explorer.cpp' },
-  {'name': 'solver', 'mainSrc': srcDir + '/solver.cpp' },
+  {'name': 'tester', 'mainSrc': srcDir + '/tester.cpp', 'deps': []},
+  {'name': 'explorer', 'mainSrc': srcDir + '/explorer.cpp', 'deps': [] },
+  {'name': 'solver', 'mainSrc': srcDir + '/solver.cpp', 'deps': [] },
   ]

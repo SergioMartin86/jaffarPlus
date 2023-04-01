@@ -64,5 +64,5 @@ class GameInstance : public GameInstanceBase
   std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
-  void setRNGState(const uint64_t RNGState) override;
+  void setRNGState(const uint64_t RNGState);
 };

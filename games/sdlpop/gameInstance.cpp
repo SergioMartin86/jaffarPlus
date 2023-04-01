@@ -432,6 +432,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 //  LOG("[Jaffar]  + Remaining IGT:        %s (%03lu %03u -> %05lu)\n", remainingIGTText, remMins, gameState.rem_tick, remMins * 720 + gameState.rem_tick);
 //  LOG("[Jaffar]  + Cutscene Delay        %03u, Total: %03u\n", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
   LOG("[Jaffar]  + Exit Room Timer:      %d\n", gameState.exit_room_timer);
+  LOG("[Jaffar]  + Kid Has Sword:        %d\n", gameState.have_sword);
 
   if (gameState.current_level == 1) LOG("[Jaffar]  + Level 1 Need Music:   %d\n", gameState.need_level1_music);
   if (gameState.current_level == 8) LOG("[Jaffar]  + Level Door Open:      %d\n", gameState.leveldoor_open);
