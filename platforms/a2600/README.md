@@ -1,6 +1,8 @@
-NES Emulators/Players
+A2600 Emulator
 -------------------------
 
-QuickNES - A fast NES emulator used for visualization / validation
-HQN - An player interface for QuickNES for visualization. Slightly simplified from the original. Uses QuickNES as emulator
-QuickerNES - A superfast variant of QuickNES used for training
+Contains Stella (A2600 emulator) 
+
+https://github.com/stella-emu/stella
+
+Adapter for JaffarPlus

@@ -1,4 +1,8 @@
-Genesis Emulators/Players
+SNES Platform
 -------------------------
 
-Genesis Plus GX - an open-source Sega 8/16 bit emulator focused on accuracy and portability
+Snes9x emulator 
+
+https://github.com/snes9xgit/snes9x
+
+Adapted for JaffarPlus
