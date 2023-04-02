@@ -1,0 +1,85 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ootw.md",
+    "State File": "stage02a.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 5000,
+    "Max Move Count": 1300
+  },
+  
+  "Game Configuration": 
+  {
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": false,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 100000,
+     "Max Size Upper Bound (Mb)": 230000
+    },
+     
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1000,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+      { "Type": "Set Lester Angular Momentum Magnet", "Intensity": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1100,
+    "Conditions":
+    [
+      { "Property": "Lester Frame", "Op": "!=", "Value":  65535 },
+      { "Property": "Lester Frame", "Op": "!=", "Value":  31201 },
+      { "Property": "Lester Frame", "Op": "!=", "Value":  31369 }
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+  ]  
+}
+ 

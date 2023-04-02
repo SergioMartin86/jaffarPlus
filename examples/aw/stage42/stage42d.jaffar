@@ -1,0 +1,241 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ootw.md",
+    "State File": "stage42d.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 10000,
+    "Max Move Count": 7000
+  },
+  
+  "Game Configuration": 
+  {
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 16300
+    },
+     
+    "Hash Database":
+    { 
+     "Database Count": 4, 
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+  },
+  
+  "Rules":
+  [
+
+   {
+    "Label": 1006,
+    "Conditions":
+    [
+    ],
+
+    "Satisfies": [  ],
+ 
+    "Actions":
+    [
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 146, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   
+   {
+    "Label": 1007,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 147 }
+    ],
+
+    "Satisfies": [ 1006 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 147, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1008,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 148 }
+    ],
+
+    "Satisfies": [ 1007 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 148, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1009,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 149 }
+    ],
+
+    "Satisfies": [ 1008 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 149, "Center": 176, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1010,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 149 },
+      { "Property": "Alien Room", "Op": "==", "Value": 146 }
+    ],
+
+    "Satisfies": [ 1009 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 149, "Center": 176, "Min": -512, "Max": 512 },
+     { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.00, "Room": 146, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1011,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 149 },
+      { "Property": "Alien Room", "Op": "==", "Value": 147 }
+    ],
+
+    "Satisfies": [ 1010 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 149, "Center": 176, "Min": -512, "Max": 512 },
+     { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.00, "Room": 147, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1012,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 149 },
+      { "Property": "Alien Room", "Op": "==", "Value": 148 }
+    ],
+
+    "Satisfies": [ 1011 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 149, "Center": 176, "Min": -512, "Max": 512 },
+     { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.00, "Room": 148, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1013,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 149 },
+      { "Property": "Alien Room", "Op": "==", "Value": 149 }
+    ],
+
+    "Satisfies": [ 1012 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 149, "Center": 176, "Min": -512, "Max": 512 },
+     { "Type": "Set Alien Horizontal Magnet", "Intensity": 1.00, "Room": 149, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1014,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 149 },
+      { "Property": "Alien Room", "Op": "==", "Value": 149 },
+      { "Property": "Alien Position X", "Op": "==", "Value": 332 }
+    ],
+
+    "Satisfies": [ 1013 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 }
+    ]
+   },
+   
+   {
+    "Label": 1015,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 149 },
+      { "Property": "Alien Room", "Op": "==", "Value": 149 },
+      { "Property": "Stage 33 Water Push", "Op": "==", "Value": 65535 }
+    ],
+
+    "Satisfies": [ 1014 ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1800,
+    "Conditions":
+    [
+     { "Property": "Lester Frame", "Op": "==", "Value":  65535 },
+     { "Property": "Stage 33 Water Push", "Op": "!=", "Value": 65535 }
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}
+ 

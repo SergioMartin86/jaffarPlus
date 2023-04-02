@@ -1,0 +1,203 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ootw.md",
+    "State File": "stage64b.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 10000,
+    "Max Move Count": 7000
+  },
+  
+  "Game Configuration": 
+  {
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 60000
+    },
+     
+    "Hash Database":
+    { 
+     "Database Count": 4, 
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+  },
+  
+  "Rules":
+  [
+
+   {
+    "Label": 1000,
+    "Conditions":
+    [
+    ],
+
+    "Satisfies": [  ],
+ 
+    "Actions":
+    [
+      { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.000, "Room": 107, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 108 }
+    ],
+
+    "Satisfies": [ 1000 ],
+ 
+    "Actions":
+    [
+      { "Type": "Add Reward", "Value": 100000.0 },
+      { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.000, "Room": 108, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 109 }
+    ],
+
+    "Satisfies": [ 1001 ],
+ 
+    "Actions":
+    [
+      { "Type": "Add Reward", "Value": 100000.0 },
+      { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.000, "Room": 109, "Center": 160, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 109 },
+      { "Property": "Stage 64 Progress State", "Op": ">", "Value": 57344 }
+    ],
+
+    "Satisfies": [ 1002 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 109, "Center": 0, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Vertical Magnet", "Intensity": 0.01, "Room": 109, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 141 },
+      { "Property": "Stage 64 Progress State", "Op": ">", "Value": 57344 }
+    ],
+
+    "Satisfies": [ 1005 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 141, "Center": 202, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Vertical Magnet", "Intensity": 1.00, "Room": 141, "Center": 117, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1007,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 141 },
+      { "Property": "Stage 64 Progress State", "Op": ">", "Value": 57376 }
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1800,
+    "Conditions":
+    [
+     { "Property": "Lester Frame", "Op": "==", "Value":  65535 },
+     { "Property": "Stage 33 Water Push", "Op": "!=", "Value": 65535 }
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1801,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value": 141 },
+     { "Property": "Lester Position Y", "Op": ">", "Value": 220 },
+     { "Property": "Lester Position Y", "Op": "<", "Value": 240 }
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+  {
+    "Label": 1802,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value": 141 },
+     { "Property": "Lester Position X", "Op": ">", "Value": 220 }
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}
+ 

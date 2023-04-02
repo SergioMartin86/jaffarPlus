@@ -26,6 +26,7 @@ option('game', type : 'combo', choices :
     'nes/metroid',
     'nes/pacman',
     'snes/pop',
+    'aw',
     'smbc',  
     'sdlpop'], description: 'Selects the game to run Jaffar with')
 

@@ -1,0 +1,139 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ootw.md",
+    "State File": "stage37b.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 10000,
+    "Max Move Count": 7000
+  },
+  
+  "Game Configuration": 
+  {
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true, 
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+     
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 80000
+    },
+     
+    "Hash Database":
+    { 
+     "Database Count": 4, 
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1011,
+    "Conditions":
+    [
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 107, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1012,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 108 },
+      { "Property": "Current Stage", "Op": "==", "Value": 39 },
+      { "Property": "Stage 37 Progress State", "Op": "==", "Value": 36825 }
+    ],
+
+    "Satisfies": [ 1011 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 108, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+  {
+    "Label": 1013,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 109 },
+      { "Property": "Current Stage", "Op": "==", "Value": 39 },
+      { "Property": "Stage 37 Progress State", "Op": "==", "Value": 36825 }
+    ],
+
+    "Satisfies": [ 1012 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 109, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1900,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 109 },
+      { "Property": "Current Stage", "Op": "==", "Value": 39 },
+      { "Property": "Stage 37 Progress State", "Op": "==", "Value": 36825 },
+      { "Property": "Lester Dead Flag", "Op": "==", "Value": 64 }
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 1800,
+    "Conditions":
+    [
+     { "Property": "Lester Frame", "Op": "==", "Value":  65535 },
+     { "Property": "Lester Room", "Op": "!=", "Value": 135 }
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}
+ 
