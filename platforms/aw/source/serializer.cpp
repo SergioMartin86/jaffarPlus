@@ -70,7 +70,6 @@ void Serializer::saveEntries(Entry *entry) {
 }
 
 void Serializer::loadEntries(Entry *entry) {
- printf("Loading\n"); fflush(stdout);
 	debug(DBG_SER, "Serializer::loadEntries()");
 	for (; entry->type != SET_END; ++entry) {
 			switch (entry->type) {
@@ -102,7 +101,6 @@ void Serializer::loadEntries(Entry *entry) {
 }
 
 void Serializer::saveInt(uint8_t es, void *p) {
- printf("Saving\n"); fflush(stdout);
 	switch (es) {
 	case 1:
 		_stream->writeByte(*(uint8_t *)p);
