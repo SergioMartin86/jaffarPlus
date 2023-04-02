@@ -72,20 +72,44 @@ class EmuInstance : public EmuInstanceBase
  }
 
 
+ // Controller input bits
+ // 0 - Up / 1
+ // 1 - Down / 2
+ // 2 - Left / 4
+ // 3 - Right / 8
+ // 4 - B / 16
+
+ // Move Format:
+ // ---BRLDU
+
  static inline INPUT_TYPE moveStringToCode(const std::string& move)
  {
   INPUT_TYPE moveCode = 0;
 
+  for (size_t i = 0; i < move.size(); i++) switch(move[i])
+  {
+    case 'U': moveCode |= 0b00000001; break;
+    case 'D': moveCode |= 0b00000010; break;
+    case 'L': moveCode |= 0b00000100; break;
+    case 'R': moveCode |= 0b00001000; break;
+    case 'B': moveCode |= 0b00010000; break;
+    case '.': break;
+    default: EXIT_WITH_ERROR("Move provided cannot be parsed: '%s', unrecognized character: '%c'\n", move.c_str(), move[i]);
+  }
 
   return moveCode;
  }
 
  static inline std::string moveCodeToString(const INPUT_TYPE move)
  {
-  std::string moveString = "|..|";
+  std::string moveString;
 
+  if (move & 0b00000001) moveString += 'U'; else moveString += '.';
+  if (move & 0b00000010) moveString += 'D'; else moveString += '.';
+  if (move & 0b00000100) moveString += 'L'; else moveString += '.';
+  if (move & 0b00001000) moveString += 'R'; else moveString += '.';
+  if (move & 0b00010000) moveString += 'B'; else moveString += '.';
 
-  moveString += "|";
   return moveString;
  }
 
@@ -97,6 +121,14 @@ class EmuInstance : public EmuInstanceBase
 
  void advanceState(const INPUT_TYPE move) override
  {
+  _engine->sys->input.dirMask  = 0;
+
+  if (move & 0b00000001) _engine->sys->input.dirMask |= PlayerInput::DIR_UP;
+  if (move & 0b00000010) _engine->sys->input.dirMask |= PlayerInput::DIR_DOWN;
+  if (move & 0b00000100) _engine->sys->input.dirMask |= PlayerInput::DIR_LEFT;
+  if (move & 0b00001000) _engine->sys->input.dirMask |= PlayerInput::DIR_RIGHT;
+  if (move & 0b00010000) _engine->sys->input.button = true;
+
   _engine->sys->context = _engine->sys->context.resume();
  }
 
