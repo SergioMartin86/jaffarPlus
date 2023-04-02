@@ -16,7 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef _JAFFAR_PLAY
 #include <SDL.h>
+#endif
+
+#include <ctime>
 #include "sys.h"
 #include "util.h"
 
@@ -33,10 +37,12 @@ struct SDLStub : System {
 
 	int DEFAULT_SCALE = 3;
 
+#ifdef _JAFFAR_PLAY
 	SDL_Surface *_screen = nullptr;
 	SDL_Window * _window = nullptr;
 	SDL_Renderer * _renderer = nullptr;
 	uint8_t _scale = DEFAULT_SCALE;
+#endif
 
 	virtual ~SDLStub() {}
 	virtual void init(const char *title);
@@ -62,6 +68,7 @@ struct SDLStub : System {
 };
 
 void SDLStub::init(const char *title) {
+#ifdef _JAFFAR_PLAY
 	SDL_Init(SDL_INIT_VIDEO  | SDL_INIT_TIMER);
 //	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 	SDL_ShowCursor(SDL_DISABLE);
@@ -72,15 +79,24 @@ void SDLStub::init(const char *title) {
 	memset(&input, 0, sizeof(input));
   _scale = DEFAULT_SCALE;
 	prepareGfxMode();
+#endif
 }
 
 void SDLStub::destroy() {
 	cleanupGfxMode();
+
+#ifdef _JAFFAR_PLAY
 	SDL_Quit();
+#endif
+
 }
 
+#ifdef _JAFFAR_PLAY
 static SDL_Color palette[NUM_COLORS];
+#endif
+
 void SDLStub::setPalette(const uint8_t *p) {
+#ifdef _JAFFAR_PLAY
   // The incoming palette is in 565 format.
   for (int i = 0; i < NUM_COLORS; ++i)
   {
@@ -93,9 +109,11 @@ void SDLStub::setPalette(const uint8_t *p) {
     p += 2;
   }
   SDL_SetPaletteColors(_screen->format->palette, palette, 0, NUM_COLORS);
+#endif
 }
 
 void SDLStub::prepareGfxMode() {
+#ifdef _JAFFAR_PLAY
   int w = SCREEN_W;
   int h = SCREEN_H;
 
@@ -111,9 +129,11 @@ void SDLStub::prepareGfxMode() {
   // To avoid this issue, we save the last palette locally and re-upload it each time. On game start-up this
   // is not requested.
   SDL_SetPaletteColors(_screen->format->palette, palette, 0, NUM_COLORS);
+#endif
 }
 
 void SDLStub::updateDisplay(const uint8_t *src) {
+#ifdef _JAFFAR_PLAY
   uint16_t height = SCREEN_H;
 	uint8_t* p = (uint8_t*)_screen->pixels;
 
@@ -133,10 +153,11 @@ void SDLStub::updateDisplay(const uint8_t *src) {
   SDL_RenderCopy(_renderer, texture, nullptr, nullptr);
   SDL_RenderPresent(_renderer);
   SDL_DestroyTexture(texture);
-
+#endif
 }
 
 void SDLStub::processEvents() {
+#ifdef _JAFFAR_PLAY
 	SDL_Event ev;
 	while(SDL_PollEvent(&ev)) {
 		switch (ev.type) {
@@ -218,6 +239,7 @@ void SDLStub::processEvents() {
 			break;
 		}
 	}
+#endif
 }
 
 void SDLStub::sleep(uint32_t duration) {
@@ -225,10 +247,11 @@ void SDLStub::sleep(uint32_t duration) {
 }
 
 uint32_t SDLStub::getTimeStamp() {
-	return SDL_GetTicks();	
+return time(NULL);
 }
 
 void SDLStub::startAudio(AudioCallback callback, void *param) {
+#ifdef _JAFFAR_PLAY
 	SDL_AudioSpec desired;
 	memset(&desired, 0, sizeof(desired));
 
@@ -243,43 +266,64 @@ void SDLStub::startAudio(AudioCallback callback, void *param) {
 //	} else {
 //		error("SDLStub::startAudio() unable to open sound device");
 //	}
+#endif
 }
 
 void SDLStub::stopAudio() {
+#ifdef _JAFFAR_PLAY
 	SDL_CloseAudio();
+#endif
 }
 
 uint32_t SDLStub::getOutputSampleRate() {
+#ifdef _JAFFAR_PLAY
 	return SOUND_SAMPLE_RATE;
+#endif
+	return 0;
 }
 
 int SDLStub::addTimer(uint32_t delay, TimerCallback callback, void *param) {
+#ifdef _JAFFAR_PLAY
 	return SDL_AddTimer(delay, (SDL_TimerCallback)callback, param);
+#endif
+	return 0;
 }
 
 void SDLStub::removeTimer(int timerId) {
+#ifdef _JAFFAR_PLAY
 	SDL_RemoveTimer(timerId);
+#endif
 }
 
 void *SDLStub::createMutex() {
+#ifdef _JAFFAR_PLAY
 	return SDL_CreateMutex();
+#endif
+	return NULL;
 }
 
 void SDLStub::destroyMutex(void *mutex) {
+#ifdef _JAFFAR_PLAY
 	SDL_DestroyMutex((SDL_mutex *)mutex);
+#endif
 }
 
 void SDLStub::lockMutex(void *mutex) {
+#ifdef _JAFFAR_PLAY
 	SDL_mutexP((SDL_mutex *)mutex);
+#endif
 }
 
 void SDLStub::unlockMutex(void *mutex) {
+#ifdef _JAFFAR_PLAY
 	SDL_mutexV((SDL_mutex *)mutex);
+#endif
 }
 
 
 
 void SDLStub::cleanupGfxMode() {
+#ifdef _JAFFAR_PLAY
 	if (_screen) {
 		SDL_FreeSurface(_screen);
     _screen = 0;
@@ -294,11 +338,14 @@ void SDLStub::cleanupGfxMode() {
 	  SDL_FreeSurface(_screen);
 	  _screen = nullptr;
 	}
+#endif
 }
 
 void SDLStub::switchGfxMode() {
+#ifdef _JAFFAR_PLAY
   cleanupGfxMode();
 	prepareGfxMode();
+#endif
 }
 
 SDLStub sysImplementation;

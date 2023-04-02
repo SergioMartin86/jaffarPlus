@@ -76,8 +76,14 @@ class EmuInstance : public EmuInstanceBase
 
  void deserializeState(const uint8_t* state) override
  {
-  uint8_t buf[_STATE_DATA_SIZE_TRAIN];
-  memcpy(buf, state, _STATE_DATA_SIZE_TRAIN);
+   #ifdef _JAFFAR_PLAY
+    uint8_t buf[_STATE_DATA_SIZE_PLAY];
+    memcpy(buf, state, _STATE_DATA_SIZE_PLAY);
+   #else
+    uint8_t buf[_STATE_DATA_SIZE_TRAIN];
+    memcpy(buf, state, _STATE_DATA_SIZE_TRAIN);
+   #endif
+
   _engine->loadGameState(buf);
  }
 
