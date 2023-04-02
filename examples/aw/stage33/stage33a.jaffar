@@ -1,0 +1,692 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ootw.md",
+    "State File": "stage33a.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 10000,
+    "Max Move Count": 7000
+  },
+  
+  "Game Configuration": 
+  {
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 100000
+    },
+     
+    "Hash Database":
+    { 
+     "Database Count": 4, 
+     "Max Size Upper Bound (Mb)": 1000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1005,
+    "Conditions":
+    [
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 103, "Center": 135, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Vertical Magnet", "Intensity": 1.00, "Room": 103, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 135 }
+    ],
+
+    "Satisfies": [ 1005 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 135, "Center": 230, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Vertical Magnet", "Intensity": 1.00, "Room": 135, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1007,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 167 }
+    ],
+
+    "Satisfies": [ 1006 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 167, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1008,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 200 }
+    ],
+
+    "Satisfies": [ 1007 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 200, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1009,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 201 }
+    ],
+
+    "Satisfies": [ 1008 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 201, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1010,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 202 }
+    ],
+
+    "Satisfies": [ 1009 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 202, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1011,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 203 }
+    ],
+
+    "Satisfies": [ 1010 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 203, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1012,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 204 }
+    ],
+
+    "Satisfies": [ 1011 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 204, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1112,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 204 },
+      { "Property": "Stage 33 Room 204 Vine 1 Pos Y", "Op": "<", "Value": 56 }
+    ],
+
+    "Satisfies": [ 1012 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 204, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+
+   {
+    "Label": 1013,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 205 }
+    ],
+
+    "Satisfies": [ 1112 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 205, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1014,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 206 }
+    ],
+
+    "Satisfies": [ 1013 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 206, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1015,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 175 }
+    ],
+
+    "Satisfies": [ 1014 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Gun Power Load Magnet", "Intensity": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1016,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 175 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1015 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 175, "Center": -512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1017,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 206 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1016 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 206, "Center": -512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1018,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 205 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1017 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 205, "Center": -512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1019,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 204 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1018 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 204, "Center": -512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1020,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 203 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1019 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 203, "Center": -512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1021,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 202 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1020 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 202, "Center": -512, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Vertical Magnet", "Intensity": 0.10, "Room": 202, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1022,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 201 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1021 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 }
+    ]
+   },
+   
+   {
+    "Label": 1023,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 201 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 }
+    ],
+
+    "Satisfies": [ 1022 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 201, "Center": -512, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Vertical Magnet", "Intensity": 0.10, "Room": 201, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1024,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 200 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 }
+    ],
+
+    "Satisfies": [ 1023 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 200, "Center": -512, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Vertical Magnet", "Intensity": 0.50, "Room": 200, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1025,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 167 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 }
+    ],
+
+    "Satisfies": [ 1024 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 167, "Center": -512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1026,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 167 },
+      { "Property": "Lester Position Y", "Op": ">", "Value": 150 },
+      { "Property": "Lester Position X", "Op": "<", "Value": 70 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 }
+    ],
+
+    "Satisfies": [ 1025 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Gun Power Load Magnet", "Intensity": 1.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 0.0001, "Room": 167, "Center": 250, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1027,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 167 },
+      { "Property": "Lester Position Y", "Op": ">", "Value": 150 },
+      { "Property": "Lester Position X", "Op": "<", "Value": 70 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Stage 33 Big Rock State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1026 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 167, "Center": 250, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Vertical Magnet", "Intensity": 1.00, "Room": 167, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1028,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 135 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Stage 33 Big Rock State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1027 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 135, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1029,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 136 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Stage 33 Big Rock State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1028 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 136, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1030,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 137 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Stage 33 Big Rock State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1029 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 137, "Center": 512, "Min": -512, "Max": 512 },
+     { "Type": "Set Lester Gun Power Load Magnet", "Intensity": 0.1 }
+    ]
+   },
+   
+   {
+    "Label": 1031,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 138 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Stage 33 Big Rock State", "Op": ">", "Value": 0 }
+    ],
+
+    "Satisfies": [ 1030 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Gun Power Load Magnet", "Intensity": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1032,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 138 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Stage 33 Big Rock State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Water Wall", "Op": ">", "Value": 2 }
+    ],
+
+    "Satisfies": [ 1031 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 138, "Center": 0, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1033,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 137 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Stage 33 Big Rock State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Water Wall", "Op": ">", "Value": 2 }
+    ],
+
+    "Satisfies": [ 1032 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 137, "Center": 0, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1034,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 136 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Stage 33 Big Rock State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Water Wall", "Op": ">", "Value": 2 }
+    ],
+
+    "Satisfies": [ 1033 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 136, "Center": 0, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1035,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 135 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Stage 33 Big Rock State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Water Wall", "Op": ">", "Value": 2 }
+    ],
+
+    "Satisfies": [ 1034 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 135, "Center": 130, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1036,
+    "Conditions":
+    [
+      { "Property": "Lester Room", "Op": "==", "Value": 135 },
+      { "Property": "Stage 33 Water Push", "Op": "==", "Value": 65535 }
+    ],
+
+    "Satisfies": [ 1035 ],
+ 
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Intensity": 1.00, "Room": 135, "Center": 512, "Min": -512, "Max": 512 }
+    ]
+   },
+   
+   {
+    "Label": 1900,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 104 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Water Wall", "Op": ">", "Value": 2 }
+    ],
+
+    "Satisfies": [  ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1800,
+    "Conditions":
+    [
+     { "Property": "Lester Frame", "Op": "==", "Value":  65535 },
+     { "Property": "Lester Room", "Op": "!=", "Value": 135 }
+    ],
+
+    "Satisfies": [ ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1801,
+    "Conditions":
+    [
+      { "Property": "Lester Next Room", "Op": "==", "Value": 200 },
+      { "Property": "Stage 33 Pool Wall State", "Op": ">", "Value": 0 },
+      { "Property": "Stage 33 Bat Active", "Op": ">", "Value": 36608 },
+      { "Property": "Lester Position Y", "Op": ">", "Value": 130 }
+    ],
+
+    "Satisfies": [ 1023 ],
+ 
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}
+ 

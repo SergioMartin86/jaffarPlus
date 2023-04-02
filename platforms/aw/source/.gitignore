@@ -1,0 +1,14 @@
+**/Debug
+**/Release
+TODO
+**/*.obj
+**/ipch
+**/*.opensdf
+**/*.sdf
+**/*.suo
+**/*.user
+**.[ado]
+/game
+
+.DS_Store
+DerivedData
