@@ -16,48 +16,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef __ENGINE_H__
-#define __ENGINE_H__
+#pragma once
 
 #include "intern.h"
-#include "vm.h"
-#include "mixer.h"
-#include "sfxplayer.h"
-#include "resource.h"
-#include "video.h"
-#include "memBuffer.h"
 
-struct System;
+struct memBuffer {
+ uint8_t *buffer;
+ int64_t pos;
 
-struct Engine {
-	enum {
-		MAX_SAVE_SLOTS = 100
-	};
-
-	System *sys;
-	VirtualMachine vm;
-	Mixer mixer;
-	Resource res;
-	SfxPlayer player;
-	Video video;
-	const char *_dataDir, *_saveDir;
-	uint8_t _stateSlot;
-
-	Engine(System *stub, const char *dataDir, const char *saveDir);
-	~Engine();
-
-	void run();
-	void init();
-	void finish();
-	void processInput();
-	
-	void makeGameStateName(uint8_t slot, char *buf);
-	void saveGameState(uint8_t* buffer);
-	void saveGameState(memBuffer* m);
-	size_t getGameStateSize();
-	void loadGameState(uint8_t* buffer);
-	void loadGameState(memBuffer* m);
-	void processState(Serializer& s);
+ memBuffer(uint8_t* buf);
+	void seek(int32_t off);
+	int64_t getSize();
+	void read(void *ptr, uint32_t size);
+	uint8_t readByte();
+	uint16_t readUint16BE();
+	uint32_t readUint32BE();
+	void write(void *ptr, uint32_t size);
+	void writeByte(uint8_t b);
+	void writeUint16BE(uint16_t n);
+	void writeUint32BE(uint32_t n);
 };
-
-#endif

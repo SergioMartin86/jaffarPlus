@@ -17,10 +17,10 @@
  */
 
 #include "serializer.h"
-#include "file.h"
+#include "memBuffer.h"
 
 
-Serializer::Serializer(File *stream, Mode mode, uint8_t *ptrBlock, uint16_t saveVer)
+Serializer::Serializer(memBuffer *stream, Mode mode, uint8_t *ptrBlock, uint16_t saveVer)
 	: _stream(stream), _mode(mode), _ptrBlock(ptrBlock), _saveVer(saveVer) {
 }
 

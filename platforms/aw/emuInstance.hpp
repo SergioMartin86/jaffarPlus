@@ -33,26 +33,32 @@ class EmuInstance : public EmuInstanceBase
   _engine->init();
 
   _engine->sys->context = boost::context::callcc(
-     [this](boost::context::continuation && sink)
-     {
-       // Return once
-       sink = sink.resume();
+    [this](boost::context::continuation && sink)
+    {
+      // Return once
+      sink = sink.resume();
 
-       // Store return context
-       _engine->sys->context = std::move(sink);
+      // Store return context
+      _engine->sys->context = std::move(sink);
 
-       // Infinite game loop
-       while(true)
-       {
-        _engine->vm.checkThreadRequests();
-        _engine->vm.inp_updatePlayer();
-        _engine->processInput();
-        _engine->vm.hostFrame();
-       }
+      // Infinite game loop
+      while(true)
+      {
+       _engine->vm.checkThreadRequests();
+       _engine->vm.inp_updatePlayer();
+       _engine->processInput();
+       _engine->vm.hostFrame();
+      }
 
-       return std::move(sink);
-     }
-    );
+      return std::move(sink);
+    }
+   );
+
+  size_t stateSize = _engine->getGameStateSize();
+  printf("State Size: %lu\n", stateSize); fflush(stdout);
+  exit(0);
+
+
  }
 
  void loadStateFile(const std::string& stateFilePath) override

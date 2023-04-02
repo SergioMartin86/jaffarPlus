@@ -28,7 +28,7 @@
 #define SE_PTR(p,ver)        { Serializer::SET_PTR, 0, 0, p, ver, Serializer::CUR_VER }
 #define SE_END()             { Serializer::SET_END, 0, 0, 0, 0, 0 }
 
-struct File;
+struct memBuffer;
 
 struct Serializer {
 	enum {
@@ -63,13 +63,13 @@ struct Serializer {
 		uint16_t maxVer;
 	};
 
-	File *_stream;
+	memBuffer *_stream;
 	Mode _mode;
 	uint8_t *_ptrBlock;
 	uint16_t _saveVer;
 	uint32_t _bytesCount;
 	
-	Serializer(File *stream, Mode mode, uint8_t *ptrBlock, uint16_t saveVer = CUR_VER);
+	Serializer(memBuffer *stream, Mode mode, uint8_t *ptrBlock, uint16_t saveVer = CUR_VER);
 
 	void saveOrLoadEntries(Entry *entry);
 
