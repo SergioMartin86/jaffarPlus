@@ -29,7 +29,7 @@ struct File {
 	File(bool gzipped = false);
 	virtual ~File();
 
-	bool open(const char *filename, const char *directory, const char *mode="rb");
+	bool open(const char *filename, const char *mode="rb");
 	void close();
 	bool ioErr() const;
 	void seek(int32_t off);

@@ -28,12 +28,12 @@ Bank::Bank(const char *dataDir)
 bool Bank::read(const MemEntry *me, uint8_t *buf) {
 
 	bool ret = false;
-	char bankName[10];
-	sprintf(bankName, "bank%02x", me->bankId);
+	char bankName[512];
+	sprintf(bankName, "%s/BANK%02x", _dataDir, me->bankId);
 	File f;
 
-	if (!f.open(bankName, _dataDir))
-		error("Bank::read() unable to open '%s'", bankName);
+	if (!f.open(bankName))
+		error("Bank::read() unable to open '%s/%s'", bankName);
 
 	
 	f.seek(me->bankOffset);

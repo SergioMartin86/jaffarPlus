@@ -69,12 +69,10 @@ void Engine::init() {
 	player.init();
 
 	uint16_t part = GAME_PART1;  // This game part is the protection screen
-#ifdef BYPASS_PROTECTION
+//#ifdef BYPASS_PROTECTION
   part = GAME_PART2;
-#endif
+//#endif
   vm.initForPart(part);
-
-
 
   // Try to cheat here. You can jump anywhere but the VM crashes afterward.
 	// Starting somewhere is probably not enough, the variables and calls return are probably missing.
@@ -125,6 +123,7 @@ size_t Engine::getGameStateSize()
 void Engine::loadGameState(uint8_t* buffer)
 {
  memBuffer m(buffer);
+ loadGameState(&m);
 }
 
 void Engine::loadGameState(memBuffer* m)

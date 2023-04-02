@@ -23,6 +23,7 @@
 #include "video.h"
 #include "util.h"
 #include "parts.h"
+#include <string>
 
 Resource::Resource(Video *vid, const char *dataDir) 
 	: video(vid), _dataDir(dataDir), currentPartId(0),requestedNextPart(0) {
@@ -69,9 +70,10 @@ void Resource::readEntries() {
 	File f;
 	int resourceCounter = 0;
 	
+	std::string memlistFile = std::string(_dataDir) + std::string("/MEMLIST.BIN");
 
-	if (!f.open("memlist.bin", _dataDir)) {
-		error("Resource::readEntries() unable to open 'memlist.bin' file\n");
+	if (!f.open(memlistFile.c_str())) {
+		error("Resource::readEntries() unable to open '%s' file\n", memlistFile.c_str());
 		//Error will exit() no need to return or do anything else.
 	}
 
@@ -274,8 +276,6 @@ void Resource::loadPartsOrMemoryEntry(uint16_t resourceId) {
    needed (for action phrases) _memList[video2Index] is always loaded with 0x11 
    (as seen in memListParts). */
 void Resource::setupPart(uint16_t partId) {
-
-	
 
 	if (partId == currentPartId)
 		return;
