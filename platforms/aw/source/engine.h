@@ -26,6 +26,8 @@
 #include "resource.h"
 #include "video.h"
 #include "memBuffer.h"
+#include <map>
+#include <string>
 
 struct System;
 

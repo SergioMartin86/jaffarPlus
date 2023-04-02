@@ -19,11 +19,14 @@
 #pragma once
 
 #include "intern.h"
+#include <map>
+#include <string>
 
 struct memBuffer {
  uint8_t *buffer;
  int64_t pos;
 
+ void reset();
  memBuffer(uint8_t* buf);
 	void seek(int32_t off);
 	int64_t getSize();
@@ -36,3 +39,5 @@ struct memBuffer {
 	void writeUint16BE(uint16_t n);
 	void writeUint32BE(uint32_t n);
 };
+
+extern std::map<std::string, memBuffer*> _fileBuffers;

@@ -5,7 +5,6 @@ srcDir = meson.current_source_dir()
 awSrc = [
 srcDir + '/bank.cpp',
 srcDir + '/engine.cpp',
-srcDir + '/file.cpp',
 srcDir + '/main.cpp',
 srcDir + '/memBuffer.cpp',
 srcDir + '/mixer.cpp',

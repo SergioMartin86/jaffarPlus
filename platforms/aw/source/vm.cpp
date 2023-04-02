@@ -25,7 +25,6 @@
 #include "sfxplayer.h"
 #include "sys.h"
 #include "parts.h"
-#include "file.h"
 
 VirtualMachine::VirtualMachine(Mixer *mix, Resource *resParameter, SfxPlayer *ply, Video *vid, System *stub)
 	: mixer(mix), res(resParameter), player(ply), video(vid), sys(stub) {
