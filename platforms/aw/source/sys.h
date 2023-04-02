@@ -21,6 +21,7 @@
 
 #include "intern.h"
 #include <boost/context/continuation.hpp>
+#include <map>
 
 extern bool _enableRender;
 

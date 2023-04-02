@@ -17,7 +17,7 @@
  */
 
 #include "bank.h"
-#include "file.h"
+#include "memBuffer.h"
 #include "resource.h"
 
 
@@ -29,12 +29,9 @@ bool Bank::read(const MemEntry *me, uint8_t *buf) {
 
 	bool ret = false;
 	char bankName[512];
-	sprintf(bankName, "%s/BANK%02x", _dataDir, me->bankId);
-	File f;
-
-	if (!f.open(bankName))
-		error("Bank::read() unable to open '%s/%s'", bankName);
-
+	sprintf(bankName, "BANK%02x", me->bankId);
+ memBuffer& f = *_fileBuffers[std::string(bankName)];
+ f.reset();
 	
 	f.seek(me->bankOffset);
 

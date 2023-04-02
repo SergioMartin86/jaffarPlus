@@ -18,12 +18,12 @@
 
 #include "resource.h"
 #include "bank.h"
-#include "file.h"
 #include "serializer.h"
 #include "video.h"
 #include "util.h"
 #include "parts.h"
 #include <string>
+#include "memBuffer.h"
 
 Resource::Resource(Video *vid, const char *dataDir) 
 	: video(vid), _dataDir(dataDir), currentPartId(0),requestedNextPart(0) {
@@ -67,16 +67,10 @@ int resourceUnitStats[7][2];
 	this is just a fast way to access the data later based on their id.
 */
 void Resource::readEntries() {	
-	File f;
+	memBuffer& f = *_fileBuffers["MEMLIST.BIN"];
+	f.reset();
 	int resourceCounter = 0;
 	
-	std::string memlistFile = std::string(_dataDir) + std::string("/MEMLIST.BIN");
-
-	if (!f.open(memlistFile.c_str())) {
-		error("Resource::readEntries() unable to open '%s' file\n", memlistFile.c_str());
-		//Error will exit() no need to return or do anything else.
-	}
-
 	//Prepare stats array
 	memset(resourceSizeStats,0,sizeof(resourceSizeStats));
 	memset(resourceUnitStats,0,sizeof(resourceUnitStats));

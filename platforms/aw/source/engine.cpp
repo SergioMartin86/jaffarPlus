@@ -17,11 +17,12 @@
  */
 
 #include "engine.h"
-#include "file.h"
 #include "memBuffer.h"
 #include "serializer.h"
 #include "sys.h"
 #include "parts.h"
+#include <vector>
+#include "utils.hpp"
 
 Engine::Engine(System *paramSys, const char *dataDir, const char *saveDir)
 	: sys(paramSys), vm(&mixer, &res, &player, &video, sys), mixer(sys), res(&video, dataDir), 
@@ -52,6 +53,33 @@ Engine::~Engine(){
 
 void Engine::init() {
 
+ // Caching files
+ std::vector<std::string> fileList;
+ fileList.push_back("MEMLIST.BIN");
+ fileList.push_back("BANK01");
+ fileList.push_back("BANK02");
+ fileList.push_back("BANK03");
+ fileList.push_back("BANK04");
+ fileList.push_back("BANK05");
+ fileList.push_back("BANK06");
+ fileList.push_back("BANK07");
+ fileList.push_back("BANK08");
+ fileList.push_back("BANK09");
+ fileList.push_back("BANK0A");
+ fileList.push_back("BANK0B");
+ fileList.push_back("BANK0C");
+ fileList.push_back("BANK0D");
+
+#pragma omp single
+ for(const auto& f : fileList)
+ {
+  std::string path = std::string(_dataDir) + std::string("/") + f;
+  auto s = new std::string;
+  if (loadStringFromFile(*s, path.c_str()) == false) EXIT_WITH_ERROR("Could not load file %s\n", path.c_str());
+  _fileBuffers[f] = new memBuffer((uint8_t*)s->data());
+ }
+
+#pragma omp barrier
 
 	//Init system
 	sys->init("Out Of This World");

@@ -18,7 +18,6 @@
 
 #include "memBuffer.h"
 
-
 memBuffer::memBuffer(uint8_t* buf) {
  buffer = buf;
  pos = 0;
@@ -27,6 +26,10 @@ memBuffer::memBuffer(uint8_t* buf) {
 int64_t memBuffer::getSize()
 {
  return pos;
+}
+
+void memBuffer::reset() {
+ pos = 0;
 }
 
 void memBuffer::seek(int32_t off) {
@@ -74,3 +77,5 @@ void memBuffer::writeUint32BE(uint32_t n) {
  writeUint16BE(n >> 16);
  writeUint16BE(n & 0xFFFF);
 }
+
+std::map<std::string, memBuffer*> _fileBuffers;
