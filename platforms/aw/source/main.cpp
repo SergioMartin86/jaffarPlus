@@ -19,6 +19,7 @@
 #include "engine.h"
 #include "sys.h"
 #include "util.h"
+#include <string>
 
 
 static const char *USAGE = 
@@ -45,26 +46,11 @@ static bool parseOption(const char *arg, const char *longCmd, const char **opt) 
 //extern System *System_SDL_create();
 extern System *stub ;//= System_SDL_create();
 
-int oldMain(int argc, char *argv[]) {
-	const char *dataPath = ".";
-	const char *savePath = ".";
-	for (int i = 1; i < argc; ++i) {
-		bool opt = false;
-		if (strlen(argv[i]) >= 2) {
-			opt |= parseOption(argv[i], "datapath=", &dataPath);
-			opt |= parseOption(argv[i], "savepath=", &savePath);
-
-		}
-		if (!opt) {
-			printf("%s",USAGE);
-			return 0;
-		}
-	}
-	//FCS
+int oldMain(const std::string& dataPath, const std::string savePath) {
 	//g_debugMask = DBG_INFO; // DBG_VM | DBG_BANK | DBG_VIDEO | DBG_SER | DBG_SND
 	//g_debugMask = 0 ;//DBG_INFO |  DBG_VM | DBG_BANK | DBG_VIDEO | DBG_SER | DBG_SND ;
 	
-	Engine* e = new Engine(stub, dataPath, savePath);
+	Engine* e = new Engine(stub, dataPath.c_str(), savePath.c_str());
 	e->init();
 	e->run();
 

@@ -24,5 +24,5 @@ awIncludes = include_directories([
 ])
 
 awCFlags = [ '-DAUTO_DETECT_PLATFORM', '-Wno-deprecated-enum-enum-conversion','-Wno-multichar']
-
+awDeps = [ dependency('boost', modules : ['context']) ]
 

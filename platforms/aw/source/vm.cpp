@@ -292,7 +292,10 @@ void VirtualMachine::op_blitFramebuffer() {
 	//WTF ?
 	vmVariables[0xF7] = 0;
 
-	video->updateDisplay(pageId);
+	if (_enableRender) video->updateDisplay(pageId);
+
+ // Returning to Jaffar
+ sys->context = sys->context.resume();
 }
 
 void VirtualMachine::op_killThread() {

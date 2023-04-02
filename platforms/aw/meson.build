@@ -16,7 +16,7 @@ platformTrainCPPFlags = [ awCFlags ]
 platformTrainCFlags = [ awCFlags ]
 platformTrainLibs = [ ] 
 platformTrainLFlags = [ ]
-platformTrainDependencies = [  ]
+platformTrainDependencies = [ awDeps ]
 
 # Platform's specific includes, source files and flags for playback
 
@@ -26,4 +26,4 @@ platformPlayCPPFlags = [ awCFlags, '-D_USE_SDL_' ]
 platformPlayCFlags = [ awCFlags, '-D_USE_SDL_' ]
 platformPlayLibs = [ ] 
 platformPlayLFlags = [ ]
-platformPlayDependencies = [ dependency('sdl2'), dependency('SDL2_image') ]
+platformPlayDependencies = [ awDeps, dependency('sdl2'), dependency('SDL2_image') ]

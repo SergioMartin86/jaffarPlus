@@ -48,7 +48,11 @@ class GameInstanceBase
   void pushState(const uint8_t* __restrict__ inputStateData) { _emu->deserializeState(inputStateData);  updateDerivedValues(); }
 
   void saveStateFile(const std::string& outputFilePath) const { _emu->saveStateFile(outputFilePath); }
-  void loadStateFile(const std::string& inputFilePath) { _emu->loadStateFile(inputFilePath);  updateDerivedValues(); }
+  void loadStateFile(const std::string& inputFilePath)
+  {
+   _emu->loadStateFile(inputFilePath);
+   updateDerivedValues();
+  }
 
   // Evaluates the rule set on a given frame.
   void evaluateRules(bool* rulesStatus) const;
