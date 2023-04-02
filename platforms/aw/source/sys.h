@@ -20,7 +20,9 @@
 #define __SYSTEM_H__
 
 #include "intern.h"
+#include <boost/context/continuation.hpp>
 
+extern bool _enableRender;
 
 #define NUM_COLORS 16
 #define BYTE_PER_PIXEL 3
@@ -51,6 +53,8 @@ struct System {
 	typedef uint32_t (*TimerCallback)(uint32_t delay, void *param);
 	
 	PlayerInput input;
+
+	boost::context::continuation context;
 
 	virtual ~System() {}
 

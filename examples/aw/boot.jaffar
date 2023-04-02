@@ -1,15 +1,13 @@
 {
   "Emulator Configuration": 
   {
-    "Game Files": "../game",
-    "State File": "full.state"
+    "Game Files": "game",
+    "State File": ""
   },
   
   "Game Configuration": 
   {
    "Timer Tolerance": 2,
-   "Disable Ghosts": false,
-   "Skip Intermission": false,
    "Hash Includes": [  ]
   },
   
@@ -55,54 +53,10 @@
   "Playback Configuration": 
   {
      "Disable Display": false,
-     "Overlay Path": "../../../../platforms/nes/overlay"
+     "Overlay Path": "../../../../platforms/aw/overlay"
   },
   
   "Rules":
   [
-   {
-    "Label": 1000,
-    "Conditions":
-    [
-     { "Property": "Remaining Pellets", "Op": "==", "Value":  0 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 1999,
-    "Conditions":
-    [
-     { "Property": "Player Frame", "Op": "==", "Value":  18 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1998,
-    "Conditions":
-    [
-     { "Property": "Player Frame", "Op": "==", "Value":  0 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   }
   ]  
 }

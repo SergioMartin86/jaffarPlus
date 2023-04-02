@@ -17,11 +17,15 @@ class PlaybackInstance : public PlaybackInstanceBase
   // Initializes the playback module instance
  PlaybackInstance(GameInstance* game, const nlohmann::json& config) : PlaybackInstanceBase(game, config)
  {
+  _game = game;
  }
 
  // Function to render frame
  void renderFrame(const uint16_t currentStep, const std::string& move) override
  {
+  _enableRender = true;
+  _game->advanceGameState(0);
+  _enableRender = false;
  }
 
  // Function to render frame

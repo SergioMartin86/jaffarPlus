@@ -20,6 +20,7 @@
 #include "sys.h"
 #include "util.h"
 
+bool _enableRender;
 
 struct SDLStub : System {
 	typedef void (SDLStub::*ScaleProc)(uint16_t *dst, uint16_t dstPitch, const uint16_t *src, uint16_t srcPitch, uint16_t w, uint16_t h);
@@ -220,7 +221,7 @@ void SDLStub::processEvents() {
 }
 
 void SDLStub::sleep(uint32_t duration) {
-	SDL_Delay(duration);
+	//SDL_Delay(duration);
 }
 
 uint32_t SDLStub::getTimeStamp() {

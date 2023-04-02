@@ -40,7 +40,6 @@ void Engine::run() {
 		vm.hostFrame();
 	}
 
-
 }
 
 Engine::~Engine(){
