@@ -22,22 +22,6 @@
 #include <string>
 
 
-static const char *USAGE = 
-	"Raw - Another World Interpreter\n"
-	"Usage: raw [OPTIONS]...\n"
-	"  --datapath=PATH   Path to where the game is installed (default '.')\n"
-	"  --savepath=PATH   Path to where the save files are stored (default '.')\n";
-
-static bool parseOption(const char *arg, const char *longCmd, const char **opt) {
-	bool ret = false;
-	if (arg[0] == '-' && arg[1] == '-') {
-		if (strncmp(arg + 2, longCmd, strlen(longCmd)) == 0) {
-			*opt = arg + 2 + strlen(longCmd);
-			ret = true;
-		}
-	}
-	return ret;
-}
 
 /*
 	We use here a design pattern found in Doom3:

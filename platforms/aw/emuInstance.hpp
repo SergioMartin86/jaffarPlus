@@ -15,6 +15,7 @@ class EmuInstance : public EmuInstanceBase
 {
 
  Engine* _engine;
+ std::string _gameFilesPath;
 
  public:
 
@@ -22,14 +23,14 @@ class EmuInstance : public EmuInstanceBase
  {
   // Checking whether configuration contains the rom file
   if (isDefined(config, "Game Files") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Game Files' key.\n");
-  std::string gameFilesPath = config["Game Files"].get<std::string>();
+  _gameFilesPath = config["Game Files"].get<std::string>();
 
   // Checking whether configuration contains the state file
   if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
   std::string stateFilePath = config["State File"].get<std::string>();
 
   _enableRender = false;
-  _engine = new Engine(stub, gameFilesPath.c_str(), stateFilePath.c_str());
+  _engine = new Engine(stub, _gameFilesPath.c_str(), "");
   _engine->init();
 
   _engine->sys->context = boost::context::callcc(
@@ -54,15 +55,14 @@ class EmuInstance : public EmuInstanceBase
     }
    );
 
-  size_t stateSize = _engine->getGameStateSize();
-  printf("State Size: %lu\n", stateSize); fflush(stdout);
-  exit(0);
-
-
+//  size_t stateSize = _engine->getGameStateSize();
+//  printf("State Size: %lu\n", stateSize); fflush(stdout);
+//  exit(0);
  }
 
  void loadStateFile(const std::string& stateFilePath) override
  {
+
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
@@ -71,10 +71,14 @@ class EmuInstance : public EmuInstanceBase
 
  void serializeState(uint8_t* state) const override
  {
+  _engine->saveGameState(state);
  }
 
  void deserializeState(const uint8_t* state) override
  {
+  uint8_t buf[_STATE_DATA_SIZE_TRAIN];
+  memcpy(buf, state, _STATE_DATA_SIZE_TRAIN);
+  _engine->loadGameState(buf);
  }
 
 

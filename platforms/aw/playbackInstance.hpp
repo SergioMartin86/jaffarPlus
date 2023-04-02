@@ -23,9 +23,15 @@ class PlaybackInstance : public PlaybackInstanceBase
  // Function to render frame
  void renderFrame(const uint16_t currentStep, const std::string& move) override
  {
+//  uint8_t emuState[_STATE_DATA_SIZE_PLAY];
+//  _game->_emu->serializeState(emuState);
+
   _enableRender = true;
   _game->advanceGameState(0);
   _enableRender = false;
+
+  // Reload game state
+//  _game->_emu->deserializeState(emuState);
  }
 
  // Function to render frame

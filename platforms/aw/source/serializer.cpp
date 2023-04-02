@@ -41,7 +41,6 @@ void Serializer::saveOrLoadEntries(Entry *entry) {
 void Serializer::saveEntries(Entry *entry) {
 	debug(DBG_SER, "Serializer::saveEntries()");
 	for (; entry->type != SET_END; ++entry) {
-		if (entry->maxVer == CUR_VER) {
 			switch (entry->type) {
 			case SET_INT:
 				saveInt(entry->size, entry->data);
@@ -67,14 +66,13 @@ void Serializer::saveEntries(Entry *entry) {
 			case SET_END:
 				break;
 			}
-		}
 	}
 }
 
 void Serializer::loadEntries(Entry *entry) {
+ printf("Loading\n"); fflush(stdout);
 	debug(DBG_SER, "Serializer::loadEntries()");
 	for (; entry->type != SET_END; ++entry) {
-		if (_saveVer >= entry->minVer && _saveVer <= entry->maxVer) {
 			switch (entry->type) {
 			case SET_INT:
 				loadInt(entry->size, entry->data);
@@ -100,11 +98,11 @@ void Serializer::loadEntries(Entry *entry) {
 			case SET_END:
 				break;				
 			}
-		}
 	}
 }
 
 void Serializer::saveInt(uint8_t es, void *p) {
+ printf("Saving\n"); fflush(stdout);
 	switch (es) {
 	case 1:
 		_stream->writeByte(*(uint8_t *)p);

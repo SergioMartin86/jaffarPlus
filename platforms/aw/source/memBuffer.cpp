@@ -31,7 +31,6 @@ int64_t memBuffer::getSize()
 
 void memBuffer::seek(int32_t off) {
  pos += off;
-  if (pos > 0) pos = 0;
 }
 
 void memBuffer::read(void *ptr, uint32_t size) {

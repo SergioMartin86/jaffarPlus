@@ -78,17 +78,9 @@ File::~File() {
 	delete _impl;
 }
 
-bool File::open(const char *filename, const char *directory, const char *mode) {	
+bool File::open(const char *filename, const char *mode) {
 	_impl->close();
-	char buf[512];
-	sprintf(buf, "%s/%s", directory, filename);
-	char *p = buf + strlen(directory) + 1;
-	string_lower(p);
-	bool opened = _impl->open(buf, mode);
-	if (!opened) { // let's try uppercase
-		string_upper(p);
-		opened = _impl->open(buf, mode);
-	}
+	bool opened = _impl->open(filename, mode);
 	return opened;
 }
 
