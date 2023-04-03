@@ -33,6 +33,8 @@ class EmuInstance : public EmuInstanceBase
   _engine = new Engine(stub, _gameFilesPath.c_str(), "");
   _engine->init();
 
+  if (stateFilePath != "") loadStateFile(stateFilePath);
+
   _engine->sys->context = boost::context::callcc(
     [this](boost::context::continuation && sink)
     {
@@ -42,6 +44,9 @@ class EmuInstance : public EmuInstanceBase
       // Store return context
       _engine->sys->context = std::move(sink);
 
+      // Set return state
+      _engine->sys->_doReturn = false;
+
       // Infinite game loop
       while(true)
       {
@@ -49,6 +54,13 @@ class EmuInstance : public EmuInstanceBase
        _engine->vm.inp_updatePlayer();
        _engine->processInput();
        _engine->vm.hostFrame();
+
+       if (_engine->sys->_doReturn == true)
+       {
+        // Returning to Jaffar
+        _engine->sys->context = _engine->sys->context.resume();
+        _engine->sys->_doReturn = false;
+       }
       }
 
       return std::move(sink);
@@ -58,15 +70,22 @@ class EmuInstance : public EmuInstanceBase
 //  size_t stateSize = _engine->getGameStateSize();
 //  printf("State Size: %lu\n", stateSize); fflush(stdout);
 //  exit(0);
+
  }
 
  void loadStateFile(const std::string& stateFilePath) override
  {
-
+  std::string stateData;
+  if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: '%s'\n", stateFilePath.c_str());
+  deserializeState((uint8_t*)stateData.data());
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
  {
+  std::string stateData;
+  stateData.resize(_STATE_DATA_SIZE_PLAY);
+  serializeState((uint8_t*)stateData.data());
+  saveStringToFile(stateData, stateFilePath.c_str());
  }
 
  void serializeState(uint8_t* state) const override
@@ -138,6 +157,7 @@ class EmuInstance : public EmuInstanceBase
  void advanceState(const INPUT_TYPE move) override
  {
   _engine->sys->input.dirMask  = 0;
+  _engine->sys->input.button = false;
 
   if (move & 0b00000001) _engine->sys->input.dirMask |= PlayerInput::DIR_UP;
   if (move & 0b00000010) _engine->sys->input.dirMask |= PlayerInput::DIR_DOWN;

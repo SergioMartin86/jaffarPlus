@@ -56,6 +56,7 @@ struct System {
 	PlayerInput input;
 
 	boost::context::continuation context;
+ bool _doReturn;
 
 	virtual ~System() {}
 

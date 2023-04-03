@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Game Files": "game",
-    "State File": ""
+    "State File": "raw.s00"
   },
   
   "Game Configuration": 

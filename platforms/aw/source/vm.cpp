@@ -293,8 +293,7 @@ void VirtualMachine::op_blitFramebuffer() {
 
 	if (_enableRender) video->updateDisplay(pageId);
 
- // Returning to Jaffar
- sys->context = sys->context.resume();
+	sys->_doReturn = true;
 }
 
 void VirtualMachine::op_killThread() {
