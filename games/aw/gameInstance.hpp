@@ -31,6 +31,19 @@ class GameInstance : public GameInstanceBase
 {
  public:
 
+ int16_t* randomSeed;
+ int16_t* pauseSlices;
+ int16_t* scrollY;
+ int16_t* heroAction;
+ int16_t* heroPosX;
+ int16_t* heroPosY;
+ int16_t* heroPosMask;
+ int16_t* heroActionPosMask;
+ int16_t* heroPosJumpCrouch;
+
+ // Container for game-specific values
+ uint8_t timerTolerance;
+
 
  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
  GameInstance(EmuInstance* emu, const nlohmann::json& config);
