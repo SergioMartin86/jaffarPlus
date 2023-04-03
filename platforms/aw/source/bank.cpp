@@ -29,8 +29,10 @@ bool Bank::read(const MemEntry *me, uint8_t *buf) {
 
 	bool ret = false;
 	char bankName[512];
-	sprintf(bankName, "BANK%02x", me->bankId);
- memBuffer& f = *_fileBuffers[std::string(bankName)];
+	sprintf(bankName, "BANK%02X", me->bankId);
+	auto fPtr = _fileBuffers[std::string(bankName)];
+	if (fPtr == NULL) error("Could not find bank file %s\n", bankName);
+ memBuffer& f = *fPtr;
  f.reset();
 	
 	f.seek(me->bankOffset);

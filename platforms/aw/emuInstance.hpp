@@ -13,11 +13,11 @@ extern System *stub;
 
 class EmuInstance : public EmuInstanceBase
 {
-
- Engine* _engine;
  std::string _gameFilesPath;
 
  public:
+
+ Engine* _engine;
 
  EmuInstance(const nlohmann::json& config) : EmuInstanceBase(config)
  {
