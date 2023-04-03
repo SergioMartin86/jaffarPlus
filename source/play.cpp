@@ -98,7 +98,7 @@ void loadSolutionFile(
 
  // Saving initial frame
  uint8_t* state = (uint8_t*) malloc(_STATE_DATA_SIZE_PLAY);
- gameInstance.loadStateFile(stateFile);
+ if (stateFile != "") gameInstance.loadStateFile(stateFile);
  gameInstance.updateDerivedValues();
  gameInstance.popState(state);
 
