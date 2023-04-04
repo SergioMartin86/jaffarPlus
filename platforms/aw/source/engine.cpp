@@ -25,8 +25,7 @@
 #include "utils.hpp"
 
 Engine::Engine(System *paramSys, const char *dataDir, const char *saveDir)
-	: sys(paramSys), vm(&mixer, &res, &player, &video, sys), mixer(sys), res(&video, dataDir), 
-	player(&mixer, &res, sys), video(&res, sys), _dataDir(dataDir), _saveDir(saveDir), _stateSlot(0) {
+	: sys(paramSys), vm(&res, &video, sys), res(&video, dataDir), video(&res, sys), _dataDir(dataDir), _saveDir(saveDir), _stateSlot(0) {
 }
 
 void Engine::run() {
@@ -92,10 +91,6 @@ void Engine::init() {
 
 	vm.init();
 
-	mixer.init();
-
-	player.init();
-
 	uint16_t part = GAME_PART1;  // This game part is the protection screen
 //#ifdef BYPASS_PROTECTION
   part = GAME_PART2;
@@ -115,8 +110,6 @@ void Engine::init() {
 }
 
 void Engine::finish() {
-	player.free();
-	mixer.free();
 	res.freeMemBlock();
 }
 
@@ -161,8 +154,6 @@ void Engine::loadGameState(memBuffer* m)
  int firstThreadId = 0;
  vm.threadsData[PC_OFFSET][firstThreadId] = 0;
 
- player.stop();
- mixer.stopAll();
  Serializer s(m, Serializer::SM_LOAD, res._memPtrStart, 0);
  processState(s);
 }
@@ -175,7 +166,4 @@ void Engine::processState(Serializer& s)
 #ifdef _JAFFAR_PLAY
  video.saveOrLoad(s);
 #endif
-
-// player.saveOrLoad(s);
- //mixer.saveOrLoad(s);
 }

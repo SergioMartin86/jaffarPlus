@@ -18,16 +18,14 @@
 
 #include <ctime>
 #include "vm.h"
-#include "mixer.h"
 #include "resource.h"
 #include "video.h"
 #include "serializer.h"
-#include "sfxplayer.h"
 #include "sys.h"
 #include "parts.h"
 
-VirtualMachine::VirtualMachine(Mixer *mix, Resource *resParameter, SfxPlayer *ply, Video *vid, System *stub)
-	: mixer(mix), res(resParameter), player(ply), video(vid), sys(stub) {
+VirtualMachine::VirtualMachine( Resource *resParameter, Video *vid, System *stub)
+	: res(resParameter), video(vid), sys(stub) {
 }
 
 void VirtualMachine::init() {
@@ -43,8 +41,6 @@ void VirtualMachine::init() {
    // these 2 variables are set by the engine executable
    vmVariables[0xDC] = 33;
 #endif
-
-	player->_markVar = &vmVariables[VM_VARIABLE_MUS_MARK];
 }
 
 void VirtualMachine::op_movConst() {
@@ -363,8 +359,6 @@ void VirtualMachine::op_updateMemList() {
 	debug(DBG_VM, "VirtualMachine::op_updateMemList(%d)", resourceId);
 
 	if (resourceId == 0) {
-		player->stop();
-//		mixer->stopAll();
 		res->invalidateRes();
 	} else {
 		res->loadPartsOrMemoryEntry(resourceId);
@@ -380,9 +374,6 @@ void VirtualMachine::op_playMusic() {
 }
 
 void VirtualMachine::initForPart(uint16_t partId) {
-
-	player->stop();
-//	mixer->stopAll();
 
 	//WTF is that ?
 	vmVariables[0xE4] = 0x14;
@@ -693,18 +684,8 @@ void VirtualMachine::snd_playSound(uint16_t resNum, uint8_t freq, uint8_t vol, u
 	
 }
 
-void VirtualMachine::snd_playMusic(uint16_t resNum, uint16_t delay, uint8_t pos) {
-
-	debug(DBG_SND, "snd_playMusic(0x%X, %d, %d)", resNum, delay, pos);
-
-	if (resNum != 0) {
-		player->loadSfxModule(resNum, delay, pos);
-		player->start();
-	} else if (delay != 0) {
-		player->setEventsDelay(delay);
-	} else {
-		player->stop();
-	}
+void VirtualMachine::snd_playMusic(uint16_t resNum, uint16_t delay, uint8_t pos)
+{
 }
 
 void VirtualMachine::saveOrLoad(Serializer &ser) {
