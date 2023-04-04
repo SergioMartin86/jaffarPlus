@@ -7,10 +7,10 @@ class GameRule : public Rule
 {
  public:
 
- magnetSet_t _magnets;
 
  GameRule();
  ~GameRule() = default;
+ magnetSet_t _magnets[_ROOM_COUNT_];
 
  bool parseGameAction(nlohmann::json actionJs, size_t actionId) override;
  datatype_t getPropertyType(const nlohmann::json& condition) override;

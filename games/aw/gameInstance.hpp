@@ -8,17 +8,17 @@
 
 // Datatype to describe a generic magnet
 struct genericMagnet_t {
- float intensity = 0.0; // How strong the magnet is
- float center = 0.0;  // What is the central point of attraction
- float min = 0.0;  // What is the minimum input value to the calculation.
- float max = 0.0;  // What is the maximum input value to the calculation.
+ float intensity = 0.0f; // How strong the magnet is
+ uint8_t room = 0; // Which room does the magnet correspond to
+ float center = 0.0f;  // What is the central point of attraction
+ bool active = false; // Indicates whether the value for this magnet has specified
 };
 
 // Datatype to describe a magnet
 struct magnetSet_t {
- genericMagnet_t lesterHorizontalMagnet[_ROOM_COUNT_];
- genericMagnet_t lesterVerticalMagnet[_ROOM_COUNT_];
- genericMagnet_t alienHorizontalMagnet[_ROOM_COUNT_];
+ genericMagnet_t lesterHorizontalMagnet;
+ genericMagnet_t lesterVerticalMagnet;
+ genericMagnet_t alienHorizontalMagnet;
 
  float gunChargeMagnet = 0;
  float gunPowerLoadMagnet = 0;
@@ -31,19 +31,17 @@ class GameInstance : public GameInstanceBase
 {
  public:
 
- int16_t* randomSeed;
- int16_t* pauseSlices;
- int16_t* scrollY;
- int16_t* heroAction;
- int16_t* heroPosX;
- int16_t* heroPosY;
- int16_t* heroPosMask;
- int16_t* heroActionPosMask;
- int16_t* heroPosJumpCrouch;
+ // LDKD
+ int16_t* lesterSwimState;
+ int16_t* lesterPosX;
+ int16_t* lesterPosY;
+ int16_t* lesterRoom;
+ int16_t* lesterAction;
+ int16_t* lesterAirMode;
 
  // Container for game-specific values
  uint8_t timerTolerance;
-
+ std::string levelCode;
 
  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
  GameInstance(EmuInstance* emu, const nlohmann::json& config);

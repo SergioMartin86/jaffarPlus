@@ -53,7 +53,6 @@ class EmuInstance : public EmuInstanceBase
        _engine->vm.checkThreadRequests();
        _engine->vm.inp_updatePlayer();
        _engine->processInput();
-       _engine->vm.hostFrame();
 
        if (_engine->sys->_doReturn == true)
        {
@@ -61,6 +60,8 @@ class EmuInstance : public EmuInstanceBase
         _engine->sys->context = _engine->sys->context.resume();
         _engine->sys->_doReturn = false;
        }
+
+       _engine->vm.hostFrame();
       }
 
       return std::move(sink);
