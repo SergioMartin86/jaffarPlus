@@ -91,7 +91,7 @@ struct VirtualMachine {
 	uint8_t _stackPtr;
 	bool gotoNextThread;
 
-	VirtualMachine(Mixer *mix, Resource *res, SfxPlayer *ply, Video *vid, System *stub);
+	VirtualMachine(Resource *res, Video *vid, System *stub);
 	void init();
 	
 	void op_movConst();

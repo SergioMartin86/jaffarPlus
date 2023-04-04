@@ -21,8 +21,6 @@
 
 #include "intern.h"
 #include "vm.h"
-#include "mixer.h"
-#include "sfxplayer.h"
 #include "resource.h"
 #include "video.h"
 #include "memBuffer.h"
@@ -38,9 +36,7 @@ struct Engine {
 
 	System *sys;
 	VirtualMachine vm;
-	Mixer mixer;
 	Resource res;
-	SfxPlayer player;
 	Video video;
 	const char *_dataDir, *_saveDir;
 	uint8_t _stateSlot;
