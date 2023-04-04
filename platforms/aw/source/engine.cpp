@@ -156,6 +156,11 @@ void Engine::loadGameState(uint8_t* buffer)
 
 void Engine::loadGameState(memBuffer* m)
 {
+ memset((uint8_t *)vm.threadsData, 0xFF, sizeof(vm.threadsData));
+ memset((uint8_t *)vm.vmIsChannelActive, 0, sizeof(vm.vmIsChannelActive));
+ int firstThreadId = 0;
+ vm.threadsData[PC_OFFSET][firstThreadId] = 0;
+
  player.stop();
  mixer.stopAll();
  Serializer s(m, Serializer::SM_LOAD, res._memPtrStart, 0);
@@ -171,6 +176,6 @@ void Engine::processState(Serializer& s)
  video.saveOrLoad(s);
 #endif
 
- player.saveOrLoad(s);
+// player.saveOrLoad(s);
  //mixer.saveOrLoad(s);
 }

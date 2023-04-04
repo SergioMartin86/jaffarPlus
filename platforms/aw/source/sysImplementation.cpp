@@ -35,7 +35,7 @@ struct SDLStub : System {
 		SOUND_SAMPLE_RATE = 22050
 	};
 
-	int DEFAULT_SCALE = 3;
+	int DEFAULT_SCALE = 2;
 
 #ifdef _JAFFAR_PLAY
 	SDL_Surface *_screen = nullptr;
