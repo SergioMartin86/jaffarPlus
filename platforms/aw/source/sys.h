@@ -20,7 +20,6 @@
 #define __SYSTEM_H__
 
 #include "intern.h"
-#include <boost/context/continuation.hpp>
 #include <map>
 
 extern bool _enableRender;
@@ -55,7 +54,6 @@ struct System {
 	
 	PlayerInput input;
 
-	boost::context::continuation context;
  bool _doReturn;
 
 	virtual ~System() {}

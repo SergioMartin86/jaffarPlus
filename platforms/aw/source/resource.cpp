@@ -340,6 +340,7 @@ void Resource::freeMemBlock() {
 }
 
 void Resource::saveOrLoad(Serializer &ser) {
+
 	uint8_t loadedList[64];
 	if (ser._mode == Serializer::SM_SAVE) {
 		memset(loadedList, 0, sizeof(loadedList));

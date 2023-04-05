@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <utils.hpp>
-
+#include <boost/context/continuation.hpp>
 #include "engine.h"
 #include "sys.h"
 
@@ -14,6 +14,7 @@ extern System *stub;
 class EmuInstance : public EmuInstanceBase
 {
  std::string _gameFilesPath;
+ boost::context::continuation gameContext;
 
  public:
 
@@ -35,14 +36,14 @@ class EmuInstance : public EmuInstanceBase
 
   if (stateFilePath != "") loadStateFile(stateFilePath);
 
-  _engine->sys->context = boost::context::callcc(
+  gameContext = boost::context::callcc(
     [this](boost::context::continuation && sink)
     {
       // Return once
       sink = sink.resume();
 
       // Store return context
-      _engine->sys->context = std::move(sink);
+      gameContext = std::move(sink);
 
       // Set return state
       _engine->sys->_doReturn = false;
@@ -57,7 +58,7 @@ class EmuInstance : public EmuInstanceBase
        if (_engine->sys->_doReturn == true)
        {
         // Returning to Jaffar
-        _engine->sys->context = _engine->sys->context.resume();
+        gameContext = gameContext.resume();
         _engine->sys->_doReturn = false;
        }
 
@@ -176,7 +177,7 @@ class EmuInstance : public EmuInstanceBase
   if (move & 0b00001000) _engine->sys->input.dirMask |= PlayerInput::DIR_RIGHT;
   if (move & 0b00010000) _engine->sys->input.button = true;
 
-  _engine->sys->context = _engine->sys->context.resume();
+  gameContext = gameContext.resume();
  }
 
 };

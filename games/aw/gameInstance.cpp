@@ -34,6 +34,8 @@ _uint128_t GameInstance::computeHash() const
   // Storage for hash calculation
   MetroHash128 hash;
 
+  hash.Update((uint8_t *)_emu->_engine->vm.threadsData, sizeof(_emu->_engine->vm.threadsData));
+
   if (levelCode == "LDKD")
   {
    hash.Update(*lesterSwimState);

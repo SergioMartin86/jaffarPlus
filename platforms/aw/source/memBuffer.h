@@ -21,6 +21,7 @@
 #include "intern.h"
 #include <map>
 #include <string>
+#include <mutex>
 
 struct memBuffer {
  uint8_t *buffer;
@@ -40,4 +41,4 @@ struct memBuffer {
 	void writeUint32BE(uint32_t n);
 };
 
-extern std::map<std::string, memBuffer*> _fileBuffers;
+extern thread_local std::map<std::string, memBuffer*> _fileBuffers;
