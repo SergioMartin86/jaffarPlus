@@ -78,4 +78,4 @@ void memBuffer::writeUint32BE(uint32_t n) {
  writeUint16BE(n & 0xFFFF);
 }
 
-std::map<std::string, memBuffer*> _fileBuffers;
+thread_local std::map<std::string, memBuffer*> _fileBuffers;

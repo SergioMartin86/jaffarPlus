@@ -69,16 +69,13 @@ void Engine::init() {
  fileList.push_back("BANK0C");
  fileList.push_back("BANK0D");
 
-#pragma omp single
- for(const auto& f : fileList)
+ if (_fileBuffers.size() == 0) for(const auto& f : fileList)
  {
   std::string path = std::string(_dataDir) + std::string("/") + f;
   auto s = new std::string;
   if (loadStringFromFile(*s, path.c_str()) == false) EXIT_WITH_ERROR("Could not load file %s\n", path.c_str());
   _fileBuffers[f] = new memBuffer((uint8_t*)s->data());
  }
-
-#pragma omp barrier
 
 	//Init system
 	sys->init("Out Of This World");
@@ -149,11 +146,6 @@ void Engine::loadGameState(uint8_t* buffer)
 
 void Engine::loadGameState(memBuffer* m)
 {
- memset((uint8_t *)vm.threadsData, 0xFF, sizeof(vm.threadsData));
- memset((uint8_t *)vm.vmIsChannelActive, 0, sizeof(vm.vmIsChannelActive));
- int firstThreadId = 0;
- vm.threadsData[PC_OFFSET][firstThreadId] = 0;
-
  Serializer s(m, Serializer::SM_LOAD, res._memPtrStart, 0);
  processState(s);
 }
