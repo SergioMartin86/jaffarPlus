@@ -69,6 +69,14 @@ class EmuInstance : public EmuInstanceBase
     }
    );
 
+    #ifdef _JAFFAR_PLAY
+     _engine->_enableVideoLoad = true;
+     _engine->_enableResourceLoad = true;
+    #else
+     _engine->_enableVideoLoad = false;
+     _engine->_enableResourceLoad = false;
+    #endif
+
 //  size_t stateSize = _engine->getGameStateSize();
 //  printf("State Size: %lu\n", stateSize); fflush(stdout);
 //  exit(0);
@@ -78,39 +86,39 @@ class EmuInstance : public EmuInstanceBase
  void loadStateFile(const std::string& stateFilePath) override
  {
   _engine->_enableVideoLoad = true;
+  _engine->_enableResourceLoad = true;
   std::string stateData;
   if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: '%s'\n", stateFilePath.c_str());
-  deserializeState((uint8_t*)stateData.data());
+
+  _engine->_enableVideoLoad = true;
+  _engine->_enableResourceLoad = true;
+
+  uint8_t buf[_STATE_DATA_SIZE_PLAY];
+  memcpy(buf, (uint8_t*)stateData.data(), _STATE_DATA_SIZE_PLAY);
+  _engine->loadGameState(buf);
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
  {
   _engine->_enableVideoLoad = true;
+  _engine->_enableResourceLoad = true;
   std::string stateData;
   stateData.resize(_STATE_DATA_SIZE_PLAY);
-  serializeState((uint8_t*)stateData.data());
+  _engine->saveGameState((uint8_t*)stateData.data());
   saveStringToFile(stateData, stateFilePath.c_str());
  }
 
  void serializeState(uint8_t* state) const override
  {
-  #ifdef _JAFFAR_PLAY
-   _engine->_enableVideoLoad = true;
-  #else
-   _engine->_enableVideoLoad = false;
-  #endif
-
   _engine->saveGameState(state);
  }
 
  void deserializeState(const uint8_t* state) override
  {
    #ifdef _JAFFAR_PLAY
-    _engine->_enableVideoLoad = true;
     uint8_t buf[_STATE_DATA_SIZE_PLAY];
     memcpy(buf, state, _STATE_DATA_SIZE_PLAY);
    #else
-    _engine->_enableVideoLoad = false;
     uint8_t buf[_STATE_DATA_SIZE_TRAIN];
     memcpy(buf, state, _STATE_DATA_SIZE_TRAIN);
    #endif

@@ -41,6 +41,7 @@ struct Engine {
 	const char *_dataDir, *_saveDir;
 	uint8_t _stateSlot;
 	bool _enableVideoLoad = true;
+	bool _enableResourceLoad = true;
 
 	Engine(System *stub, const char *dataDir, const char *saveDir);
 	~Engine();
