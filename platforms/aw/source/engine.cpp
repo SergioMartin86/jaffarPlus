@@ -163,7 +163,5 @@ void Engine::processState(Serializer& s)
  vm.saveOrLoad(s);
  res.saveOrLoad(s);
 
-#ifdef _JAFFAR_PLAY
- video.saveOrLoad(s);
-#endif
+ if (_enableVideoLoad == true) video.saveOrLoad(s);
 }
