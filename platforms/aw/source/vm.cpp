@@ -629,7 +629,8 @@ void VirtualMachine::inp_updatePlayer() {
 	vmVariables[VM_VARIABLE_HERO_ACTION_POS_MASK] = m;
 }
 
-void VirtualMachine::inp_handleSpecialKeys() {
+void VirtualMachine::inp_handleSpecialKeys()
+{
 
 	if (sys->input.pause) {
 
