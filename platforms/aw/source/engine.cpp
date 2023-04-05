@@ -133,6 +133,8 @@ size_t Engine::getGameStateSize()
 {
   uint8_t* b = (uint8_t*) malloc (1048576);
   memBuffer m(b);
+  _enableResourceLoad = false;
+  _enableVideoLoad = false;
   saveGameState(&m);
   free(b);
   return m.getSize();
@@ -153,7 +155,7 @@ void Engine::loadGameState(memBuffer* m)
 void Engine::processState(Serializer& s)
 {
  vm.saveOrLoad(s);
- res.saveOrLoad(s);
 
+ if (_enableResourceLoad == true) res.saveOrLoad(s);
  if (_enableVideoLoad == true) video.saveOrLoad(s);
 }
