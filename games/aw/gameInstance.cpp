@@ -20,12 +20,39 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lesterSwimState         = (int16_t*) &_emu->_engine->vm.vmVariables[0xE5];
   lesterPosX              = (int16_t*) &_emu->_engine->vm.vmVariables[0x01];
   lesterPosY              = (int16_t*) &_emu->_engine->vm.vmVariables[0x02];
-  lesterRoom              = (int16_t*) &_emu->_engine->vm.vmVariables[0x2A];
+  lesterRoom              = (int16_t*) &_emu->_engine->vm.vmVariables[0x66];
   lesterAction            = (int16_t*) &_emu->_engine->vm.vmVariables[ScriptVars::VM_VARIABLE_HERO_ACTION];
   lesterAirMode           = (int16_t*) &_emu->_engine->vm.vmVariables[0x63];
+  gameScriptState         = (int16_t*) &_emu->_engine->vm.vmVariables[0x2A];
 
   // Initialize derivative values
   updateDerivedValues();
+
+  // Clearing cheat engine data
+  vmVariablesPrevValues.resize(0x100);
+  vmVariablesDisplay.resize(0x100);
+  vmVariablesClear();
+}
+
+// Cheat engine like data
+void GameInstance::vmVariablesClear()
+{
+ for (size_t i = 0; i < vmVariablesPrevValues.size(); i++) vmVariablesPrevValues[i] = _emu->_engine->vm.vmVariables[i];
+ for (size_t i = 0; i < vmVariablesDisplay.size(); i++) vmVariablesDisplay[i] = true;
+}
+
+void GameInstance::vmVariablesKeepEqual()
+{
+ for (size_t i = 0; i < vmVariablesPrevValues.size(); i++)
+  if (vmVariablesPrevValues[i] != _emu->_engine->vm.vmVariables[i]) vmVariablesDisplay[i] = false;
+ for (size_t i = 0; i < vmVariablesPrevValues.size(); i++) vmVariablesPrevValues[i] = _emu->_engine->vm.vmVariables[i];
+}
+
+void GameInstance::vmVariablesKeepDifferent()
+{
+ for (size_t i = 0; i < vmVariablesPrevValues.size(); i++)
+  if (vmVariablesPrevValues[i] == _emu->_engine->vm.vmVariables[i]) vmVariablesDisplay[i] = false;
+ for (size_t i = 0; i < vmVariablesPrevValues.size(); i++) vmVariablesPrevValues[i] = _emu->_engine->vm.vmVariables[i];
 }
 
 // This function computes the hash for the current state
@@ -40,7 +67,9 @@ _uint128_t GameInstance::computeHash() const
   {
    hash.Update(*lesterSwimState);
    hash.Update(*lesterAirMode);
-   for (int i = 0; i < 0x30; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+   for (int i = 0; i < 0xFD; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+//   hash.Update(_emu->_engine->vm.vmVariables[0xFE]);
+   hash.Update(_emu->_engine->vm.vmVariables[0xFF]);
   }
 
   _uint128_t result;
@@ -65,7 +94,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
- return { "." };
+ return { ".", "R", "L", "D", "B", "U", "RB", "LB", "DB", "DR", "DL", "UL", "UB", "UR", "ULB", "URB", "DLB", "DRB" };
 }
 
 // Function to get magnet information
@@ -117,6 +146,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
+ LOG("[Jaffar]  + Game Script State:      %04d\n", *gameScriptState);
+
  LOG("[Jaffar]  + Level Code:             %s\n", levelCode.c_str());
 
  if (levelCode == "LDKD")
@@ -135,7 +166,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  for (int i = 0; i < VM_NUM_VARIABLES; i++)
  {
   if (i % 16 == 0) LOG("\n[Jaffar]  %1X  ", i / 16);
-  LOG("%04X ", (uint16_t)_emu->_engine->vm.vmVariables[i]);
+  if (vmVariablesDisplay[i] == true) LOG("%04X ", (uint16_t)_emu->_engine->vm.vmVariables[i]);
+  if (vmVariablesDisplay[i] == false) LOG("---- ");
  }
  LOG("\n");
 
