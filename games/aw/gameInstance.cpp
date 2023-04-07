@@ -24,6 +24,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lesterAction            = (int16_t*) &_emu->_engine->vm.vmVariables[ScriptVars::VM_VARIABLE_HERO_ACTION];
   lesterAirMode           = (int16_t*) &_emu->_engine->vm.vmVariables[0x63];
   gameScriptState         = (int16_t*) &_emu->_engine->vm.vmVariables[0x2A];
+  gameAnimState           = (int16_t*) &_emu->_engine->vm.vmVariables[0x0F];
+  lesterDeadState         = (int16_t*) &_emu->_engine->vm.vmVariables[0x2B];
 
   // Initialize derivative values
   updateDerivedValues();
@@ -62,15 +64,14 @@ _uint128_t GameInstance::computeHash() const
   MetroHash128 hash;
 
   hash.Update((uint8_t *)_emu->_engine->vm.threadsData, sizeof(_emu->_engine->vm.threadsData));
+  hash.Update((uint8_t *)_emu->_engine->vm._scriptStackCalls, sizeof(_emu->_engine->vm._scriptStackCalls));
+//  hash.Update((uint8_t *)_emu->_engine->vm.vmIsChannelActive, sizeof(_emu->_engine->vm.vmIsChannelActive));
 
-  if (levelCode == "LDKD")
-  {
-   hash.Update(*lesterSwimState);
-   hash.Update(*lesterAirMode);
-   for (int i = 0; i < 0xFD; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
-//   hash.Update(_emu->_engine->vm.vmVariables[0xFE]);
-   hash.Update(_emu->_engine->vm.vmVariables[0xFF]);
-  }
+  hash.Update(_emu->_engine->buttonPressCount);
+
+  for (int i = 0x00; i < 0x30; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+  for (int i = 0x60; i < 0x70; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+  for (int i = 0xF0; i < 0xFF; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -87,6 +88,14 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
  std::vector<INPUT_TYPE> moves;
 
  _emu->advanceState(move);
+
+ _emu->_engine->buttonPressCount += countButtonsPressedNumber(move);
+ if (move != _emu->_engine->lastInput0) _emu->_engine->diffInputCount++;
+
+ _emu->_engine->lastInput3 = _emu->_engine->lastInput2;
+ _emu->_engine->lastInput2 = _emu->_engine->lastInput1;
+ _emu->_engine->lastInput1 = _emu->_engine->lastInput0;
+ _emu->_engine->lastInput0 = move;
 
  return moves;
 }
@@ -139,6 +148,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   diff = -336.0f + std::abs(magnets.lesterVerticalMagnet.center - (float)*lesterPosY);
   reward += magnets.lesterVerticalMagnet.intensity * -diff;
 
+  reward -= (float)_emu->_engine->buttonPressCount * 0.0001f;
+  reward -= (float)_emu->_engine->diffInputCount * 0.00001f;
+
   return reward;
 }
 
@@ -146,19 +158,19 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
- LOG("[Jaffar]  + Game Script State:      %04d\n", *gameScriptState);
-
+ LOG("[Jaffar]  + Game State:             %04d / %04d\n", *gameScriptState, *gameAnimState);
  LOG("[Jaffar]  + Level Code:             %s\n", levelCode.c_str());
+ LOG("[Jaffar]  + Last Inputs:            %02X (%s), %02X (%s), %02X (%s), %02X (%s)\n", _emu->_engine->lastInput0, EmuInstance::moveCodeToString(_emu->_engine->lastInput0).c_str(), _emu->_engine->lastInput1, EmuInstance::moveCodeToString(_emu->_engine->lastInput1).c_str(), _emu->_engine->lastInput2, EmuInstance::moveCodeToString(_emu->_engine->lastInput2).c_str(), _emu->_engine->lastInput3, EmuInstance::moveCodeToString(_emu->_engine->lastInput3).c_str());
+ LOG("[Jaffar]  + Button Press Count:     %u\n", _emu->_engine->buttonPressCount);
+ LOG("[Jaffar]  + Diff Input Count:       %u\n", _emu->_engine->diffInputCount);
 
- if (levelCode == "LDKD")
- {
-  LOG("[Jaffar]  + Lester Swim State:      %04d\n", *lesterSwimState);
-  LOG("[Jaffar]  + Lester Pos X:           %04d\n", *lesterPosX);
-  LOG("[Jaffar]  + Lester Pos Y:           %04d\n", *lesterPosY);
-  LOG("[Jaffar]  + Lester Room:            %04d\n", *lesterRoom);
-  LOG("[Jaffar]  + Lester Action:          %04d\n", *lesterAction);
-  LOG("[Jaffar]  + Lester Air Mode:        %04d\n", *lesterAirMode);
- }
+ LOG("[Jaffar]  + Lester Swim State:      %04d\n", *lesterSwimState);
+ LOG("[Jaffar]  + Lester Pos X:           %04d\n", *lesterPosX);
+ LOG("[Jaffar]  + Lester Pos Y:           %04d\n", *lesterPosY);
+ LOG("[Jaffar]  + Lester Room:            %04d\n", *lesterRoom);
+ LOG("[Jaffar]  + Lester Action:          %04d\n", *lesterAction);
+ LOG("[Jaffar]  + Lester Air Mode:        %04d\n", *lesterAirMode);
+ LOG("[Jaffar]  + Lester Dead State:      %04d\n", *lesterDeadState);
 
  LOG("[Jaffar]  + Ram Map: \n");
  LOG("[Jaffar]      ");

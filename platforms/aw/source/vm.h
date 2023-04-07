@@ -45,10 +45,8 @@ enum ScriptVars {
 		VM_VARIABLE_PAUSE_SLICES         = 0xFF
 	};
 
-struct Mixer;
 struct Resource;
 struct Serializer;
-struct SfxPlayer;
 struct System;
 struct Video;
 
@@ -71,9 +69,7 @@ struct VirtualMachine {
 	//This table is used to play a sound
 	static const uint16_t frequenceTable[];
 
-	Mixer *mixer;
 	Resource *res;
-	SfxPlayer *player;
 	Video *video;
 	System *sys;
 

@@ -86,7 +86,9 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Lester Room") return dt_int16;
+  if (propertyName == "Lester Dead State") return dt_int16;
   if (propertyName == "Game Script State") return dt_int16;
+  if (propertyName == "Game Anim State") return dt_int16;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -98,7 +100,9 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Lester Room") return gameInstance->lesterRoom;
+  if (propertyName == "Lester Dead State") return gameInstance->lesterDeadState;
   if (propertyName == "Game Script State") return gameInstance->gameScriptState;
+  if (propertyName == "Game Anim State") return gameInstance->gameAnimState;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

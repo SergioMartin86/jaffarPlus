@@ -485,6 +485,10 @@ void Video::drawLineP(int16_t x1, int16_t x2, uint8_t color) {
 }
 
 uint8_t *Video::getPage(uint8_t page) {
+#ifndef _JAFFAR_PLAY
+ return 0;
+#endif
+
 	uint8_t *p;
 	if (page <= 3) {
 		p = _pages[page];
@@ -508,6 +512,9 @@ uint8_t *Video::getPage(uint8_t page) {
 
 
 void Video::changePagePtr1(uint8_t pageID) {
+#ifndef _JAFFAR_PLAY
+ return;
+#endif
 	debug(DBG_VIDEO, "Video::changePagePtr1(%d)", pageID);
 	_curPagePtr1 = getPage(pageID);
 }

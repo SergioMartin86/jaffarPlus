@@ -23,6 +23,8 @@ class PlaybackInstance : public PlaybackInstanceBase
  // Function to render frame
  void renderFrame(const uint16_t currentStep, const std::string& move) override
  {
+  usleep(_INVERSE_FRAME_RATE);
+
   uint8_t emuState[_STATE_DATA_SIZE_PLAY];
   _game->_emu->serializeState(emuState);
 
