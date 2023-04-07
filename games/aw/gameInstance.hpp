@@ -1,6 +1,6 @@
 #pragma once
 
-#define _INVERSE_FRAME_RATE 16667
+#define _INVERSE_FRAME_RATE 33334
 #define _ROOM_COUNT_ 256
 
 #include "gameInstanceBase.hpp"
@@ -38,7 +38,9 @@ class GameInstance : public GameInstanceBase
  int16_t* lesterRoom;
  int16_t* lesterAction;
  int16_t* lesterAirMode;
+ int16_t* lesterDeadState;
  int16_t* gameScriptState;
+ int16_t* gameAnimState;
 
  // Container for game-specific values
  uint8_t timerTolerance;
