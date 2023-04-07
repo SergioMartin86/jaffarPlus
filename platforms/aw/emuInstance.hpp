@@ -7,9 +7,8 @@
 #include <utils.hpp>
 #include <boost/context/continuation.hpp>
 #include "engine.h"
+#include "sysImplementation.hpp"
 #include "sys.h"
-
-extern System *stub;
 
 class EmuInstance : public EmuInstanceBase
 {
@@ -31,7 +30,8 @@ class EmuInstance : public EmuInstanceBase
   std::string stateFilePath = config["State File"].get<std::string>();
 
   _enableRender = false;
-  _engine = new Engine(stub, _gameFilesPath.c_str(), "");
+  SDLStub* sysImplementation = new SDLStub();
+  _engine = new Engine(sysImplementation, _gameFilesPath.c_str(), "");
   _engine->init();
 
   if (stateFilePath != "") loadStateFile(stateFilePath);

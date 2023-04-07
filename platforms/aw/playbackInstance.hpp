@@ -43,7 +43,29 @@ class PlaybackInstance : public PlaybackInstanceBase
  // Function to render frame
  bool parseCommand(const char command, uint8_t* state) override
  {
-  return true;
+   #ifdef NCURSES
+
+   if (command == 'c')
+   {
+    _game->vmVariablesClear();
+    return true;
+   }
+
+   if (command == 'w')
+   {
+    _game->vmVariablesKeepDifferent();
+    return true;
+   }
+
+   if (command == 'e')
+   {
+    _game->vmVariablesKeepEqual();
+    return true;
+   }
+
+   #endif
+
+   return true;
  }
 
 };

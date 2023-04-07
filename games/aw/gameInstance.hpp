@@ -38,10 +38,19 @@ class GameInstance : public GameInstanceBase
  int16_t* lesterRoom;
  int16_t* lesterAction;
  int16_t* lesterAirMode;
+ int16_t* gameScriptState;
 
  // Container for game-specific values
  uint8_t timerTolerance;
  std::string levelCode;
+
+ // Cheat engine like data
+ std::vector<int16_t> vmVariablesPrevValues;
+ std::vector<bool> vmVariablesDisplay;
+
+ void vmVariablesClear();
+ void vmVariablesKeepEqual();
+ void vmVariablesKeepDifferent();
 
  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
  GameInstance(EmuInstance* emu, const nlohmann::json& config);
