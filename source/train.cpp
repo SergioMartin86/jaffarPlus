@@ -11,7 +11,7 @@
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ lesterAction
+ #define _KEY_VALUE_ lesterState
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -292,7 +292,7 @@ void Train::computeStates()
             if ((i & 0b10000000) == 0) // Atari Unused
             if ((i & 0b01000000) == 0) // Atari Unused
             if ((i & 0b00100000) == 0) // Atari Unused
-         if (countButtonsPressedNumber(i) > 2 == false)
+         if (countButtonsPressedNumber(i) > 3 == false)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
@@ -345,7 +345,7 @@ void Train::computeStates()
 
         // Compute hash value
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
-        auto hash = _gameInstances[threadId]->computeHash();
+        auto hash = _gameInstances[threadId]->computeHash(_currentStep);
         tf = std::chrono::high_resolution_clock::now();
         threadHashCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 

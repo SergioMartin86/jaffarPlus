@@ -61,7 +61,7 @@ class GameInstanceBase
   void satisfyRule(bool* rulesStatus, const size_t ruleId) const;
 
   // This function computes the hash for the current state
-  virtual _uint128_t computeHash() const = 0;
+  virtual _uint128_t computeHash(const uint16_t currentStep = 0) const = 0;
 
   // This function updates derivate values (those who require calculation from raw values) after a state is re-loaded
   virtual void updateDerivedValues() = 0;

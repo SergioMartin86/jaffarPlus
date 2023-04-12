@@ -309,7 +309,8 @@ int main(int argc, char *argv[])
   do
   {
    // Loading requested step
-   gameInstance.pushState(stateSequence[currentStep]);
+   auto& curState = stateSequence[currentStep == 0 ? 0 : currentStep-1];
+   gameInstance.pushState(curState);
    memset(rulesStatus, 0, ruleCount * sizeof(bool));
    gameInstance.evaluateRules(rulesStatus);
    auto frameCheckpoint = gameInstance.getCheckpointLevel(rulesStatus);
@@ -373,7 +374,7 @@ int main(int argc, char *argv[])
    command = getKeyPress();
 
    // Parsing command
-   showFrameInfo = playbackInstance.parseCommand(command, stateSequence[currentStep]);
+   showFrameInfo = playbackInstance.parseCommand(command, curState);
 
    // Advance/Rewind commands
    if (command == 'n') currentStep = currentStep - 1;
