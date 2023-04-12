@@ -27,13 +27,6 @@
 Engine::Engine(System *paramSys, const char *dataDir, const char *saveDir)
 	: sys(paramSys), vm(&res, &video, sys), res(&video, dataDir), video(&res, sys), _dataDir(dataDir), _saveDir(saveDir), _stateSlot(0)
 {
- lastInput0 = 0;
- lastInput1 = 0;
- lastInput2 = 0;
- lastInput3 = 0;
-
- buttonPressCount = 0;
- diffInputCount = 0;
 }
 
 void Engine::run() {
@@ -129,12 +122,6 @@ void Engine::saveGameState(uint8_t* buffer)
 {
   memBuffer m(buffer);
   saveGameState(&m);
-  m.write(&lastInput0, sizeof(lastInput0));
-  m.write(&lastInput1, sizeof(lastInput1));
-  m.write(&lastInput2, sizeof(lastInput2));
-  m.write(&lastInput3, sizeof(lastInput3));
-  m.write(&buttonPressCount, sizeof(buttonPressCount));
-  m.write(&diffInputCount, sizeof(diffInputCount));
 }
 
 void Engine::saveGameState(memBuffer* m)
@@ -151,20 +138,13 @@ size_t Engine::getGameStateSize()
   _enableVideoLoad = false;
   saveGameState(&m);
   free(b);
-  size_t size = m.getSize() + sizeof(lastInput0) * 4 + sizeof(buttonPressCount) + sizeof(diffInputCount);
-  return size;
+  return m.getSize();
 }
 
 void Engine::loadGameState(uint8_t* buffer)
 {
  memBuffer m(buffer);
  loadGameState(&m);
- m.read(&lastInput0, sizeof(lastInput0));
- m.read(&lastInput1, sizeof(lastInput1));
- m.read(&lastInput2, sizeof(lastInput2));
- m.read(&lastInput3, sizeof(lastInput3));
- m.read(&buttonPressCount, sizeof(buttonPressCount));
- m.read(&diffInputCount, sizeof(diffInputCount));
 }
 
 void Engine::loadGameState(memBuffer* m)

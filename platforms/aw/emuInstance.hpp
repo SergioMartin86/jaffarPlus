@@ -89,20 +89,9 @@ class EmuInstance : public EmuInstanceBase
   _engine->_enableResourceLoad = true;
   std::string stateData;
   if (loadStringFromFile(stateData, stateFilePath.c_str()) == false) EXIT_WITH_ERROR("Could not find/read state file: '%s'\n", stateFilePath.c_str());
-
-  _engine->_enableVideoLoad = true;
-  _engine->_enableResourceLoad = true;
-
   uint8_t buf[_STATE_DATA_SIZE_PLAY];
   memcpy(buf, (uint8_t*)stateData.data(), _STATE_DATA_SIZE_PLAY);
   _engine->loadGameState(buf);
-
-  _engine->lastInput0 = 0;
-  _engine->lastInput1 = 0;
-  _engine->lastInput2 = 0;
-  _engine->lastInput3 = 0;
-  _engine->buttonPressCount = 0;
-  _engine->diffInputCount = 0;
  }
 
  void saveStateFile(const std::string& stateFilePath) const override
