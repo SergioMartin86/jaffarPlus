@@ -65,6 +65,58 @@ class PlaybackInstance : public PlaybackInstanceBase
     return true;
    }
 
+   if (command == ',')
+   {
+    _game->vmVariablesKeepGreater();
+    return true;
+   }
+
+   if (command == '.')
+   {
+    _game->vmVariablesKeepSmaller();
+    return true;
+   }
+
+   if (command == 'o')
+   {
+    // Obtaining RNG state
+    LOG("Enter memory file: ");
+
+    // Setting input as new rng
+    char str[80]; getstr(str);
+
+    LOG("Loading low memory file '%s'...\n", str);
+    std::string lowMemData;
+    bool status = loadStringFromFile(lowMemData, str);
+    if (status == false) { printw("Could not read from file %s.\n", str); return false; }
+    for (size_t i = 0; i < 0x100; i++)
+    {
+     ((uint8_t*)_game->_emu->_engine->vm.vmVariables)[i*2 + 0] = lowMemData.data()[i*2 + 1];
+     ((uint8_t*)_game->_emu->_engine->vm.vmVariables)[i*2 + 1] = lowMemData.data()[i*2 + 0];
+    }
+
+    // Replacing current sequence
+    _game->popState(state);
+
+    return true;
+   }
+
+   if (command == 'a')
+   {
+
+    LOG("Enter new RNG value: ");
+
+    // Setting input as new rng
+    char str[80]; getstr(str);
+
+    _game->_emu->_engine->vm.vmVariables[0x37] = atoi(str);
+
+    // Replacing current sequence
+    _game->popState(state);
+
+    return true;
+   }
+
    #endif
 
    return true;

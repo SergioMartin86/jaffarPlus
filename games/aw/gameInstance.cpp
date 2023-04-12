@@ -22,10 +22,24 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lesterPosY              = (int16_t*) &_emu->_engine->vm.vmVariables[0x02];
   lesterRoom              = (int16_t*) &_emu->_engine->vm.vmVariables[0x66];
   lesterAction            = (int16_t*) &_emu->_engine->vm.vmVariables[ScriptVars::VM_VARIABLE_HERO_ACTION];
-  lesterAirMode           = (int16_t*) &_emu->_engine->vm.vmVariables[0x63];
+  lesterState           = (int16_t*) &_emu->_engine->vm.vmVariables[0x63];
   gameScriptState         = (int16_t*) &_emu->_engine->vm.vmVariables[0x2A];
   gameAnimState           = (int16_t*) &_emu->_engine->vm.vmVariables[0x0F];
   lesterDeadState         = (int16_t*) &_emu->_engine->vm.vmVariables[0x2B];
+
+  lesterMomentum1          = (int16_t*) &_emu->_engine->vm.vmVariables[0x15];
+  lesterMomentum2          = (int16_t*) &_emu->_engine->vm.vmVariables[0x16];
+  lesterMomentum3          = (int16_t*) &_emu->_engine->vm.vmVariables[0x17];
+
+  lesterHasGun             = (int16_t*) &_emu->_engine->vm.vmVariables[0x0A];
+  lesterGunAmmo            = (int16_t*) &_emu->_engine->vm.vmVariables[0x06];
+  lesterGunLoad            = (int16_t*) &_emu->_engine->vm.vmVariables[0x0F];
+
+  alienState             = (int16_t*) &_emu->_engine->vm.vmVariables[0x6B];
+  alienRoom              = (int16_t*) &_emu->_engine->vm.vmVariables[0x6A];
+  alienPosX              = (int16_t*) &_emu->_engine->vm.vmVariables[0x68];
+
+  elevatorPosY           = (int16_t*) &_emu->_engine->vm.vmVariables[0x14];
 
   // Initialize derivative values
   updateDerivedValues();
@@ -57,30 +71,55 @@ void GameInstance::vmVariablesKeepDifferent()
  for (size_t i = 0; i < vmVariablesPrevValues.size(); i++) vmVariablesPrevValues[i] = _emu->_engine->vm.vmVariables[i];
 }
 
+void GameInstance::vmVariablesKeepGreater()
+{
+ for (size_t i = 0; i < vmVariablesPrevValues.size(); i++)
+  if (vmVariablesPrevValues[i] <= _emu->_engine->vm.vmVariables[i]) vmVariablesDisplay[i] = false;
+ for (size_t i = 0; i < vmVariablesPrevValues.size(); i++) vmVariablesPrevValues[i] = _emu->_engine->vm.vmVariables[i];
+}
+
+void GameInstance::vmVariablesKeepSmaller()
+{
+ for (size_t i = 0; i < vmVariablesPrevValues.size(); i++)
+  if (vmVariablesPrevValues[i] >= _emu->_engine->vm.vmVariables[i]) vmVariablesDisplay[i] = false;
+ for (size_t i = 0; i < vmVariablesPrevValues.size(); i++) vmVariablesPrevValues[i] = _emu->_engine->vm.vmVariables[i];
+}
+
 // This function computes the hash for the current state
-_uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 {
   // Storage for hash calculation
   MetroHash128 hash;
+
+  if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));
+
+  uint8_t emuState[_STATE_DATA_SIZE_PLAY];
+  _emu->serializeState(emuState);
+  _emu->advanceState(0);
 
   hash.Update((uint8_t *)_emu->_engine->vm.threadsData, sizeof(_emu->_engine->vm.threadsData));
   hash.Update((uint8_t *)_emu->_engine->vm._scriptStackCalls, sizeof(_emu->_engine->vm._scriptStackCalls));
 //  hash.Update((uint8_t *)_emu->_engine->vm.vmIsChannelActive, sizeof(_emu->_engine->vm.vmIsChannelActive));
 
-  hash.Update(_emu->_engine->buttonPressCount);
+//  hash.Update(_emu->_engine->buttonPressCount);
 
-  for (int i = 0x00; i < 0x30; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
-  for (int i = 0x60; i < 0x70; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
-  for (int i = 0xF0; i < 0xFF; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+  for (int i = 0x00; i < 0x35; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+  for (int i = 0x40; i < 0xF0; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+//  for (int i = 0xF0; i < 0xFF; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
+
+  // Reload game state
+  _emu->deserializeState(emuState);
+
   return result;
 }
 
 
 void GameInstance::updateDerivedValues()
 {
+ lesterFullMomentum = std::max(*lesterMomentum1, *lesterMomentum2) + std::abs(*lesterMomentum3);
 }
 
 std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
@@ -88,7 +127,6 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
  std::vector<INPUT_TYPE> moves;
 
  _emu->advanceState(move);
-
  _emu->_engine->buttonPressCount += countButtonsPressedNumber(move);
  if (move != _emu->_engine->lastInput0) _emu->_engine->diffInputCount++;
 
@@ -97,13 +135,18 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
  _emu->_engine->lastInput1 = _emu->_engine->lastInput0;
  _emu->_engine->lastInput0 = move;
 
+ updateDerivedValues();
+
  return moves;
 }
 
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
- return { ".", "R", "L", "D", "B", "U", "RB", "LB", "DB", "DR", "DL", "UL", "UB", "UR", "ULB", "URB", "DLB", "DRB" };
+ if (levelCode == "LDKD") return { ".", "R", "L", "U", "B", "D", "UL", "UR", "UB", "DL", "DR", "DB", "LB", "RB", "ULB", "URB", "DLB", "DRB" };
+ if (levelCode == "HTDC") return { ".", "R", "L", "U", "B", "D", "UL", "UR", "UB", "DL", "DR", "DB", "LB", "RB", "ULB", "URB", "DLB", "DRB" };
+ if (levelCode == "CLLD") return { ".", "B", "R", "L", "U" };
+ return { "." };
 }
 
 // Function to get magnet information
@@ -120,6 +163,10 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
   {
     if (_rules[lastRuleFound]->_magnets[*lesterRoom].lesterHorizontalMagnet.active == true) magnets.lesterHorizontalMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterHorizontalMagnet;
     if (_rules[lastRuleFound]->_magnets[*lesterRoom].lesterVerticalMagnet.active == true) magnets.lesterVerticalMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterVerticalMagnet;
+    if (_rules[lastRuleFound]->_magnets[*alienRoom].alienHorizontalMagnet.active == true) magnets.alienHorizontalMagnet = _rules[lastRuleFound]->_magnets[*alienRoom].alienHorizontalMagnet;
+    if (_rules[lastRuleFound]->_magnets[*lesterRoom].elevatorVerticalMagnet.active == true) magnets.elevatorVerticalMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].elevatorVerticalMagnet;
+    magnets.lesterAngularMomentumMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterAngularMomentumMagnet;
+    magnets.lesterGunLoadMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterGunLoadMagnet;
   }
 
  return magnets;
@@ -141,6 +188,10 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   float diff = 0.0;
 
   // Evaluating lester magnet's reward on position X
+  diff = -336.0f + std::abs(magnets.alienHorizontalMagnet.center - (float)*alienPosX);
+  reward += magnets.alienHorizontalMagnet.intensity * -diff;
+
+  // Evaluating lester magnet's reward on position X
   diff = -336.0f + std::abs(magnets.lesterHorizontalMagnet.center - (float)*lesterPosX);
   reward += magnets.lesterHorizontalMagnet.intensity * -diff;
 
@@ -148,29 +199,46 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   diff = -336.0f + std::abs(magnets.lesterVerticalMagnet.center - (float)*lesterPosY);
   reward += magnets.lesterVerticalMagnet.intensity * -diff;
 
-  reward -= (float)_emu->_engine->buttonPressCount * 0.0001f;
-  reward -= (float)_emu->_engine->diffInputCount * 0.00001f;
+  diff = -65535.0f + std::abs(magnets.elevatorVerticalMagnet.center - (float)*elevatorPosY);
+  reward += magnets.elevatorVerticalMagnet.intensity * -diff;
+
+  // Evaluating lester magnet's reward on position Y
+  reward += magnets.lesterAngularMomentumMagnet * lesterFullMomentum;
+
+  // Evaluating lester magnet's reward on position Y
+  reward += magnets.lesterGunLoadMagnet * *lesterGunLoad;
+
+  reward -= (float)_emu->_engine->buttonPressCount * 0.00001f;
+  reward -= (float)_emu->_engine->diffInputCount * 0.000001f;
 
   return reward;
 }
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
- LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
- LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second);
- LOG("[Jaffar]  + Game State:             %04d / %04d\n", *gameScriptState, *gameAnimState);
- LOG("[Jaffar]  + Level Code:             %s\n", levelCode.c_str());
- LOG("[Jaffar]  + Last Inputs:            %02X (%s), %02X (%s), %02X (%s), %02X (%s)\n", _emu->_engine->lastInput0, EmuInstance::moveCodeToString(_emu->_engine->lastInput0).c_str(), _emu->_engine->lastInput1, EmuInstance::moveCodeToString(_emu->_engine->lastInput1).c_str(), _emu->_engine->lastInput2, EmuInstance::moveCodeToString(_emu->_engine->lastInput2).c_str(), _emu->_engine->lastInput3, EmuInstance::moveCodeToString(_emu->_engine->lastInput3).c_str());
- LOG("[Jaffar]  + Button Press Count:     %u\n", _emu->_engine->buttonPressCount);
- LOG("[Jaffar]  + Diff Input Count:       %u\n", _emu->_engine->diffInputCount);
+ LOG("[Jaffar]  + Reward:                     %f\n", getStateReward(rulesStatus));
+// LOG("[Jaffar]  + Hash:                       0x%lX%lX\n", computeHash().first, computeHash().second);
+ LOG("[Jaffar]  + Game State:                 %04d / %04d\n", *gameScriptState, *gameAnimState);
+ LOG("[Jaffar]  + Level Code:                 %s\n", levelCode.c_str());
+ LOG("[Jaffar]  + Last Inputs:                %02X (%s), %02X (%s), %02X (%s), %02X (%s)\n", _emu->_engine->lastInput0, EmuInstance::moveCodeToString(_emu->_engine->lastInput0).c_str(), _emu->_engine->lastInput1, EmuInstance::moveCodeToString(_emu->_engine->lastInput1).c_str(), _emu->_engine->lastInput2, EmuInstance::moveCodeToString(_emu->_engine->lastInput2).c_str(), _emu->_engine->lastInput3, EmuInstance::moveCodeToString(_emu->_engine->lastInput3).c_str());
+ LOG("[Jaffar]  + Button Press Count:         %u\n", _emu->_engine->buttonPressCount);
+ LOG("[Jaffar]  + Diff Input Count:           %u\n", _emu->_engine->diffInputCount);
 
- LOG("[Jaffar]  + Lester Swim State:      %04d\n", *lesterSwimState);
- LOG("[Jaffar]  + Lester Pos X:           %04d\n", *lesterPosX);
- LOG("[Jaffar]  + Lester Pos Y:           %04d\n", *lesterPosY);
- LOG("[Jaffar]  + Lester Room:            %04d\n", *lesterRoom);
- LOG("[Jaffar]  + Lester Action:          %04d\n", *lesterAction);
- LOG("[Jaffar]  + Lester Air Mode:        %04d\n", *lesterAirMode);
- LOG("[Jaffar]  + Lester Dead State:      %04d\n", *lesterDeadState);
+ LOG("[Jaffar]  + Lester Pos X:               %04d\n", *lesterPosX);
+ LOG("[Jaffar]  + Lester Pos Y:               %04d\n", *lesterPosY);
+ LOG("[Jaffar]  + Lester Room:                %04d\n", *lesterRoom);
+ LOG("[Jaffar]  + Lester Action:              %04d\n", *lesterAction);
+ LOG("[Jaffar]  + Lester State:               %04d\n", *lesterState);
+ LOG("[Jaffar]  + Lester Dead State:          %04d\n", *lesterDeadState);
+ LOG("[Jaffar]  + Elevator Pos Y:             %04d\n", *elevatorPosY);
+
+ LOG("[Jaffar]  + Lester Has Gun:             %04d\n", *lesterHasGun);
+ LOG("[Jaffar]  + Lester Gun Ammo:            %04d\n", *lesterGunAmmo);
+ LOG("[Jaffar]  + Lester Gun Load:            %04d\n", *lesterGunLoad);
+
+ LOG("[Jaffar]  + Alien State:                %04d\n", *alienState);
+ LOG("[Jaffar]  + Alien Room:                 %04d\n", *alienRoom);
+ LOG("[Jaffar]  + Alien Pos X:                %04d\n", *alienPosX);
 
  LOG("[Jaffar]  + Ram Map: \n");
  LOG("[Jaffar]      ");
@@ -188,8 +256,12 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("\n");
 
  auto magnets = getMagnetValues(rulesStatus);
- if (std::abs(magnets.lesterHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Lester Horizontal Magnet     - Intensity: %.1f, Center: %3.3f\n", magnets.lesterHorizontalMagnet.intensity, magnets.lesterHorizontalMagnet.center);
- if (std::abs(magnets.lesterVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Lester Vertical Magnet       - Intensity: %.1f, Center: %3.3f\n", magnets.lesterVerticalMagnet.intensity, magnets.lesterVerticalMagnet.center);
+ if (std::abs(magnets.alienHorizontalMagnet.intensity) > 0.0f)    LOG("[Jaffar]  + Alien Horizontal Magnet         - Intensity: %.1f, Center: %3.3f\n", magnets.alienHorizontalMagnet.intensity, magnets.alienHorizontalMagnet.center);
+ if (std::abs(magnets.lesterHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Lester Horizontal Magnet        - Intensity: %.1f, Center: %3.3f\n", magnets.lesterHorizontalMagnet.intensity, magnets.lesterHorizontalMagnet.center);
+ if (std::abs(magnets.lesterVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Lester Vertical Magnet          - Intensity: %.1f, Center: %3.3f\n", magnets.lesterVerticalMagnet.intensity, magnets.lesterVerticalMagnet.center);
+ if (std::abs(magnets.elevatorVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Elevator Vertical Magnet        - Intensity: %.5f, Center: %3.3f\n", magnets.elevatorVerticalMagnet.intensity, magnets.elevatorVerticalMagnet.center);
+ if (std::abs(magnets.lesterAngularMomentumMagnet) > 0.0f)        LOG("[Jaffar]  + Lester Angular Momentum Magnet  - Intensity: %.1f\n", magnets.lesterAngularMomentumMagnet);
+ if (std::abs(magnets.lesterGunLoadMagnet) > 0.0f)                LOG("[Jaffar]  + Lester Gun Load Magnet  - Intensity: %.1f\n", magnets.lesterGunLoadMagnet);
 
 }
 
