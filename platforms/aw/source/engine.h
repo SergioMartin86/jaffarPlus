@@ -43,13 +43,6 @@ struct Engine {
 	bool _enableVideoLoad = true;
 	bool _enableResourceLoad = true;
 
-	uint8_t lastInput0;
-	uint8_t lastInput1;
-	uint8_t lastInput2;
-	uint8_t lastInput3;
-	uint32_t buttonPressCount;
-	uint32_t diffInputCount;
-
 	Engine(System *stub, const char *dataDir, const char *saveDir);
 	~Engine();
 

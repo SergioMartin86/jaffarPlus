@@ -127,13 +127,6 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
  std::vector<INPUT_TYPE> moves;
 
  _emu->advanceState(move);
- _emu->_engine->buttonPressCount += countButtonsPressedNumber(move);
- if (move != _emu->_engine->lastInput0) _emu->_engine->diffInputCount++;
-
- _emu->_engine->lastInput3 = _emu->_engine->lastInput2;
- _emu->_engine->lastInput2 = _emu->_engine->lastInput1;
- _emu->_engine->lastInput1 = _emu->_engine->lastInput0;
- _emu->_engine->lastInput0 = move;
 
  updateDerivedValues();
 
@@ -208,9 +201,6 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating lester magnet's reward on position Y
   reward += magnets.lesterGunLoadMagnet * *lesterGunLoad;
 
-  reward -= (float)_emu->_engine->buttonPressCount * 0.00001f;
-  reward -= (float)_emu->_engine->diffInputCount * 0.000001f;
-
   return reward;
 }
 
@@ -220,9 +210,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 // LOG("[Jaffar]  + Hash:                       0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Game State:                 %04d / %04d\n", *gameScriptState, *gameAnimState);
  LOG("[Jaffar]  + Level Code:                 %s\n", levelCode.c_str());
- LOG("[Jaffar]  + Last Inputs:                %02X (%s), %02X (%s), %02X (%s), %02X (%s)\n", _emu->_engine->lastInput0, EmuInstance::moveCodeToString(_emu->_engine->lastInput0).c_str(), _emu->_engine->lastInput1, EmuInstance::moveCodeToString(_emu->_engine->lastInput1).c_str(), _emu->_engine->lastInput2, EmuInstance::moveCodeToString(_emu->_engine->lastInput2).c_str(), _emu->_engine->lastInput3, EmuInstance::moveCodeToString(_emu->_engine->lastInput3).c_str());
- LOG("[Jaffar]  + Button Press Count:         %u\n", _emu->_engine->buttonPressCount);
- LOG("[Jaffar]  + Diff Input Count:           %u\n", _emu->_engine->diffInputCount);
 
  LOG("[Jaffar]  + Lester Pos X:               %04d\n", *lesterPosX);
  LOG("[Jaffar]  + Lester Pos Y:               %04d\n", *lesterPosY);
