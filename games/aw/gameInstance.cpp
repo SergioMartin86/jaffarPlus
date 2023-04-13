@@ -154,12 +154,19 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 
  if (ruleFound == true)
   {
-    if (_rules[lastRuleFound]->_magnets[*lesterRoom].lesterHorizontalMagnet.active == true) magnets.lesterHorizontalMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterHorizontalMagnet;
-    if (_rules[lastRuleFound]->_magnets[*lesterRoom].lesterVerticalMagnet.active == true) magnets.lesterVerticalMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterVerticalMagnet;
-    if (_rules[lastRuleFound]->_magnets[*alienRoom].alienHorizontalMagnet.active == true) magnets.alienHorizontalMagnet = _rules[lastRuleFound]->_magnets[*alienRoom].alienHorizontalMagnet;
-    if (_rules[lastRuleFound]->_magnets[*lesterRoom].elevatorVerticalMagnet.active == true) magnets.elevatorVerticalMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].elevatorVerticalMagnet;
-    magnets.lesterAngularMomentumMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterAngularMomentumMagnet;
-    magnets.lesterGunLoadMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterGunLoadMagnet;
+    if (*lesterRoom < _ROOM_COUNT_)
+    {
+     if (_rules[lastRuleFound]->_magnets[*lesterRoom].lesterHorizontalMagnet.active == true) magnets.lesterHorizontalMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterHorizontalMagnet;
+     if (_rules[lastRuleFound]->_magnets[*lesterRoom].lesterVerticalMagnet.active == true) magnets.lesterVerticalMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterVerticalMagnet;
+     if (_rules[lastRuleFound]->_magnets[*lesterRoom].elevatorVerticalMagnet.active == true) magnets.elevatorVerticalMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].elevatorVerticalMagnet;
+     magnets.lesterAngularMomentumMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterAngularMomentumMagnet;
+     magnets.lesterGunLoadMagnet = _rules[lastRuleFound]->_magnets[*lesterRoom].lesterGunLoadMagnet;
+    }
+
+    if (*alienRoom < _ROOM_COUNT_)
+    {
+     if (_rules[lastRuleFound]->_magnets[*alienRoom].alienHorizontalMagnet.active == true) magnets.alienHorizontalMagnet = _rules[lastRuleFound]->_magnets[*alienRoom].alienHorizontalMagnet;
+    }
   }
 
  return magnets;

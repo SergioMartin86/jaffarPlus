@@ -89,10 +89,10 @@ class PlaybackInstance : public PlaybackInstanceBase
     std::string lowMemData;
     bool status = loadStringFromFile(lowMemData, str);
     if (status == false) { printw("Could not read from file %s.\n", str); return false; }
-    for (size_t i = 0; i < 0x100; i++)
+    for (size_t i = 0; i < 0x100; i++) if (i < 0xF2 || i > 0xF6)
     {
-     ((uint8_t*)_game->_emu->_engine->vm.vmVariables)[i*2 + 0] = lowMemData.data()[i*2 + 1];
-     ((uint8_t*)_game->_emu->_engine->vm.vmVariables)[i*2 + 1] = lowMemData.data()[i*2 + 0];
+      ((uint8_t*)_game->_emu->_engine->vm.vmVariables)[i*2 + 0] = lowMemData.data()[i*2 + 1];
+      ((uint8_t*)_game->_emu->_engine->vm.vmVariables)[i*2 + 1] = lowMemData.data()[i*2 + 0];
     }
 
     // Replacing current sequence
