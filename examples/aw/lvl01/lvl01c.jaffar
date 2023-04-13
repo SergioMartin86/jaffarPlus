@@ -8,7 +8,7 @@
   "Game Configuration": 
   {
    "Level Code": "LDKD",
-   "Timer Tolerance": 0,
+   "Timer Tolerance": 2,
    "Hash Includes": [  ]
   },
   
@@ -30,8 +30,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 20000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
@@ -59,6 +59,20 @@
   
   "Rules":
   [
+    {
+    "Label": 1001,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Lester Vertical Magnet", "Room": 0, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
    {
     "Label": 1002,
     "Conditions":
@@ -66,10 +80,12 @@
      { "Property": "Lester Room", "Op": "==", "Value":  2 }
     ],
     
-    "Satisfies": [  ],
+    "Satisfies": [ 1001 ],
     
     "Actions":
     [
+     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
+     { "Type": "Add Reward", "Value": 1000.0 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 336 }
     ]
    },
@@ -86,6 +102,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 336 }
     ]
    },
@@ -102,6 +119,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 336 }
     ]
    },
@@ -118,6 +136,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 336 }
     ]
    },
@@ -134,6 +153,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 0 }
     ]
    },
@@ -151,6 +171,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
     ]
    },
@@ -168,6 +189,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
     ]
    },
@@ -185,6 +207,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
     ]
    },
@@ -202,6 +225,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 }
     ]
    },
@@ -219,6 +243,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
      { "Type": "Set Lester Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 336 }
     ]
    },
@@ -232,6 +257,78 @@
     ],
     
     "Satisfies": [ 1011 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1013,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  5 },
+     { "Property": "Lester Room", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ 1012 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1014,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  5 },
+     { "Property": "Lester Room", "Op": "==", "Value":  4 }
+    ],
+    
+    "Satisfies": [ 1013 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1015,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  5 },
+     { "Property": "Lester Room", "Op": "==", "Value":  5 }
+    ],
+    
+    "Satisfies": [ 1014 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1016,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  6 },
+     { "Property": "Lester Room", "Op": "==", "Value":  5 }
+    ],
+    
+    "Satisfies": [ 1015 ],
     
     "Actions":
     [
