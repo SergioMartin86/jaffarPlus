@@ -86,6 +86,15 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Lester Direction Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+    uint8_t room = actionJs["Room"].get<uint8_t>();
+    _magnets[room].lesterDirectionMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
   return recognizedActionType;
 }
 
@@ -96,12 +105,14 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Lester Room") return dt_int16;
   if (propertyName == "Lester Pos Y") return dt_int16;
   if (propertyName == "Lester Pos X") return dt_int16;
+  if (propertyName == "Lester State") return dt_int16;
   if (propertyName == "Lester Dead State") return dt_int16;
   if (propertyName == "Game Script State") return dt_int16;
   if (propertyName == "Game Anim State") return dt_int16;
   if (propertyName == "VM Value") return dt_int16;
   if (propertyName == "Lester Has Gun") return dt_int16;
   if (propertyName == "Lester Gun Ammo") return dt_int16;
+  if (propertyName == "Lester Gun Load") return dt_int16;
   if (propertyName == "Alien State") return dt_int16;
   if (propertyName == "Alien Room") return dt_int16;
   if (propertyName == "Alien Pos X") return dt_int16;
@@ -118,12 +129,14 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Lester Room") return gameInstance->lesterRoom;
   if (propertyName == "Lester Pos Y") return gameInstance->lesterPosY;
   if (propertyName == "Lester Pos X") return gameInstance->lesterPosX;
+  if (propertyName == "Lester State") return gameInstance->lesterState;
   if (propertyName == "Lester Dead State") return gameInstance->lesterDeadState;
   if (propertyName == "Game Script State") return gameInstance->gameScriptState;
   if (propertyName == "Game Anim State") return gameInstance->gameAnimState;
 
   if (propertyName == "Lester Has Gun") return gameInstance->lesterHasGun;
   if (propertyName == "Lester Gun Ammo") return gameInstance->lesterGunAmmo;
+  if (propertyName == "Lester Gun Load") return gameInstance->lesterGunLoad;
 
   if (propertyName == "Alien State") return gameInstance->alienState;
   if (propertyName == "Alien Room") return gameInstance->alienRoom;
@@ -135,7 +148,12 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
    if (condition["Index"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Index must be an integer.\n", _label);
    index = condition["Index"].get<int>();
   }
-  if (propertyName == "VM Value") return &gameInstance->_emu->_engine->vm.vmVariables[index];
+
+  if (propertyName == "VM Value")
+  {
+   gameInstance->watchVMVariables.insert(index);
+   return &gameInstance->_emu->_engine->vm.vmVariables[index];
+  }
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

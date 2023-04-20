@@ -62,16 +62,16 @@ void VirtualMachine::op_add() {
 }
 
 void VirtualMachine::op_addConst() {
-	if (res->currentPartId == 0x3E86 && _scriptPtr.pc == res->segBytecode + 0x6D48) {
-		warning("VirtualMachine::op_addConst() hack for non-stop looping gun sound bug");
-		// the script 0x27 slot 0x17 doesn't stop the gun sound from looping, I 
-		// don't really know why ; for now, let's play the 'stopping sound' like 
-		// the other scripts do
-		//  (0x6D43) jmp(0x6CE5)
-		//  (0x6D46) break
-		//  (0x6D47) VAR(6) += -50
-		snd_playSound(0x5B, 1, 64, 1);
-	}
+//	if (res->currentPartId == 0x3E86 && _scriptPtr.pc == res->segBytecode + 0x6D48) {
+//		warning("VirtualMachine::op_addConst() hack for non-stop looping gun sound bug");
+//		// the script 0x27 slot 0x17 doesn't stop the gun sound from looping, I
+//		// don't really know why ; for now, let's play the 'stopping sound' like
+//		// the other scripts do
+//		//  (0x6D43) jmp(0x6CE5)
+//		//  (0x6D46) break
+//		//  (0x6D47) VAR(6) += -50
+//		snd_playSound(0x5B, 1, 64, 1);
+//	}
 	uint8_t variableId = _scriptPtr.fetchByte();
 	int16_t value = _scriptPtr.fetchWord();
 	vmVariables[variableId] += value;
