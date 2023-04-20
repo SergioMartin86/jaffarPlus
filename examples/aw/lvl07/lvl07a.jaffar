@@ -2,13 +2,13 @@
   "Emulator Configuration": 
   {
     "Game Files": "../game",
-    "State File": "lvl03a.state"
+    "State File": "lvl07a.state"
   },
   
   "Game Configuration": 
   {
-   "Level Code": "CLLD",
-   "Timer Tolerance": 96,
+   "Level Code": "LBKG",
+   "Timer Tolerance": 2,
    "Hash Includes": [  ]
   },
   
@@ -21,7 +21,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 500,
+      "Max Move Count": 600,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 350,
@@ -31,7 +31,7 @@
     "State Database": 
     {
      "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Upper Bound (Mb)": 120000
     },
     
     "Hash Database":
@@ -60,46 +60,17 @@
   "Rules":
   [
     {
-    "Label": 1001,
+    "Label": 1000,
     "Conditions":
-    [
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Set Lester Vertical Magnet", "Room": 37, "Intensity": 1.0, "Center": 200 }
-    ]
-   },
-   
-   {
-    "Label": 1002,
-    "Conditions":
-    [
-      { "Property": "Lester Pos Y", "Op": ">", "Value":  194 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 1999,
-    "Conditions":
-    [
-     { "Property": "VM Value", "Index": 4, "Op": ">", "Value": 16384 }
+    [ 
+     { "Property": "VM Value", "Index": 99, "Op": "==", "Value": 1 }
     ],
     
     "Satisfies": [  ],
     
     "Actions":
     [
-     { "Type": "Trigger Fail" }
+     { "Type": "Trigger Win" }
     ]
    }
    

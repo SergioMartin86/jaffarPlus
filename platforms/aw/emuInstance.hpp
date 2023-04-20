@@ -69,13 +69,6 @@ class EmuInstance : public EmuInstanceBase
     }
    );
 
-    #ifdef _JAFFAR_PLAY
-     _engine->_enableVideoLoad = true;
-     _engine->_enableResourceLoad = true;
-    #else
-     _engine->_enableVideoLoad = false;
-     _engine->_enableResourceLoad = false;
-    #endif
 
 //  size_t stateSize = _engine->getGameStateSize();
 //  printf("State Size: %lu\n", stateSize); fflush(stdout);
@@ -106,11 +99,27 @@ class EmuInstance : public EmuInstanceBase
 
  void serializeState(uint8_t* state) const override
  {
+  #ifdef _JAFFAR_PLAY
+   _engine->_enableVideoLoad = true;
+   _engine->_enableResourceLoad = true;
+  #else
+   _engine->_enableVideoLoad = false;
+   _engine->_enableResourceLoad = false;
+  #endif
+
   _engine->saveGameState(state);
  }
 
  void deserializeState(const uint8_t* state) override
  {
+   #ifdef _JAFFAR_PLAY
+    _engine->_enableVideoLoad = true;
+    _engine->_enableResourceLoad = true;
+   #else
+    _engine->_enableVideoLoad = false;
+    _engine->_enableResourceLoad = false;
+   #endif
+
    #ifdef _JAFFAR_PLAY
     uint8_t buf[_STATE_DATA_SIZE_PLAY];
     memcpy(buf, state, _STATE_DATA_SIZE_PLAY);

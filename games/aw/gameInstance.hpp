@@ -6,6 +6,10 @@
 #include "gameInstanceBase.hpp"
 #include <set>
 
+#define LESTER_DIR_LEFT 1
+#define LESTER_DIR_RIGHT 2
+#define LESTER_DIR_NONE 100
+
 // Datatype to describe a generic magnet
 struct genericMagnet_t {
  float intensity = 0.0f; // How strong the magnet is
@@ -21,6 +25,7 @@ struct magnetSet_t {
  genericMagnet_t lesterVerticalMagnet;
  genericMagnet_t elevatorVerticalMagnet;
 
+ float   lesterDirectionMagnet = 0;
  float gunChargeMagnet = 0;
  float lesterGunLoadMagnet = 0;
  float lesterAngularMomentumMagnet = 0;
@@ -40,6 +45,7 @@ class GameInstance : public GameInstanceBase
  int16_t* lesterMomentum3;
  int16_t* lesterRoom;
  int16_t* lesterAction;
+ int16_t* lesterDirection;
  int16_t* lesterState;
  int16_t* lesterDeadState;
  int16_t* gameScriptState;
@@ -47,6 +53,8 @@ class GameInstance : public GameInstanceBase
  int16_t* lesterHasGun;
  int16_t* lesterGunAmmo;
  int16_t* lesterGunLoad;
+ int16_t* gameTimer;
+ int16_t* fumesState;
 
  int16_t* alienState;
  int16_t* alienRoom;
@@ -64,6 +72,8 @@ class GameInstance : public GameInstanceBase
  // Cheat engine like data
  std::vector<int16_t> vmVariablesPrevValues;
  std::vector<bool> vmVariablesDisplay;
+
+ std::set<int> watchVMVariables;
 
  void vmVariablesClear();
  void vmVariablesKeepEqual();

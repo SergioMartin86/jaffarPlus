@@ -117,6 +117,38 @@ class PlaybackInstance : public PlaybackInstanceBase
     return true;
    }
 
+   if (command == 'z')
+   {
+
+    LOG("Enter new timer value: ");
+
+    // Setting input as new rng
+    char str[80]; getstr(str);
+
+    _game->_emu->_engine->vm.vmVariables[0x31] = atoi(str);
+
+    // Replacing current sequence
+    _game->popState(state);
+
+    return true;
+   }
+
+   if (command == 'x')
+   {
+
+    LOG("Enter new ammo ");
+
+    // Setting input as new rng
+    char str[80]; getstr(str);
+
+    *_game->lesterGunAmmo = atoi(str);
+
+    // Replacing current sequence
+    _game->popState(state);
+
+    return true;
+   }
+
    #endif
 
    return true;

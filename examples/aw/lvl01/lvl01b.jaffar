@@ -243,7 +243,7 @@
     "Label": 1999,
     "Conditions":
     [ 
-     { "Property": "Lester Dead State", "Op": "==", "Value":  1 }
+     { "Property": "Lester Dead State", "Op": ">=", "Value":  10 }
     ],
     
     "Satisfies": [  ],
