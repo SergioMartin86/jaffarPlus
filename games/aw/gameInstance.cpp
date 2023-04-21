@@ -106,9 +106,11 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 
 //  hash.Update(_emu->_engine->buttonPressCount);
 
-  for (int i = 0x00; i < 0x30; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
-  for (int i = 0x40; i < 0xF0; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
-//  for (int i = 0xF0; i < 0xFF; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+  for (int i = 0x00; i < 0x20; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+  for (int i = 0x60; i < 0x70; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+
+  //for (int i = 0x00; i < 0x30; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
+  //for (int i = 0x40; i < 0xF0; i++) hash.Update(_emu->_engine->vm.vmVariables[i]);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
