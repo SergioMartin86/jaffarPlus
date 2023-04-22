@@ -30,8 +30,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 15000
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 10000
     },
     
     "Hash Database":
@@ -157,7 +157,8 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 71, "Intensity": 1.0, "Center": 336 }
+     { "Type": "Set Lester Horizontal Magnet", "Room": 71, "Intensity": 1.0, "Center": 336 },
+     { "Type": "Set Lester Gun Load Magnet", "Room": 71, "Intensity": 100.0 }
     ]
    },
    
