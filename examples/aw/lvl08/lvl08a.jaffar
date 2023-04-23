@@ -30,7 +30,7 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 600,
+     "Max Size Lower Bound (Mb)": 2000,
      "Max Size Upper Bound (Mb)": 20000
     },
     
@@ -132,6 +132,21 @@
     ],
     
     "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1998,
+    "Conditions":
+    [
+     { "Property": "Alien State", "Op": ">", "Value":  20000 }
+    ],
+    
+    "Satisfies": [  ],
     
     "Actions":
     [
