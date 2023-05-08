@@ -1,0 +1,94 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../aw.sfc",
+    "State File": "lvl02a.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Skip Frames": true,
+   "Timer Tolerance": 2,
+   "Hash Includes": [  ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": false,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 200,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 350,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 10000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+     "Disable Display": false,
+     "Overlay Path": "../../../../platforms/aw/overlay"
+  },
+  
+  "Rules":
+  [
+    {
+    "Label": 1001,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Lester Angular Momentum Magnet", "Room": 5, "Intensity": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Conditions":
+    [
+      { "Property": "Lester Pos Y", "Op": ">", "Value":  100 },
+      { "Property": "Lester Pos Y", "Op": "!=", "Value":  196 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+   
+   
+  ]  
+}

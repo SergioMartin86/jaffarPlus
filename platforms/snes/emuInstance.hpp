@@ -55,9 +55,9 @@ class EmuInstance : public EmuInstanceBase
 //  saveStateFile("boot.state");
 //  exit(0);
 
-  loadStateFile(stateFilePath);
+   loadStateFile(stateFilePath);
 
-  // Printing State size
+//   Printing State size
 //  printf("State Size: %u\n", S9xFreezeSizeFast());
 //  exit(0);
  }
