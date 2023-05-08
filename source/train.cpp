@@ -11,7 +11,7 @@
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ lesterState
+ #define _KEY_VALUE_ raceType
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -286,13 +286,13 @@ void Train::computeStates()
 //        if ((i & SNES_START_MASK) == 0)
 //        if ((i & SNES_SELECT_MASK) == 0)
 //
-//         if ((i & 0b10001000) == 0) // NES Start
-//         if ((i & 0b00000100) == 0) // NES Select
+         if ((i & 0b00001000) == 0) // NES Start
+         if ((i & 0b00000100) == 0) // NES Select
 
-            if ((i & 0b10000000) == 0) // Atari Unused
-            if ((i & 0b01000000) == 0) // Atari Unused
-            if ((i & 0b00100000) == 0) // Atari Unused
-         if (countButtonsPressedNumber(i) > 3 == false)
+//            if ((i & 0b10000000) == 0) // Atari Unused
+//            if ((i & 0b01000000) == 0) // Atari Unused
+//            if ((i & 0b00100000) == 0) // Atari Unused
+//         if (countButtonsPressedNumber(i) > 3 == false)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);

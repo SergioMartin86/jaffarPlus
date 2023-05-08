@@ -1,0 +1,467 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../aw.sfc",
+    "State File": "lvl04c1g.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Skip Frames": true,
+   "Timer Tolerance": 4,
+   "Hash Includes": [  ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": false,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 1300,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 350,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 500,
+     "Max Size Upper Bound (Mb)": 30000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 10000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+     "Disable Display": false,
+     "Overlay Path": "../../../../platforms/aw/overlay"
+  },
+  
+  "Rules":
+  [
+    {
+    "Label": 1008,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  103 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 103, "Intensity": 1.0, "Center": 135 },
+     { "Type": "Set Lester Vertical Magnet", "Room": 103, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1009,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  135 }
+    ],
+    
+    "Satisfies": [ 1008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 135, "Intensity": 1.0, "Center": 230 },
+     { "Type": "Set Lester Vertical Magnet", "Room": 135, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1010,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  167 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 167, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1011,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  200 }
+    ],
+    
+    "Satisfies": [ 1010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 200, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1012,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  201 }
+    ],
+    
+    "Satisfies": [ 1011 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 201, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+     
+   {
+    "Label": 1014,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  202 }
+    ],
+    
+    "Satisfies": [ 1012 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 202, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1015,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  203 }
+    ],
+    
+    "Satisfies": [ 1014 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 203, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1016,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  204 }
+    ],
+    
+    "Satisfies": [ 1015 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 204, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1116,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  204 },
+     { "Property": "VM Value", "Index": 111, "Op": "<", "Value": 56 }
+    ],
+    
+    "Satisfies": [ 1016 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 204, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1017,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  205 }
+    ],
+    
+    "Satisfies": [ 1116 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 205, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1018,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  206 }
+    ],
+    
+    "Satisfies": [ 1017 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 206, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1019,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  175 }
+    ],
+    
+    "Satisfies": [ 1018 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Gun Load Magnet", "Room": 175, "Intensity": 100.0 }
+    ]
+   },
+   
+   {
+    "Label": 1020,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  175 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1019 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Gun Load Magnet", "Room": 175, "Intensity": 100.0 }
+    ]
+   },
+   
+   {
+    "Label": 1021,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  206 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1020 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 206, "Intensity": 1.0, "Center": -36 }
+    ]
+   },
+   
+   {
+    "Label": 1022,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  205 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1021 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 205, "Intensity": 1.0, "Center": -36 }
+    ]
+   },
+   
+   {
+    "Label": 1023,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  204 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1022 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 204, "Intensity": 1.0, "Center": -36 }
+    ]
+   },
+   
+   {
+    "Label": 1024,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  203 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1023 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 203, "Intensity": 1.0, "Center": -36 }
+    ]
+   },
+   
+   {
+    "Label": 1025,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  202 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1024 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 202, "Intensity": 1.0, "Center": -36 },
+     { "Type": "Set Lester Vertical Magnet", "Room": 202, "Intensity": 4.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1026,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  201 },
+     { "Property": "Lester Pos Y", "Op": "<", "Value":  130 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1025 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 201, "Intensity": 1.0, "Center": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1027,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  201 },
+     { "Property": "Lester Pos Y", "Op": "<", "Value":  200 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 },
+     { "Property": "VM Value", "Index": 108, "Op": "<", "Value": 177 }
+    ],
+    
+    "Satisfies": [ 1026 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 201, "Intensity": 1.0, "Center": -36 }
+    ]
+   },
+   
+   {
+    "Label": 1028,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  200 },
+     { "Property": "Lester Pos Y", "Op": "<", "Value":  100 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 },
+     { "Property": "VM Value", "Index": 108, "Op": "!=", "Value": 177 }
+    ],
+    
+    "Satisfies": [ 1027 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 200, "Intensity": 1.0, "Center": -36 },
+     { "Type": "Set Lester Vertical Magnet", "Room": 200, "Intensity": 2.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1029,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  167 },
+     { "Property": "Lester Pos Y", "Op": "<", "Value":  130 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 1028 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win"}
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Conditions":
+    [ 
+     { "Property": "Lester Dead State", "Op": ">=", "Value":  10 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1998,
+    "Conditions":
+    [
+     { "Property": "Lester Room", "Op": "==", "Value":  200 },
+     { "Property": "Lester Pos Y", "Op": ">", "Value":  160 },
+     { "Property": "VM Value", "Index": 176, "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+  ]  
+}

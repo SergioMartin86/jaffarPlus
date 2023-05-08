@@ -120,7 +120,7 @@ void loadSolutionFile(
  }
 
  // Adding current hash to the set
- _uint128_t curHash = gameInstance.computeHash();
+ _uint128_t curHash = gameInstance.computeHash(0);
  hashMap[curHash] = 0;
 
  // Iterating move list in the sequence
@@ -147,7 +147,7 @@ void loadSolutionFile(
   unpackedMoveSequence.insert(unpackedMoveSequence.end(), newMoveListString.begin(), newMoveListString.end());
 
   // Adding current hash to the set
-  _uint128_t curHash = gameInstance.computeHash();
+  _uint128_t curHash = gameInstance.computeHash(i);
   if (hashCollisionFound == false && hashMap.contains(curHash))
   {
    hashCollisionStep = i;
@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
   do
   {
    // Loading requested step
-   auto& curState = stateSequence[currentStep == 0 ? 0 : currentStep-1];
+   auto& curState = stateSequence[currentStep];
    gameInstance.pushState(curState);
    memset(rulesStatus, 0, ruleCount * sizeof(bool));
    gameInstance.evaluateRules(rulesStatus);

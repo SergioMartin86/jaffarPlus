@@ -86,9 +86,8 @@ commonCFlags = [
 
 platformTrainSrc = [ emuInstanceSrc ]
 platformTrainIncludes = [ emuInstanceIncludes ]
-platformTrainCFlags = [ commonCFlags,
-                        '-DPREVENT_RENDERING'
-                      ]
+platformTrainCPPFlags = [ commonCFlags,'-DPREVENT_RENDERING']
+platformTrainCFlags = platformTrainCPPFlags
 platformTrainLibs = [ ] 
 platformTrainLFlags = [ 
             '-lz',
@@ -104,7 +103,8 @@ platformTrainDependencies = [
 
 platformPlayIncludes = [ emuInstanceIncludes ]
 platformPlaySrc = [ emuInstanceSrc ]
-platformPlayCFlags = [ commonCFlags ]
+platformPlayCPPFlags = [ commonCFlags ]
+platformPlayCFlags = platformPlayCPPFlags
 platformPlayLibs = [ ] 
 platformPlayLFlags = [ platformTrainLFlags ]
 platformPlayDependencies = [ platformTrainDependencies  ]

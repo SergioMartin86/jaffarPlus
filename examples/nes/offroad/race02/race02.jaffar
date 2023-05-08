@@ -1,0 +1,110 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../offroad.nes",
+    "State File": "race02.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 0,
+   "Lap Checkpoints": 
+    [
+      [60, 66 ,  209],
+      [56, 29 ,  186],
+      [52, 41 ,  131],
+      [48, 87 ,  88 ],
+      [44, 185,  88 ],
+      [40, 204,  94 ],
+      [36, 182,  122],
+      [32, 149,  122],
+      [28, 99 ,  142],
+      [24, 120,  162],
+      [20, 187,  169],
+      [16, 209,  179],
+      [12, 189,  197],
+      [8 , 134,  208],
+      [4 , 102,  209],
+      [0 , 66 ,  209]
+    ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": false,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 15,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 3000,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 350,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 120000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 10000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1000,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Player Current Lap Magnet", "Intensity": 1.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Player Turbo Counter Magnet", "Intensity": 0.02 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.0001 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+      { "Property": "Player 1 Lap Counter", "Op": "==", "Value": 5 } 
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win"}
+    ]
+   }
+  ]  
+}
