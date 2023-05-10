@@ -341,8 +341,14 @@ int main(int argc, char *argv[])
      printw("[Jaffar]  + State Type: %s\n", stateTypeString.c_str());
 
      gameInstance.printStateInfo(ruleStatusSequence[currentStep]);
-     printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | d: unpack | q: quit\n");
-     playbackInstance.printPlaybackCommands();
+
+     // Only print commands if not in reproduce mode
+     if (isReproduce == false)
+     {
+      printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | d: unpack | q: quit\n");
+      playbackInstance.printPlaybackCommands();
+     }
+
      refresh();
    }
 
