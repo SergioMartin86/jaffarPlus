@@ -13,6 +13,7 @@ struct magnetSet_t {
  float playerLapProgressMagnet = 0.0;
  float playerTurboCounterMagnet = 0.0;
  float playerAccelMagnet = 0.0;
+ float playerCashMagnet = 0.0;
 };
 
 
@@ -34,6 +35,20 @@ class GameInstance : public GameInstanceBase
   uint8_t*  p1PosX;
   uint8_t*  p1PosY;
 
+  uint8_t* p1Cash1;
+  uint8_t* p1Cash2;
+  uint8_t* p1Cash3;
+  uint8_t* p1CashGrabbed;
+
+  uint8_t* trackType;
+  uint8_t* menuState1;
+  uint8_t* menuState2;
+  uint8_t* menuState3;
+  uint8_t* menuRaceStartTimer;
+  uint8_t* menuRaceState;
+  uint8_t* menuSelectorX;
+  uint8_t* menuSelectorY;
+
   uint8_t timerTolerance;
 
   uint8_t maxCheckpointId;
@@ -42,12 +57,15 @@ class GameInstance : public GameInstanceBase
   uint8_t checkpointPosY;
   float checkpointDistance;
 
+  bool invertedTrack;
+  bool isSkipRun;
 
   // Checkpoints
-  std::map<uint8_t, std::pair<uint8_t, uint8_t>> checkpoints;
+  std::map<uint8_t, std::map<uint8_t, std::pair<uint8_t, uint8_t>>> checkpoints;
 
   // Derivative Values
   float lapProgress;
+  uint16_t totalCash;
 
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);

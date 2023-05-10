@@ -120,7 +120,7 @@ bool Train::run()
    _gameInstances[0]->pushState(_bestWinStateData);
    _gameInstances[0]->printStateInfo(_bestWinState->getRuleStatus());
 
-    if (_storeMoveHistory)
+    if (_storeMoveHistory && _showMoveList)
     {
      printf("[Jaffar]  + Win Move List: ");
      for (uint16_t i = 0; i < _bestWinStateStep; i++)
@@ -709,7 +709,7 @@ void Train::printTrainStatus()
   _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
 
   // Print Move History
-  if (_storeMoveHistory)
+  if (_storeMoveHistory && _showMoveList)
   {
    printf("[Jaffar]  + Move List: ");
    for (size_t i = 0; i < _currentStep; i++)
@@ -751,6 +751,8 @@ Train::Train(const nlohmann::json& config)
   if (isDefined(_config["Jaffar Configuration"], "Show Winning State Information") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Show Winning State Information' key.\n");
   if (isDefined(_config["Jaffar Configuration"], "Show Hash Information") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Show Winning State Information' key.\n");
   if (isDefined(_config["Jaffar Configuration"], "Show Timing Information") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Show Winning State Information' key.\n");
+  if (isDefined(_config["Jaffar Configuration"], "Show Move List") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Show Move List' key.\n");
+  _showMoveList = _config["Jaffar Configuration"]["Show Move List"].get<bool>();
   _showWinStateInfo = _config["Jaffar Configuration"]["Show Winning State Information"].get<bool>();
   _showHashInfo = _config["Jaffar Configuration"]["Show Hash Information"].get<bool>();
   _showTimingInfo = _config["Jaffar Configuration"]["Show Timing Information"].get<bool>();

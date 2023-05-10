@@ -128,6 +128,7 @@ class Train
   // Stats flags
   bool _showHashInfo;
   bool _showTimingInfo;
+  bool _showMoveList;
 
   // Flag to indicate finalization
   bool _hasFinalized;
