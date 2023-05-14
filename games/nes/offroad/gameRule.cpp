@@ -64,6 +64,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Player 1 Pos X") return dt_uint8;
   if (propertyName == "Player 1 Pos Y") return dt_uint8;
   if (propertyName == "Player 1 Turbo Counter") return dt_uint8;
+  if (propertyName == "Player 1 Cash 0") return dt_uint8;
   if (propertyName == "Player 1 Cash 1") return dt_uint8;
   if (propertyName == "Player 1 Cash 2") return dt_uint8;
   if (propertyName == "Player 1 Cash 3") return dt_uint8;
@@ -86,6 +87,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Menu State 3") return gameInstance->menuState3;
   if (propertyName == "Player 1 Turbo Counter") return gameInstance->p1TurboCounter;
 
+  if (propertyName == "Player 1 Cash 0") return gameInstance->p1Cash0;
   if (propertyName == "Player 1 Cash 1") return gameInstance->p1Cash1;
   if (propertyName == "Player 1 Cash 2") return gameInstance->p1Cash2;
   if (propertyName == "Player 1 Cash 3") return gameInstance->p1Cash3;

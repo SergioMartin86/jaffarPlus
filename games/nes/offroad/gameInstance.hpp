@@ -35,6 +35,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  p1PosX;
   uint8_t*  p1PosY;
 
+  uint8_t* p1Cash0;
   uint8_t* p1Cash1;
   uint8_t* p1Cash2;
   uint8_t* p1Cash3;
@@ -56,6 +57,10 @@ class GameInstance : public GameInstanceBase
   uint8_t checkpointPosX;
   uint8_t checkpointPosY;
   float checkpointDistance;
+
+  uint16_t* globalTimer;
+  uint8_t* playerLastInputKey;
+  uint16_t* playerLastInputFrame;
 
   bool invertedTrack;
   bool isSkipRun;
