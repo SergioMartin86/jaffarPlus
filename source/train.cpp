@@ -905,7 +905,7 @@ void Train::reset()
  _hashCollisions = 0;
 
  // Computing initial hash
- const auto hash = _gameInstances[0]->computeHash();
+ const auto hash = _gameInstances[0]->computeHash(9999);
 
  auto _firstState = (State*) malloc(_stateSize);
  _gameInstances[0]->pushState(_initialStateData);

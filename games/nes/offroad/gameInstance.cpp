@@ -20,6 +20,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   p1Accel                 = (uint8_t*)   &_emu->_baseMem[0x0097];
   p1Angle                 = (uint8_t*)   &_emu->_baseMem[0x0093];
 
+  p1Cash0                 = (uint8_t*)   &_emu->_baseMem[0x0306];
   p1Cash1                 = (uint8_t*)   &_emu->_baseMem[0x0307];
   p1Cash2                 = (uint8_t*)   &_emu->_baseMem[0x0308];
   p1Cash3                 = (uint8_t*)   &_emu->_baseMem[0x0309];
@@ -34,6 +35,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   menuSelectorY           = (uint8_t*)   &_emu->_baseMem[0x0039];
   menuRaceStartTimer      = (uint8_t*)   &_emu->_baseMem[0x0515];
   menuRaceState           = (uint8_t*)   &_emu->_baseMem[0x054A];
+
+  globalTimer            = (uint16_t*)   &_emu->_baseMem[0x0440];
+  playerLastInputKey     = (uint8_t*)   &_emu->_baseMem[0x0026];
+  playerLastInputFrame   = (uint16_t*)   &_emu->_baseMem[0x07FE];
+
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -72,6 +78,10 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   if (isSkipRun)
   {
    hash.Update(*gameTimer);
+   hash.Update(*p1Cash0);
+   hash.Update(*p1Cash1);
+   hash.Update(*p1Cash2);
+   hash.Update(*p1Cash3);
    hash.Update(*menuState1);
    hash.Update(*menuState2);
    hash.Update(*menuState3);
@@ -108,15 +118,19 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
  std::vector<INPUT_TYPE> moves;
 
  _emu->advanceState(move); moves.push_back(move);
-
+ *globalTimer = *globalTimer+1;
  updateDerivedValues();
  return moves;
 }
 
 void GameInstance::updateDerivedValues()
 {
- if (isSkipRun) return;
+ totalCash = 1000*(uint16_t)*p1Cash0 + 100*(uint16_t)*p1Cash1 + 10*(uint16_t)*p1Cash2 + *p1Cash3;
  invertedTrack = *trackType >= 0x08;
+
+ if (*playerLastInputKey != 0) *playerLastInputFrame = *globalTimer;
+
+ if (isSkipRun) return;
 
  if (checkpoints[*trackType].size() == 0) EXIT_WITH_ERROR("[Error] Checkpoints for track type %03u not defined.\n", *trackType);
 
@@ -142,8 +156,6 @@ void GameInstance::updateDerivedValues()
  if (invertedTrack == true) lapProgress = ((float)*p1LapProgress + 4.0*checkpointProgress) / (float)maxCheckpointId;
  else                       lapProgress = ((float)maxCheckpointId - (float)*p1LapProgress + 4.0*checkpointProgress) / (float)maxCheckpointId;
 
-
- totalCash = 100*(uint16_t)*p1Cash1 + 10*(uint16_t)*p1Cash2 + *p1Cash3;
 }
 
 // Function to determine the current possible moves
@@ -173,7 +185,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 {
  // We calculate a different reward if this is a winning frame
  auto stateType = getStateType(rulesStatus);
- if (stateType == f_win) return *p1TurboCounter;
+
+ if (stateType == f_win) return -1.0f * (float)*playerLastInputFrame;
+ //if (stateType == f_win) return *p1TurboCounter;
 
   // Getting rewards from rules
   float reward = 0.0;
@@ -191,7 +205,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.playerLapProgressMagnet * lapProgress;
 
   // Evaluating player health  magnet
-  float excessTurbo = 90.0f;
+  float excessTurbo = 99.0f;
   float baseTurboCount = (float) *p1TurboCounter;
   float cappedTurboCount = (float)std::min(baseTurboCount, excessTurbo);
   float excessTurboCount = (float)std::max(0.0f, baseTurboCount - excessTurbo);
@@ -218,8 +232,14 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Reward:                             %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                               0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Game Timer:                         %03u\n", *gameTimer);
+
+ LOG("[Jaffar]  + Global Timer:                       %03u\n", *globalTimer);
+ LOG("[Jaffar]  + Last Input / Frame                  %03u / %03u\n",  *playerLastInputKey, *playerLastInputFrame);
+
  LOG("[Jaffar]  + Pre Race Timer:                     %03u\n", *preRaceTimer);
- LOG("[Jaffar]  + Race Number:                        %03u\n", *raceNumber);
+ LOG("[Jaffar]  + Race Number: %2u / 99\n", *raceNumber);
+ LOG("[Jaffar]  + Current Lap: %1u / 4\n", *p1CurrentLap);
+
  LOG("[Jaffar]  + Race Type:                          %03u\n", *raceType);
  LOG("[Jaffar]  + Track Type:                         %03u\n", *trackType);
  LOG("[Jaffar]  + Menu State:                         %03u %03u %03u\n", *menuState1, *menuState2, *menuState3);
@@ -230,7 +250,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Checkpoint Distance:                %03f\n", checkpointDistance);
 
  LOG("[Jaffar]  + Player Turbo Counter:               %03u\n", *p1TurboCounter);
- LOG("[Jaffar]  + Player Cash:                        %u (%01u %01u %01u)\n", totalCash, *p1Cash1, *p1Cash2, *p1Cash3);
+ LOG("[Jaffar]  + Player Cash:                        %u (%01u %01u %01u %01u)\n", totalCash, *p1Cash0, *p1Cash1, *p1Cash2, *p1Cash3);
 
  if (isSkipRun)
  {
