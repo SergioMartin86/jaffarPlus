@@ -186,8 +186,8 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  // We calculate a different reward if this is a winning frame
  auto stateType = getStateType(rulesStatus);
 
- if (stateType == f_win) return -1.0f * (float)*playerLastInputFrame;
- //if (stateType == f_win) return *p1TurboCounter;
+// if (stateType == f_win) return -1.0f * (float)*playerLastInputFrame;
+ if (stateType == f_win) return *p1TurboCounter;
 
   // Getting rewards from rules
   float reward = 0.0;
