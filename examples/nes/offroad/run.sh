@@ -3,7 +3,7 @@
 cp race.state.base race.state
 if [ $? -ne 0 ]; then echo "Failed to copy initial state"; exit -1; fi
 
-for i in {19..99}
+for i in {13..99}
 do
   echo "Doing race ${i}"
   cp race.state race.state.${i}
