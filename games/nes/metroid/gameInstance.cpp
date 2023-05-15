@@ -10,6 +10,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   // https://datacrystal.romhacking.net/wiki/Metroid:RAM_map
 
+  pauseMode                        = (uint8_t*)   &_emu->_baseMem[0x0000];
   frameCounter                     = (uint8_t*)   &_emu->_baseMem[0x002D];
   NMIFlag                          = (uint8_t*)   &_emu->_baseMem[0x001A];
   gameMode                         = (uint8_t*)   &_emu->_baseMem[0x001E];
@@ -24,6 +25,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   samusDoorSide                    = (uint8_t*)   &_emu->_baseMem[0x004E];
   samusDoorState                   = (uint8_t*)   &_emu->_baseMem[0x0056];
   equipmentFlags                   = (uint8_t*)   &_emu->_highMem[0x0878];
+  samusSelectedWeapon              = (uint8_t*)   &_emu->_baseMem[0x0056];
+  samusMinPosY                     = (float_t*)   &_emu->_highMem[0x1FF0];
+  missileCount                     = (uint8_t*)   &_emu->_highMem[0x0879];
 
   door1State                       = (uint8_t*)   &_emu->_baseMem[0x0380];
   door2State                       = (uint8_t*)   &_emu->_baseMem[0x0390];
@@ -47,6 +51,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   bullet2PosY                      = (uint8_t*)   &_emu->_baseMem[0x03ED];
   bullet3PosY                      = (uint8_t*)   &_emu->_baseMem[0x03FD];
 
+  lagFrameCounter                  = (uint16_t*)  &_emu->_highMem[0x1FFD];
+  pauseFrameCounter                = (uint16_t*)  &_emu->_highMem[0x1FFB];
   customValue                      = (uint8_t*)   &_emu->_highMem[0x1FFF];
 
   // Initialize derivative values
@@ -59,13 +65,14 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-_uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 {
   // Storage for hash calculation
   MetroHash128 hash;
 
-  if (timerTolerance > 0)  hash.Update(*frameCounter % (timerTolerance+1));
+  if (timerTolerance > 0)  hash.Update(currentStep % (timerTolerance+1));
 
+  hash.Update(*pauseMode);
   hash.Update(*gameMode);
   hash.Update(*NMIFlag);
   hash.Update(*samusPosXRaw);
@@ -74,6 +81,10 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*samusPosYRaw);
   hash.Update(*screenPosY1);
   hash.Update(*screenPosY2);
+  hash.Update(*lagFrameCounter);
+  hash.Update(*pauseFrameCounter);
+  hash.Update(*missileCount);
+  hash.Update(*samusSelectedWeapon);
 
   hash.Update(*samusAnimation);
   hash.Update(*samusDirection);
@@ -119,6 +130,9 @@ void GameInstance::updateDerivedValues()
  uint8_t realScreenPosY1 = *screenPosY2 == 0 ? *screenPosY1+1 : *screenPosY1;
  samusPosY = (float)realScreenPosY1 * 256.0f + (float)*screenPosY2 + (float)*samusPosYRaw;
 
+ if ( *((uint64_t*)samusMinPosY) == 0) *samusMinPosY = samusPosY;
+ else if (samusPosY < *samusMinPosY) *samusMinPosY = samusPosY;
+
  bulletCount = (uint8_t)(*bullet1State > 0) + (uint8_t)(*bullet2State > 0) + (uint8_t)(*bullet3State > 0);
 }
 
@@ -126,6 +140,10 @@ void GameInstance::updateDerivedValues()
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  std::vector<std::string> moveList = {"."};
+
+ if (*samusDoorState == 2) moveList.insert(moveList.end(), { "S" });
+ moveList.insert(moveList.end(), { "A", "U", "R", "L", "LA", "LB", "RA", "RB", "ULA", "URA", "URBA" });
+ return moveList;
 
  // Evaluating custom value
  bool disableB = false;
@@ -211,24 +229,18 @@ void GameInstance::printFullMoveList(const bool* rulesStatus)
 
 std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
-  size_t skippedFrames = 0;
-  std::vector<INPUT_TYPE> moves;
+ std::vector<INPUT_TYPE> moves;
+ _emu->advanceState(move); moves.push_back(move);
 
-  _emu->advanceState(move);
-  moves.push_back(move);
+ // count lag frames
+  if (*NMIFlag == 1) (*lagFrameCounter)++;
+  if (*pauseMode == 0) (*pauseFrameCounter)++;
 
-  while (*gameMode != 3 || *NMIFlag == 1)
-  {
-   _emu->advanceState(0);
-   moves.push_back(0);
-   skippedFrames++;
-   if (skippedFrames > 2048) break;
-  }
+ updateDerivedValues();
 
-  updateDerivedValues();
-
-  return moves;
+ return moves;
 }
+
 
 // Function to get magnet information
 magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
@@ -270,6 +282,10 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   diff = std::abs(magnets.samusVerticalMagnet.center - samusPosY);
   reward += magnets.samusVerticalMagnet.intensity * -diff;
 
+  // Evaluating samus magnet's reward on min position Y
+  diff = std::abs(magnets.samusMinVerticalMagnet.center - *samusMinPosY);
+  reward += magnets.samusMinVerticalMagnet.intensity * -diff;
+
   // Evaluating bullet1 magnet's reward on position X
   diff = std::abs(magnets.bullet1HorizontalMagnet.center - (float)*bullet1PosX);
   reward += magnets.bullet1HorizontalMagnet.intensity * -diff;
@@ -278,23 +294,25 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   diff = std::abs(magnets.bullet1VerticalMagnet.center - (float)*bullet1PosY);
   reward += magnets.bullet1VerticalMagnet.intensity * -diff;
 
+  // Evaluating lag frame counter reward
+  reward += magnets.lagFrameCounterMagnet * ((float)*lagFrameCounter + (float)*pauseFrameCounter);
+
   // Returning reward
   return reward;
 }
 
-void GameInstance::setRNGState(const uint64_t RNGState)
-{
-}
-
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
+  LOG("[Jaffar]  + Pause Mode:             %03u\n", *pauseMode);
   LOG("[Jaffar]  + Frame Counter:          %03u\n", *frameCounter);
   LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second );
   LOG("[Jaffar]  + Game Mode:              %02u\n", *gameMode);
   LOG("[Jaffar]  + NMI Flag:               %02u\n", *NMIFlag);
+  LOG("[Jaffar]  + Lag Frame Counter:      %05u\n", *lagFrameCounter);
+  LOG("[Jaffar]  + Pause Frame Counter:    %05u\n", *pauseFrameCounter);
   LOG("[Jaffar]  + Samus Pos X:            %f (%02u %02u %02u)\n", samusPosX, *screenPosX1, *screenPosX2, *samusPosXRaw);
-  LOG("[Jaffar]  + Samus Pos Y:            %f (%02u %02u %02u)\n", samusPosY, *screenPosY1, *screenPosY2, *samusPosYRaw);
+  LOG("[Jaffar]  + Samus Pos Y:            %f (%02u %02u %02u / Min: %f)\n", samusPosY, *screenPosY1, *screenPosY2, *samusPosYRaw, *samusMinPosY);
   LOG("[Jaffar]  + Samus Animation:        %03u\n", *samusAnimation);
   LOG("[Jaffar]  + Samus Direction:        %03u\n", *samusDirection);
   LOG("[Jaffar]  + Samus Door Side:        %03u\n", *samusDoorSide);
@@ -306,7 +324,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Bullet Pos X:           [ %02u, %02u, %02u ]\n", *bullet1PosX, *bullet2PosX, *bullet3PosX);
   LOG("[Jaffar]  + Bullet Pos Y:           [ %02u, %02u, %02u ]\n", *bullet1PosY, *bullet2PosY, *bullet3PosY);
   LOG("[Jaffar]  + Equipment Flags:        %03u\n", *equipmentFlags);
+  LOG("[Jaffar]  + Samus Selected Weapon:  %03u\n", *samusSelectedWeapon);
   LOG("[Jaffar]  + Custom Value:           %02u\n", *customValue);
+  LOG("[Jaffar]  + Samus Missile Count:    %02u\n", *missileCount);
 
   LOG("[Jaffar]  + Rule Status: ");
   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -315,6 +335,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   auto magnets = getMagnetValues(rulesStatus);
   if (std::abs(magnets.samusHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Samus Horizontal Magnet        - Intensity: %.5f, Center: %3.3f\n", magnets.samusHorizontalMagnet.intensity, magnets.samusHorizontalMagnet.center);
   if (std::abs(magnets.samusVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Samus Vertical Magnet          - Intensity: %.5f, Center: %3.3f\n", magnets.samusVerticalMagnet.intensity, magnets.samusVerticalMagnet.center);
+  if (std::abs(magnets.samusMinVerticalMagnet.intensity) > 0.0f)  LOG("[Jaffar]  + Samus Min Vertical Magnet      - Intensity: %.5f, Center: %3.3f\n", magnets.samusMinVerticalMagnet.intensity, magnets.samusMinVerticalMagnet.center);
   if (std::abs(magnets.bullet1HorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Bullet 1 Horizontal Magnet     - Intensity: %.5f, Center: %3.3f\n", magnets.bullet1HorizontalMagnet.intensity, magnets.bullet1HorizontalMagnet.center);
   if (std::abs(magnets.bullet1VerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Bullet 1 Vertical Magnet       - Intensity: %.5f, Center: %3.3f\n", magnets.bullet1VerticalMagnet.intensity, magnets.bullet1VerticalMagnet.center);
+  if (std::abs(magnets.lagFrameCounterMagnet) > 0.0f)             LOG("[Jaffar]  + Bullet 1 Vertical Magnet       - Intensity: %.5f\n", magnets.lagFrameCounterMagnet);
 }

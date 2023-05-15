@@ -15,8 +15,10 @@ struct genericMagnet_t {
 struct magnetSet_t {
  genericMagnet_t samusHorizontalMagnet;
  genericMagnet_t samusVerticalMagnet;
+ genericMagnet_t samusMinVerticalMagnet;
  genericMagnet_t bullet1HorizontalMagnet;
  genericMagnet_t bullet1VerticalMagnet;
+ float lagFrameCounterMagnet = 0.0;
 };
 
 class GameInstance : public GameInstanceBase
@@ -24,6 +26,7 @@ class GameInstance : public GameInstanceBase
  public:
 
   // Container for game-specific values
+  uint8_t* pauseMode;
   uint8_t* frameCounter;
   uint8_t* gameMode;
   uint8_t* NMIFlag;
@@ -38,6 +41,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* samusDoorSide;
   uint8_t* samusDoorState;
   uint8_t* equipmentFlags;
+  uint8_t* samusSelectedWeapon;
+  uint8_t* missileCount;
 
   uint8_t* door1State;
   uint8_t* door2State;
@@ -68,19 +73,21 @@ class GameInstance : public GameInstanceBase
 
   // Custom conserved value
   uint8_t* customValue;
+  uint16_t* lagFrameCounter;
+  uint16_t* pauseFrameCounter;
+  float*    samusMinPosY;
 
   // Settings
   bool disableB;
   uint8_t timerTolerance;
 
   void printFullMoveList(const bool* rulesStatus);
-  GameInstance(EmuInstance* emu, const nlohmann::json& config);
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
-  _uint128_t computeHash() const override;
+  GameInstance(EmuInstance* emu, const nlohmann::json& config);
+  _uint128_t computeHash(const uint16_t currentStep = 0) const override;
   void updateDerivedValues() override;
   std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
-  void setRNGState(const uint64_t RNGState) override;
 };
