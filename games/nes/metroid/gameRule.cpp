@@ -25,6 +25,14 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
   }
 
+  if (actionType == "Set Samus Min Vertical Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
+   _magnets.samusMinVerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>() };
+    recognizedActionType = true;
+  }
+
   if (actionType == "Set Bullet 1 Horizontal Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -54,6 +62,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
    _disableBValue = actionJs["Value"].get<bool>();
    _disableBActive = true;
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Lag Frame Counter Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
+   _magnets.lagFrameCounterMagnet = actionJs["Intensity"].get<float>();
    recognizedActionType = true;
   }
 
