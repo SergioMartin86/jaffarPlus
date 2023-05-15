@@ -32,7 +32,7 @@
   
   "Jaffar Configuration": 
   {
-    "Show Timing Information": true,
+    "Show Timing Information": false,
     "Show Hash Information": false,
     "Show Winning State Information": true,
     "Show Move List": false,
@@ -49,8 +49,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 3000,
-     "Max Size Upper Bound (Mb)": 30000
+     "Max Size Lower Bound (Mb)": 4000,
+     "Max Size Upper Bound (Mb)": 15000
     },
     
     "Hash Database":
@@ -62,11 +62,11 @@
     "Save Intermediate Results":
     {
      "Enabled": true,
-     "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol",
-     "Best State Path": "/tmp/jaffar.best.state",
-     "Worst State Path": "/tmp/jaffar.worst.state"
+     "Frequency (s)": 10.0,
+     "Best Solution Path": "/pfs/lustrep1/users/semartin/jaffarPlus/examples/nes/offroad/jaffar.best.sol",
+     "Worst Solution Path": "/pfs/lustrep1/users/semartin/jaffarPlus/examples/nes/offroad/jaffar.worst.sol",
+     "Best State Path": "/pfs/lustrep1/users/semartin/jaffarPlus/examples/nes/offroad/jaffar.best.state",
+     "Worst State Path": "/pfs/lustrep1/users/semartin/jaffarPlus/examples/nes/offroad/jaffar.worst.state"
      }
   },
   
@@ -99,6 +99,7 @@
     "Label": 1001,
     "Conditions":
     [
+      { "Property": "Player 1 Turbo Counter", "Op": "<", "Value": 99 },
       { "Property": "Player 1 Lap Counter", "Op": "==", "Value": 5 } 
     ],
     
