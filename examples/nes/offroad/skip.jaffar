@@ -63,11 +63,11 @@
     "Save Intermediate Results":
     {
      "Enabled": true,
-     "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol",
-     "Best State Path": "/tmp/jaffar.best.state",
-     "Worst State Path": "/tmp/jaffar.worst.state"
+     "Frequency (s)": 10.0,
+     "Best Solution Path": "/pfs/lustrep1/users/semartin/jaffarPlus/examples/nes/offroad/jaffar.best.sol",
+     "Worst Solution Path": "/pfs/lustrep1/users/semartin/jaffarPlus/examples/nes/offroad/jaffar.worst.sol",
+     "Best State Path": "/pfs/lustrep1/users/semartin/jaffarPlus/examples/nes/offroad/jaffar.best.state",
+     "Worst State Path": "/pfs/lustrep1/users/semartin/jaffarPlus/examples/nes/offroad/jaffar.worst.state"
      }
   },
   
