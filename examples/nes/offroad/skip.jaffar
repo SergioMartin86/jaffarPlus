@@ -91,7 +91,8 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 }
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Turbo Counter Magnet", "Intensity": 1.00 }
     ]
    },
    
@@ -102,7 +103,7 @@
       { "Property": "Player 1 Lap Counter", "Op": "==", "Value": 1 }
     ],
     
-    "Satisfies": [ 1001 ],
+    "Satisfies": [  ],
     
     "Actions":
     [
@@ -130,12 +131,14 @@
     "Label": 1004,
     "Conditions":
     [
+      { "Property": "Pre Race Timer", "Op": ">", "Value": 0 },
       { "Property": "Player 1 Cash 0", "Op": "==", "Value": 0 },
       { "Property": "Player 1 Cash 1", "Op": "==", "Value": 0 },
-      { "Property": "Player 1 Cash 2", "Op": "==", "Value": 0 }
+      { "Property": "Player 1 Cash 2", "Op": "==", "Value": 0 },
+      { "Property": "Player 1 Cash 3", "Op": "==", "Value": 0 }
     ],
     
-    "Satisfies": [ 1003 ],
+    "Satisfies": [ ],
     
     "Actions":
     [
@@ -167,6 +170,7 @@
        { "Property": "Player 1 Cash 0", "Op": "==", "Value": 0 },
        { "Property": "Player 1 Cash 1", "Op": "==", "Value": 0 },
        { "Property": "Player 1 Cash 2", "Op": "==", "Value": 0 },
+      { "Property": "Player 1 Cash 3", "Op": "==", "Value": 0 },
        { "Property": "Menu Race Start Timer", "Op": "==", "Value": 59 }
      ],
      
@@ -203,6 +207,7 @@
          { "Property": "Player 1 Cash 0", "Op": "==", "Value": 0 },        
          { "Property": "Player 1 Cash 1", "Op": "==", "Value": 0 },
          { "Property": "Player 1 Cash 2", "Op": "==", "Value": 0 },
+      { "Property": "Player 1 Cash 3", "Op": "==", "Value": 0 },
          { "Property": "Menu State 1", "Op": "==", "Value": 1 },
          { "Property": "Menu Race Start Timer", "Op": "==", "Value": 0 },
          { "Property": "Menu Race State", "Op": "==", "Value": 240 }

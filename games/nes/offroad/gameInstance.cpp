@@ -40,7 +40,6 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   playerLastInputKey     = (uint8_t*)   &_emu->_baseMem[0x0026];
   playerLastInputFrame   = (uint16_t*)   &_emu->_baseMem[0x07FE];
 
-
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
@@ -90,7 +89,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
    hash.Update(*menuRaceStartTimer);
    hash.Update(*menuRaceState);
 
-//   hash.Update(_emu->_baseMem[0x026]); // Inputs
+   //hash.Update(_emu->_baseMem[0x026]); // Inputs
    hash.Update(_emu->_baseMem[0x027]);
    hash.Update(_emu->_baseMem[0x566]);
    hash.Update(_emu->_baseMem[0x567]); // Menu
@@ -186,8 +185,8 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  // We calculate a different reward if this is a winning frame
  auto stateType = getStateType(rulesStatus);
 
-// if (stateType == f_win) return -1.0f * (float)*playerLastInputFrame;
- if (stateType == f_win) return *p1TurboCounter;
+ if (stateType == f_win) return -1.0f * (float)*playerLastInputFrame;
+ //if (stateType == f_win) return *p1TurboCounter;
 
   // Getting rewards from rules
   float reward = 0.0;

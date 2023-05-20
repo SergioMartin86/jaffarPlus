@@ -7,7 +7,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 0,
+   "Timer Tolerance": 30,
    "Is Skip Run": false,
    "Lap Checkpoints": 
     [
@@ -36,11 +36,11 @@
     "Show Hash Information": false,
     "Show Winning State Information": true,
     "Show Move List": false,
-    "Win State Step Tolerance": 10,
+    "Win State Step Tolerance": 70,
     
     "State Configuration": 
     {
-      "Max Move Count": 3000,
+      "Max Move Count": 2000,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 350,
@@ -49,8 +49,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 4000,
-     "Max Size Upper Bound (Mb)": 15000
+     "Max Size Lower Bound (Mb)": 80000,
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -89,7 +89,7 @@
     [
      { "Type": "Set Player Current Lap Magnet", "Intensity": 10.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Turbo Counter Magnet", "Intensity": 0.011 },
+     { "Type": "Set Player Turbo Counter Magnet", "Intensity": 0.004 },
      { "Type": "Set Player Cash Magnet", "Intensity": 0.000 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.0001 } 
     ]
