@@ -7,6 +7,7 @@ option('game', type : 'combo', choices :
     'a2600/space',
     'a2600/barn',
     'gen/ootw',
+    'nes/ark',
     'nes/smb',
     'nes/sfsmb',
     'nes/castlevania',

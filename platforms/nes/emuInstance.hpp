@@ -76,23 +76,31 @@ class EmuInstance : public EmuInstanceBase
  void saveStateFile(const std::string& stateFilePath) const override
  {
   std::string stateData;
-  stateData.resize(_STATE_DATA_SIZE_TRAIN);
+  stateData.resize(_STATE_DATA_SIZE_PLAY);
   serializeState((uint8_t*)stateData.data());
   saveStringToFile(stateData, stateFilePath.c_str());
  }
 
  void serializeState(uint8_t* state) const override
  {
-  Mem_Writer w(state, _STATE_DATA_SIZE_TRAIN, 0);
+  #ifdef _JAFFAR_PLAY
+  Mem_Writer w(state, _STATE_DATA_SIZE_PLAY, 0);
   Auto_File_Writer a(w);
   _nes->save_state(a);
+  #else
+  memcpy(state, _baseMem, _STATE_DATA_SIZE_TRAIN);
+  #endif
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  Mem_File_Reader r(state, _STATE_DATA_SIZE_TRAIN);
+  #ifdef _JAFFAR_PLAY
+  Mem_File_Reader r(state, _STATE_DATA_SIZE_PLAY);
   Auto_File_Reader a(r);
   _nes->load_state(a);
+  #else
+  memcpy(_baseMem, state, _STATE_DATA_SIZE_TRAIN);
+  #endif
  }
 
  // Controller input bits
