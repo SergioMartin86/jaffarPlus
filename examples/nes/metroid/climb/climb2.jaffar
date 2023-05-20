@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../metroid.nes",
-    "State File": "climb.state"
+    "State File": "climb2.state"
   },
   
   "Game Configuration": 
@@ -22,15 +22,15 @@
     {
       "Max Move Count": 512,
       "Store Move History": true,
-      "XDelta3 Enabled": true, 
+      "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 1521,
       "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 180000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 80000
     },
     
     "Hash Database":
@@ -58,29 +58,9 @@
   "Rules":
   [
    {
-    "Label": 1000,
-    "Conditions":
-    [
-      { "Property": "Samus Door State", "Op": "==", "Value": 0 },
-      { "Property": "Samus Pos X Raw", "Op": "!=", "Value": 19 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Samus Horizontal Magnet", "Intensity": 1, "Center": 1880.0 }
-    ]
-   },
-   
-   {
     "Label": 1001,
     "Conditions":
     [
-      { "Property": "Samus Pos X", "Op": "<", "Value": 1970.0 },
-      { "Property": "Samus Door State", "Op": "==", "Value": 0 },
-      { "Property": "Samus Pos X Raw", "Op": "!=", "Value": 19 }
     ],
     
     "Satisfies": [  ],
@@ -136,7 +116,22 @@
     "Label": 1998,
     "Conditions":
     [
-      { "Property": "Bullet Count", "Op": ">", "Value": 1 }
+      { "Property": "Bullet Count", "Op": ">", "Value": 2 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1997,
+    "Conditions":
+    [
+      { "Property": "Samus HP 1", "Op": "<", "Value": 3 }
     ],
     
     "Satisfies": [ ],

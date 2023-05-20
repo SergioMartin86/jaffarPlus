@@ -95,6 +95,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Door 4 State") return dt_uint8;
   if (propertyName == "Bullet Count") return dt_uint8;
   if (propertyName == "Custom Value") return dt_uint8;
+  if (propertyName == "Samus HP 1") return dt_uint8;
+  if (propertyName == "Samus HP 2") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -121,6 +123,8 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Door 4 State") return gameInstance->door4State;
   if (propertyName == "Bullet Count") return &gameInstance->bulletCount;
   if (propertyName == "Custom Value") return &gameInstance->customValue;
+  if (propertyName == "Samus HP 1") return gameInstance->samusHP1;
+  if (propertyName == "Samus HP 2") return gameInstance->samusHP2;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

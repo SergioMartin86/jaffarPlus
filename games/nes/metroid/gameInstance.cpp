@@ -28,6 +28,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   samusSelectedWeapon              = (uint8_t*)   &_emu->_baseMem[0x0056];
   samusMinPosY                     = (float_t*)   &_emu->_highMem[0x1FF0];
   missileCount                     = (uint8_t*)   &_emu->_highMem[0x0879];
+  samusHP1                         = (uint8_t*)   &_emu->_baseMem[0x0107];
+  samusHP2                         = (uint8_t*)   &_emu->_baseMem[0x0106];
 
   door1State                       = (uint8_t*)   &_emu->_baseMem[0x0380];
   door2State                       = (uint8_t*)   &_emu->_baseMem[0x0390];
@@ -81,7 +83,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*samusPosYRaw);
   hash.Update(*screenPosY1);
   hash.Update(*screenPosY2);
-  hash.Update(*lagFrameCounter);
+//  hash.Update(*lagFrameCounter);
   hash.Update(*pauseFrameCounter);
   hash.Update(*missileCount);
   hash.Update(*samusSelectedWeapon);
@@ -96,10 +98,10 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*door3State);
   hash.Update(*door4State);
 
-  hash.Update(*door1Timer);
-  hash.Update(*door2Timer);
-  hash.Update(*door3Timer);
-  hash.Update(*door4Timer);
+//  hash.Update(*door1Timer);
+//  hash.Update(*door2Timer);
+//  hash.Update(*door3Timer);
+//  hash.Update(*door4Timer);
 
   hash.Update(*bullet1State);
   hash.Update(*bullet2State);
@@ -127,8 +129,7 @@ void GameInstance::updateDerivedValues()
  uint8_t realScreenPosX1 = *screenPosX2 == 0 ? *screenPosX1+1 : *screenPosX1;
  samusPosX = (float)realScreenPosX1 * 256.0f + (float)*screenPosX2 + (float)*samusPosXRaw;
 
- uint8_t realScreenPosY1 = *screenPosY2 == 0 ? *screenPosY1+1 : *screenPosY1;
- samusPosY = (float)realScreenPosY1 * 256.0f + (float)*screenPosY2 + (float)*samusPosYRaw;
+ samusPosY = (float)*screenPosY1 * 256.0f + (float)*screenPosY2 + (float)*samusPosYRaw;
 
  if ( *((uint64_t*)samusMinPosY) == 0) *samusMinPosY = samusPosY;
  else if (samusPosY < *samusMinPosY) *samusMinPosY = samusPosY;
@@ -141,8 +142,8 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 {
  std::vector<std::string> moveList = {"."};
 
- if (*samusDoorState == 2) moveList.insert(moveList.end(), { "S" });
- moveList.insert(moveList.end(), { "A", "U", "R", "L", "LA", "LB", "RA", "RB", "ULA", "URA", "URBA" });
+ if (*samusDoorState != 0) moveList.insert(moveList.end(), { "S" });
+ moveList.insert(moveList.end(), { "s", "A", "U", "R", "L", "LA", "LB", "RA", "RB", "ULA", "URA", "URBA" });
  return moveList;
 
  // Evaluating custom value
@@ -327,6 +328,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Samus Selected Weapon:  %03u\n", *samusSelectedWeapon);
   LOG("[Jaffar]  + Custom Value:           %02u\n", *customValue);
   LOG("[Jaffar]  + Samus Missile Count:    %02u\n", *missileCount);
+  LOG("[Jaffar]  + Samus HP:               %02u x 10 + %02u\n", *samusHP1, *samusHP2);
 
   LOG("[Jaffar]  + Rule Status: ");
   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

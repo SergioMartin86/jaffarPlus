@@ -43,6 +43,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* equipmentFlags;
   uint8_t* samusSelectedWeapon;
   uint8_t* missileCount;
+  uint8_t* samusHP1;
+  uint8_t* samusHP2;
 
   uint8_t* door1State;
   uint8_t* door2State;
