@@ -7,7 +7,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4
+   "Timer Tolerance": 2
   },
   
   "Jaffar Configuration": 
@@ -22,15 +22,15 @@
     {
       "Max Move Count": 512,
       "Store Move History": true,
-      "XDelta3 Enabled": true, 
+      "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 1521,
       "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 180000
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 80000
     },
     
     "Hash Database":
@@ -61,26 +61,6 @@
     "Label": 1000,
     "Conditions":
     [
-      { "Property": "Samus Door State", "Op": "==", "Value": 0 },
-      { "Property": "Samus Pos X Raw", "Op": "!=", "Value": 19 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Samus Horizontal Magnet", "Intensity": 1, "Center": 1880.0 }
-    ]
-   },
-   
-   {
-    "Label": 1001,
-    "Conditions":
-    [
-      { "Property": "Samus Pos X", "Op": "<", "Value": 1970.0 },
-      { "Property": "Samus Door State", "Op": "==", "Value": 0 },
-      { "Property": "Samus Pos X Raw", "Op": "!=", "Value": 19 }
     ],
     
     "Satisfies": [  ],
@@ -88,8 +68,25 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Samus Vertical Magnet", "Intensity": 2, "Center": 4577.0 },
-     { "Type": "Set Samus Horizontal Magnet", "Intensity": 1, "Center": 1881 }
+     { "Type": "Set Samus Vertical Magnet", "Intensity": 1, "Center": 0.0 },
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 0.1, "Center": 1885 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+      { "Property": "Samus Pos Y", "Op": "<", "Value": 4405 }
+    ],
+    
+    "Satisfies": [ 1000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Samus Vertical Magnet", "Intensity": 1, "Center": 0.0 },
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 0.1, "Center": 1900 }
     ]
    },
    
@@ -97,10 +94,7 @@
     "Label": 1002,
     "Conditions":
     [
-      { "Property": "Samus Pos X", "Op": "<", "Value": 1890.0 },
-      { "Property": "Samus Pos Y", "Op": "<", "Value": 4580 },
-      { "Property": "Samus Door State", "Op": "==", "Value": 0 },
-      { "Property": "Samus Pos X Raw", "Op": "!=", "Value": 19 }
+      { "Property": "Samus Pos Y", "Op": "<", "Value": 4363 }
     ],
     
     "Satisfies": [ 1001 ],
@@ -108,8 +102,8 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Samus Vertical Magnet", "Intensity": 2, "Center": 4500.0 },
-     { "Type": "Set Samus Horizontal Magnet", "Intensity": 1, "Center": 1881 }
+     { "Type": "Set Samus Vertical Magnet", "Intensity": 1, "Center": 0.0 },
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 0.1, "Center": 1875 }
     ]
    },
    
@@ -117,9 +111,7 @@
     "Label": 1003,
     "Conditions":
     [
-      { "Property": "Samus Pos Y", "Op": "<", "Value": 4530 },
-      { "Property": "Samus Door State", "Op": "==", "Value": 0 },
-      { "Property": "Samus Pos X Raw", "Op": "!=", "Value": 19 }
+      { "Property": "Samus Pos Y", "Op": "<", "Value": 4306 }
     ],
     
     "Satisfies": [ 1002 ],
@@ -127,23 +119,76 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Samus Vertical Magnet", "Intensity": 2, "Center": 0.0 },
-     { "Type": "Set Samus Horizontal Magnet", "Intensity": 1, "Center": 1892 }
+     { "Type": "Set Samus Vertical Magnet", "Intensity": 1, "Center": 0.0 },
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 0.1, "Center": 1895 }
     ]
    },
    
    {
-    "Label": 1998,
+    "Label": 1004,
     "Conditions":
     [
-      { "Property": "Bullet Count", "Op": ">", "Value": 1 }
+      { "Property": "Samus Pos Y", "Op": "<", "Value": 4231 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 1003 ],
     
     "Actions":
     [
-     { "Type": "Trigger Fail" }
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Samus Vertical Magnet", "Intensity": 1, "Center": 0.0 },
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 0.1, "Center": 1890 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Conditions":
+    [
+      { "Property": "Samus Pos Y", "Op": "<", "Value": 4174 }
+    ],
+    
+    "Satisfies": [ 1004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Samus Vertical Magnet", "Intensity": 1, "Center": 0.0 },
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 0.1, "Center": 1900 }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Conditions":
+    [
+      { "Property": "Samus Pos Y", "Op": "<", "Value": 4100 }
+    ],
+    
+    "Satisfies": [ 1005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Samus Vertical Magnet", "Intensity": 1, "Center": 0.0 },
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 0.1, "Center": 1872 }
+    ]
+   },
+   
+   {
+    "Label": 1007,
+    "Conditions":
+    [
+      { "Property": "Samus Pos Y", "Op": "<", "Value": 4046 }
+    ],
+    
+    "Satisfies": [ 1006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Samus Vertical Magnet", "Intensity": 1, "Center": 0.0 },
+     { "Type": "Set Samus Horizontal Magnet", "Intensity": 0.1, "Center": 1887 }
     ]
    }
   ]  

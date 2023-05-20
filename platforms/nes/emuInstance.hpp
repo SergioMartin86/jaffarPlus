@@ -83,24 +83,24 @@ class EmuInstance : public EmuInstanceBase
 
  void serializeState(uint8_t* state) const override
  {
-  #ifdef _JAFFAR_PLAY
+//  #ifdef _JAFFAR_PLAY
   Mem_Writer w(state, _STATE_DATA_SIZE_PLAY, 0);
   Auto_File_Writer a(w);
   _nes->save_state(a);
-  #else
-  memcpy(state, _baseMem, _STATE_DATA_SIZE_TRAIN);
-  #endif
+//  #else
+//  memcpy(state, _baseMem, _STATE_DATA_SIZE_TRAIN);
+//  #endif
  }
 
  void deserializeState(const uint8_t* state) override
  {
-  #ifdef _JAFFAR_PLAY
+//  #ifdef _JAFFAR_PLAY
   Mem_File_Reader r(state, _STATE_DATA_SIZE_PLAY);
   Auto_File_Reader a(r);
   _nes->load_state(a);
-  #else
-  memcpy(_baseMem, state, _STATE_DATA_SIZE_TRAIN);
-  #endif
+//  #else
+//  memcpy(_baseMem, state, _STATE_DATA_SIZE_TRAIN);
+//  #endif
  }
 
  // Controller input bits
