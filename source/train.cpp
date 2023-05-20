@@ -11,7 +11,7 @@
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ raceType
+ #define _KEY_VALUE_ gameMode
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 

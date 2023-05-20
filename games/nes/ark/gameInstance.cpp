@@ -10,6 +10,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   _emu = emu;
 
   // Container for game-specific values
+  currentLevel              = (uint8_t*)   &_emu->_baseMem[0x001A];
   frameType                 = (uint8_t*)   &_emu->_baseMem[0x0000];
   remainingBlocks           = (uint8_t*)   &_emu->_baseMem[0x000F];
   ball1X                    = (uint8_t*)   &_emu->_baseMem[0x0038];
@@ -50,6 +51,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 
   if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));
 
+  hash.Update(*currentLevel);
   hash.Update(*frameType);
   hash.Update(*remainingBlocks);
   hash.Update(*ball1X);
@@ -154,6 +156,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Reward:                             %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                               0x%lX%lX\n", computeHash().first, computeHash().second);
 
+ LOG("[Jaffar]  + Current Level:                      %03u\n", *currentLevel);
  LOG("[Jaffar]  + Frame Type:                         %03u\n", *frameType);
  LOG("[Jaffar]  + Remaining Blocks:                   %03u\n", *remainingBlocks);
  LOG("[Jaffar]  + Remaining Ball Hits:                %03u\n", ballHitsRemaining);

@@ -83,12 +83,12 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*samusPosYRaw);
   hash.Update(*screenPosY1);
   hash.Update(*screenPosY2);
-//  hash.Update(*lagFrameCounter);
+  hash.Update(*lagFrameCounter);
   hash.Update(*pauseFrameCounter);
   hash.Update(*missileCount);
   hash.Update(*samusSelectedWeapon);
 
-  hash.Update(*samusAnimation);
+//  hash.Update(*samusAnimation);
   hash.Update(*samusDirection);
   hash.Update(*samusDoorSide);
   hash.Update(*equipmentFlags);
@@ -106,17 +106,21 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*bullet1State);
   hash.Update(*bullet2State);
   hash.Update(*bullet3State);
-  hash.Update(*bullet1PosX);
-  hash.Update(*bullet2PosX);
-  hash.Update(*bullet3PosX);
-  hash.Update(*bullet1PosY);
-  hash.Update(*bullet2PosY);
-  hash.Update(*bullet3PosY);
+//  hash.Update(*bullet1PosX);
+//  hash.Update(*bullet2PosX);
+//  hash.Update(*bullet3PosX);
+//  hash.Update(*bullet1PosY);
+//  hash.Update(*bullet2PosY);
+//  hash.Update(*bullet3PosY);
 
   hash.Update(*customValue);
 
   // Samus-specific hashes
-  hash.Update(&_emu->_baseMem[0x0300], 0x0020);
+//  hash.Update(_emu->_baseMem[0x0308]); // Vertical Speed
+  hash.Update(_emu->_baseMem[0x0310]); // Vertical Accel
+  hash.Update(_emu->_baseMem[0x030A]); // Hit By Enemy
+//    hash.Update(&_emu->_baseMem[0x0300], 0x0010);
+//    hash.Update(&_emu->_baseMem[0x0314], 0x0010);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -142,8 +146,8 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 {
  std::vector<std::string> moveList = {"."};
 
- if (*samusDoorState != 0) moveList.insert(moveList.end(), { "S" });
- moveList.insert(moveList.end(), { "s", "A", "U", "R", "L", "LA", "LB", "RA", "RB", "ULA", "URA", "URBA" });
+// if (*samusDoorState != 0) moveList.insert(moveList.end(), { "S" });
+ moveList.insert(moveList.end(), { "s", "B", "R", "U", "A", "L", "sA", "UB", "UA", "DL", "UR", "UL", "LR", "LB", "LA", "RB", "RA", "BA", "ULA", "URB", "URA", "ULB", "UBA", "DLB", "DRB", "DRA", "DBA", "LBA", "RBA", "DLBA", "URBA", "LRBA", "ULBA", "ULRB", "UDBA", "UDLB", "UDLBA" });
  return moveList;
 
  // Evaluating custom value
