@@ -15,6 +15,7 @@
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
+    "Show Move List": true,
     "Show Winning State Information": true,
     "Win State Step Tolerance": 0,
     
@@ -29,8 +30,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
@@ -43,7 +44,8 @@
     {
      "Enabled": true,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Save Numbered States": false,
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"

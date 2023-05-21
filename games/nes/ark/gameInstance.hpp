@@ -37,6 +37,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  paddlePosX;
   uint8_t*  paddlePowerUp1;
   uint8_t*  paddlePowerUp2;
+  uint8_t*  warpIsActive;
 
   uint8_t lowestBallPosY;
   uint8_t lowestBallPosX;
@@ -44,7 +45,6 @@ class GameInstance : public GameInstanceBase
   float horizontalDistanceToLowestBall;
 
   uint16_t ballHitsRemaining;
-  uint8_t metalTileScoreMultiplier;
 
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);

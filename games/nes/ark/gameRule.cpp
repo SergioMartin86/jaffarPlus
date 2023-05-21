@@ -71,6 +71,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Paddle Power Up 2") return dt_uint8;
   if (propertyName == "Falling Power Up Type") return dt_uint8;
   if (propertyName == "Falling Power Up Pos Y") return dt_uint8;
+  if (propertyName == "Warp Is Active") return dt_uint8;
+
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -94,6 +96,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Paddle Power Up 2") return gameInstance->paddlePowerUp2;
   if (propertyName == "Falling Power Up Type") return gameInstance->fallingPowerUpType;
   if (propertyName == "Falling Power Up Pos Y") return gameInstance->fallingPowerUpPosY;
+  if (propertyName == "Warp Is Active") return gameInstance->warpIsActive;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

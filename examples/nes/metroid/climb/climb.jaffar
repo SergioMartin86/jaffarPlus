@@ -42,6 +42,7 @@
     "Save Intermediate Results":
     {
      "Enabled": true,
+     "Save Numbered States": true,
      "Frequency (s)": 1.0,
      "Best Solution Path": "/tmp/jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",

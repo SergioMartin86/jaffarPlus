@@ -38,6 +38,7 @@ class Train
 
   // Saving intermediate result settings
   bool _outputEnabled;
+  bool _outputSaveNumberedStates;
   double _outputSaveFrequency;
   std::string _outputSolutionBestPath;
   std::string _outputSolutionWorstPath;

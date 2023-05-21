@@ -1,14 +1,13 @@
 {
   "Emulator Configuration": 
   {
-    "Rom File": "../ark.nes",
-    "State File": "lvl04.state"
+    "Rom File": "ark.nes",
+    "State File": "lvl.state"
   },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 0,
-   "Metal Tile Score Multiplier": 3 
+   "Timer Tolerance": 0
   },
   
   "Jaffar Configuration": 
@@ -21,7 +20,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 900,
+      "Max Move Count": 1600,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 2000,
@@ -30,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 150000,
-     "Max Size Upper Bound (Mb)": 200000
+     "Max Size Lower Bound (Mb)": 1500,
+     "Max Size Upper Bound (Mb)": 20000
     },
     
     "Hash Database":
@@ -44,9 +43,10 @@
     {
      "Enabled": true,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Save Numbered States": false,
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
-     "Best State Path": "/tmp/jaffar.best.state",
+     "Best State Path": "jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
      }
   },
@@ -54,7 +54,7 @@
   "Playback Configuration": 
   {
      "Disable Display": false,
-     "Overlay Path": "../../../../platforms/nes/overlay"
+     "Overlay Path": "../../../platforms/nes/overlay"
   },
   
   "Rules":
@@ -69,7 +69,8 @@
     
     "Actions":
     [
-     { "Type": "Set Ball 1 Pos Y Magnet", "Intensity": -0.0001 } 
+     { "Type": "Set Ball 1 Pos Y Magnet", "Intensity": 0.001 },
+     { "Type": "Set Remaining Hits Magnet", "Intensity": -1 } 
     ]
    },
    
@@ -85,7 +86,8 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Falling Power Up Pos Y Magnet", "Intensity": 0.0001 }
+     { "Type": "Set Falling Power Up Pos Y Magnet", "Intensity": 0.01 },
+     { "Type": "Set Remaining Hits Magnet", "Intensity": -1 }
     ]
    },
    
@@ -175,8 +177,7 @@
     "Label": 1996,
     "Conditions":
     [
-     { "Property": "Falling Power Up Type", "Op": "!=", "Value": 4 },
-     { "Property": "Falling Power Up Type", "Op": "!=", "Value": 0 }
+     { "Property": "Warp Is Active", "Op": ">", "Value": 0 }
     ],
     
     "Satisfies": [  ],
