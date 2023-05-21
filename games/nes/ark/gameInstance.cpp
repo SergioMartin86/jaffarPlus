@@ -84,6 +84,8 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   uint16_t blockCount = BLOCK_SECTION_END - BLOCK_SECTION_START;
   hash.Update(&_emu->_baseMem[BLOCK_SECTION_START], blockCount);
 
+  hash.Update(&_emu->_baseMem[0x100], 0x50);
+
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
