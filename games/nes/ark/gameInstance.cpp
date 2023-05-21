@@ -25,15 +25,12 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   paddlePosX                = (uint8_t*)   &_emu->_baseMem[0x011A];
   paddlePowerUp1            = (uint8_t*)   &_emu->_baseMem[0x0129];
   paddlePowerUp2            = (uint8_t*)   &_emu->_baseMem[0x012D];
+  warpIsActive              = (uint8_t*)   &_emu->_baseMem[0x0124];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
-
-  if (isDefined(config, "Metal Tile Score Multiplier") == true)
-   metalTileScoreMultiplier = config["Metal Tile Score Multiplier"].get<uint8_t>();
-  else EXIT_WITH_ERROR("[Error] Game Configuration 'Metal Tile Score Multiplier' was not defined\n");
 
   #ifndef _JAFFAR_PLAY
   _emu->_nes->_doRendering = false;
@@ -66,6 +63,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*paddlePosX);
   hash.Update(*paddlePowerUp1);
   hash.Update(*paddlePowerUp2);
+  hash.Update(*warpIsActive);
 
   uint16_t blockCount = BLOCK_SECTION_END - BLOCK_SECTION_START;
   hash.Update(&_emu->_baseMem[BLOCK_SECTION_START], blockCount);
@@ -98,7 +96,10 @@ void GameInstance::updateDerivedValues()
  {
   switch(_emu->_baseMem[BLOCK_SECTION_START + i])
   {
-    case 0xE2: ballHitsRemaining += metalTileScoreMultiplier; break;
+    case 0xE5: ballHitsRemaining += 5; break;
+    case 0xE4: ballHitsRemaining += 4; break;
+    case 0xE3: ballHitsRemaining += 3; break;
+    case 0xE2: ballHitsRemaining += 2; break;
     case 0x00: break;
     default: ballHitsRemaining++;
   }
@@ -168,6 +169,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Paddle Power Up:                    %03u %03u\n", *paddlePowerUp1, *paddlePowerUp2);
  LOG("[Jaffar]  + Falling Power Up Type:              %03u\n", *fallingPowerUpType);
  LOG("[Jaffar]  + Falling Power Up Pos Y:             %03u\n", *fallingPowerUpPosY);
+ LOG("[Jaffar]  + Warp Is Active:                     %03u\n", *warpIsActive);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

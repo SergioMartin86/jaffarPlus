@@ -9,6 +9,9 @@
 #include <utils.hpp>
 #include <state.hpp>
 
+#define _LOW_MEM_SIZE 0x800
+#define _HIGH_MEM_SIZE 0x2000
+
 class EmuInstance : public EmuInstanceBase
 {
  public:
@@ -83,24 +86,43 @@ class EmuInstance : public EmuInstanceBase
 
  void serializeState(uint8_t* state) const override
  {
-//  #ifdef _JAFFAR_PLAY
+  #ifndef _JAFFAR_PLAY
+   #ifdef _NES_STATE_LOW_MEM
+    memcpy(state, _baseMem, _LOW_MEM_SIZE);
+    return;
+   #endif
+
+   #ifdef _NES_STATE_LOW_AND_HIGH_MEM
+    memcpy(state, _baseMem, _LOW_MEM_SIZE);
+    memcpy(state + _LOW_MEM_SIZE, _highMem, _HIGH_MEM_SIZE);
+    return;
+   #endif
+  #endif
+
   Mem_Writer w(state, _STATE_DATA_SIZE_PLAY, 0);
   Auto_File_Writer a(w);
   _nes->save_state(a);
-//  #else
-//  memcpy(state, _baseMem, _STATE_DATA_SIZE_TRAIN);
-//  #endif
  }
 
  void deserializeState(const uint8_t* state) override
  {
-//  #ifdef _JAFFAR_PLAY
+
+  #ifndef _JAFFAR_PLAY
+   #ifdef _NES_STATE_LOW_MEM
+    memcpy(_baseMem, state, _LOW_MEM_SIZE);
+    return;
+   #endif
+
+   #ifdef _NES_STATE_LOW_AND_HIGH_MEM
+    memcpy(_baseMem, state, _LOW_MEM_SIZE);
+    memcpy(_highMem, state + _LOW_MEM_SIZE, _HIGH_MEM_SIZE);
+    return;
+   #endif
+  #endif
+
   Mem_File_Reader r(state, _STATE_DATA_SIZE_PLAY);
   Auto_File_Reader a(r);
   _nes->load_state(a);
-//  #else
-//  memcpy(_baseMem, state, _STATE_DATA_SIZE_TRAIN);
-//  #endif
  }
 
  // Controller input bits

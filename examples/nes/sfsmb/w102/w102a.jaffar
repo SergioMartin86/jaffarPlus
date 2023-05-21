@@ -7,7 +7,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4,
+   "Timer Tolerance": 0,
    "Hash Includes": [  ]
   },
   
@@ -15,12 +15,13 @@
   {
     "Show Timing Information": true,
     "Show Hash Information": true,
+    "Show Move List": true,
     "Show Winning State Information": true,
     "Win State Step Tolerance": 0,
     
     "State Configuration": 
     {
-      "Max Move Count": 500,
+      "Max Move Count": 400,
       "Store Move History": true,
       "XDelta3 Enabled": false,
       "XDelta3 Max Differences": 5000,
@@ -29,8 +30,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 70000,
-     "Max Size Upper Bound (Mb)": 210000
+     "Max Size Lower Bound (Mb)": 50000,
+     "Max Size Upper Bound (Mb)": 190000
     },
     
     "Hash Database":
@@ -43,7 +44,8 @@
     {
      "Enabled": true,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Save Numbered States": false,
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
@@ -68,43 +70,8 @@
     
     "Actions":
     [
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 3026, "Min": 0, "Max":  6000 },
-     { "Type": "Set Screen Horizontal Magnet", "Intensity": 2.0, "Center": 2821, "Min": 0, "Max":  6000 },
-     { "Type": "Set Mario Vertical Magnet", "Intensity": 0.1, "Center": 146, "Min": 0, "Max":  255 }
-    ]
-   },
-   
-    {
-    "Label": 1001,
-    "Conditions":
-    [
-    { "Property": "Mario Position X", "Op": ">", "Value":  2500 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 3026, "Min": 0, "Max":  6000 },
-     { "Type": "Set Screen Horizontal Magnet", "Intensity": 2.0, "Center": 2821, "Min": 0, "Max":  6000 },
-     { "Type": "Set Mario Vertical Magnet", "Intensity": 0.2, "Center": 46, "Min": 0, "Max":  255 }
-    ]
-   },
-   
-   {
-    "Label": 1002,
-    "Conditions":
-    [
-     { "Property": "Warp Selector", "Op": "==", "Value":  4 }
-    ],
-    
-    "Satisfies": [ 1001 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 30000 },
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 3026, "Min": 0, "Max":  6000 },
-     { "Type": "Set Mario Vertical Magnet", "Intensity": 0.2, "Center": 80, "Min": 0, "Max":  255 }
+     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 6000, "Min": 0, "Max":  6000 },
+     { "Type": "Set Mario Vertical Magnet", "Intensity": 0.1, "Center": 158, "Min": 0, "Max":  255 }
     ]
    },
    
@@ -112,36 +79,14 @@
     "Label": 1003,
     "Conditions":
     [
-     { "Property": "Warp Selector", "Op": "==", "Value":  4 },
-     { "Property": "Mario Position Y", "Op": ">", "Value":  75 },
-     { "Property": "Mario Position Y", "Op": "<", "Value":  200 }
-    ],
-    
-    "Satisfies": [ 1002 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 30000 },
-     { "Type": "Set Mario Horizontal Magnet", "Intensity": 1.0, "Center": 2859, "Min": 0, "Max":  6000 },
-     { "Type": "Set Mario Vertical Magnet", "Intensity": 0.5, "Center": 128, "Min": 0, "Max":  255 }
-    ]
-   },
-   
-   {
-    "Label": 1004,
-    "Conditions":
-    [
-     { "Property": "Warp Selector", "Op": "==", "Value":  4 },
-     { "Property": "Mario Relative Position X", "Op": "<", "Value":  70 },
-     { "Property": "Mario State", "Op": "==", "Value": 3  }
-     
+     { "Property": "Level Entry Flag", "Op": "==", "Value":  2 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Trigger Win" }
+      { "Type": "Trigger Win" }
     ]
    },
    

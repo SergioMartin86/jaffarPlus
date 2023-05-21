@@ -760,12 +760,14 @@ Train::Train(const nlohmann::json& config)
   // Parsing file output frequency
   if (isDefined(_config["Jaffar Configuration"], "Save Intermediate Results") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Enabled") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Enabled' key.\n");
+  if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Save Numbered States") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Save Numbered States' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Frequency (s)") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Frequency (s)' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Best Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best Solution Path' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Worst Solution Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst Solution Path' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Best State Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Best Solution Path' key.\n");
   if (isDefined(_config["Jaffar Configuration"]["Save Intermediate Results"], "Worst State Path") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Save Intermediate Results'.'Worst Solution Path' key.\n");
   _outputEnabled = _config["Jaffar Configuration"]["Save Intermediate Results"]["Enabled"].get<bool>();
+  _outputSaveNumberedStates = _config["Jaffar Configuration"]["Save Intermediate Results"]["Save Numbered States"].get<bool>();
   _outputSaveFrequency = _config["Jaffar Configuration"]["Save Intermediate Results"]["Frequency (s)"].get<float>();
   _outputSolutionBestPath = _config["Jaffar Configuration"]["Save Intermediate Results"]["Best Solution Path"].get<std::string>();
   _outputSolutionWorstPath = _config["Jaffar Configuration"]["Save Intermediate Results"]["Worst Solution Path"].get<std::string>();
@@ -978,8 +980,11 @@ void Train::showSavingLoop()
          for (ssize_t i = 1; i < _currentStep-1; i++) bestSolutionString += std::string("\n") + EmuInstance::moveCodeToString(_bestState->getMove(i));
          saveStringToFile(bestSolutionString, _outputSolutionBestPath.c_str());
 
-         std::string solWithStep = _outputSolutionBestPath + std::string(".") + std::to_string(_currentStep);
-         saveStringToFile(bestSolutionString, solWithStep.c_str());
+         if (_outputSaveNumberedStates == true)
+         {
+          std::string solWithStep = _outputSolutionBestPath + std::string(".") + std::to_string(_currentStep);
+          saveStringToFile(bestSolutionString, solWithStep.c_str());
+         }
 
          std::string worstSolutionString;
          worstSolutionString += EmuInstance::moveCodeToString(_worstState->getMove(0));
