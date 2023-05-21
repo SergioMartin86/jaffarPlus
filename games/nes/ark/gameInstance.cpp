@@ -27,6 +27,14 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   paddlePowerUp2            = (uint8_t*)   &_emu->_baseMem[0x012D];
   warpIsActive              = (uint8_t*)   &_emu->_baseMem[0x0124];
 
+  enemy1PosX                = (uint8_t*)   &_emu->_baseMem[0x00B7];
+  enemy2PosX                = (uint8_t*)   &_emu->_baseMem[0x00B8];
+  enemy3PosX                = (uint8_t*)   &_emu->_baseMem[0x00B9];
+
+  enemy1PosY                = (uint8_t*)   &_emu->_baseMem[0x00AE];
+  enemy2PosY                = (uint8_t*)   &_emu->_baseMem[0x00AF];
+  enemy3PosY                = (uint8_t*)   &_emu->_baseMem[0x00B0];
+
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
@@ -64,6 +72,14 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*paddlePowerUp1);
   hash.Update(*paddlePowerUp2);
   hash.Update(*warpIsActive);
+
+  hash.Update(*enemy1PosX);
+  hash.Update(*enemy2PosX);
+  hash.Update(*enemy3PosX);
+
+  hash.Update(*enemy1PosY);
+  hash.Update(*enemy2PosY);
+  hash.Update(*enemy3PosY);
 
   uint16_t blockCount = BLOCK_SECTION_END - BLOCK_SECTION_START;
   hash.Update(&_emu->_baseMem[BLOCK_SECTION_START], blockCount);
@@ -111,7 +127,7 @@ void GameInstance::updateDerivedValues()
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
-  if (*ball1Y == 204) return { "A", "L", "R" };
+  if (*ball1Y == 204) return { ".", "A", "L", "R" };
   return { "L", "R" };
 }
 
@@ -171,6 +187,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Falling Power Up Type:              %03u\n", *fallingPowerUpType);
  LOG("[Jaffar]  + Falling Power Up Pos Y:             %03u\n", *fallingPowerUpPosY);
  LOG("[Jaffar]  + Warp Is Active:                     %03u\n", *warpIsActive);
+ LOG("[Jaffar]  + Enemy Pos X:                        %03u %03u %03u\n", *enemy1PosX, *enemy2PosX, *enemy3PosX);
+ LOG("[Jaffar]  + Enemy Pos Y:                        %03u %03u %03u\n", *enemy1PosY, *enemy2PosY, *enemy3PosY);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

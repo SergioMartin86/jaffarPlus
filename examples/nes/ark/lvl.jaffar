@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "ark.nes",
-    "State File": "lvl.state"
+    "State File": "lvl10.state"
   },
   
   "Game Configuration": 
@@ -69,7 +69,7 @@
     
     "Actions":
     [
-     { "Type": "Set Ball 1 Pos Y Magnet", "Intensity": 0.001 },
+     { "Type": "Set Ball 1 Pos Y Magnet", "Intensity": -0.001 },
      { "Type": "Set Remaining Hits Magnet", "Intensity": -1 } 
     ]
    },

@@ -39,6 +39,14 @@ class GameInstance : public GameInstanceBase
   uint8_t*  paddlePowerUp2;
   uint8_t*  warpIsActive;
 
+  uint8_t*  enemy1PosX;
+  uint8_t*  enemy2PosX;
+  uint8_t*  enemy3PosX;
+
+  uint8_t*  enemy1PosY;
+  uint8_t*  enemy2PosY;
+  uint8_t*  enemy3PosY;
+
   uint8_t lowestBallPosY;
   uint8_t lowestBallPosX;
   uint8_t timerTolerance;
