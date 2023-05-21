@@ -100,7 +100,7 @@ void GameInstance::updateDerivedValues()
     case 0xE4: ballHitsRemaining += 4; break;
     case 0xE3: ballHitsRemaining += 3; break;
     case 0xE2: ballHitsRemaining += 2; break;
-    case 0xFF: break;
+    case 0xF0: break; // Gold Brick
     case 0x00: break;
     default: ballHitsRemaining++;
   }
