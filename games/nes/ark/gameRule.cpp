@@ -58,6 +58,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Game Mode") return dt_uint8;
   if (propertyName == "Remaining Blocks") return dt_uint8;
   if (propertyName == "Ball 1 Pos X") return dt_uint8;
   if (propertyName == "Ball 1 Pos Y") return dt_uint8;
@@ -83,6 +84,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Game Mode") return gameInstance->gameMode;
   if (propertyName == "Remaining Blocks") return gameInstance->remainingBlocks;
   if (propertyName == "Ball 1 Pos X") return gameInstance->ball1X;
   if (propertyName == "Ball 1 Pos Y") return gameInstance->ball1Y;
