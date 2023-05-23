@@ -117,6 +117,7 @@ class GameInstance : public GameInstanceBase
   uint16_t* warpAreaOffset;
   uint8_t* lagIndicator;
   uint8_t* lastInputTime;
+  uint8_t* nextCastleFlag;
 
   // Derivative values
   uint8_t marioPosY;

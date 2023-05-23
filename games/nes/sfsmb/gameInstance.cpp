@@ -100,6 +100,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   warpAreaOffset       = (uint16_t*) &_emu->_baseMem[0x0750];
   lagIndicator         = (uint8_t*)  &_emu->_baseMem[0x01FB];
   lastInputTime        = (uint8_t*) &_emu->_baseMem[0x07F0];
+  nextCastleFlag       = (uint8_t*) &_emu->_baseMem[0x0719];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -118,6 +119,9 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 
   // If timer tolerance is set, use the game tick for hashing
   if (timerTolerance > 0) hash.Update(*globalTimer % (timerTolerance+1));
+
+  // If beaten koopa, wait indefinitely
+  if (*gameMode == 2) hash.Update(currentStep);
 
   // Adding fixed hash elements
   hash.Update(*screenScroll);
@@ -457,6 +461,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + LevelEntry / GameMode:  %02u / %02u\n", *levelEntryFlag, *gameMode);
  LOG("[Jaffar]  + Warp Selector / Offset: %02u / %04u\n", *warpSelector, *warpAreaOffset);
  LOG("[Jaffar]  + Timers:                 %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *animationTimer, *jumpSwimTimer, *runningTimer, *blockBounceTimer, *sideCollisionTimer, *jumpspringTimer, *gameControlTimer, *climbSideTimer, *enemyFrameTimer, *frenzyEnemyTimer, *bowserFireTimer, *stompTimer, *airBubbleTimer, *multiCoinBlockTimer, *invincibleTimer, *starTimer);
+ LOG("[Jaffar]  + Next Castle Flag        %02u\n", *nextCastleFlag);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

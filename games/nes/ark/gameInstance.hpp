@@ -22,6 +22,7 @@ class GameInstance : public GameInstanceBase
  public:
 
   // Container for game-specific values
+  uint8_t*  gameMode;
   uint8_t*  currentLevel;
   uint8_t*  frameType;
   uint8_t*  remainingBlocks;

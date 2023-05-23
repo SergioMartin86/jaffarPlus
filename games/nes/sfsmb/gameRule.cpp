@@ -87,6 +87,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Mario Screen Offset") return dt_int16;
   if (propertyName == "Warp Selector") return dt_uint8;
   if (propertyName == "Lag Indicator") return dt_uint8;
+  if (propertyName == "Next Castle Flag") return dt_uint8;
+
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -104,6 +106,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Mario Walking Frame") return gameInstance->marioWalkingFrame;
   if (propertyName == "Mario Walking Mode") return gameInstance->marioWalkingMode;
   if (propertyName == "Mario Floating Mode") return gameInstance->marioFloatingMode;
+  if (propertyName == "Next Castle Flag") return gameInstance->nextCastleFlag;
 
   if (propertyName == "Screen Position X") return &gameInstance->screenPosX; // Derivative value
 
