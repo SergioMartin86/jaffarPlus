@@ -56,7 +56,9 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   MetroHash128 hash;
 
   if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));
+  if (*remainingBlocks == 0) hash.Update(currentStep);
 
+  hash.Update(*gameMode);
   hash.Update(*currentLevel);
   hash.Update(*frameType);
   hash.Update(*remainingBlocks);

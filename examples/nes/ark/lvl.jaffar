@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "ark.nes",
-    "State File": "lvl10.state"
+    "State File": "lvl14.state"
   },
   
   "Game Configuration": 
@@ -110,7 +110,7 @@
     ]
    },
    
-   {
+     {
     "Label": 1100,
     "Conditions":
     [
@@ -121,10 +121,25 @@
     
     "Actions":
     [
+     { "Type": "Add Reward", "Value": 10000.0 }
+    ]
+   },
+  
+   {
+    "Label": 1101,
+    "Conditions":
+    [
+     { "Property": "Game Mode", "Op": "==", "Value":  5 }
+    ],
+
+    "Satisfies": [ ],
+
+    "Actions":
+    [
      { "Type": "Trigger Win" }
     ]
    },
-   
+ 
    {
     "Label": 1999,
     "Conditions":
