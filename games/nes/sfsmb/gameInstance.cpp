@@ -137,6 +137,27 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*marioRelPosY);
 //  hash.Update(*marioSubpixelPosY);
 
+
+  // Swimming:
+#define _SWIMMING
+#ifdef _SWIMMING
+  //  hash.Update(*marioXMoveForce);
+    hash.Update(*marioFacingDirection);
+    hash.Update(*marioMovingDirection);
+    hash.Update(*marioFloatingMode);
+  //  hash.Update(*marioWalkingMode);
+  //  hash.Update(*marioWalkingDelay);
+  //  hash.Update(*marioWalkingFrame);
+  //    hash.Update(*marioMaxVelLeft);
+  //    hash.Update(*marioMaxVelRight);
+    hash.Update(*marioVelX);
+  //  hash.Update(*marioVelY);
+  //  hash.Update(*marioFracVelY);
+    hash.Update(*marioGravity);
+    hash.Update(*marioFriction);
+    hash.Update(*lagIndicator);
+#else
+  // Not Swimming
   hash.Update(*marioXMoveForce);
   hash.Update(*marioFacingDirection);
   hash.Update(*marioMovingDirection);
@@ -152,6 +173,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*marioGravity);
   hash.Update(*marioFriction);
   hash.Update(*lagIndicator);
+#endif
 
   hash.Update(*screenBasePosX);
   hash.Update(*screenRelPosX);
