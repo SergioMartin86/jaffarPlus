@@ -55,6 +55,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Global Timer") return dt_uint8;
   if (propertyName == "Mario State") return dt_uint8;
   if (propertyName == "Mario Sprite") return dt_uint8;
   if (propertyName == "Mario Disappear State") return dt_uint8;
@@ -99,6 +100,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
 {
   std::string propertyName = condition["Property"].get<std::string>();
 
+  if (propertyName == "Global Timer") return gameInstance->globalTimer;
   if (propertyName == "Mario State") return gameInstance->marioState;
   if (propertyName == "Mario Sprite") return gameInstance->marioSprite;
   if (propertyName == "Mario Disappear State") return gameInstance->marioDisappearState;

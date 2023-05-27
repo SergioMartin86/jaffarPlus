@@ -14,6 +14,7 @@ struct magnetSet_t {
  float fallingPowerUpPosYMagnet = 0.0;
  float horizontalDistaceToLowestBallMagnet = 0.0;
  float lowestBallPosYMagnet = 0.0;
+ float bossHPMagnet = 0.0;
 };
 
 
@@ -24,8 +25,10 @@ class GameInstance : public GameInstanceBase
   // Container for game-specific values
   uint8_t*  gameMode;
   uint8_t*  currentLevel;
-  uint8_t*  frameType;
+  uint8_t*  lastInput;
   uint8_t*  remainingBlocks;
+  uint8_t*  remainingServeTime;
+
   uint8_t*  ball1X;
   uint8_t*  ball1Y;
   uint8_t*  ball2X;
@@ -47,6 +50,14 @@ class GameInstance : public GameInstanceBase
   uint8_t*  enemy1PosY;
   uint8_t*  enemy2PosY;
   uint8_t*  enemy3PosY;
+
+  uint8_t*  laser1PosX;
+  uint8_t*  laser2PosX;
+  uint8_t*  laser1PosY;
+  uint8_t*  laser2PosY;
+
+  uint8_t*  prevPaddlePowerUp2;
+  uint8_t*  bossHP;
 
   uint8_t lowestBallPosY;
   uint8_t lowestBallPosX;

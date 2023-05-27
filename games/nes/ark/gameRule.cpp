@@ -51,6 +51,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Boss HP Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.bossHPMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
   return recognizedActionType;
 }
 
@@ -70,9 +77,11 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Paddle Pos X") return dt_uint8;
   if (propertyName == "Paddle Power Up 1") return dt_uint8;
   if (propertyName == "Paddle Power Up 2") return dt_uint8;
+  if (propertyName == "Prev Paddle Power Up 2") return dt_uint8;
   if (propertyName == "Falling Power Up Type") return dt_uint8;
   if (propertyName == "Falling Power Up Pos Y") return dt_uint8;
   if (propertyName == "Warp Is Active") return dt_uint8;
+  if (propertyName == "Boss HP") return dt_uint8;
 
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
@@ -96,9 +105,11 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Paddle Pos X") return gameInstance->paddlePosX;
   if (propertyName == "Paddle Power Up 1") return gameInstance->paddlePowerUp1;
   if (propertyName == "Paddle Power Up 2") return gameInstance->paddlePowerUp2;
+  if (propertyName == "Prev Paddle Power Up 2") return gameInstance->prevPaddlePowerUp2;
   if (propertyName == "Falling Power Up Type") return gameInstance->fallingPowerUpType;
   if (propertyName == "Falling Power Up Pos Y") return gameInstance->fallingPowerUpPosY;
   if (propertyName == "Warp Is Active") return gameInstance->warpIsActive;
+  if (propertyName == "Boss HP") return gameInstance->bossHP;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

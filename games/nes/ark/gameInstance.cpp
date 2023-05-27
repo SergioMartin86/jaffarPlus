@@ -12,7 +12,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   // Container for game-specific values
   currentLevel              = (uint8_t*)   &_emu->_baseMem[0x001A];
   gameMode                  = (uint8_t*)   &_emu->_baseMem[0x000A];
-  frameType                 = (uint8_t*)   &_emu->_baseMem[0x0000];
+  lastInput                 = (uint8_t*)   &_emu->_baseMem[0x0000];
   remainingBlocks           = (uint8_t*)   &_emu->_baseMem[0x000F];
   ball1X                    = (uint8_t*)   &_emu->_baseMem[0x0038];
   ball1Y                    = (uint8_t*)   &_emu->_baseMem[0x0037];
@@ -35,6 +35,17 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   enemy1PosY                = (uint8_t*)   &_emu->_baseMem[0x00AE];
   enemy2PosY                = (uint8_t*)   &_emu->_baseMem[0x00AF];
   enemy3PosY                = (uint8_t*)   &_emu->_baseMem[0x00B0];
+
+  laser1PosX                = (uint8_t*)   &_emu->_baseMem[0x00DD];
+  laser2PosX                = (uint8_t*)   &_emu->_baseMem[0x00DF];
+  laser1PosY                = (uint8_t*)   &_emu->_baseMem[0x00DC];
+  laser2PosY                = (uint8_t*)   &_emu->_baseMem[0x00DE];
+
+  bossHP                    = (uint8_t*)   &_emu->_baseMem[0x0166];
+
+  prevPaddlePowerUp2        = (uint8_t*)   &_emu->_baseMem[0x07FF];
+
+  remainingServeTime        = (uint8_t*)   &_emu->_baseMem[0x0138];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -60,7 +71,6 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 
   hash.Update(*gameMode);
   hash.Update(*currentLevel);
-  hash.Update(*frameType);
   hash.Update(*remainingBlocks);
   hash.Update(*ball1X);
   hash.Update(*ball1Y);
@@ -84,6 +94,17 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*enemy2PosY);
   hash.Update(*enemy3PosY);
 
+  hash.Update(*laser1PosX);
+  hash.Update(*laser2PosX);
+
+  hash.Update(*laser1PosY);
+  hash.Update(*laser2PosY);
+
+  hash.Update(*bossHP);
+
+  hash.Update(*prevPaddlePowerUp2);
+  hash.Update(*remainingServeTime);
+
   uint16_t blockCount = BLOCK_SECTION_END - BLOCK_SECTION_START;
   hash.Update(&_emu->_baseMem[BLOCK_SECTION_START], blockCount);
 
@@ -98,6 +119,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
  std::vector<INPUT_TYPE> moves;
+ *prevPaddlePowerUp2 = *paddlePowerUp2;
  _emu->advanceState(move); moves.push_back(move);
  updateDerivedValues();
  return moves;
@@ -126,13 +148,17 @@ void GameInstance::updateDerivedValues()
     default: ballHitsRemaining++;
   }
  }
-
 }
 
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
-  if (*ball1Y == 204) return { ".", "A", "L", "R" };
+//  if (*remainingServeTime > 0) return { ".", "A" };
+//  if (*paddlePowerUp2 == 5 && (*laser1PosY == 240 || *laser2PosY == 240)) return { ".", "A" };
+//  return {"."};
+
+  if (*fallingPowerUpType == 6) return { ".", "A", "L", "R" };
+  if (*remainingServeTime > 0) return { ".", "A", "L", "R" };
   return { "L", "R" };
 }
 
@@ -169,6 +195,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   float horizontalDistanceToLowestBall = std::abs((float)*paddlePosX - (float)lowestBallPosX);
   reward += magnets.horizontalDistaceToLowestBallMagnet * horizontalDistanceToLowestBall;
   reward += magnets.lowestBallPosYMagnet * (float)lowestBallPosY;
+  reward += magnets.bossHPMagnet * (float)*bossHP;
 
   // Returning reward
   return reward;
@@ -181,7 +208,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
  LOG("[Jaffar]  + Current Level:                      %03u\n", *currentLevel);
  LOG("[Jaffar]  + Game Mode:                          %03u\n", *gameMode);
- LOG("[Jaffar]  + Frame Type:                         %03u\n", *frameType);
+ LOG("[Jaffar]  + Remaining Serve Time:               %03u\n", *remainingServeTime);
+
+ LOG("[Jaffar]  + Last Input:                         %03u\n", *lastInput);
  LOG("[Jaffar]  + Remaining Blocks:                   %03u\n", *remainingBlocks);
  LOG("[Jaffar]  + Remaining Ball Hits:                %03u\n", ballHitsRemaining);
  LOG("[Jaffar]  + Balls Pos X:                        %03u %03u %03u (Lowest: %03u)\n", *ball1X, *ball2X, *ball3X, lowestBallPosX);
@@ -189,12 +218,15 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Distance to Lowest Ball:            %.3f\n", horizontalDistanceToLowestBall);
  LOG("[Jaffar]  + Paddle State:                       %03u\n", *paddleState);
  LOG("[Jaffar]  + Paddle Pos X:                       %03u\n", *paddlePosX);
- LOG("[Jaffar]  + Paddle Power Up:                    %03u %03u\n", *paddlePowerUp1, *paddlePowerUp2);
+ LOG("[Jaffar]  + Paddle Power Up:                    %03u %03u (Prev: %03u)\n", *paddlePowerUp1, *paddlePowerUp2, *prevPaddlePowerUp2);
  LOG("[Jaffar]  + Falling Power Up Type:              %03u\n", *fallingPowerUpType);
  LOG("[Jaffar]  + Falling Power Up Pos Y:             %03u\n", *fallingPowerUpPosY);
  LOG("[Jaffar]  + Warp Is Active:                     %03u\n", *warpIsActive);
  LOG("[Jaffar]  + Enemy Pos X:                        %03u %03u %03u\n", *enemy1PosX, *enemy2PosX, *enemy3PosX);
  LOG("[Jaffar]  + Enemy Pos Y:                        %03u %03u %03u\n", *enemy1PosY, *enemy2PosY, *enemy3PosY);
+ LOG("[Jaffar]  + Laser Pos X:                        %03u %03u\n", *laser1PosX, *laser2PosX);
+ LOG("[Jaffar]  + Laser Pos Y:                        %03u %03u\n", *laser1PosY, *laser2PosY);
+ LOG("[Jaffar]  + Boss HP:                            %03u\n", *bossHP);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -208,6 +240,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.fallingPowerUpPosYMagnet) > 0.0f)            LOG("[Jaffar]  + Falling Power Up Pos Y Magnet              - Intensity: %.5f\n", magnets.fallingPowerUpPosYMagnet);
  if (std::abs(magnets.horizontalDistaceToLowestBallMagnet) > 0.0f) LOG("[Jaffar]  + Horizontal Distance To Lowest Ball Magnet  - Intensity: %.5f\n", magnets.horizontalDistaceToLowestBallMagnet);
  if (std::abs(magnets.lowestBallPosYMagnet) > 0.0f)                LOG("[Jaffar]  + Lowest Ball Pos Y Magnet                   - Intensity: %.5f\n", magnets.lowestBallPosYMagnet);
+ if (std::abs(magnets.bossHPMagnet) > 0.0f)                        LOG("[Jaffar]  + Boss HP Magnet                             - Intensity: %.5f\n", magnets.bossHPMagnet);
 
 }
 
