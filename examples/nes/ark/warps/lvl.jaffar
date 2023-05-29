@@ -1,13 +1,13 @@
 {
   "Emulator Configuration": 
   {
-    "Rom File": "ark.nes",
-    "State File": "lvl26.state"
+    "Rom File": "../ark.nes",
+    "State File": "lvl35.state"
   },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 0
+   "Timer Tolerance": 4
   },
   
   "Jaffar Configuration": 
@@ -20,7 +20,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 1600,
+      "Max Move Count": 1500,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 2000,
@@ -29,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 20000
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 80000
     },
     
     "Hash Database":
@@ -54,12 +54,13 @@
   "Playback Configuration": 
   {
      "Disable Display": false,
-     "Overlay Path": "../../../platforms/nes/overlay"
+     "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
   [
-   {
+
+    {
     "Label": 1000,
     "Conditions":
     [
@@ -78,7 +79,7 @@
     "Label": 1001,
     "Conditions":
     [
-     { "Property": "Falling Power Up Type", "Op": "==", "Value": 4 }
+     { "Property": "Falling Power Up Type", "Op": "==", "Value": 6 }
     ],
     
     "Satisfies": [ 1000 ],
@@ -86,8 +87,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Falling Power Up Pos Y Magnet", "Intensity": 0.01 },
-     { "Type": "Set Remaining Hits Magnet", "Intensity": -1 }
+     { "Type": "Set Falling Power Up Pos Y Magnet", "Intensity": 0.01 }
     ]
    },
    
@@ -96,21 +96,18 @@
     "Conditions":
     [
      { "Property": "Paddle Power Up 1", "Op": "==", "Value": 1 },
-     { "Property": "Paddle Power Up 2", "Op": "==", "Value": 4 }
+     { "Property": "Paddle Power Up 2", "Op": "==", "Value": 6 }
     ],
     
     "Satisfies": [ 1001 ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Remaining Hits Magnet", "Intensity": -1 },
-     { "Type": "Set Horizontal Distance To Lowest Ball Magnet", "Intensity": -0.001 },
-     { "Type": "Set Lowest Ball Pos Y Magnet", "Intensity": -0.001 }
+     { "Type": "Add Reward", "Value": 10000.0 }
     ]
    },
    
-     {
+   {
     "Label": 1100,
     "Conditions":
     [
@@ -121,78 +118,16 @@
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000.0 }
-    ]
-   },
-  
-   {
-    "Label": 1101,
-    "Conditions":
-    [
-     { "Property": "Game Mode", "Op": "==", "Value":  5 }
-    ],
-
-    "Satisfies": [ ],
-
-    "Actions":
-    [
      { "Type": "Trigger Win" }
     ]
    },
- 
+   
    {
     "Label": 1999,
     "Conditions":
     [
-     { "Property": "Ball 1 Pos Y", "Op": ">", "Value":  215 },
-     { "Property": "Ball 1 Pos Y", "Op": "!=", "Value": 240 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1998,
-    "Conditions":
-    [
-     { "Property": "Ball 2 Pos Y", "Op": ">", "Value":  215 },
-     { "Property": "Ball 2 Pos Y", "Op": "!=", "Value": 240 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1997,
-    "Conditions":
-    [
-     { "Property": "Ball 3 Pos Y", "Op": ">", "Value":  215 },
-     { "Property": "Ball 3 Pos Y", "Op": "!=", "Value": 240 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1996,
-    "Conditions":
-    [
-     { "Property": "Warp Is Active", "Op": ">", "Value": 0 }
+     { "Property": "Falling Power Up Type", "Op": "!=", "Value": 0 },
+     { "Property": "Falling Power Up Type", "Op": "!=", "Value": 6 }
     ],
     
     "Satisfies": [  ],
@@ -202,7 +137,7 @@
      { "Type": "Trigger Fail" }
     ]
    }
-   
+  
    
   ]  
 }

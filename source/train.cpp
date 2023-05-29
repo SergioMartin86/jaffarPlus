@@ -11,7 +11,7 @@
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ gameMode
+ #define _KEY_VALUE_ frameType
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
