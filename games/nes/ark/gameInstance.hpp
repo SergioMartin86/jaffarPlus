@@ -15,6 +15,7 @@ struct magnetSet_t {
  float horizontalDistaceToLowestBallMagnet = 0.0;
  float lowestBallPosYMagnet = 0.0;
  float bossHPMagnet = 0.0;
+ float lastInputStepMagnet = 0.0;
 };
 
 
@@ -57,6 +58,8 @@ class GameInstance : public GameInstanceBase
   uint8_t*  laser2PosY;
 
   uint8_t*  prevPaddlePowerUp2;
+  uint16_t*  lastInputStep;
+  uint16_t*  stepNumber;
   uint8_t*  bossHP;
 
   uint8_t lowestBallPosY;

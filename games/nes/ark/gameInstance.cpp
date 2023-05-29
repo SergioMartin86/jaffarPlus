@@ -44,6 +44,8 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   bossHP                    = (uint8_t*)   &_emu->_baseMem[0x0166];
 
   prevPaddlePowerUp2        = (uint8_t*)   &_emu->_baseMem[0x07FF];
+  lastInputStep             = (uint16_t*)  &_emu->_baseMem[0x07FD];
+  stepNumber                = (uint16_t*)  &_emu->_baseMem[0x07FA];
 
   remainingServeTime        = (uint8_t*)   &_emu->_baseMem[0x0138];
 
@@ -69,6 +71,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));
   if (*remainingBlocks == 0) hash.Update(currentStep);
 
+  if (*currentLevel == 36) hash.Update(*lastInputStep);
   hash.Update(*gameMode);
   hash.Update(*currentLevel);
   hash.Update(*remainingBlocks);
@@ -119,6 +122,11 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
  std::vector<INPUT_TYPE> moves;
+
+ if (*stepNumber == 65535) *stepNumber = 0; else (*stepNumber)++;
+ if (*lastInputStep == 65535) *lastInputStep = 0;
+ if (*lastInput > 0) *lastInputStep = *stepNumber;
+
  *prevPaddlePowerUp2 = *paddlePowerUp2;
  _emu->advanceState(move); moves.push_back(move);
  updateDerivedValues();
@@ -159,6 +167,7 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 
   if (*fallingPowerUpType == 6) return { ".", "A", "L", "R" };
   if (*remainingServeTime > 0) return { ".", "A", "L", "R" };
+  if (*currentLevel == 36) return { ".", "L", "R" };
   return { "L", "R" };
 }
 
@@ -178,6 +187,11 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 // Obtains the score of a given frame
 float GameInstance::getStateReward(const bool* rulesStatus) const
 {
+ // We calculate a different reward if this is a winning frame
+ auto stateType = getStateType(rulesStatus);
+
+ if (stateType == f_win) return -1.0f * (float)*lastInputStep;
+
   // Getting rewards from rules
   float reward = 0.0;
   for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
@@ -196,6 +210,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.horizontalDistaceToLowestBallMagnet * horizontalDistanceToLowestBall;
   reward += magnets.lowestBallPosYMagnet * (float)lowestBallPosY;
   reward += magnets.bossHPMagnet * (float)*bossHP;
+  reward += magnets.lastInputStepMagnet * (float)*lastInputStep;
 
   // Returning reward
   return reward;
@@ -210,7 +225,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Game Mode:                          %03u\n", *gameMode);
  LOG("[Jaffar]  + Remaining Serve Time:               %03u\n", *remainingServeTime);
 
- LOG("[Jaffar]  + Last Input:                         %03u\n", *lastInput);
+ LOG("[Jaffar]  + Last Input (Step):                  %03u (%06u)\n", *lastInput, *lastInputStep);
  LOG("[Jaffar]  + Remaining Blocks:                   %03u\n", *remainingBlocks);
  LOG("[Jaffar]  + Remaining Ball Hits:                %03u\n", ballHitsRemaining);
  LOG("[Jaffar]  + Balls Pos X:                        %03u %03u %03u (Lowest: %03u)\n", *ball1X, *ball2X, *ball3X, lowestBallPosX);
@@ -241,6 +256,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.horizontalDistaceToLowestBallMagnet) > 0.0f) LOG("[Jaffar]  + Horizontal Distance To Lowest Ball Magnet  - Intensity: %.5f\n", magnets.horizontalDistaceToLowestBallMagnet);
  if (std::abs(magnets.lowestBallPosYMagnet) > 0.0f)                LOG("[Jaffar]  + Lowest Ball Pos Y Magnet                   - Intensity: %.5f\n", magnets.lowestBallPosYMagnet);
  if (std::abs(magnets.bossHPMagnet) > 0.0f)                        LOG("[Jaffar]  + Boss HP Magnet                             - Intensity: %.5f\n", magnets.bossHPMagnet);
+ if (std::abs(magnets.lastInputStepMagnet) > 0.0f)                 LOG("[Jaffar]  + Last Input Step Magnet                     - Intensity: %.5f\n", magnets.lastInputStepMagnet);
 
 }
 
