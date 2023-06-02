@@ -25,14 +25,6 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
   }
 
-  if (actionType == "Set Samus Min Vertical Magnet")
-  {
-   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
-   if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
-   _magnets.samusMinVerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>() };
-    recognizedActionType = true;
-  }
-
   if (actionType == "Set Bullet 1 Horizontal Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -46,6 +38,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
    if (isDefined(actionJs, "Center") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Center' key.\n", _label, actionId);
    _magnets.bullet1VerticalMagnet = genericMagnet_t { .intensity = actionJs["Intensity"].get<float>(), .center= actionJs["Center"].get<float>() };
+    recognizedActionType = true;
+  }
+
+  if (actionType == "Set Missile Count Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.missileCountMagnet = actionJs["Intensity"].get<float>();
     recognizedActionType = true;
   }
 
@@ -86,9 +85,10 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Samus Pos X Raw") return dt_uint8;
   if (propertyName == "Screen Pos X2") return dt_uint8;
   if (propertyName == "Screen Pos X1") return dt_uint8;
-  if (propertyName == "Samus Pos X") return dt_float;
-  if (propertyName == "Samus Pos Y") return dt_float;
+  if (propertyName == "Samus Pos X") return dt_uint16;
+  if (propertyName == "Samus Pos Y") return dt_uint16;
   if (propertyName == "Samus Door State") return dt_uint8;
+  if (propertyName == "Samus Jump State") return dt_uint8;
   if (propertyName == "Door 1 State") return dt_uint8;
   if (propertyName == "Door 2 State") return dt_uint8;
   if (propertyName == "Door 3 State") return dt_uint8;
@@ -117,6 +117,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Samus Pos X") return &gameInstance->samusPosX;
   if (propertyName == "Samus Pos Y") return &gameInstance->samusPosY;
   if (propertyName == "Samus Door State") return gameInstance->samusDoorState;
+  if (propertyName == "Samus Jump State") return gameInstance->samusJumpState;
   if (propertyName == "Door 1 State") return gameInstance->door1State;
   if (propertyName == "Door 2 State") return gameInstance->door2State;
   if (propertyName == "Door 3 State") return gameInstance->door3State;
