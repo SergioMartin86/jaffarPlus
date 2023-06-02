@@ -9,7 +9,12 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   // Container for game-specific values
   globalTimer                       = (uint16_t*)  &_emu->_highMem[0x0000];
   frameType                         = (uint8_t*)   &_emu->_baseMem[0x007C];
+  lagFrame                          = (uint8_t*)   &_emu->_baseMem[0x01F8];
+  cameraPosX1                       = (uint8_t*)   &_emu->_baseMem[0x00D5];
+  cameraPosX2                       = (uint8_t*)   &_emu->_baseMem[0x00D4];
+  cameraPosY1                       = (uint8_t*)   &_emu->_baseMem[0x00D7];
   cameraPosY2                       = (uint8_t*)   &_emu->_baseMem[0x00D6];
+
   player1PosX1                      = (uint8_t*)   &_emu->_baseMem[0x03DE];
   player1PosX2                      = (uint8_t*)   &_emu->_baseMem[0x03DA];
   player1PosY1                      = (uint8_t*)   &_emu->_baseMem[0x03EA];
@@ -18,12 +23,17 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   player1Angle1                     = (uint8_t*)   &_emu->_baseMem[0x04B2];
   player1Angle2                     = (uint8_t*)   &_emu->_baseMem[0x040A];
   player1LapsRemaining              = (uint8_t*)   &_emu->_baseMem[0x04B6];
+  player1LapsRemainingPrev          = (uint8_t*)   &_emu->_baseMem[0x07FF];
   player1Checkpoint                 = (uint8_t*)   &_emu->_baseMem[0x04CE];
   player1Input1                     = (uint8_t*)   &_emu->_baseMem[0x009B];
   player1Input2                     = (uint8_t*)   &_emu->_baseMem[0x00CF];
   player1Input3                     = (uint8_t*)   &_emu->_baseMem[0x0352];
-  preRaceTimer                      = (uint8_t*)   &_emu->_baseMem[0x00DD];
 
+  player1RecoveryMode               = (uint8_t*)   &_emu->_baseMem[0x0416];
+  player1RecoveryTimer              = (uint8_t*)   &_emu->_baseMem[0x041A];
+  player1CanControlCar              = (uint8_t*)   &_emu->_baseMem[0x01BF];
+
+  preRaceTimer                      = (uint8_t*)   &_emu->_baseMem[0x00DD];
   activeFrame1                      = (uint8_t*)   &_emu->_baseMem[0x00B0];
   activeFrame2                      = (uint8_t*)   &_emu->_baseMem[0x00B2];
   activeFrame3                      = (uint8_t*)   &_emu->_baseMem[0x00B4];
@@ -47,8 +57,13 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 
   if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));
 
+  hash.Update(*cameraPosX1);
+  hash.Update(*cameraPosX2);
+  hash.Update(*cameraPosY1);
   hash.Update(*cameraPosY2);
+
   hash.Update(*frameType);
+  hash.Update(*lagFrame);
   hash.Update(*preRaceTimer);
   hash.Update(*player1PosX1);
   hash.Update(*player1PosX2);
@@ -58,7 +73,12 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*player1Angle1);
   hash.Update(*player1Angle2);
   hash.Update(*player1LapsRemaining);
+  hash.Update(*player1LapsRemainingPrev);
   hash.Update(*player1Checkpoint);
+
+  hash.Update(*player1RecoveryMode);
+  hash.Update(*player1RecoveryTimer);
+  hash.Update(*player1CanControlCar);
 
   hash.Update(*activeFrame1);
   hash.Update(*activeFrame2);
@@ -74,8 +94,8 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
  std::vector<INPUT_TYPE> moves;
+ *player1LapsRemainingPrev = *player1LapsRemaining;
  _emu->advanceState(move); moves.push_back(move);
-
  updateDerivedValues();
  return moves;
 }
@@ -86,13 +106,19 @@ void GameInstance::updateDerivedValues()
  else *globalTimer = *globalTimer+1;
  player1PosX = (uint16_t)*player1PosX1 * 256 + (uint16_t)*player1PosX2;
  player1PosY = (uint16_t)*player1PosY1 * 256 + (uint16_t)*player1PosY2;
+
+ cameraPosX = (uint16_t)*cameraPosX1 * 256 + (uint16_t)*cameraPosX2;
+ cameraPosY = (uint16_t)*cameraPosY1 * 256 + (uint16_t)*cameraPosY2;
 }
 
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
- if (*frameType == 0x00) return { ".", "A", "B" };
- if (*frameType == 0x01) return { ".", "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" };
+ if (*frameType == 0x00) return { "." };
+ if (*frameType == 0x01) return { ".", "A", "R", "L", "RA", "LA" };
+
+// if (*frameType == 0x00) return { ".", "A", "B" };
+// if (*frameType == 0x01) return { ".", "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" };
  return { "." };
 }
 
@@ -130,10 +156,24 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating player health  magnet
   reward += magnets.playerAccelMagnet * std::abs((float)*player1Accel);
 
-  float distX = std::abs(magnets.pointMagnet.x - player1PosX);
-  float distY = std::abs(magnets.pointMagnet.y - player1PosY);
-  float distanceToPoint = sqrt(distX*distX + distY*distY);
-  reward += magnets.pointMagnet.intensity * -distanceToPoint;
+  // Distance to point magnet
+  {
+   float distX = std::abs(magnets.pointMagnet.x - player1PosX);
+   float distY = std::abs(magnets.pointMagnet.y - player1PosY);
+   float distanceToPoint = sqrt(distX*distX + distY*distY);
+   reward += magnets.pointMagnet.intensity * -distanceToPoint;
+  }
+
+  // Distance to camera
+  {
+   float distX = std::abs(cameraPosX - player1PosX);
+   float distY = std::abs(cameraPosY - player1PosY);
+   float distanceToPoint = sqrt(distX*distX + distY*distY);
+   reward += magnets.cameraDistanceMagnet * -distanceToPoint;
+  }
+
+  // Evaluating player health  magnet
+  reward += magnets.recoveryTimerMagnet * (float)(*player1RecoveryTimer);
 
   // Returning reward
   return reward;
@@ -146,18 +186,25 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
  LOG("[Jaffar]  + Global Timer:                       %03u\n", *globalTimer);
  LOG("[Jaffar]  + Pre Race Timer:                     %03u\n", *preRaceTimer);
+ LOG("[Jaffar]  + Frame Type / Lag:                   %03u %03u\n", *frameType, *lagFrame);
 
  LOG("[Jaffar]  + Active Frames:                      %03u %03u %03u %03u\n", *activeFrame1, *activeFrame2, *activeFrame3, *activeFrame4 );
 
  LOG("[Jaffar]  + Last Input / Frame                  %03u\n",  *player1Input1);
- LOG("[Jaffar]  + Laps Remaining:                     %1u\n", *player1LapsRemaining);
+ LOG("[Jaffar]  + Laps Remaining:                     %1u (Prev: %1u)\n", *player1LapsRemaining, *player1LapsRemainingPrev);
  LOG("[Jaffar]  + Checkpoint Id:                      %03u\n", *player1Checkpoint);
 
  LOG("[Jaffar]  + Player Accel:                       %03d\n", *player1Accel);
  LOG("[Jaffar]  + Player Angle:                       %03u %03u\n", *player1Angle1, *player1Angle2);
 
+ LOG("[Jaffar]  + Camera Pos X:                       %05u\n", cameraPosX);
+ LOG("[Jaffar]  + Camera Pos Y:                       %05u\n", cameraPosY);
+
  LOG("[Jaffar]  + Player Pos X:                       %05u\n", player1PosX);
  LOG("[Jaffar]  + Player Pos Y:                       %05u\n", player1PosY);
+ LOG("[Jaffar]  + Player Recovery:                    %03u (%03u)\n", *player1RecoveryMode, *player1RecoveryTimer);
+ LOG("[Jaffar]  + Player Can Control Car:             %03u\n", *player1CanControlCar);
+
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -169,7 +216,13 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  float distY = std::abs(magnets.pointMagnet.y - player1PosY);
  float distanceToPoint = sqrt(distX*distX + distY*distY);
 
+ distX = std::abs(cameraPosX - player1PosX);
+ distY = std::abs(cameraPosY - player1PosY);
+ float cameraDistance = sqrt(distX*distX + distY*distY);
+
  if (std::abs(magnets.pointMagnet.intensity) > 0.0f)                 LOG("[Jaffar]  + Point Magnet                     - Intensity: %.5f, X: %3.3f, Y: %3.3f, Dist: %3.3f\n", magnets.pointMagnet.intensity, magnets.pointMagnet.x, magnets.pointMagnet.y, distanceToPoint);
+ if (std::abs(magnets.cameraDistanceMagnet) > 0.0f)                  LOG("[Jaffar]  + Camera Distance Magnet           - Intensity: %.5f, Dist: %3.3f\n", magnets.cameraDistanceMagnet, cameraDistance);
+ if (std::abs(magnets.recoveryTimerMagnet) > 0.0f)                   LOG("[Jaffar]  + Recovery Timer Magnet            - Intensity: %.5f\n", magnets.recoveryTimerMagnet);
  if (std::abs(magnets.playerCurrentLapMagnet) > 0.0f)                LOG("[Jaffar]  + Player Current Lap Magnet        - Intensity: %.5f\n", magnets.playerCurrentLapMagnet);
  if (std::abs(magnets.playerLapProgressMagnet) > 0.0f)               LOG("[Jaffar]  + Player Lap Progress Magnet       - Intensity: %.5f\n", magnets.playerLapProgressMagnet);
  if (std::abs(magnets.playerAccelMagnet) > 0.0f)                     LOG("[Jaffar]  + Player Accel Magnet              - Intensity: %.5f\n", magnets.playerAccelMagnet);

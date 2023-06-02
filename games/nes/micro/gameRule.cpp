@@ -39,6 +39,19 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Camera Distance Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.cameraDistanceMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+  if (actionType == "Set Recovery Timer Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.recoveryTimerMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
 
 
   return recognizedActionType;
@@ -49,7 +62,12 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Player 1 Laps Remaining") return dt_uint8;
+  if (propertyName == "Player 1 Laps Remaining Prev") return dt_uint8;
   if (propertyName == "Player 1 Checkpoint") return dt_uint8;
+  if (propertyName == "Player 1 Recovery Mode") return dt_uint8;
+  if (propertyName == "Player 1 Pos X") return dt_uint16;
+  if (propertyName == "Player 1 Pos Y") return dt_uint16;
+  if (propertyName == "Global Timer") return dt_uint16;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -61,7 +79,12 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Player 1 Laps Remaining") return gameInstance->player1LapsRemaining;
+  if (propertyName == "Player 1 Laps Remaining Prev") return gameInstance->player1LapsRemainingPrev;
   if (propertyName == "Player 1 Checkpoint") return gameInstance->player1Checkpoint;
+  if (propertyName == "Player 1 Recovery Mode") return gameInstance->player1RecoveryMode;
+  if (propertyName == "Player 1 Pos X") return &gameInstance->player1PosX;
+  if (propertyName == "Player 1 Pos Y") return &gameInstance->player1PosY;
+  if (propertyName == "Global Timer") return gameInstance->globalTimer;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

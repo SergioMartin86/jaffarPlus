@@ -19,6 +19,8 @@ struct magnetSet_t {
  float playerCurrentLapMagnet = 0.0;
  float playerLapProgressMagnet = 0.0;
  float playerAccelMagnet = 0.0;
+ float cameraDistanceMagnet = 0.0;
+ float recoveryTimerMagnet = 0.0;
  pointMagnet_t pointMagnet;
 };
 
@@ -31,7 +33,13 @@ class GameInstance : public GameInstanceBase
   uint16_t* globalTimer;
   uint8_t*  preRaceTimer;
   uint8_t*  frameType;
+  uint8_t*  lagFrame;
+
+  uint8_t*  cameraPosX1;
+  uint8_t*  cameraPosX2;
+  uint8_t*  cameraPosY1;
   uint8_t*  cameraPosY2;
+
   uint8_t*  player1PosX1;
   uint8_t*  player1PosX2;
   uint8_t*  player1PosY1;
@@ -40,10 +48,15 @@ class GameInstance : public GameInstanceBase
   uint8_t*  player1Angle1;
   uint8_t*  player1Angle2;
   uint8_t*  player1LapsRemaining;
+  uint8_t*  player1LapsRemainingPrev;
   uint8_t*  player1Checkpoint;
   uint8_t*  player1Input1;
   uint8_t*  player1Input2;
   uint8_t*  player1Input3;
+
+  uint8_t*  player1RecoveryMode;
+  uint8_t*  player1RecoveryTimer;
+  uint8_t*  player1CanControlCar;
 
   uint8_t* activeFrame1;
   uint8_t* activeFrame2;
@@ -52,6 +65,8 @@ class GameInstance : public GameInstanceBase
 
   uint16_t player1PosX;
   uint16_t player1PosY;
+  uint16_t cameraPosX;
+  uint16_t cameraPosY;
   uint8_t timerTolerance;
 
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;

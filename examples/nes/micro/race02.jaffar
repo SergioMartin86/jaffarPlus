@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "micro.nes",
-    "State File": "race01.state"
+    "State File": "race02.state"
   },
   
   "Game Configuration": 
@@ -29,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 120000
+     "Max Size Lower Bound (Mb)": 40000,
+     "Max Size Upper Bound (Mb)": 180000
     },
     
     "Hash Database":
@@ -69,11 +69,12 @@
     "Actions":
     [
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
+     { "Type": "Set Camera Distance Magnet", "Intensity": 0.001 }
     ]
    },
    
-   {
+  {
     "Label": 3000,
     "Conditions":
     [
@@ -85,7 +86,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 100000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 372, "Y": 466 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1046, "Y": 1711 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
@@ -96,7 +97,7 @@
     "Conditions":
     [
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 5 } 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 11 } 
     ],
     
     "Satisfies": [ 3000 ],
@@ -104,7 +105,7 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1236, "Y": 758 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 467, "Y": 1525 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
@@ -115,7 +116,9 @@
     "Conditions":
     [
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 22 } 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 50 },
+      { "Property": "Player 1 Checkpoint", "Op": "<=", "Value": 54 },
+      { "Property": "Player 1 Recovery Mode", "Op": ">", "Value": 0 } 
     ],
     
     "Satisfies": [ 3001 ],
@@ -123,28 +126,9 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 466, "Y": 850 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
-    ]
-   },
-   
-   {
-    "Label": 3003,
-    "Conditions":
-    [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 34 } 
-    ],
-    
-    "Satisfies": [ 3002 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 371, "Y": 632 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+     { "Type": "Set Camera Distance Magnet", "Intensity": 0.001 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1092, "Y": 1764 },
+     { "Type": "Set Recovery Timer Magnet", "Intensity": 1 }
     ]
    },
    
@@ -155,14 +139,15 @@
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 } 
     ],
     
-    "Satisfies": [ 3003 ],
+    "Satisfies": [ 3002 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 100000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 372, "Y": 466 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1046, "Y": 1711 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
+     { "Type": "Set Camera Distance Magnet", "Intensity": 0.001 }
     ]
    },
    
@@ -171,7 +156,7 @@
     "Conditions":
     [
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 5 } 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 11 } 
     ],
     
     "Satisfies": [ 2000 ],
@@ -179,9 +164,10 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1236, "Y": 758 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 467, "Y": 1525 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
+     { "Type": "Set Camera Distance Magnet", "Intensity": 0.001 }
     ]
    },
    
@@ -190,7 +176,9 @@
     "Conditions":
     [
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 22 } 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 50 },
+      { "Property": "Player 1 Checkpoint", "Op": "<=", "Value": 54 },
+      { "Property": "Player 1 Recovery Mode", "Op": ">", "Value": 0 } 
     ],
     
     "Satisfies": [ 2001 ],
@@ -198,28 +186,9 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 466, "Y": 850 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
-    ]
-   },
-   
-   {
-    "Label": 2003,
-    "Conditions":
-    [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 34 } 
-    ],
-    
-    "Satisfies": [ 2002 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 371, "Y": 632 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+     { "Type": "Set Camera Distance Magnet", "Intensity": 0.001 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1092, "Y": 1764 },
+     { "Type": "Set Recovery Timer Magnet", "Intensity": 1 }
     ]
    },
    
@@ -230,14 +199,15 @@
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 } 
     ],
     
-    "Satisfies": [ 2003 ],
+    "Satisfies": [ 2002 ],
     
     "Actions":
     [
      { "Type": "Add Reward", "Value": 100000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 372, "Y": 466 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1046, "Y": 1711 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
+     { "Type": "Set Camera Distance Magnet", "Intensity": 0.001 }
     ]
    },
    
@@ -246,7 +216,7 @@
     "Conditions":
     [
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 5 } 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 11 } 
     ],
     
     "Satisfies": [ 1000 ],
@@ -254,9 +224,10 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1236, "Y": 758 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 467, "Y": 1525 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
+     { "Type": "Set Camera Distance Magnet", "Intensity": 0.001 }
     ]
    },
    
@@ -265,7 +236,9 @@
     "Conditions":
     [
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 22 } 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 50 },
+      { "Property": "Player 1 Checkpoint", "Op": "<=", "Value": 54 },
+      { "Property": "Player 1 Recovery Mode", "Op": ">", "Value": 0 } 
     ],
     
     "Satisfies": [ 1001 ],
@@ -273,28 +246,9 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 466, "Y": 850 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
-    ]
-   },
-   
-   {
-    "Label": 1003,
-    "Conditions":
-    [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 34 } 
-    ],
-    
-    "Satisfies": [ 1002 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 371, "Y": 632 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+     { "Type": "Set Camera Distance Magnet", "Intensity": 0.001 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1092, "Y": 1764 },
+     { "Type": "Set Recovery Timer Magnet", "Intensity": 1 }
     ]
    },
    
@@ -310,6 +264,22 @@
     "Actions":
     [
       { "Type": "Trigger Win"}
+    ]
+   },
+   
+   {
+    "Label": 9999,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 4 },
+      { "Property": "Global Timer", "Op": ">", "Value": 100 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Fail"}
     ]
    }
   ]

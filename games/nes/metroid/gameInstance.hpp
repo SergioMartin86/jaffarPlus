@@ -15,10 +15,10 @@ struct genericMagnet_t {
 struct magnetSet_t {
  genericMagnet_t samusHorizontalMagnet;
  genericMagnet_t samusVerticalMagnet;
- genericMagnet_t samusMinVerticalMagnet;
  genericMagnet_t bullet1HorizontalMagnet;
  genericMagnet_t bullet1VerticalMagnet;
  float lagFrameCounterMagnet = 0.0;
+ float missileCountMagnet = 0.0;
 };
 
 class GameInstance : public GameInstanceBase
@@ -34,6 +34,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* screenPosX1;
   uint8_t* screenPosX2;
   uint8_t* samusPosYRaw;
+  uint8_t* samusJumpState;
   uint8_t* screenPosY1;
   uint8_t* screenPosY2;
   uint8_t* samusAnimation;
@@ -69,15 +70,14 @@ class GameInstance : public GameInstanceBase
   uint8_t* bullet3PosY;
 
   // Derivative Values
-  float samusPosX;
-  float samusPosY;
+  uint16_t samusPosX;
+  uint16_t samusPosY;
   uint8_t bulletCount;
 
   // Custom conserved value
   uint8_t* customValue;
   uint16_t* lagFrameCounter;
   uint16_t* pauseFrameCounter;
-  float*    samusMinPosY;
 
   // Settings
   bool disableB;

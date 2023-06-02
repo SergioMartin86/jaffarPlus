@@ -24,9 +24,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   samusDirection                   = (uint8_t*)   &_emu->_baseMem[0x004D];
   samusDoorSide                    = (uint8_t*)   &_emu->_baseMem[0x004E];
   samusDoorState                   = (uint8_t*)   &_emu->_baseMem[0x0056];
+  samusJumpState                   = (uint8_t*)   &_emu->_baseMem[0x0314];
   equipmentFlags                   = (uint8_t*)   &_emu->_highMem[0x0878];
   samusSelectedWeapon              = (uint8_t*)   &_emu->_baseMem[0x0056];
-  samusMinPosY                     = (float_t*)   &_emu->_highMem[0x1FF0];
   missileCount                     = (uint8_t*)   &_emu->_highMem[0x0879];
   samusHP1                         = (uint8_t*)   &_emu->_baseMem[0x0107];
   samusHP2                         = (uint8_t*)   &_emu->_baseMem[0x0106];
@@ -91,6 +91,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 //  hash.Update(*samusAnimation);
   hash.Update(*samusDirection);
   hash.Update(*samusDoorSide);
+  hash.Update(*samusJumpState);
   hash.Update(*equipmentFlags);
 
   hash.Update(*door1State);
@@ -117,9 +118,10 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 
   // Samus-specific hashes
 //  hash.Update(_emu->_baseMem[0x0308]); // Vertical Speed
-  hash.Update(_emu->_baseMem[0x0310]); // Vertical Accel
-  hash.Update(_emu->_baseMem[0x030A]); // Hit By Enemy
-//    hash.Update(&_emu->_baseMem[0x0300], 0x0010);
+//  hash.Update(_emu->_baseMem[0x0316]); // Jump State2
+//  hash.Update(_emu->_baseMem[0x0310]); // Vertical Accel
+//  hash.Update(_emu->_baseMem[0x030A]); // Hit By Enemy
+    hash.Update(&_emu->_baseMem[0x0300], 0x0020);
 //    hash.Update(&_emu->_baseMem[0x0314], 0x0010);
 
   _uint128_t result;
@@ -131,12 +133,8 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 void GameInstance::updateDerivedValues()
 {
  uint8_t realScreenPosX1 = *screenPosX2 == 0 ? *screenPosX1+1 : *screenPosX1;
- samusPosX = (float)realScreenPosX1 * 256.0f + (float)*screenPosX2 + (float)*samusPosXRaw;
-
- samusPosY = (float)*screenPosY1 * 256.0f + (float)*screenPosY2 + (float)*samusPosYRaw;
-
- if ( *((uint64_t*)samusMinPosY) == 0) *samusMinPosY = samusPosY;
- else if (samusPosY < *samusMinPosY) *samusMinPosY = samusPosY;
+ samusPosX = (uint16_t)realScreenPosX1 * 256.0f + (uint16_t)*screenPosX2 + (uint16_t)*samusPosXRaw;
+ samusPosY = (uint16_t)*screenPosY1 * 256.0f + (uint16_t)*screenPosY2 + (uint16_t)*samusPosYRaw;
 
  bulletCount = (uint8_t)(*bullet1State > 0) + (uint8_t)(*bullet2State > 0) + (uint8_t)(*bullet3State > 0);
 }
@@ -147,7 +145,7 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
  std::vector<std::string> moveList = {"."};
 
 // if (*samusDoorState != 0) moveList.insert(moveList.end(), { "S" });
- moveList.insert(moveList.end(), { "s", "B", "R", "U", "A", "L", "sA", "UB", "UA", "DL", "UR", "UL", "LR", "LB", "LA", "RB", "RA", "BA", "ULA", "URB", "URA", "ULB", "UBA", "DLB", "DRB", "DRA", "DBA", "LBA", "RBA", "DLBA", "URBA", "LRBA", "ULBA", "ULRB", "UDBA", "UDLB", "UDLBA" });
+ moveList.insert(moveList.end(), { "s", "B", "R", "U", "A", "L", "sA", "UB", "UA", "DL", "UR", "UL", "LR", "LB", "LA", "RB", "RA", "BA", "ULA", "URB", "URA", "ULB", "UBA", "DLB", "DRB", "DRA", "DBA", "LBA", "RBA", "DLBA", "URBA", "LRBA", "ULBA", "ULRB" });
  return moveList;
 
  // Evaluating custom value
@@ -279,17 +277,14 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Container for bounded value and difference with center
   float diff = 0.0;
 
-  // Evaluating samus magnet's reward on position X
-  diff = std::abs(magnets.samusHorizontalMagnet.center - samusPosX);
-  reward += magnets.samusHorizontalMagnet.intensity * -diff;
+  // Evaluating samus magnet's reward on position X and Y
+  diff = std::abs(magnets.samusHorizontalMagnet.center - (float)samusPosX);
+  float weightedDiffX = magnets.samusHorizontalMagnet.intensity * diff;
 
-  // Evaluating samus magnet's reward on position Y
-  diff = std::abs(magnets.samusVerticalMagnet.center - samusPosY);
-  reward += magnets.samusVerticalMagnet.intensity * -diff;
+  diff = std::abs(magnets.samusVerticalMagnet.center - (float)samusPosY);
+  float weightedDiffY = magnets.samusVerticalMagnet.intensity * diff;
 
-  // Evaluating samus magnet's reward on min position Y
-  diff = std::abs(magnets.samusMinVerticalMagnet.center - *samusMinPosY);
-  reward += magnets.samusMinVerticalMagnet.intensity * -diff;
+  reward += -sqrt(weightedDiffX*weightedDiffX + weightedDiffY*weightedDiffY);
 
   // Evaluating bullet1 magnet's reward on position X
   diff = std::abs(magnets.bullet1HorizontalMagnet.center - (float)*bullet1PosX);
@@ -301,6 +296,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 
   // Evaluating lag frame counter reward
   reward += magnets.lagFrameCounterMagnet * ((float)*lagFrameCounter + (float)*pauseFrameCounter);
+
+  // Evaluating missile count
+  reward += magnets.missileCountMagnet * (float)*missileCount;
 
   // Returning reward
   return reward;
@@ -316,12 +314,13 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + NMI Flag:               %02u\n", *NMIFlag);
   LOG("[Jaffar]  + Lag Frame Counter:      %05u\n", *lagFrameCounter);
   LOG("[Jaffar]  + Pause Frame Counter:    %05u\n", *pauseFrameCounter);
-  LOG("[Jaffar]  + Samus Pos X:            %f (%02u %02u %02u)\n", samusPosX, *screenPosX1, *screenPosX2, *samusPosXRaw);
-  LOG("[Jaffar]  + Samus Pos Y:            %f (%02u %02u %02u / Min: %f)\n", samusPosY, *screenPosY1, *screenPosY2, *samusPosYRaw, *samusMinPosY);
+  LOG("[Jaffar]  + Samus Pos X:            %05u (%02u %02u %02u)\n", samusPosX, *screenPosX1, *screenPosX2, *samusPosXRaw);
+  LOG("[Jaffar]  + Samus Pos Y:            %05u (%02u %02u %02u)\n", samusPosY, *screenPosY1, *screenPosY2, *samusPosYRaw);
   LOG("[Jaffar]  + Samus Animation:        %03u\n", *samusAnimation);
   LOG("[Jaffar]  + Samus Direction:        %03u\n", *samusDirection);
   LOG("[Jaffar]  + Samus Door Side:        %03u\n", *samusDoorSide);
   LOG("[Jaffar]  + Samus Door State:       %03u\n", *samusDoorState);
+  LOG("[Jaffar]  + Samus Jump State:       %03u\n", *samusJumpState);
   LOG("[Jaffar]  + Door States:            [ %02u, %02u, %02u, %02u ]\n", *door1State, *door2State, *door3State, *door4State);
   LOG("[Jaffar]  + Door Timers:            [ %02u, %02u, %02u, %02u ]\n", *door1Timer, *door2Timer, *door3Timer, *door4Timer);
   LOG("[Jaffar]  + Bullet Count:           %02u\n", bulletCount);
@@ -341,8 +340,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   auto magnets = getMagnetValues(rulesStatus);
   if (std::abs(magnets.samusHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Samus Horizontal Magnet        - Intensity: %.5f, Center: %3.3f\n", magnets.samusHorizontalMagnet.intensity, magnets.samusHorizontalMagnet.center);
   if (std::abs(magnets.samusVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Samus Vertical Magnet          - Intensity: %.5f, Center: %3.3f\n", magnets.samusVerticalMagnet.intensity, magnets.samusVerticalMagnet.center);
-  if (std::abs(magnets.samusMinVerticalMagnet.intensity) > 0.0f)  LOG("[Jaffar]  + Samus Min Vertical Magnet      - Intensity: %.5f, Center: %3.3f\n", magnets.samusMinVerticalMagnet.intensity, magnets.samusMinVerticalMagnet.center);
   if (std::abs(magnets.bullet1HorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Bullet 1 Horizontal Magnet     - Intensity: %.5f, Center: %3.3f\n", magnets.bullet1HorizontalMagnet.intensity, magnets.bullet1HorizontalMagnet.center);
   if (std::abs(magnets.bullet1VerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Bullet 1 Vertical Magnet       - Intensity: %.5f, Center: %3.3f\n", magnets.bullet1VerticalMagnet.intensity, magnets.bullet1VerticalMagnet.center);
-  if (std::abs(magnets.lagFrameCounterMagnet) > 0.0f)             LOG("[Jaffar]  + Bullet 1 Vertical Magnet       - Intensity: %.5f\n", magnets.lagFrameCounterMagnet);
+  if (std::abs(magnets.lagFrameCounterMagnet) > 0.0f)             LOG("[Jaffar]  + Lag Frame Counter Magnet       - Intensity: %.5f\n", magnets.lagFrameCounterMagnet);
+  if (std::abs(magnets.missileCountMagnet) > 0.0f)                LOG("[Jaffar]  + Missile Count Magnet           - Intensity: %.5f\n", magnets.missileCountMagnet);
 }
