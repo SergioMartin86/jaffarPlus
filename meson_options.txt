@@ -24,6 +24,7 @@ option('game', type : 'combo', choices :
     'nes/solar',
     'nes/bt',
     'nes/rc2',
+    'nes/sf2010',
     'nes/tennis',
     'nes/offroad',
     'nes/metroid',
