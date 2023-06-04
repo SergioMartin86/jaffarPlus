@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../metroid.nes",
-    "State File": "climb.state"
+    "State File": "climb_01.state"
   },
   
   "Game Configuration": 
