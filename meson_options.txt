@@ -29,6 +29,7 @@ option('game', type : 'combo', choices :
     'nes/offroad',
     'nes/metroid',
     'nes/pacman',
+    'nes/batman',
     'snes/pop',
     'snes/aw',
     'aw',

@@ -11,7 +11,7 @@
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ playerAction
+ #define _KEY_VALUE_ batmanAction
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -292,7 +292,7 @@ void Train::computeStates()
 //            if ((i & 0b10000000) == 0) // Atari Unused
 //            if ((i & 0b01000000) == 0) // Atari Unused
 //            if ((i & 0b00100000) == 0) // Atari Unused
-//         if (countButtonsPressedNumber(i) > 3 == false)
+         if (countButtonsPressedNumber(i) > 3 == false)
         {
          INPUT_TYPE idx = (INPUT_TYPE)i;
          alternativeMoveSet.insert(idx);
