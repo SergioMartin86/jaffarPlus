@@ -40,18 +40,19 @@ class GameInstance : public GameInstanceBase
   uint8_t*   carTireAngle;
   uint8_t*   carTurnState1;
   uint8_t*   carTurnState2;
+  uint8_t* gamePhase;
 
   uint8_t timerTolerance;
 
   // Derivative Values
   float lapProgress;
 
+  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
-  _uint128_t computeHash() const override;
+  _uint128_t computeHash(const uint16_t currentStep = 0) const override;
   void updateDerivedValues() override;
-  std::vector<std::string> getPossibleMoves() const override;
+  std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
-  void setRNGState(const uint64_t RNGState) override;
 };
