@@ -75,7 +75,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
  std::vector<INPUT_TYPE> moves;
  _emu->advanceState(move); moves.push_back(move);
- *gamePhase = *gameTimer % 4;
+ *gamePhase = *gameTimer % 8;
  updateDerivedValues();
  return moves;
 }
@@ -85,10 +85,8 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 {
  std::vector<std::string> moveList = {"."};
 
- if (*gamePhase == 0x0000) moveList.insert(moveList.end(), { "R", "L", "D", "A", "U", "RA", "LA", "DA", "DR", "DL", "UL", "UA", "UR", "ULA", "URA", "DLA", "DRA" });
- if (*gamePhase == 0x0001) moveList.insert(moveList.end(), { "A", "B", "R", "L", "RA", "RB", "LA", "LB" });
- if (*gamePhase == 0x0002) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA" });
- if (*gamePhase == 0x0003) moveList.insert(moveList.end(), { "A", "B", "R", "L", "RA", "RB", "LA", "LB" });
+ if (*gamePhase == 0x0000) moveList.insert(moveList.end(), { "A", "R", "L", "D", "RA", "LA", "UL", "UR", "UA" });
+ if (*gamePhase >  0x0000) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA" });
 
  return moveList;
 }
