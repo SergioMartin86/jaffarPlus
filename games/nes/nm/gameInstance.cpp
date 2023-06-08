@@ -22,6 +22,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   carTireAngle                    = (uint8_t*)   &_emu->_baseMem[0x007C];
   carTurnState1                   = (uint8_t*)   &_emu->_baseMem[0x064B];
   carTurnState2                   = (uint8_t*)   &_emu->_baseMem[0x064C];
+  gamePhase                       = (uint8_t*)   &_emu->_baseMem[0x07FF];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -33,7 +34,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-_uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 {
   // Storage for hash calculation
   MetroHash128 hash;
@@ -70,13 +71,25 @@ void GameInstance::updateDerivedValues()
  lapProgress = (float)*lapProgress2 * 256.0f + (float)*lapProgress1;
 }
 
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
+{
+ std::vector<INPUT_TYPE> moves;
+ _emu->advanceState(move); moves.push_back(move);
+ *gamePhase = *gameTimer % 4;
+ updateDerivedValues();
+ return moves;
+}
+
 // Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  std::vector<std::string> moveList = {"."};
 
- //moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", ".L......", "R.......", ".......A", "R..U....", "R.....B.", "R......A", "R.D.....", ".LD.....", ".L.U....", ".L....B.", ".L.....A", "..D....A", "...U...A", "R.D....A", "R..U...A", ".LD....A", ".L.U...A"});
- moveList.insert(moveList.end(), { "......B.", ".L......", "R.......", ".......A", "R.....B.", "R......A", ".L....B.", ".L.....A" });
+ if (*gamePhase == 0x0000) moveList.insert(moveList.end(), { "R", "L", "D", "A", "U", "RA", "LA", "DA", "DR", "DL", "UL", "UA", "UR", "ULA", "URA", "DLA", "DRA" });
+ if (*gamePhase == 0x0001) moveList.insert(moveList.end(), { "A", "B", "R", "L", "RA", "RB", "LA", "LB" });
+ if (*gamePhase == 0x0002) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA" });
+ if (*gamePhase == 0x0003) moveList.insert(moveList.end(), { "A", "B", "R", "L", "RA", "RB", "LA", "LB" });
+
  return moveList;
 }
 
@@ -124,15 +137,11 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   return reward;
 }
 
-void GameInstance::setRNGState(const uint64_t RNGState)
-{
-}
-
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Reward:                             %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                               0x%lX%lX\n", computeHash().first, computeHash().second);
- LOG("[Jaffar]  + Game Timer:                         %03u\n", *gameTimer);
+ LOG("[Jaffar]  + Game Timer / Phase:                 %03u / %03u\n", *gameTimer, *gamePhase);
  LOG("[Jaffar]  + Lap Progress:                       %f (%03d, %03d)\n", lapProgress, *lapProgress1, *lapProgress2);
  LOG("[Jaffar]  + Player Position:                    (%03u, %03u, %03u)\n", *playerPos1, *playerPos2, *playerPos3);
  LOG("[Jaffar]  + Traffic Light:                      (%03u)\n", *trafficLightTimer);
