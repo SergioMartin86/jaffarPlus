@@ -269,7 +269,8 @@ int main(int argc, char *argv[])
 
   // Initializing playback instance
   printw("[Jaffar] Opening Game window...\n");
-  PlaybackInstance playbackInstance(&gameInstance, config["Playback Configuration"]);
+  PlaybackInstance* playbackInstance;
+  if (disableRender == false) playbackInstance = new PlaybackInstance(&gameInstance, config["Playback Configuration"]);
 
   // Storage for sequence frames and rule evaluation
   std::vector<uint8_t*> stateSequence;
@@ -317,7 +318,7 @@ int main(int argc, char *argv[])
    stateType_t stateType = gameInstance.getStateType(rulesStatus);
 
    // Updating display
-   if (disableRender == false) playbackInstance.renderFrame(currentStep, moveList[currentStep]);
+   if (disableRender == false) playbackInstance->renderFrame(currentStep, moveList[currentStep]);
 
    // Getting possible moves
    auto possibleMoves = gameInstance.getPossibleMoves(rulesStatus);
@@ -346,7 +347,7 @@ int main(int argc, char *argv[])
      if (isReproduce == false)
      {
       printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | d: unpack | q: quit\n");
-      playbackInstance.printPlaybackCommands();
+      if (disableRender == false) playbackInstance->printPlaybackCommands();
      }
 
      refresh();
@@ -380,7 +381,7 @@ int main(int argc, char *argv[])
    command = getKeyPress();
 
    // Parsing command
-   showFrameInfo = playbackInstance.parseCommand(command, curState);
+   if (disableRender == false) showFrameInfo = playbackInstance->parseCommand(command, curState);
 
    // Advance/Rewind commands
    if (command == 'n') currentStep = currentStep - 1;
