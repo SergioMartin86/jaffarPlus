@@ -103,7 +103,7 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 {
  std::vector<std::string> moveList = {"."};
 
- if (*batmanAction == 0x0000) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA", "S", "RS", "LS",  });
+ if (*batmanAction == 0x0000) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA" });
  if (*batmanAction == 0x0001) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DL", "LRA" });
  if (*batmanAction == 0x0002) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DL", "LRA" });
  if (*batmanAction == 0x0003) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DL", "LRA" });
@@ -111,12 +111,12 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
  if (*batmanAction == 0x0005) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA" });
  if (*batmanAction == 0x0006) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA" });
  if (*batmanAction == 0x0007) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA" });
- if (*batmanAction == 0x0008) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA", "S", "SA", "LSA", "RSA" });
+ if (*batmanAction == 0x0008) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA" });
  if (*batmanAction == 0x0009) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA" });
  if (*batmanAction == 0x000A) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA" });
  if (*batmanAction == 0x000B) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA" });
  if (*batmanAction == 0x000C) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "LA", "DR", "DL", "LRA" });
- if (*batmanAction == 0x000D) moveList.insert(moveList.end(), { "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA", "S" });
+ if (*batmanAction == 0x000D) moveList.insert(moveList.end(), { "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" });
  if (*batmanAction == 0x000E) moveList.insert(moveList.end(), { "A", "B", "R", "L", "RB", "LB", "RA", "LA" });
  if (*batmanAction == 0x0010) moveList.insert(moveList.end(), { "B", "R", "L", "D", "RB", "LB" });
  if (*batmanAction == 0x0011) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "RB", "LB", "RBA" });
@@ -132,7 +132,7 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
  if (*batmanAction == 0x000D) moveList.insert(moveList.end(), { "DB", "DBA" });
  if (*batmanAction == 0x000E) moveList.insert(moveList.end(), { "D", "RBA" });
  if (*batmanAction == 0x0010) moveList.insert(moveList.end(), { "A", "BA", "RA", "LA", "DA", "DB", "RBA", "LBA", "DBA", "DRB", "DLB" });
- if (*batmanAction == 0x0011) moveList.insert(moveList.end(), { "BA", "LA", "DB", "LBA", "DBA", "RS", "LS" });
+ if (*batmanAction == 0x0011) moveList.insert(moveList.end(), { "BA", "LA", "DB", "LBA", "DBA" });
  if (*batmanAction == 0x0012) moveList.insert(moveList.end(), { "BA", "LA", "LBA", "DBA" });
  if (*batmanAction == 0x0017) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RA", "RB", "LA", "LB", "DB", "DR", "DL", "LRA", "DRB", "DLB" });
  if (*batmanAction == 0x0018) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "RB", "LB", "DB", "DR", "DL", "LRA", "DRB", "DLB" });
