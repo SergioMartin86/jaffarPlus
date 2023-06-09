@@ -16,6 +16,14 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
    recognizedActionType = true;
   }
 
+  if (actionType == "Set Tire Damage Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.tireDamageMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
+
   if (actionType == "Set Car Horizontal Magnet")
   {
    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
@@ -34,6 +42,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
 
   if (propertyName == "Car Speed") return dt_uint8;
   if (propertyName == "Car Gear") return dt_uint8;
+  if (propertyName == "Car Pos X") return dt_uint8;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -46,6 +55,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
 
   if (propertyName == "Car Speed") return gameInstance->carSpeed;
   if (propertyName == "Car Gear") return gameInstance->carGear;
+  if (propertyName == "Car Pos X") return gameInstance->carPosX;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

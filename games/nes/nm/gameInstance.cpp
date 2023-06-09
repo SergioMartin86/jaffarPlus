@@ -22,6 +22,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   carTireAngle                    = (uint8_t*)   &_emu->_baseMem[0x007C];
   carTurnState1                   = (uint8_t*)   &_emu->_baseMem[0x064B];
   carTurnState2                   = (uint8_t*)   &_emu->_baseMem[0x064C];
+  carTurnState3                   = (uint8_t*)   &_emu->_baseMem[0x0643];
   gamePhase                       = (uint8_t*)   &_emu->_baseMem[0x07FF];
 
   // Timer tolerance
@@ -57,10 +58,11 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*carTireDamage);
   hash.Update(*carPosX);
   hash.Update(*carTireAngle);
-  hash.Update(*carTurnState1);
+  hash.Update(*carTurnState1 % 4);
   hash.Update(*carTurnState2);
+  hash.Update(*carTurnState3);
 
-  hash.Update(&_emu->_baseMem[0x500], 0x200);
+//  hash.Update(&_emu->_baseMem[0x500], 0x200);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -85,10 +87,13 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
+ if (*carGear < 6) return { "B", "UA", "RA", "LA" };
+ return { "B", "RA", "LA" };
+
  std::vector<std::string> moveList = {"."};
 
- if (*gamePhase == 0x0000) moveList.insert(moveList.end(), { "A", "R", "L", "D", "RA", "LA", "UL", "UR", "UA" });
- if (*gamePhase >  0x0000) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA" });
+// if (*gamePhase == 0x0000) moveList.insert(moveList.end(), { "A", "R", "L", "D", "RA", "LA", "UL", "UR", "UA" });
+// if (*gamePhase >  0x0000) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA" });
 
  return moveList;
 }
@@ -132,6 +137,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.carHorizontalMagnet.intensity * -diff;
 
   reward += magnets.lapProgressMagnet * lapProgress;
+  reward += magnets.tireDamageMagnet * (float)*carTireDamage;
 
   // Returning reward
   return reward;
@@ -151,7 +157,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Car Tire Damage:                    (%03u)\n", *carTireDamage);
  LOG("[Jaffar]  + Car Pos X:                          (%03u)\n", *carPosX);
  LOG("[Jaffar]  + Car Tire Angle:                     (%03u)\n", *carTireAngle);
- LOG("[Jaffar]  + Car Turn State:                     (%03u, %03u)\n", *carTurnState1, *carTurnState2);
+ LOG("[Jaffar]  + Car Turn State:                     (%03u, %03u, %03u)\n", *carTurnState1, *carTurnState2, *carTurnState3);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
@@ -161,5 +167,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
  if (std::abs(magnets.carHorizontalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Car Horizontal Magnet              - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.carHorizontalMagnet.intensity, magnets.carHorizontalMagnet.center, magnets.carHorizontalMagnet.min, magnets.carHorizontalMagnet.max);
  if (std::abs(magnets.lapProgressMagnet) > 0.0f)                 LOG("[Jaffar]  + Lap Progress Magnet                - Intensity: %.5f\n", magnets.lapProgressMagnet);
+ if (std::abs(magnets.tireDamageMagnet) > 0.0f)                  LOG("[Jaffar]  + Tire Damage Magnet                 - Intensity: %.5f\n", magnets.tireDamageMagnet);
 }
 

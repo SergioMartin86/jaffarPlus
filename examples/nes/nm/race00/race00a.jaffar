@@ -29,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Max Size Lower Bound (Mb)": 130000,
+     "Max Size Upper Bound (Mb)": 190000
     },
     
     "Hash Database":
@@ -70,7 +70,38 @@
     [
      { "Type": "Set Lap Progress Magnet", "Intensity": 1.0 }
     ]
+   },
+   
+   {
+    "Label": 1999,
+    "Conditions":
+    [
+      { "Property": "Car Pos X", "Op": ">", "Value": 235 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1998,
+    "Conditions":
+    [
+      { "Property": "Car Pos X", "Op": "<", "Value": 20 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
    }
+   
    
   ]  
 }
