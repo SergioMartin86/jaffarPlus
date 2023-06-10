@@ -42,6 +42,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*   carTurnState1;
   uint8_t*   carTurnState2;
   uint8_t*   carTurnState3;
+  uint8_t* currentLap;
   uint8_t* gamePhase;
 
   uint8_t timerTolerance;
