@@ -1,8 +1,8 @@
 {
   "Emulator Configuration": 
   {
-    "Rom File": "../nm.nes",
-    "State File": "race00.state"
+    "Rom File": "nm.nes",
+    "State File": "race.state"
   },
   
   "Game Configuration": 
@@ -53,7 +53,7 @@
   
   "Playback Configuration": 
   {
-    "Overlay Path": "../../../../platforms/nes/overlay"
+    "Overlay Path": "../../../platforms/nes/overlay"
   },
   
   "Rules":
@@ -69,6 +69,21 @@
     "Actions":
     [
      { "Type": "Set Lap Progress Magnet", "Intensity": 1.0 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+      { "Property": "Current Lap", "Op": "==", "Value": 7 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
     ]
    },
    
