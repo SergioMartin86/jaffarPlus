@@ -1,54 +1,59 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
   "Emulator Configuration": 
   {
-    "Rom File": "../contra.nes",
-    "State File": "jaffar.state"
-  },
-  
-   "State Configuration": 
-  {
-    "Max Difference Count": 1500,
-    "Max Move Count": 3500
+    "Rom File": "../nm.nes",
+    "State File": "race00b.state"
   },
   
   "Game Configuration": 
   {
+   "Timer Tolerance": 0
   },
   
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
-    "Show Hash Information": true,
+    "Show Hash Information": false,
     "Show Winning State Information": true,
+    "Show Move List": false,
+    "Win State Step Tolerance": 0,
     
-    "State Database":
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 20000,
-     "Max Size Upper Bound (Mb)": 150000
+      "Max Move Count": 6000,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
     { 
-     "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
+     "Save Numbered States": false,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
-    }
+     }
   },
   
   "Playback Configuration": 
   {
-   "Overlay Path": "../../../../platforms/nes/overlay"
+    "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
@@ -63,16 +68,15 @@
     
     "Actions":
     [
-     { "Type": "Set Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Car Horizontal Magnet", "Intensity": 0.1, "Center": 128, "Min": 0, "Max": 255 }
+     { "Type": "Set Lap Progress Magnet", "Intensity": 1.0 }
     ]
    },
    
    {
-    "Label": 1998,
+    "Label": 1999,
     "Conditions":
     [
-      { "Property": "Car Gear", "Op": "<", "Value":  6 }
+      { "Property": "Car Pos X", "Op": ">", "Value": 235 }
     ],
     
     "Satisfies": [ ],
@@ -84,10 +88,10 @@
    },
    
    {
-    "Label": 1999,
+    "Label": 1998,
     "Conditions":
     [
-      { "Property": "Car Speed", "Op": "<", "Value":  180 }
+      { "Property": "Car Pos X", "Op": "<", "Value": 20 }
     ],
     
     "Satisfies": [ ],
@@ -97,6 +101,7 @@
      { "Type": "Trigger Fail" }
     ]
    }
+   
    
   ]  
 }
