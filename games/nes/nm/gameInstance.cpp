@@ -25,6 +25,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   carTurnState2                   = (uint8_t*)   &_emu->_baseMem[0x064C];
   carTurnState3                   = (uint8_t*)   &_emu->_baseMem[0x0643];
   gamePhase                       = (uint8_t*)   &_emu->_baseMem[0x07FF];
+  currentStep                     = (uint16_t*)  &_emu->_baseMem[0x07FC];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -82,6 +83,7 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
  std::vector<INPUT_TYPE> moves;
  _emu->advanceState(move); moves.push_back(move);
  *gamePhase = *gameTimer % 8;
+ *currentStep = *currentStep + 1;
  updateDerivedValues();
  return moves;
 }
@@ -161,6 +163,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Car Pos X:                          (%03u)\n", *carPosX);
  LOG("[Jaffar]  + Car Tire Angle:                     (%03u)\n", *carTireAngle);
  LOG("[Jaffar]  + Car Turn State:                     (%03u, %03u, %03u)\n", *carTurnState1, *carTurnState2, *carTurnState3);
+ LOG("[Jaffar]  + Current Step:                       (%05u)\n", *currentStep);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

@@ -43,6 +43,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Car Speed") return dt_uint8;
   if (propertyName == "Car Gear") return dt_uint8;
   if (propertyName == "Car Pos X") return dt_uint8;
+  if (propertyName == "Current Step") return dt_uint16;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
@@ -56,6 +57,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Car Speed") return gameInstance->carSpeed;
   if (propertyName == "Car Gear") return gameInstance->carGear;
   if (propertyName == "Car Pos X") return gameInstance->carPosX;
+  if (propertyName == "Current Step") return gameInstance->currentStep;
 
   EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 

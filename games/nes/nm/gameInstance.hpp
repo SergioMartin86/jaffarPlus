@@ -46,6 +46,7 @@ class GameInstance : public GameInstanceBase
   uint8_t* gamePhase;
 
   uint8_t timerTolerance;
+  uint16_t* currentStep;
 
   // Derivative Values
   float lapProgress;
