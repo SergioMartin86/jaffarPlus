@@ -76,7 +76,8 @@
     "Label": 1999,
     "Conditions":
     [
-      { "Property": "Car Pos X", "Op": ">", "Value": 235 }
+      { "Property": "Car Pos X", "Op": ">", "Value": 235 },
+      { "Property": "Current Step", "Op": ">", "Value": 200 }
     ],
     
     "Satisfies": [ ],
@@ -91,7 +92,8 @@
     "Label": 1998,
     "Conditions":
     [
-      { "Property": "Car Pos X", "Op": "<", "Value": 20 }
+      { "Property": "Car Pos X", "Op": "<", "Value": 20 },
+      { "Property": "Current Step", "Op": ">", "Value": 200 }
     ],
     
     "Satisfies": [ ],
