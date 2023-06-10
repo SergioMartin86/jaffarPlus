@@ -15,7 +15,7 @@
     "Show Timing Information": true,
     "Show Hash Information": false,
     "Show Winning State Information": true,
-    "Show Move List": true,
+    "Show Move List": false,
     "Win State Step Tolerance": 0,
     
     "State Configuration": 
