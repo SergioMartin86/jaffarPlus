@@ -7,6 +7,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   _emu = emu;
 
   // Container for game-specific values
+  currentLap                      = (uint8_t*)   &_emu->_baseMem[0x0689];
   gameTimer                       = (uint8_t*)   &_emu->_baseMem[0x007C];
   trafficLightTimer               = (uint8_t*)   &_emu->_baseMem[0x06A3];
   carRPM                          = (uint8_t*)   &_emu->_baseMem[0x0650];
@@ -61,6 +62,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*carTurnState1 % 4);
   hash.Update(*carTurnState2);
   hash.Update(*carTurnState3);
+  hash.Update(*currentLap);
 
 //  hash.Update(&_emu->_baseMem[0x500], 0x200);
 
@@ -151,6 +153,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Lap Progress:                       %f (%03d, %03d)\n", lapProgress, *lapProgress1, *lapProgress2);
  LOG("[Jaffar]  + Player Position:                    (%03u, %03u, %03u)\n", *playerPos1, *playerPos2, *playerPos3);
  LOG("[Jaffar]  + Traffic Light:                      (%03u)\n", *trafficLightTimer);
+ LOG("[Jaffar]  + Current Lap:                        (%03u)\n", *currentLap);
  LOG("[Jaffar]  + Car RPM:                            (%03u)\n", *carRPM);
  LOG("[Jaffar]  + Car Speed:                          (%03u)\n", *carSpeed);
  LOG("[Jaffar]  + Car Gear:                           (%03u)\n", *carGear);
