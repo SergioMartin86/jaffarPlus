@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../nm.nes",
-    "State File": "race00a.state"
+    "State File": "race00b.state"
   },
   
   "Game Configuration": 
