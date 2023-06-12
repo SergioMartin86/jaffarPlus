@@ -37,6 +37,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  lapProgress1;
   uint8_t*  lapProgress2;
   uint8_t*  carTireDamage;
+  uint8_t* carTireWear;
   uint8_t*  carPosX;
   uint8_t*   carTireAngle;
   uint8_t*   carTurnState1;
@@ -50,6 +51,7 @@ class GameInstance : public GameInstanceBase
 
   // Derivative Values
   float lapProgress;
+  float totalTireWear;
 
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
