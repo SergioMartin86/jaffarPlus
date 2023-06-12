@@ -68,7 +68,8 @@
     
     "Actions":
     [
-     { "Type": "Set Lap Progress Magnet", "Intensity": 1.0 }
+     { "Type": "Set Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Tire Damage Magnet", "Intensity": -1.0 }
     ]
    },
    

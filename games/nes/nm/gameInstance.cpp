@@ -19,6 +19,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   lapProgress1                    = (uint8_t*)   &_emu->_baseMem[0x0048];
   lapProgress2                    = (uint8_t*)   &_emu->_baseMem[0x0049];
   carTireDamage                   = (uint8_t*)   &_emu->_baseMem[0x036F];
+  carTireWear                     = (uint8_t*)   &_emu->_baseMem[0x03FC];
   carPosX                         = (uint8_t*)   &_emu->_baseMem[0x0546];
   carTireAngle                    = (uint8_t*)   &_emu->_baseMem[0x007C];
   carTurnState1                   = (uint8_t*)   &_emu->_baseMem[0x064B];
@@ -76,6 +77,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 void GameInstance::updateDerivedValues()
 {
  lapProgress = (float)*lapProgress2 * 256.0f + (float)*lapProgress1;
+ totalTireWear = 16.0 - (float)*carTireDamage + (float)*carTireWear / 192.0;
 }
 
 std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
@@ -141,7 +143,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.carHorizontalMagnet.intensity * -diff;
 
   reward += magnets.lapProgressMagnet * lapProgress;
-  reward += magnets.tireDamageMagnet * (float)*carTireDamage;
+  reward += magnets.tireDamageMagnet * totalTireWear;
 
   // Returning reward
   return reward;
@@ -160,6 +162,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Car Speed:                          (%03u)\n", *carSpeed);
  LOG("[Jaffar]  + Car Gear:                           (%03u)\n", *carGear);
  LOG("[Jaffar]  + Car Tire Damage:                    (%03u)\n", *carTireDamage);
+ LOG("[Jaffar]  + Car Tire Wear:                      %f (%03u)\n", totalTireWear, *carTireWear);
  LOG("[Jaffar]  + Car Pos X:                          (%03u)\n", *carPosX);
  LOG("[Jaffar]  + Car Tire Angle:                     (%03u)\n", *carTireAngle);
  LOG("[Jaffar]  + Car Turn State:                     (%03u, %03u, %03u)\n", *carTurnState1, *carTurnState2, *carTurnState3);
