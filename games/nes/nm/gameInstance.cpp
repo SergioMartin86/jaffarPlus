@@ -66,7 +66,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*carTurnState3);
   hash.Update(*currentLap);
 
-//  hash.Update(&_emu->_baseMem[0x500], 0x200);
+//  hash.Update(&_emu->_baseMem[0x0000], 0x0060);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
