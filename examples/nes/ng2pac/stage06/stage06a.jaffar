@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
-    "State File": "stage06a.state"
+    "State File": "stage06b.state"
   }, 
   
   "Game Configuration": 
@@ -90,8 +90,8 @@
     [
      { "Type": "Add Reward", "Value": 100000 },
      { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.0, "Center": 1501, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.5, "Center": 60, "Min": 0, "Max": 255 },
-     { "Type": "Set Ninja HP Magnet", "Intensity": 4.00, "Center": 255, "Min": 0, "Max": 255 }
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.2, "Center": 60, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja HP Magnet", "Intensity": 2.00, "Center": 255, "Min": 0, "Max": 255 }
     ]
    },
    
