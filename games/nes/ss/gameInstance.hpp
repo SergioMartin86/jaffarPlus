@@ -32,14 +32,14 @@ class GameInstance : public GameInstanceBase
   uint8_t* playerAttackState  ;
   uint8_t* playerAction       ;
   uint8_t* playerDirection    ;
-  uint8_t* playerHP1          ;
-  uint8_t* playerHP2          ;
-  uint8_t* playerMP1          ;
-  uint8_t* playerMP2          ;
-  uint8_t* ShunMP1            ;
-  uint8_t* ShunMP2            ;
-  uint8_t* ShunHP1            ;
-  uint8_t* ShunHP2            ;
+  uint8_t* shunHP2          ;
+  uint8_t* shunMP2          ;
+  uint8_t* seiyaHP2          ;
+  uint8_t* seiyaMP2          ;
+  uint8_t* MenuShunMP1            ;
+  uint8_t* MenuShunMP2            ;
+  uint8_t* MenuShunHP1            ;
+  uint8_t* MenuShunHP2            ;
 
   uint8_t timerTolerance;
 

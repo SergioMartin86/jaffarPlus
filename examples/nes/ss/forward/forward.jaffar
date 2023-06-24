@@ -2,12 +2,12 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ss.nes",
-    "State File": "stage.state"
+    "State File": "forward.state"
   },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 2
+   "Timer Tolerance": 0
   },
   
   "Jaffar Configuration": 
@@ -20,7 +20,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 1700,
+      "Max Move Count": 5000,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 2000,
@@ -29,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 40000,
-     "Max Size Upper Bound (Mb)": 120000
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 20000
     },
     
     "Hash Database":
@@ -68,26 +68,8 @@
      
     "Actions":
     [
-     { "Type": "Set Screen Horizontal Magnet", "Intensity": 1.0, "Center": 2288.0  }, 
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 1.0, "Center": 5000.0  }, 
      { "Type": "Set Player Horizontal Magnet", "Intensity": 1.0, "Center": 200.0  }
-    ]
-   },
-   
-   {
-    "Label": 1001,
-    "Conditions":
-    [
-      { "Property": "Screen Pos X", "Op": ">", "Value": 2288.0 }
-    ],
-    
-    "Satisfies": [ 1000 ],
-      
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Screen Horizontal Magnet", "Intensity": 0.3, "Center": 2288.0  },
-     { "Type": "Set Player Horizontal Magnet", "Intensity": 1.0, "Center": -5.0  },
-     { "Type": "Set Player Vertical Magnet", "Intensity": 0.01, "Center": 0.0 }
     ]
    },
    
@@ -95,7 +77,7 @@
     "Label": 1100,
     "Conditions":
     [
-      { "Property": "Game Mode", "Op": ">", "Value": 100 }
+      { "Property": "Game Mode", "Op": "!=", "Value": 6 }
     ],
     
     "Satisfies": [  ],
@@ -120,7 +102,6 @@
      { "Type": "Trigger Fail" }
     ]
    }
-   
    
   ]  
 }

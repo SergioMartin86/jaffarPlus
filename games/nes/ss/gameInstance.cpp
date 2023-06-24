@@ -15,14 +15,17 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   playerAttackState                   = (uint8_t*)   &_emu->_baseMem[0x004B];
   playerAction                        = (uint8_t*)   &_emu->_baseMem[0x004D];
   playerDirection                     = (uint8_t*)   &_emu->_baseMem[0x0042];
-  playerHP1                           = (uint8_t*)   &_emu->_baseMem[0x005C];
-  playerHP2                           = (uint8_t*)   &_emu->_baseMem[0x005B];
-  playerMP1                           = (uint8_t*)   &_emu->_baseMem[0x0066];
-  playerMP2                           = (uint8_t*)   &_emu->_baseMem[0x0065];
-  ShunMP1                             = (uint8_t*)   &_emu->_baseMem[0x05BD];
-  ShunMP2                             = (uint8_t*)   &_emu->_baseMem[0x05BC];
-  ShunHP1                             = (uint8_t*)   &_emu->_baseMem[0x05CF];
-  ShunHP2                             = (uint8_t*)   &_emu->_baseMem[0x05CE];
+
+  shunHP2                           = (uint8_t*)   &_emu->_baseMem[0x005B];
+  shunMP2                           = (uint8_t*)   &_emu->_baseMem[0x0065];
+
+  seiyaHP2                           = (uint8_t*)   &_emu->_baseMem[0x0059];
+  seiyaMP2                           = (uint8_t*)   &_emu->_baseMem[0x0063];
+
+  MenuShunMP1                             = (uint8_t*)   &_emu->_baseMem[0x05BD];
+  MenuShunMP2                             = (uint8_t*)   &_emu->_baseMem[0x05BC];
+  MenuShunHP1                             = (uint8_t*)   &_emu->_baseMem[0x05CF];
+  MenuShunHP2                             = (uint8_t*)   &_emu->_baseMem[0x05CE];
 
   // Initialize derivative values
   updateDerivedValues();
@@ -49,14 +52,14 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*playerJumpStrength);
   hash.Update(*playerAttackState );
   hash.Update(*playerDirection   );
-  hash.Update(*playerHP1         );
-  hash.Update(*playerHP2         );
-  hash.Update(*playerMP1         );
-  hash.Update(*playerMP2         );
-  hash.Update(*ShunMP1           );
-  hash.Update(*ShunMP2           );
-  hash.Update(*ShunHP1           );
-  hash.Update(*ShunHP2           );
+  hash.Update(*shunHP2         );
+  hash.Update(*shunMP2         );
+  hash.Update(*seiyaHP2         );
+  hash.Update(*seiyaMP2         );
+  hash.Update(*MenuShunMP1           );
+  hash.Update(*MenuShunMP2           );
+  hash.Update(*MenuShunHP1           );
+  hash.Update(*MenuShunHP2           );
 
   // Player Stats
 //  hash.Update(&_emu->_baseMem[0x03E], 0x0029);
@@ -165,8 +168,10 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Hash:                   0x%lX%lX\n", computeHash().first, computeHash().second );
   LOG("[Jaffar]  + Game Mode:              %02u\n", *gameMode);
   LOG("[Jaffar]  + Player Action:          %02u\n", *playerAction);
-  LOG("[Jaffar]  + Player HP:              %02u%02u\n", *playerHP1, *playerHP2);
-  LOG("[Jaffar]  + Player MP:              %02u%02u\n", *playerMP1, *playerMP2);
+  LOG("[Jaffar]  + Shun HP:                %02u\n", *shunHP2);
+  LOG("[Jaffar]  + Shun MP:                %02u\n", *shunMP2);
+  LOG("[Jaffar]  + Seiya HP:               %02u\n", *seiyaHP2);
+  LOG("[Jaffar]  + Seiya MP:               %02u\n", *seiyaMP2);
   LOG("[Jaffar]  + Player Direction:       %02u\n", *playerDirection);
   LOG("[Jaffar]  + Player Pos X:           %02u (Real: %f)\n", *playerPosX, realPlayerPosX);
   LOG("[Jaffar]  + Player Pos Y:           %02u\n", *playerPosY);
