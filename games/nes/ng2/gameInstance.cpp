@@ -70,18 +70,56 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Timer Tolerance' was not defined\n");
 
-
   // Last Input Frame Tolerance
   if (isDefined(config, "Last Input Key Accepted") == true)
    lastInputKeyAccepted = config["Last Input Key Accepted"].get<uint8_t>();
   else EXIT_WITH_ERROR("[Error] Game Configuration 'Last Input Key Accepted' was not defined\n");
 
+  // Trace to Follow
+  if (isDefined(config, "Trace File") == true)
+   traceFile = config["Trace File"].get<std::string>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Trace File' was not defined\n");
+
+  // Trace tolerance
+  if (isDefined(config, "Trace Tolerance") == true)
+   traceTolerance = config["Trace Tolerance"].get<float>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Trace Tolerance' was not defined\n");
+
+  // Enable B
+  if (isDefined(config, "Enable B") == true)
+   enableB = config["Enable B"].get<bool>();
+  else EXIT_WITH_ERROR("[Error] Game Configuration 'Enable B' was not defined\n");
+
+  // Loading trace
+  if (traceFile != "")
+  {
+   useTrace = true;
+   std::string traceRaw;
+   if (loadStringFromFile(traceRaw, traceFile.c_str()) == false) EXIT_WITH_ERROR("Could not find/read trace file: %s\n", traceFile.c_str());
+
+   std::istringstream f(traceRaw);
+   std::string line;
+   while (std::getline(f, line))
+   {
+    auto coordinates = split(line, ' ');
+    trace.push_back(std::make_pair(std::atof(coordinates[0].c_str()), std::atof(coordinates[1].c_str())));
+   }
+  }
+
   // Initialize derivative values
   updateDerivedValues();
 }
 
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
+{
+ std::vector<INPUT_TYPE> moves;
+ _emu->advanceState(move); moves.push_back(move);
+ updateDerivedValues();
+ return moves;
+}
+
 // This function computes the hash for the current state
-_uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 {
   // Storage for hash calculation
   MetroHash128 hash;
@@ -103,24 +141,25 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*ninjaPosX);
   hash.Update(*ninjaPosXFrac);
   hash.Update(*ninjaSpeedX);
-  hash.Update(*ninjaSpeedXFrac);
+//  hash.Update(*ninjaSpeedXFrac);
   hash.Update(*ninjaPosY);
-  hash.Update(*ninjaPosYFrac);
+//  hash.Update(*ninjaPosYFrac);
   hash.Update(*ninjaSpeedY);
-  hash.Update(*ninjaSpeedYFrac);
+//  hash.Update(*ninjaSpeedYFrac);
   hash.Update(*bossHP);
   hash.Update(*screenScroll1);
   hash.Update(*screenScroll2);
   hash.Update(*screenScroll3);
   hash.Update(*gameMode);
-//  hash.Update(*windTimer);
-//  hash.Update(*windCycle / 16);
+
+//  hash.Update(*windTimer % 4);
+  hash.Update(*windCycle);
 
   hash.Update(*heartState);
   if (*heartState == 128) hash.Update(*headHP);
   if (*heartState == 162) hash.Update(*heartTimer);
 
-  hash.Update(*lastInputTime);
+//  hash.Update(*lastInputTime);
 
   hash.Update(*cloneOffset);
 //  hash.Update(clonePosXArray, 0x40);
@@ -230,14 +269,22 @@ void GameInstance::updateDerivedValues()
  ninjaBossDistance = (std::abs(_ninjaPosX - _bossPosX) + std::abs(_ninjaPosY - _bossPosY))/256.0f;
 
  if (*lastInputKey != 0) *lastInputTime = *frameCounter;
+
+ // Calculating trace position
+ float minDistance = std::numeric_limits<float>::infinity();
+ for (size_t i = 0; i < trace.size(); i++)
+ {
+  float tracePointDistance =  std::abs(absolutePosX - trace[i].first) + std::abs((float)*ninjaPosY - trace[i].second);
+  if (tracePointDistance < minDistance) { minDistance = tracePointDistance; tracePos = i; }
+ }
 }
 
 // Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  std::vector<std::string> moveList = {"."};
 
- if (lastInputKeyAccepted != 0) if (*frameCounter > lastInputKeyAccepted && *frameCounter < lastInputKeyAccepted + 50) return moveList;
+// if (lastInputKeyAccepted != 0) if (*frameCounter > lastInputKeyAccepted && *frameCounter < lastInputKeyAccepted + 50) return moveList;
 
 // bool foundAction = false;
 
@@ -266,7 +313,7 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 // if (*ninjaCurrentAction == 0x0020)  { foundAction = true; moveList.insert(moveList.end(), { ".......A", ".L......", ".L.....A", "R.......", "R......A", "RL......"}); }
 // if (*ninjaCurrentAction == 0x0021)  { foundAction = true; moveList.insert(moveList.end(), { ".......A", "...U....", "..D.....", ".L......", ".L.....A", "R.......", "R......A", "RL......"}); }
 //
-  moveList.insert(moveList.end(), { ".......A", "......B.", "...U..B.", "..D.....", "..D...B.", ".L......", ".L.....A", ".L....B.", ".LDU....", "R.......", "R......A", "R.....B.", "RL....B.", "RL.....A", ".RDU....", "RL......", ".LDU..B.", "R.DU..B.", ".LDU....A", "R.DU...A"});
+//  moveList.insert(moveList.end(), { ".......A", "......B.", "...U..B.", "..D.....", "..D...B.", ".L......", ".L.....A", ".L....B.", ".LDU....", "R.......", "R......A", "R.....B.", "RL....B.", "RL.....A", ".RDU....", "RL......", ".LDU..B.", "R.DU..B.", ".LDU....A", "R.DU...A"});
 
 // if (*ninjaAnimation == 0x0000) moveList.insert(moveList.end(), { ".......A", "......B.", "...U....", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", "R......A", "R.....B.", "R.D.....", "R.......", "RL......", "RL.....A", ".LDU...."});
 // if (*ninjaAnimation == 0x0001) moveList.insert(moveList.end(), { ".......A", "......B.", "..D.....", ".L......", "...U..B.", "..D...B.", ".L.....A", "R......A", "R.D.....", "R.......", "RL......", ".LDU....", ".L....B.", "R.....B."});
@@ -294,6 +341,55 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
 // if (*ninjaAnimation == 0x0001) moveList.insert(moveList.end(), { ".L.U..BA", "R.DU..BA"});
 // if (*ninjaAnimation == 0x0002) moveList.insert(moveList.end(), { ".L.U..BA", "R.DU..BA"});
 
+ // Pacifist
+
+ if (*ninjaCurrentAction == 0x0000) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "LRA", "UDL" });
+ if (*ninjaCurrentAction == 0x0001) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "UDL" });
+ if (*ninjaCurrentAction == 0x0002) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "LRA", "UDL" });
+ if (*ninjaCurrentAction == 0x0003) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "UDL" });
+ if (*ninjaCurrentAction == 0x0004) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "UDL" });
+ if (*ninjaCurrentAction == 0x0005) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "UDL" });
+ if (*ninjaCurrentAction == 0x000F) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "LRA", "UDL" });
+ if (*ninjaCurrentAction == 0x0010) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "LRA", "UDL" });
+ if (*ninjaCurrentAction == 0x0011) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "LRA", "UDL" });
+ if (*ninjaCurrentAction == 0x0012) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "LRA", "UDL" });
+ if (*ninjaCurrentAction == 0x0013) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "LRA", "UDL" });
+ if (*ninjaCurrentAction == 0x0014) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR",  "LRA", "UDL" });
+ if (*ninjaCurrentAction == 0x001B) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LR", "LRA", "UDL" });
+
+ if (enableB == true)
+ {
+  if (*ninjaCurrentAction == 0x0000) moveList.insert(moveList.end(), { "B", "RB", "LB", "DB", "UB" });
+  if (*ninjaCurrentAction == 0x0001) moveList.insert(moveList.end(), { "B", "DB", "UB" });
+  if (*ninjaCurrentAction == 0x0002) moveList.insert(moveList.end(), { "B", "RB", "LB", "DB", "UB" });
+  if (*ninjaCurrentAction == 0x0003) moveList.insert(moveList.end(), { "B", "DB", "UB" });
+  if (*ninjaCurrentAction == 0x0004) moveList.insert(moveList.end(), { "B", "DB", "UB" });
+  if (*ninjaCurrentAction == 0x0005) moveList.insert(moveList.end(), { "B", "DB", "UB" });
+  if (*ninjaCurrentAction == 0x0006) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x0007) moveList.insert(moveList.end(), { "A", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x0008) moveList.insert(moveList.end(), { "A", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x0009) moveList.insert(moveList.end(), { "A", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x000A) moveList.insert(moveList.end(), { "A", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x000B) moveList.insert(moveList.end(), { "A", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x000C) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x000D) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "RB", "LA", "LB", "LRA" });
+  if (*ninjaCurrentAction == 0x000E) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "RB", "LA", "LB" });
+  if (*ninjaCurrentAction == 0x000F) moveList.insert(moveList.end(), { "B", "RB", "LB", "UB" });
+  if (*ninjaCurrentAction == 0x0010) moveList.insert(moveList.end(), { "B", "RB", "LB", "UB" });
+  if (*ninjaCurrentAction == 0x0011) moveList.insert(moveList.end(), { "B", "RB", "LB", "UB" });
+  if (*ninjaCurrentAction == 0x0012) moveList.insert(moveList.end(), { "B", "RB", "LB", "UB" });
+  if (*ninjaCurrentAction == 0x0013) moveList.insert(moveList.end(), { "B", "RB", "LB" });
+  if (*ninjaCurrentAction == 0x0014) moveList.insert(moveList.end(), { "B", "RB", "LB", "UB" });
+  if (*ninjaCurrentAction == 0x0015) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x0016) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x001B) moveList.insert(moveList.end(), { "B", "RB", "LB", "DB", "UB" });
+  if (*ninjaCurrentAction == 0x001D) moveList.insert(moveList.end(), { "A", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x001E) moveList.insert(moveList.end(), { "A", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x001F) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA", "LRA" });
+  if (*ninjaCurrentAction == 0x0020) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA" });
+  if (*ninjaCurrentAction == 0x0021) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RA", "LA" });
+ }
+
  return moveList;
 }
 
@@ -313,6 +409,11 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 // Obtains the score of a given frame
 float GameInstance::getStateReward(const bool* rulesStatus) const
 {
+  // We calculate a different reward if this is a winning frame
+  auto stateType = getStateType(rulesStatus);
+
+  if (stateType == f_win) return (float)*ninjaHP;
+
   // Getting rewards from rules
   float reward = 0.0;
   for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
@@ -371,13 +472,14 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating ninja/boss distance magnet
   reward += magnets.ninjaBossDistanceMagnet * ninjaBossDistance;
 
+  // Evaluating trace distance magnet
+  reward += magnets.traceMagnet * (float)tracePos;
+
   // Returning reward
   return reward;
 }
 
-void GameInstance::setRNGState(const uint64_t RNGState)
-{
-}
+
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
@@ -405,6 +507,11 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Heart State / Timer:               %02u / %02u\n", *heartState, *heartTimer);
  LOG("[Jaffar]  + Ninja/Boss Distance:               %.3f\n", ninjaBossDistance);
  LOG("[Jaffar]  + Wind Cycle / Timer:                %02u / %02u\n", *windCycle, *windTimer);
+
+ if (useTrace == true)
+ {
+  LOG("[Jaffar]  + Current Trace Pos:                %05lu / %05lu (%s)\n", tracePos, trace.size(), traceFile.c_str());
+ }
 
  LOG("[Jaffar]  + Active Objects:\n");
 
@@ -435,5 +542,11 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.bossHPMagnet.intensity) > 0.0f)              LOG("[Jaffar]  + Boss HP Magnet                 - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.bossHPMagnet.intensity, magnets.bossHPMagnet.center, magnets.bossHPMagnet.min, magnets.bossHPMagnet.max);
  if (std::abs(magnets.headHPMagnet.intensity) > 0.0f)              LOG("[Jaffar]  + Head HP Magnet                 - Intensity: %.5f, Center: %3.3f, Min: %3.3f, Max: %3.3f\n", magnets.headHPMagnet.intensity, magnets.headHPMagnet.center, magnets.headHPMagnet.min, magnets.headHPMagnet.max);
  if (std::abs(magnets.ninjaBossDistanceMagnet) > 0.0f)             LOG("[Jaffar]  + Ninja/Boss Distance Magnet     - Intensity: %.5f\n", magnets.ninjaBossDistanceMagnet);
+ if (std::abs(magnets.traceMagnet) > 0.0f)                         LOG("[Jaffar]  + Trace Magnet                   - Intensity: %.5f\n", magnets.traceMagnet);
+}
+
+std::string GameInstance::getFrameTrace() const
+{
+ return std::to_string(absolutePosX) + std::string(" ") + std::to_string(float(*ninjaPosY)) + std::string("\n");
 }
 

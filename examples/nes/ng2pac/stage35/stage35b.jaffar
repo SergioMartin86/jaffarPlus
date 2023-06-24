@@ -1,0 +1,137 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ng2.nes",
+    "State File": "stage35b.state"
+  },
+  
+  "State Configuration": 
+  { 
+    "Max Difference Count": 2000,
+    "Max Move Count": 350
+  },
+  
+  "Game Configuration": 
+  {
+    "Timer Tolerance": 3
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    
+    "State Database":
+    {
+     "Max Size Lower Bound (Mb)": 60000,
+     "Max Size Upper Bound (Mb)": 230000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+  
+  "Playback Configuration": 
+  {
+   "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 1000,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.01, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 1.00, "Center": 100, "Min": 0, "Max": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  522 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.20, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja Power Magnet", "Intensity": 1.00, "Center": 100, "Min": 0, "Max": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Conditions":
+    [
+     { "Property": "Absolute Pos X", "Op": ">", "Value":  640 },
+     { "Property": "Ninja Power", "Op": "==", "Value":  90 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1903,
+    "Conditions":
+    [
+     { "Property": "Ninja Position Y", "Op": ">", "Value":  184 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+        { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1904,
+    "Conditions":
+    [
+     { "Property": "Ninja Position Y", "Op": ">", "Value":  156 },
+     { "Property": "Absolute Pos X", "Op": ">", "Value":  615 },
+     { "Property": "Absolute Pos X", "Op": "<", "Value":  640 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+        { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

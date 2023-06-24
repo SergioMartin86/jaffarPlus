@@ -74,4 +74,7 @@ class GameInstanceBase
 
   // Function to print
   virtual void printStateInfo(const bool* rulesStatus) const = 0;
+
+  // Function to save a trace
+  virtual std::string getFrameTrace() const { return ""; }
 };

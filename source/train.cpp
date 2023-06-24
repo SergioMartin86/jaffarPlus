@@ -11,7 +11,7 @@
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ playerAction
+ #define _KEY_VALUE_ ninjaCurrentAction
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -93,7 +93,7 @@ bool Train::run()
      std::sort(vec.begin(), vec.end(), moveCountComparerString);
      auto itr = vec.begin();
      std::string simpleMove = simplifyMove(*itr);
-     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "*gameMode", key.first, simpleMove.c_str());
+     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "ninjaCurrentAction", key.first, simpleMove.c_str());
      itr++;
      for (; itr != vec.end(); itr++)
      {
@@ -286,6 +286,7 @@ void Train::computeStates()
 //        if ((i & SNES_START_MASK) == 0)
 //        if ((i & SNES_SELECT_MASK) == 0)
 //
+         if ((i & 0b00000010) == 0) // NES B
          if ((i & 0b00001000) == 0) // NES Start
          if ((i & 0b00000100) == 0) // NES Select
 
