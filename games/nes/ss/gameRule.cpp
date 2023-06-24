@@ -41,10 +41,10 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Game Mode") return dt_uint8;
-  if (propertyName == "Player HP 1") return dt_uint8;
-  if (propertyName == "Player HP 2") return dt_uint8;
-  if (propertyName == "Player MP 1") return dt_uint8;
-  if (propertyName == "Player MP 2") return dt_uint8;
+  if (propertyName == "Shun HP 2") return dt_uint8;
+  if (propertyName == "Shun MP 2") return dt_uint8;
+  if (propertyName == "Seiya HP 2") return dt_uint8;
+  if (propertyName == "Seiya MP 2") return dt_uint8;
   if (propertyName == "Screen Pos X") return dt_float;
   if (propertyName == "Screen Pos X2") return dt_uint8;
 
@@ -58,10 +58,10 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   std::string propertyName = condition["Property"].get<std::string>();
 
   if (propertyName == "Game Mode") return gameInstance->gameMode;
-  if (propertyName == "Player HP 1") return gameInstance->playerHP1;
-  if (propertyName == "Player HP 2") return gameInstance->playerHP2;
-  if (propertyName == "Player MP 1") return gameInstance->playerMP1;
-  if (propertyName == "Player MP 2") return gameInstance->playerMP2;
+  if (propertyName == "Shun HP 2") return gameInstance->shunHP2;
+  if (propertyName == "Shun MP 2") return gameInstance->shunMP2;
+  if (propertyName == "Seiya HP 2") return gameInstance->seiyaHP2;
+  if (propertyName == "Seiya MP 2") return gameInstance->seiyaMP2;
   if (propertyName == "Screen Pos X") return &gameInstance->screenPosX;
   if (propertyName == "Screen Pos X2") return gameInstance->screenPosX2;
 
