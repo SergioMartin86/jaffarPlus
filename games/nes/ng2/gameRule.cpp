@@ -72,6 +72,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Trace Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Trace Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    _magnets.traceMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
   return recognizedActionType;
 }
 
@@ -84,6 +91,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Ninja Power Max") return dt_uint8;
   if (propertyName == "Ninja HP") return dt_uint8;
   if (propertyName == "Ninja Position X") return dt_uint8;
+  if (propertyName == "Ninja Position X Fraction") return dt_uint8;
   if (propertyName == "Ninja Position Y") return dt_uint8;
   if (propertyName == "Ninja Speed X") return dt_uint8;
   if (propertyName == "Ninja Speed Y") return dt_uint8;
@@ -115,6 +123,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Ninja HP") return gameInstance->ninjaHP;
   if (propertyName == "Ninja Weapon") return gameInstance->ninjaWeapon;
   if (propertyName == "Ninja Position X") return gameInstance->ninjaPosX;
+  if (propertyName == "Ninja Position X Fraction") return gameInstance->ninjaPosXFrac;
   if (propertyName == "Ninja Position Y") return gameInstance->ninjaPosY;
   if (propertyName == "Ninja Speed X") return gameInstance->ninjaSpeedX;
   if (propertyName == "Ninja Speed Y") return gameInstance->ninjaSpeedY;

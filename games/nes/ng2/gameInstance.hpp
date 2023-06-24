@@ -36,6 +36,7 @@ struct magnetSet_t {
  genericMagnet_t bossHPMagnet;
  genericMagnet_t headHPMagnet;
  float ninjaBossDistanceMagnet = 0.0;
+ float traceMagnet = 0.0;
 };
 
 
@@ -98,17 +99,26 @@ class GameInstance : public GameInstanceBase
 
   uint8_t timerTolerance;
   uint8_t lastInputKeyAccepted;
+  bool enableB;
+
+  // Trace
+  bool useTrace = false;
+  std::string traceFile;
+  float traceTolerance;
+  std::vector<std::pair<float, float>> trace;
+  size_t tracePos;
 
   // Derivative Values
   double absolutePosX;
   double ninjaBossDistance;
 
+  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
-  _uint128_t computeHash() const override;
+  _uint128_t computeHash(const uint16_t currentStep = 0) const override;
   void updateDerivedValues() override;
-  std::vector<std::string> getPossibleMoves() const override;
+  std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
-  void setRNGState(const uint64_t RNGState) override;
+  std::string getFrameTrace() const override;
 };

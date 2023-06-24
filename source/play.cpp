@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
 
   // Initializing playback instance
   printw("[Jaffar] Opening Game window...\n");
-  PlaybackInstance* playbackInstance;
+  PlaybackInstance* playbackInstance = NULL;
   if (disableRender == false) playbackInstance = new PlaybackInstance(&gameInstance, config["Playback Configuration"]);
 
   // Storage for sequence frames and rule evaluation
@@ -302,6 +302,12 @@ int main(int argc, char *argv[])
   // Flag to display frame information
   bool showFrameInfo = true;
 
+  // Flag to store trace
+  bool storeTrace = false;
+
+  // Trace Storage
+  std::string traceString;
+
   // Rule status
   bool* rulesStatus = (bool*) calloc(ruleCount, sizeof(bool));
 
@@ -322,6 +328,9 @@ int main(int argc, char *argv[])
 
    // Getting possible moves
    auto possibleMoves = gameInstance.getPossibleMoves(rulesStatus);
+
+   // Storing trace
+   if (storeTrace == true) traceString += gameInstance.getFrameTrace();
 
    // Showing frame information
    if (showFrameInfo)
@@ -347,6 +356,7 @@ int main(int argc, char *argv[])
      if (isReproduce == false)
      {
       printw("[Jaffar] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | d: unpack | q: quit\n");
+      printw("[Jaffar]           t: set trace (%s) | r: save trace | c: clear trace\n", storeTrace ? "on" : "off");
       if (disableRender == false) playbackInstance->printPlaybackCommands();
      }
 
@@ -382,6 +392,20 @@ int main(int argc, char *argv[])
 
    // Parsing command
    if (disableRender == false) showFrameInfo = playbackInstance->parseCommand(command, curState);
+
+   // Trace operations
+   if (command == 't') storeTrace = !storeTrace;
+   if (command == 'c') traceString.clear();
+   if (command == 'r')
+   {
+     // Storing state file
+     std::string traceFileName = "jaffar.trace";
+     saveStringToFile(traceString, traceFileName.c_str());
+     printw("[Jaffar] Saved state to %s\n", traceFileName.c_str());
+
+     // Do no show frame info again after this action
+     showFrameInfo = false;
+   }
 
    // Advance/Rewind commands
    if (command == 'n') currentStep = currentStep - 1;

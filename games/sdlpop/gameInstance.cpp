@@ -128,7 +128,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 };
 
 // This function computes the hash for the current state
-_uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 {
  // Storage for hash calculation
  MetroHash128 hash;

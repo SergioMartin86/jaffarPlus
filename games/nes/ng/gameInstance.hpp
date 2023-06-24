@@ -128,4 +128,5 @@ class GameInstance : public GameInstanceBase
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
   void setRNGState(const uint64_t RNGState) override;
+
 };
