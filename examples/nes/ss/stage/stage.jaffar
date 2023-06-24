@@ -1,13 +1,13 @@
 {
   "Emulator Configuration": 
   {
-    "Rom File": "../sf2010.nes",
-    "State File": "preorb.state"
+    "Rom File": "../ss.nes",
+    "State File": "stage.state"
   },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 2
+   "Timer Tolerance": 0
   },
   
   "Jaffar Configuration": 
@@ -20,7 +20,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 400,
+      "Max Move Count": 1700,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 2000,
@@ -29,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 70000,
-     "Max Size Upper Bound (Mb)": 190000
+     "Max Size Lower Bound (Mb)": 15000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":
@@ -42,9 +42,9 @@
     "Save Intermediate Results":
     {
      "Enabled": true,
-     "Save Numbered States": true,
+     "Save Numbered States": false,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
@@ -68,8 +68,8 @@
      
     "Actions":
     [
-     { "Type": "Set Boss HP Magnet", "Intensity": -1000.0 }, 
-     { "Type": "Set Player Horizontal Magnet", "Intensity": 1.0, "Center": 144.0  }
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 1.0, "Center": 561.0  }, 
+     { "Type": "Set Player Horizontal Magnet", "Intensity": 1.0, "Center": 200.0  }
     ]
    },
    
@@ -77,15 +77,17 @@
     "Label": 1001,
     "Conditions":
     [
-      { "Property": "Boss HP", "Op": "==", "Value": -1 }
+      { "Property": "Screen Pos X", "Op": ">", "Value": 557.0 }
     ],
     
-    "Satisfies": [  ],
-    
+    "Satisfies": [ 1000 ],
+     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 100000.0 },
-     { "Type": "Set Player Horizontal Magnet", "Intensity": 1.0, "Center": 148.0  } 
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Screen Horizontal Magnet", "Intensity": 0.3, "Center": 561.0  },
+     { "Type": "Set Player Horizontal Magnet", "Intensity": 1.0, "Center": -5.0  },
+     { "Type": "Set Player Vertical Magnet", "Intensity": 0.01, "Center": 0.0 }
     ]
    },
    
@@ -93,7 +95,7 @@
     "Label": 1100,
     "Conditions":
     [
-      { "Property": "Open Level", "Op": "==", "Value": 10 }
+      { "Property": "Game Mode", "Op": "==", "Value": 208 }
     ],
     
     "Satisfies": [  ],
@@ -102,21 +104,7 @@
     [
      { "Type": "Trigger Win" }
     ]
-   },
-   
-   {
-    "Label": 1999,
-    "Conditions":
-    [
-      { "Property": "Player HP", "Op": "<", "Value": 8 }
-    ],
-    
-    "Satisfies": [  ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
    }
+   
   ]  
 }
