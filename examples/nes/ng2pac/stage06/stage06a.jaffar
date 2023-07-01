@@ -100,7 +100,8 @@
     "Conditions":
     [
      { "Property": "Current Level", "Op": "==", "Value":  7 },
-     { "Property": "Ninja Position X Fraction", "Op": "==", "Value":  0 }
+     { "Property": "Ninja Position X Fraction", "Op": "==", "Value":  0 },
+     { "Property": "Ninja Position Y Fraction", "Op": "==", "Value":  191 }
     ],
     
     "Satisfies": [ ],

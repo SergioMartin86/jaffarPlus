@@ -33,8 +33,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 5000
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 100000
     },
     
     "Hash Database":

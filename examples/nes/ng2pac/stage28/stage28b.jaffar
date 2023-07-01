@@ -2,52 +2,62 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
-    "State File": "stage28b.state"
-  },
-  
-  "State Configuration": 
-  { 
-    "Max Difference Count": 2000,
-    "Max Move Count": 500
-  },
+    "State File": "stage28a.state"
+  }, 
   
   "Game Configuration": 
   {
-    "Timer Tolerance": 3
+   "Timer Tolerance": 4,
+   "Last Input Key Accepted": 0,
+   "Trace File": "",
+   "Trace Tolerance": 3.0,
+   "Enable B": false
   },
   
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
-    "Show Hash Information": true,
+    "Show Hash Information": false,
     "Show Winning State Information": true,
+    "Show Move List": true,
+    "Win State Step Tolerance": 0,
     
-    "State Database":
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 63000
+      "Max Move Count": 2500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
     { 
-     "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
+     "Save Numbered States": false,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
-    }
+     }
   },
   
   "Playback Configuration": 
   {
-   "Overlay Path": "../../../../platforms/nes/overlay"
+    "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
@@ -71,8 +81,7 @@
     "Label": 1001,
     "Conditions":
     [
-     { "Property": "Absolute Pos X", "Op": ">", "Value":  755 },
-     { "Property": "Ninja Position Y", "Op": "<=", "Value":  74 }
+     { "Property": "Absolute Pos X", "Op": ">", "Value":  1648 }
     ],
     
     "Satisfies": [ ],
@@ -88,7 +97,7 @@
     "Label": 1901,
     "Conditions":
     [
-     { "Property": "Absolute Pos X", "Op": ">", "Value":  1285 }
+     { "Property": "Current Level", "Op": "==", "Value":  29 }
     ],
     
     "Satisfies": [ ],
@@ -103,22 +112,7 @@
     "Label": 1902,
     "Conditions":
     [
-     { "Property": "Ninja Power", "Op": "<", "Value":  20 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-        { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1903,
-    "Conditions":
-    [
-     { "Property": "Ninja Position Y", "Op": ">", "Value":  170 }
+     { "Property": "Ninja HP", "Op": "==", "Value":  0 }
     ],
     
     "Satisfies": [ ],
