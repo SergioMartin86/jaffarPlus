@@ -22,6 +22,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   seiyaHP2                           = (uint8_t*)   &_emu->_baseMem[0x0059];
   seiyaMP2                           = (uint8_t*)   &_emu->_baseMem[0x0063];
 
+  shiryuMP2                           = (uint8_t*)   &_emu->_baseMem[0x0069];
+  hyogaMP2                           = (uint8_t*)   &_emu->_baseMem[0x0067];
+
   MenuShunMP1                             = (uint8_t*)   &_emu->_baseMem[0x05BD];
   MenuShunMP2                             = (uint8_t*)   &_emu->_baseMem[0x05BC];
   MenuShunHP1                             = (uint8_t*)   &_emu->_baseMem[0x05CF];
@@ -52,18 +55,26 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*playerJumpStrength);
   hash.Update(*playerAttackState );
   hash.Update(*playerDirection   );
-  hash.Update(*shunHP2         );
+//  hash.Update(*shunHP2         );
   hash.Update(*shunMP2         );
-  hash.Update(*seiyaHP2         );
+//  hash.Update(*seiyaHP2         );
   hash.Update(*seiyaMP2         );
+  hash.Update(*shiryuMP2         );
+  hash.Update(*hyogaMP2         );
   hash.Update(*MenuShunMP1           );
   hash.Update(*MenuShunMP2           );
   hash.Update(*MenuShunHP1           );
   hash.Update(*MenuShunHP2           );
 
   // Player Stats
-//  hash.Update(&_emu->_baseMem[0x03E], 0x0029);
-//  hash.Update(&_emu->_baseMem[0x03E], 0x0010);
+  hash.Update(_emu->_baseMem[0x027]);
+  hash.Update(_emu->_baseMem[0x028]);
+  hash.Update(_emu->_baseMem[0x029]);
+  hash.Update(_emu->_baseMem[0x02A]);
+  hash.Update(_emu->_baseMem[0x030]);
+  hash.Update(_emu->_baseMem[0x031]);
+  hash.Update(_emu->_baseMem[0x032]);
+  hash.Update(_emu->_baseMem[0x033]);
   hash.Update(_emu->_baseMem[0x03E]);
   hash.Update(_emu->_baseMem[0x03F]);
   hash.Update(_emu->_baseMem[0x040]);
@@ -80,7 +91,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(_emu->_baseMem[0x04B]);
   hash.Update(_emu->_baseMem[0x04C]);
   hash.Update(_emu->_baseMem[0x04D]);
-  hash.Update(&_emu->_baseMem[0x04E], 0x0020);
+  hash.Update(&_emu->_baseMem[0x04E], 0x008);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -100,17 +111,17 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 {
  std::vector<std::string> moveList = {"."};
 
- if (*playerAction == 0x0000) moveList.insert(moveList.end(), { "B", "D", "L", "R", "A", "RA", "UA", "DL", "DR", "DB", "DA", "LB", "LA", "BA", "RB", "LRA", "LBA", "DBA", "DRA", "DRB", "RBA", "DLA", "DLB", "UBA" });
- if (*playerAction == 0x0001) moveList.insert(moveList.end(), { "B", "D", "L", "R", "A", "RA", "UA", "DL", "DR", "DB", "DA", "LB", "LA", "BA", "RB", "LRA", "LBA", "DBA", "DRA", "DRB", "RBA", "DLA", "DLB", "UBA" });
- if (*playerAction == 0x0010) moveList.insert(moveList.end(), { "B", "D", "L", "R", "A", "RA", "UA", "DL", "DR", "DB", "DA", "LB", "LA", "BA", "RB", "LRA", "LBA", "DBA", "DRA", "DRB", "RBA", "DLA", "DLB", "UBA" });
- if (*playerAction == 0x0011) moveList.insert(moveList.end(), { "B", "D", "L", "R", "A", "RA", "UA", "DL", "DR", "DB", "DA", "LB", "LA", "BA", "RB", "LRA", "LBA", "DBA", "DRA", "DRB", "RBA", "DLA", "DLB", "UBA" });
- if (*playerAction == 0x0012) moveList.insert(moveList.end(), { "A", "R", "L", "BA", "RB", "LA", "LB", "UA", "LBA", "LRA", "UBA" });
- if (*playerAction == 0x0012) moveList.insert(moveList.end(), { "B", "D", "DA", "DB", "DR", "DL", "RBA", "DBA", "DRA", "DRB", "DLA", "DLB" });
- if (*playerAction == 0x0020) moveList.insert(moveList.end(), { "B", "R", "L", "D", "RB", "LB", "DA", "DB", "DR", "DL", "DBA", "DRA", "DRB", "DLA", "DLB" });
- if (*playerAction == 0x0030) moveList.insert(moveList.end(), { "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" });
- if (*playerAction == 0x0031) moveList.insert(moveList.end(), { "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" });
- if (*playerAction == 0x0032) moveList.insert(moveList.end(), { "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" });
- if (*playerAction == 0x0033) moveList.insert(moveList.end(), { "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" });
+ if (*playerAction == 0x0000) moveList.insert(moveList.end(), { "D", "L", "R", "A", "RA", "UA", "DA", "LA", "DRA", "DLA", "B", "RB", "LB" });
+ if (*playerAction == 0x0001) moveList.insert(moveList.end(), { "D", "L", "R", "A", "RA", "UA", "DA", "LA", "DRA", "DLA", "B", "LB", "RB" });
+ if (*playerAction == 0x0010) moveList.insert(moveList.end(), { "D", "L", "R", "A", "RA", "UA", "DA", "LA", "DRA", "DLA", "B", "LB", "RB" });
+ if (*playerAction == 0x0011) moveList.insert(moveList.end(), { "D", "L", "R", "A", "RA", "UA", "DA", "LA", "DRA", "DLA", "B", "LB", "RB" });
+ if (*playerAction == 0x0012) moveList.insert(moveList.end(), { "A", "R", "L", "LA", "UA", "LRA", "RB", "LB", "BA" });
+ if (*playerAction == 0x0012) moveList.insert(moveList.end(), { "D", "DA", "DR", "DL", "DRA", "DLA",  "B" });
+ if (*playerAction == 0x0020) moveList.insert(moveList.end(), { "R", "L", "D", "DA", "DR", "DL", "DRA" "DLA", "B", "RB", "LB" });
+ if (*playerAction == 0x0030) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA", "B", "BA", "RB" });
+ if (*playerAction == 0x0031) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA", "B", "BA", "RB" });
+ if (*playerAction == 0x0032) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA", "B", "BA", "RB" });
+ if (*playerAction == 0x0033) moveList.insert(moveList.end(), { "A", "R", "L", "RA", "LA", "B", "BA", "RB" });
  if (*playerAction == 0x0050) moveList.insert(moveList.end(), { "B" });
 
  return moveList;
@@ -158,6 +169,9 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward -= magnets.playerVerticalMagnet.intensity * std::abs(magnets.playerVerticalMagnet.center - (float)*playerPosY);
   reward -= magnets.screenHorizontalMagnet.intensity * std::abs(magnets.screenHorizontalMagnet.center - screenPosX);
 
+  reward += magnets.seiyaHPMagnet * (float)*seiyaHP2;
+  reward += magnets.shunHPMagnet * (float)*shunHP2;
+
   // Returning reward
   return reward;
 }
@@ -172,6 +186,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Shun MP:                %02u\n", *shunMP2);
   LOG("[Jaffar]  + Seiya HP:               %02u\n", *seiyaHP2);
   LOG("[Jaffar]  + Seiya MP:               %02u\n", *seiyaMP2);
+  LOG("[Jaffar]  + Shiryu MP:              %02u\n", *shiryuMP2);
+  LOG("[Jaffar]  + Hyoga MP:               %02u\n", *hyogaMP2);
   LOG("[Jaffar]  + Player Direction:       %02u\n", *playerDirection);
   LOG("[Jaffar]  + Player Pos X:           %02u (Real: %f)\n", *playerPosX, realPlayerPosX);
   LOG("[Jaffar]  + Player Pos Y:           %02u\n", *playerPosY);
@@ -185,4 +201,6 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   if (std::abs(magnets.playerHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Player Horizontal Magnet        - Intensity: %.5f, Center: %3.3f\n", magnets.playerHorizontalMagnet.intensity, magnets.playerHorizontalMagnet.center);
   if (std::abs(magnets.playerVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Player Vertical Magnet          - Intensity: %.5f, Center: %3.3f\n", magnets.playerVerticalMagnet.intensity, magnets.playerVerticalMagnet.center);
   if (std::abs(magnets.screenHorizontalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Screen Horizontal Magnet        - Intensity: %.5f, Center: %3.3f\n", magnets.screenHorizontalMagnet.intensity, magnets.screenHorizontalMagnet.center);
+  if (std::abs(magnets.seiyaHPMagnet) > 0.0f)                      LOG("[Jaffar]  + Seiya HP Magnet                 - Intensity: %.5f\n", magnets.seiyaHPMagnet);
+  if (std::abs(magnets.shunHPMagnet) > 0.0f)                       LOG("[Jaffar]  + Shun HP Magnet                  - Intensity: %.5f\n", magnets.shunHPMagnet);
 }
