@@ -93,6 +93,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
   if (propertyName == "Ninja Position X") return dt_uint8;
   if (propertyName == "Ninja Position X Fraction") return dt_uint8;
   if (propertyName == "Ninja Position Y") return dt_uint8;
+  if (propertyName == "Ninja Position Y Fraction") return dt_uint8;
   if (propertyName == "Ninja Speed X") return dt_uint8;
   if (propertyName == "Ninja Speed Y") return dt_uint8;
   if (propertyName == "Ninja Weapon") return dt_uint8;
@@ -125,6 +126,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (propertyName == "Ninja Position X") return gameInstance->ninjaPosX;
   if (propertyName == "Ninja Position X Fraction") return gameInstance->ninjaPosXFrac;
   if (propertyName == "Ninja Position Y") return gameInstance->ninjaPosY;
+  if (propertyName == "Ninja Position Y Fraction") return gameInstance->ninjaPosYFrac;
   if (propertyName == "Ninja Speed X") return gameInstance->ninjaSpeedX;
   if (propertyName == "Ninja Speed Y") return gameInstance->ninjaSpeedY;
   if (propertyName == "Absolute Pos X") return &gameInstance->absolutePosX;
