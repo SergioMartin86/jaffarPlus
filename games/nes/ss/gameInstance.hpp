@@ -16,6 +16,8 @@ struct magnetSet_t {
  genericMagnet_t screenHorizontalMagnet;
  genericMagnet_t playerHorizontalMagnet;
  genericMagnet_t playerVerticalMagnet;
+ float shunHPMagnet = 0.0f;
+ float seiyaHPMagnet = 0.0f;
 };
 
 class GameInstance : public GameInstanceBase
@@ -36,6 +38,8 @@ class GameInstance : public GameInstanceBase
   uint8_t* shunMP2          ;
   uint8_t* seiyaHP2          ;
   uint8_t* seiyaMP2          ;
+  uint8_t* shiryuMP2          ;
+  uint8_t* hyogaMP2          ;
   uint8_t* MenuShunMP1            ;
   uint8_t* MenuShunMP2            ;
   uint8_t* MenuShunHP1            ;

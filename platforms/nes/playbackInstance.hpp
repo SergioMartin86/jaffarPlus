@@ -96,7 +96,7 @@ class PlaybackInstance : public PlaybackInstanceBase
 
   // Creating HQN GUI
   _hqnGUI = hqn::GUIController::create(_hqnState);
-  _hqnGUI->setScale(2);
+  _hqnGUI->setScale(1);
  }
 
  // Function to render frame
