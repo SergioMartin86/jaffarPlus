@@ -1,61 +1,69 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
     "State File": "stage29a.state"
-  },
-  
-  "State Configuration": 
-  { 
-    "Max Difference Count": 1100,
-    "Max Move Count": 85
-  },
+  }, 
   
   "Game Configuration": 
   {
-    "Timer Tolerance": 2
+   "Timer Tolerance": 2,
+   "Last Input Key Accepted": 0,
+   "Trace File": "",
+   "Trace Tolerance": 3.0,
+   "Enable B": true
   },
   
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
-    "Show Hash Information": true,
+    "Show Hash Information": false,
     "Show Winning State Information": true,
+    "Show Move List": true,
+    "Win State Step Tolerance": 0,
     
-    "State Database":
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 60000, 
-     "Max Size Upper Bound (Mb)": 230000
+      "Max Move Count": 3000,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
     { 
-     "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
+     "Save Numbered States": false,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
-    }
+     }
   },
   
   "Playback Configuration": 
   {
-   "Overlay Path": "../../../../platforms/nes/overlay"
+    "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
   [
    {
-    "Label": 1000,
+    "Label": 1001,
     "Conditions":
     [
     ],
@@ -64,14 +72,13 @@
     
     "Actions":
     [
-     { "Type": "Set Boss HP Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 16 },
-     { "Type": "Set Ninja Power Magnet", "Intensity": 0.001, "Center": 0, "Min": 0, "Max": 100 },
-     { "Type": "Set Ninja/Boss Distance Magnet", "Intensity": -0.00001 }
+     { "Type": "Set Ninja/Boss Distance Magnet", "Intensity": -1.0},
+	 { "Type": "Set Boss HP Magnet", "Intensity": 1000.0, "Center": 0, "Min": 0, "Max": 16 }
     ]
    },
    
    {
-    "Label": 1001,
+    "Label": 1003,
     "Conditions":
     [
      { "Property": "Boss HP", "Op": "==", "Value":  0 }
@@ -81,8 +88,24 @@
     
     "Actions":
     [
-      { "Type": "Trigger Win" }
+     { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 1903,
+    "Conditions":
+    [
+     { "Property": "Ninja HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
+   
   ]  
 }
