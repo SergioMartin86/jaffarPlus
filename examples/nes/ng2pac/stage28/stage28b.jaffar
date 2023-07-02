@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
-    "State File": "stage28a.state"
+    "State File": "stage28c.state"
   }, 
   
   "Game Configuration": 
@@ -48,7 +48,7 @@
      "Enabled": true,
      "Save Numbered States": false,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "jaffar.best.sol",
+     "Best Solution Path": "/tmp/jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
@@ -73,7 +73,7 @@
     "Actions":
     [
      { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 6000, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.20, "Center": 0, "Min": 0, "Max": 255 }
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.00, "Center": 0, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -81,10 +81,28 @@
     "Label": 1001,
     "Conditions":
     [
+     { "Property": "Absolute Pos X", "Op": ">", "Value":  755 },
+     { "Property": "Ninja Position Y", "Op": "<=", "Value":  74 }
+    ],
+    
+    "Satisfies": [ 1000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.2, "Center": 0, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Conditions":
+    [
      { "Property": "Absolute Pos X", "Op": ">", "Value":  1648 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 1001 ],
     
     "Actions":
     [
