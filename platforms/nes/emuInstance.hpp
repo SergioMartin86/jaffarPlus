@@ -185,7 +185,15 @@ class EmuInstance : public EmuInstanceBase
 
  void advanceState(const INPUT_TYPE move) override
  {
-  _nes->emulate_frame(move,0);
+  INPUT_TYPE joy1 = move;
+  INPUT_TYPE joy2 = 0;
+  if (joy1 & 0b00001000)
+  {
+   joy1 &= 0b11110111;
+   joy2 = moveStringToCode("LRs");
+  }
+
+  _nes->emulate_frame(joy1, joy2);
  }
 
 };

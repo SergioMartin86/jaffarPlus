@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
-    "State File": "stage36a.state"
+    "State File": "stage42a.state"
   }, 
   
   "Game Configuration": 
@@ -20,7 +20,7 @@
     "Show Hash Information": false,
     "Show Winning State Information": true,
     "Show Move List": true,
-    "Win State Step Tolerance": 10,
+    "Win State Step Tolerance": 5,
     
     "State Configuration": 
     {
@@ -34,7 +34,7 @@
     "State Database": 
     {
      "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 25000
+     "Max Size Upper Bound (Mb)": 30000
     },
     
     "Hash Database":
@@ -54,17 +54,17 @@
      "Worst State Path": "/tmp/jaffar.worst.state"
      }
   },
-  
+   
   "Playback Configuration": 
   {
     "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
-  
   "Rules":
   [
-   {
-    "Label": 1000,
+  
+  {
+    "Label": 999,
     "Conditions":
     [
     ],
@@ -73,8 +73,28 @@
     
     "Actions":
     [
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 88, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 2.00, "Center": 48, "Min": 0, "Max": 255 }
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 0.10, "Center": 6000, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 1.00, "Center": 0, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja HP Magnet", "Intensity": 2.00, "Center": 255, "Min": 0, "Max": 255 }
+    ]
+   },
+   
+   {
+    "Label": 1000,
+    "Conditions":
+    [
+      { "Property": "Ninja Position Y", "Op": "<=", "Value":  105 },
+      { "Property": "Absolute Pos X", "Op": ">", "Value":  80 }
+    ],
+    
+    "Satisfies": [ 999 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 100000 },
+     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 1179, "Min": 0, "Max": 6000 },
+     { "Type": "Set Ninja Vertical Magnet", "Intensity": 0.05, "Center": 57, "Min": 0, "Max": 255 },
+     { "Type": "Set Ninja HP Magnet", "Intensity": 2.00, "Center": 255, "Min": 0, "Max": 255 }
     ]
    },
    
@@ -82,7 +102,7 @@
     "Label": 1001,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value": 37 }
+     { "Property": "Current Level", "Op": "==", "Value":  43 }
     ],
     
     "Satisfies": [ ],
@@ -97,7 +117,22 @@
     "Label": 1903,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value": 35 }
+      { "Property": "Ninja Position Y", "Op": ">", "Value":  210 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+        { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Conditions":
+    [
+     { "Property": "Ninja HP", "Op": "==", "Value":  0 }
     ],
     
     "Satisfies": [ ],

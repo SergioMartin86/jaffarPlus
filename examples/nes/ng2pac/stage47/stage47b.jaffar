@@ -1,58 +1,63 @@
 {
-
-   "Jaffar Configuration": 
+  "Emulator Configuration": 
+  {
+    "Rom File": "../ng2.nes",
+    "State File": "stage47b.state"
+  }, 
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 2,
+   "Last Input Key Accepted": 0,
+   "Trace File": "",
+   "Trace Tolerance": 3.0,
+   "Enable B": true
+  },
+  
+  "Jaffar Configuration": 
   {
     "Show Timing Information": true,
-    "Show Hash Information": true,
+    "Show Hash Information": false,
     "Show Winning State Information": true,
+    "Show Move List": true,
+    "Win State Step Tolerance": 0,
     
     "State Configuration": 
     {
-      "Max Move Count": 150,
+      "Max Move Count": 3000,
       "Store Move History": true,
-      "XDelta3 Enabled": false,
+      "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 2000,
       "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Lower Bound (Mb)": 60000,
+     "Max Size Upper Bound (Mb)": 150000
     },
     
     "Hash Database":
     { 
-     "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 6000
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
+     "Save Numbered States": false,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
      }
   },
   
-  "Emulator Configuration": 
-  {
-    "Rom File": "../ng2.nes",
-    "State File": "stage47b.state"
-  },
-  
-  "Game Configuration": 
-  {
-   "Timer Tolerance": 0,
-   "Last Input Key Accepted": 40
-  },
-  
   "Playback Configuration": 
   {
-   "Overlay Path": "../../../../platforms/nes/overlay"
+    "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
