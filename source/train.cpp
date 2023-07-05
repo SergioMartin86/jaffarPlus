@@ -11,7 +11,7 @@
 
 #ifdef _DETECT_POSSIBLE_MOVES
  #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ ninjaCurrentAction
+ #define _KEY_VALUE_ groundState
  std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
 #endif
 
@@ -286,7 +286,7 @@ void Train::computeStates()
 //        if ((i & SNES_START_MASK) == 0)
 //        if ((i & SNES_SELECT_MASK) == 0)
 //
-         if ((i & 0b00000010) == 0) // NES B
+//         if ((i & 0b00000010) == 0) // NES B
          if ((i & 0b00001000) == 0) // NES Start
          if ((i & 0b00000100) == 0) // NES Select
 

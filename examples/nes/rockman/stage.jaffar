@@ -1,17 +1,13 @@
 {
   "Emulator Configuration": 
   {
-    "Rom File": "../ng2.nes",
-    "State File": "stage36a.state"
-  }, 
+    "Rom File": "rockman.nes",
+    "State File": "preskip4.state"
+  },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4,
-   "Last Input Key Accepted": 0,
-   "Trace File": "",
-   "Trace Tolerance": 3.0,
-   "Enable B": false
+   "Timer Tolerance": 1
   },
   
   "Jaffar Configuration": 
@@ -20,21 +16,21 @@
     "Show Hash Information": false,
     "Show Winning State Information": true,
     "Show Move List": true,
-    "Win State Step Tolerance": 10,
+    "Win State Step Tolerance": 0,
     
     "State Configuration": 
     {
-      "Max Move Count": 2500,
+      "Max Move Count": 80,
       "Store Move History": true,
-      "XDelta3 Enabled": false, 
+      "XDelta3 Enabled": true, 
       "XDelta3 Max Differences": 2000,
-      "XDelta3 Use Zlib Compression": true
+      "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 25000
+     "Max Size Lower Bound (Mb)": 130000, 
+     "Max Size Upper Bound (Mb)": 200000
     },
     
     "Hash Database":
@@ -42,7 +38,7 @@
      "Database Count": 2,
      "Max Size (Mb)": 20000 
     },
-    
+     
     "Save Intermediate Results":
     {
      "Enabled": true,
@@ -57,9 +53,8 @@
   
   "Playback Configuration": 
   {
-    "Overlay Path": "../../../../platforms/nes/overlay"
+    "Overlay Path": "../../../platforms/nes/overlay"
   },
-  
   
   "Rules":
   [
@@ -69,42 +64,28 @@
     [
     ],
     
-    "Satisfies": [ ],
-    
+    "Satisfies": [  ],
+     
     "Actions":
     [
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 88, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 2.00, "Center": 48, "Min": 0, "Max": 255 }
+     { "Type": "Set Player Horizontal Magnet", "Intensity": 1.00, "Center": 900.0  },
+     { "Type": "Set Player Vertical Magnet", "Intensity": 0.01, "Center": 0.0 },
+     { "Type": "Set Game Timer Magnet", "Intensity": 1.00, "Center": 85 } 
     ]
    },
    
    {
-    "Label": 1001,
+    "Label": 1801,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value": 37 }
+      { "Property": "Game Mode", "Op": "==", "Value":  11 }
     ],
     
-    "Satisfies": [ ],
-    
+    "Satisfies": [  ],
+     
     "Actions":
     [
-        { "Type": "Trigger Win" }
-    ]
-   },
-   
-   {
-    "Label": 1903,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value": 35 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-        { "Type": "Trigger Fail" }
+     { "Type": "Trigger Win" }
     ]
    }
   ]  

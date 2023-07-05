@@ -2,16 +2,16 @@
   "Emulator Configuration": 
   {
     "Rom File": "../ng2.nes",
-    "State File": "stage36a.state"
+    "State File": "stage46a.state"
   }, 
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 4,
+   "Timer Tolerance": 2,
    "Last Input Key Accepted": 0,
    "Trace File": "",
    "Trace Tolerance": 3.0,
-   "Enable B": false
+   "Enable B": true
   },
   
   "Jaffar Configuration": 
@@ -20,11 +20,11 @@
     "Show Hash Information": false,
     "Show Winning State Information": true,
     "Show Move List": true,
-    "Win State Step Tolerance": 10,
+    "Win State Step Tolerance": 0,
     
     "State Configuration": 
     {
-      "Max Move Count": 2500,
+      "Max Move Count": 3000,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 2000,
@@ -33,8 +33,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 5000,
-     "Max Size Upper Bound (Mb)": 25000
+     "Max Size Lower Bound (Mb)": 40000,
+     "Max Size Upper Bound (Mb)": 160000
     },
     
     "Hash Database":
@@ -46,9 +46,9 @@
     "Save Intermediate Results":
     {
      "Enabled": true,
-     "Save Numbered States": true,
+     "Save Numbered States": false,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
@@ -60,52 +60,67 @@
     "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
-  
   "Rules":
   [
-   {
-    "Label": 1000,
-    "Conditions":
-    [
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Set Ninja Horizontal Magnet", "Intensity": 1.00, "Center": 88, "Min": 0, "Max": 6000 },
-     { "Type": "Set Ninja Vertical Magnet", "Intensity": 2.00, "Center": 48, "Min": 0, "Max": 255 }
-    ]
-   },
-   
    {
     "Label": 1001,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value": 37 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-        { "Type": "Trigger Win" }
+     { "Type": "Set Ninja/Boss Distance Magnet", "Intensity": -1.0},
+	    { "Type": "Set Boss HP Magnet", "Intensity": 1000.0, "Center": 0, "Min": 0, "Max": 16 }
     ]
    },
    
    {
-    "Label": 1903,
+    "Label": 1003,
     "Conditions":
     [
-     { "Property": "Current Level", "Op": "==", "Value": 35 }
+     { "Property": "Boss HP", "Op": "==", "Value":  0 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-        { "Type": "Trigger Fail" }
+     { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 1903,
+    "Conditions":
+    [
+     { "Property": "Ninja HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1904,
+    "Conditions":
+    [
+     { "Property": "Ninja Power", "Op": "<", "Value":  10 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
+   
   ]  
 }
