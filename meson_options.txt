@@ -15,6 +15,7 @@ option('game', type : 'combo', choices :
     'nes/ebike',
     'nes/ng',
     'nes/ng2',
+    'nes/ng3',
     'nes/micro', 
     'nes/mm', 
     'nes/nm', 
