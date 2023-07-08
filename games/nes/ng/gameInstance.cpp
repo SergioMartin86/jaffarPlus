@@ -17,7 +17,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   bossHP                   = (uint8_t*)   &_emu->_baseMem[0x0066];
   ninjaStateFlags          = (uint8_t*)   &_emu->_baseMem[0x0084];
   ninjaIsDead              = (uint8_t*)   &_emu->_baseMem[0x008B];
-  ninjaPosX                = (uint8_t*)   &_emu->_baseMem[0x0086];
+  ninjaPosX1                = (uint8_t*)   &_emu->_baseMem[0x0086];
   ninjaPosXFrac            = (uint8_t*)   &_emu->_baseMem[0x0085];
   ninjaSpeedX              = (int8_t*)    &_emu->_baseMem[0x00AD];
   ninjaSpeedXFrac          = (uint8_t*)   &_emu->_baseMem[0x00AC];
@@ -97,7 +97,7 @@ _uint128_t GameInstance::computeHash() const
   hash.Update(*bossHP);
   hash.Update(*ninjaStateFlags);
   hash.Update(*ninjaIsDead);
-  hash.Update(*ninjaPosX);
+  hash.Update(*ninjaPosX1);
   hash.Update(*ninjaPosXFrac);
   hash.Update(*ninjaSpeedX);
   hash.Update(*ninjaSpeedXFrac);
@@ -176,12 +176,12 @@ void GameInstance::updateDerivedValues()
 {
  double _screenScroll3 = *screenScroll3 == 255 ? 0.0 : (double)*screenScroll3;
  double _screenScroll2 = *screenScroll3 == 255 ? 0.0 : (double)*screenScroll2;
- absolutePosX = _screenScroll3 * 256.0 + (_screenScroll2 + (double)*ninjaPosX) + ((double)*screenScroll1 + (double)*ninjaPosXFrac)/ 256.0;
+ absolutePosX = _screenScroll3 * 256.0 + (_screenScroll2 + (double)*ninjaPosX1) + ((double)*screenScroll1 + (double)*ninjaPosXFrac)/ 256.0;
 
  ppuIndicatorBit6 = *ppuIndicator & 0b01000000;
 
  int bossIdx = 7;
- double _ninjaPosX = 256.0*((double)*ninjaPosX) + (double)*ninjaPosXFrac;
+ double _ninjaPosX = 256.0*((double)*ninjaPosX1) + (double)*ninjaPosXFrac;
  double _bossPosX = 256.0*((double)*(enemyPosX+bossIdx)) + (double)*(enemyPosXFrac+bossIdx);
  double _ninjaPosY = 256.0*((double)*ninjaPosY);
  double _bossPosY = 256.0*((double)*(enemyPosY+bossIdx));
@@ -291,7 +291,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 // LOG("[Jaffar]  + Ninja Animation:                   %02u %02u %02u %02u\n", *ninjaAnimationType, *ninjaAnimationOffset, *ninjaAnimationTimer, *ninjaAnimationFrame);
  LOG("[Jaffar]  + Ninja Weapon:                      %02u\n", *ninjaWeapon);
 // LOG("[Jaffar]  + Ninja State Flags:                 %02u, D:(%02u)\n", *ninjaStateFlags, *ninjaIsDead);
- LOG("[Jaffar]  + Ninja Position X:                  %f: %02u + %02u\n", absolutePosX, *ninjaPosX, *ninjaPosXFrac);
+ LOG("[Jaffar]  + Ninja Position X:                  %f: %02u + %02u\n", absolutePosX, *ninjaPosX1, *ninjaPosXFrac);
 // LOG("[Jaffar]  + Ninja Speed X:                     %02d + %02u\n", *ninjaSpeedX, *ninjaSpeedXFrac);
  LOG("[Jaffar]  + Ninja Position Y:                  %02u\n", *ninjaPosY);
 // LOG("[Jaffar]  + Ninja Speed Y:                     %02d + %02u\n", *ninjaSpeedY, *ninjaSpeedYFrac);
