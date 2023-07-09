@@ -100,12 +100,12 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   // Storage for hash calculation
   MetroHash128 hash;
 
-  // if in transition, take frame counter as hash value
-//  if (*gameMode != 0) hash.Update(*globalTimer);
+  uint8_t emuState[_STATE_DATA_SIZE_PLAY];
+  _emu->serializeState(emuState);
+  _emu->advanceState(0);
 
   hash.Update(*gameMode                 );
   hash.Update(*currentStage             );
-  hash.Update(*globalTimer              );
   hash.Update(*ninjaAnimation1          );
   hash.Update(*ninjaAnimation2          );
   hash.Update(*ninjaAction              );
@@ -132,22 +132,26 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*bossHP                   );
   hash.Update(*bossPosY                 );
   hash.Update(*bossPosX                 );
-  hash.Update(*ninjaInvincibilityTimer  );
+//  hash.Update(*ninjaInvincibilityTimer  );
   hash.Update(*ninjaInvincibilityState  );
   hash.Update(*ninjaSwordType           );
   hash.Update(*ninjaVerticalCollision   );
   hash.Update(*ninjaHorizontalCollision );
   hash.Update(*levelExitFlag);
   hash.Update(*levelExitFlag2);
-  hash.Update(*bufferedMovement);
-  hash.Update(orbStateVector, ORB_COUNT);
+//  hash.Update(*bufferedMovement);
+//  hash.Update(orbStateVector, ORB_COUNT);
   hash.Update(enemyStateVector, ENEMY_COUNT);
 
   // Animation Array
-  hash.Update(&_emu->_baseMem[0x0060], 0x40);
+//  hash.Update(&_emu->_baseMem[0x0060], 0x20);
+//  hash.Update(&_emu->_baseMem[0x0080], 0x08);
 
   // Adding time tolerance
   if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));
+
+  // Reload game state
+  _emu->deserializeState(emuState);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
