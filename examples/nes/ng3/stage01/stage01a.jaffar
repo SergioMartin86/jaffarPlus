@@ -7,7 +7,7 @@
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 2,
+   "Timer Tolerance": 0,
    "Trace File": "",
    "Trace Tolerance": 3.0,
    "Enable B": false
@@ -32,8 +32,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":
@@ -176,7 +176,8 @@
     "Label": 1800,
     "Conditions":
     [
-     { "Property": "Level Exit Flag 2", "Op": "==", "Value":  108 }
+     { "Property": "Level Exit Flag 2", "Op": "==", "Value":  108 },
+     { "Property": "Absolute Pos Y", "Op": "<", "Value":  522 }
     ],
     
     "Satisfies": [ ],
@@ -222,6 +223,21 @@
     "Conditions":
     [
      { "Property": "Ninja Sword Type", "Op": "!=", "Value":  1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1996,
+    "Conditions":
+    [
+     { "Property": "Current Stage", "Op": "==", "Value":  0 }
     ],
     
     "Satisfies": [ ],
