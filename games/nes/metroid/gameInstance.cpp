@@ -83,7 +83,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*samusPosYRaw);
   hash.Update(*screenPosY1);
   hash.Update(*screenPosY2);
-  hash.Update(*lagFrameCounter);
+//  hash.Update(*lagFrameCounter);
   hash.Update(*pauseFrameCounter);
   hash.Update(*missileCount);
   hash.Update(*samusSelectedWeapon);
@@ -114,15 +114,26 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 //  hash.Update(*bullet2PosY);
 //  hash.Update(*bullet3PosY);
 
-  hash.Update(*customValue);
+//  hash.Update(*customValue);
 
   // Samus-specific hashes
-//  hash.Update(_emu->_baseMem[0x0308]); // Vertical Speed
-//  hash.Update(_emu->_baseMem[0x0316]); // Jump State2
-//  hash.Update(_emu->_baseMem[0x0310]); // Vertical Accel
-//  hash.Update(_emu->_baseMem[0x030A]); // Hit By Enemy
-    hash.Update(&_emu->_baseMem[0x0300], 0x0020);
+  hash.Update(_emu->_baseMem[0x0053]); // Run Frame
+  hash.Update(_emu->_baseMem[0x0300]); // Buffered ACtion
+  hash.Update(_emu->_baseMem[0x0304]); // Buffered ACtion
+  hash.Update(_emu->_baseMem[0x0305]); // Buffered ACtion
+  hash.Update(_emu->_baseMem[0x0306]); // Buffered ACtion
+  hash.Update(_emu->_baseMem[0x0308]); // Vertical Speed
+  hash.Update(_emu->_baseMem[0x030F]); // Buffered ACtion
+  hash.Update(_emu->_baseMem[0x0314]); // Buffered ACtion
+  hash.Update(_emu->_baseMem[0x0316]); // Jump State2
+  hash.Update(_emu->_baseMem[0x0310]); // Vertical Accel
+  hash.Update(_emu->_baseMem[0x0315]); // Buffered ACtion
+  hash.Update(_emu->_baseMem[0x030A]); // Hit By Enemy
+//    hash.Update(&_emu->_baseMem[0x0300], 0x0020);
 //    hash.Update(&_emu->_baseMem[0x0314], 0x0010);
+
+//    hash.Update(&_emu->_baseMem[0x0000], 0x0800);
+//    hash.Update(&_emu->_highMem[0x0000], 0x2000);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -133,8 +144,8 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 void GameInstance::updateDerivedValues()
 {
  uint8_t realScreenPosX1 = *screenPosX2 == 0 ? *screenPosX1+1 : *screenPosX1;
- samusPosX = (uint16_t)realScreenPosX1 * 256.0f + (uint16_t)*screenPosX2 + (uint16_t)*samusPosXRaw;
- samusPosY = (uint16_t)*screenPosY1 * 256.0f + (uint16_t)*screenPosY2 + (uint16_t)*samusPosYRaw;
+ samusPosX = (uint16_t)realScreenPosX1 * 256 + (uint16_t)*screenPosX2 + (uint16_t)*samusPosXRaw;
+ samusPosY = (uint16_t)*screenPosY1 * 256 + (uint16_t)*screenPosY2 + (uint16_t)*samusPosYRaw;
 
  bulletCount = (uint8_t)(*bullet1State > 0) + (uint8_t)(*bullet2State > 0) + (uint8_t)(*bullet3State > 0);
 }
@@ -144,59 +155,42 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 {
  std::vector<std::string> moveList = {"."};
 
-// if (*samusDoorState != 0) moveList.insert(moveList.end(), { "S" });
- moveList.insert(moveList.end(), { "s", "B", "R", "U", "A", "L", "sA", "UB", "UA", "DL", "UR", "UL", "LR", "LB", "LA", "RB", "RA", "BA", "ULA", "URB", "URA", "ULB", "UBA", "DLB", "DRB", "DRA", "DBA", "LBA", "RBA", "DLBA", "URBA", "LRBA", "ULBA", "ULRB" });
- return moveList;
-
- // Evaluating custom value
- bool disableB = false;
- for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
-  if (rulesStatus[ruleId] == true) if (_rules[ruleId]->_disableBActive == true) disableB = _rules[ruleId]->_disableBValue;
-
- if (*samusAnimation == 0x01) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "LB", "BA", "RA", "RB", "UA", "UL", "UR", "URB", "RBA", "URA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x02) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "LB", "BA", "RA", "RB", "UA", "UL", "UR", "URB", "RBA", "URA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x03) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x05) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "UA", "UR", "UL", "UD", "UB", "RB", "RA", "LB", "LA", "BA", "LBA", "UBA", "UDB", "RBA", "URB", "ULA", "ULB", "URA", "URBA", "ULBA", "UDRB", "UDLB" });
- if (*samusAnimation == 0x07) moveList.insert(moveList.end(), { "A", "B", "D", "U", "L", "R", "UL", "UD", "UB", "UA", "RB", "RA", "UR", "LB", "LA", "DB", "BA", "URA", "URB", "ULB", "ULA", "RBA", "UDB", "UBA", "LBA", "DRB", "DLB", "ULBA", "URBA" });
- if (*samusAnimation == 0x08) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "RB", "UR", "UL", "UD", "UB", "UA", "RA", "LB", "LA", "BA", "DB", "LBA", "URB", "URA", "ULB", "ULA", "UDB", "DLB", "UBA", "DRB", "RBA", "LRB", "ULBA", "URBA" });
- if (*samusAnimation == 0x0A) moveList.insert(moveList.end(), { "A", "B", "D", "U", "L", "R", "UL", "UD", "UB", "UA", "RB", "RA", "UR", "LB", "LA", "DB", "BA", "URA", "URB", "ULB", "ULA", "RBA", "UDB", "UBA", "LBA", "DRB", "DLB", "ULBA", "URBA" });
- if (*samusAnimation == 0x0B) moveList.insert(moveList.end(), { "B", "L", "R", "U", "LB", "RB", "UB", "UL", "UR", "ULB", "URB" });
- if (*samusAnimation == 0x0C) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "UBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x0D) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "RB", "UR", "UL", "UB", "UA", "RA", "LB", "LA", "BA", "LRA", "LBA", "RBA", "DRA", "UBA", "DLA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x0F) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "UBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x10) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x11) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x12) moveList.insert(moveList.end(), { "A", "B", "L", "U", "R", "UR", "UL", "UB", "UA", "RB", "RA", "LB", "LA", "BA", "URB", "URA", "RBA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x13) moveList.insert(moveList.end(), { "A", "L", "R", "U", "UA" });
- if (*samusAnimation == 0x14) moveList.insert(moveList.end(), { "A", "L", "R", "U" });
- if (*samusAnimation == 0x15) moveList.insert(moveList.end(), { "A", "L", "R", "U" });
- if (*samusAnimation == 0x17) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UA", "UL", "UR" });
- if (*samusAnimation == 0x18) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UA", "UL", "UR" });
- if (*samusAnimation == 0x19) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UA", "UL", "UR" });
- if (*samusAnimation == 0x1A) moveList.insert(moveList.end(), { "A", "L", "R", "U", "LA", "RA", "UA", "UL", "UR" });
- if (*samusAnimation == 0x20) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "UBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x21) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "DB", "UB", "UA", "RB", "RA", "BA", "UL", "LB", "LA", "DA", "UR", "ULA", "ULB", "UBA", "URA", "URB", "DBA", "RBA", "LBA", "DRB", "DLB", "LRBA", "DRBA", "ULBA", "DLBA", "URBA" });
- if (*samusAnimation == 0x23) moveList.insert(moveList.end(), { "A", "B", "U", "L", "R", "RA", "UR", "UL", "UA", "RB", "LB", "LA", "DR", "DL", "BA", "LBA", "DRB", "RBA", "DLB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x24) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "LA", "LB", "RA", "RB", "UA", "UL", "UR" });
- if (*samusAnimation == 0x25) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "LA", "LB", "RA", "RB", "UA", "UL", "UR", "ULB", "URB" });
- if (*samusAnimation == 0x27) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "UA", "UR", "UL", "UD", "UB", "RA", "LB", "LA", "RB", "DB", "BA", "RBA", "LBA", "UBA", "UDB", "URB", "ULA", "ULB", "URA", "URBA", "ULRB", "ULBA", "UDRB", "UDLB" });
- if (*samusAnimation == 0x28) moveList.insert(moveList.end(), { "A", "B", "D", "L", "R", "U", "UA", "UR", "UL", "UD", "UB", "RA", "LB", "LA", "RB", "DB", "BA", "RBA", "LBA", "UBA", "UDB", "URB", "ULA", "ULB", "URA", "URBA", "ULRB", "ULBA", "UDRB", "UDLB" });
- if (*samusAnimation == 0x34) moveList.insert(moveList.end(), { "B", "L", "R", "LB", "LR", "RB", "UL", "UR", "ULB", "URB" });
- if (*samusAnimation == 0x35) moveList.insert(moveList.end(), { "A", "B", "D", "L", "U", "R", "RB", "UR", "UL", "UD", "UB", "UA", "RA", "LB", "LA", "BA", "DB", "LBA", "URB", "URA", "ULB", "ULA", "UDB", "DBA", "UBA", "RBA", "DLBA", "ULBA", "DRBA", "LRBA", "URBA" });
- if (*samusAnimation == 0x36) moveList.insert(moveList.end(), { "A", "U", "R", "L", "D", "B", "UB", "UR", "UL", "UD", "DB", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "UBA", "LBA", "UDB", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x38) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "UR", "UL", "UB", "UA", "RB", "RA", "BA", "LB", "RBA", "LBA", "ULA", "ULB", "ULR", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x39) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LB", "UR", "UL", "UB", "UA", "RB", "RA", "LA", "RBA", "LBA", "ULA", "ULB", "URA", "URB", "ULBA", "URBA" });
- if (*samusAnimation == 0x3A) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "LA", "LB", "BA", "RA", "RB", "UA", "UL", "UR", "URB", "RBA", "URA", "ULB", "ULA", "LBA", "ULBA", "URBA" });
- if (*samusAnimation == 0x3C) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "UA", "UR", "UL", "UB", "RB", "RA", "LB", "BA", "LA", "RBA", "URB", "URA", "ULR", "ULB", "ULA", "LBA", "ULBA", "ULRB", "UDRB", "UDLB", "URBA" });
- if (*samusAnimation == 0x3E) moveList.insert(moveList.end(), { "A", "B", "L", "R", "U", "UB", "UR", "UL", "UA", "RB", "RA", "LB", "BA", "LA", "RBA", "URB", "URA", "ULR", "ULB", "ULA", "UDR", "UDL", "LBA", "UDRB", "ULBA", "ULRB", "UDLB", "URBA" });
- if (*samusAnimation == 0x40) moveList.insert(moveList.end(), { "A", "U", "R", "L", "B", "UR", "UL", "UA", "RB", "RA", "BA", "LB", "LA", "RBA", "LBA", "URB", "ULA", "ULB", "URA", "URBA", "ULRB", "ULBA", "UDRB", "UDLB" });
-
- if (disableB == true)
- {
-  std::vector<std::string> newMoveList;
-  for (const auto& move : moveList) if (move.find('B') == std::string::npos) newMoveList.push_back(move);
-  std::swap(moveList, newMoveList);
- }
+ if (*samusAnimation == 0x0001) moveList.insert(moveList.end(), { "A", "B", "R", "L", "U", "RB", "LB" });
+ if (*samusAnimation == 0x0002) moveList.insert(moveList.end(), { "A", "B", "R", "L", "U", "RB", "LB" });
+ if (*samusAnimation == 0x0003) moveList.insert(moveList.end(), { "A", "B", "R", "L", "U", "RB", "LB" });
+ if (*samusAnimation == 0x0005) moveList.insert(moveList.end(), { "A", "B", "R", "L", "U", "RB", "LB", "UA", "UB", "UR", "UL", "URB", "ULB" });
+ if (*samusAnimation == 0x0007) moveList.insert(moveList.end(), { "B", "R", "L", "U", "A", "D", "DB", "UD", "UL", "UR", "UB", "UA", "DA", "LB", "LA", "RB", "RA", "BA", "LBA", "DBA", "RBA", "UBA", "URA", "URB", "ULA", "ULB", "UDB" });
+ if (*samusAnimation == 0x0008) moveList.insert(moveList.end(), { "B", "R", "L", "U", "A", "D", "DB", "UD", "UL", "UR", "UB", "UA", "DA", "LB", "LA", "RB", "RA", "BA", "LBA", "DBA", "RBA", "UBA", "URA", "URB", "ULA", "ULB", "UDB" });
+ if (*samusAnimation == 0x000A) moveList.insert(moveList.end(), { "B", "R", "U", "A", "L", "D", "UR", "UB", "UA", "UL", "DL", "DB", "LR", "UD", "LB", "LA", "RB", "RA", "BA", "ULB", "ULA", "URB", "UDB", "URA", "UBA", "DLB", "DBA", "LRB", "LBA", "RBA" });
+ if (*samusAnimation == 0x000B) moveList.insert(moveList.end(), { "B", "R", "U", "L", "D", "A", "LR", "UL", "UR", "UB", "DL", "DB", "LB", "LA", "RB", "RA", "BA", "LBA", "DBA", "RBA", "URB", "ULB" });
+ if (*samusAnimation == 0x000C) moveList.insert(moveList.end(), { "B", "R", "U", "A", "L", "UR", "UB", "DL", "DB", "UL", "LR", "LB", "LA", "RB", "RA", "BA", "ULA", "URB", "URA", "ULB", "UBA", "DLA", "LRA", "LBA", "RBA" });
+ if (*samusAnimation == 0x000D) moveList.insert(moveList.end(), { "B", "R", "L", "U", "A", "DB", "UL", "UR", "UB", "UA", "DL", "LR", "LB", "BA", "LA", "RB", "RA", "UDA", "ULB", "ULA", "URB", "URA", "UBA", "RBA", "DLB", "DLA", "LBA", "LRB", "LRA" });
+ if (*samusAnimation == 0x000F) moveList.insert(moveList.end(), { "B", "R", "L", "A", "D", "DA", "UL", "UR", "UB", "UA", "DB", "LR", "LB", "LA", "RB", "RA", "BA", "LBA", "DLA", "RBA", "UBA", "URA", "URB", "ULA", "ULB", "UDA" });
+ if (*samusAnimation == 0x0010) moveList.insert(moveList.end(), { "B", "R", "L", "U", "A", "D", "DB", "UL", "UR", "UB", "UA", "LB", "LA", "RB", "RA", "BA", "LBA", "DLA", "RBA", "UBA", "URA", "URB", "ULA", "ULB" });
+ if (*samusAnimation == 0x0011) moveList.insert(moveList.end(), { "B", "R", "A", "L", "U", "LA", "UR", "UL", "UB", "DB", "LB", "RB", "RA", "BA", "ULA", "ULB", "URB", "URA", "UBA", "LBA", "RBA" });
+ if (*samusAnimation == 0x0012) moveList.insert(moveList.end(), { "B", "R", "L", "U", "A", "DB", "UL", "UR", "UB", "UA", "LB", "LA", "RB", "RA", "BA", "LBA", "RBA", "UBA", "URA", "URB", "ULA", "ULB" });
+ if (*samusAnimation == 0x0013) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "UA", "UD", "UDR" });
+ if (*samusAnimation == 0x0014) moveList.insert(moveList.end(), { "A", "R", "L", "U" });
+ if (*samusAnimation == 0x0017) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "RB", "DR", "DL", "UD", "DRA", "DLA", "UDR", "UDL" });
+ if (*samusAnimation == 0x0018) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U", "UDR" });
+ if (*samusAnimation == 0x0019) moveList.insert(moveList.end(), { "A", "R", "L", "D", "U" });
+ if (*samusAnimation == 0x001A) moveList.insert(moveList.end(), { "A", "R", "L", "U" });
+ if (*samusAnimation == 0x0020) moveList.insert(moveList.end(), { "B", "U", "D", "L", "R", "A", "RB", "UL", "UR", "UB", "UA", "DL", "DB", "BA", "LR", "LB", "LA", "RA", "LRA", "DLA", "LBA", "UBA", "RBA", "URA", "URB", "ULA", "ULB" });
+ if (*samusAnimation == 0x0021) moveList.insert(moveList.end(), { "B", "R", "L", "U", "A", "D", "DA", "UL", "UR", "UB", "UA", "DL", "DB", "LR", "BA", "LB", "LA", "RA", "RB", "RBA", "ULB", "ULA", "URB", "URA", "UBA", "LRB", "DLB", "DLA", "DBA", "LBA", "LRA" });
+ if (*samusAnimation == 0x0023) moveList.insert(moveList.end(), { "A", "B", "R", "L", "U", "RB", "LB", "LR", "LRB", "DLB" });
+ if (*samusAnimation == 0x0024) moveList.insert(moveList.end(), { "A", "B", "R", "L", "U", "RB", "LB" });
+ if (*samusAnimation == 0x0025) moveList.insert(moveList.end(), { "A", "B", "R", "L", "U" });
+ if (*samusAnimation == 0x0027) moveList.insert(moveList.end(), { "B", "U", "D", "L", "A", "R", "DB", "UL", "UR", "UB", "UA", "UD", "RB", "DA", "BA", "LB", "LA", "RA", "UDB", "UDA", "ULB", "ULA", "URB", "URA", "UBA", "DBA", "LBA", "RBA" });
+ if (*samusAnimation == 0x0028) moveList.insert(moveList.end(), { "B", "U", "D", "L", "A", "R", "DB", "UL", "UR", "UB", "UA", "UD", "RB", "DA", "BA", "LB", "LA", "RA", "UDB", "UDA", "ULB", "ULA", "URB", "URA", "UBA", "DBA", "LBA", "RBA" });
+ if (*samusAnimation == 0x0034) moveList.insert(moveList.end(), { "B", "U", "D", "L", "R", "A", "RB", "RA", "LA", "LB", "LR", "BA", "DB", "UL", "DL", "UA", "UB", "UR", "ULB", "URB", "DBA", "RBA" });
+ if (*samusAnimation == 0x0035) moveList.insert(moveList.end(), { "B", "R", "U", "A", "L", "D", "UR", "UB", "UA", "UL", "DL", "DB", "DA", "UD", "LR", "LB", "LA", "RB", "RA", "BA", "ULB", "UDB", "ULA", "URB", "URA", "UDR", "UBA", "DLB", "DLA", "DBA", "LRB", "LRA", "LBA", "RBA" });
+ if (*samusAnimation == 0x0036) moveList.insert(moveList.end(), { "B", "R", "L", "U", "A", "D", "DB", "UL", "UR", "UB", "UA", "DL", "LR", "LB", "LA", "RB", "RA", "BA", "LRA", "LBA", "DLA", "RBA", "UBA", "URA", "URB", "ULA", "ULB", "UDA" });
+ if (*samusAnimation == 0x0038) moveList.insert(moveList.end(), { "B", "R", "L", "U", "RB", "LB", "UA", "UB", "UR", "UL", "UD", "URB", "ULB" });
+ if (*samusAnimation == 0x0039) moveList.insert(moveList.end(), { "B", "R", "L", "U", "RB", "LB", "UA", "UB", "UR", "UL", "URB", "ULB" });
+ if (*samusAnimation == 0x003A) moveList.insert(moveList.end(), { "B", "R", "L", "U", "RB", "LB", "UA", "UB", "UR", "UL", "URB", "ULB" });
+ if (*samusAnimation == 0x003C) moveList.insert(moveList.end(), { "B", "R", "L", "U", "LB", "UA", "UB", "UR", "UL", "URB", "ULB", "UDL" });
+ if (*samusAnimation == 0x003E) moveList.insert(moveList.end(), { "B", "R", "L", "U", "RB", "LB", "UA", "UB", "UR", "UL", "URB", "ULB" });
+ if (*samusAnimation == 0x0040) moveList.insert(moveList.end(), { "B", "U", "LB", "UA", "UB", "UR", "UL", "URB", "ULB" });
 
  return moveList;
 }

@@ -29,6 +29,8 @@ option('game', type : 'combo', choices :
     'nes/tennis',
     'nes/offroad',
     'nes/metroid',
+    'nes/galaxian',
+    'nes/galaga',
     'nes/pacman',
     'nes/batman',
     'nes/ss',

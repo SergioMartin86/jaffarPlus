@@ -140,9 +140,9 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
  hash.Update(gameState.drawn_room);
  hash.Update(gameState.leveldoor_open);
  hash.Update(gameState.Kid);
- if (gameState.Kid.room == gameState.Guard.room) hash.Update(gameState.Guard);
- if (gameState.Kid.room == gameState.Char.room) hash.Update(gameState.Char);
-// if (gameState.Kid.room == gameState.Opp.room) hash.Update(gameState.Opp);
+ hash.Update(gameState.Guard);
+ hash.Update(gameState.Char);
+ hash.Update(gameState.Opp);
  hash.Update(gameState.grab_timer);
  hash.Update(gameState.holding_sword);
  hash.Update(gameState.united_with_shadow);
@@ -185,20 +185,20 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
  hash.Update(gameState.exit_room_timer);
 
  // Manual hashing
- if (_hashGuardPositionX == true) hash.Update(gameState.level.guards_x);
-// hash.Update(gameState.level.guards_dir);
-// hash.Update(gameState.level.guards_seq_lo);
-// hash.Update(gameState.level.guards_seq_hi);
-// hash.Update(gameState.level.guards_tile);
+ hash.Update(gameState.level.guards_x);
+ hash.Update(gameState.level.guards_dir);
+ hash.Update(gameState.level.guards_seq_lo);
+ hash.Update(gameState.level.guards_seq_hi);
+ hash.Update(gameState.level.guards_tile);
 
  // Artificial items
  hash.Update(gameState.currentCutsceneDelay);
  hash.Update(gameState.cumulativeCutsceneDelay);
  hash.Update(gameState.kidPrevframe);
 
- if (_hashKidCurrentHp == true) hash.Update(gameState.hitp_curr);
- if (_hashGuardCurrentHp == true) hash.Update(gameState.guardhp_curr);
- if (_hashTrobCount == true) hash.Update(gameState.trobs_count);
+ hash.Update(gameState.hitp_curr);
+ hash.Update(gameState.guardhp_curr);
+ hash.Update(gameState.trobs_count);
 
  // Mobs are moving objects (falling tiles only afaik).
  for (int i = 0; i < gameState.mobs_count; i++)
@@ -337,8 +337,8 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
   {
     if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].kidHorizontalMagnet.active == true) magnets.kidHorizontalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidHorizontalMagnet;
     if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].kidVerticalMagnet.active == true) magnets.kidVerticalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidVerticalMagnet;
-    if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].guardHorizontalMagnet.active == true) magnets.guardHorizontalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].guardHorizontalMagnet;
-    if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].guardVerticalMagnet.active == true) magnets.guardVerticalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].guardVerticalMagnet;
+    if (_rules[lastRuleFound]->_magnets[gameState.Guard.room].guardHorizontalMagnet.active == true) magnets.guardHorizontalMagnet = _rules[lastRuleFound]->_magnets[gameState.Guard.room].guardHorizontalMagnet;
+    if (_rules[lastRuleFound]->_magnets[gameState.Guard.room].guardVerticalMagnet.active == true) magnets.guardVerticalMagnet = _rules[lastRuleFound]->_magnets[gameState.Guard.room].guardVerticalMagnet;
     magnets.kidDirectionMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidDirectionMagnet;
     magnets.levelDoorOpenMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].levelDoorOpenMagnet;
     magnets.unitedWithShadowMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].unitedWithShadowMagnet;
@@ -350,16 +350,18 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
 // Obtains the score of a given frame
 float GameInstance::getStateReward(const bool* rulesStatus) const
 {
- // We calculate a different reward if this is a winning frame
+// // We calculate a different reward if this is a winning frame
  auto stateType = getStateType(rulesStatus);
- //if (stateType == f_win) return ((gameState.rem_min-1) * 720 + gameState.rem_tick);
- if (stateType == f_win) return -gameState.lastInputStep;
+// //if (stateType == f_win) return ((gameState.rem_min-1) * 720 + gameState.rem_tick);
+// if (stateType == f_win) return -gameState.lastInputStep;
 
  // Getting rewards from rules
  float reward = 0.0;
  for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
   if (rulesStatus[ruleId] == true)
    reward += _rules[ruleId]->_reward;
+
+ if (stateType == f_win) reward += 10000.0;
 
  // Getting magnet value
  auto magnets = getMagnetValues(rulesStatus);
@@ -375,24 +377,20 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  diff = -255.0f + std::abs(magnets.kidVerticalMagnet.center - (float)gameState.Kid.y);
  reward += magnets.kidVerticalMagnet.intensity * -diff;
 
- // Guard magnets should be considered only if in the same room as the kid
- if (gameState.Kid.room == gameState.Guard.room)
- {
-  // Evaluating guard magnet's reward on position X
-  diff = -255.0f + std::abs(magnets.guardHorizontalMagnet.center - (float)gameState.Guard.x);
-  reward += magnets.guardHorizontalMagnet.intensity * -diff;
+ // Evaluating guard magnet's reward on position X
+ diff = -255.0f + std::abs(magnets.guardHorizontalMagnet.center - (float)gameState.Guard.x);
+ reward += magnets.guardHorizontalMagnet.intensity * -diff;
 
-  // Evaluating guard magnet's reward on position Y
-  diff = -255.0f + std::abs(magnets.guardVerticalMagnet.center - (float)gameState.Guard.y);
-  reward += magnets.guardVerticalMagnet.intensity * -diff;
- }
+ // Evaluating guard magnet's reward on position Y
+ diff = -255.0f + std::abs(magnets.guardVerticalMagnet.center - (float)gameState.Guard.y);
+ reward += magnets.guardVerticalMagnet.intensity * -diff;
 
  // Kid Direction Magnet
  reward += gameState.Kid.direction == 0 ? 1.0 : -1.0  * magnets.kidDirectionMagnet;
 
  // Rewarding climb stairs
- if (gameState.Kid.frame >= 217 && gameState.Kid.frame <= 228) reward += (gameState.Kid.frame - 217 + 1) * 1000.f;
- if (gameState.Kid.frame == 0 && gameState.hitp_curr > 0) reward += 12000.0f;
+ //if (gameState.Kid.frame >= 217 && gameState.Kid.frame <= 228) reward += (gameState.Kid.frame - 217 + 1) * 1000.f;
+ //if (gameState.Kid.frame == 0 && gameState.hitp_curr > 0) reward += 12000.0f;
 
  // Rewarding level door open
  reward += (float)gameState.leveldoor_open * magnets.levelDoorOpenMagnet;
@@ -425,8 +423,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Current/Next Level:   %2d / %2d\n", gameState.current_level, gameState.next_level);
   LOG("[Jaffar]  + Reward:               %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                 0x%lX%lX\n", computeHash().first, computeHash().second);
-  LOG("[Jaffar]  + [Kid]                 Room: %d, Pos.x: %3d, Pos.y: %f (%3d), Frame: %3d, Action: %2d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), kidPosY, int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.hitp_curr), int(gameState.hitp_max));
-  LOG("[Jaffar]  + [Guard]               Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Color: %3u, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.curr_guard_color), int(gameState.guardhp_curr), int(gameState.guardhp_max));
+  LOG("[Jaffar]  + [Kid]                 Room: %d, Pos.x: %3d, Pos.y: %f (%3d), Frame: %3d, Action: %2d, Dir: %d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), kidPosY, int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.Kid.direction), int(gameState.hitp_curr), int(gameState.hitp_max));
+  LOG("[Jaffar]  + [Guard]               Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Color: %3u, Dir: %d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.curr_guard_color), int(gameState.Guard.direction), int(gameState.guardhp_curr), int(gameState.guardhp_max));
 //  LOG("[Jaffar]  + [Char]                Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Curr Seq: %d\n", int(gameState.Char.room), int(gameState.Char.x), int(gameState.Char.y), int(gameState.Char.frame), int(gameState.Char.action), int(gameState.Char.curr_seq));
 //  LOG("[Jaffar]  + Cumulative IGT:       %s (%03lu %03u -> %05lu)\n", cumulativeIGTText, cumMins, (720 - gameState.rem_tick), cumMins * 720 + (720 - gameState.rem_tick));
 //  LOG("[Jaffar]  + Remaining IGT:        %s (%03lu %03u -> %05lu)\n", remainingIGTText, remMins, gameState.rem_tick, remMins * 720 + gameState.rem_tick);
@@ -501,11 +499,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   if (std::abs(magnets.kidVerticalMagnet.intensity) > 0.0f)     LOG("[Jaffar]  + Kid Vertical Magnet       - Intensity: %.1f, Center: %3.3f\n", magnets.kidVerticalMagnet.intensity, magnets.kidVerticalMagnet.center);
   if (std::abs(magnets.kidDirectionMagnet) > 0.0f)              LOG("[Jaffar]  + Kid Direction Magnet      - Intensity: %.1f\n", magnets.kidDirectionMagnet);
 
-  if (gameState.Kid.room == gameState.Guard.room)
-  {
-   if (std::abs(magnets.guardHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Guard Horizontal Magnet   - Intensity: %.1f, Center: %3.3f\n", magnets.guardHorizontalMagnet.intensity, magnets.guardHorizontalMagnet.center);
-   if (std::abs(magnets.guardVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Guard Vertical Magnet     - Intensity: %.1f, Center: %3.3f\n", magnets.guardVerticalMagnet.intensity, magnets.guardVerticalMagnet.center);
-  }
+  if (std::abs(magnets.guardHorizontalMagnet.intensity) > 0.0f) LOG("[Jaffar]  + Guard Horizontal Magnet   - Intensity: %.1f, Center: %3.3f\n", magnets.guardHorizontalMagnet.intensity, magnets.guardHorizontalMagnet.center);
+  if (std::abs(magnets.guardVerticalMagnet.intensity) > 0.0f)   LOG("[Jaffar]  + Guard Vertical Magnet     - Intensity: %.1f, Center: %3.3f\n", magnets.guardVerticalMagnet.intensity, magnets.guardVerticalMagnet.center);
 
   if (std::abs(magnets.levelDoorOpenMagnet) > 0.0f)             LOG("[Jaffar]  + Level Door Open Magnet    - Intensity: %.1f\n", magnets.levelDoorOpenMagnet);
   if (std::abs(magnets.unitedWithShadowMagnet) > 0.0f)          LOG("[Jaffar]  + United With Shadow Magnet - Intensity: %.1f\n", magnets.unitedWithShadowMagnet);

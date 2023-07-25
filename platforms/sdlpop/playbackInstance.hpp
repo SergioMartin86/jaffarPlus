@@ -1004,7 +1004,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  bool parseCommand(const char command, uint8_t* state) override
  {
 
-  return true;
+    return true;
  }
 
 };
