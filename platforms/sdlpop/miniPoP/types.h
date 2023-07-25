@@ -1507,5 +1507,6 @@ struct sdlPopState_t {
  byte kidPrevframe;
  uint16_t globalStepCounter;
  uint16_t lastInputStep;
+ uint8_t guardJingleTimer;
 };
 #pragma pack(pop)

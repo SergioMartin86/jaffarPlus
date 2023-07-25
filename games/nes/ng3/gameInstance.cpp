@@ -140,12 +140,12 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*levelExitFlag);
   hash.Update(*levelExitFlag2);
 //  hash.Update(*bufferedMovement);
-//  hash.Update(orbStateVector, ORB_COUNT);
+  hash.Update(orbStateVector, ORB_COUNT);
   hash.Update(enemyStateVector, ENEMY_COUNT);
 
   // Animation Array
-//  hash.Update(&_emu->_baseMem[0x0060], 0x20);
-//  hash.Update(&_emu->_baseMem[0x0080], 0x08);
+  hash.Update(&_emu->_baseMem[0x0060], 0x20);
+  hash.Update(&_emu->_baseMem[0x0080], 0x08);
 
   // Adding time tolerance
   if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));

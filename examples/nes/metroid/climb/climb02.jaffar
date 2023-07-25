@@ -20,7 +20,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 200,
+      "Max Move Count": 2000,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 1521,
@@ -29,8 +29,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 19000
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 50000
     },
     
     "Hash Database":
@@ -90,7 +90,6 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1889 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 0 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
@@ -111,11 +110,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1891 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 4513 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -132,11 +131,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1885 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 4449 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -152,13 +151,12 @@
     
     "Actions":
     [
-     { "Type": "Trigger Win" },
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1900 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 4385 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -175,11 +173,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1875 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 4353 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -196,11 +194,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1888 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 4257 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -217,11 +215,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1891 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 4193 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -238,11 +236,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1900 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 4129 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -259,11 +257,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1872 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 4097 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -280,11 +278,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1887 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 4001 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -300,13 +298,12 @@
     
     "Actions":
     [
-     { "Type": "Trigger Win" },
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1886 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 3937 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -323,11 +320,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1924 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 3873 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -344,11 +341,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1934 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 3793 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -365,11 +362,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1934 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 3729 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -386,11 +383,11 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1938 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 3665 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -410,7 +407,8 @@
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 1938 },
      { "Type": "Set Samus Vertical Magnet", "Intensity": 1.0, "Center": 3665 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -427,10 +425,10 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 2030 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
@@ -448,10 +446,10 @@
     "Actions":
     [
      { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Set Samus Horizontal Magnet", "Intensity": 1.0, "Center": 2030 },
      { "Type": "Set Lag Frame Counter Magnet", "Intensity": -1.0 },
-     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 }
+     { "Type": "Set Missile Count Magnet", "Intensity": 0.001 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 2 }
     ]
    },
    
