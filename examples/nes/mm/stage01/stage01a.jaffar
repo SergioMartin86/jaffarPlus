@@ -1,58 +1,61 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
   "Emulator Configuration": 
   {
     "Rom File": "../mm.nes",
     "State File": "stage01a.state"
   },
   
-  "State Configuration": 
-  { 
-    "Max Difference Count": 1200,
-    "Max Move Count": 400
-  },
-  
   "Game Configuration": 
   {
    "Timer Tolerance": 1,
-   "Hash Includes": [  ]
+   "Trace File": "jaffar.trace"
   },
   
   "Jaffar Configuration": 
   {
-    "Show Timing Information": false,
+    "Show Timing Information": true,
     "Show Hash Information": false,
     "Show Winning State Information": true,
+    "Show Move List": true,
+    "Win State Step Tolerance": 0,
     
-    "State Database":
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 100,
-     "Max Size Upper Bound (Mb)": 2000
+      "Max Move Count": 400,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 120000
     },
     
     "Hash Database":
     { 
-     "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
+     "Save Numbered States": false,
      "Frequency (s)": 1.0,
      "Best Solution Path": "/tmp/jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
-    }
+     }
   },
   
   "Playback Configuration": 
   {
-   "Overlay Path": "../../../../platforms/nes/overlay"
+    "Overlay Path": "../../../../platforms/nes/overlay"
   },
-  
   "Rules":
   [
    {
@@ -66,9 +69,7 @@
 
     "Actions":
     [
-     { "Type": "Set Marble X Magnet", "Intensity": 1.0, "Center": 494, "Min": 0, "Max": 65535 },
-     { "Type": "Set Marble Y Magnet", "Intensity": 1.0, "Center": 530, "Min": 0, "Max": 65535 },
-     { "Type": "Set Marble Z Magnet", "Intensity": 1.0, "Center": 104, "Min": 0, "Max": 255 }
+     { "Type": "Set Trace Magnet", "Intensity": 1.0}
     ]
    },
 
@@ -85,22 +86,6 @@
     "Actions":
     [
      { "Type": "Trigger Win" }
-    ]
-   },
-
-   {
-    "Label": 1906,
-    "Description": "Fail on dying",
-    "Conditions":
-    [
-      { "Property": "Marble Dead Flag", "Op": "!=", "Value": 0 }
-    ],
-
-    "Satisfies": [ ],
-
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
     ]
    }
   ]  

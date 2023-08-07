@@ -42,6 +42,13 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
   }
 
+  if (actionType == "Set Trace Magnet")
+  {
+   if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Trace Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+   _magnets.traceMagnet = actionJs["Intensity"].get<float>();
+   recognizedActionType = true;
+  }
+
   return recognizedActionType;
 }
 

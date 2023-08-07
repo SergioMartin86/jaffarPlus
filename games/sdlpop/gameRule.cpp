@@ -87,6 +87,15 @@ bool GameRule::parseGameAction(nlohmann::json actionJs, size_t actionId)
     recognizedActionType = true;
    }
 
+   if (actionType == "Set Guard HP Magnet")
+   {
+    if (isDefined(actionJs, "Intensity") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Intensity' key.\n", _label, actionId);
+    if (isDefined(actionJs, "Room") == false) EXIT_WITH_ERROR("[ERROR] Magnet in Rule %lu Action %lu missing 'Room' key.\n", _label, actionId);
+    uint8_t room = actionJs["Room"].get<uint8_t>();
+    _magnets[room].guardHPMagnet = actionJs["Intensity"].get<float>();
+    recognizedActionType = true;
+   }
+
   return recognizedActionType;
 }
 
@@ -144,6 +153,8 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
  if (propertyName == "Tile FG State") return dt_uint8;
  if (propertyName == "Tile BG State") return dt_uint8;
 
+ if (propertyName == "Guard Jingle Timer") return dt_uint16;
+
  EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized property: %s\n", _label, propertyName.c_str());
 
  return dt_uint8;
@@ -198,6 +209,8 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
  if (propertyName == "Needs Level 1 Music") return &gameState.need_level1_music;
  if (propertyName == "United With Shadow") return &gameState.united_with_shadow;
  if (propertyName == "Exit Door Timer") return &gameState.leveldoor_open;
+
+ if (propertyName == "Guard Jingle Timer") return &gameState.guardJingleTimerTotal;
 
  int room = -1;
  if (isDefined(condition, "Room") == true)
