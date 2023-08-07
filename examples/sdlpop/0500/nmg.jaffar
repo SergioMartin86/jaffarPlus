@@ -1,0 +1,384 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 6,
+    "Loose Tile Sound Id": 21 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4,
+   "Property Hash Types": [ "Kid Current HP", "Guard Current HP", "Guard Position X"  ],
+   "Static Tile Hash Types":
+   [
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Level": 5, "Room": 7, "Tile": 30, "Type": "Full" },
+    { "Level": 5, "Room": 18, "Tile": 14, "Type": "Full", "Comment": "Gate" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    "Show Move List": true,
+        
+    "State Configuration": 
+    {
+      "Max Move Count": 700,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 8000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 120000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": false,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Output Images":
+    {
+     "Enabled": true, 
+     "Path": "images/new"
+    }
+  },
+ 
+  "Rules":
+  [
+   
+   {
+    "Label": 4000,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Room": 7, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 4100,
+    "Conditions":
+    [
+     { "Property": "Tile BG State", "Room": 7, "Tile": 30, "Op": ">", "Value": 0, "Comment": "Gate" }
+    ],
+    
+    "Satisfies": [ 4000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+   
+   {
+    "Label": 4001,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  9 },
+     { "Property": "Tile BG State", "Room": 7, "Tile": 30, "Op": ">", "Value": 0, "Comment": "Gate" }
+    ],
+    
+    "Satisfies": [ 4100 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 9, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 4002,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  9 },
+     { "Property": "Kid Position Y", "Op": "==", "Value": 118 }
+    ],
+    
+    "Satisfies": [ 4001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 180 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 9, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Guard Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 4003,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 }
+    ],
+    
+    "Satisfies": [ 4002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 11, "Intensity": 0.1, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 4004,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  10 }
+    ],
+    
+    "Satisfies": [ 4003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 10, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 10, "Intensity": 0.1, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 4005,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 },
+     { "Property": "Kid Position X", "Op": "<", "Value":  128 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  118 }
+    ],
+    
+    "Satisfies": [ 4004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 7, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 4006,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  8 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  130 }
+    ],
+    
+    "Satisfies": [ 4005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 8, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+  {
+    "Label": 4007,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  12 }
+    ],
+    
+    "Satisfies": [ 4005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 12, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 4008,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 4007 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 4009,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 }
+    ],
+    
+    "Satisfies": [ 4008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 4010,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  15 }
+    ],
+    
+    "Satisfies": [ 4009 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 15, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 4011,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 }
+    ],
+    
+    "Satisfies": [ 4010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 18, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+    {F
+    "Label": 4012,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Tile BG State", "Room": 18, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Gate" }
+    ],
+    
+    "Satisfies": [ 4011 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 18, "Intensity": 1.0, "Center": 130 }
+    ]
+   },
+   
+   {
+    "Label": 4013,
+    "Description": "If Kid gets to the next level to climb up the exit door (frame 217), then give reward.",
+    "Conditions":
+    [
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+    ],
+    
+    "Satisfies": [ 4012 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+      
+   {
+    "Label": 4999,
+    "Description": "If Kid exits the level, then win.",
+    "Conditions":
+    [
+     { "Property": "Next Level", "Op": "==", "Value":  6 }
+    ],
+     
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+      {
+    "Label": 1997,
+    "Conditions":
+    [ 
+     { "Property": "Guard Frame", "Op": "==", "Value":  160 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  50 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1996,
+    "Conditions":
+    [ 
+     { "Property": "Guard Frame", "Op": "==", "Value":  154 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  50 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+   
+   
+  ]  
+}

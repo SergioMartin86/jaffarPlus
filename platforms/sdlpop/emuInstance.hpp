@@ -224,7 +224,6 @@ class EmuInstance : public EmuInstanceBase
   }
 
   if (_initializeCopyProt) init_copyprot();
-
  }
 
  void saveStateFile(const std::string& _stateFilePath) const override

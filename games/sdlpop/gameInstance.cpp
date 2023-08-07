@@ -239,8 +239,17 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
 {
  std::vector<INPUT_TYPE> moves;
 
+ gameState.guardPrevHP = gameState.guardhp_curr;
+
  _emu->advanceState(move);
  moves.push_back(move);
+
+ updateDerivedValues();
+
+ if (gameState.Kid.room == gameState.Guard.room && gameState.guardPrevHP > 0 && gameState.guardhp_curr == 0) gameState.guardJingleTimerStart = gameState.globalStepCounter;
+ if (gameState.current_level == 3 && gameState.Guard.room == 20 && gameState.guardPrevHP > 0 && gameState.guardhp_curr == 0) gameState.guardJingleTimerStart = gameState.globalStepCounter;
+ if ( gameState.guardJingleTimerStart > 0) gameState.guardJingleTimerTotal = gameState.globalStepCounter - gameState.guardJingleTimerStart;
+ else gameState.guardJingleTimerTotal = 0;
 
  return moves;
 }
@@ -342,6 +351,7 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
     magnets.kidDirectionMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidDirectionMagnet;
     magnets.levelDoorOpenMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].levelDoorOpenMagnet;
     magnets.unitedWithShadowMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].unitedWithShadowMagnet;
+    magnets.guardHPMagnet = _rules[lastRuleFound]->_magnets[gameState.Guard.room].guardHPMagnet;
   }
 
  return magnets;
@@ -398,6 +408,11 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  // Rewarding united with shadow
  reward += (float)gameState.united_with_shadow * magnets.unitedWithShadowMagnet;
 
+ // Rewarding united with shadow
+  reward += (float)(gameState.guardhp_max - gameState.guardhp_curr) * magnets.guardHPMagnet;
+
+
+
  // Returning reward
  return reward;
 }
@@ -431,6 +446,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 //  LOG("[Jaffar]  + Cutscene Delay        %03u, Total: %03u\n", gameState.currentCutsceneDelay, gameState.cumulativeCutsceneDelay);
   LOG("[Jaffar]  + Exit Room Timer:      %d\n", gameState.exit_room_timer);
   LOG("[Jaffar]  + Kid Has Sword:        %d\n", gameState.have_sword);
+  LOG("[Jaffar]  + Guard Kill Jingle Timer Start: %d Total: %d (Prev HP: %u)\n", gameState.guardJingleTimerStart, gameState.guardJingleTimerTotal, gameState.guardPrevHP);
 
   if (gameState.current_level == 1) LOG("[Jaffar]  + Level 1 Need Music:   %d\n", gameState.need_level1_music);
   if (gameState.current_level == 8) LOG("[Jaffar]  + Level Door Open:      %d\n", gameState.leveldoor_open);
@@ -504,6 +520,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
   if (std::abs(magnets.levelDoorOpenMagnet) > 0.0f)             LOG("[Jaffar]  + Level Door Open Magnet    - Intensity: %.1f\n", magnets.levelDoorOpenMagnet);
   if (std::abs(magnets.unitedWithShadowMagnet) > 0.0f)          LOG("[Jaffar]  + United With Shadow Magnet - Intensity: %.1f\n", magnets.unitedWithShadowMagnet);
+  if (std::abs(magnets.guardHPMagnet) > 0.0f)                   LOG("[Jaffar]  + Guard HP Magnet           - Intensity: %.1f\n", magnets.guardHPMagnet);
 }
 
 void GameInstance::setRNGState(const uint64_t RNGState)

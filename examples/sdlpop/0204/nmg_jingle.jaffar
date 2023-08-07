@@ -5,7 +5,7 @@
     "Levels File": "../LEVELS.DAT",
     "State File": "jingle.state",
     "Initialize Copyprot": false,
-    "Override RNG Value": true,
+    "Override RNG Value": false,
     "RNG Value": 771424505,
     "Loose Tile Sound Id": 21 
   },
@@ -50,8 +50,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 150000
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 100000
     },
     
     "Hash Database":
@@ -86,75 +86,6 @@
   "Rules":
   [
    
- {
-    "Label": 2017,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Kid Room", "Op": "==", "Value": 21 }
-    ],
-    
-    "Satisfies": [  ],
-    
-    "Actions":
-    [
-     { "Type": "Set Kid Horizontal Magnet", "Room": 21, "Intensity": 1.0, "Center": 0 }
-    ]
-   },
-   
-   {
-    "Label": 2018,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Kid Room", "Op": "==", "Value":  2 }
-    ],
-    
-    "Satisfies": [ 2017 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 130 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
-    ]
-   },
-   
-   {
-    "Label": 2019,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Kid Room", "Op": "==", "Value":  9 }
-    ],
-    
-    "Satisfies": [ 2018 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 55 },
-     { "Type": "Set Kid Vertical Magnet", "Room": 9, "Intensity": 2.0, "Center": 0 }
-    ]
-   },
-   
-   {
-    "Label": 2888,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Kid Room", "Op": "==", "Value":  9 },
-     { "Property": "Kid Frame", "Op": "==", "Value":  20 }
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
    {
     "Label": 2020,
     "Conditions":
@@ -163,7 +94,7 @@
      { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" }
     ],
     
-    "Satisfies": [ 2019 ],
+    "Satisfies": [ ],
     
     "Actions":
     [
@@ -225,113 +156,8 @@
     [
      { "Type": "Add Reward", "Value": 10000 },
      { "Type": "Set Kid Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 },
-     { "Type": "Set Guard Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 }
-    ]
-   },
-   
-   {
-    "Label": 2023,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" },
-     { "Property": "Kid Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Current HP", "Op": "==", "Value":  3 }
-    ],
-    
-    "Satisfies": [ 2022 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 },
-     { "Type": "Set Guard Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 }
-    ]
-   },
-   
-   {
-    "Label": 2024,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" },
-     { "Property": "Kid Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Current HP", "Op": "==", "Value":  2 }
-    ],
-    
-    "Satisfies": [ 2023 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 },
-     { "Type": "Set Guard Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 }
-    ]
-   },
-   
-   {
-    "Label": 2025,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" },
-     { "Property": "Kid Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Current HP", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [ 2024 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 },
-     { "Type": "Set Guard Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 }
-    ]
-   },
-   
-   {
-    "Label": 2026,
-    "Conditions":
-    [
-     { "Property": "Current Level", "Op": "==", "Value":  2 },
-     { "Property": "Tile BG State", "Room": 23, "Tile": 14, "Op": ">", "Value": 0, "Comment": "Exit Level Door" },
-     { "Property": "Kid Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Current HP", "Op": "==", "Value":  0 },
-     { "Property": "Kid Position X", "Op": "<", "Value":  135 }
-     
-    ],
-    
-    "Satisfies": [ 2025 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Set Kid Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 },
-     { "Type": "Set Guard Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 }
-    ]
-   },
-   
-   {
-    "Label": 2027,
-    "Conditions": 
-    [ 
-     { "Property": "Kid Frame", "Op": "==", "Value": 217 },
-     { "Property": "Guard Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Current HP", "Op": "==", "Value":  0 },
-     { "Property": "Kid Position X", "Op": "<", "Value":  140 },
-     { "Property": "Guard Position X", "Op": "<", "Value":  175 }
-    ],
-    
-    "Satisfies": [ 2021 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000 },
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 }
+     { "Type": "Set Guard Horizontal Magnet", "Room": 23, "Intensity": 1.0, "Center": 130 },
+     { "Type": "Set Guard HP Magnet", "Room": 23, "Intensity": 1000.0 }
     ]
    },
    
@@ -341,8 +167,7 @@
     [
      { "Property": "Next Level", "Op": "==", "Value":  3 },
      { "Property": "Guard Room", "Op": "==", "Value":  23 },
-     { "Property": "Guard Current HP", "Op": "==", "Value":  0 },
-     { "Property": "Guard Position X", "Op": "<", "Value":  175 }
+     { "Property": "Guard Jingle Timer", "Op": ">", "Value":  0 }
     ],
     
     "Satisfies": [ ],
@@ -350,6 +175,21 @@
     "Actions":
     [
      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 2998,
+    "Conditions":
+    [
+     { "Property": "Guard Jingle Timer", "Op": ">", "Value":  46 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
     ]
    }
    

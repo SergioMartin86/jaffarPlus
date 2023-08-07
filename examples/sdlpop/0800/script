@@ -96,10 +96,27 @@
 
     "Actions":
     [
-      { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 },
+      { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 150 },
       { "Type": "Set Kid Vertical Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 }
     ]
    },
+   
+   {
+   "Label": 8999,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  50 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+      { "Type": "Trigger Fail" }
+    ]
+   },
+   
 
    {
     "Label": 8100,
