@@ -346,12 +346,16 @@ magnetSet_t GameInstance::getMagnetValues(const bool* rulesStatus) const
   {
     if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].kidHorizontalMagnet.active == true) magnets.kidHorizontalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidHorizontalMagnet;
     if (_rules[lastRuleFound]->_magnets[gameState.Kid.room].kidVerticalMagnet.active == true) magnets.kidVerticalMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidVerticalMagnet;
-    if (_rules[lastRuleFound]->_magnets[gameState.Guard.room].guardHorizontalMagnet.active == true) magnets.guardHorizontalMagnet = _rules[lastRuleFound]->_magnets[gameState.Guard.room].guardHorizontalMagnet;
-    if (_rules[lastRuleFound]->_magnets[gameState.Guard.room].guardVerticalMagnet.active == true) magnets.guardVerticalMagnet = _rules[lastRuleFound]->_magnets[gameState.Guard.room].guardVerticalMagnet;
     magnets.kidDirectionMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].kidDirectionMagnet;
     magnets.levelDoorOpenMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].levelDoorOpenMagnet;
     magnets.unitedWithShadowMagnet = _rules[lastRuleFound]->_magnets[gameState.Kid.room].unitedWithShadowMagnet;
-    magnets.guardHPMagnet = _rules[lastRuleFound]->_magnets[gameState.Guard.room].guardHPMagnet;
+
+    if (gameState.Guard.room == gameState.Kid.room)
+    {
+      if (_rules[lastRuleFound]->_magnets[gameState.Guard.room].guardHorizontalMagnet.active == true) magnets.guardHorizontalMagnet = _rules[lastRuleFound]->_magnets[gameState.Guard.room].guardHorizontalMagnet;
+      if (_rules[lastRuleFound]->_magnets[gameState.Guard.room].guardVerticalMagnet.active == true) magnets.guardVerticalMagnet = _rules[lastRuleFound]->_magnets[gameState.Guard.room].guardVerticalMagnet;
+      magnets.guardHPMagnet = _rules[lastRuleFound]->_magnets[gameState.Guard.room].guardHPMagnet;
+    }
   }
 
  return magnets;
@@ -362,7 +366,8 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 {
 // // We calculate a different reward if this is a winning frame
  auto stateType = getStateType(rulesStatus);
-// //if (stateType == f_win) return ((gameState.rem_min-1) * 720 + gameState.rem_tick);
+// if (stateType == f_win) return ((gameState.rem_min-1) * 720 + gameState.rem_tick);
+  if (stateType == f_win) return - ((gameState.rem_min-1) * 720 + gameState.rem_tick) - gameState.guardJingleTimerStart;
 // if (stateType == f_win) return -gameState.lastInputStep;
 
  // Getting rewards from rules

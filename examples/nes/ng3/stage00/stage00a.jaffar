@@ -9,7 +9,7 @@
   {
    "Timer Tolerance": 2,
    "Trace File": "",
-   "Trace Tolerance": 3.0,
+   "Trace Tolerance": 1.0,
    "Enable B": false
   },
   

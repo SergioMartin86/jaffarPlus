@@ -148,7 +148,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-_uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 {
   // Storage for hash calculation
   MetroHash128 hash;
@@ -188,7 +188,7 @@ _uint128_t GameInstance::computeHash() const
 //  hash.Update(*jumpingInertia);
 
   // Using stage timer to allow pauses
-  if (timerTolerance > 0) hash.Update(*stageTimer % (timerTolerance+1));
+  if (timerTolerance > 0) hash.Update(*currentStep % (timerTolerance+1));
 
   // Conditional hashes
   if (hashIncludes.contains("Subweapon Number")) hash.Update(*subweaponNumber);
@@ -316,7 +316,7 @@ void GameInstance::updateDerivedValues()
 }
 
 // Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  std::vector<std::string> moveList = {"."};
 
@@ -518,10 +518,6 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   return reward;
 }
 
-void GameInstance::setRNGState(const uint64_t RNGState)
-{
- *this->RNGState = (uint8_t) RNGState;
-}
 
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
