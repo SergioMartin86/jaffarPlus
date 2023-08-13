@@ -163,7 +163,11 @@ class EmuInstance : public EmuInstanceBase
 
  static inline std::string moveCodeToString(const INPUT_TYPE move)
  {
+#ifndef _NES_PLAYER_2
   std::string moveString = "|..|";
+#else
+  std::string moveString = "|..|........|";
+#endif
 
   if (move & 0b00010000) moveString += 'U'; else moveString += '.';
   if (move & 0b00100000) moveString += 'D'; else moveString += '.';
@@ -185,13 +189,13 @@ class EmuInstance : public EmuInstanceBase
 
  void advanceState(const INPUT_TYPE move) override
  {
+#ifndef _NES_PLAYER_2
   INPUT_TYPE joy1 = move;
   INPUT_TYPE joy2 = 0;
-  if (joy1 & 0b00001000)
-  {
-   joy1 &= 0b11110111;
-   joy2 = moveStringToCode("LRs");
-  }
+#else
+  INPUT_TYPE joy1 = 0;
+  INPUT_TYPE joy2 = move;
+#endif
 
   _nes->emulate_frame(joy1, joy2);
  }

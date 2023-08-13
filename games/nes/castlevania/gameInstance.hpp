@@ -185,13 +185,12 @@ class GameInstance : public GameInstanceBase
   bool enablePause;
   bool allowB;
 
-  GameInstance(EmuInstance* emu, const nlohmann::json& config);
   std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
-  _uint128_t computeHash() const override;
+  GameInstance(EmuInstance* emu, const nlohmann::json& config);
+  _uint128_t computeHash(const uint16_t currentStep = 0) const override;
   void updateDerivedValues() override;
-  std::vector<std::string> getPossibleMoves() const override;
+  std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
-  void setRNGState(const uint64_t RNGState) override;
 };

@@ -1,0 +1,99 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "../bc.nes",
+    "State File": "area5a.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 0,
+   "Trace File": "area5a.trace",
+   "Trace Tolerance": 3.0,
+   "Max Bullets": 0
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": false,
+    "Show Winning State Information": true,
+    "Show Move List": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 600,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 25000,
+     "Max Size Upper Bound (Mb)": 100000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 10000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": false,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+     "Disable Display": false,
+     "Overlay Path": "../../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   
+   {
+    "Label": 1000,
+    "Conditions":
+    [
+      
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Trace Magnet", "Intensity": 1.0 },
+     { "Type": "Set Player Horizontal Magnet", "Intensity": 0.0001, "Center": 804 },
+     { "Type": "Set Player Vertical Magnet", "Intensity": 0.00015, "Center": -865 } 
+    ]
+   },
+   
+   {
+    "Label": 1800,
+    "Conditions":
+    [
+     { "Property": "Exit State", "Op": "==", "Value":  44 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   }
+   
+  ]  
+}
