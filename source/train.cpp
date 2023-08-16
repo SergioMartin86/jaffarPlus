@@ -7,16 +7,6 @@
 #include <string>
 #include <set>
 
-//#define _DETECT_POSSIBLE_MOVES
-
-#ifdef _DETECT_POSSIBLE_MOVES
- #define moveKeyTemplate uint8_t
- #define _KEY_VALUE_ currentAction;
- std::map<moveKeyTemplate, std::set<std::string>> newMoveKeySet;
-#endif
-
-#define _VERIFICATION_INSTANCES 0
-
 bool Train::run()
 {
   auto searchTimeBegin = std::chrono::high_resolution_clock::now();      // Profiling
@@ -81,30 +71,6 @@ bool Train::run()
       printf("[Jaffar] To run Jaffar for more steps, increase 'Max Move Count' in the .jaffar file.\n");
       _hasFinalized = true;
     }
-
-    // If detecting new moves, save new file
-    #ifdef _DETECT_POSSIBLE_MOVES
-
-    printf("Possible Move List: \n");
-
-    for (const auto& key : newMoveKeySet)
-    {
-     std::vector<std::string> vec(key.second.begin(), key.second.end());
-     std::sort(vec.begin(), vec.end(), moveCountComparerString);
-     auto itr = vec.begin();
-     std::string simpleMove = simplifyMove(*itr);
-     printf("if (*%s == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", "ninjaCurrentAction", key.first, simpleMove.c_str());
-     itr++;
-     for (; itr != vec.end(); itr++)
-     {
-      std::string simpleMove = simplifyMove(*itr);
-       printf(", \"%s\"", simpleMove.c_str());
-     }
-     printf(" });\n");
-     //printf("Size: %lu\n", vec.size());
-    }
-
-    #endif // _DETECT_POSSIBLE_MOVES
 
     // Advancing step if not finished
     if (_hasFinalized == false) _currentStep++;
@@ -261,42 +227,32 @@ void Train::computeStates()
       _gameInstances[threadId]->pushState(baseStateData);
       std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves(baseState->getRuleStatus());
 
-      #ifdef _DETECT_POSSIBLE_MOVES
+      // Storage to find new possible key inputs
+      std::set<uint64_t> possibleMoveSet;
+      std::set<uint64_t> candidateMoveSet;
+      uint64_t keyValue;
 
-       std::set<uint64_t> possibleMoveSet;
+      // If detecting new moves, add candidate moves to the list
+      if (_detectPossibleMoves == true)
+      {
+       // Storage for the full set of moves
        std::vector<std::string> fullMoves;
-       std::set<uint64_t> alternativeMoveSet;
 
-       for (const auto& actualMove : possibleMoves)
+       // Adding current move set
+       for (const auto& move : possibleMoves)
        {
-        possibleMoveSet.insert(EmuInstance::moveStringToCode(actualMove));
-        fullMoves.push_back(actualMove);
+        possibleMoveSet.insert(EmuInstance::moveStringToCode(move));
+        fullMoves.push_back(move);
        }
 
-       size_t maxInput = 1;
-       for (size_t i = 0; i < sizeof(INPUT_TYPE); i++) maxInput *= 256;
-       for (uint64_t i = 0; i < maxInput; i++)
+       // Obtaining candidate moves and adding them to the full set of moves
+       auto candidateMoves = _gameInstances[threadId]->getCandidateMoves();
+       for (const auto move : candidateMoves)
        {
-        if (possibleMoveSet.contains(i) == false)
-
-//        if ((i & SNES_X_MASK) == 0)
-//        if ((i & SNES_Y_MASK) == 0)
-//        if ((i & SNES_TL_MASK) == 0)
-//        if ((i & SNES_TR_MASK) == 0)
-//        if ((i & SNES_START_MASK) == 0)
-//        if ((i & SNES_SELECT_MASK) == 0)
-//
-//         if ((i & 0b00000010) == 0) // NES B
-         if ((i & 0b00001000) == 0) // NES Start
-         if ((i & 0b00000100) == 0) // NES Select
-
-//            if ((i & 0b10000000) == 0) // Atari Unused
-//            if ((i & 0b01000000) == 0) // Atari Unused
-//            if ((i & 0b00100000) == 0) // Atari Unused
-         if (countButtonsPressedNumber(i) > 3 == false)
+        if (possibleMoveSet.contains(move) == false)
         {
-         INPUT_TYPE idx = (INPUT_TYPE)i;
-         alternativeMoveSet.insert(idx);
+         INPUT_TYPE idx = (INPUT_TYPE)move;
+         candidateMoveSet.insert(idx);
          fullMoves.push_back(EmuInstance::moveCodeToString(idx));
         }
        }
@@ -305,12 +261,9 @@ void Train::computeStates()
        auto possibleMoveCopy = possibleMoves;
        possibleMoves = fullMoves;
 
-       // Store key values
-       moveKeyTemplate keyValue = *_gameInstances[threadId]->_KEY_VALUE_;
-
-       // printf("possibleMove size: %lu\n", possibleMoves.size());
-
-      #endif // _DETECT_POSSIBLE_MOVES
+       // Store key value
+       keyValue = _gameInstances[threadId]->getStateMiniHash();
+      }
 
       // Making copy of base state data and pointer
       baseStateContent->copy(baseState);
@@ -419,15 +372,14 @@ void Train::computeStates()
         // Getting checkpoint level
         auto frameCheckpoint = _gameInstances[threadId]->getCheckpointLevel(newState->getRuleStatus());
 
-        #ifdef _DETECT_POSSIBLE_MOVES
-
+        if (_detectPossibleMoves == true)
+        {
          // Checking if move is not there in actual moves
          #pragma omp critical
-         if (alternativeMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
-          if (newMoveKeySet[keyValue].contains(possibleMoves[idx]) == false)
-           newMoveKeySet[keyValue].insert(possibleMoves[idx]);
-
-        #endif // _DETECT_POSSIBLE_MOVES
+         if (candidateMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
+          if (_newMoveKeySet[keyValue].contains(possibleMoves[idx]) == false)
+           _newMoveKeySet[keyValue].insert(possibleMoves[idx]);
+        }
 
         tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
@@ -479,42 +431,6 @@ void Train::computeStates()
 
         tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateEncodingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
-
-        ////////// VERIFICATION STEP START
-
-//        if (_storeMoveHistory)
-//        {
-//         if (possibleMoves[idx] == "UB"  || possibleMoves[idx] == "UD" || possibleMoves[idx] == "UBA" || possibleMoves[idx] == "UDB" || possibleMoves[idx] == "UDBA")
-//         {
-//           auto newHash = hash;
-//           bool isCorrect = true;
-//
-//           for (size_t i = 0; i < _VERIFICATION_INSTANCES && isCorrect == true; i++)
-//           {
-//            // _verificationInstances[threadId][i]->pushState(_initialStateData);
-//            // for (size_t j = 0; j <= _currentStep; j++)  _verificationInstances[threadId][i]->advanceGameState(newState->getMove(j));
-//            _verificationInstances[threadId][i]->pushState(baseStateData);
-//            _verificationInstances[threadId][i]->advanceGameState(newState->getMove(_currentStep));
-//
-//            newHash = _verificationInstances[threadId][i]->computeHash();
-//            if (newHash != hash) isCorrect = false;
-//           }
-//
-//           //if (isCorrect == true)  LOG("Yes - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
-//           //if (isCorrect == false) LOG("No - hash: 0x%lX%lX, newHash: 0x%lX%lX\n", hash.first, hash.second, newHash.first, newHash.second);
-//
-//           if (isCorrect == false)
-//           {
-//            _invalidStateCount++;
-//            _freeStateQueueMutex.lock();
-//            _freeStateQueue.push_back(newState);
-//            _freeStateQueueMutex.unlock();
-//            continue;
-//           }
-//         }
-//        }
-
-        ////////// VERIFICATION STEP END
 
         // If state has succeded or is a regular state, adding it in the corresponding database
         #pragma omp critical(newFrameDB)
@@ -709,6 +625,29 @@ void Train::printTrainStatus()
   _gameInstances[0]->pushState(bestStateData);
   _gameInstances[0]->printStateInfo(_bestState->getRuleStatus());
 
+  // If detecting new moves, show list here
+  if (_detectPossibleMoves == true)
+  {
+    printf("[Jaffar] Possible Move List: \n");
+
+    for (const auto& key : _newMoveKeySet)
+    {
+     std::vector<std::string> vec(key.second.begin(), key.second.end());
+     std::sort(vec.begin(), vec.end(), moveCountComparerString);
+     auto itr = vec.begin();
+     std::string simpleMove = simplifyMove(*itr);
+     printf("if (stateMiniHash == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", key.first, simpleMove.c_str());
+     itr++;
+     for (; itr != vec.end(); itr++)
+     {
+      std::string simpleMove = simplifyMove(*itr);
+       printf(", \"%s\"", simpleMove.c_str());
+     }
+     printf(" });\n");
+     //printf("Size: %lu\n", vec.size());
+    }
+  }
+
   // Print Move History
   if (_storeMoveHistory && _showMoveList)
   {
@@ -733,6 +672,10 @@ Train::Train(const nlohmann::json& config)
   // Reading win state tolerance
   if (isDefined(_config["Jaffar Configuration"], "Win State Step Tolerance") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Win State Step Tolerance' key.\n");
   _winStateStepTolerance = _config["Jaffar Configuration"]["Win State Step Tolerance"].get<uint16_t>();
+
+  // Reading whether to search for new key inputs
+  if (isDefined(_config["Jaffar Configuration"], "Detect Possible Moves") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'Detect Possible Moves' key.\n");
+   _detectPossibleMoves = _config["Jaffar Configuration"]["Detect Possible Moves"].get<bool>();
 
   // Parsing database sizes
   if (isDefined(_config["Jaffar Configuration"], "State Database") == false) EXIT_WITH_ERROR("[ERROR] Jaffar Configuration missing 'State Database' key.\n");
@@ -786,7 +729,6 @@ Train::Train(const nlohmann::json& config)
 
   // Resizing containers based on thread count
   _gameInstances.resize(_threadCount);
-  _verificationInstances.resize(_threadCount);
 
   // Initializing thread-specific instances
   #pragma omp parallel
@@ -801,14 +743,6 @@ Train::Train(const nlohmann::json& config)
     auto emuInstance = new EmuInstance(_config["Emulator Configuration"]);
     _gameInstances[threadId] = new GameInstance(emuInstance, _config["Game Configuration"]);
     _gameInstances[threadId]->parseRules(_config["Rules"]);
-
-    _verificationInstances[threadId].resize(_VERIFICATION_INSTANCES);
-    for (size_t i = 0; i < _VERIFICATION_INSTANCES; i++)
-    {
-     emuInstance = new EmuInstance(_config["Emulator Configuration"]);
-     _verificationInstances[threadId][i] = new GameInstance(emuInstance, _config["Game Configuration"]);
-     _verificationInstances[threadId][i]->parseRules(_config["Rules"]);
-    }
    }
   }
 

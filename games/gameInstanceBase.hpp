@@ -77,4 +77,12 @@ class GameInstanceBase
 
   // Function to save a trace
   virtual std::string getFrameTrace() const { return ""; }
+
+  ////// Functions to detect possible moves
+
+  // This function encodes a minimal set of the state variables, to differentiate possible move sets
+  virtual uint64_t getStateMiniHash() const { return 0; }
+
+  // This function returns a set of candidate moves
+  virtual std::set<INPUT_TYPE> getCandidateMoves() const { return std::set<INPUT_TYPE>(); }
 };
