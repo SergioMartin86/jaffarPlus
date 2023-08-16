@@ -43,45 +43,102 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   updateDerivedValues();
 }
 
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
+{
+ std::vector<INPUT_TYPE> moves;
+
+ _emu->advanceState(move);
+ moves.push_back(move);
+ updateDerivedValues();
+
+ return moves;
+}
+
 // This function computes the hash for the current state
-_uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 {
   // Storage for hash calculation
   MetroHash128 hash;
 
-  if (*gameMode != 2)  hash.Update(*gameTimer);
+  if (*gameMode != 2)  hash.Update(currentStep);
 
-  if (timerTolerance > 0) hash.Update(*gameTimer % timerTolerance);
-  hash.Update(*gameMode);
-  hash.Update(*gameSubMode);
-  hash.Update(*heroAction);
-  hash.Update(*screenScroll1);
-  hash.Update(*screenScroll2);
-  hash.Update(*bossHP);
-  hash.Update(*heroHP);
-  hash.Update(*currentStage);
-  hash.Update(*score1);
-  hash.Update(*score2);
-  hash.Update(*score3);
-  hash.Update(*score4);
-  hash.Update(*score5);
-  hash.Update(*heroActionTimer);
-  hash.Update(*heroScreenPosX);
-  hash.Update(*heroScreenPosY);
-  hash.Update(*heroAirMode);
-  hash.Update(*enemyShrugCounter);
-  hash.Update(*enemyGrabCounter);
-  hash.Update(*bossPosX);
+  if (timerTolerance > 0) hash.Update(currentStep % timerTolerance);
 
-  hash.Update(&_emu->_baseMem[0x04A0], 0x20); // Enemy Alive Flags
-  hash.Update(&_emu->_baseMem[0x0300], 0x80 );
-  hash.Update(&_emu->_baseMem[0x03B0], 0x150);
-  hash.Update(&_emu->_baseMem[0x0700], 0x100);
+    uint8_t emuState[_STATE_DATA_SIZE_PLAY];
+   _emu->serializeState(emuState);
+   _emu->advanceState(0);
 
-  hash.Update(&_emu->_baseMem[0x0005], 0x000E);
-  hash.Update(&_emu->_baseMem[0x0016], 0x0032);
-  hash.Update(&_emu->_baseMem[0x004A], 0x0025);
-  hash.Update(&_emu->_baseMem[0x006B], 0x0035);
+//  hash.Update(*gameMode);
+//  hash.Update(*gameSubMode);
+//  hash.Update(*heroAction);
+//  hash.Update(*screenScroll1);
+//  hash.Update(*screenScroll2);
+//  hash.Update(*bossHP);
+//  hash.Update(*heroHP);
+//  hash.Update(*currentStage);
+//  hash.Update(*score1);
+//  hash.Update(*score2);
+//  hash.Update(*score3);
+//  hash.Update(*score4);
+//  hash.Update(*score5);
+//  hash.Update(*heroActionTimer);
+//  hash.Update(*heroScreenPosX);
+//  hash.Update(*heroScreenPosY);
+//  hash.Update(*heroAirMode);
+//  hash.Update(*enemyShrugCounter);
+//  hash.Update(*enemyGrabCounter);
+//  hash.Update(*bossPosX);
+//
+//  hash.Update(&_emu->_baseMem[0x0100], 0x6FF);
+////  hash.Update(&_emu->_baseMem[0x04A0], 0x20); // Enemy Alive Flags
+////  hash.Update(&_emu->_baseMem[0x0300], 0x80 );
+////  hash.Update(&_emu->_baseMem[0x03B0], 0x150);
+////  hash.Update(&_emu->_baseMem[0x0700], 0x100);
+//
+//  hash.Update(&_emu->_baseMem[0x0005], 0x000E);
+//  hash.Update(&_emu->_baseMem[0x0016], 0x0032);
+//  hash.Update(&_emu->_baseMem[0x004A], 0x0025);
+//  hash.Update(&_emu->_baseMem[0x006B], 0x0035);
+
+    for (size_t i = 0; i < 0x800; i++)
+//     if (i != 0x0000)
+//     if (i != 0x0001)
+//     if (i != 0x0002)
+//     if (i != 0x0003)
+//     if (i != 0x0004)
+//     if (i != 0x0012)
+     if (i != 0x0018)
+     if (i != 0x0019)
+     if (i != 0x001A)
+     if (i != 0x001B)
+     if (i != 0x001C)
+     if (i != 0x001D)
+     if (i != 0x001F)
+     if (i != 0x0020)
+     if (i != 0x0014)
+     if (i != 0x0015)
+//     if (i != 0x0033)
+//      if (i != 0x0049)
+//     if (i != 0x0052)
+//     if (i != 0x0066)
+//     if (i != 0x0067)
+       if (!(i > 0x0300 && i < 0x0400))
+//     if (!(i > 0x03A0 && i < 0x03A8))
+//     if (!(i > 0x0360 && i < 0x0370))
+//     if (i != 0x0068)
+//     if (i != 0x0069)
+//     if (i != 0x006A)
+//     if (i != 0x036E)
+//     if (i != 0x036F)
+//      if (i != 0x04DF)
+//      if (i != 0x07DF)
+//      if (i != 0x049B)
+//      if (i != 0x03AB)
+//      if (i != 0x0393)
+      hash.Update(_emu->_baseMem[i]);
+
+//       Reload game state
+  _emu->deserializeState(emuState);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -102,29 +159,139 @@ void GameInstance::updateDerivedValues()
 }
 
 // Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  std::vector<std::string> moveList = {"."};
 
  if (*gameMode != 2) return {"."};
 
- // First pass stage 00-00
- if (*heroAction == 0x0000) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", ".L......", "R.......", ".......A", "...U...A", "...U..B.", "..DU....", ".L.U....", "RL......", ".L.....A", "R......A", "R.....B.", "R..U....", "R.D.....", "RL.U....", "R.DU....", "R..U..B.", "R..U...A", ".L.U..B.", ".L.U...A"});
- if (*heroAction == 0x0001) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", ".L......", "R.......", ".......A", "R..U....", "R......A", "R.D.....", ".LD.....", "RL......", ".L.U....", ".L....B.", ".L.....A", "..DU....", "...U..B.", "...U...A", "R..U..B.", "RL.U....", "R..U...A", ".LDU....", ".LD...B.", ".L.U..B.", ".L.U...A"});
- if (*heroAction == 0x0002) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", ".......A", ".L......",  "R.......", ".LD.....", "RL......", "R.D.....", "R..U....", "R.....B.", "R......A", ".L.U....", "...U...A", "..DU....", "..D...B.", "..D....A", "...U..B.", "R..U..B.", "RL.U....", "R.DU....", "R.D...B.", "R.D....A", "..DU..B.", "R..U...A", ".LDU....", "..DU...A", ".L.U..B.", ".L.U...A", "R.DU...A", "R.DU..B."});
- if (*heroAction == 0x0003) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", ".......A", ".L......",  "R.......", ".L.U....", "R.D.....", "R..U....", ".LD.....", ".L....B.", ".L.....A", "..DU....", "..D...B.", "...U...A", "..D....A", "...U..B.", ".LDU....", "RL.U....", "R.DU....", "R..U..B.", "R..U...A", "..DU..B.", ".LD...B.", ".LD....A", ".L.U..B.", ".L.U...A", "..DU...A", ".LDU...A", ".LDU..B."});
- if (*heroAction == 0x0004) moveList.insert(moveList.end(), { ".......A", "......B.", ".L......", "R.......", ".L....B.", "R.....B.", ".L.U....", "R..U....", ".L.U..B.", "R..U..B."});
- if (*heroAction == 0x0005) moveList.insert(moveList.end(), { ".......A", "......B.", ".L......", "R.......", ".L....B.", "R.....B.", ".L.U....", "R..U....", ".L.U..B.", "R..U..B."});
- if (*heroAction == 0x0010) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", "...U..B.", "..DU....", "R.....B.", "R..U....", "R.D.....", "RL......", "R..U..B.", "R.DU...."});
- if (*heroAction == 0x0011) moveList.insert(moveList.end(), { "......B.", "...U....", "..D.....", ".L......", "...U..B.", "..DU....", ".L....B.", ".L.U....", ".LD.....", ".L.U..B.", ".LDU...."});
- if (*heroAction == 0x0012) moveList.insert(moveList.end(), { "......B.", "...U....", "...U..B.", "R.....B.", "R..U....", "RL......", "R..U..B."});
- if (*heroAction == 0x0013) moveList.insert(moveList.end(), { "......B.", "...U....", ".L......", "R.......", "...U..B.", ".L....B.", ".L.U....", ".L.U..B."});
- if (*heroAction == 0x0014) moveList.insert(moveList.end(), {  ".L......", "R.......", ".L....B.", "R.....B.", ".L.U..B.", "R..U..B."});
- if (*heroAction == 0x0015) moveList.insert(moveList.end(), { ".......A", "......B.", ".L......", "R.......", ".L....B.", "R.....B.", ".L.U..B.", "R..U..B."});
- if (*heroAction == 0x0020) moveList.insert(moveList.end(), { ".......A", "...U....", ".L......", "R.......", "..D.....", ".L.....A", "...U...A", "..DU....", "R......A", "R..U....", "R.D.....", "RL......", "R..U...A", "R.DU...."});
- if (*heroAction == 0x0021) moveList.insert(moveList.end(), { ".......A", "...U....", "..D.....", ".L......",  "R.......", "...U...A", "..DU....", ".L.....A", ".L.U....", ".LD.....", ".L.U...A", ".LDU...."});
- if (*heroAction == 0x0022) moveList.insert(moveList.end(), { ".......A", "...U....", "...U...A", "R......A", "R..U....", "RL......", "R..U...A"});
- if (*heroAction == 0x0023) moveList.insert(moveList.end(), { ".......A", "...U....", ".L......",  "R.......", "...U...A", ".L.....A", ".L.U....", ".L.U...A"});
+ // Getting mini-hash
+ auto stateMiniHash = getStateMiniHash();
+
+// if (stateMiniHash == 0x0000) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0001) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0002) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0003) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0004) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0005) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "RA", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0010) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "LA", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0011) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "LA", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0012) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "LA", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0013) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "LA", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0014) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "LA", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0015) moveList.insert(moveList.end(), { "A", "B", "R", "L", "D", "U", "LA", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0020) moveList.insert(moveList.end(), { "R", "D", "U", "DA", "DB", "DR", "UR", "DRA", "DRB" });
+// if (stateMiniHash == 0x0030) moveList.insert(moveList.end(), { "L", "D", "U", "DA", "DB", "DL", "UL", "DLA", "DLB" });
+// if (stateMiniHash == 0x0041) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0042) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0043) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0044) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0045) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0046) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0047) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0048) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0049) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x004A) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x004B) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0051) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0052) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0053) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0054) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0055) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0056) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0057) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0058) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0059) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x005A) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x005B) moveList.insert(moveList.end(), { "A", "B" });
+// if (stateMiniHash == 0x0101) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0102) moveList.insert(moveList.end(), { "B", "R", "D", "RB", "DR" });
+// if (stateMiniHash == 0x0103) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0104) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0105) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0106) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0107) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0108) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0109) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x010A) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x010B) moveList.insert(moveList.end(), { "B", "R", "D", "U", "RB", "DR", "UR" });
+// if (stateMiniHash == 0x0111) moveList.insert(moveList.end(), { "L" });
+// if (stateMiniHash == 0x0112) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0113) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0114) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0115) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0116) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0117) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0118) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0119) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x011A) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x011B) moveList.insert(moveList.end(), { "B", "L", "D", "U", "LB", "DL", "UL" });
+// if (stateMiniHash == 0x0121) moveList.insert(moveList.end(), { "R" });
+// if (stateMiniHash == 0x0122) moveList.insert(moveList.end(), { "R" });
+// if (stateMiniHash == 0x0123) moveList.insert(moveList.end(), { "B", "R", "RB" });
+// if (stateMiniHash == 0x0124) moveList.insert(moveList.end(), { "B", "R", "RB" });
+// if (stateMiniHash == 0x0125) moveList.insert(moveList.end(), { "B", "R", "U", "RB", "UR" });
+// if (stateMiniHash == 0x0126) moveList.insert(moveList.end(), { "B", "R", "U", "RB", "UR" });
+// if (stateMiniHash == 0x0127) moveList.insert(moveList.end(), { "B", "R", "U", "RB", "UR" });
+// if (stateMiniHash == 0x0128) moveList.insert(moveList.end(), { "B", "R", "U", "RB", "UR" });
+// if (stateMiniHash == 0x0129) moveList.insert(moveList.end(), { "B", "R", "U", "RB", "UR" });
+// if (stateMiniHash == 0x012A) moveList.insert(moveList.end(), { "B", "R", "U", "RB", "UR" });
+// if (stateMiniHash == 0x012B) moveList.insert(moveList.end(), { "B", "R", "U", "RB", "UR" });
+// if (stateMiniHash == 0x0131) moveList.insert(moveList.end(), { "L" });
+// if (stateMiniHash == 0x0132) moveList.insert(moveList.end(), { "L" });
+// if (stateMiniHash == 0x0133) moveList.insert(moveList.end(), { "B", "L", "U", "LB", "UL" });
+// if (stateMiniHash == 0x0134) moveList.insert(moveList.end(), { "B", "L", "U", "LB", "UL" });
+// if (stateMiniHash == 0x0135) moveList.insert(moveList.end(), { "B", "L", "U", "LB", "UL" });
+// if (stateMiniHash == 0x0136) moveList.insert(moveList.end(), { "B", "L", "U", "LB", "UL" });
+// if (stateMiniHash == 0x0137) moveList.insert(moveList.end(), { "B", "L", "U", "LB", "UL" });
+// if (stateMiniHash == 0x0138) moveList.insert(moveList.end(), { "B", "L", "U", "LB", "UL" });
+// if (stateMiniHash == 0x0139) moveList.insert(moveList.end(), { "B", "L", "U", "LB", "UL" });
+// if (stateMiniHash == 0x013A) moveList.insert(moveList.end(), { "B", "L", "U", "LB", "UL" });
+// if (stateMiniHash == 0x013B) moveList.insert(moveList.end(), { "B", "L", "U", "LB", "UL" });
+// if (stateMiniHash == 0x0201) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x0202) moveList.insert(moveList.end(), { "R" });
+// if (stateMiniHash == 0x0203) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x0204) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x0205) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x0206) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x0207) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x0208) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x0209) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x020A) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x020B) moveList.insert(moveList.end(), { "A", "R", "D", "U", "RA", "DR", "UR" });
+// if (stateMiniHash == 0x0211) moveList.insert(moveList.end(), { "L" });
+// if (stateMiniHash == 0x0212) moveList.insert(moveList.end(), { "L" });
+// if (stateMiniHash == 0x0213) moveList.insert(moveList.end(), { "A", "L", "D", "U", "LA", "DL", "UL" });
+// if (stateMiniHash == 0x0214) moveList.insert(moveList.end(), { "A", "L", "D", "U", "LA", "DL", "UL" });
+// if (stateMiniHash == 0x0215) moveList.insert(moveList.end(), { "A", "L", "D", "U", "LA", "DL", "UL" });
+// if (stateMiniHash == 0x0216) moveList.insert(moveList.end(), { "A", "L", "D", "U", "LA", "DL", "UL" });
+// if (stateMiniHash == 0x0217) moveList.insert(moveList.end(), { "A", "L", "D", "U", "LA", "DL", "UL" });
+// if (stateMiniHash == 0x0218) moveList.insert(moveList.end(), { "A", "L", "D", "U", "LA", "DL", "UL" });
+// if (stateMiniHash == 0x0219) moveList.insert(moveList.end(), { "A", "L", "D", "U", "LA", "DL", "UL" });
+// if (stateMiniHash == 0x021A) moveList.insert(moveList.end(), { "A", "L", "D", "U", "LA", "DL", "UL" });
+// if (stateMiniHash == 0x021B) moveList.insert(moveList.end(), { "A", "L", "D", "U", "LA", "DL", "UL" });
+// if (stateMiniHash == 0x0221) moveList.insert(moveList.end(), { "R" });
+// if (stateMiniHash == 0x0222) moveList.insert(moveList.end(), { "R" });
+// if (stateMiniHash == 0x0223) moveList.insert(moveList.end(), { "A", "R", "RA" });
+// if (stateMiniHash == 0x0224) moveList.insert(moveList.end(), { "A", "R", "RA" });
+// if (stateMiniHash == 0x0225) moveList.insert(moveList.end(), { "A", "R", "U", "RA", "UR" });
+// if (stateMiniHash == 0x0226) moveList.insert(moveList.end(), { "A", "R", "U", "RA", "UR" });
+// if (stateMiniHash == 0x0227) moveList.insert(moveList.end(), { "A", "R", "U", "RA", "UR" });
+// if (stateMiniHash == 0x0228) moveList.insert(moveList.end(), { "A", "R", "U", "RA", "UR" });
+// if (stateMiniHash == 0x0229) moveList.insert(moveList.end(), { "A", "R", "U", "RA", "UR" });
+// if (stateMiniHash == 0x022A) moveList.insert(moveList.end(), { "A", "R", "U", "RA", "UR" });
+// if (stateMiniHash == 0x022B) moveList.insert(moveList.end(), { "A", "R", "U", "RA", "UR" });
+// if (stateMiniHash == 0x0231) moveList.insert(moveList.end(), { "L" });
+// if (stateMiniHash == 0x0232) moveList.insert(moveList.end(), { "L" });
+// if (stateMiniHash == 0x0233) moveList.insert(moveList.end(), { "A", "L", "LA" });
+// if (stateMiniHash == 0x0234) moveList.insert(moveList.end(), { "A", "L", "U", "LA", "UL" });
+// if (stateMiniHash == 0x0235) moveList.insert(moveList.end(), { "A", "L", "U", "LA", "UL" });
+// if (stateMiniHash == 0x0236) moveList.insert(moveList.end(), { "A", "L", "U", "LA", "UL" });
+// if (stateMiniHash == 0x0237) moveList.insert(moveList.end(), { "A", "L", "U", "LA", "UL" });
+// if (stateMiniHash == 0x0238) moveList.insert(moveList.end(), { "A", "L", "U", "LA", "UL" });
+// if (stateMiniHash == 0x0239) moveList.insert(moveList.end(), { "A", "L", "U", "LA", "UL" });
+// if (stateMiniHash == 0x023A) moveList.insert(moveList.end(), { "A", "L", "U", "LA", "UL" });
+// if (stateMiniHash == 0x023B) moveList.insert(moveList.end(), { "A", "L", "U", "LA", "UL" });
 
  return moveList;
 }
@@ -193,16 +360,12 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   return reward;
 }
 
-void GameInstance::setRNGState(const uint64_t RNGState)
-{
-}
-
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Game Timer:                       %02u\n", *gameTimer);
  LOG("[Jaffar]  + Game Mode:                        %02u-%02u\n", *gameMode, *gameSubMode);
  LOG("[Jaffar]  + Reward:                           %f\n", getStateReward(rulesStatus));
- LOG("[Jaffar]  + Hash:                             0x%lX\n", computeHash());
+ LOG("[Jaffar]  + Hash:                             0x%lX0x%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Score:                            %f\n", score);
  LOG("[Jaffar]  + Hero HP:                          %02d\n", *heroHP);
  LOG("[Jaffar]  + Hero Air Mode:                    %02u\n", *heroAirMode);
@@ -232,4 +395,25 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  if (std::abs(magnets.positionImbalanceMagnet) > 0.0f)            LOG("[Jaffar]  + Position Imbalance Magnet     - Intensity: %.5f\n", magnets.positionImbalanceMagnet);
  if (std::abs(magnets.bossHorizontalMagnet) > 0.0f)               LOG("[Jaffar]  + Boss Horizontal Magnet        - Intensity: %.5f\n", magnets.bossHorizontalMagnet);
 }
+
+uint64_t GameInstance::getStateMiniHash() const
+{
+ return *heroAction * 16 + *heroActionTimer;
+}
+
+std::set<INPUT_TYPE> GameInstance::getCandidateMoves() const
+{
+ std::set<INPUT_TYPE> candidateMoves;
+
+ for (INPUT_TYPE i = 0; i < 0b11111111; i++)
+ {
+   if ((i & 0b00001000) == 0) // NES Start
+   if ((i & 0b00000100) == 0) // NES Select
+   if (countButtonsPressedNumber(i) > 3 == false)
+   candidateMoves.insert(i);
+ }
+
+ return candidateMoves;
+}
+
 

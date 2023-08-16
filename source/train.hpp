@@ -50,7 +50,6 @@ class Train
 
   // Creating game instances, one per openMP thread
   std::vector<GameInstance*> _gameInstances;
-  std::vector<std::vector<GameInstance*>> _verificationInstances;
   GameInstance* _showGameInstance;
 
   // State counter
@@ -125,6 +124,10 @@ class Train
 
   // SDLPop instance and Id for the show thread
   pthread_t _showThreadId;
+
+  // Storage for finding new moves
+  std::map<uint64_t, std::set<std::string>> _newMoveKeySet;
+  bool _detectPossibleMoves;
 
   // Stats flags
   bool _showHashInfo;

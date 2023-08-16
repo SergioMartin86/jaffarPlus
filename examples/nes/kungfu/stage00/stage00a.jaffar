@@ -1,55 +1,60 @@
 {
-  "Description": "This script searches for the fastest any% solution for Castlevania Stage 01",  
- 
   "Emulator Configuration": 
   {
     "Rom File": "../kungfu.nes",
     "State File": "stage00a.state"
   },
   
-   "State Configuration": 
-  {
-    "Max Difference Count": 1500,
-    "Max Move Count": 1300
-  },
-  
   "Game Configuration": 
   {
-   "Timer Tolerance": 2
+   "Timer Tolerance": 0
   },
   
   "Jaffar Configuration": 
   {
     "Show Timing Information": true,
-    "Show Hash Information": true,
+    "Show Hash Information": false,
     "Show Winning State Information": true,
+    "Show Move List": true,
+    "Win State Step Tolerance": 0,
     
-    "State Database":
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 80000,
-     "Max Size Upper Bound (Mb)": 230000
+      "Max Move Count": 1600,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 10000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":
     { 
-     "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 3000
+     "Database Count": 2,
+     "Max Size (Mb)": 10000 
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
+     "Save Numbered States": false,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
-    }
+     }
   },
   
   "Playback Configuration": 
   {
-   "Overlay Path": "../../../../platforms/nes/overlay"
+     "Disable Display": false,
+     "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
@@ -64,9 +69,28 @@
     
     "Actions":
     [
+     { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Hero Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
-     { "Type": "Set Hero Health Magnet", "Intensity": -0.01 },
+     { "Type": "Set Hero Health Magnet", "Intensity": 0.01 },
      { "Type": "Set Position Imbalance Magnet", "Intensity": -2.0 }
+    ]
+   },
+   
+   {
+    "Label": 1001,
+    "Conditions":
+    [
+      { "Property": "Hero Pos X", "Op": "<=", "Value": 465 }
+    ],
+    
+    "Satisfies": [ 1000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Hero Horizontal Magnet", "Intensity": 1.0, "Center": 422, "Min": 0, "Max": 6000 },
+     { "Type": "Set Boss Health Magnet", "Intensity": -0.3 },
+     { "Type": "Set Hero Health Magnet", "Intensity": -0.001 }
     ]
    },
    
@@ -74,16 +98,37 @@
     "Label": 1002,
     "Conditions":
     [
-      { "Property": "Hero Pos X", "Op": "<=", "Value": 465 }
+      { "Property": "Hero Pos X", "Op": "<=", "Value": 423 },
+      { "Property": "Boss Pos X", "Op": "<=", "Value": 105 },
+      { "Property": "Boss HP", "Op": ">", "Value": 0 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Hero Horizontal Magnet", "Intensity": 1.0, "Center": 0, "Min": 0, "Max": 6000 },
+     { "Type": "Set Boss Health Magnet", "Intensity": -0.3 },
+     { "Type": "Set Hero Health Magnet", "Intensity": -0.001 }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    "Conditions":
+    [
+      { "Property": "Game Mode", "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [  ],
     
     "Actions":
     [
      { "Type": "Trigger Win" }
     ]
    },
+   
    
    {
     "Label": 1900,
