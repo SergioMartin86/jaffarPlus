@@ -126,7 +126,7 @@ class Train
   pthread_t _showThreadId;
 
   // Storage for finding new moves
-  std::map<uint64_t, std::set<std::string>> _newMoveKeySet;
+  std::map<uint64_t, std::set<INPUT_TYPE>> _newMoveKeySet;
   bool _detectPossibleMoves;
 
   // Stats flags
@@ -156,6 +156,7 @@ class Train
   void limitStateDatabase(std::vector<State*>& stateDB, size_t limit);
 
   // Calculates hash db size from its entries
+  bool checkHash(const _uint128_t hash) const;
   double hashSizeFromEntries (const ssize_t entries) const;
   size_t hashEntriesFromSize(const double size) const;
 
@@ -169,6 +170,7 @@ class Train
   ssize_t _stepHashCalculationTime;
   ssize_t _stepHashCheckingTime;
   ssize_t _stepHashFilteringTime;
+  ssize_t _stepThreadCandidateMoveEvaluationTime;
   ssize_t _stepStateAdvanceTime;
   ssize_t _stepStateDeserializationTime;
   ssize_t _stepStateEncodingTime;
