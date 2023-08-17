@@ -170,7 +170,6 @@ class Train
   ssize_t _stepHashCalculationTime;
   ssize_t _stepHashCheckingTime;
   ssize_t _stepHashFilteringTime;
-  ssize_t _stepThreadCandidateMoveEvaluationTime;
   ssize_t _stepStateAdvanceTime;
   ssize_t _stepStateDeserializationTime;
   ssize_t _stepStateEncodingTime;
