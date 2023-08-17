@@ -81,7 +81,7 @@ class GameInstanceBase
   ////// Functions to detect possible moves
 
   // This function encodes a minimal set of the state variables, to differentiate possible move sets
-  virtual uint64_t getStateMiniHash() const { return 0; }
+  virtual uint64_t getStateMoveHash() const { return 0; }
 
   // This function returns a set of candidate moves
   virtual std::set<INPUT_TYPE> getCandidateMoves() const { return std::set<INPUT_TYPE>(); }

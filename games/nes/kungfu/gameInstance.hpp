@@ -72,6 +72,6 @@ class GameInstance : public GameInstanceBase
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
-  uint64_t getStateMiniHash() const override;
+  uint64_t getStateMoveHash() const override;
   std::set<INPUT_TYPE> getCandidateMoves() const override;
 };
