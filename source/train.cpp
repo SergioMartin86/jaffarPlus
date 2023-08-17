@@ -155,6 +155,24 @@ size_t Train::hashEntriesFromSize(const double size) const
   return (size_t)((size * (512.0 * 1024.0)) / ((double)sizeof(_uint128_t) + (double)sizeof(void*)));
 };
 
+bool Train::checkHash(const _uint128_t hash) const
+{
+ bool collisionDetected = false;
+
+ // Checking for past hash DBs
+ for (const auto& hashDB : _hashPastDBs)
+ {
+  collisionDetected |= hashDB->contains(hash);
+  if (collisionDetected == true) break;
+ }
+
+ // If not found in the past, check the present db
+ if (collisionDetected == false) collisionDetected = !_hashCurDB->insert(hash).second;
+
+ // Returning the state
+ return collisionDetected;
+}
+
 void Train::computeStates()
 {
   // Initializing counters
@@ -181,6 +199,7 @@ void Train::computeStates()
   // Initializing step timers
   _stepHashCalculationTime = 0;
   _stepHashCheckingTime = 0;
+  _stepThreadCandidateMoveEvaluationTime = 0;
   _stepStateAdvanceTime = 0;
   _stepStateDeserializationTime = 0;
   _stepStateEncodingTime = 0;
@@ -206,6 +225,7 @@ void Train::computeStates()
     // Profiling timers
     ssize_t threadHashCalculationTime = 0;
     ssize_t threadHashCheckingTime = 0;
+    ssize_t threadCandidateMoveEvaluationTime = 0;
     ssize_t threadStateAdvanceTime = 0;
     ssize_t threadStateDeserializationTime = 0;
     ssize_t threadStateDecodingTime = 0;
@@ -226,44 +246,6 @@ void Train::computeStates()
       t0 = std::chrono::high_resolution_clock::now(); // Profiling
       _gameInstances[threadId]->pushState(baseStateData);
       std::vector<std::string> possibleMoves = _gameInstances[threadId]->getPossibleMoves(baseState->getRuleStatus());
-
-      // Storage to find new possible key inputs
-      std::set<uint64_t> possibleMoveSet;
-      std::set<uint64_t> candidateMoveSet;
-      uint64_t keyValue;
-
-      // If detecting new moves, add candidate moves to the list
-      if (_detectPossibleMoves == true)
-      {
-       // Storage for the full set of moves
-       std::vector<std::string> fullMoves;
-
-       // Adding current move set
-       for (const auto& move : possibleMoves)
-       {
-        possibleMoveSet.insert(EmuInstance::moveStringToCode(move));
-        fullMoves.push_back(move);
-       }
-
-       // Obtaining candidate moves and adding them to the full set of moves
-       auto candidateMoves = _gameInstances[threadId]->getCandidateMoves();
-       for (const auto move : candidateMoves)
-       {
-        if (possibleMoveSet.contains(move) == false)
-        {
-         INPUT_TYPE idx = (INPUT_TYPE)move;
-         candidateMoveSet.insert(idx);
-         fullMoves.push_back(EmuInstance::moveCodeToString(idx));
-        }
-       }
-
-       std::sort(fullMoves.begin(), fullMoves.end(), moveCountComparerString);
-       auto possibleMoveCopy = possibleMoves;
-       possibleMoves = fullMoves;
-
-       // Store key value
-       keyValue = _gameInstances[threadId]->getStateMiniHash();
-      }
 
       // Making copy of base state data and pointer
       baseStateContent->copy(baseState);
@@ -305,18 +287,7 @@ void Train::computeStates()
 
         // Checking for the existence of the hash in the hash database
         t0 = std::chrono::high_resolution_clock::now(); // Profiling
-        bool collisionDetected = false;
-
-        // Checking for past hash DBs
-        for (const auto& hashDB : _hashPastDBs)
-        {
-         collisionDetected |= hashDB->contains(hash);
-         if (collisionDetected == true) break;
-        }
-
-        // If not found in the past, check the present db
-        if (collisionDetected == false) collisionDetected = !_hashCurDB->insert(hash).second;
-
+        bool collisionDetected = checkHash(hash);
         tf = std::chrono::high_resolution_clock::now();
         threadHashCheckingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count();
 
@@ -371,15 +342,6 @@ void Train::computeStates()
 
         // Getting checkpoint level
         auto frameCheckpoint = _gameInstances[threadId]->getCheckpointLevel(newState->getRuleStatus());
-
-        if (_detectPossibleMoves == true)
-        {
-         // Checking if move is not there in actual moves
-         #pragma omp critical
-         if (candidateMoveSet.contains(EmuInstance::moveStringToCode(possibleMoves[idx])))
-          if (_newMoveKeySet[keyValue].contains(possibleMoves[idx]) == false)
-           _newMoveKeySet[keyValue].insert(possibleMoves[idx]);
-        }
 
         tf = std::chrono::high_resolution_clock::now(); // Profiling
         threadStateEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
@@ -452,6 +414,57 @@ void Train::computeStates()
         }
       }
 
+      // If detecting new moves, try candidate moves
+      if (_detectPossibleMoves == true)
+      {
+       auto t0 = std::chrono::high_resolution_clock::now(); // Profiling
+
+       // Storage to find new possible key inputs
+       std::set<INPUT_TYPE> possibleMoveSet;
+       std::set<INPUT_TYPE> candidateMoveSet;
+
+       // Storage for the full set of moves
+       std::vector<std::string> fullMoves;
+
+       // Creating a set with the moves already tried
+       for (const auto& move : possibleMoves) possibleMoveSet.insert(EmuInstance::moveStringToCode(move));
+
+       // Obtaining candidate moves that are not in the possible move set
+       auto candidateMoves = _gameInstances[threadId]->getCandidateMoves();
+       for (const auto move : candidateMoves) if (possibleMoveSet.contains(move) == false) candidateMoveSet.insert(move);
+
+       // Creating a sorted vector out of candidate moves, regarding the number of buttons pressed
+       std::vector<INPUT_TYPE> candidateMoveVector(candidateMoveSet.begin(), candidateMoveSet.end());
+       std::sort(candidateMoveVector.begin(), candidateMoveVector.end(), moveCountComparerNumber);
+
+       // Store key value
+       uint64_t keyValue = _gameInstances[threadId]->getStateMiniHash();
+
+       // Running candidate move on the current base frame and checking whether it obtained a different hash
+       for (const auto move : candidateMoveVector)
+       {
+        // Recovering base state
+        _gameInstances[threadId]->pushState(baseStateData);
+
+        // Running move
+        _gameInstances[threadId]->advanceGameState(move);
+
+        // Checking hash
+        auto hash = _gameInstances[threadId]->computeHash(_currentStep);
+
+        // Checking for the existence of the hash in the hash database
+        bool collisionDetected = checkHash(hash);
+
+        // If no collision detected, then this is a new move
+        if (collisionDetected == false)
+          #pragma omp critical
+            _newMoveKeySet[keyValue].insert(move);
+       }
+
+       tf = std::chrono::high_resolution_clock::now(); // Profiling
+       threadCandidateMoveEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(tf - t0).count(); // Profiling
+      }
+
       // Adding used base state back into free state queue, if it wasn't recycled locally
       if (baseFramePointer != NULL)
       {
@@ -470,6 +483,7 @@ void Train::computeStates()
     {
      _stepHashCalculationTime += threadHashCalculationTime;
      _stepHashCheckingTime += threadHashCheckingTime;
+     _stepThreadCandidateMoveEvaluationTime += threadCandidateMoveEvaluationTime;
      _stepStateAdvanceTime += threadStateAdvanceTime;
      _stepStateDeserializationTime += threadStateDeserializationTime;
      _stepStateEncodingTime += threadStateEncodingTime;
@@ -485,6 +499,7 @@ void Train::computeStates()
   // Updating timer averages
   _stepHashCalculationTime /= _threadCount;
   _stepHashCheckingTime /= _threadCount;
+  _stepThreadCandidateMoveEvaluationTime /= _threadCount;
   _stepStateAdvanceTime /= _threadCount;
   _stepStateDeserializationTime /= _threadCount;
   _stepStateEncodingTime /= _threadCount;
@@ -565,7 +580,7 @@ void Train::computeStates()
 
 void Train::printTrainStatus()
 {
-  ssize_t totalStepTime = _stepHashCalculationTime + _stepHashCheckingTime + _stepHashFilteringTime + _stepStateAdvanceTime + _stepStateDeserializationTime + _stepStateEncodingTime + _stepStateDecodingTime + _stepStateEvaluationTime + _stepStateCreationTime + _stepStateDBSortingTime;
+  ssize_t totalStepTime = _stepHashCalculationTime + _stepHashCheckingTime + _stepHashFilteringTime + _stepStateAdvanceTime + _stepStateDeserializationTime + _stepStateEncodingTime + _stepStateDecodingTime + _stepStateEvaluationTime + _stepStateCreationTime + _stepStateDBSortingTime + _stepThreadCandidateMoveEvaluationTime;
 
   printf("[Jaffar] ----------------------------------------------------------------\n");
   printf("[Jaffar] Config File: %s\n", _configFile.c_str());
@@ -595,6 +610,7 @@ void Train::printTrainStatus()
    printf("[Jaffar]   + Hash Calculation:        %5.2f%% (%lu)\n", ((double)_stepHashCalculationTime / (double)totalStepTime) * 100.0f, _stepHashCalculationTime);
    printf("[Jaffar]   + Hash Checking:           %5.2f%% (%lu)\n", ((double)_stepHashCheckingTime / (double)totalStepTime) * 100.0f, _stepHashCheckingTime);
    printf("[Jaffar]   + Hash Filtering:          %5.2f%% (%lu)\n", ((double)_stepHashFilteringTime / (double)totalStepTime) * 100.0f, _stepHashFilteringTime);
+   if (_detectPossibleMoves == true) printf("[Jaffar]   + Candidate Move Detection %5.2f%% (%lu)\n", ((double)_stepThreadCandidateMoveEvaluationTime / (double)totalStepTime) * 100.0f, _stepThreadCandidateMoveEvaluationTime);
    printf("[Jaffar]   + State Advance:           %5.2f%% (%lu)\n", ((double)_stepStateAdvanceTime / (double)totalStepTime) * 100.0f, _stepStateAdvanceTime);
    printf("[Jaffar]   + State Deserialization:   %5.2f%% (%lu)\n", ((double)_stepStateDeserializationTime / (double)totalStepTime) * 100.0f, _stepStateDeserializationTime);
    printf("[Jaffar]   + State Encoding:          %5.2f%% (%lu)\n", ((double)_stepStateEncodingTime / (double)totalStepTime) * 100.0f, _stepStateEncodingTime);
@@ -632,15 +648,15 @@ void Train::printTrainStatus()
 
     for (const auto& key : _newMoveKeySet)
     {
-     std::vector<std::string> vec(key.second.begin(), key.second.end());
-     std::sort(vec.begin(), vec.end(), moveCountComparerString);
+     std::vector<INPUT_TYPE> vec(key.second.begin(), key.second.end());
+     std::sort(vec.begin(), vec.end(), moveCountComparerNumber);
      auto itr = vec.begin();
-     std::string simpleMove = simplifyMove(*itr);
+     std::string simpleMove = simplifyMove(EmuInstance::moveCodeToString(*itr));
      printf("if (stateMiniHash == 0x%04X) moveList.insert(moveList.end(), { \"%s\"", key.first, simpleMove.c_str());
      itr++;
      for (; itr != vec.end(); itr++)
      {
-      std::string simpleMove = simplifyMove(*itr);
+      std::string simpleMove = simplifyMove(EmuInstance::moveCodeToString(*itr));
        printf(", \"%s\"", simpleMove.c_str());
      }
      printf(" });\n");
