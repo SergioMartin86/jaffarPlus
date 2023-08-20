@@ -18,6 +18,7 @@
     "Show Winning State Information": true,
     "Show Move List": false,
     "Win State Step Tolerance": 0,
+    "Detect Possible Moves": false,
     
     "State Configuration": 
     {
