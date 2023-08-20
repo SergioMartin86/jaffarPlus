@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "../bt.nes",
-    "State File": "skip.state"
+    "State File": "skip2.state"
   },
   
   "Game Configuration": 
@@ -18,10 +18,11 @@
     "Show Winning State Information": true,
     "Show Move List": true,
     "Win State Step Tolerance": 0,
+    "Detect Possible Moves": false,
     
     "State Configuration": 
     {
-      "Max Move Count": 500,
+      "Max Move Count": 600,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 700,
@@ -30,8 +31,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 300,
-     "Max Size Upper Bound (Mb)": 16000
+     "Max Size Lower Bound (Mb)": 3000,
+     "Max Size Upper Bound (Mb)": 18000
     },
     
     "Hash Database":
@@ -60,13 +61,11 @@
   
   "Rules":
   [
-   
    {
-    "Label": 1002,
+    "Label": 1000,
     "Conditions":
     [
-     { "Property": "Key Address 1", "Op": "==", "Value":  31 },
-     { "Property": "Key Address 2", "Op": "==", "Value":  4 }
+       { "Property": "Key Event 1 Triggered", "Op": "==", "Value":  1 }
     ],
     
     "Satisfies": [ ],
@@ -78,17 +77,33 @@
    },
    
    {
-    "Label": 1003,
+    "Label": 1001,
     "Conditions":
     [
-     { "Property": "Key Address 3", "Op": ">=", "Value":  3 }
+       { "Property": "Key Event 2 Triggered", "Op": "==", "Value":  1 }
     ],
     
     "Satisfies": [ ],
     
     "Actions":
     [
-     { "Type": "Add Reward", "Value": 10000 }
+     { "Type": "Add Reward", "Value": 100 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Conditions":
+    [
+     { "Property": "Key Event 1 Triggered", "Op": "==", "Value":  1 },
+     { "Property": "Key Event 2 Triggered", "Op": "==", "Value":  1 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
     ]
    },
    

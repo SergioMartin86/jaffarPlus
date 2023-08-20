@@ -54,8 +54,11 @@ class GameInstance : public GameInstanceBase
  float player2PosY;
  float player2PosZ;
 
+ uint8_t* lagFrame;
+
  // Artificial Values
  uint8_t* keyEvent1Triggered;
+ uint8_t* keyEvent2Triggered;
 
  // Configuration
  uint8_t timerTolerance;

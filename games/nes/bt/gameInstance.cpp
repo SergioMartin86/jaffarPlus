@@ -39,7 +39,10 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   keyAddress2        = (uint8_t* ) &_emu->_baseMem[0x0018];
   keyAddress3        = (uint8_t* ) &_emu->_baseMem[0x0021];
 
-  keyEvent1Triggered = (uint8_t* ) &_emu->_baseMem[0x06F0];
+  keyEvent1Triggered = (uint8_t* ) &_emu->_baseMem[0x0160];
+  keyEvent2Triggered = (uint8_t* ) &_emu->_baseMem[0x0161];
+
+  lagFrame = (uint8_t* ) &_emu->_baseMem[0x0009];
 
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
@@ -91,6 +94,8 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*keyAddress2);
   hash.Update(*keyAddress3);
   hash.Update(*keyEvent1Triggered);
+  hash.Update(*keyEvent2Triggered);
+  hash.Update(*lagFrame);
 
 //  hash.Update(&_emu->_baseMem[0x03EE], 0x100);
 
@@ -130,7 +135,6 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
  std::vector<std::string> moveList = { "." };
 
  moveList.insert(moveList.end(), { "B", "U", "D", "L", "A", "R", "RA", "UR", "UB", "UA", "UL", "DL", "UD", "DR", "DB", "DA", "BA", "LR", "LB", "LA", "RB", "UDA", "UDB", "ULR", "ULB", "ULA", "UDR", "UDL", "URB", "URA", "DLR", "DLB", "DLA", "DRB", "DRA", "LRB", "LRA", "LBA", "RBA" });
-
  moveList.insert(moveList.end(), { "s", "S", "Rs", "Us", "LS", "US", "Ls", "RS", "Ds", "DS", "Ss", "SB", "SA", "sB", "sA", "DSs", "DSB", "DRs", "UDS", "DRS", "DLs", "DLS", "UBA", "UsA", "UsB", "USA", "USB", "USs", "URs", "URS", "ULs", "ULS", "UDs", "LsA", "sBA", "SBA", "SsA", "SsB", "RsA", "RsB", "RSA", "RSB", "RSs", "DSA", "LsB", "LSA", "LSB", "LSs", "LRs", "LRS", "DBA", "DsA", "DsB" });
 
  return moveList;
@@ -164,7 +168,8 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
    if (*keyAddress2 == 0x04) reward += 1000.0;
   }
 
-  if (*keyAddress1 == 0x1F && *keyAddress2 == 0x04) *keyEvent1Triggered = 1;
+  if (*keyAddress1 == 0x1F && *keyAddress2 == 0x04 && *player1Lives == 2 && *lagFrame != 0) *keyEvent1Triggered = 1;
+  if (*keyAddress3 >= 3 && *player1Lives == 2 && *lagFrame != 0) *keyEvent2Triggered = 1;
 
   // Returning reward
   return reward;
@@ -175,6 +180,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Reward:                           %.10f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                             0x%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + RNG:                              0x%X\n", *rng);
+ LOG("[Jaffar]  + Lag Frame:                        %2u\n", *lagFrame);
  LOG("[Jaffar]  + Current Level:                    %2u\n", *currentLevel);
 
  LOG("[Jaffar]  + Player 1 Lives / Continues:       %2u / %2u\n", *player1Lives, *player1Continues  );
@@ -200,6 +206,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Key Address 2 (0x18):             0x%X\n", *keyAddress2 );
  LOG("[Jaffar]  + Key Address 3 (0x21):             0x%X\n", *keyAddress3 );
  LOG("[Jaffar]  + Key Event 1:                      0x%X\n", *keyEvent1Triggered );
+ LOG("[Jaffar]  + Key Event 2:                      0x%X\n", *keyEvent2Triggered );
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

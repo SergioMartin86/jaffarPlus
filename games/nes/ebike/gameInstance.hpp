@@ -40,13 +40,25 @@ class GameInstance : public GameInstanceBase
   uint8_t* bikeflightMode2;
   uint8_t* bikeflightMode3;
 
+  uint8_t* gameCycle;
+  uint8_t* currentBlockX;
+  uint8_t* prevBlockX;
+  uint8_t* blockXTransitions;
 
+  uint16_t* curSpeed;
+  uint16_t* maxSpeed;
+
+  uint8_t timerTolerance;
+
+
+  std::vector<INPUT_TYPE> advanceGameState(const INPUT_TYPE &move) override;
   GameInstance(EmuInstance* emu, const nlohmann::json& config);
-  _uint128_t computeHash() const override;
+  _uint128_t computeHash(const uint16_t currentStep = 0) const override;
   void updateDerivedValues() override;
-  std::vector<std::string> getPossibleMoves() const override;
+  std::vector<std::string> getPossibleMoves(const bool* rulesStatus) const override;
   magnetSet_t getMagnetValues(const bool* rulesStatus) const;
   float getStateReward(const bool* rulesStatus) const override;
   void printStateInfo(const bool* rulesStatus) const override;
-  void setRNGState(const uint64_t RNGState) override;
+  uint64_t getStateMoveHash() const override;
+  std::set<INPUT_TYPE> getCandidateMoves() const override;
 };

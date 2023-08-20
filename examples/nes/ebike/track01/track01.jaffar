@@ -1,55 +1,61 @@
 {
-  "Description": "This script searches for the fastest any% solution for excite bike",  
- 
   "Emulator Configuration": 
   {
     "Rom File": "../ebike.nes",
-    "State File": "track01.state"
-  },
-  
-  "State Configuration": 
-  {
-    "Max Difference Count": 1000,
-    "Max Move Count": 2400,
-    "Comments": "TAS stats at 681 and finishes at 2943 = 2262"
+    "State File": "start.state"
   },
   
   "Game Configuration": 
   {
+   "Timer Tolerance": 0
   },
   
   "Jaffar Configuration": 
   {
-    "Show Timing Information": false,
+    "Show Timing Information": true,
     "Show Hash Information": false,
     "Show Winning State Information": true,
+    "Show Move List": true,
+    "Win State Step Tolerance": 0,
+    "Detect Possible Moves": false,
     
-    "State Database":
+    "State Configuration": 
     {
-     "Max Size Lower Bound (Mb)": 50000,
-     "Max Size Upper Bound (Mb)": 200000
+      "Max Move Count": 220,
+      "Store Move History": true, 
+      "XDelta3 Enabled": false,  
+      "XDelta3 Max Differences": 2000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 60000
     },
     
     "Hash Database":
     { 
-     "Database Count": 4,
-     "Max Size Upper Bound (Mb)": 10000
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
     },
     
     "Save Intermediate Results":
     {
      "Enabled": true,
+     "Save Numbered States": false,
      "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Best Solution Path": "jaffar.best.sol",
      "Worst Solution Path": "/tmp/jaffar.worst.sol",
      "Best State Path": "/tmp/jaffar.best.state",
      "Worst State Path": "/tmp/jaffar.worst.state"
-    }
+     }
   },
   
   "Playback Configuration": 
   {
-    "Overlay Path": "../../../../platforms/nes/overlay"
+     "Disable Display": false,
+     "Overlay Path": "../../../../platforms/nes/overlay"
   },
   
   "Rules":
@@ -68,6 +74,41 @@
     "Actions":
     [
       { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    "Description": "Reward getting whip extension",
+    "Conditions":
+    [
+      { "Property": "Max Speed", "Op": ">=", "Value":  1500 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Description": "Reward getting whip extension",
+    "Conditions":
+    [
+      { "Property": "Max Speed", "Op": ">=", "Value":  832 },
+      { "Property": "Current Speed", "Op": "<", "Value":  820 }
+    ],
+    
+    "Satisfies": 
+    [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Fail" }
     ]
    }
   ]  
