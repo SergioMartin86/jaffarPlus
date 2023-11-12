@@ -17,6 +17,7 @@
     "Show Winning State Information": true,
     "Show Move List": false,
     "Win State Step Tolerance": 0,
+    "Detect Possible Moves": false,
     
     "State Configuration": 
     {
@@ -29,8 +30,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 10000,
-     "Max Size Upper Bound (Mb)": 50000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 5000
     },
     
     "Hash Database":
