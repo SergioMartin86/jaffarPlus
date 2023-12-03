@@ -1,0 +1,134 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "micro.nes",
+    "State File": "race14a.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 0
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Show Move List": false,
+    "Win State Step Tolerance": 0,
+    "Detect Possible Moves": false,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 400,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 1500,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 5000,
+     "Max Size Upper Bound (Mb)": 12000
+    },
+     
+    "Hash Database":
+    { 
+     "Database Count": 2, 
+     "Max Size (Mb)": 1000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "Overlay Path": "../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 8000,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+   
+   {
+    "Label": 8001,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ 8000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1149, "Y": 1521 }
+    ]
+   },
+   
+   {
+    "Label": 8002,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }, 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 10 }  
+    ],
+    
+    "Satisfies": [ 8001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 257, "Y": 1394 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+   
+   {
+    "Label": 8003,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }, 
+      { "Property": "Player 1 Checkpoint", "Op": "==", "Value": 20 },
+      { "Property": "Player 1 Recovery Mode", "Op": ">", "Value": 0 } 
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win"}
+    ]
+   }
+  ]
+}
