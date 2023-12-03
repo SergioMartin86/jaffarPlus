@@ -19,9 +19,11 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   player1PosX2                      = (uint8_t*)   &_emu->_baseMem[0x03DA];
   player1PosY1                      = (uint8_t*)   &_emu->_baseMem[0x03EA];
   player1PosY2                      = (uint8_t*)   &_emu->_baseMem[0x03E6];
+  player1PosY3                      = (uint8_t*)   &_emu->_baseMem[0x03EE];
   player1Accel                      = (int8_t*)    &_emu->_baseMem[0x0386];
   player1Angle1                     = (uint8_t*)   &_emu->_baseMem[0x04B2];
   player1Angle2                     = (uint8_t*)   &_emu->_baseMem[0x040A];
+  player1Angle3                     = (uint8_t*)   &_emu->_baseMem[0x04CA];
   player1LapsRemaining              = (uint8_t*)   &_emu->_baseMem[0x04B6];
   player1LapsRemainingPrev          = (uint8_t*)   &_emu->_baseMem[0x07FF];
   player1Checkpoint                 = (uint8_t*)   &_emu->_baseMem[0x04CE];
@@ -69,9 +71,11 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*player1PosX2);
   hash.Update(*player1PosY1);
   hash.Update(*player1PosY2);
+  hash.Update(*player1PosY3);
   hash.Update(*player1Accel);
   hash.Update(*player1Angle1);
   hash.Update(*player1Angle2);
+  hash.Update(*player1Angle3);
   hash.Update(*player1LapsRemaining);
   hash.Update(*player1LapsRemainingPrev);
   hash.Update(*player1Checkpoint);
@@ -175,6 +179,10 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   // Evaluating player health  magnet
   reward += magnets.recoveryTimerMagnet * (float)(*player1RecoveryTimer);
 
+  // Calculating angle magnet
+  float distanceToAngle = std::abs(*player1Angle1 - magnets.car1AngleMagnet.angle);
+  reward += (255.0 - distanceToAngle) * magnets.car1AngleMagnet.intensity;
+
   // Returning reward
   return reward;
 }
@@ -220,11 +228,14 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  distY = std::abs(cameraPosY - player1PosY);
  float cameraDistance = sqrt(distX*distX + distY*distY);
 
+ float distanceToAngle = std::abs(*player1Angle1 - magnets.car1AngleMagnet.angle);
+
  if (std::abs(magnets.pointMagnet.intensity) > 0.0f)                 LOG("[Jaffar]  + Point Magnet                     - Intensity: %.5f, X: %3.3f, Y: %3.3f, Dist: %3.3f\n", magnets.pointMagnet.intensity, magnets.pointMagnet.x, magnets.pointMagnet.y, distanceToPoint);
  if (std::abs(magnets.cameraDistanceMagnet) > 0.0f)                  LOG("[Jaffar]  + Camera Distance Magnet           - Intensity: %.5f, Dist: %3.3f\n", magnets.cameraDistanceMagnet, cameraDistance);
  if (std::abs(magnets.recoveryTimerMagnet) > 0.0f)                   LOG("[Jaffar]  + Recovery Timer Magnet            - Intensity: %.5f\n", magnets.recoveryTimerMagnet);
  if (std::abs(magnets.playerCurrentLapMagnet) > 0.0f)                LOG("[Jaffar]  + Player Current Lap Magnet        - Intensity: %.5f\n", magnets.playerCurrentLapMagnet);
  if (std::abs(magnets.playerLapProgressMagnet) > 0.0f)               LOG("[Jaffar]  + Player Lap Progress Magnet       - Intensity: %.5f\n", magnets.playerLapProgressMagnet);
  if (std::abs(magnets.playerAccelMagnet) > 0.0f)                     LOG("[Jaffar]  + Player Accel Magnet              - Intensity: %.5f\n", magnets.playerAccelMagnet);
+ if (std::abs(magnets.car1AngleMagnet.intensity) > 0.0f)             LOG("[Jaffar]  + Angle Magnet                     - Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n", magnets.car1AngleMagnet.intensity, magnets.car1AngleMagnet.angle, distanceToAngle);
 }
 

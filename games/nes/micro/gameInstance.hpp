@@ -14,6 +14,12 @@ struct pointMagnet_t {
  float y = 0.0;  // What is the y point of attraction
 };
 
+// Datatype to describe an angle magnet
+struct angleMagnet_t {
+ float intensity = 0.0; // How strong the magnet is
+ float angle = 0.0;  // What is the angle we look for
+};
+
 // Datatype to describe a magnet
 struct magnetSet_t {
  float playerCurrentLapMagnet = 0.0;
@@ -21,6 +27,7 @@ struct magnetSet_t {
  float playerAccelMagnet = 0.0;
  float cameraDistanceMagnet = 0.0;
  float recoveryTimerMagnet = 0.0;
+ angleMagnet_t car1AngleMagnet;
  pointMagnet_t pointMagnet;
 };
 
@@ -44,9 +51,11 @@ class GameInstance : public GameInstanceBase
   uint8_t*  player1PosX2;
   uint8_t*  player1PosY1;
   uint8_t*  player1PosY2;
+  uint8_t*  player1PosY3;
   int8_t*   player1Accel;
   uint8_t*  player1Angle1;
   uint8_t*  player1Angle2;
+  uint8_t*  player1Angle3;
   uint8_t*  player1LapsRemaining;
   uint8_t*  player1LapsRemainingPrev;
   uint8_t*  player1Checkpoint;
