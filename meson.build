@@ -65,6 +65,18 @@ executable('jaffar-play',
   c_args: [ platformPlayCFlags, gameInstanceCFlags ] 
 )
 
+# Building input cleaner tool
+executable('jaffar-clean',
+  'source/clean.cpp',
+  jaffarSrc + platformTrainSrc + gameInstanceSrc + xdelta3Src,
+  include_directories: [ jaffarIncludes, platformTrainIncludes, gameInstanceIncludes ],
+  dependencies: [  platformTrainDependencies, dependency('openmp', required: true) ],
+  link_with: [ platformTrainLibs ],
+  link_args: [ platformTrainLFlags, xdelta3LFlags ],
+  cpp_args: [ jaffarCPPFlags, platformTrainCPPFlags, gameInstanceCPPFlags, xdelta3CFlags ],
+  c_args: [ platformTrainCFlags, gameInstanceCFlags ]
+)
+
 # Building any necessary game-specific tools
 foreach g : gameTools
   executable('jaffar-' + g['name'],

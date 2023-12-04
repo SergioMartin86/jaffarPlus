@@ -163,7 +163,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-_uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 {
   // Storage for hash calculation
   MetroHash128 hash;
@@ -276,7 +276,7 @@ void GameInstance::updateDerivedValues()
 }
 
 // Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  std::vector<std::string> moveList = {"."};
 
@@ -458,7 +458,7 @@ void GameInstance::printFullMoveList()
  for (uint16_t i = 0; i <= 0xFF; i++)
  {
   *kidFrame = (uint8_t)i;
-  auto moves = getPossibleMoves();
+  auto moves = getPossibleMoves(0);
   if (moves.size() == 1) continue;
 
   size_t vecSize = moves.size();
@@ -611,10 +611,6 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  return reward;
 }
 
-void GameInstance::setRNGState(const uint64_t RNGState)
-{
-}
-
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Reward:                 %f\n", getStateReward(rulesStatus));
@@ -668,5 +664,10 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
  for (const auto& tile : tileWatchList)
    LOG("[Jaffar]  + Tile Info            - Room: %02u, Row: %02u, Col: %02u, Index: %03u, Mem: 0x%05X / 0x%05X, Type: %03u, State: %03u\n", tile.second.room, tile.second.row, tile.second.col, tile.second.index, TILE_TYPE_BASE + tile.second.index, TILE_STATE_BASE + tile.second.index, tileTypeBase[tile.second.index], tileStateBase[tile.second.index]);
+}
+
+std::string GameInstance::getFrameTrace() const
+{
+ return "";
 }
 
