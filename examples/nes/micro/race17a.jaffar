@@ -30,8 +30,8 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 1000,
-     "Max Size Upper Bound (Mb)": 12000
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 1200
     },
      
     
@@ -97,6 +97,36 @@
     [
       { "Property": "Player 1 Laps Remaining", "Op": ">", "Value": "Player 1 Laps Remaining Prev" },
       { "Property": "Player 1 Laps Remaining Prev", "Op": "!=", "Value": 0 } 
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Fail"}
+    ]
+   },
+   
+   {
+    "Label": 8997,
+    "Conditions":
+    [
+      { "Property": "Player 1 Checkpoint", "Op": "==", "Value": 62 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Fail"}
+    ]
+   },
+   
+   {
+    "Label": 8996,
+    "Conditions":
+    [
+      { "Property": "Player 1 Pos Y", "Op": ">", "Value": 2850 }
     ],
     
     "Satisfies": [ ],
