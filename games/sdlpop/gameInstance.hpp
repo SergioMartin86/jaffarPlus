@@ -50,6 +50,7 @@ class GameInstance : public GameInstanceBase
   uint8_t timerTolerance;
   float kidPosY;
   int kidFrameDiff;
+  uint8_t deadGuardCount;
 
   std::vector<tileWatch_t> levelTileHashes;
 

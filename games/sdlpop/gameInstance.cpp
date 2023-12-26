@@ -259,6 +259,10 @@ void GameInstance::updateDerivedValues()
  kidFrameDiff = gameState.Kid.frame - gameState.kidPrevframe;
  kidPosY = (float)gameState.Kid.y;
 
+ // Calculating dead guard count
+ deadGuardCount = 0;
+ for (uint8_t i = 0; i < 24; i++) if (gameState.level.guards_seq_hi[i] == 32) deadGuardCount++;
+
  // If climbing down, add pos y. Otherwise subtract
  if (gameState.Kid.frame >= 0x8D && gameState.Kid.frame <= 0x94 && kidFrameDiff < 0) kidPosY += (0x94 - gameState.Kid.frame);
  if (gameState.Kid.frame >= 0x8D && gameState.Kid.frame <= 0x94 && kidFrameDiff > 0) kidPosY += 7.0f - (gameState.Kid.frame - 0x8D);
@@ -404,7 +408,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
  reward += gameState.Kid.direction == 0 ? 1.0 : -1.0  * magnets.kidDirectionMagnet;
 
  // Rewarding climb stairs
- //if (gameState.Kid.frame >= 217 && gameState.Kid.frame <= 228) reward += (gameState.Kid.frame - 217 + 1) * 1000.f;
+ if (gameState.Kid.frame >= 217 && gameState.Kid.frame <= 228) reward += (gameState.Kid.frame - 217 + 1) * 1.f;
  //if (gameState.Kid.frame == 0 && gameState.hitp_curr > 0) reward += 12000.0f;
 
  // Rewarding level door open
@@ -415,8 +419,6 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
 
  // Rewarding united with shadow
   reward += (float)(gameState.guardhp_max - gameState.guardhp_curr) * magnets.guardHPMagnet;
-
-
 
  // Returning reward
  return reward;
@@ -476,6 +478,31 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
   LOG("[Jaffar]  + RNG: [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ] 0x%08X [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ]\n", prevRNG5, prevRNG4, prevRNG3, prevRNG2, prevRNG1, gameState.random_seed, postRNG1, postRNG2, postRNG3, postRNG4, postRNG5);
   LOG("[Jaffar]  + Copy Protection       Place: %02u, Index: %02u\n", copyprot_plac, copyprot_idx);
+  LOG("[Jaffar]  + Dead Guard Count: %u\n", deadGuardCount);
+
+  // LOG("[Jaffar]  + Guard Tile:   ");
+  // for (int i = 0; i < 24; i++) LOG("%3u ", gameState.level.guards_tile[i]);
+  // LOG("\n");
+
+  // LOG("[Jaffar]  + Guard Dir:    ");
+  // for (int i = 0; i < 24; i++) LOG("%3u ", gameState.level.guards_dir[i]);
+  // LOG("\n");
+
+  // LOG("[Jaffar]  + Guard X:      ");
+  // for (int i = 0; i < 24; i++) LOG("%3u ", gameState.level.guards_x[i]);
+  // LOG("\n");
+
+  // LOG("[Jaffar]  + Guard Seq Lo: ");
+  // for (int i = 0; i < 24; i++) LOG("%3u ", gameState.level.guards_seq_lo[i]);
+  // LOG("\n");
+
+  // LOG("[Jaffar]  + Guard Seq Hi: ");
+  // for (int i = 0; i < 24; i++) LOG("%3u ", gameState.level.guards_seq_hi[i]);
+  // LOG("\n");
+
+  // LOG("[Jaffar]  + Guard Color:  ");
+  // for (int i = 0; i < 24; i++) LOG("%3u ", gameState.level.guards_color[i]);
+  // LOG("\n");
 
   LOG("[Jaffar]  + Moving Objects:\n");
   for (int i = 0; i < gameState.mobs_count; ++i)

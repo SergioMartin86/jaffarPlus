@@ -6,7 +6,7 @@
     "State File": "pac1.state",
     "Initialize Copyprot": false,
     "Override RNG Value": true,
-    "RNG Value": 1,
+    "RNG Value": 300979521,
     "Loose Tile Sound Id": 0
   },
   
@@ -43,6 +43,7 @@
     "Show Winning State Information": true,
     "Win State Step Tolerance": 0,
     "Show Move List": true,
+    "Detect Possible Moves": false,
     
     "State Configuration": 
     {
@@ -55,14 +56,14 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 30000,
-     "Max Size Upper Bound (Mb)": 100000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 10000
     },
     
     "Hash Database":
     { 
      "Database Count": 2,
-     "Max Size (Mb)": 20000 
+     "Max Size (Mb)": 3000 
     },
     
     "Save Intermediate Results":

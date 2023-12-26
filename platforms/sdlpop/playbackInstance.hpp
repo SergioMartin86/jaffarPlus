@@ -139,6 +139,7 @@ class PlaybackInstance : public PlaybackInstanceBase
  std::string _overlayPath;
  bool _outputImagesEnabled;
  std::string _outputImagesPath;
+ uint8_t _baseTimerLength;
 
  SDL_Surface* _downSurface;
  SDL_Surface* _upSurface;
@@ -366,6 +367,9 @@ class PlaybackInstance : public PlaybackInstanceBase
 
   if (isDefined(config, "Overlay Path") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Overlay Path' key.\n");
   _overlayPath = config["Overlay Path"].get<std::string>();
+
+    if (isDefined(config, "Base Timer Length") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Base Timer Length' key.\n");
+  _baseTimerLength = config["Base Timer Length"].get<uint8_t>();
 
   if (isDefined(config, "Output Images") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Overlay Images' key.\n");
   if (isDefined(config["Output Images"], "Enabled") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'Overlay Images / Enabled' key.\n");
@@ -781,13 +785,9 @@ class PlaybackInstance : public PlaybackInstanceBase
 
   update_screen();
 
-  if (Kid->sword == sword_2_drawn) set_timer_length(timer_1, 6);
-  else set_timer_length(timer_1, 5);
+  if (Kid->sword == sword_2_drawn) set_timer_length(timer_1, _baseTimerLength+1);
+  else set_timer_length(timer_1, _baseTimerLength);
   do_simple_wait(timer_1);
-
-//    if (Kid->sword == sword_2_drawn) set_timer_length(timer_1, 3);
-//    else set_timer_length(timer_1, 2);
-//    do_simple_wait(timer_1);
 
   SDL_RenderClear(*renderer_);
   SDL_RenderCopy(*renderer_, *target_texture, NULL, NULL);
