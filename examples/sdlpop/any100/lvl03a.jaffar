@@ -1,0 +1,1121 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl03a.state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 300979521,
+    "Loose Tile Sound Id": 0
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4,
+   "Property Hash Types": [ "Guard Current HP"  ],
+   "Static Tile Hash Types":
+   [ 
+    { "Level": 3, "Room": 2, "Tile": 8, "Type": "Full" },
+    { "Level": 3, "Room": 16, "Tile": 6, "Type": "Full" },
+    { "Level": 3, "Room": 17, "Tile": 24, "Type": "Full" },
+    { "Level": 3, "Room": 15, "Tile": 26, "Type": "Full" },
+    { "Level": 3, "Room": 21, "Tile": 5, "Type": "Full" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Level": 3, "Room": 2, "Tile": 10, "Type": "Index Only" },
+     { "Level": 3, "Room": 5, "Tile": 10, "Type": "Full" },
+     { "Level": 3, "Room": 5, "Tile": 5, "Type": "Full" },
+     { "Level": 3, "Room": 15, "Tile": 26, "Type": "Full" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    "Show Move List": true,
+    "Detect Possible Moves": false,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 2500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 8000,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 3000,
+     "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 3000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": false,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Base Timer Length": 1,
+    "Output Images":
+    {
+     "Enabled": true,
+     "Path": "images/new"
+    }
+  },
+ 
+  "Rules":
+  [
+   {
+    "Label": 3000,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  9 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Set Kid Horizontal Magnet", "Room": 9, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+
+   {
+    "Label": 3001,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  12 }
+    ],
+   
+    "Satisfies": [ 3000 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 12, "Intensity": 1.0, "Center": 120 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 12, "Intensity": 10.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3002,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  12 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 }
+    ],
+   
+    "Satisfies": [ 3001 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 12, "Intensity": 10.0, "Center": 180 }
+    ]
+   },
+
+   {
+    "Label": 3102,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  12 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
+     { "Property": "Kid Position X", "Op": ">", "Value":  160 }
+    ],
+   
+    "Satisfies": [ 3002 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 12, "Intensity": 1.0, "Center": 180 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 12, "Intensity": 10.0, "Center": 255 }
+    ]
+   },
+
+  {
+    "Label": 3103,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  12 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  181 },
+     { "Property": "Kid Position X", "Op": ">", "Value":  160 }
+    ],
+   
+    "Satisfies": [ 3102 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 12, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+
+   {
+    "Label": 3003,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 }
+    ],
+   
+    "Satisfies": [ 3103 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 13, "Intensity": 10.0, "Center": 255 }
+    ]
+   },
+
+   {
+    "Label": 3004,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  17 }
+    ],
+   
+    "Satisfies": [ 3003 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 17, "Intensity": 10.0, "Center": 130 }
+    ]
+   },
+
+   {
+    "Label": 3005,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  17 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3004 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 17, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 3006,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3005 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 13, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3008,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  12 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3006 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 12, "Intensity": 1.0, "Center": 180 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 12, "Intensity": 10.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3009,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3008 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Vertical Magnet", "Room": 11, "Intensity": 10.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3010,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 11, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+
+   {
+    "Label": 3011,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  14 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3010 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 14, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+
+   {
+    "Label": 3012,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3011 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 18, "Intensity": 1.0, "Center": 170 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 18, "Intensity": 10.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3013,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 15, "Tile": 26, "Op": ">", "Value": 0 }
+    ],
+   
+    "Satisfies": [ 3012 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Vertical Magnet", "Room": 18, "Intensity": 10.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3014,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 15, "Tile": 26, "Op": "==", "Value": 0 }
+    ],
+   
+    "Satisfies": [ 3013 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Vertical Magnet", "Room": 18, "Intensity": 10.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3015,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  15 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3014 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 15, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+
+   {
+    "Label": 3016,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3015 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 160 },
+     { "Type": "Set Kid Direction Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 16, "Intensity": 10.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3017,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3016 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3018,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3017 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 170 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 16, "Intensity": 10.0, "Center": 181 }
+    ]
+   },
+
+   {
+    "Label": 3019,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  181 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3018 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3020,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  15 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3019 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 15, "Intensity": 1.0, "Center": 150 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 15, "Intensity": 10.0, "Center": 255 }
+    ]
+   },
+
+   {
+    "Label": 3021,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3020 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 18, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3022,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  14 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3021 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 14, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3023,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3022 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 11, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3024,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  10 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3023 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 10, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3025,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3024 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 7, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 7, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3026,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3025 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 170 }
+    ]
+   },
+
+   {
+    "Label": 3027,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3026 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3028,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3027 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 110 }
+    ]
+   },
+
+   {
+    "Label": 3029,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Position X", "Op": "<", "Value":  130 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  118 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3028 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 110 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 1, "Intensity": 4.0, "Center": 55 }
+    ]
+   },
+
+   {
+    "Label": 3030,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Position X", "Op": "<", "Value":  130 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 }
+    ],
+   
+    "Satisfies": [ 3029 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },      
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3031,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 }
+    ],
+    
+    "Satisfies": [ 3030 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 5, "Intensity": 10.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 3032,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  118 }
+    ],
+    
+    "Satisfies": [ 3031 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 5, "Intensity": 10.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 3033,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  181 }
+    ],
+    
+    "Satisfies": [ 3032 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 5, "Intensity": 10.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 3034,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Kid Position Y", "Op": "<", "Value":  100 }
+    ],
+    
+    "Satisfies": [ 3033 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 6, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 3035,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3034 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 6, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 6, "Intensity": 10.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 3036,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3035 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 5, "Intensity": 10.0, "Center": 0 },
+     { "Type": "Set Kid Direction Magnet", "Room": 5, "Intensity": -5.0 }
+    ]
+   },
+   
+   {
+    "Label": 3037,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  118 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3036 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 0 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 5, "Intensity": 10.0, "Center": 0 },
+     { "Type": "Set Kid Direction Magnet", "Room": 5, "Intensity": 5.0 }
+    ]
+   },
+   
+   {
+    "Label": 3038,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 5 },
+     { "Property": "Kid Position Y", "Op": "==", "Value":  55 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3037 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 3039,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3038 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 255 },
+     { "Type": "Set Guard Horizontal Magnet", "Room": 1, "Intensity": 5.0, "Center": 255 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 1, "Intensity": 2.0, "Center": 255 },
+     { "Type": "Set Guard Vertical Magnet", "Room": 1, "Intensity": 10.0, "Center": 255 }
+    ]
+   },
+   
+   {
+    "Label": 3040,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3},
+     { "Property": "Guard Room", "Op": "==", "Value":  3},
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3039 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 255 }
+    ]
+   },
+
+   {
+    "Label": 3041,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4},
+     { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3040 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 130 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 4, "Intensity": 2.0, "Center": 255 }
+    ]
+   },
+
+   {
+    "Label": 3042,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  21},
+     { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3041 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 21, "Intensity": 1.0, "Center": 140 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 21, "Intensity": 2.0, "Center": 55 }
+    ]
+   },
+
+   {
+    "Label": 3043,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  21},
+     { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 21, "Tile": 5, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3042 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 21, "Intensity": 1.0, "Center": 120 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 21, "Intensity": 2.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3044,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4},
+     { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 21, "Tile": 5, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3043 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 130 },
+     { "Type": "Set Kid Vertical Magnet", "Room": 4, "Intensity": 2.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3045,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4},
+     { "Property": "Kid Position Y", "Op": "==", "Value":  118},
+     { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 21, "Tile": 5, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3044 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3046,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 21, "Tile": 5, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3045 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+
+   {
+    "Label": 3047,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 21, "Tile": 5, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 }
+    ],
+    
+    "Satisfies": [ 3046 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 130 }
+    ]
+   },
+
+   {
+    "Label": 3048,
+    "Conditions": 
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 21, "Tile": 5, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 },
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+    ],
+    
+    "Satisfies": [ 3047 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+   
+   {
+    "Label": 3999,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+     { "Property": "Tile FG State", "Room": 17, "Tile": 24, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 16, "Tile": 6, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 2, "Tile": 8, "Op": "==", "Value": 1 },
+     { "Property": "Tile FG State", "Room": 21, "Tile": 5, "Op": "==", "Value": 1 },
+     { "Property": "Tile BG State", "Room": 6, "Tile": 24, "Op": ">", "Value": 0 },
+     { "Property": "Next Level", "Op": "==", "Value":  4 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+
+   {
+    "Label": 3888,
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+
+   {
+    "Label": 3887,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  45 }
+    ],
+   
+    "Satisfies": [  ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+
+  ]  
+}

@@ -140,6 +140,13 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
  if (propertyName == "Guard Is Alive") return dt_int8;
  if (propertyName == "Guard Current Sequence") return dt_int16;
 
+ if (propertyName == "Level Guard Tile")   return dt_int8;
+ if (propertyName == "Level Guard Dir")    return dt_int8;
+ if (propertyName == "Level Guard X")      return dt_int8;
+ if (propertyName == "Level Guard Seq Lo") return dt_int8;
+ if (propertyName == "Level Guard Seq Hi") return dt_int8;
+ if (propertyName == "Level Guard Color")  return dt_int8;
+
  if (propertyName == "Current Level") return dt_int16;
  if (propertyName == "Next Level") return dt_int16;
  if (propertyName == "Drawn Room") return dt_int16;
@@ -148,6 +155,7 @@ datatype_t GameRule::getPropertyType(const nlohmann::json& condition)
  if (propertyName == "United With Shadow") return dt_int8;
  if (propertyName == "Exit Door Timer") return dt_int16;
  if (propertyName == "Is Feather Fall") return dt_int16;
+ if (propertyName == "Dead Guard Count") return dt_int8;
 
  // Tile Configuration
  if (propertyName == "Tile FG State") return dt_uint8;
@@ -200,6 +208,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
  if (propertyName == "Guard Has Sword") return &gameState.Guard.sword;
  if (propertyName == "Guard Is Alive") return &gameState.Guard.alive;
  if (propertyName == "Guard Current Sequence") return &gameState.Guard.curr_seq;
+ if (propertyName == "Dead Guard Count") return &gameInstance->deadGuardCount;
 
  if (propertyName == "Current Level") return &gameState.current_level;
  if (propertyName == "Next Level") return &gameState.next_level;
@@ -218,6 +227,13 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
   if (condition["Room"].is_number() == false) EXIT_WITH_ERROR("[ERROR] Rule %lu tile room must be an integer.\n", _label);
   room = condition["Room"].get<int>();
  }
+
+ if (propertyName == "Level Guard Tile")   { if (room == -1) EXIT_WITH_ERROR("[ERROR] Invalid or missing index for %s.\n", propertyName.c_str()); return &gameState.level.guards_tile[room-1]; }
+ if (propertyName == "Level Guard Dir")    { if (room == -1) EXIT_WITH_ERROR("[ERROR] Invalid or missing index for %s.\n", propertyName.c_str()); return &gameState.level.guards_dir[room-1]; }
+ if (propertyName == "Level Guard X")      { if (room == -1) EXIT_WITH_ERROR("[ERROR] Invalid or missing index for %s.\n", propertyName.c_str()); return &gameState.level.guards_x[room-1]; }
+ if (propertyName == "Level Guard Seq Lo") { if (room == -1) EXIT_WITH_ERROR("[ERROR] Invalid or missing index for %s.\n", propertyName.c_str()); return &gameState.level.guards_seq_lo[room-1]; }
+ if (propertyName == "Level Guard Seq Hi") { if (room == -1) EXIT_WITH_ERROR("[ERROR] Invalid or missing index for %s.\n", propertyName.c_str()); return &gameState.level.guards_seq_hi[room-1]; }
+ if (propertyName == "Level Guard Color")  { if (room == -1) EXIT_WITH_ERROR("[ERROR] Invalid or missing index for %s.\n", propertyName.c_str()); return &gameState.level.guards_color[room-1]; }
 
  int tile = -1;
  if (isDefined(condition, "Tile") == true)
