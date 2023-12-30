@@ -259,10 +259,6 @@ void GameInstance::updateDerivedValues()
  kidFrameDiff = gameState.Kid.frame - gameState.kidPrevframe;
  kidPosY = (float)gameState.Kid.y;
 
- // Calculating dead guard count
- deadGuardCount = 0;
- for (uint8_t i = 0; i < 24; i++) if (gameState.level.guards_seq_hi[i] == 32) deadGuardCount++;
-
  // If climbing down, add pos y. Otherwise subtract
  if (gameState.Kid.frame >= 0x8D && gameState.Kid.frame <= 0x94 && kidFrameDiff < 0) kidPosY += (0x94 - gameState.Kid.frame);
  if (gameState.Kid.frame >= 0x8D && gameState.Kid.frame <= 0x94 && kidFrameDiff > 0) kidPosY += 7.0f - (gameState.Kid.frame - 0x8D);
@@ -445,8 +441,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
   LOG("[Jaffar]  + Current/Next Level:   %2d / %2d\n", gameState.current_level, gameState.next_level);
   LOG("[Jaffar]  + Reward:               %f\n", getStateReward(rulesStatus));
   LOG("[Jaffar]  + Hash:                 0x%lX%lX\n", computeHash().first, computeHash().second);
-  LOG("[Jaffar]  + [Kid]                 Room: %d, Pos.x: %3d, Pos.y: %f (%3d), Frame: %3d, Action: %2d, Dir: %d, HP: %d/%d\n", int(gameState.Kid.room), int(gameState.Kid.x), kidPosY, int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.Kid.direction), int(gameState.hitp_curr), int(gameState.hitp_max));
-  LOG("[Jaffar]  + [Guard]               Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Color: %3u, Dir: %d, HP: %d/%d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.curr_guard_color), int(gameState.Guard.direction), int(gameState.guardhp_curr), int(gameState.guardhp_max));
+  LOG("[Jaffar]  + [Kid]                 Room: %d, Pos.x: %3d, Pos.y: %f (%3d), Frame: %3d, Action: %2d, Dir: %d, HP: %d/%d, Alive: %d\n", int(gameState.Kid.room), int(gameState.Kid.x), kidPosY, int(gameState.Kid.y), int(gameState.Kid.frame), int(gameState.Kid.action), int(gameState.Kid.direction), int(gameState.hitp_curr), int(gameState.hitp_max), int(gameState.Kid.alive));
+  LOG("[Jaffar]  + [Guard]               Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Color: %3u, Dir: %d, HP: %d/%d, Alive: %d\n", int(gameState.Guard.room), int(gameState.Guard.x), int(gameState.Guard.y), int(gameState.Guard.frame), int(gameState.Guard.action), int(gameState.curr_guard_color), int(gameState.Guard.direction), int(gameState.guardhp_curr), int(gameState.guardhp_max), int(gameState.Guard.alive));
 //  LOG("[Jaffar]  + [Char]                Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Curr Seq: %d\n", int(gameState.Char.room), int(gameState.Char.x), int(gameState.Char.y), int(gameState.Char.frame), int(gameState.Char.action), int(gameState.Char.curr_seq));
 //  LOG("[Jaffar]  + Cumulative IGT:       %s (%03lu %03u -> %05lu)\n", cumulativeIGTText, cumMins, (720 - gameState.rem_tick), cumMins * 720 + (720 - gameState.rem_tick));
 //  LOG("[Jaffar]  + Remaining IGT:        %s (%03lu %03u -> %05lu)\n", remainingIGTText, remMins, gameState.rem_tick, remMins * 720 + gameState.rem_tick);
@@ -478,7 +474,9 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
   LOG("[Jaffar]  + RNG: [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ] 0x%08X [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ]\n", prevRNG5, prevRNG4, prevRNG3, prevRNG2, prevRNG1, gameState.random_seed, postRNG1, postRNG2, postRNG3, postRNG4, postRNG5);
   LOG("[Jaffar]  + Copy Protection       Place: %02u, Index: %02u\n", copyprot_plac, copyprot_idx);
-  LOG("[Jaffar]  + Dead Guard Count: %u\n", deadGuardCount);
+  LOG("[Jaffar]  + Dead Guard Count: %u\n", gameState.deadGuardCount);
+
+  // LOG("Pos: 0x%lX", (uint64_t)&gameState.hitp_max - (uint64_t)&gameState);
 
   // LOG("[Jaffar]  + Guard Tile:   ");
   // for (int i = 0; i < 24; i++) LOG("%3u ", gameState.level.guards_tile[i]);
@@ -502,6 +500,10 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
 
   // LOG("[Jaffar]  + Guard Color:  ");
   // for (int i = 0; i < 24; i++) LOG("%3u ", gameState.level.guards_color[i]);
+  // LOG("\n");
+
+  // LOG("[Jaffar]  + Guard Skill:  ");
+  // for (int i = 0; i < 24; i++) LOG("%3u ", gameState.level.guards_skill[i]);
   // LOG("\n");
 
   LOG("[Jaffar]  + Moving Objects:\n");

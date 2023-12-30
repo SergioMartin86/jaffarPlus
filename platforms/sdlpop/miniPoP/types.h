@@ -1510,5 +1510,6 @@ struct sdlPopState_t {
  uint8_t guardPrevHP;
  uint16_t guardJingleTimerStart;
  uint16_t guardJingleTimerTotal;
+ uint8_t deadGuardCount;
 };
 #pragma pack(pop)

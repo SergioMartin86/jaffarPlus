@@ -208,7 +208,7 @@ void* GameRule::getPropertyPointer(const nlohmann::json& condition, GameInstance
  if (propertyName == "Guard Has Sword") return &gameState.Guard.sword;
  if (propertyName == "Guard Is Alive") return &gameState.Guard.alive;
  if (propertyName == "Guard Current Sequence") return &gameState.Guard.curr_seq;
- if (propertyName == "Dead Guard Count") return &gameInstance->deadGuardCount;
+ if (propertyName == "Dead Guard Count") return &gameState.deadGuardCount;
 
  if (propertyName == "Current Level") return &gameState.current_level;
  if (propertyName == "Next Level") return &gameState.next_level;

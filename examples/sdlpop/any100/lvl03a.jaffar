@@ -6,8 +6,8 @@
     "State File": "lvl03a.state",
     "Initialize Copyprot": false,
     "Override RNG Value": true,
-    "RNG Value": 300979521,
-    "Loose Tile Sound Id": 0
+    "RNG Value": 353586498,
+    "Loose Tile Sound Id": 21
   },
   
   "Game Configuration": 
@@ -56,14 +56,14 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 3000,
-     "Max Size Upper Bound (Mb)": 10000
+      "Max Size Lower Bound (Mb)": 10000,
+      "Max Size Upper Bound (Mb)": 18000
     },
     
     "Hash Database":
     { 
      "Database Count": 2,
-     "Max Size (Mb)": 3000 
+     "Max Size (Mb)": 2000 
     },
     
     "Save Intermediate Results":
@@ -82,10 +82,10 @@
   {
     "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
     "Overlay Path": "../../../platforms/sdlpop/overlay",
-    "Base Timer Length": 1,
+    "Base Timer Length": 5,
     "Output Images":
     {
-     "Enabled": true,
+     "Enabled": false,
      "Path": "images/new"
     }
   },
@@ -1059,7 +1059,6 @@
     
     "Actions":
     [
-     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
      { "Type": "Add Reward", "Value": 10000 }
     ]
    },
