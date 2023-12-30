@@ -1482,6 +1482,7 @@ void  check_guard_fallout()
   else
   {
     on_guard_killed();
+    if (gameState.Guard.alive != 0) gameState.deadGuardCount++;
     gameState.level.guards_tile[gameState.drawn_room - 1] = -1;
     gameState.Guard.direction = dir_56_none;
     gameState.guardhp_curr = 0;
@@ -4014,6 +4015,7 @@ void  play_guard()
     {
       if (gameState.guardhp_curr == 0)
       {
+        if (gameState.Guard.direction != dir_56_none) gameState.deadGuardCount++;
         gameState.Char.alive = 0;
         on_guard_killed();
       }
