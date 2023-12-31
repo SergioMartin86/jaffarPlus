@@ -57,17 +57,17 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 4000,
+      "Max Move Count": 2500,
       "Store Move History": true,
-      "XDelta3 Enabled": false,
+      "XDelta3 Enabled": true,
       "XDelta3 Max Differences": 600,
       "XDelta3 Use Zlib Compression": false
     },
      
     "State Database": 
     {
-      "Max Size Lower Bound (Mb)": 300,
-      "Max Size Upper Bound (Mb)": 4000
+      "Max Size Lower Bound (Mb)": 5000,
+      "Max Size Upper Bound (Mb)": 13000
     },
     
     "Hash Database":
@@ -92,7 +92,7 @@
   {
     "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
     "Overlay Path": "../../../platforms/sdlpop/overlay",
-    "Base Timer Length": 1,
+    "Base Timer Length": 5,
     "Output Images":
     {
      "Enabled": false,
@@ -400,7 +400,6 @@
       "Actions":
       [
        { "Type": "Add Reward", "Value": 10000 },
-       { "Type": "Trigger Checkpoint", "Tolerance": 0 },
        { "Type": "Set Kid Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Center": 255 }
       ]
      },
@@ -1269,7 +1268,6 @@
       "Actions":
       [
        { "Type": "Add Reward", "Value": 10000 },
-       { "Type": "Trigger Checkpoint", "Tolerance": 0 },
        { "Type": "Set Kid Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 255 }
       ]
      },
@@ -1326,6 +1324,8 @@
       "Conditions":
       [
        { "Property": "Kid Room", "Op": "==", "Value": 5 },
+       { "Property": "Guard Room", "Op": "==", "Value": 5 },
+       { "Property": "Guard Current HP", "Op": "==", "Value": 1 },
        { "Property": "Tile FG State", "Room": 15, "Tile": 3, "Op": "==", "Value": 1, "Comment": "Potion" },
        { "Property": "Tile FG State", "Room": 19, "Tile": 29, "Op": "==", "Value": 1, "Comment": "Potion" },
        { "Property": "Tile FG State", "Room": 6, "Tile": 4, "Op": "==", "Value": 1, "Comment": "Potion" },
@@ -1413,8 +1413,7 @@
   
       "Actions":
       [
-       { "Type": "Add Reward", "Value": 10000 },
-       { "Type": "Trigger Checkpoint", "Tolerance": 0 }
+       { "Type": "Add Reward", "Value": 10000 }
       ]
      },
 

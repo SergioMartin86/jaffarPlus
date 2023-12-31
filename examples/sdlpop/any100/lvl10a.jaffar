@@ -1,0 +1,132 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl10a.state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 1402548583,
+    "Loose Tile Sound Id": 20
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 3,
+   "Property Hash Types": [ "Guard Current HP"  ],
+   "Static Tile Hash Types":
+   [
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    "Show Move List": true,
+    "Detect Possible Moves": false,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 2500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 600,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+      "Max Size Lower Bound (Mb)": 200,
+      "Max Size Upper Bound (Mb)": 3000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 2000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": false,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Base Timer Length": 5,
+    "Output Images":
+    {
+     "Enabled": false,
+     "Path": "images/new"
+    }
+  },
+ 
+  "Rules":
+  [
+     {
+      "Label": 10000,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  10 }
+      ],
+     
+      "Satisfies": [ ],
+  
+      "Actions":
+      [
+       { "Type": "Set Kid Horizontal Magnet", "Room": 10, "Intensity": 1.0, "Center": 0 }
+      ]
+     },
+
+     {
+      "Label": 19999,
+      "Conditions":
+      [
+       { "Property": "Next Level", "Op": "==", "Value":  11 }
+      ],
+     
+      "Satisfies": [ ],
+  
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+     },
+
+
+     {
+      "Label": 19998,
+      "Conditions":
+      [
+       { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+      ],
+       
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Fail" }
+      ]
+     }
+  ]  
+}
