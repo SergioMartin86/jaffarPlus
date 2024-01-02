@@ -200,6 +200,8 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
  hash.Update(gameState.guardhp_curr);
  hash.Update(gameState.trobs_count);
 
+ hash.Update(gameState.deadGuardCount);
+
  // Mobs are moving objects (falling tiles only afaik).
  for (int i = 0; i < gameState.mobs_count; i++)
  {
