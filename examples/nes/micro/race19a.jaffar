@@ -1,0 +1,170 @@
+{
+  "Emulator Configuration": 
+  {
+    "Rom File": "micro.nes",
+    "State File": "race19a.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Show Move List": false,
+    "Win State Step Tolerance": 0,
+    "Detect Possible Moves": false,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 800,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 2300,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 100,
+     "Max Size Upper Bound (Mb)": 1200
+    },
+     
+    "Hash Database":
+    { 
+     "Database Count": 2, 
+     "Max Size (Mb)": 1000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "Overlay Path": "../../../platforms/nes/overlay"
+  },
+  
+  "Rules":
+  [
+   {
+    "Label": 8000,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+   
+   {
+    "Label": 8001,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }
+    ],
+    
+    "Satisfies": [ 8000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2892, "Y": 369 }
+    ]
+   },
+   
+   {
+    "Label": 8101,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 9 }  
+    ],
+    
+    "Satisfies": [ 8001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2674, "Y": 250 }
+    ]
+   },
+   
+    {
+    "Label": 8201,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }, 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 13 }  
+    ],
+    
+    "Satisfies": [ 8101 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2384, "Y": 424 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+   
+   
+   {
+    "Label": 8999,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }, 
+      { "Property": "Player 1 Checkpoint", "Op": "==", "Value": 39 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win"}
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": ">", "Value": "Player 1 Laps Remaining Prev" },
+      { "Property": "Player 1 Laps Remaining Prev", "Op": "!=", "Value": 0 } 
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Fail"}
+    ]
+   }
+  ]
+}
