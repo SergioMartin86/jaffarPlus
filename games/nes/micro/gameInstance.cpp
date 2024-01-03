@@ -59,10 +59,10 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 
   if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));
 
-  hash.Update(*cameraPosX1);
-  hash.Update(*cameraPosX2);
-  hash.Update(*cameraPosY1);
-  hash.Update(*cameraPosY2);
+  // hash.Update(*cameraPosX1);
+  // hash.Update(*cameraPosX2);
+  // hash.Update(*cameraPosY1);
+  // hash.Update(*cameraPosY2);
 
   hash.Update(*frameType);
   hash.Update(*lagFrame);
@@ -71,11 +71,11 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*player1PosX2);
   hash.Update(*player1PosY1);
   hash.Update(*player1PosY2);
-  hash.Update(*player1PosY3);
+  // hash.Update(*player1PosY3);
   hash.Update(*player1Accel);
-  hash.Update(*player1Angle1);
+  // hash.Update(*player1Angle1);
   hash.Update(*player1Angle2);
-  hash.Update(*player1Angle3);
+  // hash.Update(*player1Angle3);
   hash.Update(*player1LapsRemaining);
   hash.Update(*player1LapsRemainingPrev);
   hash.Update(*player1Checkpoint);
@@ -84,10 +84,10 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*player1RecoveryTimer);
   hash.Update(*player1CanControlCar);
 
-  hash.Update(*activeFrame1);
-  hash.Update(*activeFrame2);
-  hash.Update(*activeFrame3);
-  hash.Update(*activeFrame4);
+  // hash.Update(*activeFrame1);
+  // hash.Update(*activeFrame2);
+  // hash.Update(*activeFrame3);
+  // hash.Update(*activeFrame4);
 
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -119,7 +119,7 @@ void GameInstance::updateDerivedValues()
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  if (*frameType == 0x00) return { "." };
- if (*frameType == 0x01) return { ".", "A", "R", "L", "RA", "LA" };
+ if (*frameType == 0x01) return { "A", "R", "L", "RA", "LA" };
 
 // if (*frameType == 0x00) return { ".", "A", "B" };
 // if (*frameType == 0x01) return { ".", "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" };
