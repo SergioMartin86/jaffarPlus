@@ -22,7 +22,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   player1PosY3                      = (uint8_t*)   &_emu->_baseMem[0x03EE];
   player1Accel                      = (int8_t*)    &_emu->_baseMem[0x0386];
   player1Inertia1                   = (uint8_t*)   &_emu->_baseMem[0x00B0];
-  player1Inertia1                   = (uint8_t*)   &_emu->_baseMem[0x00B2];
+  player1Inertia2                   = (uint8_t*)   &_emu->_baseMem[0x00B2];
   player1Inertia3                   = (uint8_t*)   &_emu->_baseMem[0x00B4];
   player1Inertia4                   = (uint8_t*)   &_emu->_baseMem[0x00B6];
   player1Angle1                     = (uint8_t*)   &_emu->_baseMem[0x04B2];
