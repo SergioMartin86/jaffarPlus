@@ -21,6 +21,10 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   player1PosY2                      = (uint8_t*)   &_emu->_baseMem[0x03E6];
   player1PosY3                      = (uint8_t*)   &_emu->_baseMem[0x03EE];
   player1Accel                      = (int8_t*)    &_emu->_baseMem[0x0386];
+  player1Inertia1                   = (uint8_t*)   &_emu->_baseMem[0x00B0];
+  player1Inertia1                   = (uint8_t*)   &_emu->_baseMem[0x00B2];
+  player1Inertia3                   = (uint8_t*)   &_emu->_baseMem[0x00B4];
+  player1Inertia4                   = (uint8_t*)   &_emu->_baseMem[0x00B6];
   player1Angle1                     = (uint8_t*)   &_emu->_baseMem[0x04B2];
   player1Angle2                     = (uint8_t*)   &_emu->_baseMem[0x040A];
   player1Angle3                     = (uint8_t*)   &_emu->_baseMem[0x04CA];
@@ -74,6 +78,10 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*player1PosY2);
   // hash.Update(*player1PosY3);
   hash.Update(*player1Accel);
+  hash.Update(*player1Inertia1);
+  hash.Update(*player1Inertia2);
+  hash.Update(*player1Inertia3);
+  hash.Update(*player1Inertia4);
   // hash.Update(*player1Angle1);
   hash.Update(*player1Angle2);
   // hash.Update(*player1Angle3);
@@ -120,9 +128,8 @@ void GameInstance::updateDerivedValues()
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
- if (*player1ResumeTimer > 0) return { "." }; 
- if (*frameType == 0x00) return { "." };
- if (*frameType == 0x01) return { "A", "R", "L", "RA", "LA" };
+//  if (*frameType == 0x00) return { "." };
+ if (*frameType == 0x01) return { ".", "A", "R", "L", "RA", "LA" };
  
 // if (*frameType == 0x00) return { ".", "A", "B" };
 // if (*frameType == 0x01) return { ".", "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" };
@@ -161,7 +168,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.playerLapProgressMagnet * (float)(*player1Checkpoint);
 
   // Evaluating player health  magnet
-  reward += magnets.playerAccelMagnet * std::abs((float)*player1Accel);
+  reward += magnets.playerAccelMagnet * ( std::abs((float)*player1Accel) + 0.1*(float)*player1Inertia1 + 0.1 * (float)*player1Inertia2 );
 
   // Distance to point magnet
   {
@@ -205,7 +212,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Laps Remaining:                     %1u (Prev: %1u)\n", *player1LapsRemaining, *player1LapsRemainingPrev);
  LOG("[Jaffar]  + Checkpoint Id:                      %03u\n", *player1Checkpoint);
 
- LOG("[Jaffar]  + Player Accel:                       %03d\n", *player1Accel);
+ LOG("[Jaffar]  + Player Accel (Inertia):             %03d (%03u, %03u, %03u, %03u)\n", *player1Accel, *player1Inertia1, *player1Inertia2, *player1Inertia3, *player1Inertia4);
  LOG("[Jaffar]  + Player Angle:                       %03u %03u\n", *player1Angle1, *player1Angle2);
 
  LOG("[Jaffar]  + Camera Pos X:                       %05u\n", cameraPosX);

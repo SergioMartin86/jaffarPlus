@@ -52,6 +52,10 @@ class GameInstance : public GameInstanceBase
   uint8_t*  player1PosY1;
   uint8_t*  player1PosY2;
   uint8_t*  player1PosY3;
+  uint8_t*  player1Inertia1;
+  uint8_t*  player1Inertia2;
+  uint8_t*  player1Inertia3;
+  uint8_t*  player1Inertia4;
   int8_t*   player1Accel;
   uint8_t*  player1Angle1;
   uint8_t*  player1Angle2;
