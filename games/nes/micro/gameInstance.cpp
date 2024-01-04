@@ -21,6 +21,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   player1PosY2                      = (uint8_t*)   &_emu->_baseMem[0x03E6];
   player1PosY3                      = (uint8_t*)   &_emu->_baseMem[0x03EE];
   player1Accel                      = (int8_t*)    &_emu->_baseMem[0x0386];
+  player1AccelTimer1                = (uint8_t*)   &_emu->_baseMem[0x0102];
+  player1AccelTimer2                = (uint8_t*)   &_emu->_baseMem[0x0103];
+  player1AccelTimer3                = (uint8_t*)   &_emu->_baseMem[0x010E];
   player1Inertia1                   = (uint8_t*)   &_emu->_baseMem[0x00B0];
   player1Inertia2                   = (uint8_t*)   &_emu->_baseMem[0x00B2];
   player1Inertia3                   = (uint8_t*)   &_emu->_baseMem[0x00B4];
@@ -78,6 +81,9 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*player1PosY2);
   // hash.Update(*player1PosY3);
   hash.Update(*player1Accel);
+  hash.Update(*player1AccelTimer1);
+  hash.Update(*player1AccelTimer2);
+  hash.Update(*player1AccelTimer3);
   hash.Update(*player1Inertia1);
   hash.Update(*player1Inertia2);
   hash.Update(*player1Inertia3);
@@ -99,6 +105,8 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   // hash.Update(*activeFrame3);
   // hash.Update(*activeFrame4);
 
+  hash.Update(_emu->_baseMem[0x039E]);
+  
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
   return result;
@@ -129,8 +137,10 @@ void GameInstance::updateDerivedValues()
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
 //  if (*frameType == 0x00) return { "." };
- if (*frameType == 0x01) return { ".", "A", "R", "L", "RA", "LA" };
- 
+//  if (*frameType == 0x01) return { ".", "A", "R", "L", "RA", "LA" };
+  
+  return { "A", "R", "L", "RA", "LA" };
+
 // if (*frameType == 0x00) return { ".", "A", "B" };
 // if (*frameType == 0x01) return { ".", "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" };
  return { "." };
@@ -168,7 +178,7 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   reward += magnets.playerLapProgressMagnet * (float)(*player1Checkpoint);
 
   // Evaluating player health  magnet
-  reward += magnets.playerAccelMagnet * ( std::abs((float)*player1Accel) + 0.1*(float)*player1Inertia1 + 0.1 * (float)*player1Inertia2 );
+  reward += magnets.playerAccelMagnet * ( std::abs((float)*player1Accel) - 0.1*(float)*player1AccelTimer2);
 
   // Distance to point magnet
   {
@@ -212,7 +222,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Laps Remaining:                     %1u (Prev: %1u)\n", *player1LapsRemaining, *player1LapsRemainingPrev);
  LOG("[Jaffar]  + Checkpoint Id:                      %03u\n", *player1Checkpoint);
 
- LOG("[Jaffar]  + Player Accel (Inertia):             %03d (%03u, %03u, %03u, %03u)\n", *player1Accel, *player1Inertia1, *player1Inertia2, *player1Inertia3, *player1Inertia4);
+ LOG("[Jaffar]  + Player Accel (Timers):              %03d (%03u, %03u, %03u)\n", *player1Accel, *player1AccelTimer1, *player1AccelTimer2, *player1AccelTimer3);
+ LOG("[Jaffar]  + Player Inertia:                     %03u, %03u, %03u, %03u\n", *player1Inertia1, *player1Inertia2, *player1Inertia3, *player1Inertia4);
  LOG("[Jaffar]  + Player Angle:                       %03u %03u\n", *player1Angle1, *player1Angle2);
 
  LOG("[Jaffar]  + Camera Pos X:                       %05u\n", cameraPosX);
