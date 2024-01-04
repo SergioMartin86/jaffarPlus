@@ -60,10 +60,10 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 
   if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));
 
-  // hash.Update(*cameraPosX1);
-  // hash.Update(*cameraPosX2);
-  // hash.Update(*cameraPosY1);
-  // hash.Update(*cameraPosY2);
+  hash.Update(*cameraPosX1);
+  hash.Update(*cameraPosX2);
+  hash.Update(*cameraPosY1);
+  hash.Update(*cameraPosY2);
 
   hash.Update(*frameType);
   hash.Update(*lagFrame);
@@ -120,9 +120,10 @@ void GameInstance::updateDerivedValues()
 // Function to determine the current possible moves
 std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
+ if (*player1ResumeTimer > 0) return { "." }; 
  if (*frameType == 0x00) return { "." };
  if (*frameType == 0x01) return { "A", "R", "L", "RA", "LA" };
-
+ 
 // if (*frameType == 0x00) return { ".", "A", "B" };
 // if (*frameType == 0x01) return { ".", "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" };
  return { "." };
@@ -213,6 +214,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Player Pos X:                       %05u\n", player1PosX);
  LOG("[Jaffar]  + Player Pos Y:                       %05u\n", player1PosY);
  LOG("[Jaffar]  + Player Recovery:                    %03u (%03u)\n", *player1RecoveryMode, *player1RecoveryTimer);
+ LOG("[Jaffar]  + Player Resume Timer:                %03u\n", *player1ResumeTimer);
  LOG("[Jaffar]  + Player Can Control Car:             %03u\n", *player1CanControlCar);
 
 
