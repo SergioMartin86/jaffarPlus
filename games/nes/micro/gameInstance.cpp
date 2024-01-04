@@ -33,6 +33,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 
   player1RecoveryMode               = (uint8_t*)   &_emu->_baseMem[0x0416];
   player1RecoveryTimer              = (uint8_t*)   &_emu->_baseMem[0x041A];
+  player1ResumeTimer                = (uint8_t*)   &_emu->_baseMem[0x00DA];
   player1CanControlCar              = (uint8_t*)   &_emu->_baseMem[0x01BF];
 
   preRaceTimer                      = (uint8_t*)   &_emu->_baseMem[0x00DD];
@@ -83,6 +84,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*player1RecoveryMode);
   hash.Update(*player1RecoveryTimer);
   hash.Update(*player1CanControlCar);
+  hash.Update(*player1ResumeTimer);
 
   // hash.Update(*activeFrame1);
   // hash.Update(*activeFrame2);
