@@ -66,6 +66,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  player1RecoveryMode;
   uint8_t*  player1RecoveryTimer;
   uint8_t*  player1CanControlCar;
+  uint8_t*  player1ResumeTimer;
 
   uint8_t* activeFrame1;
   uint8_t* activeFrame2;
