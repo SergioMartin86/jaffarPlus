@@ -30,7 +30,7 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 500,
+     "Max Size Lower Bound (Mb)": 50,
      "Max Size Upper Bound (Mb)": 3200
     },
      
@@ -90,7 +90,7 @@
      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2892, "Y": 369 }
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 844, "Y": 1136 }
     ]
    },
    
@@ -99,7 +99,7 @@
     "Conditions":
     [
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 9 }  
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 8 }  
     ],
     
     "Satisfies": [ 8001 ],
@@ -110,30 +110,9 @@
      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2674, "Y": 250 }
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2005, "Y": 1236 }
     ]
    },
-   
-    {
-    "Label": 8201,
-    "Conditions":
-    [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }, 
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 13 }  
-    ],
-    
-    "Satisfies": [ 8101 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2384, "Y": 424 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
-    ]
-   },
-   
    
    {
     "Label": 8999,
@@ -157,6 +136,22 @@
     [
       { "Property": "Player 1 Laps Remaining", "Op": ">", "Value": "Player 1 Laps Remaining Prev" },
       { "Property": "Player 1 Laps Remaining Prev", "Op": "!=", "Value": 0 } 
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Fail"}
+    ]
+   },
+
+   {
+    "Label": 8998,
+    "Conditions":
+    [
+      { "Property": "Player 1 Checkpoint", "Op": ">", "Value": 8 },
+      { "Property": "Player 1 Checkpoint", "Op": "<", "Value": 39 }
     ],
     
     "Satisfies": [ ],
