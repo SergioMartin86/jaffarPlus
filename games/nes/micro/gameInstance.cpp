@@ -14,6 +14,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   cameraPosX2                       = (uint8_t*)   &_emu->_baseMem[0x00D4];
   cameraPosY1                       = (uint8_t*)   &_emu->_baseMem[0x00D7];
   cameraPosY2                       = (uint8_t*)   &_emu->_baseMem[0x00D6];
+  currentRace                       = (uint8_t*)   &_emu->_baseMem[0x0308];
 
   player1PosX1                      = (uint8_t*)   &_emu->_baseMem[0x03DE];
   player1PosX2                      = (uint8_t*)   &_emu->_baseMem[0x03DA];
@@ -42,6 +43,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   player1RecoveryTimer              = (uint8_t*)   &_emu->_baseMem[0x041A];
   player1ResumeTimer                = (uint8_t*)   &_emu->_baseMem[0x00DA];
   player1CanControlCar              = (uint8_t*)   &_emu->_baseMem[0x01BF];
+  player1TankFireTimer              = (uint8_t*)   &_emu->_baseMem[0x041E];
 
   preRaceTimer                      = (uint8_t*)   &_emu->_baseMem[0x00DD];
   activeFrame1                      = (uint8_t*)   &_emu->_baseMem[0x00B0];
@@ -71,6 +73,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*cameraPosX2);
   hash.Update(*cameraPosY1);
   hash.Update(*cameraPosY2);
+  hash.Update(*currentRace);
 
   hash.Update(*frameType);
   hash.Update(*lagFrame);
@@ -99,6 +102,7 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   hash.Update(*player1RecoveryTimer);
   hash.Update(*player1CanControlCar);
   hash.Update(*player1ResumeTimer);
+  hash.Update(*player1TankFireTimer > 0);
 
   // hash.Update(*activeFrame1);
   // hash.Update(*activeFrame2);
@@ -138,8 +142,10 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 {
 //  if (*frameType == 0x00) return { "." };
 //  if (*frameType == 0x01) return { ".", "A", "R", "L", "RA", "LA" };
-  
-  return { "A", "R", "L", "RA", "LA" };
+
+if (*currentRace == 19)   return { "A", "BA", "R", "L", "RA", "LA" };
+return { "A", "R", "L", "RA", "LA" };
+
 
 // if (*frameType == 0x00) return { ".", "A", "B" };
 // if (*frameType == 0x01) return { ".", "A", "B", "R", "L", "BA", "RA", "RB", "LA", "LB", "RBA", "LBA" };
@@ -212,6 +218,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Reward:                             %f\n", getStateReward(rulesStatus));
  LOG("[Jaffar]  + Hash:                               0x%lX%lX\n", computeHash().first, computeHash().second);
 
+ LOG("[Jaffar]  + Current Race:                       %03u\n", *currentRace);
  LOG("[Jaffar]  + Global Timer:                       %03u\n", *globalTimer);
  LOG("[Jaffar]  + Pre Race Timer:                     %03u\n", *preRaceTimer);
  LOG("[Jaffar]  + Frame Type / Lag:                   %03u %03u\n", *frameType, *lagFrame);
@@ -234,7 +241,7 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Player Recovery:                    %03u (%03u)\n", *player1RecoveryMode, *player1RecoveryTimer);
  LOG("[Jaffar]  + Player Resume Timer:                %03u\n", *player1ResumeTimer);
  LOG("[Jaffar]  + Player Can Control Car:             %03u\n", *player1CanControlCar);
-
+ LOG("[Jaffar]  + Player Tank Fire Timer:             %03u\n", *player1TankFireTimer);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);

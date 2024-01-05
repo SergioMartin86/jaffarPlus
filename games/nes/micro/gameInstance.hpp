@@ -38,6 +38,7 @@ class GameInstance : public GameInstanceBase
 
   // Container for game-specific values
   uint16_t* globalTimer;
+  uint8_t*  currentRace;
   uint8_t*  preRaceTimer;
   uint8_t*  frameType;
   uint8_t*  lagFrame;
@@ -74,6 +75,7 @@ class GameInstance : public GameInstanceBase
   uint8_t*  player1RecoveryTimer;
   uint8_t*  player1CanControlCar;
   uint8_t*  player1ResumeTimer;
+  uint8_t*  player1TankFireTimer;
 
   uint8_t* activeFrame1;
   uint8_t* activeFrame2;
