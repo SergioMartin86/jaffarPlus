@@ -95,7 +95,7 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1145, "Y": 3200 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1145, "Y": 2850 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
    },
@@ -116,7 +116,7 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 3030, "Y": 2980 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 3030, "Y": 3200 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
    },
