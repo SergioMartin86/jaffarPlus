@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "micro.nes",
-    "State File": "race20b.state"
+    "State File": "race20c.state"
   },
   
   "Game Configuration": 
@@ -64,7 +64,7 @@
     "Label": 8208,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 }, 
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 }, 
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 73 }  
     ],
     
@@ -84,7 +84,7 @@
     "Label": 8209,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 }, 
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 }, 
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 77 }  
     ],
     
@@ -104,7 +104,7 @@
     "Label": 8210,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 }, 
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 }, 
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 77 },
       { "Property": "Player 1 Pos Y", "Op": ">=", "Value": 2800 }  
     ],
@@ -125,7 +125,7 @@
     "Label": 8211,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 }, 
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 }, 
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 77 }, 
       { "Property": "Player 1 Pos X", "Op": ">=", "Value": 3000 },
       { "Property": "Player 1 Pos Y", "Op": ">=", "Value": 2900 }
@@ -147,7 +147,7 @@
     "Label": 8999,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 }, 
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 }, 
       { "Property": "Player 1 Checkpoint", "Op": "==", "Value": 166 }
     ],
     
