@@ -143,7 +143,8 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 //  if (*frameType == 0x00) return { "." };
 //  if (*frameType == 0x01) return { ".", "A", "R", "L", "RA", "LA" };
 
-if (*currentRace == 19)   return { "A", "BA", "R", "L", "RA", "LA" };
+// If this is a tank race and we haven't fired, try firing
+if ((*currentRace == 19 || *currentRace == 13) && *player1TankFireTimer == 0) return { "A", "BA", "R", "L", "RA", "LA" };
 return { "A", "R", "L", "RA", "LA" };
 
 
