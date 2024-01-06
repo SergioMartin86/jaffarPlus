@@ -194,7 +194,6 @@ public:
 	}
 };
 
-void register_misc_mappers();
 void register_misc_mappers()
 {
 	register_mapper<Mapper_Color_Dreams>( 11 );

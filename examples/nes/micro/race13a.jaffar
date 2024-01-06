@@ -2,12 +2,12 @@
   "Emulator Configuration": 
   {
     "Rom File": "micro.nes",
-    "State File": "race13.state"
+    "State File": "race13a.state"
   },
   
   "Game Configuration": 
   {
-   "Timer Tolerance": 2
+   "Timer Tolerance": 0
   },
   
   "Jaffar Configuration": 
@@ -21,17 +21,17 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 500,
+      "Max Move Count": 3100,
       "Store Move History": true,
-      "XDelta3 Enabled": true, 
+      "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 1600,
       "XDelta3 Use Zlib Compression": true
     },
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 4000,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Lower Bound (Mb)": 1000,
+     "Max Size Upper Bound (Mb)": 5000
     },
      
     "Hash Database":
@@ -60,6 +60,23 @@
   "Rules":
   [
    
+  {
+    "Label": 8000,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
+      { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 499, "Y": 0 }
+    ]
+   },
+
    {
     "Label": 8001,
     "Conditions":
@@ -67,10 +84,11 @@
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }
     ],
     
-    "Satisfies": [ ],
+    "Satisfies": [ 8000 ],
     
     "Actions":
     [
+     { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
@@ -114,6 +132,27 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Point Magnet", "Intensity": 0.01, "X": 1409, "Y": 820 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+
+   {
+    "Label": 8103,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }, 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 18 },
+      { "Property": "Player 1 Pos Y", "Op": ">=", "Value": 810 }
+    ],
+    
+    "Satisfies": [ 8003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
      { "Type": "Set Point Magnet", "Intensity": 0.01, "X": 1524, "Y": 1097 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
@@ -127,7 +166,27 @@
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 25 }  
     ],
     
-    "Satisfies": [ 8003 ],
+    "Satisfies": [ 8103 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1426, "Y": 1333 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+   
+   {
+    "Label": 8104,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }, 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 30 }  
+    ],
+    
+    "Satisfies": [ 8004 ],
     
     "Actions":
     [
@@ -138,7 +197,7 @@
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
    },
-   
+
    {
     "Label": 8005,
     "Conditions":
@@ -147,7 +206,7 @@
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 32 }  
     ],
     
-    "Satisfies": [ 8004 ],
+    "Satisfies": [ 8104 ],
     
     "Actions":
     [
@@ -252,6 +311,27 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Point Magnet", "Intensity": 0.01, "X": 1409, "Y": 820 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+
+   {
+    "Label": 9103,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 }, 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 18 },
+      { "Property": "Player 1 Pos Y", "Op": ">=", "Value": 810 }
+    ],
+    
+    "Satisfies": [ 9003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
      { "Type": "Set Point Magnet", "Intensity": 0.01, "X": 1524, "Y": 1097 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
@@ -265,7 +345,27 @@
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 25 }  
     ],
     
-    "Satisfies": [ 9003 ],
+    "Satisfies": [ 9103 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1426, "Y": 1333 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+   
+   {
+    "Label": 9104,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 }, 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 30 }  
+    ],
+    
+    "Satisfies": [ 9004 ],
     
     "Actions":
     [
@@ -276,7 +376,7 @@
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
    },
-   
+
    {
     "Label": 9005,
     "Conditions":
@@ -285,7 +385,7 @@
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 32 }  
     ],
     
-    "Satisfies": [ 9004 ],
+    "Satisfies": [ 9104 ],
     
     "Actions":
     [
@@ -390,6 +490,27 @@
      { "Type": "Add Reward", "Value": 10000.0 },
      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Point Magnet", "Intensity": 0.01, "X": 1409, "Y": 820 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+
+   {
+    "Label": 10103,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 }, 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 18 },
+      { "Property": "Player 1 Pos Y", "Op": ">=", "Value": 810 }
+    ],
+    
+    "Satisfies": [ 10003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
      { "Type": "Set Point Magnet", "Intensity": 0.01, "X": 1524, "Y": 1097 },
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
@@ -403,7 +524,27 @@
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 25 }  
     ],
     
-    "Satisfies": [ 10003 ],
+    "Satisfies": [ 10103 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000.0 },
+     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1426, "Y": 1333 },
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+    ]
+   },
+   
+   {
+    "Label": 10104,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 }, 
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 30 }  
+    ],
+    
+    "Satisfies": [ 10004 ],
     
     "Actions":
     [
@@ -414,7 +555,7 @@
      { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
    },
-   
+
    {
     "Label": 10005,
     "Conditions":
@@ -423,7 +564,7 @@
       { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 32 }  
     ],
     
-    "Satisfies": [ 10004 ],
+    "Satisfies": [ 10104 ],
     
     "Actions":
     [
