@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "micro.nes",
-    "State File": "race21a.state"
+    "State File": "race22a.state"
   },
   
   "Game Configuration": 
@@ -21,7 +21,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 6000,
+      "Max Move Count": 7000,
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 350,
@@ -30,7 +30,7 @@
      
     "State Database": 
     {
-     "Max Size Lower Bound (Mb)": 300,
+     "Max Size Lower Bound (Mb)": 100,
      "Max Size Upper Bound (Mb)": 6000
     },
     
