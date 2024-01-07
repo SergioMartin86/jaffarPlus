@@ -13,8 +13,6 @@
 #define _LOW_MEM_SIZE 0x800
 #define _HIGH_MEM_SIZE 0x2000
 
-static pthread_once_t extra_mappers_initialized = PTHREAD_ONCE_INIT;
-
 class EmuInstance : public EmuInstanceBase
 {
  public:
@@ -36,9 +34,6 @@ class EmuInstance : public EmuInstanceBase
   // Checking whether configuration contains the state file
   if (isDefined(config, "State File") == false) EXIT_WITH_ERROR("[ERROR] Configuration file missing 'State File' key.\n");
   std::string stateFilePath = config["State File"].get<std::string>();
-
-  // Registering extra mappers (its a static data structure, so only once please)
-  pthread_once(&extra_mappers_initialized, register_extra_mappers);
 
   // Creating new emulator and loading rom
   auto emu = new Nes_Emu;
