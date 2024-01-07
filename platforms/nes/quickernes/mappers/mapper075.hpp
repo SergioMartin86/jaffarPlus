@@ -43,10 +43,6 @@ public:
 	{
 	}
 
-	void update_chr_banks();
-	void update_prg_banks();
-	void update_mirroring();
-
 	void apply_mapping()
 	{
 		update_prg_banks();
@@ -87,26 +83,28 @@ public:
 				break;
 		}
 	}
+
+	void update_prg_banks()
+	{
+		set_prg_bank( 0x8000, bank_8k, prg_banks [ 0 ] );
+		set_prg_bank( 0xa000, bank_8k, prg_banks [ 1 ] );
+		set_prg_bank( 0xc000, bank_8k, prg_banks [ 2 ] );
+	}
+
+	void update_chr_banks()
+	{
+		set_chr_bank( 0x0000, bank_4k, chr_banks [ 0 ] | chr_banks_hi [ 0 ] );
+		set_chr_bank( 0x1000, bank_4k, chr_banks [ 1 ] | chr_banks_hi [ 1 ] );
+	}
+
+	void update_mirroring()
+	{
+		switch ( mirroring & 1 )
+		{
+			case 1: mirror_horiz(); break;
+			case 0: mirror_vert(); break;
+		}
+	}
 };
 
-void Mapper075::update_prg_banks()
-{
-	set_prg_bank( 0x8000, bank_8k, prg_banks [ 0 ] );
-	set_prg_bank( 0xa000, bank_8k, prg_banks [ 1 ] );
-	set_prg_bank( 0xc000, bank_8k, prg_banks [ 2 ] );
-}
 
-void Mapper075::update_chr_banks()
-{
-	set_chr_bank( 0x0000, bank_4k, chr_banks [ 0 ] | chr_banks_hi [ 0 ] );
-	set_chr_bank( 0x1000, bank_4k, chr_banks [ 1 ] | chr_banks_hi [ 1 ] );
-}
-
-void Mapper075::update_mirroring()
-{
-	switch ( mirroring & 1 )
-	{
-		case 1: mirror_horiz(); break;
-		case 0: mirror_vert(); break;
-	}
-}

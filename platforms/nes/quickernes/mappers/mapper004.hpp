@@ -49,11 +49,6 @@ public:
 			mirror = 0;
 	}
 	
-	void update_chr_banks();
-	void update_prg_banks();
-	void write_irq( nes_addr_t addr, int data );
-	void write( nes_time_t, nes_addr_t, int );
-	
 	void start_frame() { next_time = first_scanline; }
 	
 	virtual void apply_mapping()
@@ -86,7 +81,6 @@ public:
 		}
 	}
 	
-	virtual void run_until( nes_time_t );
 	
 	virtual void a12_clocked()
 	{
@@ -125,122 +119,123 @@ public:
 		return time / ppu_overclock + 1;
 	}
 
+	void run_until( nes_time_t end_time )
+	{
+		bool bg_enabled = ppu_enabled();
+		
+		if (next_time < 0) next_time = 0;
+
+		end_time *= ppu_overclock;
+		while ( next_time < end_time && next_time <= last_scanline )
+		{
+			if ( bg_enabled )
+				clock_counter();
+			next_time += Nes_Ppu::scanline_len;
+		}
+	}
+
+	void update_chr_banks()
+	{
+		int chr_xor = (mode >> 7 & 1) * 0x1000;
+		set_chr_bank( 0x0000 ^ chr_xor, bank_2k, banks [0] >> 1 );
+		set_chr_bank( 0x0800 ^ chr_xor, bank_2k, banks [1] >> 1 );
+		set_chr_bank( 0x1000 ^ chr_xor, bank_1k, banks [2] );
+		set_chr_bank( 0x1400 ^ chr_xor, bank_1k, banks [3] );
+		set_chr_bank( 0x1800 ^ chr_xor, bank_1k, banks [4] );
+		set_chr_bank( 0x1c00 ^ chr_xor, bank_1k, banks [5] );
+	}
+
+	void update_prg_banks()
+	{
+		set_prg_bank( 0xA000, bank_8k, banks [7] );
+		nes_addr_t addr = 0x8000 + 0x4000 * (mode >> 6 & 1);
+		set_prg_bank( addr, bank_8k, banks [6] );
+		set_prg_bank( addr ^ 0x4000, bank_8k, last_bank - 1 );
+	}
+
+	void write_irq( nes_addr_t addr, int data )
+	{
+		switch ( addr & 0xE001 )
+		{
+		case 0xC000:
+			irq_latch = data;
+			break;
+		
+		case 0xC001:
+			/* MMC3 IRQ counter pathological behavior triggered if
+			* counter_just_clocked is 1 */
+			counter_just_clocked = 2;
+			irq_ctr = 0;
+			break;
+		
+		case 0xE000:
+			irq_flag = false;
+			irq_enabled = false;
+			break;
+		
+		case 0xE001:
+			irq_enabled = true;
+			break;
+		}
+		if ( irq_enabled )
+			irq_changed();
+	}
+
+	void write( nes_time_t time, nes_addr_t addr, int data )
+	{
+		switch ( addr & 0xE001 )
+		{
+		case 0x8000: {
+			int changed = mode ^ data;
+			mode = data;
+			// avoid unnecessary bank updates
+			if ( changed & 0x80 )
+				update_chr_banks();
+			if ( changed & 0x40 )
+				update_prg_banks();
+			break;
+		}
+		
+		case 0x8001: {
+			int bank = mode & 7;
+			banks [bank] = data;
+			if ( bank < 6 )
+				update_chr_banks();
+			else
+				update_prg_banks();
+			break;
+		}
+		
+		case 0xA000:
+			mirror = data;
+			if ( !(cart().mirroring() & 0x08) )
+			{
+				if ( mirror & 1 )
+					mirror_horiz();
+				else
+					mirror_vert();
+			}
+			break;
+		
+		case 0xA001:
+			sram_mode = data;
+			//dprintf( "%02X->%04X\n", data, addr );
+			
+			// Startropics 1 & 2 use MMC6 and always enable low 512 bytes of SRAM
+			if ( (data & 0x3F) == 0x30 )
+				enable_sram( true );
+			else
+				enable_sram( data & 0x80, data & 0x40 );
+			break;
+		
+		default:
+			run_until( time );
+			write_irq( addr, data );
+			break;
+		}
+	}
+
 	nes_time_t next_time;
 	int counter_just_clocked; // used only for debugging
 };
 
-void Mapper004::run_until( nes_time_t end_time )
-{
-	bool bg_enabled = ppu_enabled();
-	
-	if (next_time < 0) next_time = 0;
-
-	end_time *= ppu_overclock;
-	while ( next_time < end_time && next_time <= last_scanline )
-	{
-		if ( bg_enabled )
-			clock_counter();
-		next_time += Nes_Ppu::scanline_len;
-	}
-}
-
-void Mapper004::update_chr_banks()
-{
-	int chr_xor = (mode >> 7 & 1) * 0x1000;
-	set_chr_bank( 0x0000 ^ chr_xor, bank_2k, banks [0] >> 1 );
-	set_chr_bank( 0x0800 ^ chr_xor, bank_2k, banks [1] >> 1 );
-	set_chr_bank( 0x1000 ^ chr_xor, bank_1k, banks [2] );
-	set_chr_bank( 0x1400 ^ chr_xor, bank_1k, banks [3] );
-	set_chr_bank( 0x1800 ^ chr_xor, bank_1k, banks [4] );
-	set_chr_bank( 0x1c00 ^ chr_xor, bank_1k, banks [5] );
-}
-
-void Mapper004::update_prg_banks()
-{
-	set_prg_bank( 0xA000, bank_8k, banks [7] );
-	nes_addr_t addr = 0x8000 + 0x4000 * (mode >> 6 & 1);
-	set_prg_bank( addr, bank_8k, banks [6] );
-	set_prg_bank( addr ^ 0x4000, bank_8k, last_bank - 1 );
-}
-
-void Mapper004::write_irq( nes_addr_t addr, int data )
-{
-	switch ( addr & 0xE001 )
-	{
-	case 0xC000:
-		irq_latch = data;
-		break;
-	
-	case 0xC001:
-		/* MMC3 IRQ counter pathological behavior triggered if
-		 * counter_just_clocked is 1 */
-		counter_just_clocked = 2;
-		irq_ctr = 0;
-		break;
-	
-	case 0xE000:
-		irq_flag = false;
-		irq_enabled = false;
-		break;
-	
-	case 0xE001:
-		irq_enabled = true;
-		break;
-	}
-	if ( irq_enabled )
-		irq_changed();
-}
-
-void Mapper004::write( nes_time_t time, nes_addr_t addr, int data )
-{
-	switch ( addr & 0xE001 )
-	{
-	case 0x8000: {
-		int changed = mode ^ data;
-		mode = data;
-		// avoid unnecessary bank updates
-		if ( changed & 0x80 )
-			update_chr_banks();
-		if ( changed & 0x40 )
-			update_prg_banks();
-		break;
-	}
-	
-	case 0x8001: {
-		int bank = mode & 7;
-		banks [bank] = data;
-		if ( bank < 6 )
-			update_chr_banks();
-		else
-			update_prg_banks();
-		break;
-	}
-	
-	case 0xA000:
-		mirror = data;
-		if ( !(cart().mirroring() & 0x08) )
-		{
-			if ( mirror & 1 )
-				mirror_horiz();
-			else
-				mirror_vert();
-		}
-		break;
-	
-	case 0xA001:
-		sram_mode = data;
-		//dprintf( "%02X->%04X\n", data, addr );
-		
-		// Startropics 1 & 2 use MMC6 and always enable low 512 bytes of SRAM
-		if ( (data & 0x3F) == 0x30 )
-			enable_sram( true );
-		else
-			enable_sram( data & 0x80, data & 0x40 );
-		break;
-	
-	default:
-		run_until( time );
-		write_irq( addr, data );
-		break;
-	}
-}

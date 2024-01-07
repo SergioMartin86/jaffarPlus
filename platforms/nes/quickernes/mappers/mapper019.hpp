@@ -31,7 +31,13 @@ struct namco106_state_t
 	uint8_t irq_pending;
 	uint8_t unused1 [1];
 	namco_state_t sound_state;
-	void swap();
+
+	void swap()
+	{
+		set_le16( &irq_ctr, irq_ctr );
+		for ( unsigned i = 0; i < sizeof sound_state.delays / sizeof sound_state.delays [0]; i++ )
+			set_le16( &sound_state.delays [i], sound_state.delays [i] );
+	}
 };
 
 BOOST_STATIC_ASSERT( sizeof (namco106_state_t) == 20 + sizeof (namco_state_t) );
@@ -51,10 +57,6 @@ public:
 	virtual void set_channel_buf( int i, Blip_Buffer* b ) { sound.osc_output( i, b ); }
 
 	virtual void set_treble( blip_eq_t const& eq ) { sound.treble_eq( eq ); }
-
-	virtual void save_state( mapper_state_t& out );
-
-	virtual void read_state( mapper_state_t const& in );
 
 	void reset_state()
 	{
@@ -116,9 +118,6 @@ public:
 		last_time -= end_time;
 		sound.end_frame( end_time );
 	}
-
-	void write_bank( nes_addr_t, int data );
-	void write_irq( nes_time_t, nes_addr_t, int data );
 
 	virtual int read( nes_time_t time, nes_addr_t addr )
 	{
@@ -192,29 +191,30 @@ public:
 		}
 	}
 
+	void swap()
+	{
+		set_le16( &irq_ctr, irq_ctr );
+		for ( unsigned i = 0; i < sizeof sound_state.delays / sizeof sound_state.delays [0]; i++ )
+			set_le16( &sound_state.delays [i], sound_state.delays [i] );
+	}
+
+	void save_state( mapper_state_t& out )
+	{
+		sound.save_state( &sound_state );
+		namco106_state_t::swap();
+		Nes_Mapper::save_state( out );
+		namco106_state_t::swap();
+	}
+
+	void read_state( mapper_state_t const& in )
+	{
+		Nes_Mapper::read_state( in );
+		namco106_state_t::swap();
+		sound.load_state( sound_state );
+	}
+
 	Nes_Namco_Apu sound;
 	nes_time_t last_time;
 };
 
-void namco106_state_t::swap()
-{
-	set_le16( &irq_ctr, irq_ctr );
-	for ( unsigned i = 0; i < sizeof sound_state.delays / sizeof sound_state.delays [0]; i++ )
-		set_le16( &sound_state.delays [i], sound_state.delays [i] );
-}
-
-void Mapper019::save_state( mapper_state_t& out )
-{
-	sound.save_state( &sound_state );
-	namco106_state_t::swap();
-	Nes_Mapper::save_state( out );
-	namco106_state_t::swap();
-}
-
-void Mapper019::read_state( mapper_state_t const& in )
-{
-	Nes_Mapper::read_state( in );
-	namco106_state_t::swap();
-	sound.load_state( sound_state );
-}
 

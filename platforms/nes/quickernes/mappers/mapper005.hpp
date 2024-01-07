@@ -61,8 +61,6 @@ public:
 	
 	enum { regs_addr = 0x5100 };
 	
-	virtual void apply_mapping();
-	
 	virtual nes_time_t next_irq( nes_time_t )
 	{
 		if ( irq_enabled & 0x80 )
@@ -132,20 +130,23 @@ public:
 		return true;
 	}
 	
+		void apply_mapping()
+	{
+		static unsigned char list [] = {
+			0x05, 0x15, 0x16, 0x17,
+			0x20, 0x21, 0x22, 0x23,
+			0x28, 0x29, 0x2a, 0x2b
+		};
+		
+		for ( int i = 0; i < (int) sizeof list; i++ )
+			write_intercepted( 0, regs_addr + list [i], regs [list [i]] );
+		intercept_writes( 0x5100, 0x200 );
+	}
+
 	virtual void write( nes_time_t, nes_addr_t, int ) { }
+
 	nes_time_t irq_time;
 };
 
-void Mapper005::apply_mapping()
-{
-	static unsigned char list [] = {
-		0x05, 0x15, 0x16, 0x17,
-		0x20, 0x21, 0x22, 0x23,
-		0x28, 0x29, 0x2a, 0x2b
-	};
-	
-	for ( int i = 0; i < (int) sizeof list; i++ )
-		write_intercepted( 0, regs_addr + list [i], regs [list [i]] );
-	intercept_writes( 0x5100, 0x200 );
-}
+
 

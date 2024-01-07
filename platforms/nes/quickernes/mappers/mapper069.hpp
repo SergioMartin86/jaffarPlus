@@ -34,16 +34,16 @@ struct fme7_state_t
 	uint8_t irq_pending;
 	fme7_apu_state_t sound_state; // only used when saving/restoring state
 	
-	void swap();
+	void swap()
+	{
+		set_le16( &irq_count, irq_count );
+		for ( unsigned i = 0; i < sizeof sound_state.delays / sizeof sound_state.delays [0]; i++ )
+			set_le16( &sound_state.delays [i], sound_state.delays [i] );
+	}
 };
 BOOST_STATIC_ASSERT( sizeof (fme7_state_t) == 18 + sizeof (fme7_apu_state_t) );
 
-void fme7_state_t::swap()
-{
-	set_le16( &irq_count, irq_count );
-	for ( unsigned i = 0; i < sizeof sound_state.delays / sizeof sound_state.delays [0]; i++ )
-		set_le16( &sound_state.delays [i], sound_state.delays [i] );
-}
+
 
 // Fme7
 
@@ -82,8 +82,6 @@ public:
 		fme7_state_t::swap();
 		sound.load_state( sound_state );
 	}
-	
-	void write_register( int index, int data );
 	
 	virtual void apply_mapping()
 	{
@@ -125,8 +123,6 @@ public:
 		sound.end_frame( end_time );
 	}
 	
-	void write_irq( nes_time_t, int index, int data );
-	
 	virtual void write( nes_time_t time, nes_addr_t addr, int data )
 	{
 		switch ( addr & 0xE000 )
@@ -152,57 +148,59 @@ public:
 		}
 	}
 
+
+	void write_irq( nes_time_t time, int index, int data )
+	{
+		run_until( time );
+		switch ( index )
+		{
+		case 0x0D:
+			irq_mode = data;
+			irq_pending = false;
+			irq_changed();
+			break;
+
+		case 0x0E:
+			irq_count = (irq_count & 0xFF00) | data;
+			break;
+
+		case 0x0F:
+			irq_count = data << 8 | (irq_count & 0xFF);
+			break;
+		}
+	}
+
+	void write_register( int index, int data )
+	{
+		regs [index] = data;
+		int prg_bank = index - 0x09;
+		if ( (unsigned) prg_bank < 3 ) // most common
+		{
+			set_prg_bank( 0x8000 | (prg_bank << bank_8k), bank_8k, data );
+		}
+		else if ( index == 0x08 )
+		{
+			enable_sram( (data & 0xC0) == 0xC0 );
+			if ( !(data & 0xC0) )
+				set_prg_bank( 0x6000, bank_8k, data & 0x3F );
+		}
+		else if ( index < 0x08 )
+		{
+			set_chr_bank( index * 0x400, bank_1k, data );
+		}
+		else
+		{
+			if ( data & 2 )
+				mirror_single( data & 1 );
+			else if ( data & 1 )
+				mirror_horiz();
+			else
+				mirror_vert();
+		}
+	}
+
 	nes_time_t last_time;
 	Nes_Fme7_Apu sound;
 };
 
-void Mapper069::write_irq( nes_time_t time, int index, int data )
-{
-	run_until( time );
-	switch ( index )
-	{
-	case 0x0D:
-		irq_mode = data;
-		irq_pending = false;
-		irq_changed();
-		break;
-
-	case 0x0E:
-		irq_count = (irq_count & 0xFF00) | data;
-		break;
-
-	case 0x0F:
-		irq_count = data << 8 | (irq_count & 0xFF);
-		break;
-	}
-}
-
-void Mapper069::write_register( int index, int data )
-{
-	regs [index] = data;
-	int prg_bank = index - 0x09;
-	if ( (unsigned) prg_bank < 3 ) // most common
-	{
-		set_prg_bank( 0x8000 | (prg_bank << bank_8k), bank_8k, data );
-	}
-	else if ( index == 0x08 )
-	{
-		enable_sram( (data & 0xC0) == 0xC0 );
-		if ( !(data & 0xC0) )
-			set_prg_bank( 0x6000, bank_8k, data & 0x3F );
-	}
-	else if ( index < 0x08 )
-	{
-		set_chr_bank( index * 0x400, bank_1k, data );
-	}
-	else
-	{
-		if ( data & 2 )
-			mirror_single( data & 1 );
-		else if ( data & 1 )
-			mirror_horiz();
-		else
-			mirror_vert();
-	}
-}
 
