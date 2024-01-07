@@ -42,16 +42,16 @@ struct vrc6_state_t
 	
 	vrc6_apu_state_t sound_state;
 	
-	void swap();
+	void swap()
+	{
+		set_le16( &next_time, next_time );
+		for ( unsigned i = 0; i < sizeof sound_state.delays / sizeof sound_state.delays [0]; i++ )
+			set_le16( &sound_state.delays [i], sound_state.delays [i] );
+	}
 };
 BOOST_STATIC_ASSERT( sizeof (vrc6_state_t) == 26 + sizeof (vrc6_apu_state_t) );
 
-void vrc6_state_t::swap()
-{
-	set_le16( &next_time, next_time );
-	for ( unsigned i = 0; i < sizeof sound_state.delays / sizeof sound_state.delays [0]; i++ )
-		set_le16( &sound_state.delays [i], sound_state.delays [i] );
-}
+
 
 template <int swapMask>
 class Mapper_Vrc6 : public Nes_Mapper, vrc6_state_t {

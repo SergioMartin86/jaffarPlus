@@ -37,8 +37,6 @@ public:
 		regs [3] = 0x00;
 	}
 	
-	void register_changed( int );
-	
 	virtual void apply_mapping()
 	{
 		enable_sram(); // early MMC1 always had SRAM enabled
@@ -71,51 +69,53 @@ public:
 			register_changed( 0 );
 		}
 	}
+
+	
+	void register_changed( int reg )
+	{
+		// Mirroring
+		if ( reg == 0 )
+		{
+			int mode = regs [0] & 3;
+			if ( mode < 2 )
+				mirror_single( mode & 1 );
+			else if ( mode == 2 )
+				mirror_vert();
+			else
+				mirror_horiz();
+		}
+		
+		// CHR
+		if ( reg < 3 && cart().chr_size() > 0 )
+		{
+			if ( regs [0] & 0x10 )
+			{
+				set_chr_bank( 0x0000, bank_4k, regs [1] );
+				set_chr_bank( 0x1000, bank_4k, regs [2] );
+			}
+			else
+			{
+				set_chr_bank( 0, bank_8k, regs [1] >> 1 );
+			}
+		}
+		
+		// PRG
+		int bank = (regs [1] & 0x10) | (regs [3] & 0x0f);
+		if ( !(regs [0] & 0x08) )
+		{
+			set_prg_bank( 0x8000, bank_32k, bank >> 1 );
+		}
+		else if ( regs [0] & 0x04 )
+		{
+			set_prg_bank( 0x8000, bank_16k, bank );
+			set_prg_bank( 0xC000, bank_16k, bank | 0x0f );
+		}
+		else
+		{
+			set_prg_bank( 0x8000, bank_16k, bank & ~0x0f );
+			set_prg_bank( 0xC000, bank_16k, bank );
+		}
+	}
 };
 
-void Mapper001::register_changed( int reg )
-{
-	// Mirroring
-	if ( reg == 0 )
-	{
-		int mode = regs [0] & 3;
-		if ( mode < 2 )
-			mirror_single( mode & 1 );
-		else if ( mode == 2 )
-			mirror_vert();
-		else
-			mirror_horiz();
-	}
-	
-	// CHR
-	if ( reg < 3 && cart().chr_size() > 0 )
-	{
-		if ( regs [0] & 0x10 )
-		{
-			set_chr_bank( 0x0000, bank_4k, regs [1] );
-			set_chr_bank( 0x1000, bank_4k, regs [2] );
-		}
-		else
-		{
-			set_chr_bank( 0, bank_8k, regs [1] >> 1 );
-		}
-	}
-	
-	// PRG
-	int bank = (regs [1] & 0x10) | (regs [3] & 0x0f);
-	if ( !(regs [0] & 0x08) )
-	{
-		set_prg_bank( 0x8000, bank_32k, bank >> 1 );
-	}
-	else if ( regs [0] & 0x04 )
-	{
-		set_prg_bank( 0x8000, bank_16k, bank );
-		set_prg_bank( 0xC000, bank_16k, bank | 0x0f );
-	}
-	else
-	{
-		set_prg_bank( 0x8000, bank_16k, bank & ~0x0f );
-		set_prg_bank( 0xC000, bank_16k, bank );
-	}
-}
 
