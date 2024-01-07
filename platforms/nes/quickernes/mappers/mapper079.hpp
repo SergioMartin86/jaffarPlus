@@ -87,9 +87,4 @@ void Mapper_AveNina< multicart >::write_regs()
 	}
 }
 
-// void register_mapper_avenina();
-// void register_mapper_avenina()
-// {
-// 	register_mapper < Mapper_AveNina < false > > ( 79 );
-// 	register_mapper < Mapper_AveNina < true  > > ( 113 );
-// }
+typedef Mapper_AveNina<false> Mapper079;

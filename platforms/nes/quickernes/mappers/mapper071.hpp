@@ -19,10 +19,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 #include "blargg_source.h"
 
-class Mapper_071_Camerica : public Nes_Mapper {
+// Camerica 
+
+class Mapper071 : public Nes_Mapper {
 	uint8_t regs [3];
 public:
-	Mapper_071_Camerica()
+	Mapper071()
 	{
 		register_state( regs, sizeof regs );
 	}

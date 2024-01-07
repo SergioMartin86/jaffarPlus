@@ -25,6 +25,8 @@
 
 #include "Nes_Mapper.h"
 
+// https://www.nesdev.org/wiki/INES_Mapper244
+
 struct mapper244_state_t
 {
 	uint8_t preg;
@@ -33,9 +35,9 @@ struct mapper244_state_t
 
 BOOST_STATIC_ASSERT( sizeof (mapper244_state_t) == 2 );
 
-class Mapper_244 : public Nes_Mapper, mapper244_state_t {
+class Mapper244 : public Nes_Mapper, mapper244_state_t {
 public:
-	Mapper_244()
+	Mapper244()
 	{
 		mapper244_state_t *state = this;
 		register_state( state, sizeof *state );
@@ -65,9 +67,3 @@ public:
 		}
 	}
 };
-
-// void register_mapper_244();
-// void register_mapper_244()
-// {
-// 	register_mapper< Mapper_244 > ( 244 );
-// }

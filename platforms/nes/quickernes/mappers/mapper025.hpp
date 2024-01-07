@@ -26,6 +26,5 @@
 
 #pragma once
 #include "Nes_Mapper.h"
-#include "mappers/mapper021.hpp"
 
 typedef Mapper_VRC2_4<true,false> Mapper025;

@@ -36,9 +36,11 @@ struct vrc3_state_t
 	uint16_t next_time;
 };
 
-class Mapper_VRC3 : public Nes_Mapper, vrc3_state_t {
+// VRC3
+
+class Mapper073 : public Nes_Mapper, vrc3_state_t {
 public:
-	Mapper_VRC3()
+	Mapper073()
 	{
 		vrc3_state_t * state = this;
 		register_state( state, sizeof * state );
@@ -131,5 +133,5 @@ public:
 // void register_vrc3_mapper();
 // void register_vrc3_mapper()
 // {
-// 	register_mapper< Mapper_VRC3> ( 73 );
+// 	register_mapper< Mapper073> ( 73 );
 // }

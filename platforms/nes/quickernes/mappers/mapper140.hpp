@@ -26,9 +26,11 @@
 
 #include "Nes_Mapper.h"
 
-class Mapper_Jaleco_JF11 : public Nes_Mapper {
+// Jaleco_JF11 
+
+class Mapper140 : public Nes_Mapper {
 public:
-	Mapper_Jaleco_JF11()
+	Mapper140()
 	{
 		register_state( &regs, 1 );
 	}
@@ -59,9 +61,3 @@ public:
 
 	uint8_t regs;
 };
-
-// void register_mapper_jaleco_jf11();
-// void register_mapper_jaleco_jf11()
-// {
-// 	register_mapper< Mapper_Jaleco_JF11 > ( 140 );
-// }

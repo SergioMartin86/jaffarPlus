@@ -24,36 +24,11 @@
 
 #include "Nes_Mapper.h"
 
-class Mapper_Sunsoft2a : public Nes_Mapper {
+// Sunsoft2b
+
+class Mapper089 : public Nes_Mapper {
 public:
-	Mapper_Sunsoft2a()
-	{
-		register_state( &regs, 1 );
-	}
-
-	virtual void reset_state()
-	{}
-
-	virtual void apply_mapping()
-	{
-		set_prg_bank( 0xC000, bank_16k, last_bank );
-		write( 0, 0x8000, regs );
-	}
-
-	virtual void write( nes_time_t, nes_addr_t addr, int data )
-	{
-		regs = handle_bus_conflict( addr, data );
-
-		set_chr_bank( 0x0000, bank_8k, data & 0x0F );
-		set_prg_bank( 0x8000, bank_16k, ( data >> 4 ) & 0x07 );
-	}
-
-	uint8_t regs;
-};
-
-class Mapper_Sunsoft2b : public Nes_Mapper {
-public:
-	Mapper_Sunsoft2b()
+	Mapper089()
 	{
 		register_state( &regs, 1 );
 	}
@@ -78,10 +53,3 @@ public:
 
 	uint8_t regs;
 };
-
-// void register_mapper_sunsoft2();
-// void register_mapper_sunsoft2()
-// {
-// 	register_mapper< Mapper_Sunsoft2a > ( 93 );
-// 	register_mapper< Mapper_Sunsoft2b > ( 89 );
-// }

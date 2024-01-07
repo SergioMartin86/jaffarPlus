@@ -25,9 +25,11 @@
 
 #include "Nes_Mapper.h"
 
-class Mapper_246 : public Nes_Mapper {
+// https://www.nesdev.org/wiki/INES_Mapper246
+
+class Mapper246 : public Nes_Mapper {
 public:
-	Mapper_246()
+	Mapper246()
 	{
 		register_state( regs, sizeof regs );
 	}
@@ -41,7 +43,7 @@ public:
 	{
 		enable_sram();
 		intercept_writes( 0x6000, 0x07 );
-		for ( int i = 0; i < sizeof regs; i++ )
+		for ( size_t i = 0; i < sizeof regs; i++ )
 			write_intercepted( 0, 0x6000 + i, regs [ i ] );
 	}
 
@@ -70,8 +72,3 @@ public:
 	uint8_t regs [ 8 ];
 };
 
-// void register_mapper_246();
-// void register_mapper_246()
-// {
-// 	register_mapper< Mapper_246 > ( 246 );
-// }

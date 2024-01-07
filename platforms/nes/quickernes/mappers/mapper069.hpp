@@ -45,9 +45,11 @@ void fme7_state_t::swap()
 		set_le16( &sound_state.delays [i], sound_state.delays [i] );
 }
 
-class Mapper_Fme7 : public Nes_Mapper, fme7_state_t {
+// Fme7
+
+class Mapper069 : public Nes_Mapper, fme7_state_t {
 public:
-	Mapper_Fme7()
+	Mapper069()
 	{
 		fme7_state_t* state = this;
 		register_state( state, sizeof *state );
@@ -154,7 +156,7 @@ public:
 	Nes_Fme7_Apu sound;
 };
 
-void Mapper_Fme7::write_irq( nes_time_t time, int index, int data )
+void Mapper069::write_irq( nes_time_t time, int index, int data )
 {
 	run_until( time );
 	switch ( index )
@@ -175,7 +177,7 @@ void Mapper_Fme7::write_irq( nes_time_t time, int index, int data )
 	}
 }
 
-void Mapper_Fme7::write_register( int index, int data )
+void Mapper069::write_register( int index, int data )
 {
 	regs [index] = data;
 	int prg_bank = index - 0x09;
@@ -204,8 +206,3 @@ void Mapper_Fme7::write_register( int index, int data )
 	}
 }
 
-// void register_fme7_mapper();
-// void register_fme7_mapper()
-// {
-// 	register_mapper<Mapper_Fme7>( 69 );
-// }

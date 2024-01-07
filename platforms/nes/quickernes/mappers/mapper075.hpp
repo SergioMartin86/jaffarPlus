@@ -29,9 +29,11 @@ struct vrc1_state_t
 
 BOOST_STATIC_ASSERT( sizeof ( vrc1_state_t ) == 8 );
 
-class Mapper_VRC1 : public Nes_Mapper, vrc1_state_t {
+// VRC1 
+
+class Mapper075 : public Nes_Mapper, vrc1_state_t {
 public:
-	Mapper_VRC1()
+	Mapper075()
 	{
 		vrc1_state_t * state = this;
 		register_state( state, sizeof * state );
@@ -87,20 +89,20 @@ public:
 	}
 };
 
-void Mapper_VRC1::update_prg_banks()
+void Mapper075::update_prg_banks()
 {
 	set_prg_bank( 0x8000, bank_8k, prg_banks [ 0 ] );
 	set_prg_bank( 0xa000, bank_8k, prg_banks [ 1 ] );
 	set_prg_bank( 0xc000, bank_8k, prg_banks [ 2 ] );
 }
 
-void Mapper_VRC1::update_chr_banks()
+void Mapper075::update_chr_banks()
 {
 	set_chr_bank( 0x0000, bank_4k, chr_banks [ 0 ] | chr_banks_hi [ 0 ] );
 	set_chr_bank( 0x1000, bank_4k, chr_banks [ 1 ] | chr_banks_hi [ 1 ] );
 }
 
-void Mapper_VRC1::update_mirroring()
+void Mapper075::update_mirroring()
 {
 	switch ( mirroring & 1 )
 	{
@@ -108,9 +110,3 @@ void Mapper_VRC1::update_mirroring()
 		case 0: mirror_vert(); break;
 	}
 }
-
-// void register_vrc1_mapper();
-// void register_vrc1_mapper()
-// {
-// 	register_mapper< Mapper_VRC1> ( 75 );
-// }
