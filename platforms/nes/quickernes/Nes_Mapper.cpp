@@ -2,9 +2,11 @@
 // Nes_Emu 0.7.0. http://www.slack.net/~ant/
 
 #include "Nes_Mapper.h"
-
 #include <string.h>
 #include "Nes_Core.h"
+#include <cstdio>
+#include "mappers/mapper_002_Unrom.hpp"
+#include "mappers/mapper_071_Camerica.hpp"
 
 /* Copyright (C) 2004-2006 Shay Green. This module is free software; you
 can redistribute it and/or modify it under the terms of the GNU Lesser
@@ -19,10 +21,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 #include "blargg_source.h"
 
+static __thread char c;
+
 Nes_Mapper::Nes_Mapper()
 {
 	emu_ = NULL;
-	__thread static char c;
 	state = &c; // TODO: state must not be null?
 	state_size = 0;
 }
@@ -159,49 +162,36 @@ int Nes_Mapper::handle_bus_conflict( nes_addr_t addr, int data )
 }
 #endif
 
-// Mapper registration
-
-int const max_mappers = 64;
-Nes_Mapper::mapping_t Nes_Mapper::mappers [max_mappers] =
-{
-	{ 0, Nes_Mapper::make_nrom },
-	{ 1, Nes_Mapper::make_mmc1 },
-	{ 2, Nes_Mapper::make_unrom },
-	{ 3, Nes_Mapper::make_cnrom },
-	{ 4, Nes_Mapper::make_mmc3 },
-	{ 7, Nes_Mapper::make_aorom }
-};
-static int mapper_count = 6; // to do: keep synchronized with pre-supplied mappers above
-
-Nes_Mapper::creator_func_t Nes_Mapper::get_mapper_creator( int code )
-{
-	for ( int i = 0; i < mapper_count; i++ )
-	{
-		if ( mappers [i].code == code )
-			return mappers [i].func;
-	}
-	return NULL;
-}
-
-void Nes_Mapper::register_mapper( int code, creator_func_t func )
-{
-	mapping_t& m = mappers [mapper_count++];
-	m.code = code;
-	m.func = func;
-}
+	// { 0, Nes_Mapper::make_nrom },
+	// { 1, Nes_Mapper::make_mmc1 },
+	// { 2, Nes_Mapper::make_unrom },
+	// { 3, Nes_Mapper::make_cnrom },
+	// { 4, Nes_Mapper::make_mmc3 },
+	// { 7, Nes_Mapper::make_aorom }
 
 Nes_Mapper* Nes_Mapper::create( Nes_Cart const* cart, Nes_Core* emu )
 {
-	Nes_Mapper::creator_func_t func = get_mapper_creator( cart->mapper_code() );
-	if ( !func )
-		return NULL;
+  // Getting cartdrige mapper code
+  auto mapperCode = cart->mapper_code();
 	
-	// to do: out of memory will be reported as unsupported mapper
-	Nes_Mapper* mapper = func();
-	if ( mapper )
-	{
-		mapper->cart_ = cart;
-		mapper->emu_ = emu;
-	}
-	return mapper;
+  // Storage for the mapper, NULL by default	
+  Nes_Mapper* mapper = NULL;
+
+  // Now checking if the detected mapper code is supported
+  if (mapperCode ==  2) mapper = new Mapper_002_Unrom();
+  if (mapperCode == 71) mapper = new Mapper_071_Camerica();
+
+  // If no mapper was found, return null (error) now 
+  if (mapper == NULL)
+  {
+	fprintf(stderr, "Could not find mapper for code: %u\n", mapperCode);
+    return NULL;
+  } 
+
+  // Assigning backwards pointers to cartdrige and emulator now
+  mapper->cart_ = cart;
+  mapper->emu_ = emu;
+
+  // Returning successfully created mapper
+  return mapper;
 }
