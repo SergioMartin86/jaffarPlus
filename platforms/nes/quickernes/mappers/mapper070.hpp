@@ -25,6 +25,8 @@
 
 #include "Nes_Mapper.h"
 
+// Mapper_74x161x162x32
+
 template < int mapperId >
 class Mapper_74x161x162x32 : public Nes_Mapper {
 public:
@@ -76,10 +78,4 @@ public:
 	uint8_t bank;
 };
 
-// void register_mapper_74x161x162x32();
-// void register_mapper_74x161x162x32()
-// {
-// 	register_mapper< Mapper_74x161x162x32 <70> > ( 70 );
-// 	register_mapper< Mapper_74x161x162x32 <152> > ( 152 );
-// 	register_mapper< Mapper_74x161x162x32 <86> > ( 86 );
-// }
+typedef Mapper_74x161x162x32<70> Mapper070;

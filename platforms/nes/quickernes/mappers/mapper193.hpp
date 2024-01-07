@@ -27,9 +27,11 @@
 
 #include "Nes_Mapper.h"
  
-class Mapper_193 : public Nes_Mapper {
+// NTDEC's TC-112 mapper IC.
+
+class Mapper193 : public Nes_Mapper {
 public:
-	Mapper_193()
+	Mapper193()
 	{
 		register_state( regs, sizeof regs );
 	}
@@ -39,7 +41,7 @@ public:
 
 	virtual void apply_mapping()
 	{
-		for ( int i = 0; i < sizeof regs; i++ )
+		for ( size_t i = 0; i < sizeof regs; i++ )
 			write_intercepted( 0, 0x6000 + i, regs [ i ] );
 		set_prg_bank( 0xA000, bank_8k, ~2 );
 		set_prg_bank( 0xC000, bank_8k, ~1 );
@@ -70,8 +72,3 @@ public:
 	uint8_t regs [ 4 ];
 };
 
-// void register_mapper_193();
-// void register_mapper_193()
-// {
-// 	register_mapper< Mapper_193 > ( 193 );
-// }

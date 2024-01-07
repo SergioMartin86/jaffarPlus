@@ -29,9 +29,11 @@
 
 #include "Nes_Mapper.h"
 
-class Mapper_Unrom512 : public Nes_Mapper {
+// Unrom512 
+
+class Mapper030 : public Nes_Mapper {
 public:
-	Mapper_Unrom512() { }
+	Mapper030() { }
 
 	void reset_state() { }
 
@@ -47,8 +49,3 @@ public:
 	}
 };
 
-// void register_unrom512_mapper();
-// void register_unrom512_mapper()
-// {
-// 	register_mapper< Mapper_Unrom512> ( 30 );
-// }

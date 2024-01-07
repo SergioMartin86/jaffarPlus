@@ -23,9 +23,11 @@
 
 #include "Nes_Mapper.h"
 
-class Mapper_240 : public Nes_Mapper {
+// https://www.nesdev.org/wiki/INES_Mapper240
+
+class Mapper240 : public Nes_Mapper {
 public:
-	Mapper_240()
+	Mapper240()
 	{
 		register_state( &regs, 1 );
 	}
@@ -58,9 +60,3 @@ public:
 
 	uint8_t regs;
 };
-
-// void register_mapper_240();
-// void register_mapper_240()
-// {
-// 	register_mapper< Mapper_240 > ( 240 );
-// }

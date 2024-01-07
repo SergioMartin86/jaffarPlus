@@ -34,9 +34,11 @@ struct taito_x1005_state_t
 
 BOOST_STATIC_ASSERT( sizeof (taito_x1005_state_t) == 11 );
 
-class Mapper_TaitoX1005 : public Nes_Mapper, taito_x1005_state_t {
+// TaitoX1005
+
+class Mapper207 : public Nes_Mapper, taito_x1005_state_t {
 public:
-	Mapper_TaitoX1005()
+	Mapper207()
 	{
 		taito_x1005_state_t *state = this;
 		register_state( state, sizeof *state );
@@ -87,8 +89,3 @@ public:
 	virtual void write( nes_time_t, nes_addr_t addr, int data ) { }
 };
 
-// void register_mapper_taito_x1005();
-// void register_mapper_taito_x1005()
-// {
-// 	register_mapper< Mapper_TaitoX1005 > ( 207 );
-// }

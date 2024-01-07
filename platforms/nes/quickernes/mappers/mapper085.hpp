@@ -36,9 +36,11 @@ struct vrc7_state_t
 };
 BOOST_STATIC_ASSERT( sizeof (vrc7_state_t) == 20 + sizeof (vrc7_snapshot_t) );
 
-class Mapper_Vrc7 : public Nes_Mapper, vrc7_state_t {
+// Vrc7
+
+class Mapper085 : public Nes_Mapper, vrc7_state_t {
 public:
-	Mapper_Vrc7()
+	Mapper085()
 	{
 		vrc7_state_t* state = this;
 		register_state( state, sizeof *state );
@@ -117,7 +119,7 @@ public:
 
 	void apply_mapping()
 	{
-		int i;
+		size_t i;
 
 		for ( i = 0; i < sizeof prg_banks; i++ )
 			write_prg_bank( i, prg_banks [i] );
@@ -220,8 +222,3 @@ public:
 	enum { timer_period = 113 * 4 + 3 };
 };
 
-// void register_vrc7_mapper();
-// void register_vrc7_mapper()
-// {
-// 	register_mapper< Mapper_Vrc7 > ( 85 );
-// }

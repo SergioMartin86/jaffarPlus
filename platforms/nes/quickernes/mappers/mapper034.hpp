@@ -21,10 +21,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA */
 
 // Nina-1 (Deadly Towers only)
 
-class Mapper_Nina1 : public Nes_Mapper {
+class Mapper034 : public Nes_Mapper {
 	uint8_t bank;
 public:
-	Mapper_Nina1()
+	Mapper034()
 	{
 		register_state( &bank, 1 );
 	}
@@ -41,133 +41,3 @@ public:
 	}
 };
 
-// GNROM
-
-class Mapper_Gnrom : public Nes_Mapper {
-	uint8_t bank;
-public:
-	Mapper_Gnrom()
-	{
-		register_state( &bank, 1 );
-	}
-	
-	virtual void apply_mapping()
-	{
-		int b = bank;
-		bank = ~b;
-		write( 0, 0, b );
-	}
-	
-	virtual void write( nes_time_t, nes_addr_t, int data )
-	{
-		int changed = bank ^ data;
-		bank = data;
-		
-		if ( changed & 0x30 )
-			set_prg_bank( 0x8000, bank_32k, bank >> 4 & 3 );
-		
-		if ( changed & 0x03 )
-			set_chr_bank( 0, bank_8k, bank & 3 );
-	}
-};
-
-// Color Dreams
-
-class Mapper_Color_Dreams : public Nes_Mapper {
-	uint8_t bank;
-public:
-	Mapper_Color_Dreams()
-	{
-		register_state( &bank, 1 );
-	}
-	
-	virtual void apply_mapping()
-	{
-		int b = bank;
-		bank = ~b;
-		write( 0, 0, b );
-	}
-	
-	virtual void write( nes_time_t, nes_addr_t, int data )
-	{
-		int changed = bank ^ data;
-		bank = data;
-		
-		if ( changed & 0x0f )
-			set_prg_bank( 0x8000, bank_32k, bank & 0x0f );
-		
-		if ( changed & 0xf0 )
-			set_chr_bank( 0, bank_8k, bank >> 4 );
-	}
-};
-
-// Jaleco/Konami
-
-class Mapper_87 : public Nes_Mapper {
-	uint8_t bank;
-public:
-	Mapper_87()
-	{
-		register_state( &bank, 1 );
-	}
-	
-	void apply_mapping()
-	{
-		intercept_writes( 0x6000, 1 );
-		write( 0, 0x6000, bank );
-	}
-	
-	bool write_intercepted( nes_time_t, nes_addr_t addr, int data )
-	{
-		if ( addr != 0x6000 )
-			return false;
-		
-		bank = data;
-		set_chr_bank( 0, bank_8k, data >> 1 );
-		return true;
-	}
-	
-	void write( nes_time_t, nes_addr_t, int ) { }
-};
-
-// Quattro
-
-class Mapper_Quattro : public Nes_Mapper {
-	uint8_t regs [2];
-public:
-	Mapper_Quattro()
-	{
-		register_state( regs, sizeof regs );
-	}
-	
-	virtual void reset_state()
-	{
-		regs [0] = 0;
-		regs [1] = 3;
-	}
-	
-	virtual void apply_mapping()
-	{
-		int bank = regs [0] >> 1 & 0x0c;
-		set_prg_bank( 0x8000, bank_16k, bank + (regs [1] & 3) );
-		set_prg_bank( 0xC000, bank_16k, bank + 3 );
-	}
-	
-	virtual void write( nes_time_t, nes_addr_t addr, int data )
-	{
-		if ( addr < 0xc000 )
-			regs [0] = data;
-		else
-			regs [1] = data;
-		Mapper_Quattro::apply_mapping();
-	}
-};
-
-// void register_misc_mappers()
-// {
-// 	register_mapper<Mapper_Color_Dreams>( 11 );
-// 	register_mapper<Mapper_Nina1>( 34 );
-// 	register_mapper<Mapper_Gnrom>( 66 );
-// 	register_mapper<Mapper_87>( 87 );
-// 	register_mapper<Mapper_Quattro>( 232 );
-// }

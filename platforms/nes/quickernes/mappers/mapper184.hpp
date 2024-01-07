@@ -24,9 +24,11 @@
 
 #include "Nes_Mapper.h"
 
-class Mapper_Sunsoft1 : public Nes_Mapper {
+// Sunsoft1
+
+class Mapper184 : public Nes_Mapper {
 public:
-	Mapper_Sunsoft1()
+	Mapper184()
 	{
 		register_state( &regs, 1 );
 	}
@@ -59,8 +61,3 @@ public:
 	uint8_t regs;
 };
 
-// void register_mapper_sunsoft1();
-// void register_mapper_sunsoft1()
-// {
-// 	register_mapper< Mapper_Sunsoft1 > ( 184 );
-// }

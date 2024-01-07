@@ -19,9 +19,11 @@
 
 #include "Nes_Mapper.h"
 
-class Mapper_60 : public Nes_Mapper {
+// NROM-128 4-in-1 multicart
+
+class Mapper060 : public Nes_Mapper {
 public:
-	Mapper_60()
+	Mapper060()
 	{
 		last_game = 2;
 		register_state( &game_sel, 1 );
@@ -46,9 +48,3 @@ public:
 
 	uint8_t game_sel, last_game;
 };
-
-// void register_mapper_60();
-// void register_mapper_60()
-// {
-// 	register_mapper< Mapper_60 > ( 60 );
-// }

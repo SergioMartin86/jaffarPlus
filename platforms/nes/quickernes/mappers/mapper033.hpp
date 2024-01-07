@@ -34,9 +34,11 @@ struct tc0190_state_t
 
 BOOST_STATIC_ASSERT( sizeof ( tc0190_state_t ) == 9 );
 
-class Mapper_TaitoTC0190 : public Nes_Mapper, tc0190_state_t {
+// TaitoTC0190
+
+class Mapper033 : public Nes_Mapper, tc0190_state_t {
 public:
-	Mapper_TaitoTC0190()
+	Mapper033()
 	{
 		tc0190_state_t *state = this;
 		register_state( state, sizeof *state );
@@ -89,9 +91,3 @@ public:
 		}
 	}
 };
-
-// void register_mapper_taito_tc0190();
-// void register_mapper_taito_tc0190()
-// {
-// 	register_mapper< Mapper_TaitoTC0190 > ( 33 );
-// }

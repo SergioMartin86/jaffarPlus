@@ -25,9 +25,11 @@
 
 #include "Nes_Mapper.h"
  
-class Mapper_Irem_Tam_S1 : public Nes_Mapper {
+// Irem_Tam_S1 
+
+class Mapper097 : public Nes_Mapper {
 public:
-	Mapper_Irem_Tam_S1()
+	Mapper097()
 	{
 		register_state( &bank, 1 );
 	}
@@ -59,9 +61,3 @@ public:
 
 	uint8_t bank;
 };
-
-// void register_mapper_irem_tamS1();
-// void register_mapper_irem_tamS1()
-// {
-// 	register_mapper< Mapper_Irem_Tam_S1 > ( 97 );
-// }

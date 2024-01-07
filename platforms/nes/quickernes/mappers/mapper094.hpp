@@ -26,9 +26,11 @@
 
 #include "Nes_Mapper.h"
  
-class Mapper_Un1rom : public Nes_Mapper {
+// Un1rom 
+
+class Mapper094 : public Nes_Mapper {
 public:
-	Mapper_Un1rom()
+	Mapper094()
 	{
 		register_state( &bank, 1 );
 	}
@@ -49,9 +51,3 @@ public:
 
 	uint8_t bank;
 };
-
-// void register_mapper_un1rom();
-// void register_mapper_un1rom()
-// {
-// 	register_mapper< Mapper_Un1rom > ( 94 );
-// }

@@ -25,9 +25,11 @@
  
 #include "Nes_Mapper.h"
  
-class Mapper_180 : public Nes_Mapper {
+// UxROM (inverted)
+
+class Mapper180 : public Nes_Mapper {
 public:
-	Mapper_180()
+	Mapper180()
 	{
 		register_state( &bank, 1 );
 	}
@@ -49,9 +51,3 @@ public:
 
 	uint8_t bank;
 };
-
-// void register_mapper_180();
-// void register_mapper_180()
-// {
-// 	register_mapper< Mapper_180 > ( 180 );
-// }

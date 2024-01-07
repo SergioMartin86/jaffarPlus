@@ -35,9 +35,11 @@ struct mapper32_state_t
 
 BOOST_STATIC_ASSERT( sizeof ( mapper32_state_t ) == 12 );
 
-class Mapper_Irem_G101 : public Nes_Mapper, mapper32_state_t {
+// Irem_G101
+
+class Mapper032 : public Nes_Mapper, mapper32_state_t {
 public:
-	Mapper_Irem_G101()
+	Mapper032()
 	{
 		mapper32_state_t * state = this;
 		register_state( state, sizeof * state );
@@ -67,7 +69,7 @@ public:
 			set_prg_bank ( 0xE000, bank_8k, ~0 );
 		}
 
-		for ( int i = 0; i < sizeof chr_bank; i++)
+		for ( unsigned long int i = 0; i < sizeof chr_bank; i++)
 			set_chr_bank( ( i << 10 ), bank_1k, chr_bank [ i ] );
 
 		switch ( mirr )
@@ -115,8 +117,3 @@ public:
 	}
 };
 
-// void register_mapper_irem_g101();
-// void register_mapper_irem_g101()
-// {
-// 	register_mapper< Mapper_Irem_G101 > ( 32 );
-// }
