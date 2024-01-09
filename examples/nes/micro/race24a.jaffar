@@ -21,7 +21,7 @@
     
     "State Configuration": 
     {
-      "Max Move Count": 600, 
+      "Max Move Count": 800, 
       "Store Move History": true,
       "XDelta3 Enabled": false, 
       "XDelta3 Max Differences": 5000,
@@ -189,7 +189,25 @@
     
     "Actions":
     [
-     { "Type": "Trigger Win" }
+      { "Type": "Add Reward", "Value": 10000.0 },
+      { "Type": "Set Camera Distance Magnet", "Intensity": 0.001 },
+      { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1188, "Y": 1572 },
+      { "Type": "Set Recovery Timer Magnet", "Intensity": 1 }
+    ]
+   },
+
+   {
+    "Label": 8006,
+    "Conditions":
+    [
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 }
+    ],
+    
+    "Satisfies": [ 8005 ],
+    
+    "Actions":
+    [
+      { "Type": "Trigger Win", "Value": 10000.0 }
     ]
    },
 
