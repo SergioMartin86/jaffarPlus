@@ -76,6 +76,8 @@ class GameInstance : public GameInstanceBase
   uint8_t*  player1CanControlCar;
   uint8_t*  player1ResumeTimer;
   uint8_t*  player1TankFireTimer;
+  uint8_t*  playerLastInputKey;
+  uint16_t*  playerLastInputFrame;
 
   uint8_t* activeFrame1;
   uint8_t* activeFrame2;

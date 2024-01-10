@@ -51,6 +51,9 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
   activeFrame3                      = (uint8_t*)   &_emu->_baseMem[0x00B4];
   activeFrame4                      = (uint8_t*)   &_emu->_baseMem[0x00B6];
 
+  playerLastInputKey                = (uint8_t*)    &_emu->_baseMem[0x009B];
+  playerLastInputFrame              = (uint16_t*)   &_emu->_baseMem[0x01A0];
+
   // Timer tolerance
   if (isDefined(config, "Timer Tolerance") == true)
    timerTolerance = config["Timer Tolerance"].get<uint8_t>();
@@ -110,6 +113,8 @@ _uint128_t GameInstance::computeHash(const uint16_t currentStep) const
   // hash.Update(*activeFrame4);
 
   hash.Update(_emu->_baseMem[0x039E]);
+
+  hash.Update(*playerLastInputFrame);
   
   _uint128_t result;
   hash.Finalize(reinterpret_cast<uint8_t *>(&result));
@@ -123,6 +128,8 @@ std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move)
  *player1LapsRemainingPrev = *player1LapsRemaining;
  _emu->advanceState(move); moves.push_back(move);
  updateDerivedValues();
+
+ if (move != 0) *playerLastInputFrame = *globalTimer;
  return moves;
 }
 
@@ -145,7 +152,8 @@ std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus)
 
 // If this is a tank race and we haven't fired, try firing
 if ((*currentRace == 19 || *currentRace == 13 || *currentRace == 24) && *player1TankFireTimer == 0) return { "A", "BA", "R", "L", "RA", "LA" };
-return { "A", "R", "L", "RA", "LA" };
+return { ".", "A", "R", "L", "RA", "LA" };
+// return { "A", "R", "L", "RA", "LA" };
 
 
 // if (*frameType == 0x00) return { ".", "A", "B" };
@@ -174,6 +182,10 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   for (size_t ruleId = 0; ruleId < _rules.size(); ruleId++)
    if (rulesStatus[ruleId] == true)
     reward += _rules[ruleId]->_reward;
+
+ // We calculate a different reward if this is a winning frame
+ auto stateType = getStateType(rulesStatus);
+ if (stateType == f_win) return -1.0f * (float)*playerLastInputFrame;
 
   // Getting magnet values for the kid
   auto magnets = getMagnetValues(rulesStatus);
@@ -243,6 +255,8 @@ void GameInstance::printStateInfo(const bool* rulesStatus) const
  LOG("[Jaffar]  + Player Resume Timer:                %03u\n", *player1ResumeTimer);
  LOG("[Jaffar]  + Player Can Control Car:             %03u\n", *player1CanControlCar);
  LOG("[Jaffar]  + Player Tank Fire Timer:             %03u\n", *player1TankFireTimer);
+
+ LOG("[Jaffar]  + Last Input / Frame                  %03u / %03u\n",  *playerLastInputKey, *playerLastInputFrame);
 
  LOG("[Jaffar]  + Rule Status: ");
  for (size_t i = 0; i < _rules.size(); i++) LOG("%d", rulesStatus[i] ? 1 : 0);
