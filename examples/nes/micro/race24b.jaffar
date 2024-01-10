@@ -2,7 +2,7 @@
   "Emulator Configuration": 
   {
     "Rom File": "micro.nes",
-    "State File": "race24a.state"
+    "State File": "race24b.state"
   },
   
   "Game Configuration": 
@@ -31,7 +31,7 @@
     "State Database": 
     {
      "Max Size Lower Bound (Mb)": 2000,
-     "Max Size Upper Bound (Mb)": 10000
+     "Max Size Upper Bound (Mb)": 5000
     },
      
     "Hash Database":
@@ -59,51 +59,14 @@
   
   "Rules":
   [
-   {
-    "Label": 8000,
-    "Conditions":
-    [
-    ],
-    
-    "Satisfies": [ ],
-    
-    "Actions":
-    [
-     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1363, "Y": 0 }
-    ]
-   },
    
-   {
-    "Label": 8100,
-    "Conditions":
-    [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 }
-    ],
-    
-    "Satisfies": [ 8000 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
-     { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
-     { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1293, "Y": 1714 }
-    ]
-   },
-
    {
     "Label": 8001,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
-      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 4 }
     ],
     
-    "Satisfies": [ 8100 ],
+    "Satisfies": [  ],
     
     "Actions":
     [
@@ -119,7 +82,7 @@
     "Label": 8002,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 },
       { "Property": "Player 1 Checkpoint", "Op": "==", "Value": 8 }
     ],
     
@@ -139,7 +102,7 @@
     "Label": 8003,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 },
       { "Property": "Player 1 Checkpoint", "Op": "==", "Value": 8 },
       { "Property": "Player 1 Pos Y", "Op": "<", "Value": 1470 }
     ],
@@ -160,7 +123,7 @@
     "Label": 8004,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 },
       { "Property": "Player 1 Checkpoint", "Op": "==", "Value": 8 },
       { "Property": "Player 1 Pos Y", "Op": "<", "Value": 1050 }
     ],
@@ -181,7 +144,7 @@
     "Label": 8005,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 3 },
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 },
       { "Property": "Player 1 Checkpoint", "Op": "==", "Value": 47 }
     ],
     
@@ -200,7 +163,7 @@
     "Label": 8006,
     "Conditions":
     [
-      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 2 }
+      { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 }
     ],
     
     "Satisfies": [ 8005 ],
