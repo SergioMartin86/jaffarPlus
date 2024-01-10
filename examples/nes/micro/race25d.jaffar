@@ -148,7 +148,7 @@
     "Conditions":
     [
       { "Property": "Player 1 Laps Remaining", "Op": "==", "Value": 1 }, 
-      { "Property": "Player 1 Checkpoint", "Op": "==", "Value": 166 }
+      { "Property": "Player 1 Checkpoint", "Op": ">=", "Value": 166 }
     ],
     
     "Satisfies": [ ],
