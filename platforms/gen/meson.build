@@ -121,6 +121,9 @@ platformTrainIncludes = [ emuInstanceIncludes ]
 platformTrainCFlags = [ commonCFlags,
                         '-DPREVENT_RENDERING'
                       ]
+platformTrainCPPFlags = [ commonCFlags,
+                        '-DPREVENT_RENDERING'
+                      ]
 platformTrainLibs = [ ] 
 platformTrainLFlags = [ '-lz', '-lm', '-lncurses' ]
 platformTrainDependencies = [ dependency('sdl2'), dependency('SDL2_image') ]
@@ -130,6 +133,7 @@ platformTrainDependencies = [ dependency('sdl2'), dependency('SDL2_image') ]
 platformPlayIncludes = [ emuInstanceIncludes ]
 platformPlaySrc = [ emuInstanceSrc ]
 platformPlayCFlags = [ commonCFlags ]
+platformPlayCPPFlags = [ commonCFlags ]
 platformPlayLibs = [ ] 
 platformPlayLFlags = [ platformTrainLFlags ]
 platformPlayDependencies = [ dependency('sdl2'), dependency('SDL2_image') ]
