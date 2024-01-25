@@ -94,7 +94,7 @@ GameInstance::GameInstance(EmuInstance* emu, const nlohmann::json& config)
 }
 
 // This function computes the hash for the current state
-_uint128_t GameInstance::computeHash() const
+_uint128_t GameInstance::computeHash(const uint16_t currentStep) const
 {
   // Storage for hash calculation
   MetroHash128 hash;
@@ -200,7 +200,7 @@ void GameInstance::updateDerivedValues()
 }
 
 // Function to determine the current possible moves
-std::vector<std::string> GameInstance::getPossibleMoves() const
+std::vector<std::string> GameInstance::getPossibleMoves(const bool* rulesStatus) const
 {
  std::vector<std::string> moveList = {"."};
 
@@ -226,15 +226,14 @@ std::vector<std::string> GameInstance::getPossibleMoves() const
  return moveList;
 }
 
-uint16_t GameInstance::advanceState(const INPUT_TYPE &move)
+std::vector<INPUT_TYPE> GameInstance::advanceGameState(const INPUT_TYPE &move) 
 {
    _emu->advanceState(move);
-  uint16_t skippedFrames = 0;
 
 //  while(*inputFrame != 0 || *animationFrame != 0) { _emu->advanceState(0); skippedFrames++; }
 
   updateDerivedValues();
-  return skippedFrames;
+  return std::vector<INPUT_TYPE>({ move });
 }
 
 // Function to get magnet information
@@ -306,19 +305,13 @@ float GameInstance::getStateReward(const bool* rulesStatus) const
   return reward;
 }
 
-void GameInstance::setRNGState(const uint64_t RNGState)
-{
- *gameRNG = (uint16_t) RNGState;
-// *lesterPosX = (int16_t) RNGState;
-}
-
 void GameInstance::printStateInfo(const bool* rulesStatus) const
 {
  LOG("[Jaffar]  + Timer:                             %02u (%02u) (%02u)\n", *gameTimer, *lagFrame, *inputFrame);
  LOG("[Jaffar]  + RNG:                               %04u\n", *gameRNG);
  LOG("[Jaffar]  + Current Stage:                     %02u\n", *currentStage);
  LOG("[Jaffar]  + Reward:                            %f\n", getStateReward(rulesStatus));
- LOG("[Jaffar]  + Hash:                              0x%lX\n", computeHash());
+ LOG("[Jaffar]  + Hash:                              0x\%lX%lX\n", computeHash().first, computeHash().second);
  LOG("[Jaffar]  + Game Mode:                         %02u\n", *gameMode);
  LOG("[Jaffar]  + Animation Frame:                   %02u\n", *animationFrame);
  LOG("[Jaffar]  + Lester Room:                       %02u, Next: %02u\n", *lesterRoom, *lesterNextRoom);
