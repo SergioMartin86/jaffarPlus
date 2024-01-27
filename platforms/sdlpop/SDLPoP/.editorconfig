@@ -1,6 +1,0 @@
-root = true
-
-# Code style
-[*]
-indent_style = tab
-indent_size = 4
