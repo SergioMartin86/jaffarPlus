@@ -7,9 +7,6 @@ project('jaffar','c','cpp',
 # Declaring dependency vector
 jaffarDependencies = []
 
-# Accessing source directory
-subdir('source')
-
 # xDelta3 Configuration
 xdelta3Src = [ 'extern/xdelta3/xdelta3.c' ]
 xdelta3CFlags = [ '-DXD3_DEBUG=0', '-fno-builtin', '-DNDEBUG=1']
@@ -22,7 +19,7 @@ jaffarIncludes = include_directories([
  'extern/json/single_include',
  'extern/phmap',
  'extern/xdelta3',
- 'games'
+ 'source'
  ])
 
 # Common Jaffar sources
@@ -35,7 +32,11 @@ jaffarSrc = [
 
 # Common Jaffar CFlags
 
-jaffarCPPFlags = [ '-Wfatal-errors', '-Wall' ]
+jaffarCPPFlags = [ '-Wfatal-errors', '-Wall', '-Werror' ]
+jaffarCommonSources = [  ]
+
+# Accessing source directory
+subdir('source')
 
 # Building main Jaffar training executable
 #executable('jaffar',
@@ -91,6 +92,8 @@ jaffarCPPFlags = [ '-Wfatal-errors', '-Wall' ]
 # Building tester tool
 executable('jaffar-tester',
   'source/tester.cpp',
+  cpp_args: jaffarCPPFlags,
+  sources : jaffarCommonSources,
   dependencies : jaffarDependencies,
   include_directories : jaffarIncludes
 )
