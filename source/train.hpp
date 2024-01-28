@@ -21,6 +21,9 @@
 template <class V> using HashSetT = SETNAME<V SETEXTRAARGS>;
 using hashSet_t = HashSetT<_uint128_t>;
 
+// Emulators
+#include <emulators/quickerNES/quickerNES.hpp>
+
 class Train
 {
   public:

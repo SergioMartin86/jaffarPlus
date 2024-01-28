@@ -1,7 +1,6 @@
 #pragma once
 
 #include <climits>
-#include "nlohmann/json.hpp"
 #include <fstream>
 #include <iterator>
 #include <sstream>
