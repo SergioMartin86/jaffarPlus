@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <utils.hpp>
 #include <nlohmann/json.hpp>
 
@@ -12,9 +13,12 @@ class Emulator
 
   typedef uint64_t input_t;
 
-  // Constructor must only do configuration parsing
+  // Constructor must only do configuration parsing to perform dry runs
   Emulator(const nlohmann::json& config) {};
   virtual ~Emulator() = default;
+
+  // Initialization function
+  virtual void initialize() = 0;
 
   // State advancing function
   virtual void advanceState(const std::string &move) = 0;
@@ -42,8 +46,14 @@ class Emulator
   virtual void deserializeState(const uint8_t *state) = 0;
 
   // Move parsing functions
-  static inline input_t moveStringToCode(const std::string& move);
-  static inline std::string moveCodeToString(const input_t move);
+  static input_t moveStringToCode(const std::string& move);
+  static std::string moveCodeToString(const input_t move);
+
+  // Function to get emulator name
+  virtual std::string getName() const = 0;
+
+  // Function to obtain emulator based on name
+  static Emulator* getEmulator(const std::string& emulatorName, const nlohmann::json& config);
 };
 
 } // namespace jaffarPlus

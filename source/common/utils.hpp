@@ -1,65 +1,16 @@
 #pragma once
 
-#include <climits>
+#include <algorithm>
 #include <fstream>
-#include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <pthread.h>
+#include <stdarg.h>
+#include <iterator>
 
-// If we use NCurses, we need to use the appropriate printing function
-#ifdef NCURSES
- #include <ncurses.h>
- #define LOG printw
-#else
- #define LOG printf
-#endif
-
-// Function to split a string into a sub-strings delimited by a character
-// Taken from stack overflow answer to https://stackoverflow.com/questions/236129/how-do-i-iterate-over-the-words-of-a-string
-// By Evan Teran
-
-template <typename Out>
-void split(const std::string &s, char delim, Out result)
+namespace jaffarPlus
 {
-  std::istringstream iss(s);
-  std::string item;
-  while (std::getline(iss, item, delim))
-  {
-    *result++ = item;
-  }
-}
-
-std::vector<std::string> split(const std::string &s, char delim);
-
-// Logging functions
-void exitWithError [[noreturn]] (const char *fileName, const int lineNumber, const char *format, ...);
-
-#define EXIT_WITH_ERROR(...) \
-  exitWithError(__FILE__, __LINE__, __VA_ARGS__)
-
-// Checks if directory exists
-bool dirExists(const std::string dirPath);
-
-// Loads a string from a given file
-bool loadStringFromFile(std::string &dst, const char *fileName);
-
-// Save string to a file
-bool saveStringToFile(const std::string &dst, const char *fileName);
-
-#pragma GCC diagnostic ignored "-Wparentheses"
-
-// Checks whether a given key is present in the JSON object.
-template <typename T, typename... Key>
-bool isDefined(T &js, const Key &... key)
-{
-  auto *tmp = &js;
-  bool result = true;
-  decltype(tmp->begin()) it;
-  ((result && ((it = tmp->find(key)) == tmp->end() ? (result = false) : (tmp = &*it, true))), ...);
-  return result;
-}
 
 // Function to split a vector into n mostly fair chunks
 template <typename T>
@@ -75,9 +26,6 @@ std::vector<T> splitVector(const T size, const T n)
 
   return subSizes;
 }
-
-// Taken from https://stackoverflow.com/questions/116038/how-do-i-read-an-entire-file-into-a-stdstring-in-c/116220#116220
-std::string slurp(std::ifstream &in);
 
 inline std::string simplifyMove(const std::string& move)
 {
@@ -181,5 +129,52 @@ template<typename T> inline uint16_t countButtonsPressedNumber(const T& input) {
 };
 
 static auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
-static auto moveCountComparerNumber = [](const INPUT_TYPE a, const INPUT_TYPE b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
+static auto moveCountComparerNumber = [](const uint64_t a, const uint64_t b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
 
+static inline std::vector<std::string> split(const std::string &s, char delim)
+{
+ std::string newString = s;
+ std::replace(newString.begin(), newString.end(), '\n', ' ');
+ std::vector<std::string> elems;
+ split(newString, delim, std::back_inserter(elems));
+ return elems;
+}
+
+// Taken from https://stackoverflow.com/questions/116038/how-do-i-read-an-entire-file-into-a-stdstring-in-c/116220#116220
+static inline std::string slurp(std::ifstream &in)
+{
+  std::ostringstream sstr;
+  sstr << in.rdbuf();
+  return sstr.str();
+}
+
+static inline bool loadStringFromFile(std::string &dst, const std::string& fileName)
+{
+  std::ifstream fi(fileName);
+
+  // If file not found or open, return false
+  if (fi.good() == false) return false;
+
+  // Reading entire file
+  dst = slurp(fi);
+
+  // Closing file
+  fi.close();
+
+  return true;
+}
+
+// Save string to a file
+static inline bool saveStringToFile(const std::string &src, const std::string& fileName)
+{
+  FILE *fid = fopen(fileName.c_str(), "w");
+  if (fid != NULL)
+  {
+    fwrite(src.c_str(), 1, src.size(), fid);
+    fclose(fid);
+    return true;
+  }
+  return false;
+}
+
+} // namespace jaffarPlus
