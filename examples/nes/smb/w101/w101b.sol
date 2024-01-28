@@ -1,1 +1,0 @@
-. . . . . . . . . . . . . . . . . L L . . L R R R R R R R R R R R R R R R R R R R R R R R R R R R R R RA RA RA RA RA RA RA RA RA R R R R R R . . RB L RA R R R R R R R R R R R R R R . . L R . R . RB R . R A . . L L R R R R L R . . . . L L L L L L L . L L R R R R R R R L
