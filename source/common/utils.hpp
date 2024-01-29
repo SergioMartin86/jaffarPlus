@@ -8,24 +8,10 @@
 #include <pthread.h>
 #include <stdarg.h>
 #include <iterator>
+#include <limits.h>
 
 namespace jaffarPlus
 {
-
-// Function to split a vector into n mostly fair chunks
-template <typename T>
-std::vector<T> splitVector(const T size, const T n)
-{
-  std::vector<T> subSizes(n);
-
-  T length = size / n;
-  T remain = size % n;
-
-  for (T i = 0; i < n; i++)
-    subSizes[i] = i < remain ? length + 1 : length;
-
-  return subSizes;
-}
 
 inline std::string simplifyMove(const std::string& move)
 {
@@ -130,6 +116,36 @@ template<typename T> inline uint16_t countButtonsPressedNumber(const T& input) {
 
 static auto moveCountComparerString = [](const std::string& a, const std::string& b) { return countButtonsPressedString(a) < countButtonsPressedString(b); };
 static auto moveCountComparerNumber = [](const uint64_t a, const uint64_t b) { return countButtonsPressedNumber(a) < countButtonsPressedNumber(b); };
+
+// Function to split a vector into n mostly fair chunks
+template <typename T>
+std::vector<T> splitVector(const T size, const T n)
+{
+  std::vector<T> subSizes(n);
+
+  T length = size / n;
+  T remain = size % n;
+
+  for (T i = 0; i < n; i++)
+    subSizes[i] = i < remain ? length + 1 : length;
+
+  return subSizes;
+}
+
+// Function to split a string into a sub-strings delimited by a character
+// Taken from stack overflow answer to https://stackoverflow.com/questions/236129/how-do-i-iterate-over-the-words-of-a-string
+// By Evan Teran
+
+template <typename Out>
+inline void split(const std::string &s, char delim, Out result)
+{
+  std::istringstream iss(s);
+  std::string item;
+  while (std::getline(iss, item, delim))
+  {
+    *result++ = item;
+  }
+}
 
 static inline std::vector<std::string> split(const std::string &s, char delim)
 {

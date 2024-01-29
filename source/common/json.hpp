@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
+#include <json/single_include/nlohmann/json.hpp>
 #include "logger.hpp"
 
 namespace jaffarPlus

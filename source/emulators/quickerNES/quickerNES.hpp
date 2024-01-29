@@ -1,10 +1,11 @@
 #pragma once
 
-#include <sha1/sha1.hpp>
+#include <nesInstance.hpp>
+#include <common/hash.hpp>
 #include <common/json.hpp>
+#include <common/utils.hpp>
+#include <common/logger.hpp>
 #include <emulators/emulator.hpp>
-#include <quickerNES/nesInstance.hpp>
-#include <quickerNES/nesInstance.hpp>
 
 namespace jaffarPlus
 {
@@ -46,34 +47,38 @@ class QuickerNES final : public Emulator
   }
 
   // State advancing function
-  void advanceState(const std::string &move) override
+  void advanceState(const std::string& move) override
   {
-
+    _quickerNES.advanceState(move);
   }
 
-  virtual size_t getStateSize() const override
+  size_t getStateSize() const override
   {
     return 0;
   };
   
-  void serializeState(uint8_t *state) const override
+  inline void serializeState(uint8_t *state) const override
   {
-
+    _quickerNES.serializeState(state);
   };
   
-  void deserializeState(const uint8_t *state) override
+  inline void deserializeState(const uint8_t *state) override
   {
-
+    _quickerNES.deserializeState(state);
   };
 
-  static inline input_t moveStringToCode(const std::string& move)
+  inline void printDebugInformation() const override
   {
-   return 0;
+   auto lowMem = getProperty("RAM");
+   auto lowMemHashString = hashToString(calculateMetroHash(lowMem.first, lowMem.second));
+   LOG("[J+] Final State Hash:        %s\n", lowMemHashString.c_str());
   }
 
-  static inline std::string moveCodeToString(const input_t move)
+  property_t getProperty(const std::string& propertyName) const override
   {
-    return 0;
+     if (propertyName == "RAM") return property_t(_quickerNES.getLowMem(), _quickerNES.getLowMemSize());
+
+     EXIT_WITH_ERROR("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());  
   }
 
   inline std::string getName() const override { return "QuickerNES"; } 

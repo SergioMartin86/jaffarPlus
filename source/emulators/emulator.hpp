@@ -1,17 +1,18 @@
 #pragma once
 
 #include <string>
-#include <utils.hpp>
-#include <nlohmann/json.hpp>
+#include <common/json.hpp>
+#include <common/utils.hpp>
 
 namespace jaffarPlus
 {
 
+// A property is a contiguous segment of memory with size, identifiable by name 
+typedef std::pair<void*, size_t> property_t;
+
 class Emulator
 {
   public:
-
-  typedef uint64_t input_t;
 
   // Constructor must only do configuration parsing to perform dry runs
   Emulator(const nlohmann::json& config) {};
@@ -21,7 +22,7 @@ class Emulator
   virtual void initialize() = 0;
 
   // State advancing function
-  virtual void advanceState(const std::string &move) = 0;
+  virtual void advanceState(const std::string& move) = 0;
 
   // State file load / save functions
   inline void loadStateFile(const std::string &stateFilePath)
@@ -45,12 +46,14 @@ class Emulator
   virtual void serializeState(uint8_t *state) const = 0;
   virtual void deserializeState(const uint8_t *state) = 0;
 
-  // Move parsing functions
-  static input_t moveStringToCode(const std::string& move);
-  static std::string moveCodeToString(const input_t move);
-
   // Function to get emulator name
   virtual std::string getName() const = 0;
+
+  // Function to print debug information, whatever it might be
+  virtual void printDebugInformation() const = 0;
+
+  // Get a property by name
+  virtual property_t getProperty(const std::string& propertyName) const = 0;
 
   // Function to obtain emulator based on name
   static Emulator* getEmulator(const std::string& emulatorName, const nlohmann::json& config);
