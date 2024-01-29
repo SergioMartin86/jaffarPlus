@@ -1,5 +1,6 @@
 {
  "Emulator" : "QuickerNES",
+ "Initial State File Path" : "qualify.state",
 
  "Emulator Configuration" :
  {

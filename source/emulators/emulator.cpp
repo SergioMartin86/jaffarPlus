@@ -1,5 +1,5 @@
-#include <emulators/emulator.hpp>
 #include <emulators/quickerNES/quickerNES.hpp>
+#include <emulators/emulator.hpp>
 
 namespace jaffarPlus
 {
@@ -10,6 +10,5 @@ namespace jaffarPlus
 
   EXIT_WITH_ERROR("Emulator '%s' not recognized\n", emulatorName.c_str());
  }
-
 
 }
