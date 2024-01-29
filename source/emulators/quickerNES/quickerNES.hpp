@@ -54,7 +54,7 @@ class QuickerNES final : public Emulator
 
   size_t getStateSize() const override
   {
-    return 0;
+   return _quickerNES.getStateSize();
   };
   
   inline void serializeState(uint8_t *state) const override
