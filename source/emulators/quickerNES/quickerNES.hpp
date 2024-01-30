@@ -69,14 +69,20 @@ class QuickerNES final : public Emulator
 
   inline void printDebugInformation() const override
   {
-   auto lowMem = getProperty("RAM");
-   auto lowMemHashString = hashToString(calculateMetroHash(lowMem.first, lowMem.second));
-   LOG("[J+] Final State Hash:        %s\n", lowMemHashString.c_str());
+     printMemoryBlockHash("LRAM");
+     printMemoryBlockHash("SRAM");
+     printMemoryBlockHash("NTAB");
+     printMemoryBlockHash("CHRR");
+     printMemoryBlockHash("SPRT");
   }
 
   property_t getProperty(const std::string& propertyName) const override
   {
-     if (propertyName == "RAM") return property_t(_quickerNES.getLowMem(), _quickerNES.getLowMemSize());
+     if (propertyName == "LRAM") return property_t(_quickerNES.getLowMem(),       _quickerNES.getLowMemSize());
+     if (propertyName == "SRAM") return property_t(_quickerNES.getWorkMem(),      _quickerNES.getWorkMemSize());
+     if (propertyName == "NTAB") return property_t(_quickerNES.getNametableMem(), _quickerNES.getNametableMemSize());
+     if (propertyName == "CHRR") return property_t(_quickerNES.getCHRMem(),       _quickerNES.getCHRMemSize());
+     if (propertyName == "SPRT") return property_t(_quickerNES.getSpriteMem(),    _quickerNES.getSpriteMemSize());
 
      EXIT_WITH_ERROR("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());  
   }
@@ -84,6 +90,13 @@ class QuickerNES final : public Emulator
   inline std::string getName() const override { return "QuickerNES"; } 
 
   private:
+
+  void printMemoryBlockHash(const std::string& blockName) const
+  {
+   auto p = getProperty(blockName);
+   auto hash = hashToString(calculateMetroHash(p.first, p.second));
+   LOG("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
+  }
 
   NESInstance _quickerNES;
 

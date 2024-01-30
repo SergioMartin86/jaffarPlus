@@ -113,6 +113,6 @@ int main(int argc, char *argv[])
   LOG("[J+] Elapsed time:            %3.3fs\n", (double)dt * 1.0e-9);
   LOG("[J+] Performance:             %.3f inputs / s\n", (double)sequenceLength / elapsedTimeSeconds);
 
-  // Printing debug information
+  // Printing emulator debug information
   e->printDebugInformation();
 }
