@@ -3,7 +3,7 @@
 
 namespace jaffarPlus
 {
- #define DETECT_EMULATOR(E) if (emulatorName == E::getName()) return std::make_unique<E>(config);
+ #define DETECT_EMULATOR(EMULATOR) if (emulatorName == EMULATOR::getName()) return std::make_unique<EMULATOR>(config);
   
  std::unique_ptr<Emulator> Emulator::getEmulator(const std::string& emulatorName, const nlohmann::json& config)
  {

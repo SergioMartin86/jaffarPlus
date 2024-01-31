@@ -21,13 +21,20 @@ class Game : public jaffarPlus::Game
 
   static inline std::string getName() { return "NES / Micro Machines"; } 
 
-  Game(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator))
+  size_t getGameSpecificStorageSize() const override { return sizeof(uint32_t); }
+
+  Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : jaffarPlus::Game(emulator, config)
+  {
+    // Timer tolerance
+    timerTolerance = JSON_GET_NUMBER(uint8_t, config, "Timer Tolerance");
+  }
+
+  void initializeImpl() override
   {
     // Getting NES low RAM pointer
     auto ram = _emulator->getProperty("LRAM").pointer;
 
     // Game-specific values
-    globalTimer                       = (uint16_t*)  &ram[0x0000];
     frameType                         = (uint8_t*)   &ram[0x007C];
     lagFrame                          = (uint8_t*)   &ram[0x01F8];
     cameraPosX1                       = (uint8_t*)   &ram[0x00D5];
@@ -74,17 +81,19 @@ class Game : public jaffarPlus::Game
     playerLastInputKey                = (uint8_t*)   &ram[0x009B];
     playerLastInputFrame              = (uint16_t*)  &ram[0x01A0];
 
-    // Timer tolerance
-    timerTolerance = JSON_GET_NUMBER(uint8_t, config, "Timer Tolerance");
+    // Game-specific values
+    currentStep                       = (uint32_t*)  &_gameSpecificStorage[0x0000];
+    *currentStep = 0;
   }
 
   std::vector<std::string> advanceStateImpl(const std::string& input) override
   {
     *player1LapsRemainingPrev = *player1LapsRemaining;
+    *currentStep = *currentStep + 1;
 
     _emulator->advanceState(input);
 
-    if (input != "|..|........|") *playerLastInputFrame = *globalTimer;
+    if (input != "|..|........|") *playerLastInputFrame = *currentStep;
 
     return {input};
   }
@@ -94,7 +103,7 @@ class Game : public jaffarPlus::Game
     // Storage for hash calculation
     MetroHash128 hash;
 
-    //if (timerTolerance > 0) hash.Update(currentStep % (timerTolerance+1));
+    if (timerTolerance > 0) hash.Update(*currentStep % (timerTolerance+1));
 
     hash.Update(*cameraPosX1);
     hash.Update(*cameraPosX2);
@@ -143,10 +152,8 @@ class Game : public jaffarPlus::Game
     return result;
   }
 
-  void updateDerivedValues() override
+  void updateGameSpecificValues() override
   {
-    *globalTimer = *globalTimer == 0xFFFF ? 0 : *globalTimer + 1;
-
     player1PosX = (uint16_t)*player1PosX1 * 256 + (uint16_t)*player1PosX2;
     player1PosY = (uint16_t)*player1PosY1 * 256 + (uint16_t)*player1PosY2;
 
@@ -157,7 +164,7 @@ class Game : public jaffarPlus::Game
   void printStateInfoImpl() const override
   {
     LOG("[J+]  + Current Race:                       %03u\n", *currentRace);
-    LOG("[J+]  + Global Timer:                       %03u\n", *globalTimer);
+    LOG("[J+]  + Current Step:                       %03u\n", *currentStep);
     LOG("[J+]  + Pre Race Timer:                     %03u\n", *preRaceTimer);
     LOG("[J+]  + Frame Type / Lag:                   %03u %03u\n", *frameType, *lagFrame);
 
@@ -187,7 +194,6 @@ class Game : public jaffarPlus::Game
   private:
 
   // Container for game-specific values
-  uint16_t* globalTimer;
   uint8_t*  currentRace;
   uint8_t*  preRaceTimer;
   uint8_t*  frameType;
@@ -239,6 +245,7 @@ class Game : public jaffarPlus::Game
   uint16_t cameraPosX;
   uint16_t cameraPosY;
   uint8_t timerTolerance;
+  uint32_t* currentStep;
 };
 
 } // namespace microMachines
