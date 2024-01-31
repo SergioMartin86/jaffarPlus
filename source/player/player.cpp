@@ -1,7 +1,6 @@
 #include <chrono>
 #include <argparse/argparse.hpp>
 #include "emulators/emulator.hpp"
-#include "games/game.hpp"
 #include "common/logger.hpp"
 #include "common/json.hpp"
 
@@ -59,9 +58,6 @@ int main(int argc, char *argv[])
   // Getting emulator name from the configuration
   const auto emulatorName = JSON_GET_STRING(config, "Emulator");
 
-// Getting game name from the configuration
-  const auto gameName = JSON_GET_STRING(config, "Game");
-
   // Getting emulator from its name and configuring it
   auto e = jaffarPlus::Emulator::getEmulator(emulatorName, JSON_GET_OBJECT(config, "Emulator Configuration"));
 
@@ -74,9 +70,6 @@ int main(int argc, char *argv[])
   // If initial state file defined, load it
   if (initialStateFilePath.empty() == false) e->loadStateFile(initialStateFilePath);
 
-  // Getting game from its name and configuring it
-  auto g = jaffarPlus::Game::getGame(gameName, e, JSON_GET_OBJECT(config, "Game Configuration"));
-
   // Getting input sequence
   const auto solutionSequence = jaffarPlus::split(solutionFileString, ' ');
 
@@ -84,7 +77,7 @@ int main(int argc, char *argv[])
   const auto sequenceLength = solutionSequence.size();
 
   // Printing information
-  LOG("[J+] Emulator Name:          '%s'\n", emulatorName.c_str());
+  LOG("[J+] Emulator Name:          '%s'\n", e->getName().c_str());
   LOG("[J+] Config File:            '%s'\n", configFile.c_str());
   LOG("[J+] Solution File:          '%s'\n", solutionFile.c_str());
   LOG("[J+] Cycle Type:             '%s'\n", cycleType.c_str());
@@ -94,7 +87,7 @@ int main(int argc, char *argv[])
 
   // Serializing initial state
   auto currentState = (uint8_t *)malloc(stateSize);
-  g->popState(currentState);
+  e->serializeState(currentState);
 
   // Check whether to perform each action
   const bool doPreAdvance = cycleType == "Full";
@@ -105,10 +98,10 @@ int main(int argc, char *argv[])
   auto t0 = std::chrono::high_resolution_clock::now();
   for (const auto& input : solutionSequence)
   {
-    if (doPreAdvance == true) g->advanceState(input);
-    if (doDeserialize == true) g->pushState(currentState);
-    g->advanceState(input);
-    if (doSerialize == true) g->popState(currentState);
+    if (doPreAdvance == true) e->advanceState(input);
+    if (doDeserialize == true) e->deserializeState(currentState);
+    e->advanceState(input);
+    if (doSerialize == true) e->serializeState(currentState);
   }
   auto tf = std::chrono::high_resolution_clock::now();
 
@@ -120,10 +113,6 @@ int main(int argc, char *argv[])
   LOG("[J+] Elapsed time:            %3.3fs\n", (double)dt * 1.0e-9);
   LOG("[J+] Performance:             %.3f inputs / s\n", (double)sequenceLength / elapsedTimeSeconds);
 
-  // Printing emulator and game information
-  LOG("[J+] Emulator Debug Information:\n");
-  g->getEmulator()->printDebugInformation();
-
-  LOG("[J+] Game State Information:\n");
-  g->printStateInfo(sequenceLength);
+  // Printing emulator debug information
+  e->printDebugInformation();
 }

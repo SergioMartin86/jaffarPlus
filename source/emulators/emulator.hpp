@@ -8,7 +8,7 @@ namespace jaffarPlus
 {
 
 // A property is a contiguous segment of memory with size, identifiable by name 
-typedef std::pair<void*, size_t> property_t;
+struct property_t { uint8_t* pointer; size_t size; };
 
 class Emulator
 {
@@ -46,9 +46,6 @@ class Emulator
   virtual void serializeState(uint8_t *state) const = 0;
   virtual void deserializeState(const uint8_t *state) = 0;
 
-  // Function to get emulator name
-  virtual std::string getName() const = 0;
-
   // Function to print debug information, whatever it might be
   virtual void printDebugInformation() const = 0;
 
@@ -56,7 +53,7 @@ class Emulator
   virtual property_t getProperty(const std::string& propertyName) const = 0;
 
   // Function to obtain emulator based on name
-  static Emulator* getEmulator(const std::string& emulatorName, const nlohmann::json& config);
+  static std::unique_ptr<Emulator> getEmulator(const std::string& emulatorName, const nlohmann::json& config);
 };
 
 } // namespace jaffarPlus

@@ -86,7 +86,7 @@ subdir('source')
 #endforeach
 #
 
-# Building tester tool
+# Jaffar Tester tool
 executable('jaffar-tester',
   'source/tester.cpp',
   cpp_args: jaffarCPPFlags,

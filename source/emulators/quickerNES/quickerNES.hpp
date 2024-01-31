@@ -10,9 +10,14 @@
 namespace jaffarPlus
 {
 
+namespace emulator
+{
+
 class QuickerNES final : public Emulator
 {
   public:
+
+  static std::string getName() { return "QuickerNES"; } 
 
   // Constructor must only do configuration parsing
   QuickerNES(const nlohmann::json& config) : Emulator(config)
@@ -87,14 +92,12 @@ class QuickerNES final : public Emulator
      EXIT_WITH_ERROR("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());  
   }
 
-  inline std::string getName() const override { return "QuickerNES"; } 
-
   private:
 
   void printMemoryBlockHash(const std::string& blockName) const
   {
    auto p = getProperty(blockName);
-   auto hash = hashToString(calculateMetroHash(p.first, p.second));
+   auto hash = hashToString(calculateMetroHash(p.pointer, p.size));
    LOG("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }
 
@@ -104,5 +107,7 @@ class QuickerNES final : public Emulator
   std::string _romFileSHA1;
 
 };
+
+} // namespace emulator
 
 } // namespace jaffarPlus
