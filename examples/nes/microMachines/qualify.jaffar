@@ -1,12 +1,18 @@
 {
- "Emulator" : "QuickerNES",
- "Initial State File Path" : "qualify.state",
+ "Emulator": "QuickerNES",
+ "Game": "NES / Micro Machines",
+ "Initial State File Path": "qualify.state",
 
- "Emulator Configuration" :
+ "Emulator Configuration":
  {
    "Rom File Path": "Micro Machines (U).nes",
    "Rom File SHA1": "EC7BB4D11AFA5A955010BB9A548C1460EAC08FE0",
    "Controller 1 Type": "Joypad",
    "Controller 2 Type": "None"
+ },
+
+ "Game Configuration":
+ {
+  "Timer Tolerance": 0 
  }
 }
