@@ -15,9 +15,24 @@ namespace NES
 namespace microMachines
 {
 
-class Game : public jaffarPlus::Game
+class Game final : public jaffarPlus::Game
 {
  public:
+
+  // Datatype to describe a point magnet
+  struct pointMagnet_t
+  {
+    float intensity = 0.0; // How strong the magnet is
+    float x = 0.0;  // What is the x point of attraction
+    float y = 0.0;  // What is the y point of attraction
+  };
+
+  // Datatype to describe an angle magnet
+  struct angleMagnet_t
+  {
+    float intensity = 0.0; // How strong the magnet is
+    float angle = 0.0;  // What is the angle we look for
+  };
 
   static inline std::string getName() { return "NES / Micro Machines"; } 
 
@@ -193,6 +208,65 @@ class Game : public jaffarPlus::Game
 
   private:
 
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
+  {
+    bool recognizedActionType = false;
+
+    if (actionType == "Set Point Magnet")
+    {
+      auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
+      auto x = JSON_GET_NUMBER(float, actionJs, "X");
+      auto y = JSON_GET_NUMBER(float, actionJs, "Y");
+      rule.addAction([=, this](){ this->pointMagnet = pointMagnet_t { .intensity = intensity, .x = x, .y = y }; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Player Current Lap Magnet")
+    {
+      auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
+      rule.addAction([=, this](){ this->playerCurrentLapMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Player Lap Progress Magnet")
+    {
+      auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
+      rule.addAction([=, this](){ this->playerLapProgressMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Player Accel Magnet")
+    {
+      auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
+      rule.addAction([=, this](){ this->playerAccelMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Camera Distance Magnet")
+    {
+      auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
+      rule.addAction([=, this](){ this->cameraDistanceMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Recovery Timer Magnet")
+    {
+      auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
+      rule.addAction([=, this](){ this->recoveryTimerMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Car 1 Angle Magnet")
+    {
+      auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
+      auto angle = JSON_GET_NUMBER(float, actionJs, "Angle");
+      rule.addAction([=, this](){ this->car1AngleMagnet = angleMagnet_t { .intensity = intensity, .angle = angle}; });
+      recognizedActionType = true;
+    }
+
+    return recognizedActionType;
+  }
+
   // Container for game-specific values
   uint8_t*  currentRace;
   uint8_t*  preRaceTimer;
@@ -246,6 +320,15 @@ class Game : public jaffarPlus::Game
   uint16_t cameraPosY;
   uint8_t timerTolerance;
   uint32_t* currentStep;
+
+  // Magnets (used to determine state reward and have Jaffar favor a direction or action)
+  float playerCurrentLapMagnet = 0.0;
+  float playerLapProgressMagnet = 0.0;
+  float playerAccelMagnet = 0.0;
+  float cameraDistanceMagnet = 0.0;
+  float recoveryTimerMagnet = 0.0;
+  angleMagnet_t car1AngleMagnet;
+  pointMagnet_t pointMagnet;
 };
 
 } // namespace microMachines

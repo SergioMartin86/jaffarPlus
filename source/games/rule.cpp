@@ -90,9 +90,6 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
     if (valueFound == false) EXIT_WITH_ERROR("[ERROR] Rule %lu contains an invalid 'Value' key.\n", _label, conditionJs["Value"].dump().c_str());
   }
 
-  // Storing condition count
-  _conditionCount = _conditions.size();
-
   // Adding Rules that are satisfied by this rule activation
   if (isDefined(ruleJs, "Satisfies") == false) EXIT_WITH_ERROR("[ERROR] Rule missing 'Satisfies' key.\n");
   _satisfiesLabels = ruleJs["Satisfies"].get<std::vector<size_t>>();
@@ -103,70 +100,7 @@ void Rule::initialize(nlohmann::json ruleJs, void* gameInstance)
   parseActions(ruleJs["Actions"]);
 }
 
-void Rule::parseActions(nlohmann::json actionsJs)
-{
- for (size_t actionId = 0; actionId < actionsJs.size(); actionId++)
- {
-   const auto actionJs = actionsJs[actionId];
 
-   // Getting action type
-   if (isDefined(actionJs, "Type") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Type' key.\n", _label, actionId);
-   std::string actionType = actionJs["Type"].get<std::string>();
 
-   // Running the action, depending on the type
-   bool recognizedActionType = false;
 
-   if (actionType == "Add Reward")
-   {
-     if (isDefined(actionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Action %lu missing 'Value' key.\n", _label, actionId);
-     _reward = actionJs["Value"].get<float>();
-     recognizedActionType = true;
-   }
-
-   // Storing fail state
-   if (actionType == "Trigger Fail")
-   {
-     _isFailRule = true;
-     recognizedActionType = true;
-   }
-
-   // Storing win state
-   if (actionType == "Trigger Win")
-   {
-     _isWinRule = true;
-     recognizedActionType = true;
-   }
-
-   // Storing win state
-   if (actionType == "Trigger Checkpoint")
-   {
-    if (isDefined(actionJs, "Tolerance") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu Checkpoint %lu missing 'Tolerance' key.\n", _label, actionId);
-    _checkPointTolerance = actionJs["Tolerance"].get<int>();
-     _isCheckpointRule = true;
-     recognizedActionType = true;
-   }
-
-   // If not recognized yet, it must be a game specific action
-   if (recognizedActionType == false) recognizedActionType = parseGameAction(actionJs, actionId);
-
-   // If not recognized at all, then fail
-   if (recognizedActionType == false) EXIT_WITH_ERROR("[ERROR] Unrecognized rule %lu, action %lu type: %s\n", _label, actionId, actionType.c_str());
-  }
-}
-
-operator_t Rule::getOperationType(const std::string &operation)
-{
-  if (operation == "==") return op_equal;
-  if (operation == "!=") return op_not_equal;
-  if (operation == ">") return op_greater;
-  if (operation == ">=") return op_greater_or_equal;
-  if (operation == "<") return op_less;
-  if (operation == "<=") return op_less_or_equal;
-  if (operation == "BitTrue") return op_bit_true;
-  if (operation == "BitFalse") return op_bit_false;
-
-  EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized operator: %s\n", _label, operation.c_str());
-
-  return op_equal;
-}
 
