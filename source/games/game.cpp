@@ -4,7 +4,7 @@
 
 namespace jaffarPlus
 {
- #define DETECT_GAME(G) if (gameName == games::G::Game::getName()) return std::make_unique<games::G::Game>(std::move(emulator), config);
+ #define DETECT_GAME(GAME) if (gameName == games::GAME::Game::getName()) return std::make_unique<games::GAME::Game>(emulator, config);
 
  std::unique_ptr<Game> Game::getGame(const std::string& gameName, std::unique_ptr<Emulator>& emulator, const nlohmann::json& config)
  {

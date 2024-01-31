@@ -68,14 +68,17 @@ int main(int argc, char *argv[])
   // Initializing emulator
   e->initialize();
 
-  // Getting state size
-  const auto stateSize = e->getStateSize();
-
   // If initial state file defined, load it
   if (initialStateFilePath.empty() == false) e->loadStateFile(initialStateFilePath);
 
   // Getting game from its name and configuring it
   auto g = jaffarPlus::Game::getGame(gameName, e, JSON_GET_OBJECT(config, "Game Configuration"));
+
+  // Initializing game
+  g->initialize();
+
+  // Getting game state size
+  const auto stateSize = g->getStateSize();
 
   // Getting input sequence
   const auto solutionSequence = jaffarPlus::split(solutionFileString, ' ');
@@ -94,7 +97,7 @@ int main(int argc, char *argv[])
 
   // Serializing initial state
   auto currentState = (uint8_t *)malloc(stateSize);
-  g->popState(currentState);
+  g->serializeState(currentState);
 
   // Check whether to perform each action
   const bool doPreAdvance = cycleType == "Full";
@@ -106,9 +109,9 @@ int main(int argc, char *argv[])
   for (const auto& input : solutionSequence)
   {
     if (doPreAdvance == true) g->advanceState(input);
-    if (doDeserialize == true) g->pushState(currentState);
+    if (doDeserialize == true) g->deserializeState(currentState);
     g->advanceState(input);
-    if (doSerialize == true) g->popState(currentState);
+    if (doSerialize == true) g->serializeState(currentState);
   }
   auto tf = std::chrono::high_resolution_clock::now();
 
@@ -125,5 +128,5 @@ int main(int argc, char *argv[])
   g->getEmulator()->printDebugInformation();
 
   LOG("[J+] Game State Information:\n");
-  g->printStateInfo(sequenceLength);
+  g->printStateInfo();
 }
