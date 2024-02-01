@@ -30,6 +30,7 @@ class Rule final
   void setCheckpointRule(const bool isCheckpointRule) { _isCheckpointRule = isCheckpointRule; }
   void setCheckpointTolerance(const size_t checkPointTolerance) { _checkPointTolerance = checkPointTolerance; }
   void addAction(const std::function<void()>& function) { _actions.push_back(function); }
+  void addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
 
   label_t getLabel() const { return _label; }
   float getReward() const { return _reward; }
@@ -43,22 +44,8 @@ class Rule final
   // Conditions are evaluated frequently, so this optimized for performance
   // Operands are pre-parsed as pointers/immediates and the evaluation function
   // is a template that is created at compilation time.
-  std::vector<Condition *> _conditions;
-
-  inline Condition::operator_t getOperationType(const std::string &operation)
-  {
-    if (operation == "==") return Condition::op_equal;
-    if (operation == "!=") return Condition::op_not_equal;
-    if (operation == ">") return Condition::op_greater;
-    if (operation == ">=") return Condition::op_greater_or_equal;
-    if (operation == "<") return Condition::op_less;
-    if (operation == "<=") return Condition::op_less_or_equal;
-    if (operation == "BitTrue") return Condition::op_bit_true;
-    if (operation == "BitFalse") return Condition::op_bit_false;
-
-    EXIT_WITH_ERROR("[Error] Rule %lu, unrecognized operator: %s\n", _label, operation.c_str());
-  }
-
+  std::unordered_set<std::unique_ptr<Condition>> _conditions;
+  
   // Stores an identifying label for the rule
   const label_t _label;
 
