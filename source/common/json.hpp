@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdlib>
 #include <json/single_include/nlohmann/json.hpp>
 #include "logger.hpp"
 
@@ -40,6 +41,15 @@ template <typename T> static inline const T jsonGetNumber(const nlohmann::json& 
   if (json.contains(entry) == false) EXIT_WITH_ERROR("[Error] JSON contains no field called '%s'\n", entry.c_str());
   if (json[entry].is_number() == false) EXIT_WITH_ERROR("[Error] Configuration entry '%s' is not a number\n", entry.c_str());
   return json.at(entry).get<T>();
+}
+
+#define JSON_GET_BOOLEAN(JSON, ENTRY) jaffarPlus::jsonGetBoolean(JSON, ENTRY)
+static inline const bool jsonGetBoolean(const nlohmann::json& json, const std::string& entry)
+{
+  if (json.is_object() == false) EXIT_WITH_ERROR("[Error] JSON passed is not a key/value object. Happened when trying to obtain string entry '%s'\n", entry.c_str());
+  if (json.contains(entry) == false) EXIT_WITH_ERROR("[Error] JSON contains no field called '%s'\n", entry.c_str());
+  if (json[entry].is_boolean() == false) EXIT_WITH_ERROR("[Error] Configuration entry '%s' is not a boolean\n", entry.c_str());
+  return json.at(entry).get<bool>();
 }
 
 }
