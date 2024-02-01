@@ -77,6 +77,9 @@ int main(int argc, char *argv[])
   // Initializing game
   g->initialize();
 
+  // Parsing script rules
+  g->parseRules(JSON_GET_ARRAY(config, "Rules"));
+
   // Getting game state size
   const auto stateSize = g->getStateSize();
 

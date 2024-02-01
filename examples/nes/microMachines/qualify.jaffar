@@ -50,7 +50,7 @@
     { "Name": "Player 1 Recovery Timer",          "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x041A", "Hashable": true,  "Printable": true }, 
     { "Name": "Player 1 Resume Timer",            "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x00DA", "Hashable": true,  "Printable": true }, 
     { "Name": "Player 1 Can Control Car",         "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x01BF", "Hashable": true,  "Printable": true }, 
-    { "Name": "Player 1 Tank Fire Timer",         "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x041E", "Hashable": true,  "Printable": true }, 
+    { "Name": "Player 1 Tank Fire Timer",         "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x041E", "Hashable": false, "Printable": true }, 
     { "Name": "Pre-Race Timer",                   "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x00DD", "Hashable": true,  "Printable": true }, 
     { "Name": "Active Frame 1",                   "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x00B0", "Hashable": false, "Printable": true }, 
     { "Name": "Active Frame 2",                   "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x00B2", "Hashable": false, "Printable": true }, 
@@ -59,5 +59,55 @@
     { "Name": "Player Last Input Key",            "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x009B", "Hashable": false, "Printable": true }, 
     { "Name": "Player Last Input Frame",          "Data Type": "UINT16", "Endianness": "Little", "Memory Block": "LRAM", "Offset": "0x01A0", "Hashable": false, "Printable": true }     
   ]
- }
+ },
+
+ "Rules":
+ [
+   {
+     "Label": 1000,
+     "Conditions":
+     [
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+       { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
+       { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
+       { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
+     ]
+   },
+     
+   {
+     "Label": 1001,
+     "Conditions":
+     [
+       { "Property": "Player 1 Current Laps Remaining", "Op": "==", "Value": 0 } 
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+       { "Type": "Trigger Win"}
+     ]
+   },
+
+   {
+     "Label": 1999,
+     "Conditions":
+     [
+       { "Property": "Player 1 Current Laps Remaining", "Op": ">", "Value": "Player 1 Previous Laps Remaining" },
+       { "Property": "Player 1 Previous Laps Remaining", "Op": "!=", "Value": 0 } 
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+       { "Type": "Trigger Fail"}
+     ]
+   }
+ ]
 }

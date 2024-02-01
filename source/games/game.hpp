@@ -61,8 +61,6 @@ class Game
       // Calculating property pointer
       const auto pointer = _emulator->getProperty(memoryBlock).pointer + offset;
 
-      printf("pointer: 0x%lX\n", (uint64_t) pointer);
-
       // Creating property
       auto property = std::make_unique<Property>(name, pointer, dataType, endianness);
 
@@ -162,7 +160,21 @@ class Game
   }
 
   // This function computes the hash for the current state
-  virtual hash_t computeHash() const = 0;
+  virtual hash_t computeHash() const 
+  {
+    // Storage for hash calculation
+    MetroHash128 hashEngine;
+
+    // Processing hashable game properties
+    for (const auto& p : _propertyHashSet) hashEngine.Update(p->getPointer(), p->getSize());
+
+    // Processing any additional game-specific hash 
+    computeAdditionalHashing(hashEngine);
+ 
+    hash_t result;
+    hashEngine.Finalize(reinterpret_cast<uint8_t *>(&result));
+    return result;
+  }
 
   // This function updates derivate values (those who require calculation from raw values) after a state is re-loaded
   virtual void updateGameSpecificValues() = 0;
@@ -214,21 +226,24 @@ class Game
   // Parsing game rules
   void parseRules(const nlohmann::json& rulesJson)
   {
-    // Parse each individual rule
-    if (rulesJson.is_array() == false) EXIT_WITH_ERROR("Passed rules JSON object is not an array.");
- 
+    // Reset the rules container
+    _rules.clear();
+
     // Evaluate each rule
-    for (auto& ruleJson : rulesJson)
+    for (const auto& ruleJson : rulesJson)
     {
       // Check if rule is a key/value object
-      if (rulesJson.is_object() == false) EXIT_WITH_ERROR("Passed rule is not a JSON object.");
+      if (ruleJson.is_object() == false) EXIT_WITH_ERROR("Passed rule is not a JSON object. Dump: \n %s", ruleJson.dump(2).c_str());
       
       // Parsing json into a rule class
-      auto rule = std::move(parseRule(ruleJson));
+      auto rule = parseRule(ruleJson);
+
+      // Adding new rule to the collection
+      _rules[rule->getLabel()] = std::move(rule);
     }
-  
-    // Then re-evaluate them
-    //evaluateRules();
+
+    // Then re-evaluate rules
+    // evaluateRules();
   }
  
   // Individual rule parser 
@@ -238,7 +253,7 @@ class Game
     auto label = JSON_GET_NUMBER(Rule::label_t, ruleJs, "Label");
 
     // Getting rule condition array
-    // const auto& conditions = JSON_GET_ARRAY(ruleJs, "Conditions");
+    const auto& conditions = JSON_GET_ARRAY(ruleJs, "Conditions");
 
     // Getting rule action array
     const auto& actions = JSON_GET_ARRAY(ruleJs, "Actions");
@@ -247,7 +262,7 @@ class Game
     auto rule = std::make_unique<Rule>(label);
  
     // Parsing rule conditions
-    // for (const auto& condition : conditions) parseRuleCondition(*rule, condition);  
+    for (const auto& condition : conditions) rule->addCondition(parseRuleCondition(condition));  
 
     // Parsing rule actions
     for (const auto& action : actions) parseRuleAction(*rule, action);  
@@ -255,69 +270,76 @@ class Game
     return rule;
   }
 
-  // void parseRuleCondition(Rule& rule, const nlohmann::json& conditionJs)
-  // {
-  //   // Parsing operator type
-  //   const auto& op = JSON_GET_ARRAY(conditionJs, "Op");
+  std::unique_ptr<Condition> parseRuleCondition(const nlohmann::json& conditionJs)
+  {
+    // Parsing operator name
+    const auto& opName = JSON_GET_STRING(conditionJs, "Op");
+   
+    // Getting operator type from its name
+    const auto opType =  Condition::getOperatorType(opName);
 
-  //   // Parsing first operand (property name)
-  //   const auto& op = JSON_GET_STRING(conditionJs, "Property");
-  //   datatype_t dtype = getPropertyType(conditionJs);
-  //   auto property = getPropertyPointer(conditionJs, (GameInstance*)gameInstance);
+    // Parsing first operand (property name)
+    const auto& propertyName = JSON_GET_STRING(conditionJs, "Property");
 
-  //   // Parsing second operand (number)
-  //   if (isDefined(conditionJs, "Value") == false) EXIT_WITH_ERROR("[ERROR] Rule %lu condition missing 'Value' key.\n", _label);
+    // Getting property name hash, for indexing
+    const auto propertyNameHash = hashString(propertyName);
 
-  //   bool valueFound = false;
-  //   if (conditionJs["Value"].is_number())
-  //   {
-  //    // Creating new condition object
-  //    Condition *condition = NULL;
-  //    if (dtype == Property::dt_uint8_le)  condition = new _vCondition<uint8_t>(operation, property, NULL, conditionJs["Value"].get<uint8_t>());
-  //    if (dtype == Property::dt_uint16_le) condition = new _vCondition<uint16_t>(operation, property, NULL, conditionJs["Value"].get<uint16_t>());
-  //    if (dtype == Property::dt_uint32_le) condition = new _vCondition<uint32_t>(operation, property, NULL, conditionJs["Value"].get<uint32_t>());
-  //    if (dtype == Property::dt_int8_le)   condition = new _vCondition<int8_t>(operation, property, NULL, conditionJs["Value"].get<int8_t>());
-  //    if (dtype == Property::dt_int16_le)  condition = new _vCondition<int16_t>(operation, property, NULL, conditionJs["Value"].get<int16_t>());
-  //    if (dtype == Property::dt_int32_le)  condition = new _vCondition<int32_t>(operation, property, NULL, conditionJs["Value"].get<int32_t>());
-  //    if (dtype == Property::dt_double)    condition = new _vCondition<double>(operation, property, NULL, conditionJs["Value"].get<double>());
-  //    if (dtype == Property::dt_float)     condition = new _vCondition<float>(operation, property, NULL, conditionJs["Value"].get<float>());
+    // Making sure the requested property exists in the property map
+    if (_propertyMap.contains(propertyNameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", propertyName.c_str());
 
-  //    // Adding condition to the list
-  //    _conditions.push_back(condition);
+    // Getting property object
+    const auto property1 = _propertyMap[propertyNameHash].get();
 
-  //    valueFound = true;
-  //   }
-  // }
-  //   if (conditionJs["Value"].is_string())
-  //   {
-  //    // Hack: fooling property parser with value
-  //    nlohmann::json newCondition;
-  //    newCondition["Property"] = conditionJs["Value"];
+    // Getting property data type
+    auto datatype1 = property1->getDatatype();
 
-  //    // Creating new property
-  //    datatype_t valueType = getPropertyType(newCondition);
-  //    if (valueType != dtype) EXIT_WITH_ERROR("[ERROR] Rule %lu, property (%s) and value (%s) types must coincide.\n", _label, conditionJs["Property"].get<std::string>(), conditionJs["Value"].get<std::string>());
+    // Parsing second operand (number)
+    if (conditionJs.contains("Value") == false) EXIT_WITH_ERROR("[ERROR] Rule condition missing 'Value' key.\n");
 
-  //    // Getting value pointer
-  //    auto valuePtr = getPropertyPointer(newCondition, (GameInstance*)gameInstance);
+    // If value is a number, take it as immediate
+    if (conditionJs["Value"].is_number())
+    {
+     if (datatype1 == Property::datatype_t::dt_uint8)   return std::make_unique<_vCondition<uint8_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<uint8_t>());
+     if (datatype1 == Property::datatype_t::dt_uint16)  return std::make_unique<_vCondition<uint16_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint16_t>());
+     if (datatype1 == Property::datatype_t::dt_uint32)  return std::make_unique<_vCondition<uint32_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint32_t>());
+     if (datatype1 == Property::datatype_t::dt_uint64)  return std::make_unique<_vCondition<uint64_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint64_t>());
 
-  //    // Adding condition to the list
-  //    Condition *condition = NULL;
-  //    if (dtype == dt_uint8) condition = new _vCondition<uint8_t>(operation, property, valuePtr, 0);
-  //    if (dtype == dt_uint16) condition = new _vCondition<uint16_t>(operation, property, valuePtr, 0);
-  //    if (dtype == dt_uint32) condition = new _vCondition<uint32_t>(operation, property, valuePtr, 0);
-  //    if (dtype == dt_int8) condition = new _vCondition<int8_t>(operation, property, valuePtr, 0);
-  //    if (dtype == dt_int16) condition = new _vCondition<int16_t>(operation, property, valuePtr, 0);
-  //    if (dtype == dt_int32) condition = new _vCondition<int32_t>(operation, property, valuePtr, 0);
-  //    if (dtype == dt_double) condition = new _vCondition<double>(operation, property, valuePtr, 0);
-  //    if (dtype == dt_float) condition = new _vCondition<float>(operation, property, valuePtr, 0);
-  //    _conditions.push_back(condition);
+     if (datatype1 == Property::datatype_t::dt_int8)    return std::make_unique<_vCondition<int8_t>  >(opType, property1, nullptr, 0, conditionJs["Value"].get<int8_t>());
+     if (datatype1 == Property::datatype_t::dt_int16)   return std::make_unique<_vCondition<int16_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<int16_t>());
+     if (datatype1 == Property::datatype_t::dt_int32)   return std::make_unique<_vCondition<int32_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<int32_t>());
+     if (datatype1 == Property::datatype_t::dt_int64)   return std::make_unique<_vCondition<int64_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<int64_t>());
 
-  //    valueFound = true;
-  //   }
+     if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>   >(opType, property1, nullptr, 0, conditionJs["Value"].get<float>());
+     if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>  >(opType, property1, nullptr, 0, conditionJs["Value"].get<double>());
+     if (datatype1 == Property::datatype_t::dt_bool)    return std::make_unique<_vCondition<bool>    >(opType, property1, nullptr, 0, conditionJs["Value"].get<bool>());
+    }
 
-  //   if (valueFound == false) EXIT_WITH_ERROR("[ERROR] Rule %lu contains an invalid 'Value' key.\n", _label, conditionJs["Value"].dump().c_str());
-  // }
+    // If value is a string, take value as property number 2
+    if (conditionJs["Value"].is_string())
+    {
+          // Parsing first operand (property name)
+      const auto& property2Name = JSON_GET_STRING(conditionJs, "Value");
+
+      // Getting property object
+      const auto property2 = _propertyMap[hashString("propertyName")].get();
+
+      if (datatype1 == Property::datatype_t::dt_uint8)   return std::make_unique<_vCondition<uint8_t> >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_uint16)  return std::make_unique<_vCondition<uint16_t>>(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_uint32)  return std::make_unique<_vCondition<uint32_t>>(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_uint64)  return std::make_unique<_vCondition<uint64_t>>(opType, property1, property2, 0, 0);
+
+      if (datatype1 == Property::datatype_t::dt_int8)    return std::make_unique<_vCondition<int8_t>  >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_int16)   return std::make_unique<_vCondition<int16_t> >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_int32)   return std::make_unique<_vCondition<int32_t> >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_int64)   return std::make_unique<_vCondition<int64_t> >(opType, property1, property2, 0, 0);
+
+      if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>   >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>  >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_bool)    return std::make_unique<_vCondition<bool>    >(opType, property1, property2, 0, 0);
+    }
+
+    EXIT_WITH_ERROR("[ERROR] Rule contains an invalid 'Value' key.\n", conditionJs["Value"].dump().c_str());
+  }
 
   void parseRuleAction(Rule& rule, const nlohmann::json& actionJs) 
   {
@@ -359,7 +381,7 @@ class Game
     if (recognizedActionType == false) recognizedActionType = parseRuleActionImpl(rule, actionType, actionJs);
 
     // If not recognized at all, then fail
-    if (recognizedActionType == false) EXIT_WITH_ERROR("[ERROR] Unrecognized action '%s' in rule %lu\n", rule.getLabel(), actionType.c_str());
+    if (recognizedActionType == false) EXIT_WITH_ERROR("[ERROR] Unrecognized action '%s' in rule %lu\n", actionType.c_str(), rule.getLabel());
   }
 
   // Function to get emulator name
@@ -373,6 +395,7 @@ class Game
 
   protected:
 
+  virtual void computeAdditionalHashing(MetroHash128& hashEngine) const { };
   virtual void initializeImpl() = 0;
   virtual size_t getGameSpecificStorageSize() const = 0;
   virtual void printStateInfoImpl() const = 0;
@@ -386,8 +409,8 @@ class Game
   size_t _gameSpecificStorageSize;
   uint8_t* _gameSpecificStorage;
 
-  // Game script rules
-  std::vector<std::unique_ptr<Rule>> _rules;
+  // Game script rules. Using vector to preserve their ordering
+  std::map<Rule::label_t, std::unique_ptr<Rule>> _rules;
 
   // Property hash set to quickly distinguish states from each other 
   std::unordered_set<const Property*> _propertyHashSet;

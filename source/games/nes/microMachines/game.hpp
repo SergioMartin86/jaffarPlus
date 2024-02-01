@@ -96,6 +96,10 @@ class Game final : public jaffarPlus::Game
     playerLastInputKey                = (uint8_t*)   &ram[0x009B];
     playerLastInputFrame              = (uint16_t*)  &ram[0x01A0];
 
+
+    // Getting properties for custom hashing
+    player1TankFireTimer              = (uint8_t*) _propertyMap[hashString("Player 1 Tank Fire Timer")]->getPointer();
+
     // Game-specific values
     currentStep                       = (uint32_t*)  &_gameSpecificStorage[0x0000];
     *currentStep = 0;
@@ -113,58 +117,11 @@ class Game final : public jaffarPlus::Game
     return {input};
   }
 
-  hash_t computeHash() const override
+  void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
-    // Storage for hash calculation
-    MetroHash128 hash;
+    if (timerTolerance > 0) hashEngine.Update(*currentStep % (timerTolerance+1));
 
-    if (timerTolerance > 0) hash.Update(*currentStep % (timerTolerance+1));
-
-    hash.Update(*cameraPosX1);
-    hash.Update(*cameraPosX2);
-    hash.Update(*cameraPosY1);
-    hash.Update(*cameraPosY2);
-    hash.Update(*currentRace);
-
-    hash.Update(*frameType);
-    hash.Update(*lagFrame);
-    hash.Update(*preRaceTimer);
-    hash.Update(*player1PosX1);
-    hash.Update(*player1PosX2);
-    hash.Update(*player1PosY1);
-    hash.Update(*player1PosY2);
-    // hash.Update(*player1PosY3);
-    hash.Update(*player1Accel);
-    hash.Update(*player1AccelTimer1);
-    hash.Update(*player1AccelTimer2);
-    hash.Update(*player1AccelTimer3);
-    hash.Update(*player1Inertia1);
-    hash.Update(*player1Inertia2);
-    hash.Update(*player1Inertia3);
-    hash.Update(*player1Inertia4);
-    // hash.Update(*player1Angle1);
-    hash.Update(*player1Angle2);
-    // hash.Update(*player1Angle3);
-    hash.Update(*player1LapsRemaining);
-    hash.Update(*player1LapsRemainingPrev);
-    hash.Update(*player1Checkpoint);
-
-    hash.Update(*player1RecoveryMode);
-    hash.Update(*player1RecoveryTimer);
-    hash.Update(*player1CanControlCar);
-    hash.Update(*player1ResumeTimer);
-    hash.Update(*player1TankFireTimer > 0);
-
-    // hash.Update(*activeFrame1);
-    // hash.Update(*activeFrame2);
-    // hash.Update(*activeFrame3);
-    // hash.Update(*activeFrame4);
-    // hash.Update(_emu->_baseMem[0x039E]);
-    // hash.Update(*playerLastInputFrame);
-    
-    _uint128_t result;
-    hash.Finalize(reinterpret_cast<uint8_t *>(&result));
-    return result;
+    hashEngine.Update(*player1TankFireTimer > 0);
   }
 
   void updateGameSpecificValues() override
@@ -178,32 +135,7 @@ class Game final : public jaffarPlus::Game
 
   void printStateInfoImpl() const override
   {
-    LOG("[J+]  + Current Race:                       %03u\n", *currentRace);
-    LOG("[J+]  + Current Step:                       %03u\n", *currentStep);
-    LOG("[J+]  + Pre Race Timer:                     %03u\n", *preRaceTimer);
-    LOG("[J+]  + Frame Type / Lag:                   %03u %03u\n", *frameType, *lagFrame);
-
-    LOG("[J+]  + Active Frames:                      %03u %03u %03u %03u\n", *activeFrame1, *activeFrame2, *activeFrame3, *activeFrame4 );
-
-    LOG("[J+]  + Last Input / Frame                  %03u\n",  *player1Input1);
-    LOG("[J+]  + Laps Remaining:                     %1u (Prev: %1u)\n", *player1LapsRemaining, *player1LapsRemainingPrev);
-    LOG("[J+]  + Checkpoint Id:                      %03u\n", *player1Checkpoint);
-
-    LOG("[J+]  + Player Accel (Timers):              %03d (%03u, %03u, %03u)\n", *player1Accel, *player1AccelTimer1, *player1AccelTimer2, *player1AccelTimer3);
-    LOG("[J+]  + Player Inertia:                     %03u, %03u, %03u, %03u\n", *player1Inertia1, *player1Inertia2, *player1Inertia3, *player1Inertia4);
-    LOG("[J+]  + Player Angle:                       %03u %03u\n", *player1Angle1, *player1Angle2);
-
-    LOG("[J+]  + Camera Pos X:                       %05u\n", cameraPosX);
-    LOG("[J+]  + Camera Pos Y:                       %05u\n", cameraPosY);
-
-    LOG("[J+]  + Player Pos X:                       %05u\n", player1PosX);
-    LOG("[J+]  + Player Pos Y:                       %05u\n", player1PosY);
-    LOG("[J+]  + Player Recovery:                    %03u (%03u)\n", *player1RecoveryMode, *player1RecoveryTimer);
-    LOG("[J+]  + Player Resume Timer:                %03u\n", *player1ResumeTimer);
-    LOG("[J+]  + Player Can Control Car:             %03u\n", *player1CanControlCar);
-    LOG("[J+]  + Player Tank Fire Timer:             %03u\n", *player1TankFireTimer);
-
-    LOG("[J+]  + Last Input / Frame                  %03u / %03u\n",  *playerLastInputKey, *playerLastInputFrame);
+    // Printing magnets status
   }
 
   private:

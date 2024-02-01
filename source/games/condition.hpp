@@ -23,8 +23,24 @@ class Condition
 
   Condition(const operator_t opType) : _opType(opType) { }
 
-  virtual inline bool evaluate() = 0;
+  virtual inline bool evaluate() const = 0;
   virtual ~Condition() = default;
+
+  static inline operator_t getOperatorType(const std::string &operation)
+  {
+    if (operation == "==") return op_equal;
+    if (operation == "!=") return op_not_equal;
+    if (operation == ">") return op_greater;
+    if (operation == ">=") return op_greater_or_equal;
+    if (operation == "<") return op_less;
+    if (operation == "<=") return op_less_or_equal;
+    if (operation == "BitTrue") return op_bit_true;
+    if (operation == "BitFalse") return op_bit_false;
+
+    EXIT_WITH_ERROR("[Error] Unrecognized operator: %s\n", operation.c_str());
+
+    return op_equal;
+  }
 
   protected:
 
@@ -36,7 +52,11 @@ class _vCondition : public Condition
 {
   public:
 
-  _vCondition(const operator_t opType, Property *property1, Property * property2, T immediate1, T immediate2) : Condition(opType)
+  _vCondition(const operator_t opType, Property *property1, Property * property2, T immediate1, T immediate2) : Condition(opType),
+    _property1(property1),
+    _property2(property2),
+    _immediate1(immediate1),
+    _immediate2(immediate2)
   {
     switch (_opType)
     {
@@ -50,16 +70,15 @@ class _vCondition : public Condition
       case op_bit_false        : _opFcPtr = _opBitFalse; break;
       default: break;
     }
-
-    _immediate1 = immediate1;
-    _immediate2 = immediate2;
   }
 
-  inline bool evaluate()
+  inline bool evaluate() const
   {
-    if (_property1 != NULL) _immediate1 = _property1->getValue<T>();
-    if (_property2 != NULL) _immediate2 = _property2->getValue<T>();
-    return _opFcPtr(_immediate1, _immediate2);
+    T immediate1 = _immediate1;
+    T immediate2 = _immediate2;
+    if (_property1 != nullptr) immediate1 = _property1->getValue<T>();
+    if (_property2 != nullptr) immediate2 = _property2->getValue<T>();
+    return _opFcPtr(immediate1, immediate2);
   }
 
   private:
@@ -77,8 +96,8 @@ class _vCondition : public Condition
 
   Property* const _property1;
   Property* const _property2;
-  T _immediate1;
-  T _immediate2;
+  const T _immediate1;
+  const T _immediate2;
 };
 
 } // namespace jaffarPlus
