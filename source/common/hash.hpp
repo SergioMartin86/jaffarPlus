@@ -10,7 +10,7 @@ namespace jaffarPlus
 
 typedef _uint128_t hash_t;
 
-inline hash_t calculateMetroHash(void *data, size_t size)
+inline hash_t calculateMetroHash(const void *data, size_t size)
 {
   MetroHash128 hash;
   hash.Update(data, size);
@@ -26,5 +26,7 @@ inline std::string hashToString(const hash_t hash)
   sprintf(hashStringBuffer, "0x%lX%lX", hash.first, hash.second);
   return std::string(hashStringBuffer);
 }
+
+inline hash_t hashString(const std::string& string) { return calculateMetroHash(string.data(), string.size()); }
 
 }
