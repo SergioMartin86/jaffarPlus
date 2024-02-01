@@ -136,6 +136,23 @@ class Game final : public jaffarPlus::Game
   void printStateInfoImpl() const override
   {
     // Printing magnets status
+    float distX = std::abs(pointMagnet.x - player1PosX);
+    float distY = std::abs(pointMagnet.y - player1PosY);
+    float distanceToPoint = sqrt(distX*distX + distY*distY);
+
+    distX = std::abs(cameraPosX - player1PosX);
+    distY = std::abs(cameraPosY - player1PosY);
+    float cameraDistance = sqrt(distX*distX + distY*distY);
+
+    float distanceToAngle = std::abs(*player1Angle1 - car1AngleMagnet.angle);
+
+    if (std::abs(pointMagnet.intensity) > 0.0f)      LOG("[J++]  + Point Magnet                     - Intensity: %.5f, X: %3.3f, Y: %3.3f, Dist: %3.3f\n", pointMagnet.intensity, pointMagnet.x, pointMagnet.y, distanceToPoint);
+    if (std::abs(cameraDistanceMagnet) > 0.0f)       LOG("[J++]  + Camera Distance Magnet           - Intensity: %.5f, Dist: %3.3f\n",cameraDistanceMagnet, cameraDistance);
+    if (std::abs(recoveryTimerMagnet) > 0.0f)        LOG("[J++]  + Recovery Timer Magnet            - Intensity: %.5f\n",recoveryTimerMagnet);
+    if (std::abs(playerCurrentLapMagnet) > 0.0f)     LOG("[J++]  + Player Current Lap Magnet        - Intensity: %.5f\n",playerCurrentLapMagnet);
+    if (std::abs(playerLapProgressMagnet) > 0.0f)    LOG("[J++]  + Player Lap Progress Magnet       - Intensity: %.5f\n",playerLapProgressMagnet);
+    if (std::abs(playerAccelMagnet) > 0.0f)          LOG("[J++]  + Player Accel Magnet              - Intensity: %.5f\n",playerAccelMagnet);
+    if (std::abs(car1AngleMagnet.intensity) > 0.0f)  LOG("[J++]  + Angle Magnet                     - Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n", car1AngleMagnet.intensity, car1AngleMagnet.angle, distanceToAngle);
   }
 
   private:
