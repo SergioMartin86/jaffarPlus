@@ -14,7 +14,10 @@ class Rule final
 
   typedef size_t label_t;
 
-  Rule(const label_t label) : _label(label) {};
+  Rule(const size_t index, const label_t label) :
+   _index(index), 
+   _label(label)
+   {};
   ~Rule() = default;
 
   // The rule is achieved only if all conditions are met
@@ -31,6 +34,7 @@ class Rule final
   void setCheckpointTolerance(const size_t checkPointTolerance) { _checkPointTolerance = checkPointTolerance; }
   void addAction(const std::function<void()>& function) { _actions.push_back(function); }
   void addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
+  void addSatisfyRuleLabel(const label_t satisfyRuleLabel) { _satisfyRuleLabels.insert(satisfyRuleLabel); }
 
   label_t getLabel() const { return _label; }
   float getReward() const { return _reward; }
@@ -38,7 +42,9 @@ class Rule final
   bool getFailRule() const { return _isFailRule; }
   bool getCheckpointRule() const { return _isCheckpointRule; }
   size_t getCheckpointTolerance() const { return _checkPointTolerance; }
-
+  std::unordered_set<label_t> getSatisfyRuleLabels() const { return _satisfyRuleLabels; }
+  size_t getIndex() const { return _index; }
+  
   private:
 
   // Conditions are evaluated frequently, so this optimized for performance
@@ -46,6 +52,9 @@ class Rule final
   // is a template that is created at compilation time.
   std::unordered_set<std::unique_ptr<Condition>> _conditions;
   
+  // Internal index for sequential access
+  const size_t _index;
+
   // Stores an identifying label for the rule
   const label_t _label;
 
@@ -59,8 +68,7 @@ class Rule final
   size_t _checkPointTolerance = 0;
 
   // Stores rules that also satisfied if this one is
-  std::vector<size_t> _satisfiesLabels;
-  std::vector<size_t> _satisfiesIndexes;
+  std::unordered_set<label_t> _satisfyRuleLabels;
 
   // Storage for game-specific actions
   std::vector<std::function<void()>> _actions;

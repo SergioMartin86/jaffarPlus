@@ -106,7 +106,7 @@ class Game
     updateGameSpecificValues();
 
     // Then re-evaluate rules
-    // evaluateRules();
+    evaluateRules();
 
     return performedInputs;
   }
@@ -142,7 +142,7 @@ class Game
      updateGameSpecificValues();
 
      // Then re-evaluate rules
-     // evaluateRules();
+     evaluateRules();
   }
 
   // This function returns the size of the game state
@@ -187,10 +187,18 @@ class Game
    size_t maximumNameSize = 0;
    for (const auto& p : _propertyPrintSet) maximumNameSize = std::max(maximumNameSize, p->getName().size());
 
+   // Printing rule status
+   LOG("[J+]  + Rule Status: ");
+   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", _rulesStatus[i] ? 1 : 0);
+   LOG("\n");
+
    // Getting state hash 
    const auto hash = hashToString(computeHash());
 
+   // Printing state hash
    LOG("[J+]  + Hash: %s\n", hash.c_str());
+
+   // Printing game properties defined in the script file
    LOG("[J+]  + Game Properties: \n");
    for (const auto& p : _propertyPrintSet)
    {
@@ -220,6 +228,7 @@ class Game
      if (p->getDatatype() == Property::datatype_t::dt_bool)     LOG("%1u\n",             p->getValue<bool>() );
    }
 
+   // Printing game-specific stuff now
    printStateInfoImpl();
   }
 
@@ -228,46 +237,54 @@ class Game
   {
     // Reset the rules container
     _rules.clear();
+    _rulesStatus.clear();
 
     // Evaluate each rule
-    for (const auto& ruleJson : rulesJson)
+    for (size_t idx = 0; idx < rulesJson.size(); idx++)
     {
+      // Getting specific rule json object
+      const auto& ruleJs = rulesJson[idx];
+
       // Check if rule is a key/value object
-      if (ruleJson.is_object() == false) EXIT_WITH_ERROR("Passed rule is not a JSON object. Dump: \n %s", ruleJson.dump(2).c_str());
+      if (ruleJs.is_object() == false) EXIT_WITH_ERROR("Passed rule is not a JSON object. Dump: \n %s", ruleJs.dump(2).c_str());
       
+      // Getting rule label
+      auto label = JSON_GET_NUMBER(Rule::label_t, ruleJs, "Label");
+
+      // Creating new rule with the given label
+      auto rule = std::make_unique<Rule>(idx, label);
+ 
       // Parsing json into a rule class
-      auto rule = parseRule(ruleJson);
+      parseRule(*rule, ruleJs);
 
       // Adding new rule to the collection
       _rules[rule->getLabel()] = std::move(rule);
     }
 
+    // Create rule status vector
+    _rulesStatus.resize(_rules.size());
+
+    // Clearing the status vector evaluation
+    for (size_t i = 0; i < _rulesStatus.size(); i++) _rulesStatus[i] = false;
+
     // Then re-evaluate rules
-    // evaluateRules();
+    evaluateRules();
   }
  
   // Individual rule parser 
-  std::unique_ptr<Rule> parseRule(const nlohmann::json& ruleJs) 
+  void parseRule(Rule& rule, const nlohmann::json& ruleJs) 
   {
-    // Getting rule label
-    auto label = JSON_GET_NUMBER(Rule::label_t, ruleJs, "Label");
-
     // Getting rule condition array
     const auto& conditions = JSON_GET_ARRAY(ruleJs, "Conditions");
 
     // Getting rule action array
     const auto& actions = JSON_GET_ARRAY(ruleJs, "Actions");
 
-    // Creating new rule with the given label
-    auto rule = std::make_unique<Rule>(label);
- 
     // Parsing rule conditions
-    for (const auto& condition : conditions) rule->addCondition(parseRuleCondition(condition));  
+    for (const auto& condition : conditions) rule.addCondition(parseRuleCondition(condition));  
 
     // Parsing rule actions
-    for (const auto& action : actions) parseRuleAction(*rule, action);  
-
-    return rule;
+    for (const auto& action : actions) parseRuleAction(rule, action);  
   }
 
   std::unique_ptr<Condition> parseRuleCondition(const nlohmann::json& conditionJs)
@@ -279,16 +296,16 @@ class Game
     const auto opType =  Condition::getOperatorType(opName);
 
     // Parsing first operand (property name)
-    const auto& propertyName = JSON_GET_STRING(conditionJs, "Property");
+    const auto& property1Name = JSON_GET_STRING(conditionJs, "Property");
 
     // Getting property name hash, for indexing
-    const auto propertyNameHash = hashString(propertyName);
+    const auto property1NameHash = hashString(property1Name);
 
     // Making sure the requested property exists in the property map
-    if (_propertyMap.contains(propertyNameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", propertyName.c_str());
+    if (_propertyMap.contains(property1NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property1Name.c_str());
 
     // Getting property object
-    const auto property1 = _propertyMap[propertyNameHash].get();
+    const auto property1 = _propertyMap[property1NameHash].get();
 
     // Getting property data type
     auto datatype1 = property1->getDatatype();
@@ -317,11 +334,17 @@ class Game
     // If value is a string, take value as property number 2
     if (conditionJs["Value"].is_string())
     {
-          // Parsing first operand (property name)
+      // Parsing second operand (property name)
       const auto& property2Name = JSON_GET_STRING(conditionJs, "Value");
 
+      // Getting property name hash, for indexing
+      const auto property2NameHash = hashString(property2Name);
+
+      // Making sure the requested property exists in the property map
+      if (_propertyMap.contains(property2NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property2Name.c_str());
+
       // Getting property object
-      const auto property2 = _propertyMap[hashString("propertyName")].get();
+      const auto property2 = _propertyMap[property2NameHash].get();
 
       if (datatype1 == Property::datatype_t::dt_uint8)   return std::make_unique<_vCondition<uint8_t> >(opType, property1, property2, 0, 0);
       if (datatype1 == Property::datatype_t::dt_uint16)  return std::make_unique<_vCondition<uint16_t>>(opType, property1, property2, 0, 0);
@@ -384,6 +407,55 @@ class Game
     if (recognizedActionType == false) EXIT_WITH_ERROR("[ERROR] Unrecognized action '%s' in rule %lu\n", actionType.c_str(), rule.getLabel());
   }
 
+  // Evaluates the rule set on a given frame. Returns true if it is a fail.
+  void evaluateRules() 
+  {
+    for (auto& entry : _rules)
+    {
+      // Getting rule
+      auto& rule = *entry.second;
+
+      // Getting rule index
+      const auto ruleIdx = rule.getIndex(); 
+
+      // Evaluate rule only if it's not yet satisfied
+      if (_rulesStatus[ruleIdx] == false)
+      {
+        // Checking if conditions are met
+        bool isSatisfied = rule.evaluate();
+
+        // If it's achieved, update its status and run its actions
+        if (isSatisfied) satisfyRule(rule);
+      }
+    }
+  }
+
+  // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules
+  void satisfyRule(Rule& rule) 
+  {
+    // Recursively run actions for the yet unsatisfied rules that are satisfied by this one and mark them as satisfied
+    for (const auto& satisfyRuleLabel : rule.getSatisfyRuleLabels())
+    {
+      // Making sure referenced label exists
+      if (_rules.contains(satisfyRuleLabel) == false) EXIT_WITH_ERROR("[ERROR] Unrecognized rule label %lu in satisfy array\n", satisfyRuleLabel);
+
+      // Obtaining subrule to satisfy
+      auto& subRule = _rules.at(satisfyRuleLabel);
+
+      // Getting index from the subrule
+      auto subRuleIdx = subRule->getIndex();
+
+      // Only activate it if it hasn't been activated before
+      if (_rulesStatus[subRuleIdx] == false) satisfyRule(*subRule);
+    }
+
+    // Getting rule index
+    const auto ruleIdx = rule.getIndex(); 
+
+    // Setting status to satisfied
+    _rulesStatus[ruleIdx] = true;
+  }
+
   // Function to get emulator name
   static std::string getName();
 
@@ -411,6 +483,9 @@ class Game
 
   // Game script rules. Using vector to preserve their ordering
   std::map<Rule::label_t, std::unique_ptr<Rule>> _rules;
+
+  // Storage for status vector indicating whether the rules have been satisfied
+  std::vector<bool> _rulesStatus;
 
   // Property hash set to quickly distinguish states from each other 
   std::unordered_set<const Property*> _propertyHashSet;

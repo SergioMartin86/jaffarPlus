@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
     if (doPreAdvance == true) g->advanceState(input);
     if (doDeserialize == true) g->deserializeState(currentState);
     g->advanceState(input);
+    g->printStateInfo();
     if (doSerialize == true) g->serializeState(currentState);
   }
   auto tf = std::chrono::high_resolution_clock::now();
