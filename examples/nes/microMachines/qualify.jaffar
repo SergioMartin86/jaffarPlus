@@ -17,7 +17,6 @@
 
   "Properties":
   [
-    { "Name": "Player 1 Previous Laps Remaining", "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "GSS",      "Offset": "0x0000", "Hashable": true,   "Printable": true  }, 
     { "Name": "Current Race",                     "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x0308", "Hashable": true,   "Printable": true  }, 
     { "Name": "Frame Type",                       "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x007C", "Hashable": true,   "Printable": true  }, 
     { "Name": "Lag Frame",                        "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x01F8", "Hashable": true,   "Printable": true  }, 
@@ -42,6 +41,7 @@
     { "Name": "Player 1 Angle 2",                 "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x040A", "Hashable": true,   "Printable": true  }, 
     { "Name": "Player 1 Angle 3",                 "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x04CA", "Hashable": false,  "Printable": false }, 
     { "Name": "Player 1 Current Laps Remaining",  "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x04B6", "Hashable": true,   "Printable": true  }, 
+    { "Name": "Player 1 Previous Laps Remaining", "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "GSS",      "Offset": "0x0000", "Hashable": true,   "Printable": true  }, 
     { "Name": "Player 1 Checkpoint",              "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x04CE", "Hashable": true,   "Printable": true  }, 
     { "Name": "Player 1 Input 1",                 "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x009B", "Hashable": false,  "Printable": false }, 
     { "Name": "Player 1 Input 2",                 "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x00CF", "Hashable": false,  "Printable": false }, 

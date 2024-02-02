@@ -5,7 +5,7 @@
 #include <common/json.hpp>
 #include <common/utils.hpp>
 #include <common/logger.hpp>
-#include <emulators/emulator.hpp>
+#include <emulator.hpp>
 
 namespace jaffarPlus
 {

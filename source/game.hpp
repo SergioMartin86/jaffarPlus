@@ -6,8 +6,8 @@
 #include <memory>
 #include <common/hash.hpp>
 #include <common/json.hpp>
-#include <emulators/emulator.hpp>
-#include <games/rule.hpp>
+#include "emulator.hpp"
+#include "rule.hpp"
 
 namespace jaffarPlus
 {

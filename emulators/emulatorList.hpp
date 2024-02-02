@@ -1,5 +1,5 @@
-#include <emulators/quickerNES/quickerNES.hpp>
-#include <emulators/emulator.hpp>
+#include <emulator.hpp>
+#include "quickerNES/quickerNES.hpp"
 
 namespace jaffarPlus
 {
