@@ -23,8 +23,7 @@ class Game final : public jaffarPlus::Game
 
   Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : jaffarPlus::Game(emulator, config)
   {
-    // Timer tolerance
-    _timerTolerance = JSON_GET_NUMBER(uint8_t, config, "Timer Tolerance");
+    // Perform parsing of the configuration here, if anything special settings are required.
   }
 
   private:
@@ -45,40 +44,23 @@ class Game final : public jaffarPlus::Game
     _player1AccelTimer2                = (uint8_t*)  _propertyMap[hashString("Player 1 Accel Timer 2")]->getPointer();
     _player1Angle1                     = (uint8_t*)  _propertyMap[hashString("Player 1 Angle 1")]->getPointer();
     _player1LapsRemaining              = (uint8_t*)  _propertyMap[hashString("Player 1 Current Laps Remaining")]->getPointer();
+    _player1LapsRemainingPrev          = (uint8_t*)  _propertyMap[hashString("Player 1 Previous Laps Remaining")]->getPointer();
     _player1Checkpoint                 = (uint8_t*)  _propertyMap[hashString("Player 1 Checkpoint")]->getPointer();
     _player1RecoveryTimer              = (uint8_t*)  _propertyMap[hashString("Player 1 Recovery Timer")]->getPointer();
 
-    // Game-specific values
-    size_t pos = 0x0000;
-
-    _currentStep                        = (uint32_t*)  &_gameSpecificStorage[pos]; pos += sizeof(uint32_t);
-    *_currentStep = 0;
-
-    _player1LapsRemainingPrev          = (uint8_t*)   &_gameSpecificStorage[pos]; pos += sizeof(uint8_t);
+    // Setting initial value for previous laps remaining
     *_player1LapsRemainingPrev = *_player1LapsRemaining;
-
-    _playerLastInputFrame              = (uint16_t*) &_gameSpecificStorage[pos]; pos += sizeof(uint16_t);
-    *_playerLastInputFrame = 0;
   }
 
-  size_t getGameSpecificStorageSize() const override { return 8; }
-
-  std::vector<std::string> advanceStateImpl(const std::string& input) override
+  void advanceStateImpl(const std::string& input) override
   {
     *_player1LapsRemainingPrev = *_player1LapsRemaining;
-    *_currentStep = *_currentStep + 1;
 
     _emulator->advanceState(input);
-
-    if (input != "|..|........|") *_playerLastInputFrame = *_currentStep;
-
-    return {input};
   }
 
   void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
-    if (_timerTolerance > 0) hashEngine.Update(*_currentStep % (_timerTolerance+1));
-
     hashEngine.Update(*_player1TankFireTimer > 0);
   }
 
@@ -113,9 +95,6 @@ class Game final : public jaffarPlus::Game
   {
     // Getting rewards from rules
     float reward = 0.0;
-
-    // We calculate a different reward if this is a winning frame
-    if (_stateType == stateType_t::win) return -1.0f * (float)*_playerLastInputFrame;
 
     // Evaluating player health  magnet
     reward += playerCurrentLapMagnet * (float)(*_player1LapsRemaining);
@@ -231,6 +210,16 @@ class Game final : public jaffarPlus::Game
     float angle = 0.0;  // What is the angle we look for
   };
 
+  // Magnets (used to determine state reward and have Jaffar favor a direction or action)
+  float playerCurrentLapMagnet = 0.0;
+  float playerLapProgressMagnet = 0.0;
+  float playerAccelMagnet = 0.0;
+  float cameraDistanceMagnet = 0.0;
+  float recoveryTimerMagnet = 0.0;
+  angleMagnet_t car1AngleMagnet;
+  pointMagnet_t pointMagnet;
+
+  // Property pointers for quick access
   uint8_t*  _cameraPosX1;
   uint8_t*  _cameraPosX2;
   uint8_t*  _cameraPosY1;
@@ -250,7 +239,6 @@ class Game final : public jaffarPlus::Game
 
   uint8_t*  _player1RecoveryTimer;
   uint8_t*  _player1TankFireTimer;
-  uint16_t*  _playerLastInputFrame;
 
   // Calculated values
   uint16_t _player1PosX;
@@ -258,16 +246,6 @@ class Game final : public jaffarPlus::Game
   uint16_t _cameraPosX;
   uint16_t _cameraPosY;
   uint8_t  _timerTolerance;
-  uint32_t* _currentStep;
-
-  // Magnets (used to determine state reward and have Jaffar favor a direction or action)
-  float playerCurrentLapMagnet = 0.0;
-  float playerLapProgressMagnet = 0.0;
-  float playerAccelMagnet = 0.0;
-  float cameraDistanceMagnet = 0.0;
-  float recoveryTimerMagnet = 0.0;
-  angleMagnet_t car1AngleMagnet;
-  pointMagnet_t pointMagnet;
 
   // Game-Specific values
   float _player1DistanceToPointX;

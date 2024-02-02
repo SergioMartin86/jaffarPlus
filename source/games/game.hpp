@@ -27,63 +27,15 @@ class Game
   // Base constructor
   Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : _emulator(std::move(emulator))
   {
+    // Getting Game-specific storage size
+    _gameSpecificStorageSize = JSON_GET_NUMBER(size_t, config, "Game-Specific Storage (GSS) Size");
+
+    // Allocating Game-specific storage
+    _gameSpecificStorage = std::make_unique<uint8_t>(_gameSpecificStorageSize);
+
     // Parsing game properties
     const auto& propertiesJs = JSON_GET_ARRAY(config, "Properties");
-    for (const auto& propertyJs : propertiesJs)
-    {
-      // Getting property settings
-      const auto name = JSON_GET_STRING(propertyJs, "Name");
-      const auto dataTypeString = JSON_GET_STRING(propertyJs, "Data Type");
-      const auto endiannessString = JSON_GET_STRING(propertyJs, "Endianness");
-      const auto memoryBlock = JSON_GET_STRING(propertyJs, "Memory Block");
-      const auto offsetString = JSON_GET_STRING(propertyJs, "Offset");
-      const auto hashable = JSON_GET_BOOLEAN(propertyJs, "Hashable");
-      const auto printable = JSON_GET_BOOLEAN(propertyJs, "Printable");
-
-      // Parsing datatype
-      Property::datatype_t dataType;
-      bool datatypeRecognized = false;
-      if (dataTypeString == "UINT8")   { dataType = Property::datatype_t::dt_uint8;    datatypeRecognized = true; }
-      if (dataTypeString == "UINT16")  { dataType = Property::datatype_t::dt_uint16;   datatypeRecognized = true; }
-      if (dataTypeString == "UINT32")  { dataType = Property::datatype_t::dt_uint32;   datatypeRecognized = true; }
-      if (dataTypeString == "UINT64")  { dataType = Property::datatype_t::dt_uint64;   datatypeRecognized = true; }
-      if (dataTypeString == "INT8")    { dataType = Property::datatype_t::dt_int8;     datatypeRecognized = true; }
-      if (dataTypeString == "INT16")   { dataType = Property::datatype_t::dt_int16;    datatypeRecognized = true; }
-      if (dataTypeString == "INT32")   { dataType = Property::datatype_t::dt_int32;    datatypeRecognized = true; }
-      if (dataTypeString == "INT64")   { dataType = Property::datatype_t::dt_int64;    datatypeRecognized = true; }
-      if (dataTypeString == "BOOL")    { dataType = Property::datatype_t::dt_bool;     datatypeRecognized = true; }
-      if (dataTypeString == "FLOAT32") { dataType = Property::datatype_t::dt_float32;  datatypeRecognized = true; }
-      if (dataTypeString == "FLOAT64") { dataType = Property::datatype_t::dt_float64;  datatypeRecognized = true; }
-      if (datatypeRecognized == false) EXIT_WITH_ERROR("Data type '%s' not recognized.", dataTypeString.c_str());
-
-      // Parsing endianness
-      Property::endianness_t endianness;
-      bool endiannessRecognized = false;
-      if (endiannessString == "Little") { endianness = Property::endianness_t::little; endiannessRecognized = true; }
-      if (endiannessString == "Big") { endianness = Property::endianness_t::big; endiannessRecognized = true; }
-      if (endiannessRecognized == false) EXIT_WITH_ERROR("Endianness '%s' not recognized.", endiannessString.c_str());
-
-      // Getting offset
-      const auto offset = std::strtoull(offsetString.c_str(), nullptr, 0);
-
-      // Calculating property pointer
-      const auto pointer = _emulator->getProperty(memoryBlock).pointer + offset;
-
-      // Creating property
-      auto property = std::make_unique<Property>(name, pointer, dataType, endianness);
-
-      // If this is a hashable property, add it to the hash set
-      if (hashable) _propertyHashSet.insert(property.get());
-
-      // If this is a printable property, add it to the set
-      if (printable) _propertyPrintSet.push_back(property.get());
-
-      // Getting property name hash as key 
-      const auto propertyNameHash = property->getNameHash();
-
-      // Adding property to the map for later reference
-      _propertyMap[propertyNameHash] = std::move(property);
-    } 
+    for (const auto& propertyJs : propertiesJs) parseGameProperty(propertyJs);
   };
 
   Game() = delete;
@@ -92,10 +44,6 @@ class Game
   // Function to initialize game instance
   void initialize()
   {
-    // Parsing and allocating game-specific storage
-    _gameSpecificStorageSize = getGameSpecificStorageSize();
-    _gameSpecificStorage = (uint8_t*)calloc(_gameSpecificStorageSize, sizeof(uint8_t));
-
     // Initializing the particular game selected
     initializeImpl();
 
@@ -117,18 +65,19 @@ class Game
 
     // Running game-specific rule actions
     runGameSpecificRuleActions();
-    
+
     // Updating game reward
     updateReward();
   }
   
   // Function to advance state. Returns a vector with the performed inputs (including skip frames)
-  virtual std::vector<std::string> advanceState(const std::string& input)
+  virtual void advanceState(const std::string& input)
   {
     // Performing the requested input
-    const auto performedInputs = advanceStateImpl(input);
+    advanceStateImpl(input);
 
-    return performedInputs;
+    // Advancing current step 
+    _currentStep++;
   }
 
   // Serialization routine -- simply a call to the underlying emulator
@@ -137,7 +86,7 @@ class Game
      size_t pos = 0;
 
      // Serializing game-specific data
-     memcpy(&outputStateData[pos], _gameSpecificStorage, _gameSpecificStorageSize);
+     memcpy(&outputStateData[pos], (const void*)_gameSpecificStorage.get(), _gameSpecificStorageSize);
      pos += _gameSpecificStorageSize;
 
      // Serializing internal emulator state
@@ -151,7 +100,7 @@ class Game
      size_t pos = 0;
 
      // Deserializing game-specific data
-     memcpy(_gameSpecificStorage, &inputStateData[pos], _gameSpecificStorageSize);
+     memcpy((void*)_gameSpecificStorage.get(), &inputStateData[pos], _gameSpecificStorageSize);
      pos += _gameSpecificStorageSize;
 
      // Deserializing state data into the emulator
@@ -253,7 +202,54 @@ class Game
    // Printing game-specific stuff now
    printStateInfoImpl();
   }
+  
+  // This function parses game properties as described in the Jaffar script
+  void parseGameProperty(const nlohmann::json& propertyJs)
+  {
+    // Checking correct format
+    if (propertyJs.is_object() == false) EXIT_WITH_ERROR("Property has wrong format (must be an object). Dump: \n %s", propertyJs.dump(2).c_str());
 
+    // Getting property settings
+    const auto name = JSON_GET_STRING(propertyJs, "Name");
+    const auto dataTypeString = JSON_GET_STRING(propertyJs, "Data Type");
+    const auto endiannessString = JSON_GET_STRING(propertyJs, "Endianness");
+    const auto memoryBlock = JSON_GET_STRING(propertyJs, "Memory Block");
+    const auto offsetString = JSON_GET_STRING(propertyJs, "Offset");
+    const auto hashable = JSON_GET_BOOLEAN(propertyJs, "Hashable");
+    const auto printable = JSON_GET_BOOLEAN(propertyJs, "Printable");
+
+    // Parsing datatype
+    Property::datatype_t dataType = Property::parseDatatypeName(dataTypeString);
+
+    // Parsing endianness
+    Property::endianness_t endianness = Property::parseEndiannessName(endiannessString);
+
+    // Getting offset
+    const auto offset = std::strtoull(offsetString.c_str(), nullptr, 0);
+
+    // Getting storage pointer for the new property.
+    // If its game specific storage, we get it directly from there.
+    // Otherwise, we look for it in the emulator
+    const auto pointer = memoryBlock == "GSS" ?
+     _gameSpecificStorage.get() :
+     _emulator->getProperty(memoryBlock).pointer + offset;
+
+    // Creating property
+    auto property = std::make_unique<Property>(name, pointer, dataType, endianness);
+
+    // If this is a hashable property, add it to the hash set
+    if (hashable) _propertyHashSet.insert(property.get());
+
+    // If this is a printable property, add it to the set
+    if (printable) _propertyPrintSet.push_back(property.get());
+
+    // Getting property name hash as key 
+    const auto propertyNameHash = property->getNameHash();
+
+    // Adding property to the map for later reference
+    _propertyMap[propertyNameHash] = std::move(property);
+  }
+ 
   // Parsing game rules
   void parseRules(const nlohmann::json& rulesJson)
   {
@@ -331,6 +327,7 @@ class Game
 
     // Parsing second operand (number)
     if (conditionJs.contains("Value") == false) EXIT_WITH_ERROR("[ERROR] Rule condition missing 'Value' key.\n");
+    if (conditionJs["Value"].is_number() == false && conditionJs["Value"].is_string() == false) EXIT_WITH_ERROR("[ERROR] Wrong format for 'Value' entry in rule condition. It must be a string or number");
 
     // If value is a number, take it as immediate
     if (conditionJs["Value"].is_number())
@@ -571,13 +568,21 @@ class Game
   virtual void updateGameSpecificValues() = 0;
   virtual void computeAdditionalHashing(MetroHash128& hashEngine) const = 0;
   virtual void initializeImpl() = 0;
-  virtual size_t getGameSpecificStorageSize() const = 0;
   virtual void printStateInfoImpl() const = 0;
-  virtual std::vector<std::string> advanceStateImpl(const std::string& input) = 0;
+  virtual void advanceStateImpl(const std::string& input) = 0;
   virtual bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) = 0;
 
   // Current game state type
   stateType_t _stateType;
+
+  // Game-specific storage size
+  size_t _gameSpecificStorageSize;
+
+  // Game-specific storage 
+  std::unique_ptr<uint8_t> _gameSpecificStorage;
+
+  // Storing current step
+  size_t* _currentStep = 0;
 
   // Current game state reward
   float _reward = 0.0;
@@ -587,10 +592,6 @@ class Game
 
   // Underlying emulator instance
   const std::unique_ptr<Emulator> _emulator;
-
-  // Game-Specific storage size and pointer
-  size_t _gameSpecificStorageSize;
-  uint8_t* _gameSpecificStorage;
 
   // Game script rules. Using vector to preserve their ordering
   std::map<Rule::label_t, std::unique_ptr<Rule>> _rules;
