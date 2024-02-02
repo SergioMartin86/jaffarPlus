@@ -83,8 +83,11 @@ int main(int argc, char *argv[])
   // Parsing script rules
   g->parseRules(JSON_GET_ARRAY(config, "Rules"));
 
+  // Creating runner from game instance
+  jaffarPlus::Runner r(g, JSON_GET_OBJECT(config, "Runner Configuration"));
+
   // Getting game state size
-  const auto stateSize = g->getStateSize();
+  const auto stateSize = r.getStateSize();
 
   // Getting input sequence
   const auto solutionSequence = jaffarPlus::split(solutionFileString, ' ');
@@ -103,7 +106,7 @@ int main(int argc, char *argv[])
 
   // Serializing initial state
   auto currentState = (uint8_t *)malloc(stateSize);
-  g->serializeState(currentState);
+  r.serializeState(currentState);
 
   // Check whether to perform each action
   const bool doPreAdvance = cycleType == "Full";
@@ -114,12 +117,10 @@ int main(int argc, char *argv[])
   auto t0 = std::chrono::high_resolution_clock::now();
   for (const auto& input : solutionSequence)
   {
-    if (doPreAdvance == true) g->advanceState(input);
-    if (doDeserialize == true) g->deserializeState(currentState);
-    g->advanceState(input);
-    g->updateGameState();
-    g->printStateInfo();
-    if (doSerialize == true) g->serializeState(currentState);
+    if (doPreAdvance == true) r.advanceState(input);
+    if (doDeserialize == true) r.deserializeState(currentState);
+    r.advanceState(input);
+    if (doSerialize == true) r.serializeState(currentState);
   }
   auto tf = std::chrono::high_resolution_clock::now();
 
@@ -131,13 +132,16 @@ int main(int argc, char *argv[])
   LOG("[J+] Elapsed time:            %3.3fs\n", (double)dt * 1.0e-9);
   LOG("[J+] Performance:             %.3f inputs / s\n", (double)sequenceLength / elapsedTimeSeconds);
 
-  // Printing emulator and game information
-  LOG("[J+] Emulator Debug Information:\n");
-  g->getEmulator()->printDebugInformation();
-
   // Updating and printing game internal information
-  g->updateGameState();
+  r.getGame()->updateGameState();
 
-  LOG("[J+] Game State Information:\n");
-  g->printStateInfo();
+  // Printing Information
+  LOG("[J+] Runner Information:\n");
+  r.printInfo();
+
+  LOG("[J+] Emulator Information:\n");
+  r.getGame()->getEmulator()->printInfo();
+
+  LOG("[J+] Game Information:\n");
+  r.getGame()->printInfo();
 }

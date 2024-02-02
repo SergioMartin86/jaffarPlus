@@ -72,7 +72,7 @@ class QuickerNES final : public Emulator
     _quickerNES.deserializeState(state);
   };
 
-  inline void printDebugInformation() const override
+  inline void printInfo() const override
   {
      printMemoryBlockHash("NES LRAM");
      printMemoryBlockHash("NES SRAM");
