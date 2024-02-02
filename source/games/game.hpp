@@ -16,6 +16,14 @@ class Game
 {
  public:
 
+  enum stateType_t
+  {
+    normal = 0,
+    win = 1,
+    fail = 2,
+    checkpoint = 3
+  };
+
   // Base constructor
   Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : _emulator(std::move(emulator))
   {
@@ -94,19 +102,31 @@ class Game
     // Updating game specific values
     updateGameSpecificValues();
   }
-
-
-  // Function to advance state. Returns a vector with the performed inputs (including skip frames)
-  virtual std::vector<std::string> advanceState(const std::string& input)
+ 
+  // Function to update game state internal information
+  void updateGameState()
   {
-    // Performing the requested input
-    const auto performedInputs = advanceStateImpl(input);
-
     // Updating derived values
     updateGameSpecificValues();
 
     // Then re-evaluate rules
     evaluateRules();
+
+    // Determining new game state type
+    updateGameStateType();
+
+    // Running game-specific rule actions
+    runGameSpecificRuleActions();
+    
+    // Updating game reward
+    updateReward();
+  }
+  
+  // Function to advance state. Returns a vector with the performed inputs (including skip frames)
+  virtual std::vector<std::string> advanceState(const std::string& input)
+  {
+    // Performing the requested input
+    const auto performedInputs = advanceStateImpl(input);
 
     return performedInputs;
   }
@@ -137,12 +157,6 @@ class Game
      // Deserializing state data into the emulator
      _emulator->deserializeState(&inputStateData[pos]); 
      pos += _emulator->getStateSize();
-
-     // Updating the game's derived values
-     updateGameSpecificValues();
-
-     // Then re-evaluate rules
-     evaluateRules();
   }
 
   // This function returns the size of the game state
@@ -176,9 +190,6 @@ class Game
     return result;
   }
 
-  // This function updates derivate values (those who require calculation from raw values) after a state is re-loaded
-  virtual void updateGameSpecificValues() = 0;
-
   // Function to print
   void printStateInfo() const
   {
@@ -186,6 +197,17 @@ class Game
    const size_t separatorSize = 4;
    size_t maximumNameSize = 0;
    for (const auto& p : _propertyPrintSet) maximumNameSize = std::max(maximumNameSize, p->getName().size());
+
+   // Printing game state
+   LOG("[J+]  + Game State Type: ");
+   if (_stateType == stateType_t::normal) LOG("Normal");
+   if (_stateType == stateType_t::win) LOG("Win");
+   if (_stateType == stateType_t::fail) LOG("Fail");
+   if (_stateType == stateType_t::checkpoint) LOG("Checkpoint");
+   LOG("\n");
+
+   // Printing game state
+   LOG("[J+]  + Game State Reward: %f\n", _reward);
 
    // Printing rule status
    LOG("[J+]  + Rule Status: ");
@@ -266,9 +288,6 @@ class Game
 
     // Clearing the status vector evaluation
     for (size_t i = 0; i < _rulesStatus.size(); i++) _rulesStatus[i] = false;
-
-    // Then re-evaluate rules
-    evaluateRules();
   }
  
   // Individual rule parser 
@@ -410,6 +429,7 @@ class Game
   // Evaluates the rule set on a given frame. Returns true if it is a fail.
   void evaluateRules() 
   {
+    // First, checking if the rules have been satisfied
     for (auto& entry : _rules)
     {
       // Getting rule
@@ -428,6 +448,85 @@ class Game
         if (isSatisfied) satisfyRule(rule);
       }
     }
+  }
+
+  void runGameSpecificRuleActions()
+  {
+     // First, checking if the rules have been satisfied
+    for (auto& entry : _rules)
+    {
+      // Getting rule
+      auto& rule = *entry.second;
+
+      // Getting rule index
+      const auto ruleIdx = rule.getIndex(); 
+
+      // Run ations only if rule is satisfied
+      if (_rulesStatus[ruleIdx] == true) for (const auto& action : rule.getActions()) action();
+    }  
+  }
+
+
+  void updateGameStateType()
+  {
+    // Clearing game state type before we evaluate satisfied rules
+    _stateType = stateType_t::normal;
+
+    // Second, we run the specified actions for the satisfied rules in label order
+    for (auto& entry : _rules)
+    {
+      // Getting rule
+      auto& rule = *entry.second;
+
+      // Getting rule index
+      const auto ruleIdx = rule.getIndex(); 
+
+      // Run actions
+      if (_rulesStatus[ruleIdx] == true)
+      {
+       // Modify game state, depending on rule type
+
+       // Evaluate checkpoint rule and store tolerance if specified
+       if (rule.isCheckpointRule())
+       {
+        _stateType = stateType_t::checkpoint;
+        _checkpointTolerance = rule.getCheckpointTolerance();
+       } 
+
+       // Winning in the same rule superseeds checkpoint, and failing superseed everything
+       if (rule.isWinRule()) _stateType = stateType_t::win;
+       if (rule.isFailRule()) _stateType = stateType_t::fail;
+      }
+    }
+  }
+
+  void updateReward()
+  {
+    // First, we resetting reward to zero
+    _reward = 0.0;
+
+    // Second, we get the reward from every satisfied rule
+    for (auto& entry : _rules)
+    {
+      // Getting rule
+      auto& rule = *entry.second;
+
+      // Getting rule index
+      const auto ruleIdx = rule.getIndex(); 
+
+      // Run actions
+      if (_rulesStatus[ruleIdx] == true)
+      {
+       // Getting reward from satisfied rule
+       const auto ruleReward = rule.getReward();
+
+       // Adding it to the state reward
+       _reward += ruleReward;
+      }
+    }
+
+    // Adding any game-specific rewards
+    _reward += calculateGameSpecificReward();
   }
 
   // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules
@@ -467,12 +566,24 @@ class Game
 
   protected:
 
-  virtual void computeAdditionalHashing(MetroHash128& hashEngine) const { };
+  // This function updates derivate values (those who require calculation from raw values) after a state is re-loaded
+  virtual float calculateGameSpecificReward() const = 0;
+  virtual void updateGameSpecificValues() = 0;
+  virtual void computeAdditionalHashing(MetroHash128& hashEngine) const = 0;
   virtual void initializeImpl() = 0;
   virtual size_t getGameSpecificStorageSize() const = 0;
   virtual void printStateInfoImpl() const = 0;
   virtual std::vector<std::string> advanceStateImpl(const std::string& input) = 0;
-  virtual bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) { return false; };
+  virtual bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) = 0;
+
+  // Current game state type
+  stateType_t _stateType;
+
+  // Current game state reward
+  float _reward = 0.0;
+
+  // For game states that represent checkpoints, store their tolerance here
+  size_t _checkpointTolerance = 0;
 
   // Underlying emulator instance
   const std::unique_ptr<Emulator> _emulator;

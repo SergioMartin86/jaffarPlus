@@ -38,12 +38,13 @@ class Rule final
 
   label_t getLabel() const { return _label; }
   float getReward() const { return _reward; }
-  bool getWinRule() const { return _isWinRule; }
-  bool getFailRule() const { return _isFailRule; }
-  bool getCheckpointRule() const { return _isCheckpointRule; }
+  bool isWinRule() const { return _isWinRule; }
+  bool isFailRule() const { return _isFailRule; }
+  bool isCheckpointRule() const { return _isCheckpointRule; }
   size_t getCheckpointTolerance() const { return _checkPointTolerance; }
   std::unordered_set<label_t> getSatisfyRuleLabels() const { return _satisfyRuleLabels; }
   size_t getIndex() const { return _index; }
+  const std::vector<std::function<void()>>& getActions() const { return _actions; }
   
   private:
 
