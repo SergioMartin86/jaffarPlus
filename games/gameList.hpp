@@ -1,6 +1,6 @@
-#include <emulators/emulator.hpp>
-#include <games/game.hpp>
-#include <games/nes/microMachines/game.hpp>
+#include <emulator.hpp>
+#include <game.hpp>
+#include "nes/microMachines.hpp"
 
 namespace jaffarPlus
 {

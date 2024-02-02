@@ -1,7 +1,9 @@
 #include <chrono>
 #include <argparse/argparse.hpp>
-#include "emulators/emulator.hpp"
-#include "games/game.hpp"
+#include "game.hpp"
+#include "emulator.hpp"
+#include "../emulators/emulatorList.hpp"
+#include "../games/gameList.hpp"
 #include "common/logger.hpp"
 #include "common/json.hpp"
 

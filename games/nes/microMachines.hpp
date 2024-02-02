@@ -1,7 +1,7 @@
 #pragma once
 
 #include <common/json.hpp>
-#include "../../game.hpp"
+#include <game.hpp>
 
 namespace jaffarPlus
 {
@@ -12,10 +12,7 @@ namespace games
 namespace NES
 {
 
-namespace microMachines
-{
-
-class Game final : public jaffarPlus::Game
+class MicroMachines final : public jaffarPlus::Game
 {
   public:
 
@@ -256,8 +253,6 @@ class Game final : public jaffarPlus::Game
   float _player1DistanceToCamera;
   float _player1DistanceToMagnetAngle;
 };
-
-} // namespace microMachines
 
 } // namespace NES
 
