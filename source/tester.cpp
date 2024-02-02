@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
     if (doPreAdvance == true) g->advanceState(input);
     if (doDeserialize == true) g->deserializeState(currentState);
     g->advanceState(input);
+    g->updateGameState();
     g->printStateInfo();
     if (doSerialize == true) g->serializeState(currentState);
   }
@@ -130,6 +131,9 @@ int main(int argc, char *argv[])
   // Printing emulator and game information
   LOG("[J+] Emulator Debug Information:\n");
   g->getEmulator()->printDebugInformation();
+
+  // Updating and printing game internal information
+  g->updateGameState();
 
   LOG("[J+] Game State Information:\n");
   g->printStateInfo();

@@ -17,32 +17,17 @@ namespace microMachines
 
 class Game final : public jaffarPlus::Game
 {
- public:
-
-  // Datatype to describe a point magnet
-  struct pointMagnet_t
-  {
-    float intensity = 0.0; // How strong the magnet is
-    float x = 0.0;  // What is the x point of attraction
-    float y = 0.0;  // What is the y point of attraction
-  };
-
-  // Datatype to describe an angle magnet
-  struct angleMagnet_t
-  {
-    float intensity = 0.0; // How strong the magnet is
-    float angle = 0.0;  // What is the angle we look for
-  };
+  public:
 
   static inline std::string getName() { return "NES / Micro Machines"; } 
-
-  size_t getGameSpecificStorageSize() const override { return sizeof(uint32_t); }
 
   Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : jaffarPlus::Game(emulator, config)
   {
     // Timer tolerance
     timerTolerance = JSON_GET_NUMBER(uint8_t, config, "Timer Tolerance");
   }
+
+  private:
 
   void initializeImpl() override
   {
@@ -105,6 +90,8 @@ class Game final : public jaffarPlus::Game
     *currentStep = 0;
   }
 
+  size_t getGameSpecificStorageSize() const override { return sizeof(uint32_t); }
+
   std::vector<std::string> advanceStateImpl(const std::string& input) override
   {
     *player1LapsRemainingPrev = *player1LapsRemaining;
@@ -131,31 +118,69 @@ class Game final : public jaffarPlus::Game
 
     cameraPosX = (uint16_t)*cameraPosX1 * 256 + (uint16_t)*cameraPosX2;
     cameraPosY = (uint16_t)*cameraPosY1 * 256 + (uint16_t)*cameraPosY2;
+
+    // Re-calclating stats
+    _player1DistanceToPointY  = std::abs(pointMagnet.x - player1PosX);
+    _player1DistanceToPointY  = std::abs(pointMagnet.y - player1PosY);
+    _player1DistanceToPoint   = sqrtf(_player1DistanceToPointX*_player1DistanceToPointX + _player1DistanceToPointY*_player1DistanceToPointY);
+
+    _player1DistanceToCameraX = std::abs(cameraPosX - player1PosX);
+    _player1DistanceToCameraY = std::abs(cameraPosY - player1PosY);
+    _player1DistanceToCamera  = sqrtf(_player1DistanceToCameraX*_player1DistanceToCameraX + _player1DistanceToCameraY*_player1DistanceToCameraY);
+
+    // Resetting magnets ahead of rule re-evaluation
+    playerCurrentLapMagnet = 0.0;
+    playerLapProgressMagnet = 0.0;
+    playerAccelMagnet = 0.0;
+    cameraDistanceMagnet = 0.0;
+    recoveryTimerMagnet = 0.0;
+    car1AngleMagnet.intensity = 0.0;
+    pointMagnet.intensity = 0.0;
+  }
+
+  float calculateGameSpecificReward() const
+  {
+    // Getting rewards from rules
+    float reward = 0.0;
+
+    // We calculate a different reward if this is a winning frame
+    if (_stateType == stateType_t::win) return -1.0f * (float)*playerLastInputFrame;
+
+    // Evaluating player health  magnet
+    reward += playerCurrentLapMagnet * (float)(*player1LapsRemaining);
+
+    // Evaluating player health  magnet
+    reward += playerLapProgressMagnet * (float)(*player1Checkpoint);
+
+    // Evaluating player health  magnet
+    reward += playerAccelMagnet * ( std::abs((float)*player1Accel) - 0.1*(float)*player1AccelTimer2);
+
+    // Distance to point magnet
+    reward += pointMagnet.intensity * -_player1DistanceToPoint;
+
+    // Distance to camera
+    reward += cameraDistanceMagnet * -_player1DistanceToCamera;
+
+    // Evaluating player health  magnet
+    reward += recoveryTimerMagnet * (float)(*player1RecoveryTimer);
+
+    // Calculating angle magnet
+    reward += (255.0 - _player1DistanceToMagnetAngle) * car1AngleMagnet.intensity;
+
+    // Returning reward
+    return reward;
   }
 
   void printStateInfoImpl() const override
   {
-    // Printing magnets status
-    float distX = std::abs(pointMagnet.x - player1PosX);
-    float distY = std::abs(pointMagnet.y - player1PosY);
-    float distanceToPoint = sqrt(distX*distX + distY*distY);
-
-    distX = std::abs(cameraPosX - player1PosX);
-    distY = std::abs(cameraPosY - player1PosY);
-    float cameraDistance = sqrt(distX*distX + distY*distY);
-
-    float distanceToAngle = std::abs(*player1Angle1 - car1AngleMagnet.angle);
-
-    if (std::abs(pointMagnet.intensity) > 0.0f)      LOG("[J++]  + Point Magnet                     - Intensity: %.5f, X: %3.3f, Y: %3.3f, Dist: %3.3f\n", pointMagnet.intensity, pointMagnet.x, pointMagnet.y, distanceToPoint);
-    if (std::abs(cameraDistanceMagnet) > 0.0f)       LOG("[J++]  + Camera Distance Magnet           - Intensity: %.5f, Dist: %3.3f\n",cameraDistanceMagnet, cameraDistance);
-    if (std::abs(recoveryTimerMagnet) > 0.0f)        LOG("[J++]  + Recovery Timer Magnet            - Intensity: %.5f\n",recoveryTimerMagnet);
-    if (std::abs(playerCurrentLapMagnet) > 0.0f)     LOG("[J++]  + Player Current Lap Magnet        - Intensity: %.5f\n",playerCurrentLapMagnet);
-    if (std::abs(playerLapProgressMagnet) > 0.0f)    LOG("[J++]  + Player Lap Progress Magnet       - Intensity: %.5f\n",playerLapProgressMagnet);
-    if (std::abs(playerAccelMagnet) > 0.0f)          LOG("[J++]  + Player Accel Magnet              - Intensity: %.5f\n",playerAccelMagnet);
-    if (std::abs(car1AngleMagnet.intensity) > 0.0f)  LOG("[J++]  + Angle Magnet                     - Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n", car1AngleMagnet.intensity, car1AngleMagnet.angle, distanceToAngle);
-  }
-
-  private:
+    if (std::abs(pointMagnet.intensity) > 0.0f)      LOG("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Dist: %3.3f\n", pointMagnet.intensity, pointMagnet.x, pointMagnet.y, _player1DistanceToPoint);
+    if (std::abs(cameraDistanceMagnet) > 0.0f)       LOG("[J+]  + Camera Distance Magnet                   Intensity: %.5f, Dist: %3.3f\n", cameraDistanceMagnet, _player1DistanceToCamera);
+    if (std::abs(recoveryTimerMagnet) > 0.0f)        LOG("[J+]  + Recovery Timer Magnet                    Intensity: %.5f\n", recoveryTimerMagnet);
+    if (std::abs(playerCurrentLapMagnet) > 0.0f)     LOG("[J+]  + Player Current Lap Magnet                Intensity: %.5f\n", playerCurrentLapMagnet);
+    if (std::abs(playerLapProgressMagnet) > 0.0f)    LOG("[J+]  + Player Lap Progress Magnet               Intensity: %.5f\n", playerLapProgressMagnet);
+    if (std::abs(playerAccelMagnet) > 0.0f)          LOG("[J+]  + Player Accel Magnet                      Intensity: %.5f\n", playerAccelMagnet);
+    if (std::abs(car1AngleMagnet.intensity) > 0.0f)  LOG("[J+]  + Angle Magnet                             Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n", car1AngleMagnet.intensity, car1AngleMagnet.angle, _player1DistanceToMagnetAngle);
+  } 
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
@@ -209,12 +234,31 @@ class Game final : public jaffarPlus::Game
     {
       auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
       auto angle = JSON_GET_NUMBER(float, actionJs, "Angle");
-      rule.addAction([=, this](){ this->car1AngleMagnet = angleMagnet_t { .intensity = intensity, .angle = angle}; });
+      rule.addAction([=, this]()
+       { 
+        this->car1AngleMagnet = angleMagnet_t { .intensity = intensity, .angle = angle};
+        this->_player1DistanceToMagnetAngle = std::abs(*player1Angle1 - car1AngleMagnet.angle);
+       });
       recognizedActionType = true;
     }
 
     return recognizedActionType;
   }
+
+  // Datatype to describe a point magnet
+  struct pointMagnet_t
+  {
+    float intensity = 0.0; // How strong the magnet is
+    float x = 0.0;  // What is the x point of attraction
+    float y = 0.0;  // What is the y point of attraction
+  };
+
+  // Datatype to describe an angle magnet
+  struct angleMagnet_t
+  {
+    float intensity = 0.0; // How strong the magnet is
+    float angle = 0.0;  // What is the angle we look for
+  };
 
   // Container for game-specific values
   uint8_t*  currentRace;
@@ -278,6 +322,15 @@ class Game final : public jaffarPlus::Game
   float recoveryTimerMagnet = 0.0;
   angleMagnet_t car1AngleMagnet;
   pointMagnet_t pointMagnet;
+
+  // Game-Specific values
+  float _player1DistanceToPointX;
+  float _player1DistanceToPointY;
+  float _player1DistanceToPoint;
+  float _player1DistanceToCameraX;
+  float _player1DistanceToCameraY;
+  float _player1DistanceToCamera;
+  float _player1DistanceToMagnetAngle;
 };
 
 } // namespace microMachines
