@@ -55,15 +55,7 @@
     { "Name": "Active Frame 1",                   "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x00B0", "Hashable": false,  "Printable": false }, 
     { "Name": "Active Frame 2",                   "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x00B2", "Hashable": false,  "Printable": false }, 
     { "Name": "Active Frame 3",                   "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x00B4", "Hashable": false,  "Printable": false }, 
-    { "Name": "Active Frame 4",                   "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x00B6", "Hashable": false,  "Printable": false }, 
-    { "Name": "Player Last Input Key",            "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x009B", "Hashable": false,  "Printable": true  }, 
-    { "Name": "Player Last Input Frame",          "Data Type": "UINT16", "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x01A0", "Hashable": false,  "Printable": true  }     
-  ],
-
-  "Game-Specific Storage":
-  [
-    { "Name": "Player 1 Previous Laps Remaining", "Data Type": "UINT8",  "Hashable": true, "Printable": true  },
-    { "Name": "Player 1 Last Input Step",         "Data Type": "UINT32", "Hashable": true, "Printable": true  }
+    { "Name": "Active Frame 4",                   "Data Type": "UINT8",  "Endianness": "Little", "Memory Block": "NES LRAM", "Offset": "0x00B6", "Hashable": false,  "Printable": false }
   ]
  },
 
