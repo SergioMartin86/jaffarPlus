@@ -2,6 +2,7 @@
 
 #include <common/json.hpp>
 #include <game.hpp>
+#include <emulator.hpp>
 
 namespace jaffarPlus
 {
@@ -18,7 +19,7 @@ class MicroMachines final : public jaffarPlus::Game
 
   static inline std::string getName() { return "NES / Micro Machines"; } 
 
-  Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : jaffarPlus::Game(emulator, config)
+  MicroMachines(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : jaffarPlus::Game(emulator, config)
   {
     // Perform parsing of the configuration here, if anything special settings are required.
   }
@@ -49,19 +50,19 @@ class MicroMachines final : public jaffarPlus::Game
     *_player1LapsRemainingPrev = *_player1LapsRemaining;
   }
 
-  void advanceStateImpl(const std::string& input) override
+  inline void advanceStateImpl(const std::string& input) override
   {
     *_player1LapsRemainingPrev = *_player1LapsRemaining;
 
     _emulator->advanceState(input);
   }
 
-  void computeAdditionalHashing(MetroHash128& hashEngine) const override
+  inline void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     hashEngine.Update(*_player1TankFireTimer > 0);
   }
 
-  void updateGameSpecificValues() override
+  inline void updateGameSpecificValues() override
   {
     _player1PosX = (uint16_t)*_player1PosX1 * 256 + (uint16_t)*_player1PosX2;
     _player1PosY = (uint16_t)*_player1PosY1 * 256 + (uint16_t)*_player1PosY2;
@@ -88,7 +89,7 @@ class MicroMachines final : public jaffarPlus::Game
     pointMagnet.intensity = 0.0;
   }
 
-  float calculateGameSpecificReward() const
+  inline float calculateGameSpecificReward() const
   {
     // Getting rewards from rules
     float reward = 0.0;

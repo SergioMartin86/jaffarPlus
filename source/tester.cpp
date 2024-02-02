@@ -1,11 +1,12 @@
 #include <chrono>
 #include <argparse/argparse.hpp>
-#include "game.hpp"
-#include "emulator.hpp"
-#include "../emulators/emulatorList.hpp"
-#include "../games/gameList.hpp"
 #include "common/logger.hpp"
 #include "common/json.hpp"
+#include "../emulators/emulatorList.hpp"
+#include "../games/gameList.hpp"
+#include "game.hpp"
+#include "emulator.hpp"
+#include "runner.hpp"
 
 int main(int argc, char *argv[])
 {

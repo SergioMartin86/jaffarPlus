@@ -52,7 +52,7 @@ class Game
   }
  
   // Function to update game state internal information
-  void updateGameState()
+  inline void updateGameState()
   {
     // Updating derived values
     updateGameSpecificValues();
@@ -71,17 +71,14 @@ class Game
   }
   
   // Function to advance state. Returns a vector with the performed inputs (including skip frames)
-  virtual void advanceState(const std::string& input)
+  inline void advanceState(const std::string& input)
   {
     // Performing the requested input
     advanceStateImpl(input);
-
-    // Advancing current step 
-    _currentStep++;
   }
 
   // Serialization routine -- simply a call to the underlying emulator
-  void serializeState(uint8_t* outputStateData) const
+  inline void serializeState(uint8_t* outputStateData) const
   { 
      size_t pos = 0;
 
@@ -95,7 +92,7 @@ class Game
   }
 
   // Deserialization routine
-  void deserializeState(const uint8_t* inputStateData)
+  inline void deserializeState(const uint8_t* inputStateData)
   {
      size_t pos = 0;
 
@@ -123,7 +120,7 @@ class Game
   }
 
   // This function computes the hash for the current state
-  virtual hash_t computeHash() const 
+  inline hash_t computeHash() const 
   {
     // Storage for hash calculation
     MetroHash128 hashEngine;
@@ -424,7 +421,7 @@ class Game
   }
 
   // Evaluates the rule set on a given frame. Returns true if it is a fail.
-  void evaluateRules() 
+  inline void evaluateRules() 
   {
     // First, checking if the rules have been satisfied
     for (auto& entry : _rules)
@@ -447,7 +444,7 @@ class Game
     }
   }
 
-  void runGameSpecificRuleActions()
+  inline void runGameSpecificRuleActions()
   {
      // First, checking if the rules have been satisfied
     for (auto& entry : _rules)
@@ -463,8 +460,7 @@ class Game
     }  
   }
 
-
-  void updateGameStateType()
+  inline void updateGameStateType()
   {
     // Clearing game state type before we evaluate satisfied rules
     _stateType = stateType_t::normal;
@@ -497,7 +493,7 @@ class Game
     }
   }
 
-  void updateReward()
+  inline void updateReward()
   {
     // First, we resetting reward to zero
     _reward = 0.0;
@@ -527,7 +523,7 @@ class Game
   }
 
   // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules
-  void satisfyRule(Rule& rule) 
+  inline void satisfyRule(Rule& rule) 
   {
     // Recursively run actions for the yet unsatisfied rules that are satisfied by this one and mark them as satisfied
     for (const auto& satisfyRuleLabel : rule.getSatisfyRuleLabels())
@@ -552,11 +548,11 @@ class Game
     _rulesStatus[ruleIdx] = true;
   }
 
+  // Returns pointer to the internal emulator
+  inline Emulator* getEmulator() const { return _emulator.get(); }
+
   // Function to get emulator name
   static std::string getName();
-
-  // Returns pointer to the internal emulator
-  Emulator* getEmulator() { return _emulator.get(); }
 
   // Function to obtain emulator based on name
   static std::unique_ptr<Game> getGame(const std::string& gameName, std::unique_ptr<Emulator>& emulator, const nlohmann::json& config);
@@ -580,9 +576,6 @@ class Game
 
   // Game-specific storage 
   std::unique_ptr<uint8_t> _gameSpecificStorage;
-
-  // Storing current step
-  size_t* _currentStep = 0;
 
   // Current game state reward
   float _reward = 0.0;
