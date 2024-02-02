@@ -24,108 +24,79 @@ class Game final : public jaffarPlus::Game
   Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : jaffarPlus::Game(emulator, config)
   {
     // Timer tolerance
-    timerTolerance = JSON_GET_NUMBER(uint8_t, config, "Timer Tolerance");
+    _timerTolerance = JSON_GET_NUMBER(uint8_t, config, "Timer Tolerance");
   }
 
   private:
 
   void initializeImpl() override
   {
-    // Getting NES low RAM pointer
-    auto ram = _emulator->getProperty("LRAM").pointer;
+    // Getting some properties' pointers now for quick access later
+    _player1TankFireTimer              = (uint8_t*)  _propertyMap[hashString("Player 1 Tank Fire Timer")]->getPointer();
+    _cameraPosX1                       = (uint8_t*)  _propertyMap[hashString("Camera Pos X1")]->getPointer();
+    _cameraPosX2                       = (uint8_t*)  _propertyMap[hashString("Camera Pos X2")]->getPointer();
+    _cameraPosY1                       = (uint8_t*)  _propertyMap[hashString("Camera Pos Y1")]->getPointer();
+    _cameraPosY2                       = (uint8_t*)  _propertyMap[hashString("Camera Pos Y2")]->getPointer();
+    _player1PosX1                      = (uint8_t*)  _propertyMap[hashString("Player 1 Pos X1")]->getPointer();
+    _player1PosX2                      = (uint8_t*)  _propertyMap[hashString("Player 1 Pos X2")]->getPointer();
+    _player1PosY1                      = (uint8_t*)  _propertyMap[hashString("Player 1 Pos Y1")]->getPointer();
+    _player1PosY2                      = (uint8_t*)  _propertyMap[hashString("Player 1 Pos Y2")]->getPointer();
+    _player1Accel                      = (int8_t*)   _propertyMap[hashString("Player 1 Accel")]->getPointer();
+    _player1AccelTimer2                = (uint8_t*)  _propertyMap[hashString("Player 1 Accel Timer 2")]->getPointer();
+    _player1Angle1                     = (uint8_t*)  _propertyMap[hashString("Player 1 Angle 1")]->getPointer();
+    _player1LapsRemaining              = (uint8_t*)  _propertyMap[hashString("Player 1 Current Laps Remaining")]->getPointer();
+    _player1Checkpoint                 = (uint8_t*)  _propertyMap[hashString("Player 1 Checkpoint")]->getPointer();
+    _player1RecoveryTimer              = (uint8_t*)  _propertyMap[hashString("Player 1 Recovery Timer")]->getPointer();
 
     // Game-specific values
-    frameType                         = (uint8_t*)   &ram[0x007C];
-    lagFrame                          = (uint8_t*)   &ram[0x01F8];
-    cameraPosX1                       = (uint8_t*)   &ram[0x00D5];
-    cameraPosX2                       = (uint8_t*)   &ram[0x00D4];
-    cameraPosY1                       = (uint8_t*)   &ram[0x00D7];
-    cameraPosY2                       = (uint8_t*)   &ram[0x00D6];
-    currentRace                       = (uint8_t*)   &ram[0x0308];
+    size_t pos = 0x0000;
 
-    player1PosX1                      = (uint8_t*)   &ram[0x03DE];
-    player1PosX2                      = (uint8_t*)   &ram[0x03DA];
-    player1PosY1                      = (uint8_t*)   &ram[0x03EA];
-    player1PosY2                      = (uint8_t*)   &ram[0x03E6];
-    player1PosY3                      = (uint8_t*)   &ram[0x03EE];
-    player1Accel                      = (int8_t*)    &ram[0x0386];
-    player1AccelTimer1                = (uint8_t*)   &ram[0x0102];
-    player1AccelTimer2                = (uint8_t*)   &ram[0x0103];
-    player1AccelTimer3                = (uint8_t*)   &ram[0x010E];
-    player1Inertia1                   = (uint8_t*)   &ram[0x00B0];
-    player1Inertia2                   = (uint8_t*)   &ram[0x00B2];
-    player1Inertia3                   = (uint8_t*)   &ram[0x00B4];
-    player1Inertia4                   = (uint8_t*)   &ram[0x00B6];
-    player1Angle1                     = (uint8_t*)   &ram[0x04B2];
-    player1Angle2                     = (uint8_t*)   &ram[0x040A];
-    player1Angle3                     = (uint8_t*)   &ram[0x04CA];
-    player1LapsRemaining              = (uint8_t*)   &ram[0x04B6];
-    player1LapsRemainingPrev          = (uint8_t*)   &ram[0x07FF];
-    player1Checkpoint                 = (uint8_t*)   &ram[0x04CE];
-    player1Input1                     = (uint8_t*)   &ram[0x009B];
-    player1Input2                     = (uint8_t*)   &ram[0x00CF];
-    player1Input3                     = (uint8_t*)   &ram[0x0352];
+    _currentStep                        = (uint32_t*)  &_gameSpecificStorage[pos]; pos += sizeof(uint32_t);
+    *_currentStep = 0;
 
-    player1RecoveryMode               = (uint8_t*)   &ram[0x0416];
-    player1RecoveryTimer              = (uint8_t*)   &ram[0x041A];
-    player1ResumeTimer                = (uint8_t*)   &ram[0x00DA];
-    player1CanControlCar              = (uint8_t*)   &ram[0x01BF];
-    player1TankFireTimer              = (uint8_t*)   &ram[0x041E];
+    _player1LapsRemainingPrev          = (uint8_t*)   &_gameSpecificStorage[pos]; pos += sizeof(uint8_t);
+    *_player1LapsRemainingPrev = *_player1LapsRemaining;
 
-    preRaceTimer                      = (uint8_t*)   &ram[0x00DD];
-    activeFrame1                      = (uint8_t*)   &ram[0x00B0];
-    activeFrame2                      = (uint8_t*)   &ram[0x00B2];
-    activeFrame3                      = (uint8_t*)   &ram[0x00B4];
-    activeFrame4                      = (uint8_t*)   &ram[0x00B6];
-
-    playerLastInputKey                = (uint8_t*)   &ram[0x009B];
-    playerLastInputFrame              = (uint16_t*)  &ram[0x01A0];
-
-
-    // Getting properties for custom hashing
-    player1TankFireTimer              = (uint8_t*) _propertyMap[hashString("Player 1 Tank Fire Timer")]->getPointer();
-
-    // Game-specific values
-    currentStep                       = (uint32_t*)  &_gameSpecificStorage[0x0000];
-    *currentStep = 0;
+    _playerLastInputFrame              = (uint16_t*) &_gameSpecificStorage[pos]; pos += sizeof(uint16_t);
+    *_playerLastInputFrame = 0;
   }
 
-  size_t getGameSpecificStorageSize() const override { return sizeof(uint32_t); }
+  size_t getGameSpecificStorageSize() const override { return 8; }
 
   std::vector<std::string> advanceStateImpl(const std::string& input) override
   {
-    *player1LapsRemainingPrev = *player1LapsRemaining;
-    *currentStep = *currentStep + 1;
+    *_player1LapsRemainingPrev = *_player1LapsRemaining;
+    *_currentStep = *_currentStep + 1;
 
     _emulator->advanceState(input);
 
-    if (input != "|..|........|") *playerLastInputFrame = *currentStep;
+    if (input != "|..|........|") *_playerLastInputFrame = *_currentStep;
 
     return {input};
   }
 
   void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
-    if (timerTolerance > 0) hashEngine.Update(*currentStep % (timerTolerance+1));
+    if (_timerTolerance > 0) hashEngine.Update(*_currentStep % (_timerTolerance+1));
 
-    hashEngine.Update(*player1TankFireTimer > 0);
+    hashEngine.Update(*_player1TankFireTimer > 0);
   }
 
   void updateGameSpecificValues() override
   {
-    player1PosX = (uint16_t)*player1PosX1 * 256 + (uint16_t)*player1PosX2;
-    player1PosY = (uint16_t)*player1PosY1 * 256 + (uint16_t)*player1PosY2;
+    _player1PosX = (uint16_t)*_player1PosX1 * 256 + (uint16_t)*_player1PosX2;
+    _player1PosY = (uint16_t)*_player1PosY1 * 256 + (uint16_t)*_player1PosY2;
 
-    cameraPosX = (uint16_t)*cameraPosX1 * 256 + (uint16_t)*cameraPosX2;
-    cameraPosY = (uint16_t)*cameraPosY1 * 256 + (uint16_t)*cameraPosY2;
+    _cameraPosX = (uint16_t)*_cameraPosX1 * 256 + (uint16_t)*_cameraPosX2;
+    _cameraPosY = (uint16_t)*_cameraPosY1 * 256 + (uint16_t)*_cameraPosY2;
 
     // Re-calclating stats
-    _player1DistanceToPointY  = std::abs(pointMagnet.x - player1PosX);
-    _player1DistanceToPointY  = std::abs(pointMagnet.y - player1PosY);
+    _player1DistanceToPointY  = std::abs(pointMagnet.x - _player1PosX);
+    _player1DistanceToPointY  = std::abs(pointMagnet.y - _player1PosY);
     _player1DistanceToPoint   = sqrtf(_player1DistanceToPointX*_player1DistanceToPointX + _player1DistanceToPointY*_player1DistanceToPointY);
 
-    _player1DistanceToCameraX = std::abs(cameraPosX - player1PosX);
-    _player1DistanceToCameraY = std::abs(cameraPosY - player1PosY);
+    _player1DistanceToCameraX = std::abs(_cameraPosX - _player1PosX);
+    _player1DistanceToCameraY = std::abs(_cameraPosY - _player1PosY);
     _player1DistanceToCamera  = sqrtf(_player1DistanceToCameraX*_player1DistanceToCameraX + _player1DistanceToCameraY*_player1DistanceToCameraY);
 
     // Resetting magnets ahead of rule re-evaluation
@@ -144,16 +115,16 @@ class Game final : public jaffarPlus::Game
     float reward = 0.0;
 
     // We calculate a different reward if this is a winning frame
-    if (_stateType == stateType_t::win) return -1.0f * (float)*playerLastInputFrame;
+    if (_stateType == stateType_t::win) return -1.0f * (float)*_playerLastInputFrame;
 
     // Evaluating player health  magnet
-    reward += playerCurrentLapMagnet * (float)(*player1LapsRemaining);
+    reward += playerCurrentLapMagnet * (float)(*_player1LapsRemaining);
 
     // Evaluating player health  magnet
-    reward += playerLapProgressMagnet * (float)(*player1Checkpoint);
+    reward += playerLapProgressMagnet * (float)(*_player1Checkpoint);
 
     // Evaluating player health  magnet
-    reward += playerAccelMagnet * ( std::abs((float)*player1Accel) - 0.1*(float)*player1AccelTimer2);
+    reward += playerAccelMagnet * ( std::abs((float)*_player1Accel) - 0.1*(float)*_player1AccelTimer2);
 
     // Distance to point magnet
     reward += pointMagnet.intensity * -_player1DistanceToPoint;
@@ -162,7 +133,7 @@ class Game final : public jaffarPlus::Game
     reward += cameraDistanceMagnet * -_player1DistanceToCamera;
 
     // Evaluating player health  magnet
-    reward += recoveryTimerMagnet * (float)(*player1RecoveryTimer);
+    reward += recoveryTimerMagnet * (float)(*_player1RecoveryTimer);
 
     // Calculating angle magnet
     reward += (255.0 - _player1DistanceToMagnetAngle) * car1AngleMagnet.intensity;
@@ -237,7 +208,7 @@ class Game final : public jaffarPlus::Game
       rule.addAction([=, this]()
        { 
         this->car1AngleMagnet = angleMagnet_t { .intensity = intensity, .angle = angle};
-        this->_player1DistanceToMagnetAngle = std::abs(*player1Angle1 - car1AngleMagnet.angle);
+        this->_player1DistanceToMagnetAngle = std::abs(*_player1Angle1 - car1AngleMagnet.angle);
        });
       recognizedActionType = true;
     }
@@ -260,59 +231,34 @@ class Game final : public jaffarPlus::Game
     float angle = 0.0;  // What is the angle we look for
   };
 
-  // Container for game-specific values
-  uint8_t*  currentRace;
-  uint8_t*  preRaceTimer;
-  uint8_t*  frameType;
-  uint8_t*  lagFrame;
+  uint8_t*  _cameraPosX1;
+  uint8_t*  _cameraPosX2;
+  uint8_t*  _cameraPosY1;
+  uint8_t*  _cameraPosY2;
 
-  uint8_t*  cameraPosX1;
-  uint8_t*  cameraPosX2;
-  uint8_t*  cameraPosY1;
-  uint8_t*  cameraPosY2;
+  uint8_t*  _player1PosX1;
+  uint8_t*  _player1PosX2;
+  uint8_t*  _player1PosY1;
+  uint8_t*  _player1PosY2;
 
-  uint8_t*  player1PosX1;
-  uint8_t*  player1PosX2;
-  uint8_t*  player1PosY1;
-  uint8_t*  player1PosY2;
-  uint8_t*  player1PosY3;
-  uint8_t*  player1Inertia1;
-  uint8_t*  player1Inertia2;
-  uint8_t*  player1Inertia3;
-  uint8_t*  player1Inertia4;
-  uint8_t*  player1AccelTimer1;
-  uint8_t*  player1AccelTimer2;
-  uint8_t*  player1AccelTimer3;
-  int8_t*   player1Accel;
-  uint8_t*  player1Angle1;
-  uint8_t*  player1Angle2;
-  uint8_t*  player1Angle3;
-  uint8_t*  player1LapsRemaining;
-  uint8_t*  player1LapsRemainingPrev;
-  uint8_t*  player1Checkpoint;
-  uint8_t*  player1Input1;
-  uint8_t*  player1Input2;
-  uint8_t*  player1Input3;
+  uint8_t*  _player1AccelTimer2;
+  int8_t*   _player1Accel;
+  uint8_t*  _player1Angle1;
+  uint8_t*  _player1LapsRemaining;
+  uint8_t*  _player1LapsRemainingPrev;
+  uint8_t*  _player1Checkpoint;
 
-  uint8_t*  player1RecoveryMode;
-  uint8_t*  player1RecoveryTimer;
-  uint8_t*  player1CanControlCar;
-  uint8_t*  player1ResumeTimer;
-  uint8_t*  player1TankFireTimer;
-  uint8_t*  playerLastInputKey;
-  uint16_t*  playerLastInputFrame;
+  uint8_t*  _player1RecoveryTimer;
+  uint8_t*  _player1TankFireTimer;
+  uint16_t*  _playerLastInputFrame;
 
-  uint8_t* activeFrame1;
-  uint8_t* activeFrame2;
-  uint8_t* activeFrame3;
-  uint8_t* activeFrame4;
-
-  uint16_t player1PosX;
-  uint16_t player1PosY;
-  uint16_t cameraPosX;
-  uint16_t cameraPosY;
-  uint8_t timerTolerance;
-  uint32_t* currentStep;
+  // Calculated values
+  uint16_t _player1PosX;
+  uint16_t _player1PosY;
+  uint16_t _cameraPosX;
+  uint16_t _cameraPosY;
+  uint8_t  _timerTolerance;
+  uint32_t* _currentStep;
 
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
   float playerCurrentLapMagnet = 0.0;
