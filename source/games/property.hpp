@@ -43,9 +43,36 @@ class Property
   {
   }
 
-  inline size_t getSize() const
+  inline size_t getSize() const { return getDatatypeSize(_datatype); }
+
+  static inline endianness_t parseEndiannessName(const std::string& endiannessName)
   {
-    switch (_datatype)
+    if (endiannessName == "Little") return endianness_t::little;
+    if (endiannessName == "Big")    return endianness_t::big;   
+    
+    EXIT_WITH_ERROR("Endianness '%s' not recognized.", endiannessName.c_str());
+  }
+
+  static inline datatype_t parseDatatypeName(const std::string& datatypeName)
+  {
+    if (datatypeName == "UINT8")   return datatype_t::dt_uint8;   
+    if (datatypeName == "UINT16")  return datatype_t::dt_uint16;  
+    if (datatypeName == "UINT32")  return datatype_t::dt_uint32;  
+    if (datatypeName == "UINT64")  return datatype_t::dt_uint64;  
+    if (datatypeName == "INT8")    return datatype_t::dt_int8;    
+    if (datatypeName == "INT16")   return datatype_t::dt_int16;   
+    if (datatypeName == "INT32")   return datatype_t::dt_int32;   
+    if (datatypeName == "INT64")   return datatype_t::dt_int64;   
+    if (datatypeName == "BOOL")    return datatype_t::dt_bool;    
+    if (datatypeName == "FLOAT32") return datatype_t::dt_float32; 
+    if (datatypeName == "FLOAT64") return datatype_t::dt_float64; 
+    
+    EXIT_WITH_ERROR("Data type '%s' not recognized.", datatypeName.c_str());
+  }
+
+  static inline size_t getDatatypeSize(const datatype_t datatype)
+  {
+    switch (datatype)
     {
       case dt_uint8    : return 1;        
       case dt_uint16   : return 2;      
@@ -60,7 +87,7 @@ class Property
       case dt_float64  : return 8; 
     }
 
-    EXIT_WITH_ERROR("Unidentified datatype %d\n", _datatype);
+    EXIT_WITH_ERROR("Unidentified datatype %d\n", datatype);
   }
 
   template <typename T> inline T getValue() const

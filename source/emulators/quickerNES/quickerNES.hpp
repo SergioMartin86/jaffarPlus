@@ -74,20 +74,20 @@ class QuickerNES final : public Emulator
 
   inline void printDebugInformation() const override
   {
-     printMemoryBlockHash("LRAM");
-     printMemoryBlockHash("SRAM");
-     printMemoryBlockHash("NTAB");
-     printMemoryBlockHash("CHRR");
-     printMemoryBlockHash("SPRT");
+     printMemoryBlockHash("NES LRAM");
+     printMemoryBlockHash("NES SRAM");
+     printMemoryBlockHash("NES NTAB");
+     printMemoryBlockHash("NES CHRR");
+     printMemoryBlockHash("NES SPRT");
   }
 
   property_t getProperty(const std::string& propertyName) const override
   {
-     if (propertyName == "LRAM") return property_t(_quickerNES.getLowMem(),       _quickerNES.getLowMemSize());
-     if (propertyName == "SRAM") return property_t(_quickerNES.getWorkMem(),      _quickerNES.getWorkMemSize());
-     if (propertyName == "NTAB") return property_t(_quickerNES.getNametableMem(), _quickerNES.getNametableMemSize());
-     if (propertyName == "CHRR") return property_t(_quickerNES.getCHRMem(),       _quickerNES.getCHRMemSize());
-     if (propertyName == "SPRT") return property_t(_quickerNES.getSpriteMem(),    _quickerNES.getSpriteMemSize());
+     if (propertyName == "NES LRAM") return property_t(_quickerNES.getLowMem(),       _quickerNES.getLowMemSize());
+     if (propertyName == "NES SRAM") return property_t(_quickerNES.getWorkMem(),      _quickerNES.getWorkMemSize());
+     if (propertyName == "NES NTAB") return property_t(_quickerNES.getNametableMem(), _quickerNES.getNametableMemSize());
+     if (propertyName == "NES CHRR") return property_t(_quickerNES.getCHRMem(),       _quickerNES.getCHRMemSize());
+     if (propertyName == "NES SPRT") return property_t(_quickerNES.getSpriteMem(),    _quickerNES.getSpriteMemSize());
 
      EXIT_WITH_ERROR("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());  
   }
