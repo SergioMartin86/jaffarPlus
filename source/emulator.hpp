@@ -47,7 +47,7 @@ class Emulator
   virtual void deserializeState(const uint8_t *state) = 0;
 
   // Function to print debug information, whatever it might be
-  virtual void printDebugInformation() const = 0;
+  virtual void printInfo() const = 0;
 
   // Get a property by name
   virtual property_t getProperty(const std::string& propertyName) const = 0;

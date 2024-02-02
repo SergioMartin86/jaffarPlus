@@ -77,7 +77,7 @@ class Game
     advanceStateImpl(input);
   }
 
-  // Serialization routine -- simply a call to the underlying emulator
+  // Serialization routine 
   inline void serializeState(uint8_t* outputStateData) const
   { 
      size_t pos = 0;
@@ -120,29 +120,22 @@ class Game
   }
 
   // This function computes the hash for the current state
-  inline hash_t computeHash() const 
+  inline void computeHash(MetroHash128& hashEngine) const 
   {
-    // Storage for hash calculation
-    MetroHash128 hashEngine;
-
     // Processing hashable game properties
-    for (const auto& p : _propertyHashSet) hashEngine.Update(p->getPointer(), p->getSize());
+    for (const auto& p : _propertyHashVector) hashEngine.Update(p->getPointer(), p->getSize());
 
     // Processing any additional game-specific hash 
     computeAdditionalHashing(hashEngine);
- 
-    hash_t result;
-    hashEngine.Finalize(reinterpret_cast<uint8_t *>(&result));
-    return result;
   }
 
   // Function to print
-  void printStateInfo() const
+  void printInfo() const
   {
    // Getting maximum printable property name, for formatting purposes
    const size_t separatorSize = 4;
    size_t maximumNameSize = 0;
-   for (const auto& p : _propertyPrintSet) maximumNameSize = std::max(maximumNameSize, p->getName().size());
+   for (const auto& p : _propertyPrintVector) maximumNameSize = std::max(maximumNameSize, p->getName().size());
 
    // Printing game state
    LOG("[J+]  + Game State Type: ");
@@ -160,15 +153,9 @@ class Game
    for (size_t i = 0; i < _rules.size(); i++) LOG("%d", _rulesStatus[i] ? 1 : 0);
    LOG("\n");
 
-   // Getting state hash 
-   const auto hash = hashToString(computeHash());
-
-   // Printing state hash
-   LOG("[J+]  + Hash: %s\n", hash.c_str());
-
    // Printing game properties defined in the script file
    LOG("[J+]  + Game Properties: \n");
-   for (const auto& p : _propertyPrintSet)
+   for (const auto& p : _propertyPrintVector)
    {
      // Getting property name
      const auto& name = p->getName();
@@ -197,7 +184,7 @@ class Game
    }
 
    // Printing game-specific stuff now
-   printStateInfoImpl();
+   printInfoImpl();
   }
   
   // This function parses game properties as described in the Jaffar script
@@ -235,10 +222,10 @@ class Game
     auto property = std::make_unique<Property>(name, pointer, dataType, endianness);
 
     // If this is a hashable property, add it to the hash set
-    if (hashable) _propertyHashSet.insert(property.get());
+    if (hashable) _propertyHashVector.push_back(property.get());
 
     // If this is a printable property, add it to the set
-    if (printable) _propertyPrintSet.push_back(property.get());
+    if (printable) _propertyPrintVector.push_back(property.get());
 
     // Getting property name hash as key 
     const auto propertyNameHash = property->getNameHash();
@@ -564,7 +551,7 @@ class Game
   virtual void updateGameSpecificValues() = 0;
   virtual void computeAdditionalHashing(MetroHash128& hashEngine) const = 0;
   virtual void initializeImpl() = 0;
-  virtual void printStateInfoImpl() const = 0;
+  virtual void printInfoImpl() const = 0;
   virtual void advanceStateImpl(const std::string& input) = 0;
   virtual bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) = 0;
 
@@ -592,11 +579,11 @@ class Game
   // Storage for status vector indicating whether the rules have been satisfied
   std::vector<bool> _rulesStatus;
 
-  // Property hash set to quickly distinguish states from each other 
-  std::unordered_set<const Property*> _propertyHashSet;
+  // Property hash set to quickly distinguish states from each other. Its a vector to keep the ordering
+  std::vector<const Property*> _propertyHashVector;
 
-  // Property print vector for printing game information to screen. Its a vector to keep the order
-  std::vector<const Property*> _propertyPrintSet;
+  // Property print vector for printing game information to screen. Its a vector to keep the ordering
+  std::vector<const Property*> _propertyPrintVector;
 
   // Property map to store all registered properties for future reference, indexed by their name hash
   std::map<hash_t, std::unique_ptr<Property>> _propertyMap;

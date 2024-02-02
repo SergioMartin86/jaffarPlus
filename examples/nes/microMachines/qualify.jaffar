@@ -59,6 +59,20 @@
   ]
  },
 
+ "Runner Configuration":
+ {
+   "Maximum Step": 500,
+   "Hash Step Tolerance": 0,
+   "Store Input History": true,
+
+   "Compression":
+   {
+    "Use Differential Compression": false, 
+    "Max Difference (bytes)": 350,
+    "Use Zlib Compression": false
+   }
+ },
+
  "Rules":
  [
    {
