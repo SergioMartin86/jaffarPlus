@@ -30,6 +30,7 @@ class MicroMachines final : public jaffarPlus::Game
   {
     // Getting some properties' pointers now for quick access later
     _player1TankFireTimer              = (uint8_t*)  _propertyMap[hashString("Player 1 Tank Fire Timer")]->getPointer();
+    _currentRace                       = (uint8_t*)  _propertyMap[hashString("Current Race")]->getPointer();
     _cameraPosX1                       = (uint8_t*)  _propertyMap[hashString("Camera Pos X1")]->getPointer();
     _cameraPosX2                       = (uint8_t*)  _propertyMap[hashString("Camera Pos X2")]->getPointer();
     _cameraPosY1                       = (uint8_t*)  _propertyMap[hashString("Camera Pos Y1")]->getPointer();
@@ -117,6 +118,44 @@ class MicroMachines final : public jaffarPlus::Game
 
     // Returning reward
     return reward;
+  }
+
+  // Here we must list all potential moves we plan to use during the exploration.
+  // This is necessary by Jaffar to encode the input history
+  inline std::vector<std::string> getAllowedInputs() const override
+  {
+    return { 
+      "|..|.......A|",
+      "|..|......BA|",
+      "|..|...R....|",
+      "|..|..L.....|",
+      "|..|...R...A|",
+      "|..|..L....A|",
+    };
+  }
+
+  // Here we return the proposed inputs for the current state
+  inline std::vector<std::string> getProposedStateInputs() const override
+  {
+    // If this is a tank race and we haven't fired, try firing
+    if ((*_currentRace == 19 || *_currentRace == 13 || *_currentRace == 24) && *_player1TankFireTimer == 0)
+      return { 
+        "|..|.......A|",
+        "|..|......BA|",
+        "|..|...R....|",
+        "|..|..L.....|",
+        "|..|...R...A|",
+        "|..|..L....A|",
+       };
+
+    // Otherwise do not try firing
+    return { 
+      "|..|.......A|",
+      "|..|...R....|",
+      "|..|..L.....|",
+      "|..|...R...A|",
+      "|..|..L....A|",
+      };
   }
 
   void printInfoImpl() const override
@@ -218,6 +257,8 @@ class MicroMachines final : public jaffarPlus::Game
   pointMagnet_t _pointMagnet;
 
   // Property pointers for quick access
+  uint8_t*  _currentRace;
+
   uint8_t*  _cameraPosX1;
   uint8_t*  _cameraPosX2;
   uint8_t*  _cameraPosY1;

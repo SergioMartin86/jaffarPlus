@@ -61,11 +61,15 @@
 
  "Runner Configuration":
  {
-   "Maximum Step": 500,
    "Hash Step Tolerance": 0,
-   "Store Input History": true,
 
-   "Compression":
+   "Input History":
+   {
+    "Store Input History": true,
+    "Maximum Step": 500
+   },
+
+   "State Compression":
    {
     "Use Differential Compression": false, 
     "Max Difference (bytes)": 350,

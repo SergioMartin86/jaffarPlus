@@ -544,9 +544,12 @@ class Game
   // Function to obtain emulator based on name
   static std::unique_ptr<Game> getGame(const std::string& gameName, std::unique_ptr<Emulator>& emulator, const nlohmann::json& config);
 
+  // Function to get all possible allowed inputs
+  virtual std::vector<std::string> getAllowedInputs() const = 0;
+
   protected:
 
-  // This function updates derivate values (those who require calculation from raw values) after a state is re-loaded
+  virtual std::vector<std::string> getProposedStateInputs() const = 0;
   virtual float calculateGameSpecificReward() const = 0;
   virtual void updateGameSpecificValues() = 0;
   virtual void computeAdditionalHashing(MetroHash128& hashEngine) const = 0;
