@@ -86,6 +86,9 @@ int main(int argc, char *argv[])
   // Creating runner from game instance
   jaffarPlus::Runner r(g, JSON_GET_OBJECT(config, "Runner Configuration"));
 
+  // Parsing Possible game inputs
+  r.parseGameInputs(JSON_GET_ARRAY(config, "Game Inputs"));
+
   // Getting game state size
   const auto stateSize = r.getStateSize();
 
@@ -133,7 +136,18 @@ int main(int argc, char *argv[])
   LOG("[J+] Performance:             %.3f inputs / s\n", (double)sequenceLength / elapsedTimeSeconds);
 
   // Updating and printing game internal information
-  r.getGame()->updateGameState();
+  
+  // Re-evaluate game rules
+  r.getGame()->evaluateRules();
+
+  // Determining new game state type
+  r.getGame()->updateGameStateType();
+
+  // Running game-specific rule actions
+  r.getGame()->runGameSpecificRuleActions();
+
+  // Updating game reward
+  r.getGame()->updateReward();
 
   // Printing Information
   LOG("[J+] Runner Information:\n");
