@@ -31,7 +31,7 @@ class Game
     _gameSpecificStorageSize = JSON_GET_NUMBER(size_t, config, "Game-Specific Storage (GSS) Size");
 
     // Allocating Game-specific storage
-    _gameSpecificStorage = std::make_unique<uint8_t>(_gameSpecificStorageSize);
+    _gameSpecificStorage.resize(_gameSpecificStorageSize);
 
     // Parsing game properties
     const auto& propertiesJs = JSON_GET_ARRAY(config, "Properties");
@@ -50,59 +50,46 @@ class Game
     // Updating game specific values
     updateGameSpecificValues();
   }
- 
-  // Function to update game state internal information
-  inline void updateGameState()
-  {
-    // Updating derived values
-    updateGameSpecificValues();
 
-    // Then re-evaluate rules
-    evaluateRules();
-
-    // Determining new game state type
-    updateGameStateType();
-
-    // Running game-specific rule actions
-    runGameSpecificRuleActions();
-
-    // Updating game reward
-    updateReward();
-  }
-  
-  // Function to advance state. Returns a vector with the performed inputs (including skip frames)
+  // Function to advance state. 
   inline void advanceState(const std::string& input)
   {
     // Performing the requested input
     advanceStateImpl(input);
+
+    // Updating derived values
+    updateGameSpecificValues();
   }
 
   // Serialization routine 
   inline void serializeState(uint8_t* outputStateData) const
   { 
-     size_t pos = 0;
+    size_t pos = 0;
 
-     // Serializing game-specific data
-     memcpy(&outputStateData[pos], (const void*)_gameSpecificStorage.get(), _gameSpecificStorageSize);
-     pos += _gameSpecificStorageSize;
+    // Serializing game-specific data
+    memcpy(&outputStateData[pos], (const void*)_gameSpecificStorage.data(), _gameSpecificStorageSize);
+    pos += _gameSpecificStorageSize;
 
-     // Serializing internal emulator state
-     _emulator->serializeState(&outputStateData[pos]);
-     pos += _emulator->getStateSize();
+    // Serializing internal emulator state
+    _emulator->serializeState(&outputStateData[pos]);
+    pos += _emulator->getStateSize();
   }
 
   // Deserialization routine
   inline void deserializeState(const uint8_t* inputStateData)
   {
-     size_t pos = 0;
+    size_t pos = 0;
 
-     // Deserializing game-specific data
-     memcpy((void*)_gameSpecificStorage.get(), &inputStateData[pos], _gameSpecificStorageSize);
-     pos += _gameSpecificStorageSize;
+    // Deserializing game-specific data
+    memcpy((void*)_gameSpecificStorage.data(), &inputStateData[pos], _gameSpecificStorageSize);
+    pos += _gameSpecificStorageSize;
 
-     // Deserializing state data into the emulator
-     _emulator->deserializeState(&inputStateData[pos]); 
-     pos += _emulator->getStateSize();
+    // Deserializing state data into the emulator
+    _emulator->deserializeState(&inputStateData[pos]); 
+    pos += _emulator->getStateSize();
+
+    // Updating game specific values
+    updateGameSpecificValues();
   }
 
   // This function returns the size of the game state
@@ -178,8 +165,8 @@ class Game
      if (p->getDatatype() == Property::datatype_t::dt_uint16)   LOG("0x%04X  (%05u)\n",  p->getValue<uint16_t>(), p->getValue<uint16_t>());
      if (p->getDatatype() == Property::datatype_t::dt_uint32)   LOG("0x%08X  (%10u)\n",  p->getValue<uint32_t>(), p->getValue<uint32_t>());
      if (p->getDatatype() == Property::datatype_t::dt_uint64)   LOG("0x%16lX (%lu)\n",   p->getValue<uint64_t>(), p->getValue<uint64_t>());
-     if (p->getDatatype() == Property::datatype_t::dt_float32)  LOG("0x%f    (0x%X)\n",  p->getValue<float>(),    p->getValue<uint32_t>());
-     if (p->getDatatype() == Property::datatype_t::dt_float64)  LOG("0x%f    (0x%lX)\n", p->getValue<double>(),   p->getValue<uint64_t>());
+     if (p->getDatatype() == Property::datatype_t::dt_float32)  LOG("%f      (0x%X)\n",  p->getValue<float>(),    p->getValue<uint32_t>());
+     if (p->getDatatype() == Property::datatype_t::dt_float64)  LOG("%f      (0x%lX)\n", p->getValue<double>(),   p->getValue<uint64_t>());
      if (p->getDatatype() == Property::datatype_t::dt_bool)     LOG("%1u\n",             p->getValue<bool>() );
    }
 
@@ -215,9 +202,15 @@ class Game
     // If its game specific storage, we get it directly from there.
     // Otherwise, we look for it in the emulator
     const auto pointer = memoryBlock == "GSS" ?
-     _gameSpecificStorage.get() :
+     _gameSpecificStorage.data() :
      _emulator->getProperty(memoryBlock).pointer + offset;
 
+    // Registering new property
+    registerGameProperty(name, pointer, dataType, endianness, hashable, printable);
+  }
+
+  void registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness, const bool hashable, const bool printable)
+  {
     // Creating property
     auto property = std::make_unique<Property>(name, pointer, dataType, endianness);
 
@@ -233,7 +226,7 @@ class Game
     // Adding property to the map for later reference
     _propertyMap[propertyNameHash] = std::move(property);
   }
- 
+
   // Parsing game rules
   void parseRules(const nlohmann::json& rulesJson)
   {
@@ -280,13 +273,13 @@ class Game
     const auto& actions = JSON_GET_ARRAY(ruleJs, "Actions");
 
     // Parsing rule conditions
-    for (const auto& condition : conditions) rule.addCondition(parseRuleCondition(condition));  
+    for (const auto& condition : conditions) rule.addCondition(parseCondition(condition));  
 
     // Parsing rule actions
     for (const auto& action : actions) parseRuleAction(rule, action);  
   }
 
-  std::unique_ptr<Condition> parseRuleCondition(const nlohmann::json& conditionJs)
+  std::unique_ptr<Condition> parseCondition(const nlohmann::json& conditionJs)
   {
     // Parsing operator name
     const auto& opName = JSON_GET_STRING(conditionJs, "Op");
@@ -410,7 +403,7 @@ class Game
   // Evaluates the rule set on a given frame. Returns true if it is a fail.
   inline void evaluateRules() 
   {
-    // First, checking if the rules have been satisfied
+    // Second, check which unsatisfied rules have been satisfied now
     for (auto& entry : _rules)
     {
       // Getting rule
@@ -516,10 +509,9 @@ class Game
     for (const auto& satisfyRuleLabel : rule.getSatisfyRuleLabels())
     {
       // Making sure referenced label exists
-      if (_rules.contains(satisfyRuleLabel) == false) EXIT_WITH_ERROR("[ERROR] Unrecognized rule label %lu in satisfy array\n", satisfyRuleLabel);
-
-      // Obtaining subrule to satisfy
-      auto& subRule = _rules.at(satisfyRuleLabel);
+      auto it = _rules.find(satisfyRuleLabel);
+      if (it == _rules.end()) EXIT_WITH_ERROR("[ERROR] Unrecognized rule label %lu in satisfy array\n", satisfyRuleLabel);
+      auto& subRule = it->second;
 
       // Getting index from the subrule
       auto subRuleIdx = subRule->getIndex();
@@ -544,12 +536,8 @@ class Game
   // Function to obtain emulator based on name
   static std::unique_ptr<Game> getGame(const std::string& gameName, std::unique_ptr<Emulator>& emulator, const nlohmann::json& config);
 
-  // Function to get all possible allowed inputs
-  virtual std::vector<std::string> getAllowedInputs() const = 0;
-
   protected:
 
-  virtual std::vector<std::string> getProposedStateInputs() const = 0;
   virtual float calculateGameSpecificReward() const = 0;
   virtual void updateGameSpecificValues() = 0;
   virtual void computeAdditionalHashing(MetroHash128& hashEngine) const = 0;
@@ -565,7 +553,7 @@ class Game
   size_t _gameSpecificStorageSize;
 
   // Game-specific storage 
-  std::unique_ptr<uint8_t> _gameSpecificStorage;
+  std::vector<uint8_t> _gameSpecificStorage;
 
   // Current game state reward
   float _reward = 0.0;

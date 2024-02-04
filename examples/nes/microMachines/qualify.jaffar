@@ -63,10 +63,19 @@
  {
    "Hash Step Tolerance": 0,
 
-   "Input History":
+   "Store Input History":
    {
-    "Store Input History": true,
-    "Maximum Step": 500
+    "Enabled": true,
+    "Maximum Step": 500,
+    "Allowed Inputs":
+    [
+      "|..|.......A|",
+      "|..|......BA|",
+      "|..|...R....|",
+      "|..|..L.....|",
+      "|..|...R...A|",
+      "|..|..L....A|"
+    ]
    },
 
    "State Compression":

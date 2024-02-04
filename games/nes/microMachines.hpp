@@ -47,6 +47,11 @@ class MicroMachines final : public jaffarPlus::Game
     _player1Checkpoint                 = (uint8_t*)  _propertyMap[hashString("Player 1 Checkpoint")]->getPointer();
     _player1RecoveryTimer              = (uint8_t*)  _propertyMap[hashString("Player 1 Recovery Timer")]->getPointer();
 
+    // Registering game specific values
+
+    registerGameProperty("Player 1 Pos Y", &_player1PosY, Property::datatype_t::dt_uint16, Property::endianness_t::little, false, true);
+    registerGameProperty("Player 1 Pos X", &_player1PosX, Property::datatype_t::dt_uint16, Property::endianness_t::little, false, true);
+
     // Setting initial value for previous laps remaining
     *_player1LapsRemainingPrev = *_player1LapsRemaining;
   }
@@ -79,15 +84,6 @@ class MicroMachines final : public jaffarPlus::Game
     _player1DistanceToCameraX = std::abs(_cameraPosX - _player1PosX);
     _player1DistanceToCameraY = std::abs(_cameraPosY - _player1PosY);
     _player1DistanceToCamera  = sqrtf(_player1DistanceToCameraX*_player1DistanceToCameraX + _player1DistanceToCameraY*_player1DistanceToCameraY);
-
-    // Resetting magnets ahead of rule re-evaluation
-    _playerCurrentLapMagnet = 0.0;
-    _playerLapProgressMagnet = 0.0;
-    _playerAccelMagnet = 0.0;
-    _cameraDistanceMagnet = 0.0;
-    _recoveryTimerMagnet = 0.0;
-    _car1AngleMagnet.intensity = 0.0;
-    _pointMagnet.intensity = 0.0;
   }
 
   inline float calculateGameSpecificReward() const
@@ -114,59 +110,22 @@ class MicroMachines final : public jaffarPlus::Game
     reward += _recoveryTimerMagnet * (float)(*_player1RecoveryTimer);
 
     // Calculating angle magnet
-    reward += (255.0 - _player1DistanceToMagnetAngle) * _car1AngleMagnet.intensity;
+    reward += (255.0 - _player1DistanceToMagnetAngle) * _player1AngleMagnet.intensity;
 
     // Returning reward
     return reward;
   }
 
-  // Here we must list all potential moves we plan to use during the exploration.
-  // This is necessary by Jaffar to encode the input history
-  inline std::vector<std::string> getAllowedInputs() const override
-  {
-    return { 
-      "|..|.......A|",
-      "|..|......BA|",
-      "|..|...R....|",
-      "|..|..L.....|",
-      "|..|...R...A|",
-      "|..|..L....A|",
-    };
-  }
-
-  // Here we return the proposed inputs for the current state
-  inline std::vector<std::string> getProposedStateInputs() const override
-  {
-    // If this is a tank race and we haven't fired, try firing
-    if ((*_currentRace == 19 || *_currentRace == 13 || *_currentRace == 24) && *_player1TankFireTimer == 0)
-      return { 
-        "|..|.......A|",
-        "|..|......BA|",
-        "|..|...R....|",
-        "|..|..L.....|",
-        "|..|...R...A|",
-        "|..|..L....A|",
-       };
-
-    // Otherwise do not try firing
-    return { 
-      "|..|.......A|",
-      "|..|...R....|",
-      "|..|..L.....|",
-      "|..|...R...A|",
-      "|..|..L....A|",
-      };
-  }
 
   void printInfoImpl() const override
   {
-    if (std::abs(_pointMagnet.intensity) > 0.0f)      LOG("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Dist: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y, _player1DistanceToPoint);
-    if (std::abs(_cameraDistanceMagnet) > 0.0f)       LOG("[J+]  + Camera Distance Magnet                   Intensity: %.5f, Dist: %3.3f\n", _cameraDistanceMagnet, _player1DistanceToCamera);
-    if (std::abs(_recoveryTimerMagnet) > 0.0f)        LOG("[J+]  + Recovery Timer Magnet                    Intensity: %.5f\n", _recoveryTimerMagnet);
-    if (std::abs(_playerCurrentLapMagnet) > 0.0f)     LOG("[J+]  + Player Current Lap Magnet                Intensity: %.5f\n", _playerCurrentLapMagnet);
-    if (std::abs(_playerLapProgressMagnet) > 0.0f)    LOG("[J+]  + Player Lap Progress Magnet               Intensity: %.5f\n", _playerLapProgressMagnet);
-    if (std::abs(_playerAccelMagnet) > 0.0f)          LOG("[J+]  + Player Accel Magnet                      Intensity: %.5f\n", _playerAccelMagnet);
-    if (std::abs(_car1AngleMagnet.intensity) > 0.0f)  LOG("[J+]  + Angle Magnet                             Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n", _car1AngleMagnet.intensity, _car1AngleMagnet.angle, _player1DistanceToMagnetAngle);
+    if (std::abs(_pointMagnet.intensity) > 0.0f)         LOG("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Dist: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y, _player1DistanceToPoint);
+    if (std::abs(_cameraDistanceMagnet) > 0.0f)          LOG("[J+]  + Camera Distance Magnet                   Intensity: %.5f, Dist: %3.3f\n", _cameraDistanceMagnet, _player1DistanceToCamera);
+    if (std::abs(_recoveryTimerMagnet) > 0.0f)           LOG("[J+]  + Recovery Timer Magnet                    Intensity: %.5f\n", _recoveryTimerMagnet);
+    if (std::abs(_playerCurrentLapMagnet) > 0.0f)        LOG("[J+]  + Player Current Lap Magnet                Intensity: %.5f\n", _playerCurrentLapMagnet);
+    if (std::abs(_playerLapProgressMagnet) > 0.0f)       LOG("[J+]  + Player Lap Progress Magnet               Intensity: %.5f\n", _playerLapProgressMagnet);
+    if (std::abs(_playerAccelMagnet) > 0.0f)             LOG("[J+]  + Player Accel Magnet                      Intensity: %.5f\n", _playerAccelMagnet);
+    if (std::abs(_player1AngleMagnet.intensity) > 0.0f)  LOG("[J+]  + Player Angle Magnet                      Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n", _player1AngleMagnet.intensity, _player1AngleMagnet.angle, _player1DistanceToMagnetAngle);
   } 
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
@@ -217,14 +176,14 @@ class MicroMachines final : public jaffarPlus::Game
       recognizedActionType = true;
     }
 
-    if (actionType == "Set Car 1 Angle Magnet")
+    if (actionType == "Set Player 1 Angle Magnet")
     {
       auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
       auto angle = JSON_GET_NUMBER(float, actionJs, "Angle");
       rule.addAction([=, this]()
        { 
-        this->_car1AngleMagnet = angleMagnet_t { .intensity = intensity, .angle = angle};
-        this->_player1DistanceToMagnetAngle = std::abs(*_player1Angle1 - _car1AngleMagnet.angle);
+        this->_player1AngleMagnet = angleMagnet_t { .intensity = intensity, .angle = angle};
+        this->_player1DistanceToMagnetAngle = std::abs(*_player1Angle1 - _player1AngleMagnet.angle);
        });
       recognizedActionType = true;
     }
@@ -253,7 +212,7 @@ class MicroMachines final : public jaffarPlus::Game
   float _playerAccelMagnet = 0.0;
   float _cameraDistanceMagnet = 0.0;
   float _recoveryTimerMagnet = 0.0;
-  angleMagnet_t _car1AngleMagnet;
+  angleMagnet_t _player1AngleMagnet;
   pointMagnet_t _pointMagnet;
 
   // Property pointers for quick access
@@ -284,7 +243,6 @@ class MicroMachines final : public jaffarPlus::Game
   uint16_t _player1PosY;
   uint16_t _cameraPosX;
   uint16_t _cameraPosY;
-  uint8_t  _timerTolerance;
 
   // Game-Specific values
   float _player1DistanceToPointX;

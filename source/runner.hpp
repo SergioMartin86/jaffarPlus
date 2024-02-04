@@ -2,9 +2,12 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
+#include <common/bitwise.hpp>
 #include <common/hash.hpp>
 #include <common/json.hpp>
 #include "game.hpp"
+#include "inputSet.hpp"
 
 namespace jaffarPlus
 {
@@ -18,29 +21,30 @@ class Runner final
   {
    _hashStepTolerance = JSON_GET_NUMBER(uint32_t, config, "Hash Step Tolerance");
 
-    const auto& inputHistoryJs = JSON_GET_OBJECT(config, "Input History");
-    _storeInputHistory = JSON_GET_BOOLEAN(inputHistoryJs, "Store Input History");
+    const auto& inputHistoryJs = JSON_GET_OBJECT(config, "Store Input History");
+    _inputHistoryEnabled = JSON_GET_BOOLEAN(inputHistoryJs, "Enabled");
     _maximumStep = JSON_GET_NUMBER(uint32_t, inputHistoryJs, "Maximum Step");
     
     const auto& stateCompressionJs = JSON_GET_OBJECT(config, "State Compression");
     _useDifferentialCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Differential Compression");
     _maximumDifferences = JSON_GET_NUMBER(size_t, stateCompressionJs, "Max Difference (bytes)");
     _useDifferentialCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Zlib Compression");
+  }
+
+  void parseGameInputs(const nlohmann::json& gameInputsJs)
+  {
+    for (const auto& inputSetJs : gameInputsJs) _inputSets.insert(std::move(parseInputSet(inputSetJs)));
 
     // If storing input history, allocate input history storage
-    if (_storeInputHistory == true)
+    if (_inputHistoryEnabled == true)
     {
-      // Getting all possible inputs
-      const auto possibleInputs = _game->getAllowedInputs();
-
       // Calculating bit storage for the possible inputs index
-      const size_t possibleInputSize = possibleInputs.size();
-      size_t indexSizeBits = 0;
+      _inputIndexSizeBits = 0;
       size_t indexCapacity = 1;
-      while (indexCapacity < possibleInputSize) { indexCapacity <<= 1, indexSizeBits++; }; 
+      while (indexCapacity < _currentInputIndex) { indexCapacity <<= 1, _inputIndexSizeBits++; }; 
 
       // Total size in bits for the input history
-      size_t inputHistorySizeBits = _maximumStep * indexSizeBits;
+      size_t inputHistorySizeBits = _maximumStep * _inputIndexSizeBits;
 
       // Total size in bytes
       _inputHistorySizeBytes = inputHistorySizeBits / 8;
@@ -48,19 +52,97 @@ class Runner final
       // Add one byte if not perfectly divisible by 8
       if (inputHistorySizeBits % 8 > 0) _inputHistorySizeBytes++;
 
-      printf("Input size: %lu, Index bit capacity: %lu (bits: %lu)\n", possibleInputSize, indexCapacity, indexSizeBits);
+      printf("Input max index: %u, Index bit capacity: %lu (bits: %lu)\n", _currentInputIndex, indexCapacity, _inputIndexSizeBits);
       printf("Input History Size Bytes: %lu (Bits: %lu)\n", _inputHistorySizeBytes, inputHistorySizeBits);
 
       // Allocating storage now
-      _inputHistory = std::make_unique<uint8_t>(_inputHistorySizeBytes);
+      _inputHistory.resize(_inputHistorySizeBytes);
+
+      // Clearing storage (set to zero)
+      memset(_inputHistory.data(), 0, _inputHistorySizeBytes);
     }
   }
 
-  // Function to advance state. Returns a vector with the performed inputs (including skip frames)
+  std::unique_ptr<InputSet> parseInputSet(const nlohmann::json& inputSetJs)
+  {
+    // Checking format
+    if (inputSetJs.is_object() == false) EXIT_WITH_ERROR("[ERROR] Input set provided must be a JSON object type. Dump: %s.\n", inputSetJs.dump(2).c_str());
+
+    // Creating new input set to add
+    auto inputSet = std::make_unique<InputSet>();
+
+    // Getting input set condition array
+    const auto& conditions = JSON_GET_ARRAY(inputSetJs, "Conditions");
+
+    // Getting input string array
+    const auto& inputsJs = JSON_GET_ARRAY(inputSetJs, "Inputs");
+
+    // Parsing input set conditions
+    for (const auto& condition : conditions) inputSet->addCondition(_game->parseCondition(condition));  
+
+    // Parsing input set inputs
+    for (const auto& inputJs : inputsJs)
+    {
+      // Checking format
+      if (inputJs.is_string() == false) EXIT_WITH_ERROR("[ERROR] Inputs provided must be of string type. Dump: %s.\n", inputSetJs.dump(2).c_str());
+
+      // Getting string input
+      const auto& input = inputJs.get<std::string>();
+
+      // Getting input hash
+      const auto inputHash = hashString(input);
+
+      // Getting index for the new input
+      InputSet::inputIndex_t inputIdx = 0;
+      
+      // Checking if input has already been added globally. If not, add it
+      if (_inputHashMap.contains(inputHash) == false)
+      {
+        // Getting input index and advancing it
+        inputIdx = _currentInputIndex++;
+
+        // Adding new input hash->index to the map
+        _inputHashMap[inputHash] = inputIdx;
+
+        // Adding new input index->string to the map
+        _inputStringMap[inputIdx] = input;
+      }
+
+      // If it is, just get it from there
+      if (_inputHashMap.contains(inputHash) == true) inputIdx = _inputHashMap[inputHash];
+
+      // Register the new input
+      inputSet->addInput(inputIdx);
+    }
+
+    return inputSet;
+  }
+  
+  // Function to advance state.
   void advanceState(const std::string& input)
   {
+    // Getting input hash
+    const auto inputHash = hashString(input);
+
+    // Getting input index from the hash map
+    auto it = _inputHashMap.find(inputHash);
+    if (it == _inputHashMap.end()) EXIT_WITH_ERROR("[ERROR] Input '%s' provided but has not been registered as allowed input first.\n", input.c_str());
+    const auto inputIndex = it->second;
+
+    advanceState(inputIndex);
+  }
+
+    // Function to advance state.
+  void advanceState(const InputSet::inputIndex_t inputIdx)
+  {
+    // Getting input string
+    const auto& inputString = _inputStringMap[inputIdx];
+
     // Performing the requested input
-    _game->advanceState(input);
+    _game->advanceState(inputString);
+
+    // If storing input history, do it now
+    if (_inputHistoryEnabled == true) bitcopy(_inputHistory.data(), _currentStep, (const uint8_t*)&inputIdx, 0, 1, _inputIndexSizeBits);
 
     // Advancing step counter
     _currentStep++;
@@ -69,29 +151,43 @@ class Runner final
   // Serialization routine 
   inline void serializeState(uint8_t* outputStateData) const
   { 
-     size_t pos = 0;
+    size_t pos = 0;
 
-     // Serializing runner-specific data
-     memcpy(&outputStateData[pos], &_currentStep, sizeof(_currentStep));
-     pos += sizeof(_currentStep);
+    // Serializing runner-specific data
+    memcpy(&outputStateData[pos], &_currentStep, sizeof(_currentStep));
+    pos += sizeof(_currentStep);
 
-     // Serializing internal emulator state
-     _game->serializeState(&outputStateData[pos]);
-     pos += _game->getStateSize();
+    // If enabled, store input history    
+    if (_inputHistoryEnabled == true)
+    {
+      memcpy(&outputStateData[pos], _inputHistory.data(), _inputHistorySizeBytes);
+      pos += _inputHistorySizeBytes;
+    }
+
+    // Serializing internal emulator state
+    _game->serializeState(&outputStateData[pos]);
+    pos += _game->getStateSize();
   }
 
   // Deserialization routine
   inline void deserializeState(const uint8_t* inputStateData)
   {
-     size_t pos = 0;
+    size_t pos = 0;
 
-     // Deserializing game-specific data
-     memcpy(&_currentStep, &inputStateData[pos], sizeof(_currentStep));
-     pos += sizeof(_currentStep);
+    // Deserializing game-specific data
+    memcpy(&_currentStep, &inputStateData[pos], sizeof(_currentStep));
+    pos += sizeof(_currentStep);
 
-     // Deserializing state data into the emulator
-     _game->deserializeState(&inputStateData[pos]); 
-     pos += _game->getStateSize();
+    // If enabled, recover input history    
+    if (_inputHistoryEnabled == true)
+    {
+      memcpy(_inputHistory.data(), &inputStateData[pos], _inputHistorySizeBytes);
+      pos += _inputHistorySizeBytes;
+    }
+
+    // Deserializing state data into the emulator
+    _game->deserializeState(&inputStateData[pos]); 
+    pos += _game->getStateSize();
   }
 
   // This function returns the size of the game state
@@ -101,6 +197,9 @@ class Runner final
 
     // Adding the size of game specific storage
     stateSize += sizeof(_currentStep);
+
+    // If enabled, factor in the size of input history    
+    if (_inputHistoryEnabled == true) stateSize += _inputHistorySizeBytes;
 
     // Adding the size of the emulator state
     stateSize += _game->getStateSize();
@@ -165,13 +264,16 @@ class Runner final
   uint32_t _hashStepToleranceStage;
 
   // Specifies whether to store the input history
-  bool _storeInputHistory;
+  bool _inputHistoryEnabled;
 
   // Total size for the input history in bytes
   size_t _inputHistorySizeBytes;
 
+  // Maximum size of input index in bits
+  size_t _inputIndexSizeBits;
+
   // Storage for the input history
-  std::unique_ptr<uint8_t> _inputHistory;
+  std::vector<uint8_t> _inputHistory;
 
   // Whether to use differential compression
   bool _useDifferentialCompression;
@@ -182,11 +284,20 @@ class Runner final
   // Whether to use Zlib compression
   bool _useZlibCompression;
 
-  // Type for input indexing
-  typedef uint32_t inputIndex_t; 
+  ///////////////////////////////
+  // Input processing variables
+
+  // Storage for the index to use to register a new input. Should start at zero
+  InputSet::inputIndex_t _currentInputIndex = 0;
 
   // Hash map for input indexing
-  std::map<hash_t, inputIndex_t> _inputHashMap;
+  std::map<hash_t, InputSet::inputIndex_t> _inputHashMap;
+
+  // Map for getting the allowed input from index
+  std::map<InputSet::inputIndex_t, std::string> _inputStringMap;
+
+  // Set of allowed input sets
+  std::unordered_set<std::unique_ptr<InputSet>> _inputSets;
 };
 
 } // namespace jaffarPlus
