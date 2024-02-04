@@ -56,6 +56,12 @@ int main(int argc, char *argv[])
   try { config = nlohmann::json::parse(configFileString); }
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
+  // Parsing state compression configuration
+  const auto& stateCompressionJs = JSON_GET_OBJECT(config, "State Compression");
+  const auto useDifferentialCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Differential Compression");
+  const auto maximumDifferences = JSON_GET_NUMBER(size_t, stateCompressionJs, "Max Difference (bytes)");
+  const auto useZlibCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Zlib Compression");
+
   // Getting initial state file from the configuration
   const auto initialStateFilePath = JSON_GET_STRING(config, "Initial State File Path");
 
@@ -98,18 +104,31 @@ int main(int argc, char *argv[])
   // Getting sequence length
   const auto sequenceLength = solutionSequence.size();
 
+  // Getting differential state size
+  size_t differentialStateSize = r.getDifferentialStateSize(maximumDifferences);
+
   // Printing information
-  LOG("[J+] Emulator Name:          '%s'\n", emulatorName.c_str());
-  LOG("[J+] Config File:            '%s'\n", configFile.c_str());
-  LOG("[J+] Solution File:          '%s'\n", solutionFile.c_str());
-  LOG("[J+] Cycle Type:             '%s'\n", cycleType.c_str());
-  LOG("[J+] State Size:              %lu\n", stateSize);
-  LOG("[J+] Sequence Length:         %lu\n", sequenceLength);
+  LOG("[J+] Emulator Name:                   '%s'\n", emulatorName.c_str());
+  LOG("[J+] Config File:                     '%s'\n", configFile.c_str());
+  LOG("[J+] Solution File:                   '%s'\n", solutionFile.c_str());
+  LOG("[J+] Cycle Type:                      '%s'\n", cycleType.c_str());
+  LOG("[J+] State Size:                       %lu\n", stateSize);
+  LOG("[J+] Use Differential Compression:     %s\n", useDifferentialCompression ? "true" : "false");
+  if (useDifferentialCompression == true)
+  {
+  LOG("[J+]  + Using Zlib Compression:        %s\n", useZlibCompression ? "true" : "false");
+  LOG("[J+]  + Differential State Size:       %lu\n", differentialStateSize);
+  } 
+  LOG("[J+] Sequence Length:                  %lu\n", sequenceLength);
   LOG("[J+] ********** Running Test **********\n");
 
   // Serializing initial state
   auto currentState = (uint8_t *)malloc(stateSize);
   r.serializeState(currentState);
+
+  // Storage for diffential compression
+  auto diffentialStateData = (uint8_t *)malloc(differentialStateSize);
+  size_t maxDifferentialStateSize = r.serializeDifferentialState(diffentialStateData, currentState, differentialStateSize, useZlibCompression);
 
   // Check whether to perform each action
   const bool doPreAdvance = cycleType == "Full";
@@ -121,9 +140,20 @@ int main(int argc, char *argv[])
   for (const auto& input : solutionSequence)
   {
     if (doPreAdvance == true) r.advanceState(input);
-    if (doDeserialize == true) r.deserializeState(currentState);
+
+    if (doDeserialize == true)
+    {
+      if (useDifferentialCompression == false) r.deserializeState(currentState);
+      if (useDifferentialCompression == true) r.deserializeDifferentialState(diffentialStateData, currentState, useZlibCompression);
+    } 
+
     r.advanceState(input);
-    if (doSerialize == true) r.serializeState(currentState);
+
+    if (doSerialize == true)
+    {
+      if (useDifferentialCompression == false) r.serializeState(currentState);
+      if (useDifferentialCompression == true) maxDifferentialStateSize = std::max(maxDifferentialStateSize, r.serializeDifferentialState(diffentialStateData, currentState, differentialStateSize, useZlibCompression));
+    } 
   }
   auto tf = std::chrono::high_resolution_clock::now();
 
@@ -132,8 +162,12 @@ int main(int argc, char *argv[])
   double elapsedTimeSeconds = (double)dt * 1.0e-9;
 
   // Printing time information
-  LOG("[J+] Elapsed time:            %3.3fs\n", (double)dt * 1.0e-9);
-  LOG("[J+] Performance:             %.3f inputs / s\n", (double)sequenceLength / elapsedTimeSeconds);
+  LOG("[J+] Elapsed time:                  %3.3fs\n", (double)dt * 1.0e-9);
+  LOG("[J+] Performance:                   %.3f inputs / s\n", (double)sequenceLength / elapsedTimeSeconds);
+  if (useDifferentialCompression == true)
+  {
+  LOG("[J+] Max Differential State Size:   %lu\n", maxDifferentialStateSize);
+  } 
 
   // Printing Information
   LOG("[J+] Runner Information:\n");
