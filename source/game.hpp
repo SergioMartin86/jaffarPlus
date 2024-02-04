@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <common/bitwise.hpp>
 #include <common/hash.hpp>
 #include <common/json.hpp>
 #include "emulator.hpp"
@@ -62,6 +63,18 @@ class Game
 
     // Calling the post-update hook
     stateUpdatePostHook();
+
+    // Re-evaluate game rules
+    evaluateRules();
+
+    // Determining new game state type
+    updateGameStateType();
+
+    // Running game-specific rule actions
+    runGameSpecificRuleActions();
+
+    // Updating game reward
+    updateReward();
   }
 
   // Serialization routine 
@@ -69,13 +82,22 @@ class Game
   { 
     size_t pos = 0;
 
-    // Serializing game-specific data
-    memcpy(&outputStateData[pos], (const void*)_gameSpecificStorage.data(), _gameSpecificStorageSize);
-    pos += _gameSpecificStorageSize;
-
     // Serializing internal emulator state
     _emulator->serializeState(&outputStateData[pos]);
     pos += _emulator->getStateSize();
+
+    // Serializing game-specific data
+    memcpy(&outputStateData[pos], _gameSpecificStorage.data(), _gameSpecificStorageSize);
+    pos += _gameSpecificStorageSize;
+
+    // Serializing reward
+    memcpy(&outputStateData[pos], &_reward, sizeof(_reward));
+    pos += _reward;
+
+    // Serializing rule states
+    memcpy(&outputStateData[pos], _rulesStatus.data(), _rulesStatus.size());
+    pos += _rulesStatus.size();
+
   }
 
   // Deserialization routine
@@ -86,13 +108,21 @@ class Game
     // Calling the pre-update hook
     stateUpdatePreHook();
 
+    // Deserializing state data into the emulator
+    _emulator->deserializeState(&inputStateData[pos]); 
+    pos += _emulator->getStateSize();
+
     // Deserializing game-specific data
     memcpy((void*)_gameSpecificStorage.data(), &inputStateData[pos], _gameSpecificStorageSize);
     pos += _gameSpecificStorageSize;
 
-    // Deserializing state data into the emulator
-    _emulator->deserializeState(&inputStateData[pos]); 
-    pos += _emulator->getStateSize();
+    // Deserializing reward
+    memcpy(&_reward, &inputStateData[pos], sizeof(_reward));
+    pos += _reward;
+
+    // Deserializing rule states
+    memcpy(_rulesStatus.data(), &inputStateData[pos], _rulesStatus.size());
+    pos += _rulesStatus.size();
 
     // Calling the post-update hook
     stateUpdatePostHook();
@@ -103,11 +133,17 @@ class Game
   {
     size_t stateSize = 0;
 
+    // Adding the size of the emulator state
+    stateSize += _emulator->getStateSize();
+
     // Adding the size of game specific storage
     stateSize += _gameSpecificStorageSize;
 
-    // Adding the size of the emulator state
-    stateSize += _emulator->getStateSize();
+    // Adding the size of current reward
+    stateSize += sizeof(_reward);
+
+    // Adding the size of rules status
+    stateSize += sizeof(_rulesStatus.size());
 
     return stateSize;
   }
@@ -143,7 +179,7 @@ class Game
 
    // Printing rule status
    LOG("[J+]  + Rule Status: ");
-   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", _rulesStatus[i] ? 1 : 0);
+   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", getBitValue(_rulesStatus.data(), i) ? 1 : 0);
    LOG("\n");
 
    // Printing game properties defined in the script file
@@ -263,10 +299,10 @@ class Game
     }
 
     // Create rule status vector
-    _rulesStatus.resize(_rules.size());
+    _rulesStatus.resize(getByteStorageForBitCount(_rules.size()));
 
     // Clearing the status vector evaluation
-    for (size_t i = 0; i < _rulesStatus.size(); i++) _rulesStatus[i] = false;
+    for (size_t i = 0; i < _rules.size(); i++) setBitValue(_rulesStatus.data(), i, false);
   }
  
   // Individual rule parser 
@@ -422,7 +458,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Evaluate rule only if it's not yet satisfied
-      if (_rulesStatus[ruleIdx] == false)
+      if (getBitValue(_rulesStatus.data(), ruleIdx) == false)
       {
         // Checking if conditions are met
         bool isSatisfied = rule.evaluate();
@@ -448,7 +484,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Run ations only if rule is satisfied
-      if (_rulesStatus[ruleIdx] == true) for (const auto& action : rule.getActions()) action();
+      if (getBitValue(_rulesStatus.data(), ruleIdx) == true) for (const auto& action : rule.getActions()) action();
     }  
   }
 
@@ -467,7 +503,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Run actions
-      if (_rulesStatus[ruleIdx] == true)
+      if (getBitValue(_rulesStatus.data(), ruleIdx) == true)
       {
        // Modify game state, depending on rule type
 
@@ -500,7 +536,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Run actions
-      if (_rulesStatus[ruleIdx] == true)
+      if (getBitValue(_rulesStatus.data(), ruleIdx) == true)
       {
        // Getting reward from satisfied rule
        const auto ruleReward = rule.getReward();
@@ -529,14 +565,14 @@ class Game
       auto subRuleIdx = subRule->getIndex();
 
       // Only activate it if it hasn't been activated before
-      if (_rulesStatus[subRuleIdx] == false) satisfyRule(*subRule);
+      if (getBitValue(_rulesStatus.data(), subRuleIdx) == false) satisfyRule(*subRule);
     }
 
     // Getting rule index
     const auto ruleIdx = rule.getIndex(); 
 
     // Setting status to satisfied
-    _rulesStatus[ruleIdx] = true;
+    setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
   // Returns pointer to the internal emulator
@@ -585,7 +621,7 @@ class Game
   std::map<Rule::label_t, std::unique_ptr<Rule>> _rules;
 
   // Storage for status vector indicating whether the rules have been satisfied
-  std::vector<bool> _rulesStatus;
+  std::vector<uint8_t> _rulesStatus;
 
   // Property hash set to quickly distinguish states from each other. Its a vector to keep the ordering
   std::vector<const Property*> _propertyHashVector;

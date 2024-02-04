@@ -30,7 +30,7 @@ namespace jaffarPlus
     0b01111111
   };
 
-  void bitcopy(uint8_t* dstBuffer, const size_t dstOffset, const uint8_t* srcBuffer, const size_t srcOffset, const size_t count, const size_t elementBitSize )
+  inline void bitcopy(uint8_t* dstBuffer, const size_t dstOffset, const uint8_t* srcBuffer, const size_t srcOffset, const size_t count, const size_t elementBitSize )
   {
     const size_t totalBitCount = count * elementBitSize;
     const size_t dstOffsetBits = dstOffset * elementBitSize;
@@ -56,6 +56,40 @@ namespace jaffarPlus
       if (dstPosBit == 8) { dstPosBit = 0; dstPosByte++; }
       if (srcPosBit == 8) { srcPosBit = 0; srcPosByte++; }
     }
+  }
+  
+  inline size_t getEncodingBitsForElementCount(const size_t elementCount)
+  {
+    // Calculating bit storage for the possible inputs index
+    size_t bitEncodingSize = 0;
+    size_t encodingCapacity = 1;
+    while (encodingCapacity < elementCount) { encodingCapacity <<= 1, bitEncodingSize++; }; 
+    return bitEncodingSize;
+  }
+
+  inline size_t getByteStorageForBitCount(const size_t bitCount)
+  {
+    // Calculating bit storage for the possible inputs index
+    size_t byteStorageSize = bitCount / 8;
+    if (bitCount % 8 > 0) byteStorageSize++;
+    return byteStorageSize;
+  }
+
+  inline void setBitValue(uint8_t* dst, const size_t idx, const bool value)
+  {
+    size_t dstPosByte = idx / 8;
+    uint8_t dstPosBit = idx % 8;
+    
+    if (value == false) dst[dstPosByte] = dst[dstPosByte] & bitNotMaskTable[dstPosBit];
+    if (value == true)  dst[dstPosByte] = dst[dstPosByte] | bitMaskTable[dstPosBit];
+  }
+
+  inline bool getBitValue(const uint8_t* dst, const size_t idx)
+  {
+    size_t dstPosByte = idx / 8;
+    uint8_t dstPosBit = idx % 8;
+    
+    return (dst[dstPosByte] & bitMaskTable[dstPosBit]) > 0;
   }
 
 } // namespace jaffarPlus

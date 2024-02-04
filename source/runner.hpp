@@ -3,11 +3,14 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <set>
+#include <xdelta3/xdelta3.h>
 #include <common/bitwise.hpp>
 #include <common/hash.hpp>
 #include <common/json.hpp>
 #include "game.hpp"
 #include "inputSet.hpp"
+
 
 namespace jaffarPlus
 {
@@ -39,9 +42,7 @@ class Runner final
     if (_inputHistoryEnabled == true)
     {
       // Calculating bit storage for the possible inputs index
-      _inputIndexSizeBits = 0;
-      size_t indexCapacity = 1;
-      while (indexCapacity < _currentInputIndex) { indexCapacity <<= 1, _inputIndexSizeBits++; }; 
+      _inputIndexSizeBits = getEncodingBitsForElementCount(_currentInputIndex);
 
       // Total size in bits for the input history
       size_t inputHistorySizeBits = _maximumStep * _inputIndexSizeBits;
@@ -51,9 +52,6 @@ class Runner final
 
       // Add one byte if not perfectly divisible by 8
       if (inputHistorySizeBits % 8 > 0) _inputHistorySizeBytes++;
-
-      printf("Input max index: %u, Index bit capacity: %lu (bits: %lu)\n", _currentInputIndex, indexCapacity, _inputIndexSizeBits);
-      printf("Input History Size Bytes: %lu (Bits: %lu)\n", _inputHistorySizeBytes, inputHistorySizeBits);
 
       // Allocating storage now
       _inputHistory.resize(_inputHistorySizeBytes);
@@ -116,6 +114,20 @@ class Runner final
     }
 
     return inputSet;
+  }
+
+  std::set<InputSet::inputIndex_t> getPossibleInputs() const
+  {
+    // Storage for the possible input set
+    std::set<InputSet::inputIndex_t> possibleInputs;
+
+    // For all registered input sets, see which ones satisfy their conditions and add them
+    for (const auto& inputSet : _inputSets)
+     if (inputSet->evaluate() == true)
+       possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
+
+    // Return possible inputs
+    return possibleInputs;
   }
   
   // Function to advance state.
@@ -190,6 +202,12 @@ class Runner final
     pos += _game->getStateSize();
   }
 
+  // Differential serialization routine
+  inline void serializeDifferentialState(uint8_t* outputStateData, uint8_t* referenceState) const
+  { 
+
+  }
+
   // This function returns the size of the game state
   size_t getStateSize() const
   {
@@ -236,14 +254,29 @@ class Runner final
    // Calculating hash tolerance stage
    auto hashStepToleranceStage = getHashStepToleranceStage();
 
+   // Memory usage
+   LOG("[J+]  + Input History Enabled: %s\n", _inputHistoryEnabled ? "true" : "false");
+   if (_inputHistoryEnabled == true)
+   {
+    LOG("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _currentInputIndex, _inputIndexSizeBits);
+    LOG("[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _maximumStep, _inputHistorySizeBytes, _inputIndexSizeBits * _maximumStep);
+   }
+
    // Printing runner state
    LOG("[J+]  + Current Step: %u\n", _currentStep);
    LOG("[J+]  + Hash: %s\n", hash.c_str());
    LOG("[J+]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
+
+   // Getting possible inputs
+   const auto& possibleInputs = getPossibleInputs();
+
+   // Printing them
+   LOG("[J+]  + Possible Inputs:\n");
+   for (const auto inputIdx : possibleInputs) 
+    printf("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
   }
 
   inline uint32_t getHashStepToleranceStage() const { return  _currentStep % (_hashStepTolerance + 1); }
-      
   inline Game* getGame() const { return _game.get(); }
 
  private:
