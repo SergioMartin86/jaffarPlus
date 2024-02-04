@@ -47,18 +47,21 @@ class Game
     // Initializing the particular game selected
     initializeImpl();
 
-    // Updating game specific values
-    updateGameSpecificValues();
+    // Calling the post-update hook
+    stateUpdatePostHook();
   }
 
   // Function to advance state. 
   inline void advanceState(const std::string& input)
   {
+    // Calling the pre-update hook
+    stateUpdatePreHook();
+
     // Performing the requested input
     advanceStateImpl(input);
 
-    // Updating derived values
-    updateGameSpecificValues();
+    // Calling the post-update hook
+    stateUpdatePostHook();
   }
 
   // Serialization routine 
@@ -80,6 +83,9 @@ class Game
   {
     size_t pos = 0;
 
+    // Calling the pre-update hook
+    stateUpdatePreHook();
+
     // Deserializing game-specific data
     memcpy((void*)_gameSpecificStorage.data(), &inputStateData[pos], _gameSpecificStorageSize);
     pos += _gameSpecificStorageSize;
@@ -88,8 +94,8 @@ class Game
     _emulator->deserializeState(&inputStateData[pos]); 
     pos += _emulator->getStateSize();
 
-    // Updating game specific values
-    updateGameSpecificValues();
+    // Calling the post-update hook
+    stateUpdatePostHook();
   }
 
   // This function returns the size of the game state
@@ -403,6 +409,9 @@ class Game
   // Evaluates the rule set on a given frame. Returns true if it is a fail.
   inline void evaluateRules() 
   {
+    // Calling the pre-update hook
+    ruleUpdatePreHook();
+
     // Second, check which unsatisfied rules have been satisfied now
     for (auto& entry : _rules)
     {
@@ -422,6 +431,9 @@ class Game
         if (isSatisfied) satisfyRule(rule);
       }
     }
+
+    // Calling the pre-update hook
+    ruleUpdatePostHook();
   }
 
   inline void runGameSpecificRuleActions()
@@ -539,12 +551,17 @@ class Game
   protected:
 
   virtual float calculateGameSpecificReward() const = 0;
-  virtual void updateGameSpecificValues() = 0;
   virtual void computeAdditionalHashing(MetroHash128& hashEngine) const = 0;
   virtual void initializeImpl() = 0;
   virtual void printInfoImpl() const = 0;
   virtual void advanceStateImpl(const std::string& input) = 0;
   virtual bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) = 0;
+
+  // Optional hooks
+  virtual inline void stateUpdatePreHook() {};
+  virtual inline void stateUpdatePostHook() {};
+  virtual inline void ruleUpdatePreHook() {};
+  virtual inline void ruleUpdatePostHook() {};
 
   // Current game state type
   stateType_t _stateType;

@@ -109,11 +109,7 @@
     [
      { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
      { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
-     { "Type": "Set Camera Distance Magnet", "Intensity": 0.0 },
-     { "Type": "Set Recovery Timer Magnet", "Intensity": 0.0 },
-     { "Type": "Set Player 1 Angle Magnet", "Intensity": 0.0, "Angle": 0 },
-     { "Type": "Set Point Magnet", "Intensity": 0.0, "X": 0, "Y": 0 }
+     { "Type": "Set Player Accel Magnet", "Intensity": 0.001 }
     ]
    },
    

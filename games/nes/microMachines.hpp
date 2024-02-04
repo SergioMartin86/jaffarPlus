@@ -68,7 +68,8 @@ class MicroMachines final : public jaffarPlus::Game
     hashEngine.Update(*_player1TankFireTimer > 0);
   }
 
-  inline void updateGameSpecificValues() override
+  // Updating derivative values after updating the internal state
+  inline void stateUpdatePostHook() override
   {
     _player1PosX = (uint16_t)*_player1PosX1 * 256 + (uint16_t)*_player1PosX2;
     _player1PosY = (uint16_t)*_player1PosY1 * 256 + (uint16_t)*_player1PosY2;
@@ -84,6 +85,19 @@ class MicroMachines final : public jaffarPlus::Game
     _player1DistanceToCameraX = std::abs(_cameraPosX - _player1PosX);
     _player1DistanceToCameraY = std::abs(_cameraPosY - _player1PosY);
     _player1DistanceToCamera  = sqrtf(_player1DistanceToCameraX*_player1DistanceToCameraX + _player1DistanceToCameraY*_player1DistanceToCameraY);
+  }
+
+  // Resetting magnet values prior to rule evaluation
+  inline void ruleUpdatePreHook() override
+  {
+    // Resetting magnets ahead of rule re-evaluation
+    _playerCurrentLapMagnet = 0.0;
+    _playerLapProgressMagnet = 0.0;
+    _playerAccelMagnet = 0.0;
+    _cameraDistanceMagnet = 0.0;
+    _recoveryTimerMagnet = 0.0;
+    _player1AngleMagnet.intensity = 0.0;
+    _pointMagnet.intensity = 0.0;
   }
 
   inline float calculateGameSpecificReward() const
