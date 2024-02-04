@@ -135,20 +135,6 @@ int main(int argc, char *argv[])
   LOG("[J+] Elapsed time:            %3.3fs\n", (double)dt * 1.0e-9);
   LOG("[J+] Performance:             %.3f inputs / s\n", (double)sequenceLength / elapsedTimeSeconds);
 
-  // Updating and printing game internal information
-  
-  // Re-evaluate game rules
-  r.getGame()->evaluateRules();
-
-  // Determining new game state type
-  r.getGame()->updateGameStateType();
-
-  // Running game-specific rule actions
-  r.getGame()->runGameSpecificRuleActions();
-
-  // Updating game reward
-  r.getGame()->updateReward();
-
   // Printing Information
   LOG("[J+] Runner Information:\n");
   r.printInfo();
