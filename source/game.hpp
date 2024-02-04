@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <xdelta3/xdelta3.h>
 #include <common/bitwise.hpp>
 #include <common/hash.hpp>
 #include <common/json.hpp>
@@ -92,12 +93,11 @@ class Game
 
     // Serializing reward
     memcpy(&outputStateData[pos], &_reward, sizeof(_reward));
-    pos += _reward;
+    pos += sizeof(_reward);
 
     // Serializing rule states
     memcpy(&outputStateData[pos], _rulesStatus.data(), _rulesStatus.size());
     pos += _rulesStatus.size();
-
   }
 
   // Deserialization routine
@@ -118,7 +118,7 @@ class Game
 
     // Deserializing reward
     memcpy(&_reward, &inputStateData[pos], sizeof(_reward));
-    pos += _reward;
+    pos += sizeof(_reward);
 
     // Deserializing rule states
     memcpy(_rulesStatus.data(), &inputStateData[pos], _rulesStatus.size());
@@ -143,7 +143,126 @@ class Game
     stateSize += sizeof(_reward);
 
     // Adding the size of rules status
-    stateSize += sizeof(_rulesStatus.size());
+    stateSize += _rulesStatus.size();
+
+    return stateSize;
+  }
+
+  // Differential serialization routine
+  inline size_t serializeDifferentialState(uint8_t* __restrict__ outputStateData, const uint8_t* __restrict__ referenceState, const size_t maxDifferences, const bool useZlibCompression) const
+  {
+    size_t pos = 0;
+
+    // Serializing internal emulator state
+    uint8_t emulatorStateData[_emulator->getStateSize()];
+    _emulator->serializeState(emulatorStateData);
+    
+    // Encoding internal emulator state with differential data
+    auto diffCount = (usize_t*)&outputStateData[pos];
+    pos += sizeof(usize_t);
+
+    // Encoding differential for the emulator state
+    int ret = xd3_encode_memory(
+      emulatorStateData,
+      _emulator->getStateSize(),
+      &referenceState[pos],
+      _emulator->getStateSize(),
+      &outputStateData[pos],
+      diffCount,
+      maxDifferences,
+      useZlibCompression ? 0 : XD3_NOCOMPRESS
+    );
+
+    if (*diffCount > maxDifferences) EXIT_WITH_ERROR("[Error] Exceeded maximum difference count emulator state storage: %d > %d.\n", *diffCount, maxDifferences);
+    if (ret != 0) EXIT_WITH_ERROR("[Error] unexpected error while encoding differential compression of emulator state\n");
+
+    // Advancing position pointer
+    pos += *diffCount;
+
+    // Serializing game-specific data
+    memcpy(&outputStateData[pos], _gameSpecificStorage.data(), _gameSpecificStorageSize);
+    pos += _gameSpecificStorageSize;
+
+    // Serializing reward
+    memcpy(&outputStateData[pos], &_reward, sizeof(_reward));
+    pos += sizeof(_reward);
+
+    // Serializing rule states
+    memcpy(&outputStateData[pos], _rulesStatus.data(), _rulesStatus.size());
+    pos += _rulesStatus.size();
+
+    return pos;
+  }
+
+  // Differential deserialization routine
+  inline size_t deserializeDifferentialState(const uint8_t* __restrict__ inputStateData, const uint8_t* __restrict__ referenceState, const bool useZlibCompression)
+  {
+    size_t pos = 0;
+
+    // Calling the pre-update hook
+    stateUpdatePreHook();
+
+    // Storage for the internal emulator state
+    uint8_t emulatorStateData[_emulator->getStateSize()];
+
+    // Reading differential count
+    usize_t diffCount;
+    memcpy(&diffCount, &inputStateData[pos], sizeof(usize_t));
+    pos += sizeof(usize_t);
+
+    usize_t output_size;
+    int ret = xd3_decode_memory (
+      &inputStateData[pos],
+      diffCount,
+      &referenceState[pos],
+      _emulator->getStateSize(),
+      emulatorStateData,
+      &output_size,
+      _emulator->getStateSize(),
+      useZlibCompression ? 0 : XD3_NOCOMPRESS
+    );
+
+    if (ret != 0) EXIT_WITH_ERROR("[Error] State Decode failure: %d: %s\n", ret, xd3_strerror(ret));
+
+    // Deserializing emulator state
+    _emulator->deserializeState(emulatorStateData); 
+
+    // Advancing position pointer
+    pos += diffCount;
+  
+    // Deserializing game-specific data
+    memcpy((void*)_gameSpecificStorage.data(), &inputStateData[pos], _gameSpecificStorageSize);
+    pos += _gameSpecificStorageSize;
+
+    // Deserializing reward
+    memcpy(&_reward, &inputStateData[pos], sizeof(_reward));
+    pos += sizeof(_reward);
+
+    // Deserializing rules status
+    memcpy(_rulesStatus.data(), &inputStateData[pos], _rulesStatus.size());
+    pos += _rulesStatus.size();
+
+    // Calling the post-update hook
+    stateUpdatePostHook();
+
+    return pos;
+  }
+
+  inline size_t getDifferentialStateSize(const size_t maxDifferences)
+  {
+    size_t stateSize = 0;
+
+    // Adding maximum differences (in place of emulator storage)
+    stateSize += maxDifferences;
+
+    // Adding the size of game specific storage
+    stateSize += _gameSpecificStorageSize;
+
+    // Adding the size of current reward
+    stateSize += sizeof(_reward);
+
+    // Adding the size of rules status
+    stateSize += _rulesStatus.size();
 
     return stateSize;
   }

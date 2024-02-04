@@ -27,11 +27,6 @@ class Runner final
     const auto& inputHistoryJs = JSON_GET_OBJECT(config, "Store Input History");
     _inputHistoryEnabled = JSON_GET_BOOLEAN(inputHistoryJs, "Enabled");
     _maximumStep = JSON_GET_NUMBER(uint32_t, inputHistoryJs, "Maximum Step");
-    
-    const auto& stateCompressionJs = JSON_GET_OBJECT(config, "State Compression");
-    _useDifferentialCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Differential Compression");
-    _maximumDifferences = JSON_GET_NUMBER(size_t, stateCompressionJs, "Max Difference (bytes)");
-    _useDifferentialCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Zlib Compression");
   }
 
   void parseGameInputs(const nlohmann::json& gameInputsJs)
@@ -48,16 +43,16 @@ class Runner final
       size_t inputHistorySizeBits = _maximumStep * _inputIndexSizeBits;
 
       // Total size in bytes
-      _inputHistorySizeBytes = inputHistorySizeBits / 8;
+      size_t inputHistorySizeBytes = inputHistorySizeBits / 8;
 
       // Add one byte if not perfectly divisible by 8
-      if (inputHistorySizeBits % 8 > 0) _inputHistorySizeBytes++;
+      if (inputHistorySizeBits % 8 > 0) inputHistorySizeBytes++;
 
       // Allocating storage now
-      _inputHistory.resize(_inputHistorySizeBytes);
+      _inputHistory.resize(inputHistorySizeBytes);
 
       // Clearing storage (set to zero)
-      memset(_inputHistory.data(), 0, _inputHistorySizeBytes);
+      memset(_inputHistory.data(), 0, _inputHistory.size());
     }
   }
 
@@ -154,7 +149,14 @@ class Runner final
     _game->advanceState(inputString);
 
     // If storing input history, do it now
-    if (_inputHistoryEnabled == true) bitcopy(_inputHistory.data(), _currentStep, (const uint8_t*)&inputIdx, 0, 1, _inputIndexSizeBits);
+    if (_inputHistoryEnabled == true) 
+    {
+      // Checking we haven't exeeded maximum step
+      if (_currentStep >= _maximumStep) EXIT_WITH_ERROR("[ERROR] Trying to advance step when storing input history and the maximum step (%lu) has been reached\n", _maximumStep);
+      
+      // Storing the new more in the input history
+      bitcopy(_inputHistory.data(), _currentStep, (const uint8_t*)&inputIdx, 0, 1, _inputIndexSizeBits);
+    }
 
     // Advancing step counter
     _currentStep++;
@@ -172,8 +174,8 @@ class Runner final
     // If enabled, store input history    
     if (_inputHistoryEnabled == true)
     {
-      memcpy(&outputStateData[pos], _inputHistory.data(), _inputHistorySizeBytes);
-      pos += _inputHistorySizeBytes;
+      memcpy(&outputStateData[pos], _inputHistory.data(), _inputHistory.size());
+      pos += _inputHistory.size();
     }
 
     // Serializing internal emulator state
@@ -193,19 +195,13 @@ class Runner final
     // If enabled, recover input history    
     if (_inputHistoryEnabled == true)
     {
-      memcpy(_inputHistory.data(), &inputStateData[pos], _inputHistorySizeBytes);
-      pos += _inputHistorySizeBytes;
+      memcpy(_inputHistory.data(), &inputStateData[pos], _inputHistory.size());
+      pos += _inputHistory.size();
     }
 
     // Deserializing state data into the emulator
     _game->deserializeState(&inputStateData[pos]); 
     pos += _game->getStateSize();
-  }
-
-  // Differential serialization routine
-  inline void serializeDifferentialState(uint8_t* outputStateData, uint8_t* referenceState) const
-  { 
-
   }
 
   // This function returns the size of the game state
@@ -217,10 +213,117 @@ class Runner final
     stateSize += sizeof(_currentStep);
 
     // If enabled, factor in the size of input history    
-    if (_inputHistoryEnabled == true) stateSize += _inputHistorySizeBytes;
+    if (_inputHistoryEnabled == true) stateSize += _inputHistory.size();
 
     // Adding the size of the emulator state
     stateSize += _game->getStateSize();
+
+    return stateSize;
+  }
+
+  // Differential serialization routine
+  inline size_t serializeDifferentialState(uint8_t* __restrict__ outputStateData, const uint8_t* __restrict__ referenceState, const size_t maxSize, const bool useZlibCompression) const
+  { 
+    size_t pos = 0;
+    size_t maxPos = maxSize - 1;
+
+    // Performing differential serialization of the internal game instance
+    pos += _game->serializeDifferentialState(&outputStateData[pos], &referenceState[pos], maxSize, useZlibCompression);
+    if (pos > maxPos) EXIT_WITH_ERROR("[Error] Serialize pointer position meets maximum differential state size: %d >= %d.\n", pos, maxSize);
+
+    // If storing input history, do it now
+    if (_inputHistoryEnabled == true) 
+    {
+      // Allocating space for differential count
+      auto diffCount = (usize_t*)&outputStateData[pos];
+      pos += sizeof(usize_t);
+
+      // Remaining differences
+      const usize_t remainingDifferences = maxSize - pos;
+
+      // Encoding differential for the move history    
+      int ret = xd3_encode_memory(
+        _inputHistory.data(),
+        _inputHistory.size(),
+        &referenceState[pos],
+        _inputHistory.size(),
+        &outputStateData[pos],
+        diffCount,
+        remainingDifferences,
+        useZlibCompression ? 0 : XD3_NOCOMPRESS
+       );
+
+      if (*diffCount > remainingDifferences) EXIT_WITH_ERROR("[Error] Exceeded maximum difference count in input history storage: %d + %d >= %d.\n", pos, *diffCount, maxSize);
+      if (ret != 0) EXIT_WITH_ERROR("[Error] unexpected error while encoding differential compression of input history. Diff count: %d\n", *diffCount);
+
+      // Advancing position pointer
+      pos += *diffCount;
+      if (pos > maxPos) EXIT_WITH_ERROR("[Error] Serialize pointer position meets maximum differential state size: %d >= %d.\n", pos, maxSize);
+    }
+
+    // Serializing current step
+    memcpy(&outputStateData[pos], &_currentStep, sizeof(_currentStep));
+    pos += sizeof(_currentStep);
+    if (pos > maxPos) EXIT_WITH_ERROR("[Error] Serialize pointer position meets maximum differential state size: %d >= %d.\n", pos, maxSize);
+
+    return pos;
+  }
+
+  // Differential deserialization routine
+  inline size_t deserializeDifferentialState(const uint8_t* __restrict__ inputStateData, const uint8_t* __restrict__ referenceState, const bool useZlibCompression)
+  { 
+    size_t pos = 0;
+
+    // Performing differential serialization of the internal game instance
+    pos += _game->deserializeDifferentialState(&inputStateData[pos], &referenceState[pos], useZlibCompression);
+
+    // If storing input history, do it now
+    if (_inputHistoryEnabled == true) 
+    {
+      // Reading differential count
+      usize_t diffCount;
+      memcpy(&diffCount, &inputStateData[pos], sizeof(usize_t));
+      pos += sizeof(usize_t);
+
+      usize_t output_size;
+      int ret = xd3_decode_memory (
+         &inputStateData[pos],
+         diffCount,
+         &referenceState[pos],
+        _inputHistory.size(),
+         (uint8_t*)_inputHistory.data(),
+         &output_size,
+        _inputHistory.size(),
+        useZlibCompression ? 0 : XD3_NOCOMPRESS
+      );
+
+      if (ret != 0) EXIT_WITH_ERROR("[Error] State Decode failure: %d: %s\n", ret, xd3_strerror(ret));
+
+      // Advancing position pointer
+      pos += diffCount;
+    }
+
+    // Deserializing current step
+    memcpy(&_currentStep, &inputStateData[pos], sizeof(_currentStep));
+    pos += sizeof(_currentStep);
+
+    // Returning bytes used
+    return pos;
+  }
+
+  // Getting the maximum differntial state size
+  inline size_t getDifferentialStateSize(const size_t maxDifferences)
+  { 
+    size_t stateSize = 0;
+
+    // Adding the size of game specific storage
+    stateSize += _game->getDifferentialStateSize(0);
+
+    // Adding the maximum difference size
+    stateSize += maxDifferences;
+
+    // Adding storage for current step
+    stateSize += sizeof(_currentStep);
 
     return stateSize;
   }
@@ -259,7 +362,7 @@ class Runner final
    if (_inputHistoryEnabled == true)
    {
     LOG("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _currentInputIndex, _inputIndexSizeBits);
-    LOG("[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _maximumStep, _inputHistorySizeBytes, _inputIndexSizeBits * _maximumStep);
+    LOG("[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _maximumStep, _inputHistory.size(), _inputIndexSizeBits * _maximumStep);
    }
 
    // Printing runner state
@@ -299,27 +402,16 @@ class Runner final
   // Specifies whether to store the input history
   bool _inputHistoryEnabled;
 
-  // Total size for the input history in bytes
-  size_t _inputHistorySizeBytes;
-
   // Maximum size of input index in bits
   size_t _inputIndexSizeBits;
 
   // Storage for the input history
   std::vector<uint8_t> _inputHistory;
 
-  // Whether to use differential compression
-  bool _useDifferentialCompression;
-
-  // Maximum number of difference bytes to tolerate if using differential compression
-  size_t _maximumDifferences;
-
-  // Whether to use Zlib compression
-  bool _useZlibCompression;
-
   ///////////////////////////////
   // Input processing variables
-
+  //////////////////////////////
+  
   // Storage for the index to use to register a new input. Should start at zero
   InputSet::inputIndex_t _currentInputIndex = 0;
 

@@ -1,7 +1,14 @@
 {
  "Emulator": "QuickerNES",
  "Game": "NES / Micro Machines",
- "Initial State File Path": "qualify.state",
+ "Initial State File Path": "race20a.state",
+
+ "State Compression":
+ {
+  "Use Differential Compression": false, 
+  "Max Difference (bytes)": 4000,
+  "Use Zlib Compression": false
+ },
 
  "Emulator Configuration":
  {
@@ -66,14 +73,7 @@
    "Store Input History":
    {
     "Enabled": true,
-    "Maximum Step": 500
-   },
-
-   "State Compression":
-   {
-    "Use Differential Compression": false, 
-    "Max Difference (bytes)": 350,
-    "Use Zlib Compression": false
+    "Maximum Step": 2000
    }
  },
 
