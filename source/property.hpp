@@ -2,7 +2,7 @@
 
 #include <string>
 #include <cstring>
-#include <common/hash.hpp>
+#include <jaffarCommon/include/hash.hpp>
 
 namespace jaffarPlus
 {
@@ -39,7 +39,7 @@ class Property
   _pointer(pointer),
   _datatype(datatype),
   _endianness(endianness),
-  _nameHash(hashString(name))
+  _nameHash(jaffarCommon::hashString(name))
   {
   }
 
@@ -113,7 +113,7 @@ class Property
 
   datatype_t getDatatype() const { return _datatype; }
   std::string getName() const { return _name; } 
-  hash_t getNameHash() const { return _nameHash; }
+  jaffarCommon::hash_t getNameHash() const { return _nameHash; }
   void* getPointer() const { return _pointer; }
 
   private:
@@ -122,7 +122,7 @@ class Property
   void* const _pointer;
   const datatype_t _datatype;
   const endianness_t _endianness;
-  const hash_t _nameHash;
+  const jaffarCommon::hash_t _nameHash;
 };
 
 } // namespace jaffarPlus

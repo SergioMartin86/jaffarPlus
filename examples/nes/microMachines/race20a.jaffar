@@ -5,9 +5,9 @@
 
  "State Compression":
  {
-  "Use Differential Compression": false, 
+  "Use Differential Compression": true, 
   "Max Difference (bytes)": 4000,
-  "Use Zlib Compression": false
+  "Use Zlib Compression": true
  },
 
  "Emulator Configuration":

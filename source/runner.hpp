@@ -4,10 +4,10 @@
 #include <memory>
 #include <vector>
 #include <set>
-#include <xdelta3/xdelta3.h>
-#include <common/bitwise.hpp>
-#include <common/hash.hpp>
-#include <common/json.hpp>
+#include <jaffarCommon/include/bitwise.hpp>
+#include <jaffarCommon/include/hash.hpp>
+#include <jaffarCommon/include/json.hpp>
+#include <jaffarCommon/include/diff.hpp>
 #include "game.hpp"
 #include "inputSet.hpp"
 
@@ -37,7 +37,7 @@ class Runner final
     if (_inputHistoryEnabled == true)
     {
       // Calculating bit storage for the possible inputs index
-      _inputIndexSizeBits = getEncodingBitsForElementCount(_currentInputIndex);
+      _inputIndexSizeBits = jaffarCommon::getEncodingBitsForElementCount(_currentInputIndex);
 
       // Total size in bits for the input history
       size_t inputHistorySizeBits = _maximumStep * _inputIndexSizeBits;
@@ -83,7 +83,7 @@ class Runner final
       const auto& input = inputJs.get<std::string>();
 
       // Getting input hash
-      const auto inputHash = hashString(input);
+      const auto inputHash = jaffarCommon::hashString(input);
 
       // Getting index for the new input
       InputSet::inputIndex_t inputIdx = 0;
@@ -129,7 +129,7 @@ class Runner final
   void advanceState(const std::string& input)
   {
     // Getting input hash
-    const auto inputHash = hashString(input);
+    const auto inputHash = jaffarCommon::hashString(input);
 
     // Getting input index from the hash map
     auto it = _inputHashMap.find(inputHash);
@@ -155,7 +155,7 @@ class Runner final
       if (_currentStep >= _maximumStep) EXIT_WITH_ERROR("[ERROR] Trying to advance step when storing input history and the maximum step (%lu) has been reached\n", _maximumStep);
       
       // Storing the new more in the input history
-      bitcopy(_inputHistory.data(), _currentStep, (const uint8_t*)&inputIdx, 0, 1, _inputIndexSizeBits);
+      jaffarCommon::bitcopy(_inputHistory.data(), _currentStep, (const uint8_t*)&inputIdx, 0, 1, _inputIndexSizeBits);
     }
 
     // Advancing step counter
@@ -163,44 +163,44 @@ class Runner final
   }
 
   // Serialization routine 
-  inline void serializeState(uint8_t* outputStateData) const
+  inline void serializeState(uint8_t* outputData) const
   { 
     size_t pos = 0;
 
     // Serializing runner-specific data
-    memcpy(&outputStateData[pos], &_currentStep, sizeof(_currentStep));
+    memcpy(&outputData[pos], &_currentStep, sizeof(_currentStep));
     pos += sizeof(_currentStep);
 
     // If enabled, store input history    
     if (_inputHistoryEnabled == true)
     {
-      memcpy(&outputStateData[pos], _inputHistory.data(), _inputHistory.size());
+      memcpy(&outputData[pos], _inputHistory.data(), _inputHistory.size());
       pos += _inputHistory.size();
     }
 
     // Serializing internal emulator state
-    _game->serializeState(&outputStateData[pos]);
+    _game->serializeState(&outputData[pos]);
     pos += _game->getStateSize();
   }
 
   // Deserialization routine
-  inline void deserializeState(const uint8_t* inputStateData)
+  inline void deserializeState(const uint8_t* inputData)
   {
     size_t pos = 0;
 
     // Deserializing game-specific data
-    memcpy(&_currentStep, &inputStateData[pos], sizeof(_currentStep));
+    memcpy(&_currentStep, &inputData[pos], sizeof(_currentStep));
     pos += sizeof(_currentStep);
 
     // If enabled, recover input history    
     if (_inputHistoryEnabled == true)
     {
-      memcpy(_inputHistory.data(), &inputStateData[pos], _inputHistory.size());
+      memcpy(_inputHistory.data(), &inputData[pos], _inputHistory.size());
       pos += _inputHistory.size();
     }
 
     // Deserializing state data into the emulator
-    _game->deserializeState(&inputStateData[pos]); 
+    _game->deserializeState(&inputData[pos]); 
     pos += _game->getStateSize();
   }
 
@@ -222,97 +222,47 @@ class Runner final
   }
 
   // Differential serialization routine
-  inline size_t serializeDifferentialState(uint8_t* __restrict__ outputStateData, const uint8_t* __restrict__ referenceState, const size_t maxSize, const bool useZlibCompression) const
+  inline void serializeDifferentialState(
+    uint8_t* __restrict__ outputData,
+    size_t* outputDataPos,
+    const size_t outputDataMaxSize,
+    const uint8_t* __restrict__ referenceData,
+    size_t* referenceDataPos,
+    const size_t referenceDataMaxSize,
+    const bool useZlib) const
   { 
-    size_t pos = 0;
-    size_t maxPos = maxSize - 1;
-
     // Performing differential serialization of the internal game instance
-    pos += _game->serializeDifferentialState(&outputStateData[pos], &referenceState[pos], maxSize, useZlibCompression);
-    if (pos > maxPos) EXIT_WITH_ERROR("[Error] Serialize pointer position meets maximum differential state size: %d >= %d.\n", pos, maxSize);
+    _game->serializeDifferentialState(outputData, outputDataPos, outputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
 
-    // If storing input history, do it now
-    if (_inputHistoryEnabled == true) 
-    {
-      // Allocating space for differential count
-      auto diffCount = (usize_t*)&outputStateData[pos];
-      pos += sizeof(usize_t);
-
-      // Remaining differences
-      const usize_t remainingDifferences = maxSize - pos;
-
-      // Encoding differential for the move history    
-      int ret = xd3_encode_memory(
-        _inputHistory.data(),
-        _inputHistory.size(),
-        &referenceState[pos],
-        _inputHistory.size(),
-        &outputStateData[pos],
-        diffCount,
-        remainingDifferences,
-        useZlibCompression ? 0 : XD3_NOCOMPRESS
-       );
-
-      if (*diffCount > remainingDifferences) EXIT_WITH_ERROR("[Error] Exceeded maximum difference count in input history storage: %d + %d >= %d.\n", pos, *diffCount, maxSize);
-      if (ret != 0) EXIT_WITH_ERROR("[Error] unexpected error while encoding differential compression of input history. Diff count: %d\n", *diffCount);
-
-      // Advancing position pointer
-      pos += *diffCount;
-      if (pos > maxPos) EXIT_WITH_ERROR("[Error] Serialize pointer position meets maximum differential state size: %d >= %d.\n", pos, maxSize);
-    }
+    // Serializing input history data
+    if (_inputHistoryEnabled == true) jaffarCommon::serializeDifferentialData(_inputHistory.data(), _inputHistory.size(), outputData, outputDataPos, outputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
 
     // Serializing current step
-    memcpy(&outputStateData[pos], &_currentStep, sizeof(_currentStep));
-    pos += sizeof(_currentStep);
-    if (pos > maxPos) EXIT_WITH_ERROR("[Error] Serialize pointer position meets maximum differential state size: %d >= %d.\n", pos, maxSize);
-
-    return pos;
+    jaffarCommon::serializeContiguousData(&_currentStep, sizeof(_currentStep), outputData, outputDataPos, outputDataMaxSize, referenceDataPos, referenceDataMaxSize);
   }
 
   // Differential deserialization routine
-  inline size_t deserializeDifferentialState(const uint8_t* __restrict__ inputStateData, const uint8_t* __restrict__ referenceState, const bool useZlibCompression)
+  inline void deserializeDifferentialState(
+    const uint8_t* __restrict__ inputData,
+    size_t* inputDataPos,
+    const size_t inputDataMaxSize,
+    const uint8_t* __restrict__ referenceData,
+    size_t* referenceDataPos,
+    const size_t referenceDataMaxSize,
+    const bool useZlib)
   { 
-    size_t pos = 0;
-
     // Performing differential serialization of the internal game instance
-    pos += _game->deserializeDifferentialState(&inputStateData[pos], &referenceState[pos], useZlibCompression);
+    _game->deserializeDifferentialState(inputData, inputDataPos, inputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
 
-    // If storing input history, do it now
-    if (_inputHistoryEnabled == true) 
-    {
-      // Reading differential count
-      usize_t diffCount;
-      memcpy(&diffCount, &inputStateData[pos], sizeof(usize_t));
-      pos += sizeof(usize_t);
-
-      usize_t output_size;
-      int ret = xd3_decode_memory (
-         &inputStateData[pos],
-         diffCount,
-         &referenceState[pos],
-        _inputHistory.size(),
-         (uint8_t*)_inputHistory.data(),
-         &output_size,
-        _inputHistory.size(),
-        useZlibCompression ? 0 : XD3_NOCOMPRESS
-      );
-
-      if (ret != 0) EXIT_WITH_ERROR("[Error] State Decode failure: %d: %s\n", ret, xd3_strerror(ret));
-
-      // Advancing position pointer
-      pos += diffCount;
-    }
+    // Deserializing input history
+    if (_inputHistoryEnabled == true) jaffarCommon::deserializeDifferentialData(_inputHistory.data(), _inputHistory.size(), inputData, inputDataPos, inputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize);
 
     // Deserializing current step
-    memcpy(&_currentStep, &inputStateData[pos], sizeof(_currentStep));
-    pos += sizeof(_currentStep);
-
-    // Returning bytes used
-    return pos;
+    jaffarCommon::deserializeContiguousData(&_currentStep, sizeof(_currentStep), inputData, inputDataPos, inputDataMaxSize, referenceDataPos, referenceDataMaxSize);
   }
 
   // Getting the maximum differntial state size
-  inline size_t getDifferentialStateSize(const size_t maxDifferences)
+  inline size_t getDifferentialStateSize(const size_t maxDifferences) const
   { 
     size_t stateSize = 0;
 
@@ -329,7 +279,7 @@ class Runner final
   }
 
   // This function computes the hash for the current runner state
-  inline hash_t computeHash() const 
+  inline jaffarCommon::hash_t computeHash() const 
   {
     // Storage for hash calculation
     MetroHash128 hashEngine;
@@ -343,7 +293,7 @@ class Runner final
     // Processing hashing from the game proper
     _game->computeHash(hashEngine);
  
-    hash_t result;
+    jaffarCommon::hash_t result;
     hashEngine.Finalize(reinterpret_cast<uint8_t *>(&result));
     return result;
   }
@@ -352,7 +302,7 @@ class Runner final
   void printInfo() const
   {
    // Getting state hash 
-   const auto hash = hashToString(computeHash());
+   const auto hash = jaffarCommon::hashToString(computeHash());
 
    // Calculating hash tolerance stage
    auto hashStepToleranceStage = getHashStepToleranceStage();
@@ -416,7 +366,7 @@ class Runner final
   InputSet::inputIndex_t _currentInputIndex = 0;
 
   // Hash map for input indexing
-  std::map<hash_t, InputSet::inputIndex_t> _inputHashMap;
+  std::map<jaffarCommon::hash_t, InputSet::inputIndex_t> _inputHashMap;
 
   // Map for getting the allowed input from index
   std::map<InputSet::inputIndex_t, std::string> _inputStringMap;

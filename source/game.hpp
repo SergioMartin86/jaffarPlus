@@ -4,10 +4,9 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include <xdelta3/xdelta3.h>
-#include <common/bitwise.hpp>
-#include <common/hash.hpp>
-#include <common/json.hpp>
+#include <jaffarCommon/include/bitwise.hpp>
+#include <jaffarCommon/include/hash.hpp>
+#include <jaffarCommon/include/json.hpp>
 #include "emulator.hpp"
 #include "rule.hpp"
 
@@ -79,29 +78,29 @@ class Game
   }
 
   // Serialization routine 
-  inline void serializeState(uint8_t* outputStateData) const
+  inline void serializeState(uint8_t* outputData) const
   { 
     size_t pos = 0;
 
     // Serializing internal emulator state
-    _emulator->serializeState(&outputStateData[pos]);
+    _emulator->serializeState(&outputData[pos]);
     pos += _emulator->getStateSize();
 
     // Serializing game-specific data
-    memcpy(&outputStateData[pos], _gameSpecificStorage.data(), _gameSpecificStorageSize);
+    memcpy(&outputData[pos], _gameSpecificStorage.data(), _gameSpecificStorageSize);
     pos += _gameSpecificStorageSize;
 
     // Serializing reward
-    memcpy(&outputStateData[pos], &_reward, sizeof(_reward));
+    memcpy(&outputData[pos], &_reward, sizeof(_reward));
     pos += sizeof(_reward);
 
     // Serializing rule states
-    memcpy(&outputStateData[pos], _rulesStatus.data(), _rulesStatus.size());
+    memcpy(&outputData[pos], _rulesStatus.data(), _rulesStatus.size());
     pos += _rulesStatus.size();
   }
 
   // Deserialization routine
-  inline void deserializeState(const uint8_t* inputStateData)
+  inline void deserializeState(const uint8_t* inputData)
   {
     size_t pos = 0;
 
@@ -109,19 +108,19 @@ class Game
     stateUpdatePreHook();
 
     // Deserializing state data into the emulator
-    _emulator->deserializeState(&inputStateData[pos]); 
+    _emulator->deserializeState(&inputData[pos]); 
     pos += _emulator->getStateSize();
 
     // Deserializing game-specific data
-    memcpy((void*)_gameSpecificStorage.data(), &inputStateData[pos], _gameSpecificStorageSize);
+    memcpy((void*)_gameSpecificStorage.data(), &inputData[pos], _gameSpecificStorageSize);
     pos += _gameSpecificStorageSize;
 
     // Deserializing reward
-    memcpy(&_reward, &inputStateData[pos], sizeof(_reward));
+    memcpy(&_reward, &inputData[pos], sizeof(_reward));
     pos += sizeof(_reward);
 
     // Deserializing rule states
-    memcpy(_rulesStatus.data(), &inputStateData[pos], _rulesStatus.size());
+    memcpy(_rulesStatus.data(), &inputData[pos], _rulesStatus.size());
     pos += _rulesStatus.size();
 
     // Calling the post-update hook
@@ -149,106 +148,58 @@ class Game
   }
 
   // Differential serialization routine
-  inline size_t serializeDifferentialState(uint8_t* __restrict__ outputStateData, const uint8_t* __restrict__ referenceState, const size_t maxDifferences, const bool useZlibCompression) const
+  inline void serializeDifferentialState(
+    uint8_t* __restrict__ outputData,
+    size_t* outputDataPos,
+    const size_t outputDataMaxSize,
+    const uint8_t* __restrict__ referenceData,
+    size_t* referenceDataPos,
+    const size_t referenceDataMaxSize,
+    const bool useZlib) const
   {
-    size_t pos = 0;
-
     // Serializing internal emulator state
-    uint8_t emulatorStateData[_emulator->getStateSize()];
-    _emulator->serializeState(emulatorStateData);
-    
-    // Encoding internal emulator state with differential data
-    auto diffCount = (usize_t*)&outputStateData[pos];
-    pos += sizeof(usize_t);
-
-    // Encoding differential for the emulator state
-    int ret = xd3_encode_memory(
-      emulatorStateData,
-      _emulator->getStateSize(),
-      &referenceState[pos],
-      _emulator->getStateSize(),
-      &outputStateData[pos],
-      diffCount,
-      maxDifferences,
-      useZlibCompression ? 0 : XD3_NOCOMPRESS
-    );
-
-    if (*diffCount > maxDifferences) EXIT_WITH_ERROR("[Error] Exceeded maximum difference count emulator state storage: %d > %d.\n", *diffCount, maxDifferences);
-    if (ret != 0) EXIT_WITH_ERROR("[Error] unexpected error while encoding differential compression of emulator state\n");
-
-    // Advancing position pointer
-    pos += *diffCount;
+    _emulator->serializeDifferentialState(outputData, outputDataPos, outputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
 
     // Serializing game-specific data
-    memcpy(&outputStateData[pos], _gameSpecificStorage.data(), _gameSpecificStorageSize);
-    pos += _gameSpecificStorageSize;
+    jaffarCommon::serializeContiguousData(_gameSpecificStorage.data(), _gameSpecificStorageSize, outputData, outputDataPos, outputDataMaxSize, referenceDataPos, referenceDataMaxSize);
 
     // Serializing reward
-    memcpy(&outputStateData[pos], &_reward, sizeof(_reward));
-    pos += sizeof(_reward);
+    jaffarCommon::serializeContiguousData(&_reward, sizeof(_reward), outputData, outputDataPos, outputDataMaxSize, referenceDataPos, referenceDataMaxSize);
 
     // Serializing rule states
-    memcpy(&outputStateData[pos], _rulesStatus.data(), _rulesStatus.size());
-    pos += _rulesStatus.size();
-
-    return pos;
+    jaffarCommon::serializeContiguousData(_rulesStatus.data(), _rulesStatus.size(), outputData, outputDataPos, outputDataMaxSize, referenceDataPos, referenceDataMaxSize);
   }
 
   // Differential deserialization routine
-  inline size_t deserializeDifferentialState(const uint8_t* __restrict__ inputStateData, const uint8_t* __restrict__ referenceState, const bool useZlibCompression)
+  inline void deserializeDifferentialState(
+    const uint8_t* __restrict__ inputData,
+    size_t* inputDataPos,
+    const size_t inputDataMaxSize,
+    const uint8_t* __restrict__ referenceData,
+    size_t* referenceDataPos,
+    const size_t referenceDataMaxSize,
+    const bool useZlib)
   {
-    size_t pos = 0;
-
     // Calling the pre-update hook
     stateUpdatePreHook();
 
     // Storage for the internal emulator state
-    uint8_t emulatorStateData[_emulator->getStateSize()];
+    _emulator->deserializeDifferentialState(inputData, inputDataPos, inputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
 
-    // Reading differential count
-    usize_t diffCount;
-    memcpy(&diffCount, &inputStateData[pos], sizeof(usize_t));
-    pos += sizeof(usize_t);
-
-    usize_t output_size;
-    int ret = xd3_decode_memory (
-      &inputStateData[pos],
-      diffCount,
-      &referenceState[pos],
-      _emulator->getStateSize(),
-      emulatorStateData,
-      &output_size,
-      _emulator->getStateSize(),
-      useZlibCompression ? 0 : XD3_NOCOMPRESS
-    );
-
-    if (ret != 0) EXIT_WITH_ERROR("[Error] State Decode failure: %d: %s\n", ret, xd3_strerror(ret));
-
-    // Deserializing emulator state
-    _emulator->deserializeState(emulatorStateData); 
-
-    // Advancing position pointer
-    pos += diffCount;
-  
     // Deserializing game-specific data
-    memcpy((void*)_gameSpecificStorage.data(), &inputStateData[pos], _gameSpecificStorageSize);
-    pos += _gameSpecificStorageSize;
+    jaffarCommon::deserializeContiguousData(_gameSpecificStorage.data(), _gameSpecificStorageSize, inputData, inputDataPos, inputDataMaxSize, referenceDataPos, referenceDataMaxSize);
 
     // Deserializing reward
-    memcpy(&_reward, &inputStateData[pos], sizeof(_reward));
-    pos += sizeof(_reward);
+    jaffarCommon::deserializeContiguousData(&_reward, sizeof(_reward), inputData, inputDataPos, inputDataMaxSize, referenceDataPos, referenceDataMaxSize);
 
     // Deserializing rules status
-    memcpy(_rulesStatus.data(), &inputStateData[pos], _rulesStatus.size());
-    pos += _rulesStatus.size();
+    jaffarCommon::deserializeContiguousData(_rulesStatus.data(), _rulesStatus.size(), inputData, inputDataPos, inputDataMaxSize, referenceDataPos, referenceDataMaxSize);
 
     // Calling the post-update hook
     stateUpdatePostHook();
-
-    return pos;
   }
 
-  inline size_t getDifferentialStateSize(const size_t maxDifferences)
+  inline size_t getDifferentialStateSize(const size_t maxDifferences) const
   {
     size_t stateSize = 0;
 
@@ -298,7 +249,7 @@ class Game
 
    // Printing rule status
    LOG("[J+]  + Rule Status: ");
-   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", getBitValue(_rulesStatus.data(), i) ? 1 : 0);
+   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", jaffarCommon::getBitValue(_rulesStatus.data(), i) ? 1 : 0);
    LOG("\n");
 
    // Printing game properties defined in the script file
@@ -418,10 +369,10 @@ class Game
     }
 
     // Create rule status vector
-    _rulesStatus.resize(getByteStorageForBitCount(_rules.size()));
+    _rulesStatus.resize(jaffarCommon::getByteStorageForBitCount(_rules.size()));
 
     // Clearing the status vector evaluation
-    for (size_t i = 0; i < _rules.size(); i++) setBitValue(_rulesStatus.data(), i, false);
+    for (size_t i = 0; i < _rules.size(); i++) jaffarCommon::setBitValue(_rulesStatus.data(), i, false);
   }
  
   // Individual rule parser 
@@ -452,7 +403,7 @@ class Game
     const auto& property1Name = JSON_GET_STRING(conditionJs, "Property");
 
     // Getting property name hash, for indexing
-    const auto property1NameHash = hashString(property1Name);
+    const auto property1NameHash = jaffarCommon::hashString(property1Name);
 
     // Making sure the requested property exists in the property map
     if (_propertyMap.contains(property1NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property1Name.c_str());
@@ -492,7 +443,7 @@ class Game
       const auto& property2Name = JSON_GET_STRING(conditionJs, "Value");
 
       // Getting property name hash, for indexing
-      const auto property2NameHash = hashString(property2Name);
+      const auto property2NameHash = jaffarCommon::hashString(property2Name);
 
       // Making sure the requested property exists in the property map
       if (_propertyMap.contains(property2NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property2Name.c_str());
@@ -577,7 +528,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Evaluate rule only if it's not yet satisfied
-      if (getBitValue(_rulesStatus.data(), ruleIdx) == false)
+      if (jaffarCommon::getBitValue(_rulesStatus.data(), ruleIdx) == false)
       {
         // Checking if conditions are met
         bool isSatisfied = rule.evaluate();
@@ -603,7 +554,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Run ations only if rule is satisfied
-      if (getBitValue(_rulesStatus.data(), ruleIdx) == true) for (const auto& action : rule.getActions()) action();
+      if (jaffarCommon::getBitValue(_rulesStatus.data(), ruleIdx) == true) for (const auto& action : rule.getActions()) action();
     }  
   }
 
@@ -622,7 +573,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Run actions
-      if (getBitValue(_rulesStatus.data(), ruleIdx) == true)
+      if (jaffarCommon::getBitValue(_rulesStatus.data(), ruleIdx) == true)
       {
        // Modify game state, depending on rule type
 
@@ -655,7 +606,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Run actions
-      if (getBitValue(_rulesStatus.data(), ruleIdx) == true)
+      if (jaffarCommon::getBitValue(_rulesStatus.data(), ruleIdx) == true)
       {
        // Getting reward from satisfied rule
        const auto ruleReward = rule.getReward();
@@ -684,14 +635,14 @@ class Game
       auto subRuleIdx = subRule->getIndex();
 
       // Only activate it if it hasn't been activated before
-      if (getBitValue(_rulesStatus.data(), subRuleIdx) == false) satisfyRule(*subRule);
+      if (jaffarCommon::getBitValue(_rulesStatus.data(), subRuleIdx) == false) satisfyRule(*subRule);
     }
 
     // Getting rule index
     const auto ruleIdx = rule.getIndex(); 
 
     // Setting status to satisfied
-    setBitValue(_rulesStatus.data(), ruleIdx, true);
+    jaffarCommon::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
   // Returns pointer to the internal emulator
@@ -749,7 +700,7 @@ class Game
   std::vector<const Property*> _propertyPrintVector;
 
   // Property map to store all registered properties for future reference, indexed by their name hash
-  std::map<hash_t, std::unique_ptr<Property>> _propertyMap;
+  std::map<jaffarCommon::hash_t, std::unique_ptr<Property>> _propertyMap;
 };
 
 } // namespace jaffarPlus

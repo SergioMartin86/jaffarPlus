@@ -1,7 +1,8 @@
 #include <chrono>
-#include <argparse/argparse.hpp>
-#include "common/logger.hpp"
-#include "common/json.hpp"
+#include <jaffarCommon/extern/argparse/argparse.hpp>
+#include <jaffarCommon/include/logger.hpp>
+#include <jaffarCommon/include/json.hpp>
+#include <jaffarCommon/include/string.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
 #include "game.hpp"
@@ -32,13 +33,13 @@ int main(int argc, char *argv[])
   // Parsing config file
   const std::string configFile = program.get<std::string>("configFile");
   std::string configFileString;
-  if (jaffarPlus::loadStringFromFile(configFileString, configFile) == false) 
+  if (jaffarCommon::loadStringFromFile(configFileString, configFile) == false) 
     EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
 
   // If sequence file defined, load it and play it
   const std::string solutionFile = program.get<std::string>("solutionFile");
   std::string solutionFileString;
-  if (jaffarPlus::loadStringFromFile(solutionFileString, solutionFile) == false) 
+  if (jaffarCommon::loadStringFromFile(solutionFileString, solutionFile) == false) 
     EXIT_WITH_ERROR("[ERROR] Could not find or read from solution sequence file: %s\n%s \n", solutionFile.c_str(), program.help().str().c_str());
 
   // Getting reproduce flag
@@ -99,7 +100,7 @@ int main(int argc, char *argv[])
   const auto stateSize = r.getStateSize();
 
   // Getting input sequence
-  const auto solutionSequence = jaffarPlus::split(solutionFileString, ' ');
+  const auto solutionSequence = jaffarCommon::split(solutionFileString, ' ');
 
   // Getting sequence length
   const auto sequenceLength = solutionSequence.size();
@@ -128,7 +129,10 @@ int main(int argc, char *argv[])
 
   // Storage for diffential compression
   auto diffentialStateData = (uint8_t *)malloc(differentialStateSize);
-  size_t maxDifferentialStateSize = r.serializeDifferentialState(diffentialStateData, currentState, differentialStateSize, useZlibCompression);
+  size_t differentialDataPos = 0;
+  size_t referenceDataPos = 0;
+  r.serializeDifferentialState(diffentialStateData, &differentialDataPos, differentialStateSize, currentState, &referenceDataPos, stateSize, useZlibCompression);
+  size_t maxDifferentialStateSize = differentialDataPos;
 
   // Check whether to perform each action
   const bool doPreAdvance = cycleType == "Full";
@@ -144,7 +148,13 @@ int main(int argc, char *argv[])
     if (doDeserialize == true)
     {
       if (useDifferentialCompression == false) r.deserializeState(currentState);
-      if (useDifferentialCompression == true) r.deserializeDifferentialState(diffentialStateData, currentState, useZlibCompression);
+
+      if (useDifferentialCompression == true) 
+      {
+        size_t differentialDataPos = 0;
+        size_t referenceDataPos = 0;
+        r.deserializeDifferentialState(diffentialStateData, &differentialDataPos, differentialStateSize, currentState, &referenceDataPos, stateSize, useZlibCompression);
+      }
     } 
 
     r.advanceState(input);
@@ -152,7 +162,14 @@ int main(int argc, char *argv[])
     if (doSerialize == true)
     {
       if (useDifferentialCompression == false) r.serializeState(currentState);
-      if (useDifferentialCompression == true) maxDifferentialStateSize = std::max(maxDifferentialStateSize, r.serializeDifferentialState(diffentialStateData, currentState, differentialStateSize, useZlibCompression));
+
+      if (useDifferentialCompression == true)
+      {
+        size_t differentialDataPos = 0;
+        size_t referenceDataPos = 0;
+        r.serializeDifferentialState(diffentialStateData, &differentialDataPos, differentialStateSize, currentState, &referenceDataPos, stateSize, useZlibCompression);
+        maxDifferentialStateSize = std::max(maxDifferentialStateSize, differentialDataPos);
+      } 
     } 
   }
   auto tf = std::chrono::high_resolution_clock::now();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/json.hpp>
+#include <jaffarCommon/include/json.hpp>
 #include <vector>
 #include "property.hpp"
 #include "condition.hpp"

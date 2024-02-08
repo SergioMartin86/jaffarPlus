@@ -9,8 +9,8 @@ jaffarIncludes = include_directories([
 
 # Common Jaffar sources
 jaffarSources = [
- 'extern/metrohash128/metrohash128.cpp',
- 'extern/xdelta3/xdelta3.c'
+ 'extern/jaffarCommon/extern/metrohash128/metrohash128.cpp',
+ 'extern/jaffarCommon/extern/xdelta3/xdelta3.c'
 ]
 
 # Common Jaffar CPPFlags
