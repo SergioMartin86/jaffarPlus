@@ -1,10 +1,9 @@
 #pragma once
 
 #include <nesInstance.hpp>
-#include <common/hash.hpp>
-#include <common/json.hpp>
-#include <common/utils.hpp>
-#include <common/logger.hpp>
+#include <jaffarCommon/include/hash.hpp>
+#include <jaffarCommon/include/json.hpp>
+#include <jaffarCommon/include/logger.hpp>
 #include <emulator.hpp>
 
 namespace jaffarPlus
@@ -40,7 +39,7 @@ class QuickerNES final : public Emulator
   {
     // Reading from ROM file
     std::string romFileData;
-    bool status = loadStringFromFile(romFileData, _romFilePath.c_str());
+    bool status = jaffarCommon::loadStringFromFile(romFileData, _romFilePath.c_str());
     if (status == false) EXIT_WITH_ERROR("Could not find/read from ROM file: %s\n", _romFilePath.c_str());
 
     // Getting SHA1 of ROM for checksum
@@ -72,6 +71,31 @@ class QuickerNES final : public Emulator
     _quickerNES.deserializeState(state);
   };
 
+  inline void serializeDifferentialState(
+    uint8_t* __restrict__ outputData,
+    size_t* outputDataPos,
+    const size_t outputDataMaxSize,
+    const uint8_t* __restrict__ referenceData,
+    size_t* referenceDataPos,
+    const size_t referenceDataMaxSize,
+    const bool useZlib) const
+  {
+    _quickerNES.serializeDifferentialState(outputData, outputDataPos, outputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
+  }
+
+  inline void deserializeDifferentialState(
+    const uint8_t* __restrict__ inputData,
+    size_t* inputDataPos,
+    const size_t inputDataMaxSize,
+    const uint8_t* __restrict__ referenceData,
+    size_t* referenceDataPos,
+    const size_t referenceDataMaxSize,
+    const bool useZlib)
+  {
+    _quickerNES.deserializeDifferentialState(inputData, inputDataPos, inputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
+  }
+
+
   inline void printInfo() const override
   {
      printMemoryBlockHash("NES LRAM");
@@ -97,7 +121,7 @@ class QuickerNES final : public Emulator
   void printMemoryBlockHash(const std::string& blockName) const
   {
    auto p = getProperty(blockName);
-   auto hash = hashToString(calculateMetroHash(p.pointer, p.size));
+   auto hash = jaffarCommon::hashToString(jaffarCommon::calculateMetroHash(p.pointer, p.size));
    LOG("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }
 

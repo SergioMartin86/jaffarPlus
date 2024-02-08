@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/json.hpp>
+#include <jaffarCommon/include/json.hpp>
 #include <game.hpp>
 #include <emulator.hpp>
 
@@ -29,23 +29,23 @@ class MicroMachines final : public jaffarPlus::Game
   void initializeImpl() override
   {
     // Getting some properties' pointers now for quick access later
-    _player1TankFireTimer              = (uint8_t*)  _propertyMap[hashString("Player 1 Tank Fire Timer")]->getPointer();
-    _currentRace                       = (uint8_t*)  _propertyMap[hashString("Current Race")]->getPointer();
-    _cameraPosX1                       = (uint8_t*)  _propertyMap[hashString("Camera Pos X1")]->getPointer();
-    _cameraPosX2                       = (uint8_t*)  _propertyMap[hashString("Camera Pos X2")]->getPointer();
-    _cameraPosY1                       = (uint8_t*)  _propertyMap[hashString("Camera Pos Y1")]->getPointer();
-    _cameraPosY2                       = (uint8_t*)  _propertyMap[hashString("Camera Pos Y2")]->getPointer();
-    _player1PosX1                      = (uint8_t*)  _propertyMap[hashString("Player 1 Pos X1")]->getPointer();
-    _player1PosX2                      = (uint8_t*)  _propertyMap[hashString("Player 1 Pos X2")]->getPointer();
-    _player1PosY1                      = (uint8_t*)  _propertyMap[hashString("Player 1 Pos Y1")]->getPointer();
-    _player1PosY2                      = (uint8_t*)  _propertyMap[hashString("Player 1 Pos Y2")]->getPointer();
-    _player1Accel                      = (int8_t*)   _propertyMap[hashString("Player 1 Accel")]->getPointer();
-    _player1AccelTimer2                = (uint8_t*)  _propertyMap[hashString("Player 1 Accel Timer 2")]->getPointer();
-    _player1Angle1                     = (uint8_t*)  _propertyMap[hashString("Player 1 Angle 1")]->getPointer();
-    _player1LapsRemaining              = (uint8_t*)  _propertyMap[hashString("Player 1 Current Laps Remaining")]->getPointer();
-    _player1LapsRemainingPrev          = (uint8_t*)  _propertyMap[hashString("Player 1 Previous Laps Remaining")]->getPointer();
-    _player1Checkpoint                 = (uint8_t*)  _propertyMap[hashString("Player 1 Checkpoint")]->getPointer();
-    _player1RecoveryTimer              = (uint8_t*)  _propertyMap[hashString("Player 1 Recovery Timer")]->getPointer();
+    _player1TankFireTimer              = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Tank Fire Timer")]->getPointer();
+    _currentRace                       = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Current Race")]->getPointer();
+    _cameraPosX1                       = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Camera Pos X1")]->getPointer();
+    _cameraPosX2                       = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Camera Pos X2")]->getPointer();
+    _cameraPosY1                       = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Camera Pos Y1")]->getPointer();
+    _cameraPosY2                       = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Camera Pos Y2")]->getPointer();
+    _player1PosX1                      = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Pos X1")]->getPointer();
+    _player1PosX2                      = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Pos X2")]->getPointer();
+    _player1PosY1                      = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Pos Y1")]->getPointer();
+    _player1PosY2                      = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Pos Y2")]->getPointer();
+    _player1Accel                      = (int8_t*)   _propertyMap[jaffarCommon::hashString("Player 1 Accel")]->getPointer();
+    _player1AccelTimer2                = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Accel Timer 2")]->getPointer();
+    _player1Angle1                     = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Angle 1")]->getPointer();
+    _player1LapsRemaining              = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Current Laps Remaining")]->getPointer();
+    _player1LapsRemainingPrev          = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Previous Laps Remaining")]->getPointer();
+    _player1Checkpoint                 = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Checkpoint")]->getPointer();
+    _player1RecoveryTimer              = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Recovery Timer")]->getPointer();
 
     // Registering game specific values
 
