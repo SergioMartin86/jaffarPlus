@@ -4,6 +4,8 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <jaffarCommon/include/serializers/base.hpp>
+#include <jaffarCommon/include/deserializers/base.hpp>
 #include <jaffarCommon/include/bitwise.hpp>
 #include <jaffarCommon/include/hash.hpp>
 #include <jaffarCommon/include/json.hpp>
@@ -77,123 +79,39 @@ class Game
     updateReward();
   }
 
-  // Serialization routine 
-  inline void serializeState(uint8_t* outputData) const
-  { 
-    size_t pos = 0;
-
-    // Serializing internal emulator state
-    _emulator->serializeState(&outputData[pos]);
-    pos += _emulator->getStateSize();
-
-    // Serializing game-specific data
-    memcpy(&outputData[pos], _gameSpecificStorage.data(), _gameSpecificStorageSize);
-    pos += _gameSpecificStorageSize;
-
-    // Serializing reward
-    memcpy(&outputData[pos], &_reward, sizeof(_reward));
-    pos += sizeof(_reward);
-
-    // Serializing rule states
-    memcpy(&outputData[pos], _rulesStatus.data(), _rulesStatus.size());
-    pos += _rulesStatus.size();
-  }
-
-  // Deserialization routine
-  inline void deserializeState(const uint8_t* inputData)
-  {
-    size_t pos = 0;
-
-    // Calling the pre-update hook
-    stateUpdatePreHook();
-
-    // Deserializing state data into the emulator
-    _emulator->deserializeState(&inputData[pos]); 
-    pos += _emulator->getStateSize();
-
-    // Deserializing game-specific data
-    memcpy((void*)_gameSpecificStorage.data(), &inputData[pos], _gameSpecificStorageSize);
-    pos += _gameSpecificStorageSize;
-
-    // Deserializing reward
-    memcpy(&_reward, &inputData[pos], sizeof(_reward));
-    pos += sizeof(_reward);
-
-    // Deserializing rule states
-    memcpy(_rulesStatus.data(), &inputData[pos], _rulesStatus.size());
-    pos += _rulesStatus.size();
-
-    // Calling the post-update hook
-    stateUpdatePostHook();
-  }
-
-  // This function returns the size of the game state
-  size_t getStateSize() const
-  {
-    size_t stateSize = 0;
-
-    // Adding the size of the emulator state
-    stateSize += _emulator->getStateSize();
-
-    // Adding the size of game specific storage
-    stateSize += _gameSpecificStorageSize;
-
-    // Adding the size of current reward
-    stateSize += sizeof(_reward);
-
-    // Adding the size of rules status
-    stateSize += _rulesStatus.size();
-
-    return stateSize;
-  }
-
   // Differential serialization routine
-  inline void serializeDifferentialState(
-    uint8_t* __restrict__ outputData,
-    size_t* outputDataPos,
-    const size_t outputDataMaxSize,
-    const uint8_t* __restrict__ referenceData,
-    size_t* referenceDataPos,
-    const size_t referenceDataMaxSize,
-    const bool useZlib) const
+  inline void serializeState(jaffarCommon::serializer::Base& serializer) const
   {
     // Serializing internal emulator state
-    _emulator->serializeDifferentialState(outputData, outputDataPos, outputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
+    _emulator->serializeState(serializer);
 
     // Serializing game-specific data
-    jaffarCommon::serializeContiguousData(_gameSpecificStorage.data(), _gameSpecificStorageSize, outputData, outputDataPos, outputDataMaxSize, referenceDataPos, referenceDataMaxSize);
+    serializer.pushContiguous(_gameSpecificStorage.data(), _gameSpecificStorageSize);
 
     // Serializing reward
-    jaffarCommon::serializeContiguousData(&_reward, sizeof(_reward), outputData, outputDataPos, outputDataMaxSize, referenceDataPos, referenceDataMaxSize);
+    serializer.pushContiguous(&_reward, sizeof(_reward));
 
     // Serializing rule states
-    jaffarCommon::serializeContiguousData(_rulesStatus.data(), _rulesStatus.size(), outputData, outputDataPos, outputDataMaxSize, referenceDataPos, referenceDataMaxSize);
+    serializer.pushContiguous(_rulesStatus.data(), _rulesStatus.size());
   }
 
   // Differential deserialization routine
-  inline void deserializeDifferentialState(
-    const uint8_t* __restrict__ inputData,
-    size_t* inputDataPos,
-    const size_t inputDataMaxSize,
-    const uint8_t* __restrict__ referenceData,
-    size_t* referenceDataPos,
-    const size_t referenceDataMaxSize,
-    const bool useZlib)
+  inline void deserializeState(jaffarCommon::deserializer::Base& deserializer)
   {
     // Calling the pre-update hook
     stateUpdatePreHook();
 
     // Storage for the internal emulator state
-    _emulator->deserializeDifferentialState(inputData, inputDataPos, inputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
+    _emulator->deserializeState(deserializer);
 
     // Deserializing game-specific data
-    jaffarCommon::deserializeContiguousData(_gameSpecificStorage.data(), _gameSpecificStorageSize, inputData, inputDataPos, inputDataMaxSize, referenceDataPos, referenceDataMaxSize);
+    deserializer.popContiguous(_gameSpecificStorage.data(), _gameSpecificStorageSize);
 
     // Deserializing reward
-    jaffarCommon::deserializeContiguousData(&_reward, sizeof(_reward), inputData, inputDataPos, inputDataMaxSize, referenceDataPos, referenceDataMaxSize);
+    deserializer.popContiguous(&_reward, sizeof(_reward));
 
     // Deserializing rules status
-    jaffarCommon::deserializeContiguousData(_rulesStatus.data(), _rulesStatus.size(), inputData, inputDataPos, inputDataMaxSize, referenceDataPos, referenceDataMaxSize);
+    deserializer.popContiguous(_rulesStatus.data(), _rulesStatus.size());
 
     // Calling the post-update hook
     stateUpdatePostHook();
