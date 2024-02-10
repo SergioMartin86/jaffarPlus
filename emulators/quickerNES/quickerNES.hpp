@@ -4,6 +4,8 @@
 #include <jaffarCommon/include/hash.hpp>
 #include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/logger.hpp>
+#include <jaffarCommon/include/serializers/base.hpp>
+#include <jaffarCommon/include/deserializers/base.hpp>
 #include <emulator.hpp>
 
 namespace jaffarPlus
@@ -56,45 +58,8 @@ class QuickerNES final : public Emulator
     _quickerNES.advanceState(move);
   }
 
-  size_t getStateSize() const override
-  {
-   return _quickerNES.getStateSize();
-  };
-  
-  inline void serializeState(uint8_t *state) const override
-  {
-    _quickerNES.serializeState(state);
-  };
-  
-  inline void deserializeState(const uint8_t *state) override
-  {
-    _quickerNES.deserializeState(state);
-  };
-
-  inline void serializeDifferentialState(
-    uint8_t* __restrict__ outputData,
-    size_t* outputDataPos,
-    const size_t outputDataMaxSize,
-    const uint8_t* __restrict__ referenceData,
-    size_t* referenceDataPos,
-    const size_t referenceDataMaxSize,
-    const bool useZlib) const
-  {
-    _quickerNES.serializeDifferentialState(outputData, outputDataPos, outputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
-  }
-
-  inline void deserializeDifferentialState(
-    const uint8_t* __restrict__ inputData,
-    size_t* inputDataPos,
-    const size_t inputDataMaxSize,
-    const uint8_t* __restrict__ referenceData,
-    size_t* referenceDataPos,
-    const size_t referenceDataMaxSize,
-    const bool useZlib)
-  {
-    _quickerNES.deserializeDifferentialState(inputData, inputDataPos, inputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
-  }
-
+  inline void serializeState(jaffarCommon::serializer::Base& serializer) const override { _quickerNES.serializeState(serializer); };
+  inline void deserializeState(jaffarCommon::deserializer::Base& deserializer) override { _quickerNES.deserializeState(deserializer); };
 
   inline void printInfo() const override
   {

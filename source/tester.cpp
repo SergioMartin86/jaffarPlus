@@ -1,7 +1,11 @@
 #include <chrono>
-#include <jaffarCommon/extern/argparse/argparse.hpp>
-#include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/json.hpp>
+#include <jaffarCommon/extern/argparse/argparse.hpp>
+#include <jaffarCommon/include/serializers/contiguous.hpp>
+#include <jaffarCommon/include/serializers/differential.hpp>
+#include <jaffarCommon/include/deserializers/contiguous.hpp>
+#include <jaffarCommon/include/deserializers/differential.hpp>
+#include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/string.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
@@ -125,14 +129,14 @@ int main(int argc, char *argv[])
 
   // Serializing initial state
   auto currentState = (uint8_t *)malloc(stateSize);
-  r.serializeState(currentState);
+  jaffarCommon::serializer::Contiguous sc(currentState, stateSize);
+  r.serializeState(sc);
 
   // Storage for diffential compression
   auto diffentialStateData = (uint8_t *)malloc(differentialStateSize);
-  size_t differentialDataPos = 0;
-  size_t referenceDataPos = 0;
-  r.serializeDifferentialState(diffentialStateData, &differentialDataPos, differentialStateSize, currentState, &referenceDataPos, stateSize, useZlibCompression);
-  size_t maxDifferentialStateSize = differentialDataPos;
+  jaffarCommon::serializer::Differential sd(diffentialStateData, differentialStateSize, currentState, stateSize, useZlibCompression);
+  r.serializeState(sd);
+  size_t maxDifferentialStateSize = sd.getOutputSize();
 
   // Check whether to perform each action
   const bool doPreAdvance = cycleType == "Full";
@@ -147,13 +151,16 @@ int main(int argc, char *argv[])
 
     if (doDeserialize == true)
     {
-      if (useDifferentialCompression == false) r.deserializeState(currentState);
+      if (useDifferentialCompression == false)
+      {
+        jaffarCommon::deserializer::Contiguous dc(currentState, stateSize);
+        r.deserializeState(dc);
+      } 
 
       if (useDifferentialCompression == true) 
       {
-        size_t differentialDataPos = 0;
-        size_t referenceDataPos = 0;
-        r.deserializeDifferentialState(diffentialStateData, &differentialDataPos, differentialStateSize, currentState, &referenceDataPos, stateSize, useZlibCompression);
+        jaffarCommon::deserializer::Differential dd(diffentialStateData, differentialStateSize, currentState, stateSize, useZlibCompression);
+        r.deserializeState(dd);
       }
     } 
 
@@ -161,14 +168,17 @@ int main(int argc, char *argv[])
 
     if (doSerialize == true)
     {
-      if (useDifferentialCompression == false) r.serializeState(currentState);
+      if (useDifferentialCompression == false)
+      {
+        jaffarCommon::serializer::Contiguous sc(currentState, stateSize);
+        r.serializeState(sc);
+      } 
 
       if (useDifferentialCompression == true)
       {
-        size_t differentialDataPos = 0;
-        size_t referenceDataPos = 0;
-        r.serializeDifferentialState(diffentialStateData, &differentialDataPos, differentialStateSize, currentState, &referenceDataPos, stateSize, useZlibCompression);
-        maxDifferentialStateSize = std::max(maxDifferentialStateSize, differentialDataPos);
+        jaffarCommon::serializer::Differential sd(diffentialStateData, differentialStateSize, currentState, stateSize, useZlibCompression);
+        r.serializeState(sd);
+        maxDifferentialStateSize = std::max(maxDifferentialStateSize, sd.getOutputSize());
       } 
     } 
   }

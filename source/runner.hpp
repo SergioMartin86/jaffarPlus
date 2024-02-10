@@ -4,10 +4,14 @@
 #include <memory>
 #include <vector>
 #include <set>
+#include <jaffarCommon/include/serializers/base.hpp>
+#include <jaffarCommon/include/deserializers/base.hpp>
+#include <jaffarCommon/include/serializers/contiguous.hpp>
+#include <jaffarCommon/include/deserializers/contiguous.hpp>
 #include <jaffarCommon/include/bitwise.hpp>
 #include <jaffarCommon/include/hash.hpp>
 #include <jaffarCommon/include/json.hpp>
-#include <jaffarCommon/include/diff.hpp>
+#include <jaffarCommon/include/logger.hpp>
 #include "game.hpp"
 #include "inputSet.hpp"
 
@@ -162,120 +166,47 @@ class Runner final
     _currentStep++;
   }
 
-  // Serialization routine 
-  inline void serializeState(uint8_t* outputData) const
-  { 
-    size_t pos = 0;
-
-    // Serializing runner-specific data
-    memcpy(&outputData[pos], &_currentStep, sizeof(_currentStep));
-    pos += sizeof(_currentStep);
-
-    // If enabled, store input history    
-    if (_inputHistoryEnabled == true)
-    {
-      memcpy(&outputData[pos], _inputHistory.data(), _inputHistory.size());
-      pos += _inputHistory.size();
-    }
-
-    // Serializing internal emulator state
-    _game->serializeState(&outputData[pos]);
-    pos += _game->getStateSize();
-  }
-
-  // Deserialization routine
-  inline void deserializeState(const uint8_t* inputData)
-  {
-    size_t pos = 0;
-
-    // Deserializing game-specific data
-    memcpy(&_currentStep, &inputData[pos], sizeof(_currentStep));
-    pos += sizeof(_currentStep);
-
-    // If enabled, recover input history    
-    if (_inputHistoryEnabled == true)
-    {
-      memcpy(_inputHistory.data(), &inputData[pos], _inputHistory.size());
-      pos += _inputHistory.size();
-    }
-
-    // Deserializing state data into the emulator
-    _game->deserializeState(&inputData[pos]); 
-    pos += _game->getStateSize();
-  }
-
-  // This function returns the size of the game state
-  size_t getStateSize() const
-  {
-    size_t stateSize = 0;
-
-    // Adding the size of game specific storage
-    stateSize += sizeof(_currentStep);
-
-    // If enabled, factor in the size of input history    
-    if (_inputHistoryEnabled == true) stateSize += _inputHistory.size();
-
-    // Adding the size of the emulator state
-    stateSize += _game->getStateSize();
-
-    return stateSize;
-  }
-
-  // Differential serialization routine
-  inline void serializeDifferentialState(
-    uint8_t* __restrict__ outputData,
-    size_t* outputDataPos,
-    const size_t outputDataMaxSize,
-    const uint8_t* __restrict__ referenceData,
-    size_t* referenceDataPos,
-    const size_t referenceDataMaxSize,
-    const bool useZlib) const
+  // Serialization routine
+  inline void serializeState(jaffarCommon::serializer::Base& serializer) const
   { 
     // Performing differential serialization of the internal game instance
-    _game->serializeDifferentialState(outputData, outputDataPos, outputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
+    _game->serializeState(serializer);
 
     // Serializing input history data
-    if (_inputHistoryEnabled == true) jaffarCommon::serializeDifferentialData(_inputHistory.data(), _inputHistory.size(), outputData, outputDataPos, outputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
+    if (_inputHistoryEnabled == true) serializer.push(_inputHistory.data(), _inputHistory.size());
 
     // Serializing current step
-    jaffarCommon::serializeContiguousData(&_currentStep, sizeof(_currentStep), outputData, outputDataPos, outputDataMaxSize, referenceDataPos, referenceDataMaxSize);
+    serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
   }
 
-  // Differential deserialization routine
-  inline void deserializeDifferentialState(
-    const uint8_t* __restrict__ inputData,
-    size_t* inputDataPos,
-    const size_t inputDataMaxSize,
-    const uint8_t* __restrict__ referenceData,
-    size_t* referenceDataPos,
-    const size_t referenceDataMaxSize,
-    const bool useZlib)
+  // Deeserialization routine
+  inline void deserializeState(jaffarCommon::deserializer::Base& deserializer)
   { 
     // Performing differential serialization of the internal game instance
-    _game->deserializeDifferentialState(inputData, inputDataPos, inputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize, useZlib);
+    _game->deserializeState(deserializer);
 
     // Deserializing input history
-    if (_inputHistoryEnabled == true) jaffarCommon::deserializeDifferentialData(_inputHistory.data(), _inputHistory.size(), inputData, inputDataPos, inputDataMaxSize, referenceData, referenceDataPos, referenceDataMaxSize);
+    if (_inputHistoryEnabled == true) deserializer.pop(_inputHistory.data(), _inputHistory.size());
 
     // Deserializing current step
-    jaffarCommon::deserializeContiguousData(&_currentStep, sizeof(_currentStep), inputData, inputDataPos, inputDataMaxSize, referenceDataPos, referenceDataMaxSize);
+    deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
+  }
+
+  // Getting the maximum differntial state size
+  inline size_t getStateSize() const
+  { 
+    jaffarCommon::serializer::Contiguous s;
+    this->serializeState(s);
+    return s.getOutputSize();
   }
 
   // Getting the maximum differntial state size
   inline size_t getDifferentialStateSize(const size_t maxDifferences) const
   { 
-    size_t stateSize = 0;
-
-    // Adding the size of game specific storage
-    stateSize += _game->getDifferentialStateSize(0);
-
-    // Adding the maximum difference size
-    stateSize += maxDifferences;
-
-    // Adding storage for current step
-    stateSize += sizeof(_currentStep);
-
-    return stateSize;
+    jaffarCommon::serializer::Differential s;
+    this->serializeState(s);
+    size_t contiguousSize = s.getOutputSize();
+    return contiguousSize + maxDifferences;
   }
 
   // This function computes the hash for the current runner state
