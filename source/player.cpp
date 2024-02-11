@@ -23,6 +23,16 @@ int main(int argc, char *argv[])
     .help("path to the solution sequence file (.sol) to reproduce.")
     .required();
 
+  program.add_argument("--reproduce")
+    .help("Plays the entire sequence without interruptions and exit at the end.")
+    .default_value(false)
+    .implicit_value(true);
+
+  program.add_argument("--disableRender")
+    .help("Do not render game window.")
+    .default_value(false)
+    .implicit_value(true);
+    
   // Try to parse arguments
   try { program.parse_args(argc, argv);  }
   catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
@@ -38,6 +48,12 @@ int main(int argc, char *argv[])
   std::string solutionFileString;
   if (jaffarCommon::loadStringFromFile(solutionFileString, solutionFile) == false) 
     EXIT_WITH_ERROR("[ERROR] Could not find or read from solution sequence file: %s\n%s \n", solutionFile.c_str(), program.help().str().c_str());
+
+  // Getting reproduce flag
+  bool isReproduce = program.get<bool>("--reproduce");
+  
+  // Getting reproduce flag
+  bool disableRender = program.get<bool>("--disableRender");
 
   // Parsing configuration file
   nlohmann::json config;
@@ -59,6 +75,9 @@ int main(int argc, char *argv[])
   // Initializing emulator
   e->initialize();
 
+  // Enabling rendering
+  e->enableRendering();
+  
   // If initial state file defined, load it
   if (initialStateFilePath.empty() == false) e->loadStateFile(initialStateFilePath);
 
@@ -83,8 +102,11 @@ int main(int argc, char *argv[])
   // Getting input sequence
   const auto solutionSequence = jaffarCommon::split(solutionFileString, ' ');
 
+  // Variable for current step in view
+  ssize_t currentStep = 0;
+
   // Getting sequence length
-  const auto sequenceLength = solutionSequence.size();
+  const ssize_t sequenceLength = solutionSequence.size();
 
   // Initializing terminal
   jaffarCommon::initializeTerminal();
@@ -96,9 +118,93 @@ int main(int argc, char *argv[])
   LOG("[J+] State Size:                       %lu\n", stateSize);
   LOG("[J+] Sequence Length:                  %lu\n", sequenceLength);
   LOG("[J+] ********** Creating Playback Sequence **********\n");
+  jaffarCommon::refreshTerminal();
 
   // Instantiating playback object
   jaffarPlus::Playback p(r, solutionSequence);
+
+// Flag to display frame information
+  bool showFrameInfo = true;
+
+  // Flag to continue running playback
+  bool continueRunning = true;
+
+  // Interactive section
+  while (continueRunning)
+  {
+    // Updating display
+    if (disableRender == false) p.renderFrame(currentStep);
+
+    // Getting input
+    const auto &inputString = p.getStateInputString(currentStep);
+
+    // Getting input
+    const auto &inputIndex = p.getStateInputIndex(currentStep);
+
+    // Getting state hash
+    const auto hash = p.getStateHash(currentStep);
+
+    // Getting state data
+    const auto stateData = p.getStateData(currentStep);
+
+    // Printing data and commands
+    if (showFrameInfo)
+    {
+      jaffarCommon::clearTerminal();
+
+      LOG("[] ----------------------------------------------------------------\n");
+      LOG("[] Current Step #: %lu / %lu\n", currentStep + 1, sequenceLength);
+      LOG("[] Input:          %s (0x%X)\n", inputString.c_str(), inputIndex);
+      LOG("[] State Hash:     0x%lX%lX\n", hash.first, hash.second);
+
+      // Only print commands if not in reproduce mode
+      if (isReproduce == false) LOG("[] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | q: quit\n");
+
+      jaffarCommon::refreshTerminal();
+    }
+
+    // Resetting show frame info flag
+    showFrameInfo = true;
+
+    // Get command
+    auto command = jaffarCommon::getKeyPress();
+
+    // Advance/Rewind commands
+    if (command == 'n') currentStep = currentStep - 1;
+    if (command == 'm') currentStep = currentStep + 1;
+    if (command == 'h') currentStep = currentStep - 10;
+    if (command == 'j') currentStep = currentStep + 10;
+    if (command == 'y') currentStep = currentStep - 100;
+    if (command == 'u') currentStep = currentStep + 100;
+    if (command == 'k') currentStep = currentStep - 1000;
+    if (command == 'i') currentStep = currentStep + 1000;
+
+    // Correct current step if requested more than possible
+    if (currentStep < 0) currentStep = 0;
+    if (currentStep > sequenceLength) currentStep = sequenceLength;
+
+    // Quicksave creation command
+    if (command == 's')
+    {
+      // Storing state file
+      std::string saveFileName = "quicksave.state";
+
+      std::string saveData;
+      saveData.resize(stateSize);
+      memcpy(saveData.data(), stateData, stateSize);
+      if (jaffarCommon::saveStringToFile(saveData, saveFileName.c_str()) == false) EXIT_WITH_ERROR("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
+      LOG("[] Saved state to %s\n", saveFileName.c_str());
+
+      // Do no show frame info again after this action
+      showFrameInfo = false;
+    }
+
+    // Start playback from current point
+    if (command == 'p') isReproduce = true;
+
+    // Start playback from current point
+    if (command == 'q') continueRunning = false;
+  }
 
   // Ending ncurses window
   jaffarCommon::finalizeTerminal();

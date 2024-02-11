@@ -8,6 +8,15 @@
 #include <jaffarCommon/include/deserializers/base.hpp>
 #include <emulator.hpp>
 
+#ifdef _USE_SDL2
+#include <SDL.h>
+#endif
+
+// Relevant defines for rendering
+#define BLIT_SIZE 65536
+#define DEFAULT_WIDTH 256
+#define DEFAULT_HEIGHT 240
+
 namespace jaffarPlus
 {
 
@@ -35,7 +44,18 @@ class QuickerNES final : public Emulator
 
     // Parsing rom file SHA1
     _romFileSHA1 = JSON_GET_STRING(config, "Rom File SHA1");
+
+    // Setting game's internal video buffer
+    _curBlit = (int32_t*) malloc (sizeof(int32_t) * BLIT_SIZE);
+    _videoBuffer = (uint8_t *) malloc(BLIT_SIZE);
+    ((emulator_t*)_quickerNES.getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
   };
+
+  ~QuickerNES()
+  {
+    free(_curBlit);
+    free(_videoBuffer);
+  }
 
   void initialize() override
   {
@@ -80,6 +100,136 @@ class QuickerNES final : public Emulator
 
      EXIT_WITH_ERROR("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());  
   }
+
+  ////////// Rendering functions (some of these taken from https://github.com/Bindernews/HeadlessQuickNes / MIT License)
+
+  // Function to initalize the video palette 
+  int32_t *_initF_VideoPalette()
+  {
+      static int32_t VideoPalette[512];
+      const emulator_t::rgb_t *palette = emulator_t::nes_colors;
+      for (int i = 0; i < 512; i++)
+      {
+          VideoPalette[i] = palette[i].red << 16 | palette[i].green << 8
+              | palette[i].blue | 0xff000000;
+      }
+      return VideoPalette;
+  }
+
+  // Initialize the video palette
+  const int32_t* NES_VIDEO_PALETTE = _initF_VideoPalette();
+
+  // Storage for nes renderer state  
+  int32_t* _curBlit;
+  uint8_t* _videoBuffer;
+
+  // Copied from bizinterface.cpp in BizHawk/quicknes
+  inline void saveBlit(const void *ePtr, int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom)
+  {
+    const emulator_t *e = (emulator_t*) ePtr;
+    const unsigned char *in_pixels = e->frame().pixels;
+    if (in_pixels == NULL) return;
+    int32_t *out_pixels = dest;
+
+    for (unsigned h = 0; h < emulator_t::image_height;  h++, in_pixels += e->frame().pitch, out_pixels += emulator_t::image_width)
+      for (unsigned w = 0; w < emulator_t::image_width; w++)
+      {
+        unsigned col = e->frame().palette[in_pixels[w]];
+        const emulator_t::rgb_t& rgb = e->nes_colors[col];
+        unsigned r = rgb.red;
+        unsigned g = rgb.green;
+        unsigned b = rgb.blue;
+        out_pixels[w] = (r << 16) | (g << 8) | (b << 0);
+      }
+  }
+
+  inline void enableRendering() override  { _quickerNES.enableRendering(); }
+  inline void disableRendering() override { _quickerNES.disableRendering(); }
+  inline void updateRendererState () override  { saveBlit(_quickerNES.getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0); }
+  inline void serializeRendererState(jaffarCommon::serializer::Base& serializer) const override  { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
+  inline void deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) override  { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
+  inline size_t getRendererStateSize() const 
+  {
+    jaffarCommon::serializer::Contiguous s;
+    serializeRendererState(s);
+    return s.getOutputSize();
+  }
+
+  #ifdef _USE_SDL2
+  
+  // Window pointer
+  SDL_Window *m_window;
+  
+  // Renderer
+  SDL_Renderer *m_renderer;
+  
+  // SDL Textures
+  SDL_Texture *m_tex;
+
+  // Destination rect for the texture
+  SDL_Rect m_nesDest;
+
+  const SDL_Rect NES_BLIT_RECT = { 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT };
+
+  bool setScale(int scale)
+  {
+    int winW = DEFAULT_WIDTH * scale;
+    int winH = DEFAULT_HEIGHT * scale;
+
+    // Change the window size
+    SDL_SetWindowSize(m_window, winW, winH);
+    
+    // update the overlay destination
+    m_nesDest = { 0, 0, winW, winH };
+
+    return true;
+  } 
+
+  inline void launchRendererWindow() override
+  {
+    // Opening rendering window
+    SDL_SetMainReady();
+
+    // We can only call SDL_InitSubSystem once
+    if (!SDL_WasInit(SDL_INIT_VIDEO))
+      if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
+        EXIT_WITH_ERROR("Failed to initialize video: %s", SDL_GetError());
+
+    if (!(m_window = SDL_CreateWindow("JaffarPlus - NES Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0))) EXIT_WITH_ERROR("Coult not open SDL window in NES emulator");
+    if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) EXIT_WITH_ERROR("Coult not create SDL renderer in NES emulator");
+    if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256))) EXIT_WITH_ERROR("Coult not create SDL texture in NES emulator");
+    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+    if (!setScale(1)) EXIT_WITH_ERROR("Coult not set SDL scale in NES emulator");
+  }
+
+  inline void updateRendererWindow() override
+  {
+    void *nesPixels = nullptr;
+    int pitch = 0;
+
+    if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0) EXIT_WITH_ERROR("Coult not lock texture in NES emulator");
+
+    memcpy(nesPixels, _curBlit, sizeof(int32_t) * BLIT_SIZE);
+    SDL_UnlockTexture(m_tex);
+
+    // render to screen
+    SDL_RenderClear(m_renderer);
+    SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, &m_nesDest);
+
+    SDL_RenderPresent(m_renderer);
+  }
+
+  inline void closeRendererWindow() override
+  {
+    if (m_tex) SDL_DestroyTexture(m_tex);
+    if (m_renderer) SDL_DestroyRenderer(m_renderer);
+    if (m_window) SDL_DestroyWindow(m_window);
+  }
+  #else
+  inline void launchRendererWindow() override { }
+  inline void updateRendererWindow() override { }
+  inline void closeRendererWindow() override  { }
+  #endif
 
   private:
 
