@@ -130,7 +130,7 @@ class Runner final
   }
   
   // Function to advance state.
-  void advanceState(const std::string& input)
+  inline jaffarPlus::InputSet::inputIndex_t getInputIndex(const std::string& input) const
   {
     // Getting input hash
     const auto inputHash = jaffarCommon::hashString(input);
@@ -140,7 +140,7 @@ class Runner final
     if (it == _inputHashMap.end()) EXIT_WITH_ERROR("[ERROR] Input '%s' provided but has not been registered as allowed input first.\n", input.c_str());
     const auto inputIndex = it->second;
 
-    advanceState(inputIndex);
+    return inputIndex;
   }
 
     // Function to advance state.

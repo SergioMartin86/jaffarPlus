@@ -30,15 +30,23 @@ class Game
   // Base constructor
   Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : _emulator(std::move(emulator))
   {
-    // Getting Game-specific storage size
-    _gameSpecificStorageSize = JSON_GET_NUMBER(size_t, config, "Game-Specific Storage (GSS) Size");
+    // Parsing printable game properties
+    const auto& printPropertiesJs = JSON_GET_ARRAY(config, "Print Properties");
+    for (const auto& propertyJs : printPropertiesJs)
+    {
+      if (propertyJs.is_string() == false) EXIT_WITH_ERROR("Printable property entry is not a string");
+      const auto propertyName = propertyJs.get<std::string>();
+      _printablePropertyNames.push_back(propertyName);
+    }
 
-    // Allocating Game-specific storage
-    _gameSpecificStorage.resize(_gameSpecificStorageSize);
-
-    // Parsing game properties
-    const auto& propertiesJs = JSON_GET_ARRAY(config, "Properties");
-    for (const auto& propertyJs : propertiesJs) parseGameProperty(propertyJs);
+     // Parsing hashable game properties
+    const auto& hashPropertiesJs = JSON_GET_ARRAY(config, "Hash Properties");
+    for (const auto& propertyJs : hashPropertiesJs)
+    {
+      if (propertyJs.is_string() == false) EXIT_WITH_ERROR("Hashable property entry is not a string");
+      const auto propertyName = propertyJs.get<std::string>();
+      _hashablePropertyNames.push_back(propertyName);
+    }
   };
 
   Game() = delete;
@@ -47,8 +55,31 @@ class Game
   // Function to initialize game instance
   void initialize()
   {
-    // Initializing the particular game selected
-    initializeImpl();
+    // Registering printable properties
+    for (const auto& property : _printablePropertyNames)
+    {
+      // Getting property name hash
+      const auto propertyHash = jaffarCommon::hashString(property);
+
+      // Checking the property is registered 
+      if (_propertyMap.contains(propertyHash) == false) EXIT_WITH_ERROR("Property '%s' is not registered in this game", property.c_str());
+
+      // If so, add its pointer to the print property vector
+      _propertyPrintVector.push_back(_propertyMap.at(propertyHash).get());
+    }
+
+    // Registering hashable properties
+    for (const auto& property : _hashablePropertyNames)
+    {
+      // Getting property name hash
+      const auto propertyHash = jaffarCommon::hashString(property);
+
+      // Checking the property is registered 
+      if (_propertyMap.contains(propertyHash) == false) EXIT_WITH_ERROR("Property '%s' is not registered in this game", property.c_str());
+
+      // If so, add its pointer to the print property vector
+      _propertyHashVector.push_back(_propertyMap.at(propertyHash).get());
+    }
 
     // Calling the post-update hook
     stateUpdatePostHook();
@@ -85,8 +116,8 @@ class Game
     // Serializing internal emulator state
     _emulator->serializeState(serializer);
 
-    // Serializing game-specific data
-    serializer.pushContiguous(_gameSpecificStorage.data(), _gameSpecificStorageSize);
+    // Storage for game-specific data
+    serializeStateImpl(serializer);
 
     // Serializing reward
     serializer.pushContiguous(&_reward, sizeof(_reward));
@@ -104,8 +135,8 @@ class Game
     // Storage for the internal emulator state
     _emulator->deserializeState(deserializer);
 
-    // Deserializing game-specific data
-    deserializer.popContiguous(_gameSpecificStorage.data(), _gameSpecificStorageSize);
+    // Storage for game-specific data
+    deserializeStateImpl(deserializer);
 
     // Deserializing reward
     deserializer.popContiguous(&_reward, sizeof(_reward));
@@ -123,9 +154,6 @@ class Game
 
     // Adding maximum differences (in place of emulator storage)
     stateSize += maxDifferences;
-
-    // Adding the size of game specific storage
-    stateSize += _gameSpecificStorageSize;
 
     // Adding the size of current reward
     stateSize += sizeof(_reward);
@@ -203,52 +231,11 @@ class Game
    // Printing game-specific stuff now
    printInfoImpl();
   }
-  
-  // This function parses game properties as described in the Jaffar script
-  void parseGameProperty(const nlohmann::json& propertyJs)
-  {
-    // Checking correct format
-    if (propertyJs.is_object() == false) EXIT_WITH_ERROR("Property has wrong format (must be an object). Dump: \n %s", propertyJs.dump(2).c_str());
 
-    // Getting property settings
-    const auto name = JSON_GET_STRING(propertyJs, "Name");
-    const auto dataTypeString = JSON_GET_STRING(propertyJs, "Data Type");
-    const auto endiannessString = JSON_GET_STRING(propertyJs, "Endianness");
-    const auto memoryBlock = JSON_GET_STRING(propertyJs, "Memory Block");
-    const auto offsetString = JSON_GET_STRING(propertyJs, "Offset");
-    const auto hashable = JSON_GET_BOOLEAN(propertyJs, "Hashable");
-    const auto printable = JSON_GET_BOOLEAN(propertyJs, "Printable");
-
-    // Parsing datatype
-    Property::datatype_t dataType = Property::parseDatatypeName(dataTypeString);
-
-    // Parsing endianness
-    Property::endianness_t endianness = Property::parseEndiannessName(endiannessString);
-
-    // Getting offset
-    const auto offset = std::strtoull(offsetString.c_str(), nullptr, 0);
-
-    // Getting storage pointer for the new property.
-    // If its game specific storage, we get it directly from there.
-    // Otherwise, we look for it in the emulator
-    const auto pointer = memoryBlock == "GSS" ?
-     _gameSpecificStorage.data() :
-     _emulator->getProperty(memoryBlock).pointer + offset;
-
-    // Registering new property
-    registerGameProperty(name, pointer, dataType, endianness, hashable, printable);
-  }
-
-  void registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness, const bool hashable, const bool printable)
+  void registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)
   {
     // Creating property
     auto property = std::make_unique<Property>(name, pointer, dataType, endianness);
-
-    // If this is a hashable property, add it to the hash set
-    if (hashable) _propertyHashVector.push_back(property.get());
-
-    // If this is a printable property, add it to the set
-    if (printable) _propertyPrintVector.push_back(property.get());
 
     // Getting property name hash as key 
     const auto propertyNameHash = property->getNameHash();
@@ -574,9 +561,10 @@ class Game
 
   protected:
 
+  virtual void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const = 0;
+  virtual void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) = 0;
   virtual float calculateGameSpecificReward() const = 0;
   virtual void computeAdditionalHashing(MetroHash128& hashEngine) const = 0;
-  virtual void initializeImpl() = 0;
   virtual void printInfoImpl() const = 0;
   virtual void advanceStateImpl(const std::string& input) = 0;
   virtual bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) = 0;
@@ -589,12 +577,6 @@ class Game
 
   // Current game state type
   stateType_t _stateType;
-
-  // Game-specific storage size
-  size_t _gameSpecificStorageSize;
-
-  // Game-specific storage 
-  std::vector<uint8_t> _gameSpecificStorage;
 
   // Current game state reward
   float _reward = 0.0;
@@ -610,6 +592,12 @@ class Game
 
   // Storage for status vector indicating whether the rules have been satisfied
   std::vector<uint8_t> _rulesStatus;
+
+  // Storage for the parse property names that are meant to be printed
+  std::vector<std::string> _printablePropertyNames;
+
+  // Storage for the parse property names that are meant to be hased
+  std::vector<std::string> _hashablePropertyNames;
 
   // Property hash set to quickly distinguish states from each other. Its a vector to keep the ordering
   std::vector<const Property*> _propertyHashVector;

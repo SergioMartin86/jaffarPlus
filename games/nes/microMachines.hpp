@@ -21,13 +21,54 @@ class MicroMachines final : public jaffarPlus::Game
 
   MicroMachines(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : jaffarPlus::Game(emulator, config)
   {
-    // Perform parsing of the configuration here, if anything special settings are required.
-  }
+    // Getting emulator's low memory pointer
+    auto lowMem = _emulator->getProperty("NES LRAM").pointer;
 
-  private:
+    // Registering native game properties
+    registerGameProperty("Current Race",                     &lowMem[0x0308], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Frame Type",                       &lowMem[0x007C], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Lag Frame",                        &lowMem[0x01F8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Camera Pos X1",                    &lowMem[0x00D5], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Camera Pos X2",                    &lowMem[0x00D4], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Camera Pos Y1",                    &lowMem[0x00D7], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Camera Pos Y2",                    &lowMem[0x00D6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Pos X1",                  &lowMem[0x03DE], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Pos X2",                  &lowMem[0x03DA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Pos Y1",                  &lowMem[0x03EA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Pos Y2",                  &lowMem[0x03E6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Pos Y3",                  &lowMem[0x03EE], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Accel",                   &lowMem[0x0386], Property::datatype_t::dt_int8,  Property::endianness_t::little);
+    registerGameProperty("Player 1 Accel Timer 1",           &lowMem[0x0102], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Accel Timer 2",           &lowMem[0x0103], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Accel Timer 3",           &lowMem[0x010E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Inertia 1",               &lowMem[0x00B0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Inertia 2",               &lowMem[0x00B2], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Inertia 3",               &lowMem[0x00B4], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Inertia 4",               &lowMem[0x00B6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Angle 1",                 &lowMem[0x04B2], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Angle 2",                 &lowMem[0x040A], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Angle 3",                 &lowMem[0x04CA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Current Laps Remaining",  &lowMem[0x04B6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Checkpoint",              &lowMem[0x04CE], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Input 1",                 &lowMem[0x009B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Input 2",                 &lowMem[0x00CF], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Input 3",                 &lowMem[0x0352], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Recovery Mode",           &lowMem[0x0416], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Recovery Timer",          &lowMem[0x041A], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Resume Timer",            &lowMem[0x00DA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Can Control Car",         &lowMem[0x01BF], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Tank Fire Timer",         &lowMem[0x041E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Pre-Race Timer",                   &lowMem[0x00DD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Active Frame 1",                   &lowMem[0x00B0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Active Frame 2",                   &lowMem[0x00B2], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Active Frame 3",                   &lowMem[0x00B4], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Active Frame 4",                   &lowMem[0x00B6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-  void initializeImpl() override
-  {
+    // Registering derivative game properties
+    registerGameProperty("Player 1 Previous Laps Remaining", &_player1LapsRemainingPrev, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player 1 Pos Y",                   &_player1PosY, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player 1 Pos X",                   &_player1PosX, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+
     // Getting some properties' pointers now for quick access later
     _player1TankFireTimer              = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Tank Fire Timer")]->getPointer();
     _currentRace                       = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Current Race")]->getPointer();
@@ -43,22 +84,15 @@ class MicroMachines final : public jaffarPlus::Game
     _player1AccelTimer2                = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Accel Timer 2")]->getPointer();
     _player1Angle1                     = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Angle 1")]->getPointer();
     _player1LapsRemaining              = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Current Laps Remaining")]->getPointer();
-    _player1LapsRemainingPrev          = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Previous Laps Remaining")]->getPointer();
     _player1Checkpoint                 = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Checkpoint")]->getPointer();
     _player1RecoveryTimer              = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player 1 Recovery Timer")]->getPointer();
-
-    // Registering game specific values
-
-    registerGameProperty("Player 1 Pos Y", &_player1PosY, Property::datatype_t::dt_uint16, Property::endianness_t::little, false, true);
-    registerGameProperty("Player 1 Pos X", &_player1PosX, Property::datatype_t::dt_uint16, Property::endianness_t::little, false, true);
-
-    // Setting initial value for previous laps remaining
-    *_player1LapsRemainingPrev = *_player1LapsRemaining;
   }
+
+  private:
 
   inline void advanceStateImpl(const std::string& input) override
   {
-    *_player1LapsRemainingPrev = *_player1LapsRemaining;
+    _player1LapsRemainingPrev = *_player1LapsRemaining;
 
     _emulator->advanceState(input);
   }
@@ -98,6 +132,18 @@ class MicroMachines final : public jaffarPlus::Game
     _recoveryTimerMagnet = 0.0;
     _player1AngleMagnet.intensity = 0.0;
     _pointMagnet.intensity = 0.0;
+  }
+
+  inline void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
+  {
+    // Storing previous lap count
+    serializer.pushContiguous(&_player1LapsRemainingPrev, 1);
+  }
+
+  inline void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
+  {
+    // Restoring previous lap count
+    deserializer.popContiguous(&_player1LapsRemainingPrev, 1);
   }
 
   inline float calculateGameSpecificReward() const
@@ -246,7 +292,7 @@ class MicroMachines final : public jaffarPlus::Game
   int8_t*   _player1Accel;
   uint8_t*  _player1Angle1;
   uint8_t*  _player1LapsRemaining;
-  uint8_t*  _player1LapsRemainingPrev;
+  uint8_t  _player1LapsRemainingPrev = 255;
   uint8_t*  _player1Checkpoint;
 
   uint8_t*  _player1RecoveryTimer;
