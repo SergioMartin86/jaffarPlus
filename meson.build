@@ -18,3 +18,13 @@ executable('jaffar-tester',
   dependencies : jaffarDependencies,
   include_directories : jaffarIncludes
 )
+
+# Jaffar Player tool
+executable('jaffar-player',
+  'source/player.cpp',
+  cpp_args: [ jaffarCPPFlags ],
+  link_args: [ '-lncurses' ],
+  sources : jaffarSources,
+  dependencies : [ jaffarDependencies, dependency('sdl2'), dependency('SDL2_image') ],
+  include_directories : jaffarIncludes
+)

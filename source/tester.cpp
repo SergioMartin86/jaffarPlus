@@ -147,7 +147,10 @@ int main(int argc, char *argv[])
   auto t0 = std::chrono::high_resolution_clock::now();
   for (const auto& input : solutionSequence)
   {
-    if (doPreAdvance == true) r.advanceState(input);
+    // Getting input index
+    const auto inputIndex = r.getInputIndex(input);
+
+    if (doPreAdvance == true) r.advanceState(inputIndex);
 
     if (doDeserialize == true)
     {
@@ -164,7 +167,7 @@ int main(int argc, char *argv[])
       }
     } 
 
-    r.advanceState(input);
+    r.advanceState(inputIndex);
 
     if (doSerialize == true)
     {
