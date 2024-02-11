@@ -31,6 +31,8 @@ class Game
   Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : _emulator(std::move(emulator))
   {
     // Parsing printable game properties
+    _frameRate = JSON_GET_NUMBER(float, config, "Frame Rate");
+
     const auto& printPropertiesJs = JSON_GET_ARRAY(config, "Print Properties");
     for (const auto& propertyJs : printPropertiesJs)
     {
@@ -558,7 +560,10 @@ class Game
 
   // Function to obtain emulator based on name
   static std::unique_ptr<Game> getGame(const std::string& gameName, std::unique_ptr<Emulator>& emulator, const nlohmann::json& config);
-
+ 
+  // Function to get the frame rate
+  float getFrameRate() const { return _frameRate; }
+  
   protected:
 
   virtual void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const = 0;
@@ -607,6 +612,9 @@ class Game
 
   // Property map to store all registered properties for future reference, indexed by their name hash
   std::map<jaffarCommon::hash_t, std::unique_ptr<Property>> _propertyMap;
+
+  // Inverse frame rate to play the game with, required for correct playback
+  float _frameRate;
 };
 
 } // namespace jaffarPlus

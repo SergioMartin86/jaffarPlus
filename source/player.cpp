@@ -90,6 +90,10 @@ int main(int argc, char *argv[])
   // Parsing script rules
   g->parseRules(JSON_GET_ARRAY(config, "Rules"));
 
+  // Getting inverse frame rate from game
+  const auto frameRate = g->getFrameRate();
+  const uint32_t inverseFrameRate = std::round((1.0 / frameRate) * 1.0e+6);
+
   // Creating runner from game instance
   jaffarPlus::Runner r(g, JSON_GET_OBJECT(config, "Runner Configuration"));
 
@@ -117,6 +121,7 @@ int main(int argc, char *argv[])
   LOG("[J+] Solution File:                   '%s'\n", solutionFile.c_str());
   LOG("[J+] State Size:                       %lu\n", stateSize);
   LOG("[J+] Sequence Length:                  %lu\n", sequenceLength);
+  LOG("[J+] Frame Rate:                       %f (%u)\n", frameRate, inverseFrameRate);
   LOG("[J+] ********** Creating Playback Sequence **********\n");
   jaffarCommon::refreshTerminal();
 
@@ -154,11 +159,12 @@ int main(int argc, char *argv[])
 
       LOG("[] ----------------------------------------------------------------\n");
       LOG("[] Current Step #: %lu / %lu\n", currentStep + 1, sequenceLength);
+      LOG("[] Playback:       %s\n", isReproduce ? "Playing" : "Stopped");
       LOG("[] Input:          %s (0x%X)\n", inputString.c_str(), inputIndex);
       LOG("[] State Hash:     0x%lX%lX\n", hash.first, hash.second);
 
       // Only print commands if not in reproduce mode
-      if (isReproduce == false) LOG("[] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | q: quit\n");
+      LOG("[] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | q: quit\n");
 
       jaffarCommon::refreshTerminal();
     }
@@ -166,8 +172,24 @@ int main(int argc, char *argv[])
     // Resetting show frame info flag
     showFrameInfo = true;
 
-    // Get command
-    auto command = jaffarCommon::getKeyPress();
+    // Specifies the command to execute next
+    int command = 0;
+
+    // If it's reproducing, 
+    if (isReproduce == true)
+    {
+      // Introducing sleep related to the frame rate
+      usleep(inverseFrameRate);
+
+      // Advance to the next frame  
+      currentStep++;
+
+      // Get command without interrupting
+      command = jaffarCommon::getKeyPress();
+    } 
+
+    // If it's not reproducing, grab command with a wait
+    if (isReproduce == false) command = jaffarCommon::waitForKeyPress();
 
     // Advance/Rewind commands
     if (command == 'n') currentStep = currentStep - 1;
@@ -181,7 +203,7 @@ int main(int argc, char *argv[])
 
     // Correct current step if requested more than possible
     if (currentStep < 0) currentStep = 0;
-    if (currentStep > sequenceLength) currentStep = sequenceLength;
+    if (currentStep > sequenceLength) { currentStep = sequenceLength; isReproduce = false; }
 
     // Quicksave creation command
     if (command == 's')
@@ -199,10 +221,10 @@ int main(int argc, char *argv[])
       showFrameInfo = false;
     }
 
-    // Start playback from current point
-    if (command == 'p') isReproduce = true;
+    // Toggles playback from current point
+    if (command == 'p') isReproduce = !isReproduce;
 
-    // Start playback from current point
+    // Triggers the exit
     if (command == 'q') continueRunning = false;
   }
 
