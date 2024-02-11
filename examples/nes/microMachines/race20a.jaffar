@@ -20,6 +20,8 @@
 
  "Game Configuration":
  {
+  "Frame Rate": 60.10,
+
   "Print Properties":
   [
     "Current Race",                   
