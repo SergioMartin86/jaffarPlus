@@ -82,6 +82,9 @@ int main(int argc, char *argv[])
   // Initializing emulator
   e->initialize();
 
+  // Disable rendering
+  e->disableRendering();
+
   // If initial state file defined, load it
   if (initialStateFilePath.empty() == false) e->loadStateFile(initialStateFilePath);
 

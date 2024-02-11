@@ -22,7 +22,7 @@ executable('jaffar-tester',
 # Jaffar Player tool
 executable('jaffar-player',
   'source/player.cpp',
-  cpp_args: [ jaffarCPPFlags ],
+  cpp_args: [ jaffarCPPFlags, '-DNCURSES', '-D_USE_SDL2' ],
   link_args: [ '-lncurses' ],
   sources : jaffarSources,
   dependencies : [ jaffarDependencies, dependency('sdl2'), dependency('SDL2_image') ],
