@@ -159,7 +159,7 @@ class QuickerNES final : public Emulator
   
   // Window pointer
   SDL_Window *m_window;
-  
+
   // Renderer
   SDL_Renderer *m_renderer;
   
@@ -185,24 +185,16 @@ class QuickerNES final : public Emulator
     return true;
   } 
 
-  inline void launchRendererWindow() override
+  inline void initializeVideoOutput(SDL_Window* window) override
   {
-    // Opening rendering window
-    SDL_SetMainReady();
-
-    // We can only call SDL_InitSubSystem once
-    if (!SDL_WasInit(SDL_INIT_VIDEO))
-      if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
-        EXIT_WITH_ERROR("Failed to initialize video: %s", SDL_GetError());
-
-    if (!(m_window = SDL_CreateWindow("JaffarPlus - NES Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0))) EXIT_WITH_ERROR("Coult not open SDL window in NES emulator");
+    m_window = window;
     if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) EXIT_WITH_ERROR("Coult not create SDL renderer in NES emulator");
     if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256))) EXIT_WITH_ERROR("Coult not create SDL texture in NES emulator");
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
     if (!setScale(1)) EXIT_WITH_ERROR("Coult not set SDL scale in NES emulator");
   }
 
-  inline void updateRendererWindow() override
+  inline void updateVideoOutput() override
   {
     void *nesPixels = nullptr;
     int pitch = 0;
@@ -219,16 +211,15 @@ class QuickerNES final : public Emulator
     SDL_RenderPresent(m_renderer);
   }
 
-  inline void closeRendererWindow() override
+  inline void finalizeVideoOutput() override
   {
     if (m_tex) SDL_DestroyTexture(m_tex);
     if (m_renderer) SDL_DestroyRenderer(m_renderer);
-    if (m_window) SDL_DestroyWindow(m_window);
   }
   #else
-  inline void launchRendererWindow() override { }
-  inline void updateRendererWindow() override { }
-  inline void closeRendererWindow() override  { }
+  inline void initializeVideoOutput() override { }
+  inline void updateVideoOutput() override { }
+  inline void finalizeVideoOutput() override  { }
   #endif
 
   private:
