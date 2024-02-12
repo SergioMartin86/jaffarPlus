@@ -6,6 +6,10 @@
 #include <jaffarCommon/include/serializers/contiguous.hpp>
 #include <jaffarCommon/include/deserializers/contiguous.hpp>
 
+#ifdef _USE_SDL2
+#include <SDL.h>
+#endif
+
 namespace jaffarPlus
 {
 
@@ -86,13 +90,17 @@ class Emulator
   virtual size_t getRendererStateSize() const = 0;
 
   // Opens the emulator's renderer window for output to screen
-  virtual void launchRendererWindow() = 0;
+  #ifdef _USE_SDL2
+  virtual void initializeVideoOutput(SDL_Window* window) = 0;
+  #else
+  virtual void initializeVideoOutput() = 0;
+  #endif
 
   // Update the contents of the emulator's renderer window
-  virtual void updateRendererWindow() = 0;
+  virtual void updateVideoOutput() = 0;
 
   // Closes the emulator's renderer window
-  virtual void closeRendererWindow() = 0;
+  virtual void finalizeVideoOutput() = 0;
 };
 
 } // namespace jaffarPlus

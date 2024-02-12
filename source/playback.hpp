@@ -10,7 +10,7 @@
 namespace jaffarPlus
 {
 
-class Playback
+class Playback final
 {
   public:
 
@@ -78,16 +78,9 @@ class Playback
       // Adding step to the internal storage
       _sequence.push_back(step);
     }
-
-    // Launching rendering window
-    _runner->getGame()->getEmulator()->launchRendererWindow();
   };
 
-  ~Playback()
-  {
-    // Closing renderer window
-    _runner->getGame()->getEmulator()->closeRendererWindow();
-  }
+  ~Playback() {}
 
   inline std::string getStateInputString(const size_t currentStep) { return getStep(currentStep).inputString; }
   inline jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) { return getStep(currentStep).inputIndex; }
@@ -99,7 +92,7 @@ class Playback
     const auto& step = getStep(currentStep);
     jaffarCommon::deserializer::Contiguous d(step.rendererStateData, _rendererStateSize);
     _runner->getGame()->getEmulator()->deserializeRendererState(d);
-    _runner->getGame()->getEmulator()->updateRendererWindow();
+    _runner->getGame()->getEmulator()->updateVideoOutput();
   }
   
 
