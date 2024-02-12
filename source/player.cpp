@@ -11,8 +11,6 @@
 #include "runner.hpp"
 #include "playback.hpp"
 
-void mainCycle(const std::string& configFileString, const std::string& solutionFile, bool disableRender, SDL_Window* window);
-
 // Switch to toggle whether to reload the movie on reaching the end of the sequence
 bool isReload = false; 
 
@@ -40,48 +38,7 @@ void closeOutputWindow(SDL_Window* window)
   SDL_DestroyWindow(window);
 }
 
-int main(int argc, char *argv[])
-{
- // Parsing command line arguments
-  argparse::ArgumentParser program("jaffar-tester", "1.0");
-
-  program.add_argument("configFile")
-    .help("path to the Jaffar configuration script (.jaffar) file to run.")
-    .required();
-
-  program.add_argument("solutionFile")
-    .help("path to the solution sequence file (.sol) to reproduce.")
-    .required();
-
-  program.add_argument("--disableRender")
-    .help("Do not render game window.")
-    .default_value(false)
-    .implicit_value(true);
-    
-  // Try to parse arguments
-  try { program.parse_args(argc, argv);  }
-  catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
-
-  // Parsing config file
-  const std::string configFile = program.get<std::string>("configFile");
-
-  // Parsin solution file
-  const std::string solutionFile = program.get<std::string>("solutionFile");
-
-  // Getting reproduce flag
-  bool disableRender = program.get<bool>("--disableRender");
-
-  // Initializing terminal
-  jaffarCommon::initializeTerminal();
-
-  // Creating output window
-  auto window = disableRender ? nullptr : launchOutputWindow();
-
-  // Running main cycle
-  while (true) mainCycle(configFile, solutionFile, disableRender, window);
-}
-
-void mainCycle(const std::string& configFile, const std::string& solutionFile, bool disableRender, SDL_Window* window)
+bool mainCycle(const std::string& configFile, const std::string& solutionFile, bool disableRender, SDL_Window* window)
 {
   // If sequence file defined, load it and play it
   std::string solutionFileString;
@@ -154,12 +111,6 @@ void mainCycle(const std::string& configFile, const std::string& solutionFile, b
   const ssize_t sequenceLength = solutionSequence.size();
 
   // Printing information
-  LOG("[J+] Emulator Name:                   '%s'\n", emulatorName.c_str());
-  LOG("[J+] Config File:                     '%s'\n", configFile.c_str());
-  LOG("[J+] Solution File:                   '%s'\n", solutionFile.c_str());
-  LOG("[J+] State Size:                       %lu\n", stateSize);
-  LOG("[J+] Sequence Length:                  %lu\n", sequenceLength);
-  LOG("[J+] Frame Rate:                       %f (%u)\n", frameRate, inverseFrameRate);
   LOG("[J+] ********** Creating Playback Sequence **********\n");
   jaffarCommon::refreshTerminal();
 
@@ -168,9 +119,12 @@ void mainCycle(const std::string& configFile, const std::string& solutionFile, b
 
   // Flag to display frame information
   bool showFrameInfo = true;
+ 
+  // Finalization flag
+  bool isFinalize = false;
 
   // Interactive section
-  while (true)
+  while (isFinalize == false)
   {
     // Updating display
     if (disableRender == false) p.renderFrame(currentStep);
@@ -192,15 +146,21 @@ void mainCycle(const std::string& configFile, const std::string& solutionFile, b
     {
       jaffarCommon::clearTerminal();
 
-      LOG("[] ----------------------------------------------------------------\n");
-      LOG("[] Current Step #: %lu / %lu\n", currentStep + 1, sequenceLength);
-      LOG("[] Playback:       %s\n", isReproduce ? "Playing" : "Stopped");
-      LOG("[] On Finish:      %s\n", isReload ? "Auto Reload" : "Stop");
-      LOG("[] Input:          %s (0x%X)\n", inputString.c_str(), inputIndex);
-      LOG("[] State Hash:     0x%lX%lX\n", hash.first, hash.second);
+      LOG("[J+] ----------------------------------------------------------------\n");
+      LOG("[J+] Current Step #:              %lu / %lu\n", currentStep + 1, sequenceLength);
+      LOG("[J+] Playback:                    %s\n", isReproduce ? "Playing" : "Stopped");
+      LOG("[J+] On Finish:                   %s\n", isReload ? "Auto Reload" : "Stop");
+      LOG("[J+] Input:                       %s (0x%X)\n", inputString.c_str(), inputIndex);
+      LOG("[J+] State Hash:                  0x%lX%lX\n", hash.first, hash.second);
+      LOG("[J+] Emulator Name:              '%s'\n", emulatorName.c_str());
+      LOG("[J+] Config File:                '%s'\n", configFile.c_str());
+      LOG("[J+] Solution File:              '%s'\n", solutionFile.c_str());
+      LOG("[J+] State Size:                  %lu\n", stateSize);
+      LOG("[J+] Sequence Length:             %lu\n", sequenceLength);
+      LOG("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
 
       // Only print commands if not in reproduce mode
-      LOG("[] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | r: autoreload | q: quit\n");
+      LOG("[J+] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | r: autoreload | q: quit\n");
 
       jaffarCommon::refreshTerminal();
     }
@@ -256,7 +216,7 @@ void mainCycle(const std::string& configFile, const std::string& solutionFile, b
       saveData.resize(stateSize);
       memcpy(saveData.data(), stateData, stateSize);
       if (jaffarCommon::saveStringToFile(saveData, saveFileName.c_str()) == false) EXIT_WITH_ERROR("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
-      LOG("[] Saved state to %s\n", saveFileName.c_str());
+      LOG("[J+] Saved state to %s\n", saveFileName.c_str());
 
       // Do no show frame info again after this action
       showFrameInfo = false;
@@ -269,22 +229,62 @@ void mainCycle(const std::string& configFile, const std::string& solutionFile, b
     if (command == 'r') isReload = !isReload;
 
     // Triggers the exit
-    if (command == 'q') 
-    {
-      // Close game output 
-      if (disableRender == false) r.getGame()->getEmulator()->finalizeVideoOutput();
-
-      // Closing output window
-      if (disableRender == false) closeOutputWindow(window);
-
-      // Ending ncurses window
-      jaffarCommon::finalizeTerminal();
-
-      // Exiting
-      exit(0);
-    }
+    if (command == 'q') isFinalize = true;
   }
 
   // Close game output 
   if (disableRender == false) r.getGame()->getEmulator()->finalizeVideoOutput();
+
+  // returning false on exit to trigger the finalization
+  if (isFinalize) return false;  
+
+  // Otherwise, keep looping
+  return true;
+}
+
+int main(int argc, char *argv[])
+{
+ // Parsing command line arguments
+  argparse::ArgumentParser program("jaffar-tester", "1.0");
+
+  program.add_argument("configFile")
+    .help("path to the Jaffar configuration script (.jaffar) file to run.")
+    .required();
+
+  program.add_argument("solutionFile")
+    .help("path to the solution sequence file (.sol) to reproduce.")
+    .required();
+
+  program.add_argument("--disableRender")
+    .help("Do not render game window.")
+    .default_value(false)
+    .implicit_value(true);
+    
+  // Try to parse arguments
+  try { program.parse_args(argc, argv);  }
+  catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
+
+  // Parsing config file
+  const std::string configFile = program.get<std::string>("configFile");
+
+  // Parsin solution file
+  const std::string solutionFile = program.get<std::string>("solutionFile");
+
+  // Getting reproduce flag
+  bool disableRender = program.get<bool>("--disableRender");
+
+  // Initializing terminal
+  jaffarCommon::initializeTerminal();
+
+  // Creating output window
+  auto window = disableRender ? nullptr : launchOutputWindow();
+
+  // Running main cycle
+  while (mainCycle(configFile, solutionFile, disableRender, window));
+
+  // Closing output window
+  if (disableRender == false) closeOutputWindow(window);
+
+  // Ending ncurses window
+  jaffarCommon::finalizeTerminal();
 }
