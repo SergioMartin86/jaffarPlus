@@ -129,10 +129,10 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
     // Updating display
     if (disableRender == false) p.renderFrame(currentStep);
 
-    // Getting input
+    // Getting input string
     const auto &inputString = p.getStateInputString(currentStep);
 
-    // Getting input
+    // Getting input index
     const auto &inputIndex = p.getStateInputIndex(currentStep);
 
     // Getting state hash
