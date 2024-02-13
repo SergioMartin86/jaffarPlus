@@ -15,7 +15,7 @@ executable('jaffar',
   'source/jaffar.cpp',
   cpp_args: jaffarCPPFlags,
   sources : jaffarSources,
-  dependencies : jaffarDependencies,
+  dependencies : [ jaffarDependencies, dependency('openmp', required: true) ],
   include_directories : jaffarIncludes
 )
 
