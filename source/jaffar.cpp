@@ -100,5 +100,6 @@ int main(int argc, char *argv[])
   } 
 
   // Printing State Db information
+  LOG("[J+] State Database Info:\n");
   stateDb.printInfo(); 
 }

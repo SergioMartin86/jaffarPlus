@@ -24,6 +24,13 @@ class StateDb
 
     // Creating free state database
     _freeStateQueue = new jaffarCommon::atomicQueue_t<void*>(_maxStates);
+
+    // Allocating space for the states
+    _internalBuffer = (uint8_t*) malloc (_maxSize);
+
+    // Doing first touch every 1024 bytes (pages are 4K but using 1K just to be sure)
+    #pragma omp parallel for 
+    for (size_t i = 0; i < _maxSize; i += 1024) _internalBuffer[i] = 1;
   }
 
   ~StateDb()
@@ -35,11 +42,16 @@ class StateDb
   // Function to print relevant information
   void printInfo() const
   {
-   LOG("[J+]  + Max Size (Bytes):            %lu\n", _maxSize);
-   LOG("[J+]  + Max States:                  %lu\n", _maxStates);
+   LOG("[J+]  + Max Size (Bytes):              %lu bytes (%.3f Mb, %.6f Gb)\n", _maxSize, (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
+   LOG("[J+]  + Max States:                    %lu\n", _maxStates);
   }
 
   private:
+
+  /**
+   * Internal buffer for the state database
+   */ 
+  uint8_t* _internalBuffer;
 
   /**
    * Maximum size (Mb) for the state database to grow to
