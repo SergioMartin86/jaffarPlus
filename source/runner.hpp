@@ -229,7 +229,7 @@ class Runner final
     return result;
   }
 
-  // Function to print
+  // Function to print relevant information
   void printInfo() const
   {
    // Getting state hash 

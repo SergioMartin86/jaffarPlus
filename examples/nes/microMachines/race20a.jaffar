@@ -10,6 +10,11 @@
   "Use Zlib Compression": false
  },
 
+ "State Database":
+ {
+  "Max Size (Mb)": 1024
+ },
+
  "Emulator Configuration":
  {
    "Rom File Path": "Micro Machines (U).nes",
@@ -17,6 +22,7 @@
    "Controller 1 Type": "Joypad",
    "Controller 2 Type": "None"
  },
+ 
 
  "Game Configuration":
  {
