@@ -10,6 +10,15 @@ subdir('source')
 # Accessing emulators
 subdir('emulators')
 
+# Jaffar 
+executable('jaffar',
+  'source/jaffar.cpp',
+  cpp_args: jaffarCPPFlags,
+  sources : jaffarSources,
+  dependencies : jaffarDependencies,
+  include_directories : jaffarIncludes
+)
+
 # Jaffar Tester tool
 executable('jaffar-tester',
   'source/tester.cpp',
