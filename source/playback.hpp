@@ -75,6 +75,18 @@ class Playback final
       // Advancing state
       _runner->advanceState(step.inputIndex);
 
+      // Evaluate game rules 
+      _runner->getGame()->evaluateRules();
+
+      // Determining new game state type
+      _runner->getGame()->updateGameStateType();
+
+      // Running game-specific rule actions
+      _runner->getGame()->runGameSpecificRuleActions();
+
+      // Updating game reward
+      _runner->getGame()->updateReward();
+
       // Adding step to the internal storage
       _sequence.push_back(step);
     }
@@ -82,10 +94,10 @@ class Playback final
 
   ~Playback() {}
 
-  inline std::string getStateInputString(const size_t currentStep) { return getStep(currentStep).inputString; }
-  inline jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) { return getStep(currentStep).inputIndex; }
-  inline void* getStateData(const size_t currentStep) { return getStep(currentStep).gameStateData; }
-  inline jaffarCommon::hash_t getStateHash(const size_t currentStep) { return getStep(currentStep).stateHash; }
+  inline std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
+  inline jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }
+  inline void* getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
+  inline jaffarCommon::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
 
   inline void renderFrame(const size_t currentStep)
   {
@@ -95,14 +107,28 @@ class Playback final
     _runner->getGame()->getEmulator()->updateVideoOutput();
   }
   
+  void printInfo(const size_t stepId) const
+  {
+    // Deserializing appropriate state
+    jaffarCommon::deserializer::Contiguous d(getStateData(stepId), _gameStateSize);
+    _runner->deserializeState(d);
+
+    // Now printing information
+    LOG("[J+] Runner Information: \n");
+    _runner->printInfo();
+    LOG("[J+] Game Information: \n");
+    _runner->getGame()->printInfo();
+    LOG("[J+] Emulator Information: \n");
+    _runner->getGame()->getEmulator()->printInfo();
+  }
 
   private:
 
   // Step getter
-  step_t& getStep(const size_t stepId)
+  step_t getStep(const size_t stepId) const
   {
     if (stepId >= _sequence.size()) EXIT_WITH_ERROR("Requested step %lu which exceeds sequence size %lu", stepId, _sequence.size());
-    return _sequence[stepId];
+    return _sequence.at(stepId);
   }
 
   // Pointer to runner

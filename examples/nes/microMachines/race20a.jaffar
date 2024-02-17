@@ -3,16 +3,16 @@
  "Game": "NES / Micro Machines",
  "Initial State File Path": "race20a.state",
 
- "State Compression":
- {
-  "Use Differential Compression": true, 
-  "Max Difference (bytes)": 6000,
-  "Use Zlib Compression": false
- },
-
  "State Database":
  {
-  "Max Size (Mb)": 50000
+  "Max Size (Mb)": 50000,
+
+  "Compression":
+  {
+    "Use Differential Compression": true, 
+    "Max Difference (bytes)": 6000,
+    "Use Zlib Compression": false
+  }
  },
 
  "Emulator Configuration":
