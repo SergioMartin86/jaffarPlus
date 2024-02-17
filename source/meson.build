@@ -1,5 +1,5 @@
 # Declaring dependency vector
-jaffarDependencies = []
+jaffarCommonDependencies = []
 
 # Common Jaffar include dirs
 jaffarIncludes = include_directories([

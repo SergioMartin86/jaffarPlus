@@ -2,4 +2,4 @@ quickerNESSubproject = subproject('quickerNES', default_options : 'buildQuickNES
 
 # Getting QuickerNES dependency
 quickerNESDependency = quickerNESSubproject.get_variable('quickerNESDependency')
-jaffarDependencies += quickerNESDependency
+jaffarCommonDependencies += quickerNESDependency
