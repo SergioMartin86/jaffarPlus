@@ -4,6 +4,10 @@
 #include <numa.h>
 #include <unistd.h>
 #include <memory>
+#include <jaffarCommon/include/serializers/contiguous.hpp>
+#include <jaffarCommon/include/serializers/differential.hpp>
+#include <jaffarCommon/include/deserializers/contiguous.hpp>
+#include <jaffarCommon/include/deserializers/differential.hpp>
 #include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/concurrent.hpp>
 #include <jaffarCommon/include/timing.hpp>
@@ -150,7 +154,7 @@ class StateDb
     }
 
     // Serializing the runner state into the memory received (if no compression is used)
-    if (_useDifferentialCompression == true)
+    if (_useDifferentialCompression == false)
     {
       jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
       r.serializeState(s);
@@ -158,6 +162,20 @@ class StateDb
 
     // Inserting state into the database
     _nextStateDb.insert({reward, statePtr});
+  }
+
+  inline void* popState()
+  {
+    // Pointer to return 
+    void* statePtr;
+    
+    // Trying to pop the next state from the current state database
+    const auto success = _currentStateDb.pop_front_get(statePtr);
+
+    // If not successful, return a null pointer
+    if (success == false) return nullptr;
+
+    return statePtr;
   }
 
   /**
@@ -170,6 +188,26 @@ class StateDb
 
     // Clearing next state db
     _nextStateDb.clear();
+  }
+
+  /**
+   * Loads the state into the runner, performing the appropriate decompression (or not) procedure
+  */
+  inline void loadStateIntoRunner(Runner& r, const void* statePtr)
+  {
+    // Serializing the runner state into the memory received (if using differential compression)
+    if (_useDifferentialCompression == true)
+    {
+      jaffarCommon::deserializer::Differential d(statePtr, _differentialStateSize, _referenceData, _stateSizeRaw, _useZlibCompression);
+      r.deserializeState(d);
+    }
+
+    // Serializing the runner state into the memory received (if no compression is used)
+    if (_useDifferentialCompression == false)
+    {
+      jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
+      r.deserializeState(d);
+    }
   }
 
   /**
@@ -188,6 +226,14 @@ class StateDb
   inline size_t getNextStateDbSize() const
   {
     return _nextStateDb.size();
+  }
+
+  /**
+   * Gets the current number of states in the current state database
+  */
+  inline size_t getCurrentStateDbSize() const
+  {
+    return _currentStateDb.wasSize();
   }
 
   private:
