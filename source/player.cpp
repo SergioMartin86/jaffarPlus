@@ -158,6 +158,8 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
       LOG("[J+] State Size:                  %lu\n", stateSize);
       LOG("[J+] Sequence Length:             %lu\n", sequenceLength);
       LOG("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
+      p.printInfo(currentStep);
+      
 
       // Only print commands if not in reproduce mode
       LOG("[J+] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | r: autoreload | q: quit\n");

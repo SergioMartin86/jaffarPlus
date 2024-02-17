@@ -1,8 +1,10 @@
 #include <chrono>
+#include <omp.h>
 #include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/extern/argparse/argparse.hpp>
 #include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/string.hpp>
+#include <jaffarCommon/include/timing.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
 #include "game.hpp"
@@ -34,72 +36,107 @@ int main(int argc, char *argv[])
   try { config = nlohmann::json::parse(configFileString); }
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
-  // Parsing state compression configuration
-  const auto& stateCompressionJs = JSON_GET_OBJECT(config, "State Compression");
-  const auto useDifferentialCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Differential Compression");
-  const auto maximumDifferences = JSON_GET_NUMBER(size_t, stateCompressionJs, "Max Difference (bytes)");
-  const auto useZlibCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Zlib Compression");
-
   // Getting initial state file from the configuration
   const auto initialStateFilePath = JSON_GET_STRING(config, "Initial State File Path");
 
   // Getting emulator name from the configuration
   const auto emulatorName = JSON_GET_STRING(config, "Emulator");
 
-// Getting game name from the configuration
+  // Getting game name from the configuration
   const auto gameName = JSON_GET_STRING(config, "Game");
 
-  // Getting emulator from its name and configuring it
-  auto e = jaffarPlus::Emulator::getEmulator(emulatorName, JSON_GET_OBJECT(config, "Emulator Configuration"));
+  // Getting number of threads
+  size_t threadCount = omp_get_max_threads();
 
-  // Initializing emulator
-  e->initialize();
+  // Creating storage for the runnners (one per thread)
+  std::vector<std::unique_ptr<jaffarPlus::Runner>> runners(threadCount);
 
-  // Disable rendering
-  e->disableRendering();
+  // Initializing runners, one per thread
+  #pragma omp parallel
+  {
+    // Getting my thread id
+    int threadId = omp_get_thread_num();
+  
+    // Getting emulator from its name and configuring it
+    auto e = jaffarPlus::Emulator::getEmulator(emulatorName, JSON_GET_OBJECT(config, "Emulator Configuration"));
 
-  // If initial state file defined, load it
-  if (initialStateFilePath.empty() == false) e->loadStateFile(initialStateFilePath);
+    // Initializing emulator
+    e->initialize();
 
-  // Getting game from its name and configuring it
-  auto g = jaffarPlus::Game::getGame(gameName, e, JSON_GET_OBJECT(config, "Game Configuration"));
+    // Disable rendering
+    e->disableRendering();
 
-  // Initializing game
-  g->initialize();
+    // If initial state file defined, load it
+    if (initialStateFilePath.empty() == false) e->loadStateFile(initialStateFilePath);
 
-  // Parsing script rules
-  g->parseRules(JSON_GET_ARRAY(config, "Rules"));
+    // Getting game from its name and configuring it
+    auto g = jaffarPlus::Game::getGame(gameName, e, JSON_GET_OBJECT(config, "Game Configuration"));
 
-  // Creating runner from game instance
-  jaffarPlus::Runner r(g, JSON_GET_OBJECT(config, "Runner Configuration"));
+    // Initializing game
+    g->initialize();
 
-  // Parsing Possible game inputs
-  r.parseGameInputs(JSON_GET_ARRAY(config, "Game Inputs"));
+    // Parsing script rules
+    g->parseRules(JSON_GET_ARRAY(config, "Rules"));
 
-  // Getting game state size
-  const auto stateSize = r.getStateSize();
+    // Creating runner from game instance
+    auto r = std::make_unique<jaffarPlus::Runner>(g, JSON_GET_OBJECT(config, "Runner Configuration"));
 
-  // Getting differential state size
-  size_t differentialStateSize = r.getDifferentialStateSize(maximumDifferences);
+    // Parsing Possible game inputs
+    r->parseGameInputs(JSON_GET_ARRAY(config, "Game Inputs"));
 
-  // Calculating state storage size
-  size_t stateStorageSize = useDifferentialCompression ? differentialStateSize : stateSize;
+    // Storing runner
+    runners[threadId] = std::move(r);
+  }
+
+  // Grabbing a runner to do continue initialization
+  auto& r = *runners[0];
 
   // Creating State database
-  jaffarPlus::StateDb stateDb(stateStorageSize, JSON_GET_OBJECT(config, "State Database"));
+  jaffarPlus::StateDb stateDb(r, JSON_GET_OBJECT(config, "State Database"));
+
+  // Getting memory for the reference state
+  const auto stateSize = r.getStateSize();
+
+  // Allocating memory
+  auto referenceData = malloc(stateSize);
+  
+  // Serializing the initial state without compression to use as reference
+  jaffarCommon::serializer::Contiguous s(referenceData, stateSize);
+  r.serializeState(s);
+
+  // Setting reference data
+  stateDb.setReferenceData(referenceData);
+
+  // Evaluate game rules on the initial state
+  r.getGame()->evaluateRules();
+
+  // Determining new game state type
+  r.getGame()->updateGameStateType();
+
+  // Running game-specific rule actions
+  r.getGame()->runGameSpecificRuleActions();
+
+  // Updating game reward
+  r.getGame()->updateReward();
+
+  // Getting reward for the initial state
+  const auto reward = r.getGame()->getReward();
+
+  // Pushing initial state
+  stateDb.pushState(reward, r);
+
+  LOG("States: %lu\n", stateDb.getNextStateDbSize());
 
   // Printing information
-  LOG("[J+] Emulator Name:                   '%s'\n", emulatorName.c_str());
-  LOG("[J+] Config File:                     '%s'\n", configFile.c_str());
-  LOG("[J+] State Size:                       %lu\n", stateSize);
-  LOG("[J+] Use Differential Compression:     %s\n", useDifferentialCompression ? "true" : "false");
-  if (useDifferentialCompression == true)
-  {
-  LOG("[J+]  + Using Zlib Compression:        %s\n", useZlibCompression ? "true" : "false");
-  LOG("[J+]  + Differential State Size:       %lu\n", differentialStateSize);
-  } 
+  LOG("[J+] Emulator Name:                    '%s'\n", emulatorName.c_str());
+  LOG("[J+] Config File:                      '%s'\n", configFile.c_str());
+  LOG("[J+] Thread Count:                     %lu\n", threadCount);
 
   // Printing State Db information
   LOG("[J+] State Database Info:\n");
   stateDb.printInfo(); 
+
+  
+
 }
+

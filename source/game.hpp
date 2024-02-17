@@ -98,18 +98,6 @@ class Game
 
     // Calling the post-update hook
     stateUpdatePostHook();
-
-    // Re-evaluate game rules
-    evaluateRules();
-
-    // Determining new game state type
-    updateGameStateType();
-
-    // Running game-specific rule actions
-    runGameSpecificRuleActions();
-
-    // Updating game reward
-    updateReward();
   }
 
   // Differential serialization routine
@@ -123,6 +111,9 @@ class Game
 
     // Serializing reward
     serializer.pushContiguous(&_reward, sizeof(_reward));
+
+    // Serializing state type
+    serializer.pushContiguous(&_stateType, sizeof(_stateType));
 
     // Serializing rule states
     serializer.pushContiguous(_rulesStatus.data(), _rulesStatus.size());
@@ -142,6 +133,9 @@ class Game
 
     // Deserializing reward
     deserializer.popContiguous(&_reward, sizeof(_reward));
+
+    // Serializing state type
+    deserializer.popContiguous(&_stateType, sizeof(_stateType));
 
     // Deserializing rules status
     deserializer.popContiguous(_rulesStatus.data(), _rulesStatus.size());
@@ -563,6 +557,9 @@ class Game
  
   // Function to get the frame rate
   float getFrameRate() const { return _frameRate; }
+
+  // Function to get the reward
+  float getReward() const { return _reward; }
   
   protected:
 
