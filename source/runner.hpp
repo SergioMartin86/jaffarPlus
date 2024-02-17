@@ -4,13 +4,13 @@
 #include <memory>
 #include <vector>
 #include <set>
-#include <jaffarCommon/include/serializers/base.hpp>
-#include <jaffarCommon/include/deserializers/base.hpp>
+#include <jaffarCommon/include/json.hpp>
+#include <jaffarCommon/include/serializers/differential.hpp>
+#include <jaffarCommon/include/deserializers/differential.hpp>
 #include <jaffarCommon/include/serializers/contiguous.hpp>
 #include <jaffarCommon/include/deserializers/contiguous.hpp>
 #include <jaffarCommon/include/bitwise.hpp>
 #include <jaffarCommon/include/hash.hpp>
-#include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/logger.hpp>
 #include "game.hpp"
 #include "inputSet.hpp"
