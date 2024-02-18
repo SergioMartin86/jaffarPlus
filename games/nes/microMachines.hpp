@@ -111,17 +111,12 @@ class MicroMachines final : public jaffarPlus::Game
     _cameraPosX = (uint16_t)*_cameraPosX1 * 256 + (uint16_t)*_cameraPosX2;
     _cameraPosY = (uint16_t)*_cameraPosY1 * 256 + (uint16_t)*_cameraPosY2;
 
-    // Re-calclating stats
-    _player1DistanceToPointY  = std::abs(_pointMagnet.x - _player1PosX);
-    _player1DistanceToPointY  = std::abs(_pointMagnet.y - _player1PosY);
-    _player1DistanceToPoint   = sqrtf(_player1DistanceToPointX*_player1DistanceToPointX + _player1DistanceToPointY*_player1DistanceToPointY);
-
-    _player1DistanceToCameraX = std::abs(_cameraPosX - _player1PosX);
-    _player1DistanceToCameraY = std::abs(_cameraPosY - _player1PosY);
+    // Re-calculating distance to camera
+    _player1DistanceToCameraX = std::abs((float)_cameraPosX - (float)_player1PosX);
+    _player1DistanceToCameraY = std::abs((float)_cameraPosY - (float)_player1PosY);
     _player1DistanceToCamera  = sqrtf(_player1DistanceToCameraX*_player1DistanceToCameraX + _player1DistanceToCameraY*_player1DistanceToCameraY);
   }
 
-  // Resetting magnet values prior to rule evaluation
   inline void ruleUpdatePreHook() override
   {
     // Resetting magnets ahead of rule re-evaluation
@@ -131,7 +126,18 @@ class MicroMachines final : public jaffarPlus::Game
     _cameraDistanceMagnet = 0.0;
     _recoveryTimerMagnet = 0.0;
     _player1AngleMagnet.intensity = 0.0;
+
     _pointMagnet.intensity = 0.0;
+    _pointMagnet.x = 0.0;
+    _pointMagnet.y = 0.0;
+  }
+
+  inline void ruleUpdatePostHook() override
+  {
+    // Updating distance to user-defined point
+    _player1DistanceToPointX  = std::abs((float)_pointMagnet.x - (float)_player1PosX);
+    _player1DistanceToPointY  = std::abs((float)_pointMagnet.y - (float)_player1PosY);
+    _player1DistanceToPoint   = sqrtf(_player1DistanceToPointX*_player1DistanceToPointX + _player1DistanceToPointY*_player1DistanceToPointY);
   }
 
   inline void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
@@ -151,25 +157,25 @@ class MicroMachines final : public jaffarPlus::Game
     // Getting rewards from rules
     float reward = 0.0;
 
-    // Evaluating player health  magnet
+    // Evaluating player current lap  magnet
     reward += _playerCurrentLapMagnet * (float)(*_player1LapsRemaining);
 
-    // Evaluating player health  magnet
+    // Evaluating player lap progress  magnet
     reward += _playerLapProgressMagnet * (float)(*_player1Checkpoint);
 
-    // Evaluating player health  magnet
+    // Evaluating player accel  magnet
     reward += _playerAccelMagnet * ( std::abs((float)*_player1Accel) - 0.1*(float)*_player1AccelTimer2);
 
     // Distance to point magnet
-    reward += _pointMagnet.intensity * -_player1DistanceToPoint;
+    reward += -1.0 * _pointMagnet.intensity * _player1DistanceToPoint;
 
-    // Distance to camera
-    reward += _cameraDistanceMagnet * -_player1DistanceToCamera;
+    // // Distance to camera
+    reward += -1.0 * _cameraDistanceMagnet * _player1DistanceToCamera;
 
-    // Evaluating player health  magnet
+    // // Evaluating player health  magnet
     reward += _recoveryTimerMagnet * (float)(*_player1RecoveryTimer);
 
-    // Calculating angle magnet
+    // // Calculating angle magnet
     reward += (255.0 - _player1DistanceToMagnetAngle) * _player1AngleMagnet.intensity;
 
     // Returning reward
@@ -179,7 +185,14 @@ class MicroMachines final : public jaffarPlus::Game
 
   void printInfoImpl() const override
   {
-    if (std::abs(_pointMagnet.intensity) > 0.0f)         LOG("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Dist: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y, _player1DistanceToPoint);
+    if (std::abs(_pointMagnet.intensity) > 0.0f)
+    {
+      LOG("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      LOG("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+      LOG("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+      LOG("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+    } 
+
     if (std::abs(_cameraDistanceMagnet) > 0.0f)          LOG("[J+]  + Camera Distance Magnet                   Intensity: %.5f, Dist: %3.3f\n", _cameraDistanceMagnet, _player1DistanceToCamera);
     if (std::abs(_recoveryTimerMagnet) > 0.0f)           LOG("[J+]  + Recovery Timer Magnet                    Intensity: %.5f\n", _recoveryTimerMagnet);
     if (std::abs(_playerCurrentLapMagnet) > 0.0f)        LOG("[J+]  + Player Current Lap Magnet                Intensity: %.5f\n", _playerCurrentLapMagnet);

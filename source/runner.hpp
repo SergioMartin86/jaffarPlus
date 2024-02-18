@@ -146,6 +146,9 @@ class Runner final
     // Function to advance state.
   void advanceState(const InputSet::inputIndex_t inputIdx)
   {
+    // Safety check
+    if (_inputStringMap.contains(inputIdx) == false) EXIT_WITH_ERROR("Move Index %u not found in runner\n", inputIdx);
+
     // Getting input string
     const auto& inputString = _inputStringMap[inputIdx];
 
@@ -159,11 +162,29 @@ class Runner final
       if (_currentStep >= _maximumStep) EXIT_WITH_ERROR("[ERROR] Trying to advance step when storing input history and the maximum step (%lu) has been reached\n", _maximumStep);
       
       // Storing the new more in the input history
-      jaffarCommon::bitcopy(_inputHistory.data(), _currentStep, (const uint8_t*)&inputIdx, 0, 1, _inputIndexSizeBits);
+      setInput(_currentStep, inputIdx);
     }
 
     // Advancing step counter
     _currentStep++;
+  }
+
+  inline void setInput(const size_t stepId, const InputSet::inputIndex_t inputIdx)
+  {
+    // Using bit-encoded copy to store the new input
+    jaffarCommon::bitcopy(_inputHistory.data(), stepId, (const uint8_t*)&inputIdx, 0, 1, _inputIndexSizeBits);
+  }
+
+  inline InputSet::inputIndex_t getInput(const size_t stepId) const
+  {
+    // Temporary storage for the new input
+    InputSet::inputIndex_t inputIdx = 0;
+
+    // Using bit-encoded copy to store the new input
+    jaffarCommon::bitcopy((uint8_t*)&inputIdx, 0, _inputHistory.data(), stepId, 1, _inputIndexSizeBits);
+
+    // Returning value
+    return inputIdx;
   }
 
   // Serialization routine
@@ -229,6 +250,39 @@ class Runner final
     return result;
   }
 
+  // Function to dump current inputs to a file
+  bool dumpInputHistoryToFile(const std::string& filePath) const
+  {
+    // If input history is not enable, simply return false
+    if (_inputHistoryEnabled == false) return false;
+
+    // Getting the history into a string
+    std::string inputHistoryString;
+
+    // For each entry, add the input string
+    for (size_t i = 0; i < _currentStep; i++)
+    {
+      // Getting input index
+      const auto inputIdx = getInput(i);
+
+      // Safety check
+      if (_inputStringMap.contains(inputIdx) == false) EXIT_WITH_ERROR("Move Index %u not found in runner\n", inputIdx);
+
+      // Getting input string
+      const std::string& inputString = _inputStringMap.at(inputIdx);
+
+      // Adding it to the story
+      inputHistoryString += inputString;
+      inputHistoryString += "\n";
+    }
+
+    // Dumping file
+    bool success = jaffarCommon::saveStringToFile(inputHistoryString, filePath);
+
+    // Returning whether the dump succeeded
+    return success;
+  }
+ 
   // Function to print relevant information
   void printInfo() const
   {
@@ -257,11 +311,12 @@ class Runner final
    // Printing them
    LOG("[J+]  + Possible Inputs:\n");
    for (const auto inputIdx : possibleInputs) 
-    printf("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
+    LOG("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
   }
 
   inline uint32_t getHashStepToleranceStage() const { return  _currentStep % (_hashStepTolerance + 1); }
   inline Game* getGame() const { return _game.get(); }
+  inline size_t getMaximumStep() const { return _maximumStep; }
 
  private:
 

@@ -65,7 +65,7 @@ class HashDb final
    size_t curHashStoreIdx = 0;
    while (itr != _hashStores.rend())
    {
-   LOG("[J+]    + [%04lu] - Age: %lu, Entries: %lu, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
+   LOG("[J+]    + [%02lu] - Age: %lu, Entries: %lu, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
        itr->id, itr->age, itr->hashSet.size(), ((double)itr->hashSet.size()) / (1024.0 * 1024.0),
        _queryCounters[curHashStoreIdx]->load(), _collisionCounters[curHashStoreIdx]->load(),
        100.0 * (double)_collisionCounters[curHashStoreIdx]->load() / (double)_queryCounters[curHashStoreIdx]->load());

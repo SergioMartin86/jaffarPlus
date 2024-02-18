@@ -1,6 +1,7 @@
 #pragma once
 
 #include <omp.h>
+#include <cmath>
 #include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/hash.hpp>
 #include <jaffarCommon/include/serializers/base.hpp>
@@ -87,7 +88,7 @@ class Engine final
     const auto stateSize = r.getStateSize();
 
     // Allocating memory
-    auto referenceData = malloc(stateSize);
+    uint8_t referenceData[stateSize];
     
     // Serializing the initial state without compression to use as reference
     jaffarCommon::serializer::Contiguous s(referenceData, stateSize);
@@ -128,7 +129,7 @@ class Engine final
 
     // Adding it to the hash DB
     _hashDb->checkHashCollision(hash);
- 
+
     // Printing information
     LOG("[J+] Emulator Name:                    '%s'\n", emulatorName.c_str());
     LOG("[J+] Thread Count:                     %lu\n", threadCount);
@@ -149,17 +150,69 @@ class Engine final
   */
   void run()
   {
-    // Performing one computation step in parallel
-    #pragma omp parallel
-      workerFunction();
+    // Current step being ran
+    size_t currentStep = 0;
 
-    // Advancing hash database state
-    _hashDb->advanceState();
+    // Flag to determine whether to continue running
+    bool continueRunning = true;
 
-    // Swapping next and current state databases
-    _stateDb->swapStateDatabases();
+    // Using first runner for state evaluation
+    auto& r = *_runners.begin();
 
-    LOG("States: %lu\n", _stateDb->getCurrentStateDbSize());
+    // Iterate until no longer need to run
+    while (continueRunning == true)
+    {
+      // Clearing win states vector
+      _winStatesFound.clear();
+
+      // Performing one computation step in parallel
+      #pragma omp parallel
+        workerFunction();
+
+      // Advancing hash database state
+      _hashDb->advanceState();
+
+      // Swapping next and current state databases
+      _stateDb->swapStateDatabases();
+
+      // Getting current number of states left in the database
+      const size_t statesLeft = _stateDb->getCurrentStateDbSize();
+
+      // Getting best state so far
+      auto bestState = _stateDb->getBestState();
+
+      // Loading best state into runner
+      _stateDb->loadStateIntoRunner(*r, bestState);
+
+      // Dumping best solution so far into a file
+      r->dumpInputHistoryToFile("jaffar.best.sol");
+
+      // Print state database information
+      printf("[J+] State Database Information:");
+      _stateDb->printInfo();
+
+      printf("[J+] Hash Database Information:");
+      _hashDb->printInfo();
+
+      // Printing Information
+      // LOG("Best State Info:\n");
+      // r->printInfo();
+      // r->getGame()->printInfo();
+ 
+      LOG("Best Reward: %f:\n", r->getGame()->getReward());
+      
+      if (_winStatesFound.size() > 0) continueRunning = false;
+
+      // If no states remain, then stop
+      if (statesLeft == 0) continueRunning = false;
+
+      LOG("Step: %lu - States: %lu\n", currentStep, _stateDb->getCurrentStateDbSize());
+
+      // Increasing current step
+      currentStep++;
+    }
+
+    if (_winStatesFound.size() > 0) printf("Win state reached");
   }
 
   ~Engine() = default;
@@ -204,8 +257,6 @@ class Engine final
         // Checking if hash exists (state is repeated)
         bool isCollision = _hashDb->checkHashCollision(hash);
         
-        printf("Im here A, input: %d, hash: %s\n", *inputItr, jaffarCommon::hashToString(hash).c_str());
-
         // If state is repeated then we are not interested in it, continue
         if (isCollision == true) continue;
 
@@ -218,38 +269,29 @@ class Engine final
         // Getting state type
         const auto stateType = r->getGame()->getStateType();
 
-        printf("Im here B\n");
-
         // Now we have determined the state is not repeated, check if it's not a failed state
         if (stateType == Game::stateType_t::fail) continue;
-
+        
         // Now that the state is not failed nor repeated, this is effectively a new state to add
         void* newStateData = nullptr;
 
-        // If this is the last input option, we can drirectly steal the memory from the base state
-        if (std::next(inputItr) == possibleInputs.end()) newStateData = baseStateData;
-
-        // Otherwise, simply grab one from the state database
-        if (std::next(inputItr) == possibleInputs.end()) newStateData = _stateDb->getFreeState();
-
-        printf("Im here C\n");
+        // Grab a free state from the state db
+        newStateData = _stateDb->getFreeState();
 
         // If couldn't get any memory, simply drop the state
         if (newStateData == nullptr) continue;
-
-        // Now processing the rest of the game-defined rule actions
-        r->getGame()->runGameSpecificRuleActions();
 
         // Updating state reward
         r->getGame()->updateReward();
 
         // Getting state reward
         const auto reward = r->getGame()->getReward();  
-           
+          
         // If we are here, this is a new state to push into the next step's database
         _stateDb->pushState(reward, *r, newStateData);
 
-        printf("Im here D\n");
+        // If this is a win state, register it
+        if (stateType == Game::stateType_t::win) _winStatesFound.push_back(newStateData);
       }
 
       // Return base state to the free state queue
@@ -265,6 +307,9 @@ class Engine final
 
   // The thread-safe hash database to check for repeated states
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
+
+  // Set of win states found
+  std::vector<void*> _winStatesFound;
 };
 
 } // namespace jaffarPlus
