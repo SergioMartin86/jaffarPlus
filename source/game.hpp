@@ -556,11 +556,14 @@ class Game
   static std::unique_ptr<Game> getGame(const std::string& gameName, std::unique_ptr<Emulator>& emulator, const nlohmann::json& config);
  
   // Function to get the frame rate
-  float getFrameRate() const { return _frameRate; }
+  inline float getFrameRate() const { return _frameRate; }
 
   // Function to get the reward
-  float getReward() const { return _reward; }
+  inline float getReward() const { return _reward; }
   
+  // Function to get the state type
+  inline stateType_t getStateType() const { return _stateType; }
+
   protected:
 
   virtual void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const = 0;
