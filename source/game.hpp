@@ -131,17 +131,26 @@ class Game
     // Storage for game-specific data
     deserializeStateImpl(deserializer);
 
+    // Calling the post-update hook
+    stateUpdatePostHook();
+
     // Deserializing reward
     deserializer.popContiguous(&_reward, sizeof(_reward));
 
     // Serializing state type
     deserializer.popContiguous(&_stateType, sizeof(_stateType));
 
+    // Calling the pre-rule update hook
+    ruleUpdatePreHook();    
+
     // Deserializing rules status
     deserializer.popContiguous(_rulesStatus.data(), _rulesStatus.size());
 
-    // Calling the post-update hook
-    stateUpdatePostHook();
+    // Running game specific rule actions
+    runGameSpecificRuleActions();
+
+    // Calling the post-rule update hook
+    ruleUpdatePostHook();    
   }
 
   inline size_t getDifferentialStateSize(const size_t maxDifferences) const
@@ -439,6 +448,9 @@ class Game
       }
     }
 
+    // Running game-specific rule actions
+    runGameSpecificRuleActions();
+
     // Calling the pre-update hook
     ruleUpdatePostHook();
   }
@@ -519,6 +531,14 @@ class Game
 
     // Adding any game-specific rewards
     _reward += calculateGameSpecificReward();
+
+    // Sanity check
+    if (std::isfinite(_reward) == false)
+    {
+      LOG("[J+] Error: Non finite reward detected: %f\n", _reward);
+      printInfo();
+      EXIT_WITH_ERROR("Invalid Reward");
+    } 
   }
 
   // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules

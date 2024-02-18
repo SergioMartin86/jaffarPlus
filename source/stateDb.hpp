@@ -106,6 +106,7 @@ class StateDb
    LOG("[J+]  + Max State DB Size:             %lu bytes (%.3f Mb, %.6f Gb)\n", _maxSize, (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
    LOG("[J+]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
    LOG("[J+]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
+   LOG("[J+]  + Total States:                  %lu\n", _currentStateDb.wasSize() + _nextStateDb.size() + _freeStateQueue->was_size());
   }
 
   inline void* getFreeState()
@@ -115,7 +116,7 @@ class StateDb
 
     // Trying to get free space for a new state
     bool success = _freeStateQueue->try_pop(stateSpace);
-
+ 
     // If successful, return the pointer immediately
     if (success == true) return stateSpace;
     
@@ -175,13 +176,23 @@ class StateDb
     return statePtr;
   }
 
+  inline void* getBestState() const
+  {
+    return _currentStateDb.front();
+  }
+
+  inline void* getWorstState() const
+  {
+    return _currentStateDb.back();
+  }
+
   /**
    * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
   */
   inline void swapStateDatabases()
   {
     // Copying state pointers
-    for (auto& statePtr : _nextStateDb) _currentStateDb.push_back(statePtr.second);
+    for (auto& statePtr : _nextStateDb) _currentStateDb.push_back_no_lock(statePtr.second);
 
     // Clearing next state db
     _nextStateDb.clear();

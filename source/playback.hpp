@@ -81,9 +81,6 @@ class Playback final
       // Determining new game state type
       _runner->getGame()->updateGameStateType();
 
-      // Running game-specific rule actions
-      _runner->getGame()->runGameSpecificRuleActions();
-
       // Updating game reward
       _runner->getGame()->updateReward();
 

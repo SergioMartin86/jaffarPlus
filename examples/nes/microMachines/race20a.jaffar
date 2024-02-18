@@ -5,7 +5,7 @@
 
  "State Database":
  {
-  "Max Size (Mb)": 1,
+  "Max Size (Mb)": 200,
 
   "Compression":
   {
@@ -43,8 +43,10 @@
     "Camera Pos X2",                  
     "Camera Pos Y1",                  
     "Camera Pos Y2",                  
+    "Player 1 Pos X",
     "Player 1 Pos X1",                
     "Player 1 Pos X2",                
+    "Player 1 Pos Y",
     "Player 1 Pos Y1",                
     "Player 1 Pos Y2",                
     "Player 1 Pos Y3",                
@@ -96,7 +98,7 @@
 
  "Runner Configuration":
  {
-   "Hash Step Tolerance": 2,
+   "Hash Step Tolerance": 4,
 
    "Store Input History":
    {
