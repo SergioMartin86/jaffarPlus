@@ -3,6 +3,7 @@
 #include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/string.hpp>
 #include "engine.hpp"
+#include "hashDb.hpp"
 
 int main(int argc, char *argv[])
 {

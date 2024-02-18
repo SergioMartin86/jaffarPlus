@@ -5,7 +5,7 @@
 
  "State Database":
  {
-  "Max Size (Mb)": 5000,
+  "Max Size (Mb)": 1,
 
   "Compression":
   {
@@ -13,6 +13,12 @@
     "Max Difference (bytes)": 6000,
     "Use Zlib Compression": false
   }
+ },
+
+ "Hash Database":
+ {
+  "Max Store Count": 4,
+  "Max Store Size (Mb)": 10000
  },
 
  "Emulator Configuration":
@@ -90,7 +96,7 @@
 
  "Runner Configuration":
  {
-   "Hash Step Tolerance": 0,
+   "Hash Step Tolerance": 2,
 
    "Store Input History":
    {

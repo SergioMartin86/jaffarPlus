@@ -138,11 +138,8 @@ class StateDb
     if (success == false) EXIT_WITH_ERROR("Failed on pushing free state back. This must be a bug in Jaffar\n");
   }
 
-  inline void pushState(const float reward, Runner& r)
+  inline void pushState(const float reward, Runner& r, void* statePtr)
   {
-    // Getting memory to serialize the state in
-    auto statePtr = getFreeState();
-
     // Check that we got a free state (we did not overflow state memory)
     if (statePtr == nullptr) EXIT_WITH_ERROR("Ran out of free states\n");
 
