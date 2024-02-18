@@ -27,19 +27,19 @@ class Engine final
     const auto initialStateFilePath = JSON_GET_STRING(config, "Initial State File Path");
 
     // Getting emulator name from the configuration
-    const auto emulatorName = JSON_GET_STRING(config, "Emulator");
+    _emulatorName = JSON_GET_STRING(config, "Emulator");
 
     // Getting game name from the configuration
-    const auto gameName = JSON_GET_STRING(config, "Game");
+    _gameName = JSON_GET_STRING(config, "Game");
 
     // Getting number of threads
-    size_t threadCount = omp_get_max_threads();
+    _threadCount = omp_get_max_threads();
 
     // Sanity check
-    if (threadCount == 0) EXIT_WITH_ERROR("The number of worker threads must be at least one. Provided: %lu\n", threadCount);
+    if (_threadCount == 0) EXIT_WITH_ERROR("The number of worker threads must be at least one. Provided: %lu\n", _threadCount);
 
     // Creating storage for the runnners (one per thread)
-    _runners.resize(threadCount);
+    _runners.resize(_threadCount);
 
     // Initializing runners, one per thread
     #pragma omp parallel
@@ -48,7 +48,7 @@ class Engine final
       int threadId = omp_get_thread_num();
     
       // Getting emulator from its name and configuring it
-      auto e = jaffarPlus::Emulator::getEmulator(emulatorName, JSON_GET_OBJECT(config, "Emulator Configuration"));
+      auto e = jaffarPlus::Emulator::getEmulator(_emulatorName, JSON_GET_OBJECT(config, "Emulator Configuration"));
 
       // Initializing emulator
       e->initialize();
@@ -59,8 +59,11 @@ class Engine final
       // If initial state file defined, load it
       if (initialStateFilePath.empty() == false) e->loadStateFile(initialStateFilePath);
 
+      // Disabling ignored state properties
+      e->disableStateProperties();
+
       // Getting game from its name and configuring it
-      auto g = jaffarPlus::Game::getGame(gameName, e, JSON_GET_OBJECT(config, "Game Configuration"));
+      auto g = jaffarPlus::Game::getGame(_gameName, e, JSON_GET_OBJECT(config, "Game Configuration"));
 
       // Initializing game
       g->initialize();
@@ -80,6 +83,9 @@ class Engine final
 
     // Grabbing a runner to do continue initialization
     auto& r = *_runners[0];
+
+    // Getting maximum bumber of steps
+    _maxStepCount = r.getMaximumStep();
 
     // Creating State database
     _stateDb = std::make_unique<jaffarPlus::StateDb>(r, JSON_GET_OBJECT(config, "State Database"));
@@ -129,20 +135,6 @@ class Engine final
 
     // Adding it to the hash DB
     _hashDb->checkHashCollision(hash);
-
-    // Printing information
-    LOG("[J+] Emulator Name:                    '%s'\n", emulatorName.c_str());
-    LOG("[J+] Thread Count:                     %lu\n", threadCount);
-
-    // Printing State Db information
-    LOG("[J+] State Database Info:\n");
-    _stateDb->printInfo(); 
-
-    // Printing Hash Db information
-    LOG("[J+] Hash Database Info:\n");
-    _hashDb->printInfo(); 
-
-    LOG("States: %lu\n", _stateDb->getCurrentStateDbSize());
   };
 
   /**
@@ -165,6 +157,13 @@ class Engine final
       // Clearing win states vector
       _winStatesFound.clear();
 
+      // Clearing step counters
+      _stepBaseStatesProcessed = 0;
+      _stepNewStatesProcessed = 0;
+
+      // Computing step time
+      const auto t0 = jaffarCommon::now();
+
       // Performing one computation step in parallel
       #pragma omp parallel
         workerFunction();
@@ -174,6 +173,9 @@ class Engine final
 
       // Swapping next and current state databases
       _stateDb->swapStateDatabases();
+
+      // Computing step time
+      const auto currentStepTime = jaffarCommon::timeDeltaSeconds(jaffarCommon::now(), t0);
 
       // Getting current number of states left in the database
       const size_t statesLeft = _stateDb->getCurrentStateDbSize();
@@ -187,32 +189,34 @@ class Engine final
       // Dumping best solution so far into a file
       r->dumpInputHistoryToFile("jaffar.best.sol");
 
+      // Printing information
+      LOG("[J+] Current Step #:                   %lu (Max: %lu)\n", currentStep, _maxStepCount);
+      LOG("[J+] Emulator Name:                    '%s'\n", _emulatorName.c_str());
+      LOG("[J+] Game Name:                        '%s'\n", _gameName.c_str());
+      LOG("[J+] Thread Count:                     %lu\n", _threadCount);
+      LOG("[J+] Base States Performance:          %.3f States/s\n", (double)_stepBaseStatesProcessed / currentStepTime);
+      LOG("[J+] New States Performance:           %.3f States/s\n", (double)_stepNewStatesProcessed / currentStepTime);
+
       // Print state database information
-      printf("[J+] State Database Information:");
+      LOG("[J+] State Database Information:\n");
       _stateDb->printInfo();
 
-      printf("[J+] Hash Database Information:");
+      LOG("[J+] Hash Database Information:\n");
       _hashDb->printInfo();
 
-      // Printing Information
-      // LOG("Best State Info:\n");
-      // r->printInfo();
-      // r->getGame()->printInfo();
- 
-      LOG("Best Reward: %f:\n", r->getGame()->getReward());
-      
       if (_winStatesFound.size() > 0) continueRunning = false;
 
       // If no states remain, then stop
       if (statesLeft == 0) continueRunning = false;
 
-      LOG("Step: %lu - States: %lu\n", currentStep, _stateDb->getCurrentStateDbSize());
-
       // Increasing current step
       currentStep++;
+
+      // Stop if reached maximum step count
+      if (currentStep == _maxStepCount) continueRunning = false;
     }
 
-    if (_winStatesFound.size() > 0) printf("Win state reached");
+    if (_winStatesFound.size() > 0) LOG("Win state reached");
   }
 
   ~Engine() = default;
@@ -236,15 +240,21 @@ class Engine final
     // While there are still states in the database, keep on grabbing them
     while ((baseStateData = _stateDb->popState()) != nullptr)
     {
+      // Increasing base state counter
+      _stepBaseStatesProcessed++;
+      
       // Load state into runner via the state database
       _stateDb->loadStateIntoRunner(*r, baseStateData);
-   
+
       // Getting possible inputs
       const auto& possibleInputs = r->getPossibleInputs();
 
       // Trying out each possible input
       for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++)
       {
+        // Increasing new state counter
+        _stepNewStatesProcessed++;
+
         // We don't need to reload the base state if it is the first input
         if (inputItr != possibleInputs.begin()) _stateDb->loadStateIntoRunner(*r, baseStateData);
 
@@ -310,6 +320,30 @@ class Engine final
 
   // Set of win states found
   std::vector<void*> _winStatesFound;
+
+  ///////////////// Configuration
+
+  // Emulator Name
+  std::string _emulatorName;
+
+  // Game Name
+  std::string _gameName;
+
+  // Maximum number of steps to run
+  size_t _maxStepCount;
+
+  // Thread count (set by openMP)
+  size_t _threadCount;
+
+  //////////////// Statistics
+   
+  // Counter for the number of base states processed
+  std::atomic<size_t> _stepBaseStatesProcessed;
+
+  // Counter for the number of new states processed
+  std::atomic<size_t> _stepNewStatesProcessed;
+
+  
 };
 
 } // namespace jaffarPlus
