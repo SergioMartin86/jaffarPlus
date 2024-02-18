@@ -83,23 +83,34 @@ class QuickerNES final : public Emulator
 
   inline void printInfo() const override
   {
-     printMemoryBlockHash("NES LRAM");
-     printMemoryBlockHash("NES SRAM");
-     printMemoryBlockHash("NES NTAB");
-     printMemoryBlockHash("NES CHRR");
-     printMemoryBlockHash("NES SPRT");
+     printMemoryBlockHash("LRAM");
+     printMemoryBlockHash("SRAM");
+     printMemoryBlockHash("NTAB");
+     printMemoryBlockHash("CHRR");
+     printMemoryBlockHash("SPRT");
   }
 
   property_t getProperty(const std::string& propertyName) const override
   {
-     if (propertyName == "NES LRAM") return property_t(_quickerNES.getLowMem(),       _quickerNES.getLowMemSize());
-     if (propertyName == "NES SRAM") return property_t(_quickerNES.getWorkMem(),      _quickerNES.getWorkMemSize());
-     if (propertyName == "NES NTAB") return property_t(_quickerNES.getNametableMem(), _quickerNES.getNametableMemSize());
-     if (propertyName == "NES CHRR") return property_t(_quickerNES.getCHRMem(),       _quickerNES.getCHRMemSize());
-     if (propertyName == "NES SPRT") return property_t(_quickerNES.getSpriteMem(),    _quickerNES.getSpriteMemSize());
+     if (propertyName == "LRAM") return property_t(_quickerNES.getLowMem(),       _quickerNES.getLowMemSize());
+     if (propertyName == "SRAM") return property_t(_quickerNES.getWorkMem(),      _quickerNES.getWorkMemSize());
+     if (propertyName == "NTAB") return property_t(_quickerNES.getNametableMem(), _quickerNES.getNametableMemSize());
+     if (propertyName == "CHRR") return property_t(_quickerNES.getCHRMem(),       _quickerNES.getCHRMemSize());
+     if (propertyName == "SPRT") return property_t(_quickerNES.getSpriteMem(),    _quickerNES.getSpriteMemSize());
 
      EXIT_WITH_ERROR("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());  
   }
+
+  inline void enableStateProperty(const std::string& property) override
+  {
+    _quickerNES.enableStateBlock(property);
+  }
+
+  inline void disableStateProperty(const std::string& property) override
+  {
+    _quickerNES.disableStateBlock(property);
+  }
+
 
   ////////// Rendering functions (some of these taken from https://github.com/Bindernews/HeadlessQuickNes / MIT License)
 
@@ -235,7 +246,6 @@ class QuickerNES final : public Emulator
 
   std::string _romFilePath;
   std::string _romFileSHA1;
-
 };
 
 } // namespace emulator

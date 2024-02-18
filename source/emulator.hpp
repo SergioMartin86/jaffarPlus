@@ -21,7 +21,19 @@ class Emulator
   public:
 
   // Constructor must only do configuration parsing to perform dry runs
-  Emulator(const nlohmann::json& config) {};
+  Emulator(const nlohmann::json& config)
+  {
+    // Getting disabled state properties
+    auto disabledStatePropertiesJs = JSON_GET_ARRAY(config, "Disabled State Properties");
+    for (const auto& property : disabledStatePropertiesJs)
+    {
+      // Sanity Check
+      if (property.is_string() == false) EXIT_WITH_ERROR("Disabled emulator properties entries should be strings");
+
+      // Getting property name
+      _disabledStateProperties.push_back(property.get<std::string>());
+    }
+  };
   virtual ~Emulator() = default;
 
   // Initialization function
@@ -57,8 +69,14 @@ class Emulator
     return s.getOutputSize();
   }
 
+  inline void disableStateProperties() { for (const auto& property : _disabledStateProperties) disableStateProperty(property); }
+  inline void enableStateProperties()  { for (const auto& property : _disabledStateProperties) enableStateProperty(property); }
+
   virtual void serializeState(jaffarCommon::serializer::Base& serializer) const = 0;
   virtual void deserializeState(jaffarCommon::deserializer::Base& deserializer) = 0;
+  
+  virtual void enableStateProperty(const std::string& property) = 0;
+  virtual void disableStateProperty(const std::string& property) = 0;
 
   // Function to print debug information, whatever it might be
   virtual void printInfo() const = 0;
@@ -101,6 +119,9 @@ class Emulator
 
   // Closes the emulator's renderer window
   virtual void finalizeVideoOutput() = 0;
+
+  // Collection of state blocks to disable during engine run
+  std::vector<std::string> _disabledStateProperties;
 };
 
 } // namespace jaffarPlus

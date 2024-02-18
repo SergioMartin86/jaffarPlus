@@ -22,7 +22,7 @@ class MicroMachines final : public jaffarPlus::Game
   MicroMachines(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : jaffarPlus::Game(emulator, config)
   {
     // Getting emulator's low memory pointer
-    auto lowMem = _emulator->getProperty("NES LRAM").pointer;
+    auto lowMem = _emulator->getProperty("LRAM").pointer;
 
     // Registering native game properties
     registerGameProperty("Current Race",                     &lowMem[0x0308], Property::datatype_t::dt_uint8, Property::endianness_t::little);
