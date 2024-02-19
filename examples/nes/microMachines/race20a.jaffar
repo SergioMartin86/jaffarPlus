@@ -37,7 +37,7 @@
    "Store Input History":
    {
     "Enabled": true,
-    "Maximum Step": 2000
+    "Maximum Step": 1800
    }
  },
 
