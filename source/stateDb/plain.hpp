@@ -28,7 +28,7 @@ class Plain : public stateDb::Base
 
   Plain(Runner& r, const nlohmann::json& config) : stateDb::Base(r, config)
   {
-    // Getting system's page size
+    // Getting system's page size (typically 4K but it may change in the future)
     const size_t pageSize = sysconf(_SC_PAGESIZE);
 
     // Creating free state queue
@@ -38,7 +38,7 @@ class Plain : public stateDb::Base
     auto status = posix_memalign((void**)&_internalBuffer, pageSize, _maxSize);
     if (status != 0) EXIT_WITH_ERROR("Could not allocate aligned memory for the state database");
     
-    // Doing first touch every page (pages are 4K)
+    // Doing first touch for every page 
     #pragma omp parallel for 
     for (size_t i = 0; i < _maxSize; i += pageSize) _internalBuffer[i] = 1;
 
