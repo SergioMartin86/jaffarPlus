@@ -151,6 +151,9 @@ class Engine final
     // Using first runner for state evaluation
     auto& r = *_runners.begin();
 
+    // Computing total elapsed time
+    const auto tStart = jaffarCommon::now();
+
     // Iterate until no longer need to run
     while (continueRunning == true)
     {
@@ -162,7 +165,7 @@ class Engine final
       _stepNewStatesProcessed = 0;
 
       // Computing step time
-      const auto t0 = jaffarCommon::now();
+      const auto tStep = jaffarCommon::now();
 
       // Performing one computation step in parallel
       #pragma omp parallel
@@ -175,7 +178,10 @@ class Engine final
       _stateDb->swapStateDatabases();
 
       // Computing step time
-      const auto currentStepTime = jaffarCommon::timeDeltaSeconds(jaffarCommon::now(), t0);
+      const auto currentStepTime = jaffarCommon::timeDeltaSeconds(jaffarCommon::now(), tStep);
+
+      // Computing total running time
+      const auto totalRunningTime = jaffarCommon::timeDeltaSeconds(jaffarCommon::now(), tStart);
 
       // Getting current number of states left in the database
       const size_t statesLeft = _stateDb->getCurrentStateDbSize();
@@ -194,6 +200,7 @@ class Engine final
       LOG("[J+] Emulator Name:                    '%s'\n", _emulatorName.c_str());
       LOG("[J+] Game Name:                        '%s'\n", _gameName.c_str());
       LOG("[J+] Thread Count:                     %lu\n", _threadCount);
+      LOG("[J+] Elapsed Time (Step/Total):        %3.3fs / %3.3fs\n", currentStepTime, totalRunningTime);
       LOG("[J+] Base States Performance:          %.3f States/s\n", (double)_stepBaseStatesProcessed / currentStepTime);
       LOG("[J+] New States Performance:           %.3f States/s\n", (double)_stepNewStatesProcessed / currentStepTime);
 
