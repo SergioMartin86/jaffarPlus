@@ -135,7 +135,7 @@ class HashDb final
    * The current age is increased, and if the current database exceeds its maximum
    * entries, it is send to the past db collection and a new one is created
   */
-  inline void advanceState()
+  inline void advanceStep()
   {
     // The current hash store is the latest to be entered
     auto itr = _hashStores.rbegin();

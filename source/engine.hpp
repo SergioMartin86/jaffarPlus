@@ -1,16 +1,16 @@
 #pragma once
 
 #include <omp.h>
-#include <cmath>
 #include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/hash.hpp>
+#include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/serializers/base.hpp>
 #include <jaffarCommon/include/deserializers/base.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
 #include "game.hpp"
 #include "runner.hpp"
-#include "stateDb.hpp"
+#include "stateDb/plain.hpp"
 #include "hashDb.hpp"
 
 namespace jaffarPlus
@@ -88,7 +88,7 @@ class Engine final
     _maxStepCount = r.getMaximumStep();
 
     // Creating State database
-    _stateDb = std::make_unique<jaffarPlus::StateDb>(r, JSON_GET_OBJECT(config, "State Database"));
+    _stateDb = std::make_unique<jaffarPlus::stateDb::Plain>(r, JSON_GET_OBJECT(config, "State Database"));
 
     // Getting memory for the reference state
     const auto stateSize = r.getStateSize();
@@ -124,8 +124,8 @@ class Engine final
     // Pushing initial state to the next state database
     _stateDb->pushState(reward, r, stateData);
 
-    // Now swapping databases so that the next becomes the current one
-    _stateDb->swapStateDatabases();
+    // Advancing the step in the state database
+    _stateDb->advanceStep();
 
     // Creating hash database 
     _hashDb = std::make_unique<jaffarPlus::HashDb>(JSON_GET_OBJECT(config, "Hash Database"));
@@ -172,10 +172,10 @@ class Engine final
         workerFunction();
 
       // Advancing hash database state
-      _hashDb->advanceState();
+      _hashDb->advanceStep();
 
       // Swapping next and current state databases
-      _stateDb->swapStateDatabases();
+      _stateDb->advanceStep();
 
       // Computing step time
       const auto currentStepTime = jaffarCommon::timeDeltaSeconds(jaffarCommon::now(), tStep);
@@ -184,7 +184,7 @@ class Engine final
       const auto totalRunningTime = jaffarCommon::timeDeltaSeconds(jaffarCommon::now(), tStart);
 
       // Getting current number of states left in the database
-      const size_t statesLeft = _stateDb->getCurrentStateDbSize();
+      const size_t statesLeft = _stateDb->getStateCount();
 
       // Getting best state so far
       auto bestState = _stateDb->getBestState();
@@ -320,7 +320,7 @@ class Engine final
   std::vector<std::unique_ptr<Runner>> _runners;
 
   // The thread-safe state database that contains current and next step's states. 
-  std::unique_ptr<jaffarPlus::StateDb> _stateDb;
+  std::unique_ptr<jaffarPlus::stateDb::Base> _stateDb;
 
   // The thread-safe hash database to check for repeated states
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;

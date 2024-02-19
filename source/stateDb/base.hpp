@@ -1,9 +1,9 @@
 #pragma once
 
 #include <stdlib.h>
-#include <numa.h>
 #include <unistd.h>
 #include <memory>
+#include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/serializers/contiguous.hpp>
 #include <jaffarCommon/include/serializers/differential.hpp>
 #include <jaffarCommon/include/deserializers/contiguous.hpp>
@@ -11,18 +11,22 @@
 #include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/concurrent.hpp>
 #include <jaffarCommon/include/timing.hpp>
-#include "runner.hpp"
+#include <jaffarCommon/include/timing.hpp>
+#include "../runner.hpp"
 
 #define _JAFFAR_STATE_PADDING_BYTES 64
 
 namespace jaffarPlus
 {
 
-class StateDb
+namespace stateDb 
+{
+
+class Base
 {
   public:
 
-  StateDb(Runner& r, const nlohmann::json& config)
+  Base(Runner& r, const nlohmann::json& config)
   {
     ///////// Parsing configuration
 
@@ -49,9 +53,6 @@ class StateDb
     // The effective state size is how many bytes does the runner really need to store a state
     _stateSizeEffective = _useDifferentialCompression ? _differentialStateSize : _stateSizeRaw;
 
-    // Getting system's page size
-    const size_t pageSize = sysconf(_SC_PAGESIZE);
-
     // We want to align each state to 512 bits (64 bytes) to favor vectorized access
     // Now calculating the necessary padding to reach the next multiple of 64 bytes
     _stateSize = ((_stateSizeEffective / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
@@ -64,33 +65,9 @@ class StateDb
 
     // Getting maximum number of states
     _maxStates = _maxSize / _stateSize;
-
-    // Creating free state queue
-    _freeStateQueue = std::make_unique<jaffarCommon::atomicQueue_t<void*>>(_maxStates);
-
-    // Allocating space for the states
-    auto status = posix_memalign((void**)&_internalBuffer, pageSize, _maxSize);
-    if (status != 0) EXIT_WITH_ERROR("Could not allocate aligned memory for the state database");
-    
-    // Timing
-    auto t0 = jaffarCommon::now(); 
-
-    // Doing first touch every page (pages are 4K)
-    #pragma omp parallel for 
-    for (size_t i = 0; i < _maxSize; i += pageSize) _internalBuffer[i] = 1;
-
-    // Adding the state pointers to the free state queue
-    for (size_t i = 0; i < _maxStates; i++) 
-     _freeStateQueue->try_push((void*) &_internalBuffer[i * _stateSize]);
-
-    // Timing
-    _initializationTime = jaffarCommon::timeDeltaSeconds(jaffarCommon::now(), t0); 
-
-    LOG("[J+] Free State Queue Size:            %d\n", _freeStateQueue->was_size());
-    LOG("[J+] State Db Initialization Time:     %f\n", _initializationTime);
   }
 
-  ~StateDb()
+  virtual ~Base()
   {
     // Freeing up reference data buffer
     free(_referenceData);
@@ -106,38 +83,17 @@ class StateDb
    LOG("[J+]  + Max State DB Size:             %lu bytes (%.3f Mb, %.6f Gb)\n", _maxSize, (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
    LOG("[J+]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
    LOG("[J+]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
-   LOG("[J+]  + Total States:                  %lu\n", _currentStateDb.wasSize() + _nextStateDb.size() + _freeStateQueue->was_size());
+
+   printInfoImpl();
   }
 
-  inline void* getFreeState()
-  {
-    // Storage for the new free state space
-    void* stateSpace;
-
-    // Trying to get free space for a new state
-    bool success = _freeStateQueue->try_pop(stateSpace);
- 
-    // If successful, return the pointer immediately
-    if (success == true) return stateSpace;
-    
-    // If failed, then try to get it from the back of the current state database
-    success = _currentStateDb.pop_back_get(stateSpace);
-
-    // If successful, return the pointer immediately 
-    if (success == true) return stateSpace;
-
-    // Otherwise, return a null pointer. The state will be discarded
-    return nullptr;
-  }
-
-  inline void returnFreeState(void* const statePtr)
-  {
-    // Trying to get free space for a new state
-    bool success = _freeStateQueue->try_push(statePtr);
-
-    // If successful, return the pointer immediately
-    if (success == false) EXIT_WITH_ERROR("Failed on pushing free state back. This must be a bug in Jaffar\n");
-  }
+  virtual void* getFreeState() = 0;
+  virtual void returnFreeState(void* const statePtr) = 0;
+  virtual void* popState() = 0;
+  virtual void* getBestState() const = 0;
+  virtual void* getWorstState() const = 0;
+  virtual void advanceStep() = 0;
+  virtual size_t getStateCount() const = 0;
 
   inline void pushState(const float reward, Runner& r, void* statePtr)
   {
@@ -158,44 +114,8 @@ class StateDb
       r.serializeState(s);
     }
 
-    // Inserting state into the database
-    _nextStateDb.insert({reward, statePtr});
-  }
-
-  inline void* popState()
-  {
-    // Pointer to return 
-    void* statePtr;
-    
-    // Trying to pop the next state from the current state database
-    const auto success = _currentStateDb.pop_front_get(statePtr);
-
-    // If not successful, return a null pointer
-    if (success == false) return nullptr;
-
-    return statePtr;
-  }
-
-  inline void* getBestState() const
-  {
-    return _currentStateDb.front();
-  }
-
-  inline void* getWorstState() const
-  {
-    return _currentStateDb.back();
-  }
-
-  /**
-   * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
-  */
-  inline void swapStateDatabases()
-  {
-    // Copying state pointers
-    for (auto& statePtr : _nextStateDb) _currentStateDb.push_back_no_lock(statePtr.second);
-
-    // Clearing next state db
-    _nextStateDb.clear();
+    // Calling particular implementation of the push state function
+    pushStateImpl(reward, statePtr);
   }
 
   /**
@@ -228,39 +148,12 @@ class StateDb
    memcpy(_referenceData, referenceData, _stateSizeRaw);
   }
 
-  /**
-   * Gets the current number of states in the next state database
-  */
-  inline size_t getNextStateDbSize() const
-  {
-    return _nextStateDb.size();
-  }
 
-  /**
-   * Gets the current number of states in the current state database
-  */
-  inline size_t getCurrentStateDbSize() const
-  {
-    return _currentStateDb.wasSize();
-  }
+  protected:
 
-  private:
-
-  /**
-   * The current state database used as read-only source of base states
-  */
-  jaffarCommon::concurrentDeque<void*> _currentStateDb;
-
-  /**
-   * The next state database, where new states are stored as they are created
-  */
-  jaffarCommon::concurrentMultimap_t<float, void*> _nextStateDb;
-
-  /**
-   * This queue will hold pointers to all the free state storage
-  */
-  std::unique_ptr<jaffarCommon::atomicQueue_t<void*>> _freeStateQueue;
-
+  virtual void pushStateImpl(const float reward, void* statePtr) = 0;
+  virtual void printInfoImpl() const = 0;
+  
   /**
    * Stores the size occupied by each state (with padding)
   */
@@ -280,11 +173,6 @@ class StateDb
    * Stores the size actually occupied by each state, after adding padding
   */
   size_t _stateSizePadding;
-
-  /**
-   * Internal buffer for the state database
-   */ 
-  uint8_t* _internalBuffer;
 
   /**
    * Maximum size (Mb) for the state database to grow to
@@ -318,9 +206,8 @@ class StateDb
   // Storage for reference data required for differential compression
   void* _referenceData;
 
-  //////////// Timing variables
-
-  double _initializationTime;
 };
+
+} // namespace stateDb
 
 } // namespace jaffarPlus
