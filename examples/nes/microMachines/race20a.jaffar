@@ -5,7 +5,8 @@
 
  "State Database":
  {
-  "Max Size (Mb)": 5000,
+  "Type": "Plain",
+  "Max Size (Mb)": 20000,
 
   "Compression":
   {
