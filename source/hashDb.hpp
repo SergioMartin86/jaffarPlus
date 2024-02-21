@@ -53,19 +53,19 @@ class HashDb final
   // Function to print relevant information
   void printInfo() const
   {
-   LOG("[J+]  + Max Store Count:               %lu\n", _maxStoreCount);
-   LOG("[J+]  + Max Store Size:                %f Mb (%f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
-   LOG("[J+]  + Max Store Entries:             %lu (%f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
-   LOG("[J+]  + Total Max Entries:             %lu (%f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
+   LOG("[J++]  + Max Store Count:               %lu\n", _maxStoreCount);
+   LOG("[J++]  + Max Store Size:                %f Mb (%f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
+   LOG("[J++]  + Max Store Entries:             %lu (%f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
+   LOG("[J++]  + Total Max Entries:             %lu (%f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
 
    // Printing hash store information
-   LOG("[J+]  + Hash Stores (%lu / %lu):\n", _hashStores.size(), _maxStoreCount);
+   LOG("[J++]  + Hash Stores (%lu / %lu):\n", _hashStores.size(), _maxStoreCount);
    
    auto itr = _hashStores.rbegin();
    size_t curHashStoreIdx = 0;
    while (itr != _hashStores.rend())
    {
-   LOG("[J+]    + [%02lu] - Age: %lu, Entries: %lu, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
+   LOG("[J++]    + [%02lu] - Age: %lu, Entries: %lu, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
        itr->id, itr->age, itr->hashSet.size(), ((double)itr->hashSet.size()) / (1024.0 * 1024.0),
        _queryCounters[curHashStoreIdx]->load(), _collisionCounters[curHashStoreIdx]->load(),
        100.0 * (double)_collisionCounters[curHashStoreIdx]->load() / (double)_queryCounters[curHashStoreIdx]->load());

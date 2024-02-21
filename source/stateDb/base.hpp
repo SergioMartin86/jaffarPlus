@@ -1,8 +1,5 @@
 #pragma once
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <memory>
 #include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/serializers/contiguous.hpp>
 #include <jaffarCommon/include/serializers/differential.hpp>
@@ -10,8 +7,6 @@
 #include <jaffarCommon/include/deserializers/differential.hpp>
 #include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/concurrent.hpp>
-#include <jaffarCommon/include/timing.hpp>
-#include <jaffarCommon/include/timing.hpp>
 #include "../runner.hpp"
 
 #define _JAFFAR_STATE_PADDING_BYTES 64
@@ -29,9 +24,6 @@ class Base
   Base(Runner& r, const nlohmann::json& config)
   {
     ///////// Parsing configuration
-
-    // Getting maximum size in Mb
-    _maxSizeMb = JSON_GET_NUMBER(size_t, config, "Max Size (Mb)");
 
     // Parsing state compression configuration
     const auto& stateCompressionJs = JSON_GET_OBJECT(config, "Compression");
@@ -59,12 +51,6 @@ class Base
 
     // Padding is the difference between the aligned state size and the raw one
     _stateSizePadding = _stateSize - _stateSizeEffective;
-
-    // Converting it to pure bytes
-    _maxSize = _maxSizeMb * 1024ul * 1024ul;
-
-    // Getting maximum number of states
-    _maxStates = _maxSize / _stateSize;
   }
 
   virtual ~Base()
@@ -76,13 +62,17 @@ class Base
   // Function to print relevant information
   void printInfo() const
   {
-   LOG("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
-   LOG("[J+]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
-   LOG("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
-   LOG("[J+]  + Max State DB Entries:          %lu (%f Mstates)\n", _maxStates, (double)_maxStates * 1.0e-6);
-   LOG("[J+]  + Max State DB Size:             %lu bytes (%.3f Mb, %.6f Gb)\n", _maxSize, (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
-   LOG("[J+]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
-   LOG("[J+]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
+   const size_t currentStateCount = getStateCount();
+   const size_t currentStateBytes = currentStateCount * _stateSize;
+
+   LOG("[J++]  + Current State Count:           %lu (%.3f Mb, %.6f Gb)\n", currentStateCount, (double)currentStateBytes / (1024.0 * 1024.0), (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0));
+   LOG("[J++]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
+   LOG("[J++]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
+   LOG("[J++]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
+   LOG("[J++]  + Max State DB Entries:          %lu (%f Mstates)\n", _maxStates, (double)_maxStates * 1.0e-6);
+   LOG("[J++]  + Max State DB Size:             %lu bytes (%.3f Mb, %.6f Gb)\n", _maxSize, (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
+   LOG("[J++]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
+   LOG("[J++]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
 
    printInfoImpl();
   }
@@ -173,11 +163,6 @@ class Base
    * Stores the size actually occupied by each state, after adding padding
   */
   size_t _stateSizePadding;
-
-  /**
-   * Maximum size (Mb) for the state database to grow to
-  */
-  double _maxSizeMb;
 
   /**
    * Maximum size (bytes) for the state database to grow

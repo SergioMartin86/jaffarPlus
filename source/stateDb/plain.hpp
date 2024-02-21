@@ -4,17 +4,9 @@
 #include <unistd.h>
 #include <memory>
 #include <jaffarCommon/include/logger.hpp>
-#include <jaffarCommon/include/serializers/contiguous.hpp>
-#include <jaffarCommon/include/serializers/differential.hpp>
-#include <jaffarCommon/include/deserializers/contiguous.hpp>
-#include <jaffarCommon/include/deserializers/differential.hpp>
 #include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/concurrent.hpp>
-#include <jaffarCommon/include/timing.hpp>
-#include "../runner.hpp"
 #include "base.hpp"
-
-#define _JAFFAR_STATE_PADDING_BYTES 64
 
 namespace jaffarPlus
 {
@@ -28,6 +20,15 @@ class Plain : public stateDb::Base
 
   Plain(Runner& r, const nlohmann::json& config) : stateDb::Base(r, config)
   {
+     // Getting maximum state db size in Mb
+    _maxSizeMb = JSON_GET_NUMBER(size_t, config, "Max Size (Mb)");
+
+    // Converting it to pure bytes
+    _maxSize = _maxSizeMb * 1024ul * 1024ul;
+
+    // Getting maximum number of states
+    _maxStates = _maxSize / _stateSize;
+
     // Getting system's page size (typically 4K but it may change in the future)
     const size_t pageSize = sysconf(_SC_PAGESIZE);
 
@@ -52,7 +53,6 @@ class Plain : public stateDb::Base
   // Function to print relevant information
   void printInfoImpl() const override
   {
-   LOG("[J+]  + Total States:                  %lu\n", _currentStateDb.wasSize() + _nextStateDb.size() + _freeStateQueue->was_size());
   }
 
   inline void* getFreeState() override
@@ -136,6 +136,11 @@ class Plain : public stateDb::Base
   }
 
   private:
+
+  /**
+   * Maximum size (Mb) for the state database to grow to
+  */
+  double _maxSizeMb;
 
   /**
    * The current state database used as read-only source of base states

@@ -4,6 +4,7 @@
 #include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/hash.hpp>
 #include <jaffarCommon/include/logger.hpp>
+#include <jaffarCommon/include/timing.hpp>
 #include <jaffarCommon/include/serializers/base.hpp>
 #include <jaffarCommon/include/deserializers/base.hpp>
 #include "../emulators/emulatorList.hpp"
@@ -11,6 +12,7 @@
 #include "game.hpp"
 #include "runner.hpp"
 #include "stateDb/plain.hpp"
+#include "stateDb/numa.hpp"
 #include "hashDb.hpp"
 
 namespace jaffarPlus
@@ -88,7 +90,12 @@ class Engine final
     _maxStepCount = r.getMaximumStep();
 
     // Creating State database
-    _stateDb = std::make_unique<jaffarPlus::stateDb::Plain>(r, JSON_GET_OBJECT(config, "State Database"));
+    const auto& stateDatabaseJs = JSON_GET_OBJECT(config, "State Database");
+    const auto& stateDatabaseType = JSON_GET_STRING(stateDatabaseJs, "Type");
+    bool stateDatabaseTypeRecognized = false;
+    if (stateDatabaseType == "Plain") { _stateDb = std::make_unique<jaffarPlus::stateDb::Plain>(r, JSON_GET_OBJECT(config, "State Database")); stateDatabaseTypeRecognized = true; }
+    if (stateDatabaseType == "Numa Aware") { _stateDb = std::make_unique<jaffarPlus::stateDb::Numa>(r, JSON_GET_OBJECT(config, "State Database")); stateDatabaseTypeRecognized = true; }
+    if (stateDatabaseTypeRecognized == false) EXIT_WITH_ERROR("State database type '%s' not recognized", stateDatabaseType.c_str());
 
     // Getting memory for the reference state
     const auto stateSize = r.getStateSize();
@@ -196,19 +203,19 @@ class Engine final
       r->dumpInputHistoryToFile("jaffar.best.sol");
 
       // Printing information
-      LOG("[J+] Current Step #:                   %lu (Max: %lu)\n", currentStep, _maxStepCount);
-      LOG("[J+] Emulator Name:                    '%s'\n", _emulatorName.c_str());
-      LOG("[J+] Game Name:                        '%s'\n", _gameName.c_str());
-      LOG("[J+] Thread Count:                     %lu\n", _threadCount);
-      LOG("[J+] Elapsed Time (Step/Total):        %3.3fs / %3.3fs\n", currentStepTime, totalRunningTime);
-      LOG("[J+] Base States Performance:          %.3f States/s\n", (double)_stepBaseStatesProcessed / currentStepTime);
-      LOG("[J+] New States Performance:           %.3f States/s\n", (double)_stepNewStatesProcessed / currentStepTime);
+      LOG("[J++] Current Step #:                   %lu (Max: %lu)\n", currentStep, _maxStepCount);
+      LOG("[J++] Emulator Name:                    '%s'\n", _emulatorName.c_str());
+      LOG("[J++] Game Name:                        '%s'\n", _gameName.c_str());
+      LOG("[J++] Thread Count:                     %lu\n", _threadCount);
+      LOG("[J++] Elapsed Time (Step/Total):        %3.3fs / %3.3fs\n", currentStepTime, totalRunningTime);
+      LOG("[J++] Base States Performance:          %.3f States/s\n", (double)_stepBaseStatesProcessed / currentStepTime);
+      LOG("[J++] New States Performance:           %.3f States/s\n", (double)_stepNewStatesProcessed / currentStepTime);
 
       // Print state database information
-      LOG("[J+] State Database Information:\n");
+      LOG("[J++] State Database Information:\n");
       _stateDb->printInfo();
 
-      LOG("[J+] Hash Database Information:\n");
+      LOG("[J++] Hash Database Information:\n");
       _hashDb->printInfo();
 
       if (_winStatesFound.size() > 0) continueRunning = false;
@@ -221,9 +228,12 @@ class Engine final
 
       // Stop if reached maximum step count
       if (currentStep == _maxStepCount) continueRunning = false;
+
+      // Division rule to separate different steps
+      LOG("[J++] --------------------------------------------------------------\n");
     }
 
-    if (_winStatesFound.size() > 0) LOG("Win state reached");
+    if (_winStatesFound.size() > 0) LOG("[J++] Win state reached");
   }
 
   ~Engine() = default;
