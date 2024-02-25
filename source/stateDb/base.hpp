@@ -47,7 +47,9 @@ class Base
 
     // We want to align each state to 512 bits (64 bytes) to favor vectorized access
     // Now calculating the necessary padding to reach the next multiple of 64 bytes
-    _stateSize = ((_stateSizeEffective / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
+    _stateSize = _stateSizeEffective;
+    if (_stateSize % _JAFFAR_STATE_PADDING_BYTES != 0)
+     _stateSize = ((_stateSizeEffective / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
 
     // Padding is the difference between the aligned state size and the raw one
     _stateSizePadding = _stateSize - _stateSizeEffective;
@@ -190,7 +192,6 @@ class Base
 
   // Storage for reference data required for differential compression
   void* _referenceData;
-
 };
 
 } // namespace stateDb

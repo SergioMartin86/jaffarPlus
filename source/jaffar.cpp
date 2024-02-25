@@ -2,8 +2,7 @@
 #include <jaffarCommon/extern/argparse/argparse.hpp>
 #include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/string.hpp>
-#include "engine.hpp"
-#include "hashDb.hpp"
+#include "driver.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -34,10 +33,10 @@ int main(int argc, char *argv[])
   try { config = nlohmann::json::parse(configFileString); }
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
-  // Building Jaffar engine
-  jaffarPlus::Engine engine(config);
+  // Creating driver to run the Jaffar engine
+  auto d = jaffarPlus::Driver::getDriver(config);
 
-  // Running engine
-  engine.run();
+  // Running driver
+  d->run();
 }
 

@@ -54,9 +54,9 @@ class HashDb final
   void printInfo() const
   {
    LOG("[J++]  + Max Store Count:               %lu\n", _maxStoreCount);
-   LOG("[J++]  + Max Store Size:                %f Mb (%f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
-   LOG("[J++]  + Max Store Entries:             %lu (%f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
-   LOG("[J++]  + Total Max Entries:             %lu (%f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
+   LOG("[J++]  + Max Store Size:                %f Mb (%.2f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
+   LOG("[J++]  + Max Store Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
+   LOG("[J++]  + Total Max Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
 
    // Printing hash store information
    LOG("[J++]  + Hash Stores (%lu / %lu):\n", _hashStores.size(), _maxStoreCount);
@@ -65,9 +65,13 @@ class HashDb final
    size_t curHashStoreIdx = 0;
    while (itr != _hashStores.rend())
    {
-   LOG("[J++]    + [%02lu] - Age: %lu, Entries: %lu, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
-       itr->id, itr->age, itr->hashSet.size(), ((double)itr->hashSet.size()) / (1024.0 * 1024.0),
-       _queryCounters[curHashStoreIdx]->load(), _collisionCounters[curHashStoreIdx]->load(),
+   LOG("[J++]    + [%02lu] - Age: %lu, Entries: %.3f M, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
+       itr->id,
+       itr->age,
+       (double)itr->hashSet.size() / (1024.0 * 1024.0) ,
+       (_bytesPerEntry * (double)itr->hashSet.size())  / (1024.0 * 1024.0),
+       _queryCounters[curHashStoreIdx]->load(),
+       _collisionCounters[curHashStoreIdx]->load(),
        100.0 * (double)_collisionCounters[curHashStoreIdx]->load() / (double)_queryCounters[curHashStoreIdx]->load());
    itr++;
    curHashStoreIdx++; 
@@ -77,7 +81,7 @@ class HashDb final
   /**
    * Function to check whether the provided hash is already present in any of the hash stores
   */
-  inline bool checkHashCollision(const jaffarCommon::hash_t hash)
+  inline bool checkHashExists(const jaffarCommon::hash_t hash)
   {
     // The current hash store is the latest to be entered
     auto itr = _hashStores.rbegin();
@@ -161,7 +165,7 @@ class HashDb final
    * Calculated empirically, by filling a hash set with a huge number of distinct hashes
    * and measuring the maximum resident (memory) set size after execution.
   */
-  const double _bytesPerEntry = 18.83035648;
+  const double _bytesPerEntry = 32.0;
 
   /**
    * Identifier count for hash db stores

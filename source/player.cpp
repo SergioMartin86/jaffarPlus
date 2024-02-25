@@ -55,51 +55,24 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
   try { config = nlohmann::json::parse(configFileString); }
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
-  // Getting initial state file from the configuration
-  const auto initialStateFilePath = JSON_GET_STRING(config, "Initial State File Path");
-  
-  // Getting emulator name from the configuration
-  const auto emulatorName = JSON_GET_STRING(config, "Emulator");
-
-  // Getting game name from the configuration
-  const auto gameName = JSON_GET_STRING(config, "Game");
-
-  // Getting emulator from its name and configuring it
-  auto e = jaffarPlus::Emulator::getEmulator(emulatorName, JSON_GET_OBJECT(config, "Emulator Configuration"));
-
-  // Initializing emulator
-  e->initialize();
+  // Creating runner from game instance
+  auto r = jaffarPlus::Runner::getRunner(
+    JSON_GET_OBJECT(config, "Emulator Configuration"),
+    JSON_GET_OBJECT(config, "Game Configuration"),
+    JSON_GET_OBJECT(config, "Runner Configuration"));
 
   // Enabling rendering
-  if (disableRender == false) e->enableRendering();
+  if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
 
   // Initializing emulator's video output
-  if (disableRender == false) e->initializeVideoOutput(window);
-  
-  // If initial state file defined, load it
-  if (initialStateFilePath.empty() == false) e->loadStateFile(initialStateFilePath);
-
-  // Getting game from its name and configuring it
-  auto g = jaffarPlus::Game::getGame(gameName, e, JSON_GET_OBJECT(config, "Game Configuration"));
-
-  // Initializing game
-  g->initialize();
-
-  // Parsing script rules
-  g->parseRules(JSON_GET_ARRAY(config, "Rules"));
+  if (disableRender == false) r->getGame()->getEmulator()->initializeVideoOutput(window);
 
   // Getting inverse frame rate from game
-  const auto frameRate = g->getFrameRate();
+  const auto frameRate = r->getGame()->getFrameRate();
   const uint32_t inverseFrameRate = std::round((1.0 / frameRate) * 1.0e+6);
 
-  // Creating runner from game instance
-  jaffarPlus::Runner r(g, JSON_GET_OBJECT(config, "Runner Configuration"));
-
-  // Parsing Possible game inputs
-  r.parseGameInputs(JSON_GET_ARRAY(config, "Game Inputs"));
-
   // Getting game state size
-  const auto stateSize = r.getStateSize();
+  const auto stateSize = r->getStateSize();
 
   // Getting input sequence
   const auto solutionSequence = jaffarCommon::split(solutionFileString, ' ');
@@ -115,7 +88,7 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
   jaffarCommon::refreshTerminal();
 
   // Instantiating playback object
-  jaffarPlus::Playback p(r, solutionSequence);
+  jaffarPlus::Playback p(*r, solutionSequence);
 
   // Flag to display frame information
   bool showFrameInfo = true;
@@ -151,8 +124,9 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
       LOG("[J+] Playback:                    %s\n", isReproduce ? "Playing" : "Stopped");
       LOG("[J+] On Finish:                   %s\n", isReload ? "Auto Reload" : "Stop");
       LOG("[J+] Input:                       %s (0x%X)\n", inputString.c_str(), inputIndex);
+      LOG("[J+] Game Name:                  '%s'\n", r->getGame()->getName().c_str());
+      LOG("[J+] Emulator Name:              '%s'\n", r->getGame()->getEmulator()->getName().c_str());
       LOG("[J+] State Hash:                  0x%lX%lX\n", hash.first, hash.second);
-      LOG("[J+] Emulator Name:              '%s'\n", emulatorName.c_str());
       LOG("[J+] Config File:                '%s'\n", configFile.c_str());
       LOG("[J+] Solution File:              '%s'\n", solutionFile.c_str());
       LOG("[J+] State Size:                  %lu\n", stateSize);
@@ -160,7 +134,6 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
       LOG("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
       p.printInfo(currentStep);
       
-
       // Only print commands if not in reproduce mode
       LOG("[J+] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | r: autoreload | q: quit\n");
 
@@ -235,7 +208,7 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
   }
 
   // Close game output 
-  if (disableRender == false) r.getGame()->getEmulator()->finalizeVideoOutput();
+  if (disableRender == false) r->getGame()->getEmulator()->finalizeVideoOutput();
 
   // returning false on exit to trigger the finalization
   if (isFinalize) return false;  

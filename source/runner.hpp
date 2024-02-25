@@ -12,6 +12,7 @@
 #include <jaffarCommon/include/bitwise.hpp>
 #include <jaffarCommon/include/hash.hpp>
 #include <jaffarCommon/include/logger.hpp>
+#include "../games/gameList.hpp"
 #include "game.hpp"
 #include "inputSet.hpp"
 
@@ -31,11 +32,15 @@ class Runner final
     const auto& inputHistoryJs = JSON_GET_OBJECT(config, "Store Input History");
     _inputHistoryEnabled = JSON_GET_BOOLEAN(inputHistoryJs, "Enabled");
     _maximumStep = JSON_GET_NUMBER(uint32_t, inputHistoryJs, "Maximum Step");
+
+    // Storing game inputs for delayed parsing
+    _possibleInputsJs = JSON_GET_ARRAY(config, "Possible Inputs");
   }
 
-  void parseGameInputs(const nlohmann::json& gameInputsJs)
+  void initialize()
   {
-    for (const auto& inputSetJs : gameInputsJs) _inputSets.insert(std::move(parseInputSet(inputSetJs)));
+    // Parsing possible game inputs
+    for (const auto& inputSetJs : _possibleInputsJs) _inputSets.insert(std::move(parseInputSet(inputSetJs)));
 
     // If storing input history, allocate input history storage
     if (_inputHistoryEnabled == true)
@@ -318,6 +323,22 @@ class Runner final
   inline Game* getGame() const { return _game.get(); }
   inline size_t getMaximumStep() const { return _maximumStep; }
 
+  // Function to obtain runner based on game and emulator choice
+  static std::unique_ptr<Runner> getRunner(const nlohmann::json& emulatorConfig, const nlohmann::json& gameConfig, const nlohmann::json& runnerConfig)
+  {
+      // Getting Game
+      auto game = Game::getGame(emulatorConfig, gameConfig);
+
+      // Creating new runner
+      auto r = std::make_unique<Runner>(game, runnerConfig);
+
+      // Initializing runner
+      r->initialize();
+
+      // Returning runner
+      return r;
+  }
+ 
  private:
 
   // Pointer to the game instance
@@ -359,6 +380,9 @@ class Runner final
 
   // Set of allowed input sets
   std::unordered_set<std::unique_ptr<InputSet>> _inputSets;
+
+  // JSON of possible inputs stored for delayed parsing
+  nlohmann::json _possibleInputsJs;
 };
 
 } // namespace jaffarPlus

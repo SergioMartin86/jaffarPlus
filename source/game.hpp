@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <utility>
 #include <jaffarCommon/include/serializers/base.hpp>
 #include <jaffarCommon/include/deserializers/base.hpp>
 #include <jaffarCommon/include/bitwise.hpp>
@@ -27,12 +28,16 @@ class Game
     checkpoint = 3
   };
 
-  // Base constructor
-  Game(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : _emulator(std::move(emulator))
+  // Constructor that takes an already created emulator
+  Game(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : _emulator(std::move(emulator))
   {
+    // Getting emulator name (for runtime use)
+    _gameName = JSON_GET_STRING(config, "Game Name");
+
     // Parsing printable game properties
     _frameRate = JSON_GET_NUMBER(float, config, "Frame Rate");
 
+    // Marking printable properties
     const auto& printPropertiesJs = JSON_GET_ARRAY(config, "Print Properties");
     for (const auto& propertyJs : printPropertiesJs)
     {
@@ -49,12 +54,11 @@ class Game
       const auto propertyName = propertyJs.get<std::string>();
       _hashablePropertyNames.push_back(propertyName);
     }
+
+    // Storing rules JSON for later parsing
+    _rulesJs = JSON_GET_ARRAY(config, "Rules");  
   };
 
-  Game() = delete;
-  virtual ~Game() = default;
-
-  // Function to initialize game instance
   void initialize()
   {
     // Registering printable properties
@@ -85,7 +89,13 @@ class Game
 
     // Calling the post-update hook
     stateUpdatePostHook();
+
+    // Now parsing rules
+    parseRules(_rulesJs);
   }
+
+  Game() = delete;
+  virtual ~Game() = default;
 
   // Function to advance state. 
   inline void advanceState(const std::string& input)
@@ -188,7 +198,7 @@ class Game
    for (const auto& p : _propertyPrintVector) maximumNameSize = std::max(maximumNameSize, p->getName().size());
 
    // Printing game state
-   LOG("[J+]  + Game State Type: ");
+   LOG("[J++]  + Game State Type: ");
    if (_stateType == stateType_t::normal) LOG("Normal");
    if (_stateType == stateType_t::win) LOG("Win");
    if (_stateType == stateType_t::fail) LOG("Fail");
@@ -196,22 +206,22 @@ class Game
    LOG("\n");
 
    // Printing game state
-   LOG("[J+]  + Game State Reward: %f\n", _reward);
+   LOG("[J++]  + Game State Reward: %f\n", _reward);
 
    // Printing rule status
-   LOG("[J+]  + Rule Status: ");
+   LOG("[J++]  + Rule Status: ");
    for (size_t i = 0; i < _rules.size(); i++) LOG("%d", jaffarCommon::getBitValue(_rulesStatus.data(), i) ? 1 : 0);
    LOG("\n");
 
    // Printing game properties defined in the script file
-   LOG("[J+]  + Game Properties: \n");
+   LOG("[J++]  + Game Properties: \n");
    for (const auto& p : _propertyPrintVector)
    {
      // Getting property name
      const auto& name = p->getName();
 
      // Printing property name first
-     LOG("[J+]    + '%s':", name.c_str());
+     LOG("[J++]    + '%s':", name.c_str());
 
      // Calculating separation spaces for this property
      const auto propertySeparatorSize = separatorSize + maximumNameSize - name.size();
@@ -235,191 +245,6 @@ class Game
 
    // Printing game-specific stuff now
    printInfoImpl();
-  }
-
-  void registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)
-  {
-    // Creating property
-    auto property = std::make_unique<Property>(name, pointer, dataType, endianness);
-
-    // Getting property name hash as key 
-    const auto propertyNameHash = property->getNameHash();
-
-    // Adding property to the map for later reference
-    _propertyMap[propertyNameHash] = std::move(property);
-  }
-
-  // Parsing game rules
-  void parseRules(const nlohmann::json& rulesJson)
-  {
-    // Reset the rules container
-    _rules.clear();
-    _rulesStatus.clear();
-
-    // Evaluate each rule
-    for (size_t idx = 0; idx < rulesJson.size(); idx++)
-    {
-      // Getting specific rule json object
-      const auto& ruleJs = rulesJson[idx];
-
-      // Check if rule is a key/value object
-      if (ruleJs.is_object() == false) EXIT_WITH_ERROR("Passed rule is not a JSON object. Dump: \n %s", ruleJs.dump(2).c_str());
-      
-      // Getting rule label
-      auto label = JSON_GET_NUMBER(Rule::label_t, ruleJs, "Label");
-
-      // Creating new rule with the given label
-      auto rule = std::make_unique<Rule>(idx, label);
- 
-      // Parsing json into a rule class
-      parseRule(*rule, ruleJs);
-
-      // Adding new rule to the collection
-      _rules[rule->getLabel()] = std::move(rule);
-    }
-
-    // Create rule status vector
-    _rulesStatus.resize(jaffarCommon::getByteStorageForBitCount(_rules.size()));
-
-    // Clearing the status vector evaluation
-    for (size_t i = 0; i < _rules.size(); i++) jaffarCommon::setBitValue(_rulesStatus.data(), i, false);
-  }
- 
-  // Individual rule parser 
-  void parseRule(Rule& rule, const nlohmann::json& ruleJs) 
-  {
-    // Getting rule condition array
-    const auto& conditions = JSON_GET_ARRAY(ruleJs, "Conditions");
-
-    // Getting rule action array
-    const auto& actions = JSON_GET_ARRAY(ruleJs, "Actions");
-
-    // Parsing rule conditions
-    for (const auto& condition : conditions) rule.addCondition(parseCondition(condition));  
-
-    // Parsing rule actions
-    for (const auto& action : actions) parseRuleAction(rule, action);  
-  }
-
-  std::unique_ptr<Condition> parseCondition(const nlohmann::json& conditionJs)
-  {
-    // Parsing operator name
-    const auto& opName = JSON_GET_STRING(conditionJs, "Op");
-   
-    // Getting operator type from its name
-    const auto opType =  Condition::getOperatorType(opName);
-
-    // Parsing first operand (property name)
-    const auto& property1Name = JSON_GET_STRING(conditionJs, "Property");
-
-    // Getting property name hash, for indexing
-    const auto property1NameHash = jaffarCommon::hashString(property1Name);
-
-    // Making sure the requested property exists in the property map
-    if (_propertyMap.contains(property1NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property1Name.c_str());
-
-    // Getting property object
-    const auto property1 = _propertyMap[property1NameHash].get();
-
-    // Getting property data type
-    auto datatype1 = property1->getDatatype();
-
-    // Parsing second operand (number)
-    if (conditionJs.contains("Value") == false) EXIT_WITH_ERROR("[ERROR] Rule condition missing 'Value' key.\n");
-    if (conditionJs["Value"].is_number() == false && conditionJs["Value"].is_string() == false) EXIT_WITH_ERROR("[ERROR] Wrong format for 'Value' entry in rule condition. It must be a string or number");
-
-    // If value is a number, take it as immediate
-    if (conditionJs["Value"].is_number())
-    {
-     if (datatype1 == Property::datatype_t::dt_uint8)   return std::make_unique<_vCondition<uint8_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<uint8_t>());
-     if (datatype1 == Property::datatype_t::dt_uint16)  return std::make_unique<_vCondition<uint16_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint16_t>());
-     if (datatype1 == Property::datatype_t::dt_uint32)  return std::make_unique<_vCondition<uint32_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint32_t>());
-     if (datatype1 == Property::datatype_t::dt_uint64)  return std::make_unique<_vCondition<uint64_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint64_t>());
-
-     if (datatype1 == Property::datatype_t::dt_int8)    return std::make_unique<_vCondition<int8_t>  >(opType, property1, nullptr, 0, conditionJs["Value"].get<int8_t>());
-     if (datatype1 == Property::datatype_t::dt_int16)   return std::make_unique<_vCondition<int16_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<int16_t>());
-     if (datatype1 == Property::datatype_t::dt_int32)   return std::make_unique<_vCondition<int32_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<int32_t>());
-     if (datatype1 == Property::datatype_t::dt_int64)   return std::make_unique<_vCondition<int64_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<int64_t>());
-
-     if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>   >(opType, property1, nullptr, 0, conditionJs["Value"].get<float>());
-     if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>  >(opType, property1, nullptr, 0, conditionJs["Value"].get<double>());
-     if (datatype1 == Property::datatype_t::dt_bool)    return std::make_unique<_vCondition<bool>    >(opType, property1, nullptr, 0, conditionJs["Value"].get<bool>());
-    }
-
-    // If value is a string, take value as property number 2
-    if (conditionJs["Value"].is_string())
-    {
-      // Parsing second operand (property name)
-      const auto& property2Name = JSON_GET_STRING(conditionJs, "Value");
-
-      // Getting property name hash, for indexing
-      const auto property2NameHash = jaffarCommon::hashString(property2Name);
-
-      // Making sure the requested property exists in the property map
-      if (_propertyMap.contains(property2NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property2Name.c_str());
-
-      // Getting property object
-      const auto property2 = _propertyMap[property2NameHash].get();
-
-      if (datatype1 == Property::datatype_t::dt_uint8)   return std::make_unique<_vCondition<uint8_t> >(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_uint16)  return std::make_unique<_vCondition<uint16_t>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_uint32)  return std::make_unique<_vCondition<uint32_t>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_uint64)  return std::make_unique<_vCondition<uint64_t>>(opType, property1, property2, 0, 0);
-
-      if (datatype1 == Property::datatype_t::dt_int8)    return std::make_unique<_vCondition<int8_t>  >(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_int16)   return std::make_unique<_vCondition<int16_t> >(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_int32)   return std::make_unique<_vCondition<int32_t> >(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_int64)   return std::make_unique<_vCondition<int64_t> >(opType, property1, property2, 0, 0);
-
-      if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>   >(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>  >(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_bool)    return std::make_unique<_vCondition<bool>    >(opType, property1, property2, 0, 0);
-    }
-
-    EXIT_WITH_ERROR("[ERROR] Rule contains an invalid 'Value' key.\n", conditionJs["Value"].dump().c_str());
-  }
-
-  void parseRuleAction(Rule& rule, const nlohmann::json& actionJs) 
-  {
-    // Getting action type
-    std::string actionType = JSON_GET_STRING(actionJs, "Type");
-
-    // Running the action, depending on the type
-    bool recognizedActionType = false;
-
-    if (actionType == "Add Reward")
-    {
-      rule.setReward(JSON_GET_NUMBER(float, actionJs, "Value"));
-      recognizedActionType = true;
-    }
-
-    // Storing fail state
-    if (actionType == "Trigger Fail")
-    {
-      rule.setFailRule(true);
-      recognizedActionType = true;
-    }
-
-    // Storing win state
-    if (actionType == "Trigger Win")
-    {
-      rule.setWinRule(true);
-      recognizedActionType = true;
-    }
-
-    // Storing checkpoint flags
-    if (actionType == "Trigger Checkpoint")
-    {
-      rule.setCheckpointRule(true);
-      rule.setCheckpointTolerance(JSON_GET_NUMBER(size_t, actionJs, "Tolerance"));
-      recognizedActionType = true;
-    }
-
-    // If not recognized yet, it must be a game specific action
-    if (recognizedActionType == false) recognizedActionType = parseRuleActionImpl(rule, actionType, actionJs);
-
-    // If not recognized at all, then fail
-    if (recognizedActionType == false) EXIT_WITH_ERROR("[ERROR] Unrecognized action '%s' in rule %lu\n", actionType.c_str(), rule.getLabel());
   }
 
   // Evaluates the rule set on a given frame. Returns true if it is a fail.
@@ -541,6 +366,211 @@ class Game
     } 
   }
 
+  std::unique_ptr<Condition> parseCondition(const nlohmann::json& conditionJs)
+  {
+    // Parsing operator name
+    const auto& opName = JSON_GET_STRING(conditionJs, "Op");
+   
+    // Getting operator type from its name
+    const auto opType =  Condition::getOperatorType(opName);
+
+    // Parsing first operand (property name)
+    const auto& property1Name = JSON_GET_STRING(conditionJs, "Property");
+
+    // Getting property name hash, for indexing
+    const auto property1NameHash = jaffarCommon::hashString(property1Name);
+
+    // Making sure the requested property exists in the property map
+    if (_propertyMap.contains(property1NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property1Name.c_str());
+
+    // Getting property object
+    const auto property1 = _propertyMap[property1NameHash].get();
+
+    // Getting property data type
+    auto datatype1 = property1->getDatatype();
+
+    // Parsing second operand (number)
+    if (conditionJs.contains("Value") == false) EXIT_WITH_ERROR("[ERROR] Rule condition missing 'Value' key.\n");
+    if (conditionJs["Value"].is_number() == false && conditionJs["Value"].is_string() == false) EXIT_WITH_ERROR("[ERROR] Wrong format for 'Value' entry in rule condition. It must be a string or number");
+
+    // If value is a number, take it as immediate
+    if (conditionJs["Value"].is_number())
+    {
+     if (datatype1 == Property::datatype_t::dt_uint8)   return std::make_unique<_vCondition<uint8_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<uint8_t>());
+     if (datatype1 == Property::datatype_t::dt_uint16)  return std::make_unique<_vCondition<uint16_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint16_t>());
+     if (datatype1 == Property::datatype_t::dt_uint32)  return std::make_unique<_vCondition<uint32_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint32_t>());
+     if (datatype1 == Property::datatype_t::dt_uint64)  return std::make_unique<_vCondition<uint64_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint64_t>());
+
+     if (datatype1 == Property::datatype_t::dt_int8)    return std::make_unique<_vCondition<int8_t>  >(opType, property1, nullptr, 0, conditionJs["Value"].get<int8_t>());
+     if (datatype1 == Property::datatype_t::dt_int16)   return std::make_unique<_vCondition<int16_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<int16_t>());
+     if (datatype1 == Property::datatype_t::dt_int32)   return std::make_unique<_vCondition<int32_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<int32_t>());
+     if (datatype1 == Property::datatype_t::dt_int64)   return std::make_unique<_vCondition<int64_t> >(opType, property1, nullptr, 0, conditionJs["Value"].get<int64_t>());
+
+     if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>   >(opType, property1, nullptr, 0, conditionJs["Value"].get<float>());
+     if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>  >(opType, property1, nullptr, 0, conditionJs["Value"].get<double>());
+     if (datatype1 == Property::datatype_t::dt_bool)    return std::make_unique<_vCondition<bool>    >(opType, property1, nullptr, 0, conditionJs["Value"].get<bool>());
+    }
+
+    // If value is a string, take value as property number 2
+    if (conditionJs["Value"].is_string())
+    {
+      // Parsing second operand (property name)
+      const auto& property2Name = JSON_GET_STRING(conditionJs, "Value");
+
+      // Getting property name hash, for indexing
+      const auto property2NameHash = jaffarCommon::hashString(property2Name);
+
+      // Making sure the requested property exists in the property map
+      if (_propertyMap.contains(property2NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property2Name.c_str());
+
+      // Getting property object
+      const auto property2 = _propertyMap[property2NameHash].get();
+
+      if (datatype1 == Property::datatype_t::dt_uint8)   return std::make_unique<_vCondition<uint8_t> >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_uint16)  return std::make_unique<_vCondition<uint16_t>>(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_uint32)  return std::make_unique<_vCondition<uint32_t>>(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_uint64)  return std::make_unique<_vCondition<uint64_t>>(opType, property1, property2, 0, 0);
+
+      if (datatype1 == Property::datatype_t::dt_int8)    return std::make_unique<_vCondition<int8_t>  >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_int16)   return std::make_unique<_vCondition<int16_t> >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_int32)   return std::make_unique<_vCondition<int32_t> >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_int64)   return std::make_unique<_vCondition<int64_t> >(opType, property1, property2, 0, 0);
+
+      if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>   >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>  >(opType, property1, property2, 0, 0);
+      if (datatype1 == Property::datatype_t::dt_bool)    return std::make_unique<_vCondition<bool>    >(opType, property1, property2, 0, 0);
+    }
+
+    EXIT_WITH_ERROR("[ERROR] Rule contains an invalid 'Value' key.\n", conditionJs["Value"].dump().c_str());
+  }
+
+  // Returns pointer to the internal emulator
+  inline Emulator* getEmulator() const { return _emulator.get(); }
+
+  // Function to obtain emulator based on name
+  static std::unique_ptr<Game> getGame(const nlohmann::json& emulatorConfig, const nlohmann::json& gameConfig);
+ 
+  // Function to get the frame rate
+  inline float getFrameRate() const { return _frameRate; }
+
+  // Function to get the reward
+  inline float getReward() const { return _reward; }
+  
+  // Function to get the state type
+  inline stateType_t getStateType() const { return _stateType; }
+
+  // Function to get game name in runtime
+  inline std::string getName() const { return _gameName; }
+
+  protected:
+
+  void registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)
+  {
+    // Creating property
+    auto property = std::make_unique<Property>(name, pointer, dataType, endianness);
+
+    // Getting property name hash as key 
+    const auto propertyNameHash = property->getNameHash();
+
+    // Adding property to the map for later reference
+    _propertyMap[propertyNameHash] = std::move(property);
+  }
+
+  // Parsing game rules
+  void parseRules(const nlohmann::json& rulesJson)
+  {
+    // Reset the rules container
+    _rules.clear();
+    _rulesStatus.clear();
+
+    // Evaluate each rule
+    for (size_t idx = 0; idx < rulesJson.size(); idx++)
+    {
+      // Getting specific rule json object
+      const auto& ruleJs = rulesJson[idx];
+
+      // Check if rule is a key/value object
+      if (ruleJs.is_object() == false) EXIT_WITH_ERROR("Passed rule is not a JSON object. Dump: \n %s", ruleJs.dump(2).c_str());
+      
+      // Getting rule label
+      auto label = JSON_GET_NUMBER(Rule::label_t, ruleJs, "Label");
+
+      // Creating new rule with the given label
+      auto rule = std::make_unique<Rule>(idx, label);
+ 
+      // Parsing json into a rule class
+      parseRule(*rule, ruleJs);
+
+      // Adding new rule to the collection
+      _rules[rule->getLabel()] = std::move(rule);
+    }
+
+    // Create rule status vector
+    _rulesStatus.resize(jaffarCommon::getByteStorageForBitCount(_rules.size()));
+
+    // Clearing the status vector evaluation
+    for (size_t i = 0; i < _rules.size(); i++) jaffarCommon::setBitValue(_rulesStatus.data(), i, false);
+  }
+ 
+  // Individual rule parser 
+  void parseRule(Rule& rule, const nlohmann::json& ruleJs) 
+  {
+    // Getting rule condition array
+    const auto& conditions = JSON_GET_ARRAY(ruleJs, "Conditions");
+
+    // Getting rule action array
+    const auto& actions = JSON_GET_ARRAY(ruleJs, "Actions");
+
+    // Parsing rule conditions
+    for (const auto& condition : conditions) rule.addCondition(parseCondition(condition));  
+
+    // Parsing rule actions
+    for (const auto& action : actions) parseRuleAction(rule, action);  
+  }
+
+  void parseRuleAction(Rule& rule, const nlohmann::json& actionJs) 
+  {
+    // Getting action type
+    std::string actionType = JSON_GET_STRING(actionJs, "Type");
+
+    // Running the action, depending on the type
+    bool recognizedActionType = false;
+
+    if (actionType == "Add Reward")
+    {
+      rule.setReward(JSON_GET_NUMBER(float, actionJs, "Value"));
+      recognizedActionType = true;
+    }
+
+    // Storing fail state
+    if (actionType == "Trigger Fail")
+    {
+      rule.setFailRule(true);
+      recognizedActionType = true;
+    }
+
+    // Storing win state
+    if (actionType == "Trigger Win")
+    {
+      rule.setWinRule(true);
+      recognizedActionType = true;
+    }
+
+    // Storing checkpoint flags
+    if (actionType == "Trigger Checkpoint")
+    {
+      rule.setCheckpointRule(true);
+      rule.setCheckpointTolerance(JSON_GET_NUMBER(size_t, actionJs, "Tolerance"));
+      recognizedActionType = true;
+    }
+
+    // If not recognized yet, it must be a game specific action
+    if (recognizedActionType == false) recognizedActionType = parseRuleActionImpl(rule, actionType, actionJs);
+
+    // If not recognized at all, then fail
+    if (recognizedActionType == false) EXIT_WITH_ERROR("[ERROR] Unrecognized action '%s' in rule %lu\n", actionType.c_str(), rule.getLabel());
+  }
+
   // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules
   inline void satisfyRule(Rule& rule) 
   {
@@ -565,26 +595,6 @@ class Game
     // Setting status to satisfied
     jaffarCommon::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
-
-  // Returns pointer to the internal emulator
-  inline Emulator* getEmulator() const { return _emulator.get(); }
-
-  // Function to get emulator name
-  static std::string getName();
-
-  // Function to obtain emulator based on name
-  static std::unique_ptr<Game> getGame(const std::string& gameName, std::unique_ptr<Emulator>& emulator, const nlohmann::json& config);
- 
-  // Function to get the frame rate
-  inline float getFrameRate() const { return _frameRate; }
-
-  // Function to get the reward
-  inline float getReward() const { return _reward; }
-  
-  // Function to get the state type
-  inline stateType_t getStateType() const { return _stateType; }
-
-  protected:
 
   virtual void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const = 0;
   virtual void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) = 0;
@@ -635,6 +645,12 @@ class Game
 
   // Inverse frame rate to play the game with, required for correct playback
   float _frameRate;
+
+  // Game name (for runtime use)
+  std::string _gameName;
+
+  // Temporal storage of the rules json for delayed parsing
+  nlohmann::json _rulesJs;
 };
 
 } // namespace jaffarPlus
