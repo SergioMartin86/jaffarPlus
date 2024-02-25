@@ -298,25 +298,25 @@ class Runner final
    auto hashStepToleranceStage = getHashStepToleranceStage();
 
    // Memory usage
-   LOG("[J+]  + Input History Enabled: %s\n", _inputHistoryEnabled ? "true" : "false");
+   LOG("[J++]  + Input History Enabled: %s\n", _inputHistoryEnabled ? "true" : "false");
    if (_inputHistoryEnabled == true)
    {
-    LOG("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _currentInputIndex, _inputIndexSizeBits);
-    LOG("[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _maximumStep, _inputHistory.size(), _inputIndexSizeBits * _maximumStep);
+    LOG("[J++]    + Possible Input Count: %u (Encoded in %lu bits)\n", _currentInputIndex, _inputIndexSizeBits);
+    LOG("[J++]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _maximumStep, _inputHistory.size(), _inputIndexSizeBits * _maximumStep);
    }
 
    // Printing runner state
-   LOG("[J+]  + Current Step: %u\n", _currentStep);
-   LOG("[J+]  + Hash: %s\n", hash.c_str());
-   LOG("[J+]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
+   LOG("[J++]  + Current Step: %u\n", _currentStep);
+   LOG("[J++]  + Hash: %s\n", hash.c_str());
+   LOG("[J++]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
 
    // Getting possible inputs
    const auto& possibleInputs = getPossibleInputs();
 
    // Printing them
-   LOG("[J+]  + Possible Inputs:\n");
+   LOG("[J++]  + Possible Inputs:\n");
    for (const auto inputIdx : possibleInputs) 
-    LOG("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
+    LOG("[J++]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
   }
 
   inline uint32_t getHashStepToleranceStage() const { return  _currentStep % (_hashStepTolerance + 1); }

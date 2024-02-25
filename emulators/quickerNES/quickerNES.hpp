@@ -261,7 +261,7 @@ class QuickerNES final : public Emulator
   {
    auto p = getProperty(blockName);
    auto hash = jaffarCommon::hashToString(jaffarCommon::calculateMetroHash(p.pointer, p.size));
-   LOG("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
+   LOG("[J++] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }
 
   NESInstance _quickerNES;

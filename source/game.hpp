@@ -87,9 +87,6 @@ class Game
       _propertyHashVector.push_back(_propertyMap.at(propertyHash).get());
     }
 
-    // Calling the post-update hook
-    stateUpdatePostHook();
-
     // Now parsing rules
     parseRules(_rulesJs);
   }
