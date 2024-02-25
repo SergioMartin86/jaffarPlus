@@ -228,16 +228,6 @@ class Numa : public stateDb::Base
     return nullptr;
   }
 
-  inline void* getBestState() const override
-  {
-    return _currentStateDb.front();
-  }
-
-  inline void* getWorstState() const override
-  {
-    return _currentStateDb.back();
-  }
-
   /**
    * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
   */
@@ -294,11 +284,6 @@ class Numa : public stateDb::Base
    * How far should each thread scavenge for a state belonging to its numa domain
   */
   size_t _scavengingDepth;
-
-  /**
-   * The current state database used as read-only source of base states
-  */
-  jaffarCommon::concurrentDeque<void*> _currentStateDb;
 
   /**
    * The next state database, where new states are stored as they are created

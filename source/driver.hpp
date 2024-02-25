@@ -53,14 +53,14 @@ class Driver final
       // If maximum step established and reached, finish now
       if (_maxSteps > 0 && _currentStep >= _maxSteps) { LOG("[J++] Fail: Maximum step count (%lu) reached without a solution.\n", _currentStep); exit(-1); }
 
-      // // Getting best state so far
-      // auto bestState = _engine.getBestState();
+      // Getting best state so far
+      auto bestState = _engine->getStateDb()->getBestState();
 
-      // // Loading best state into runner
-      // _stateDb->loadStateIntoRunner(*r, bestState);
+      // Loading best state into runner
+      _engine->getStateDb()->loadStateIntoRunner(*_runner, bestState);
 
-      // // Dumping best solution so far into a file
-      // r->dumpInputHistoryToFile("jaffar.best.sol");
+      // Dumping best solution so far into a file
+      _runner->dumpInputHistoryToFile("jaffar.best.sol");
 
       // Printing information
       LOG("[J++] Emulator Name:                               '%s'\n", _runner->getGame()->getEmulator()->getName().c_str());
@@ -68,8 +68,15 @@ class Driver final
       LOG("[J++] Current Step #:                              %lu (Max: %lu)\n", _currentStep, _maxSteps);
 
       // Printing engine information
+      LOG("[J++] Engine Information: \n");
       _engine->printInfo();
-      
+      LOG("[J++] Runner Information (Best State): \n");
+      _runner->printInfo();
+      LOG("[J++] Game Information (Best State): \n");
+      _runner->getGame()->printInfo();
+      LOG("[J++] Emulator Information (Best State): \n");
+      _runner->getGame()->getEmulator()->printInfo();
+
       // Division rule to separate different steps
       LOG("[J++] --------------------------------------------------------------\n");
 

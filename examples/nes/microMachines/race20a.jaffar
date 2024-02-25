@@ -4,11 +4,11 @@
   "State Database":
   {
     "Type": "Numa Aware",
-    "Max Size (Mb)": 20000,
+    "Max Size (Mb)": 400,
     "Max Size per NUMA Domain (Mb)":
     [ 
-      20000,
-      20000
+      200,
+      200
     ],
   
     "Scavenger Queues Size": 32,
@@ -90,7 +90,8 @@
     "Player 1 Pos Y1",                
     "Player 1 Pos Y2",                
     "Player 1 Pos Y3",                
-    "Player 1 Accel",                 
+    "Player 1 Accel",            
+    "Player 1 Accel Timer 2",               
     "Player 1 Angle 2",                
     "Player 1 Current Laps Remaining",
     "Player 1 Previous Laps Remaining",

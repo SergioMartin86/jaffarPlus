@@ -67,12 +67,11 @@ class Base
    const size_t currentStateCount = getStateCount();
    const size_t currentStateBytes = currentStateCount * _stateSize;
 
-   LOG("[J++]  + Current State Count:           %lu (%.3f Mb, %.6f Gb)\n", currentStateCount, (double)currentStateBytes / (1024.0 * 1024.0), (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0));
+   LOG("[J++]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n", currentStateCount, (double)currentStateCount * 1.0e-6, _maxStates, (double)_maxStates * 1.0e-6, 100.0 * (double)currentStateCount / (double)_maxStates);
+   LOG("[J++]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n", (double)currentStateBytes / (1024.0 * 1024.0), (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
    LOG("[J++]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
    LOG("[J++]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
    LOG("[J++]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
-   LOG("[J++]  + Max State DB Entries:          %lu (%f Mstates)\n", _maxStates, (double)_maxStates * 1.0e-6);
-   LOG("[J++]  + Max State DB Size:             %lu bytes (%.3f Mb, %.6f Gb)\n", _maxSize, (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
    LOG("[J++]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
    LOG("[J++]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
 
@@ -82,8 +81,6 @@ class Base
   virtual void* getFreeState() = 0;
   virtual void returnFreeState(void* const statePtr) = 0;
   virtual void* popState() = 0;
-  virtual void* getBestState() const = 0;
-  virtual void* getWorstState() const = 0;
   virtual void advanceStep() = 0;
   virtual size_t getStateCount() const = 0;
 
@@ -131,6 +128,22 @@ class Base
   }
 
   /**
+   * This function returns a pointer to the best state found in the current state database
+  */
+  inline void* getBestState() const
+  {
+    return _currentStateDb.front();
+  }
+
+  /**
+   * This function returns a pointer to the worst state found in the current state database
+  */
+  inline void* getWorstState() const
+  {
+    return _currentStateDb.back();
+  }
+
+  /**
    * This function sets the reference data required for differential compression
    * 
    * It must be of the same size as _stateSizeRaw
@@ -140,12 +153,16 @@ class Base
    memcpy(_referenceData, referenceData, _stateSizeRaw);
   }
 
-
   protected:
 
   virtual void pushStateImpl(const float reward, void* statePtr) = 0;
   virtual void printInfoImpl() const = 0;
   
+  /**
+   * The current state database used as read-only source of base states
+  */
+  jaffarCommon::concurrentDeque<void*> _currentStateDb;
+
   /**
    * Stores the size occupied by each state (with padding)
   */

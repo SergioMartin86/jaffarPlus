@@ -126,6 +126,7 @@ class MicroMachines final : public jaffarPlus::Game
     _cameraDistanceMagnet = 0.0;
     _recoveryTimerMagnet = 0.0;
     _player1AngleMagnet.intensity = 0.0;
+    _player1AngleMagnet.angle = 0.0;
 
     _pointMagnet.intensity = 0.0;
     _pointMagnet.x = 0.0;
@@ -138,6 +139,8 @@ class MicroMachines final : public jaffarPlus::Game
     _player1DistanceToPointX  = std::abs((float)_pointMagnet.x - (float)_player1PosX);
     _player1DistanceToPointY  = std::abs((float)_pointMagnet.y - (float)_player1PosY);
     _player1DistanceToPoint   = sqrtf(_player1DistanceToPointX*_player1DistanceToPointX + _player1DistanceToPointY*_player1DistanceToPointY);
+
+    _player1DistanceToMagnetAngle = std::abs(_player1AngleMagnet.angle - (float)*_player1Angle1);
   }
 
   inline void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override

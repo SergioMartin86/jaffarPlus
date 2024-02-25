@@ -204,17 +204,13 @@ class Engine final
 
      // Computing total running time
      _totalRunningTime += _currentStepTime;
-
-         auto& r = *_runners[0];
-         r.getGame()->printInfo();
   }
 
   ~Engine() = default;
 
   // Relevant data for the driver
 
-  auto getWorstState() const { return _stateDb->getWorstState(); }
-  auto getBestState() const { return _stateDb->getBestState(); }
+  auto& getStateDb() const { return _stateDb; }
   auto getWinStates() const { return _winStatesFound; }
   auto getStateCount () const { return _stateDb->getStateCount(); }
   auto getMaximumStep () const { return _maxStepCount; }

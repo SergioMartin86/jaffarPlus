@@ -11,12 +11,6 @@
 #include "runner.hpp"
 #include "playback.hpp"
 
-// Switch to toggle whether to reload the movie on reaching the end of the sequence
-bool isReload = false; 
-
-// Switch to toggle whether to reproduce the movie
-bool isReproduce = false; 
-
 SDL_Window* launchOutputWindow()
 {
   // Opening rendering window
@@ -38,7 +32,7 @@ void closeOutputWindow(SDL_Window* window)
   SDL_DestroyWindow(window);
 }
 
-bool mainCycle(const std::string& configFile, const std::string& solutionFile, bool disableRender, SDL_Window* window)
+bool mainCycle(const std::string& configFile, const std::string& solutionFile, bool disableRender, bool reproduceStart, SDL_Window* window)
 {
   // If sequence file defined, load it and play it
   std::string solutionFileString;
@@ -55,7 +49,7 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
   try { config = nlohmann::json::parse(configFileString); }
   catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
-  // Creating runner from game instance
+  // Creating runner from the configuration
   auto r = jaffarPlus::Runner::getRunner(
     JSON_GET_OBJECT(config, "Emulator Configuration"),
     JSON_GET_OBJECT(config, "Game Configuration"),
@@ -88,13 +82,19 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
   jaffarCommon::refreshTerminal();
 
   // Instantiating playback object
-  jaffarPlus::Playback p(*r, solutionSequence);
+  jaffarPlus::Playback p(*r, solutionSequence); 
 
   // Flag to display frame information
   bool showFrameInfo = true;
  
   // Finalization flag
   bool isFinalize = false;
+
+  // Switch to toggle whether to reload the movie on reaching the end of the sequence
+  bool isReload = false; 
+
+  // Switch to toggle whether to reproduce the movie
+  bool isReproduce = reproduceStart; 
 
   // Interactive section
   while (isFinalize == false)
@@ -230,6 +230,11 @@ int main(int argc, char *argv[])
     .help("path to the solution sequence file (.sol) to reproduce.")
     .required();
 
+  program.add_argument("--reproduce")
+    .help("Starts playing from the start")
+    .default_value(false)
+    .implicit_value(true);
+
   program.add_argument("--disableRender")
     .help("Do not render game window.")
     .default_value(false)
@@ -246,6 +251,9 @@ int main(int argc, char *argv[])
   const std::string solutionFile = program.get<std::string>("solutionFile");
 
   // Getting reproduce flag
+  bool reproduceStart = program.get<bool>("--reproduce");
+
+  // Getting disablerender flag
   bool disableRender = program.get<bool>("--disableRender");
 
   // Initializing terminal
@@ -255,7 +263,7 @@ int main(int argc, char *argv[])
   auto window = disableRender ? nullptr : launchOutputWindow();
 
   // Running main cycle
-  while (mainCycle(configFile, solutionFile, disableRender, window));
+  while (mainCycle(configFile, solutionFile, disableRender, reproduceStart, window));
 
   // Closing output window
   if (disableRender == false) closeOutputWindow(window);

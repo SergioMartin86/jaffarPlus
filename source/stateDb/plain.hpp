@@ -105,16 +105,6 @@ class Plain : public stateDb::Base
     return statePtr;
   }
 
-  inline void* getBestState() const override
-  {
-    return _currentStateDb.front();
-  }
-
-  inline void* getWorstState() const override
-  {
-    return _currentStateDb.back();
-  }
-
   /**
    * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
   */
@@ -141,11 +131,6 @@ class Plain : public stateDb::Base
    * Maximum size (Mb) for the state database to grow to
   */
   double _maxSizeMb;
-
-  /**
-   * The current state database used as read-only source of base states
-  */
-  jaffarCommon::concurrentDeque<void*> _currentStateDb;
 
   /**
    * The next state database, where new states are stored as they are created
