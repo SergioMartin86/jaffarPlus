@@ -1,15 +1,34 @@
+#pragma once 
+
 #include <emulator.hpp>
 #include "quickerNES/quickerNES.hpp"
 
 namespace jaffarPlus
 {
- #define DETECT_EMULATOR(EMULATOR) if (emulatorName == EMULATOR::getName()) return std::make_unique<EMULATOR>(config);
+ #define DETECT_EMULATOR(EMULATOR) if (emulatorName == EMULATOR::getName()) { e = std::make_unique<EMULATOR>(emulatorConfig); isRecognized = true; }
   
- std::unique_ptr<Emulator> Emulator::getEmulator(const std::string& emulatorName, const nlohmann::json& config)
+ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json& emulatorConfig)
  {
+  // Base pointer for the emulator
+  std::unique_ptr<Emulator> e;
+
+  // Flag to indicate whether the name was recognized
+  bool isRecognized = false;
+
+  // Getting emulator name
+  const auto& emulatorName = JSON_GET_STRING(emulatorConfig, "Emulator Name");
+
+  // Detecting emulator
   DETECT_EMULATOR(emulator::QuickerNES);
 
-  EXIT_WITH_ERROR("Emulator '%s' not recognized\n", emulatorName.c_str());
+  // Check if recognized
+  if (isRecognized == false) EXIT_WITH_ERROR("Emulator '%s' not recognized\n", emulatorName.c_str());
+ 
+  // Initializing emulator
+  e->initialize();
+
+  // Returning emulator pointer
+  return e;
  }
 
 } // namespace jaffarPlus

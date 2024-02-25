@@ -70,41 +70,17 @@ int main(int argc, char *argv[])
   // Getting initial state file from the configuration
   const auto initialStateFilePath = JSON_GET_STRING(config, "Initial State File Path");
 
-  // Getting emulator name from the configuration
-  const auto emulatorName = JSON_GET_STRING(config, "Emulator");
+    // Creating runner from the configuration
+  auto r = jaffarPlus::Runner::getRunner(
+    JSON_GET_OBJECT(config, "Emulator Configuration"),
+    JSON_GET_OBJECT(config, "Game Configuration"),
+    JSON_GET_OBJECT(config, "Runner Configuration"));
 
-// Getting game name from the configuration
-  const auto gameName = JSON_GET_STRING(config, "Game");
-
-  // Getting emulator from its name and configuring it
-  auto e = jaffarPlus::Emulator::getEmulator(emulatorName, JSON_GET_OBJECT(config, "Emulator Configuration"));
-
-  // Initializing emulator
-  e->initialize();
-
-  // Disable rendering
-  e->disableRendering();
-
-  // If initial state file defined, load it
-  if (initialStateFilePath.empty() == false) e->loadStateFile(initialStateFilePath);
-
-  // Getting game from its name and configuring it
-  auto g = jaffarPlus::Game::getGame(gameName, e, JSON_GET_OBJECT(config, "Game Configuration"));
-
-  // Initializing game
-  g->initialize();
-
-  // Parsing script rules
-  g->parseRules(JSON_GET_ARRAY(config, "Rules"));
-
-  // Creating runner from game instance
-  jaffarPlus::Runner r(g, JSON_GET_OBJECT(config, "Runner Configuration"));
-
-  // Parsing Possible game inputs
-  r.parseGameInputs(JSON_GET_ARRAY(config, "Game Inputs"));
+  // Disabling rendering
+  r->getGame()->getEmulator()->disableRendering();
 
   // Getting game state size
-  const auto stateSize = r.getStateSize();
+  const auto stateSize = r->getStateSize();
 
   // Getting input sequence
   const auto solutionSequence = jaffarCommon::split(solutionFileString, ' ');
@@ -113,10 +89,11 @@ int main(int argc, char *argv[])
   const auto sequenceLength = solutionSequence.size();
 
   // Getting differential state size
-  size_t differentialStateSize = r.getDifferentialStateSize(maximumDifferences);
+  size_t differentialStateSize = r->getDifferentialStateSize(maximumDifferences);
 
   // Printing information
-  LOG("[J+] Emulator Name:                   '%s'\n", emulatorName.c_str());
+  LOG("[J+] Emulator Name:                   '%s'\n", r->getGame()->getEmulator()->getName().c_str());
+  LOG("[J+] Game Name:                       '%s'\n", r->getGame()->getName().c_str());
   LOG("[J+] Config File:                     '%s'\n", configFile.c_str());
   LOG("[J+] Solution File:                   '%s'\n", solutionFile.c_str());
   LOG("[J+] Cycle Type:                      '%s'\n", cycleType.c_str());
@@ -133,12 +110,12 @@ int main(int argc, char *argv[])
   // Serializing initial state
   auto currentState = (uint8_t *)malloc(stateSize);
   jaffarCommon::serializer::Contiguous sc(currentState, stateSize);
-  r.serializeState(sc);
+  r->serializeState(sc);
 
   // Storage for diffential compression
   auto diffentialStateData = (uint8_t *)malloc(differentialStateSize);
   jaffarCommon::serializer::Differential sd(diffentialStateData, differentialStateSize, currentState, stateSize, useZlibCompression);
-  r.serializeState(sd);
+  r->serializeState(sd);
   size_t maxDifferentialStateSize = sd.getOutputSize();
 
   // Check whether to perform each action
@@ -151,39 +128,39 @@ int main(int argc, char *argv[])
   for (const auto& input : solutionSequence)
   {
     // Getting input index
-    const auto inputIndex = r.getInputIndex(input);
+    const auto inputIndex = r->getInputIndex(input);
 
-    if (doPreAdvance == true) r.advanceState(inputIndex);
+    if (doPreAdvance == true) r->advanceState(inputIndex);
 
     if (doDeserialize == true)
     {
       if (useDifferentialCompression == false)
       {
         jaffarCommon::deserializer::Contiguous dc(currentState, stateSize);
-        r.deserializeState(dc);
+        r->deserializeState(dc);
       } 
 
       if (useDifferentialCompression == true) 
       {
         jaffarCommon::deserializer::Differential dd(diffentialStateData, differentialStateSize, currentState, stateSize, useZlibCompression);
-        r.deserializeState(dd);
+        r->deserializeState(dd);
       }
     } 
 
-    r.advanceState(inputIndex);
+    r->advanceState(inputIndex);
 
     if (doSerialize == true)
     {
       if (useDifferentialCompression == false)
       {
         jaffarCommon::serializer::Contiguous sc(currentState, stateSize);
-        r.serializeState(sc);
+        r->serializeState(sc);
       } 
 
       if (useDifferentialCompression == true)
       {
         jaffarCommon::serializer::Differential sd(diffentialStateData, differentialStateSize, currentState, stateSize, useZlibCompression);
-        r.serializeState(sd);
+        r->serializeState(sd);
         maxDifferentialStateSize = std::max(maxDifferentialStateSize, sd.getOutputSize());
       } 
     } 
@@ -204,11 +181,11 @@ int main(int argc, char *argv[])
 
   // Printing Information
   LOG("[J+] Runner Information:\n");
-  r.printInfo();
+  r->printInfo();
 
   LOG("[J+] Emulator Information:\n");
-  r.getGame()->getEmulator()->printInfo();
+  r->getGame()->getEmulator()->printInfo();
 
   LOG("[J+] Game Information:\n");
-  r.getGame()->printInfo();
+  r->getGame()->printInfo();
 }

@@ -32,6 +32,9 @@ class QuickerNES final : public Emulator
   // Constructor must only do configuration parsing
   QuickerNES(const nlohmann::json& config) : Emulator(config)
   {
+    // Getting initial state file from the configuration
+    _initialStateFilePath = JSON_GET_STRING(config, "Initial State File Path");
+
     // Parsing controller configuration
     auto controller1Type = JSON_GET_STRING(config, "Controller 1 Type");
     auto controller2Type = JSON_GET_STRING(config, "Controller 2 Type");
@@ -70,6 +73,22 @@ class QuickerNES final : public Emulator
 
     // Loading rom into emulator
     _quickerNES.loadROM((uint8_t*)romFileData.data(), romFileData.size());
+
+    // If initial state file defined, load it
+    if (_initialStateFilePath.empty() == false)
+    {
+      // Reading from initial state file
+      std::string initialState;
+      bool success = jaffarCommon::loadStringFromFile(initialState, _initialStateFilePath);
+      if (success == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
+
+      // Deserializing initial state into the emulator
+      jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
+      deserializeState(d);
+    } 
+
+    // Now disabling state properties, as requested
+    disableStateProperties();
   }
 
   // State advancing function
@@ -80,6 +99,9 @@ class QuickerNES final : public Emulator
 
   inline void serializeState(jaffarCommon::serializer::Base& serializer) const override { _quickerNES.serializeState(serializer); };
   inline void deserializeState(jaffarCommon::deserializer::Base& deserializer) override { _quickerNES.deserializeState(deserializer); };
+
+  inline void disableStateProperties() { for (const auto& property : _disabledStateProperties) disableStateProperty(property); }
+  inline void enableStateProperties()  { for (const auto& property : _disabledStateProperties) enableStateProperty(property); }
 
   inline void printInfo() const override
   {
@@ -246,6 +268,7 @@ class QuickerNES final : public Emulator
 
   std::string _romFilePath;
   std::string _romFileSHA1;
+  std::string _initialStateFilePath;
 };
 
 } // namespace emulator

@@ -19,7 +19,7 @@ class MicroMachines final : public jaffarPlus::Game
 
   static inline std::string getName() { return "NES / Micro Machines"; } 
 
-  MicroMachines(std::unique_ptr<Emulator>& emulator, const nlohmann::json& config) : jaffarPlus::Game(emulator, config)
+  MicroMachines(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // Getting emulator's low memory pointer
     auto lowMem = _emulator->getProperty("LRAM").pointer;
@@ -187,18 +187,18 @@ class MicroMachines final : public jaffarPlus::Game
   {
     if (std::abs(_pointMagnet.intensity) > 0.0f)
     {
-      LOG("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
-      LOG("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
-      LOG("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
-      LOG("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+      LOG("[J++]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      LOG("[J++]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+      LOG("[J++]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+      LOG("[J++]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
     } 
 
-    if (std::abs(_cameraDistanceMagnet) > 0.0f)          LOG("[J+]  + Camera Distance Magnet                   Intensity: %.5f, Dist: %3.3f\n", _cameraDistanceMagnet, _player1DistanceToCamera);
-    if (std::abs(_recoveryTimerMagnet) > 0.0f)           LOG("[J+]  + Recovery Timer Magnet                    Intensity: %.5f\n", _recoveryTimerMagnet);
-    if (std::abs(_playerCurrentLapMagnet) > 0.0f)        LOG("[J+]  + Player Current Lap Magnet                Intensity: %.5f\n", _playerCurrentLapMagnet);
-    if (std::abs(_playerLapProgressMagnet) > 0.0f)       LOG("[J+]  + Player Lap Progress Magnet               Intensity: %.5f\n", _playerLapProgressMagnet);
-    if (std::abs(_playerAccelMagnet) > 0.0f)             LOG("[J+]  + Player Accel Magnet                      Intensity: %.5f\n", _playerAccelMagnet);
-    if (std::abs(_player1AngleMagnet.intensity) > 0.0f)  LOG("[J+]  + Player Angle Magnet                      Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n", _player1AngleMagnet.intensity, _player1AngleMagnet.angle, _player1DistanceToMagnetAngle);
+    if (std::abs(_cameraDistanceMagnet) > 0.0f)          LOG("[J++]  + Camera Distance Magnet                   Intensity: %.5f, Dist: %3.3f\n", _cameraDistanceMagnet, _player1DistanceToCamera);
+    if (std::abs(_recoveryTimerMagnet) > 0.0f)           LOG("[J++]  + Recovery Timer Magnet                    Intensity: %.5f\n", _recoveryTimerMagnet);
+    if (std::abs(_playerCurrentLapMagnet) > 0.0f)        LOG("[J++]  + Player Current Lap Magnet                Intensity: %.5f\n", _playerCurrentLapMagnet);
+    if (std::abs(_playerLapProgressMagnet) > 0.0f)       LOG("[J++]  + Player Lap Progress Magnet               Intensity: %.5f\n", _playerLapProgressMagnet);
+    if (std::abs(_playerAccelMagnet) > 0.0f)             LOG("[J++]  + Player Accel Magnet                      Intensity: %.5f\n", _playerAccelMagnet);
+    if (std::abs(_player1AngleMagnet.intensity) > 0.0f)  LOG("[J++]  + Player Angle Magnet                      Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n", _player1AngleMagnet.intensity, _player1AngleMagnet.angle, _player1DistanceToMagnetAngle);
   } 
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
