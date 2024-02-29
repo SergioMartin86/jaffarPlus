@@ -120,6 +120,7 @@ class Engine final
     _runnerStateAdvanceAverageCumulativeTime = 0;
     _runnerStateLoadAverageCumulativeTime = 0;
     _runnerStateSaveAverageCumulativeTime = 0;
+    _calculateHashAverageCumulativeTime = 0;
     _checkHashAverageCumulativeTime = 0;
     _ruleCheckingAverageCumulativeTime = 0;
     _getFreeStateAverageCumulativeTime = 0;
@@ -146,6 +147,7 @@ class Engine final
      _runnerStateAdvanceThreadRawTime = 0;
      _runnerStateLoadThreadRawTime = 0;
      _runnerStateSaveThreadRawTime = 0;
+     _calculateHashThreadRawTime = 0;
      _checkHashThreadRawTime = 0;
      _ruleCheckingThreadRawTime = 0;
      _getFreeStateThreadRawTime = 0;
@@ -184,6 +186,8 @@ class Engine final
      _runnerStateLoadAverageCumulativeTime    += _runnerStateLoadAverageTime;
      _runnerStateSaveAverageTime               = _runnerStateSaveThreadRawTime / _threadCount;
      _runnerStateSaveAverageCumulativeTime    += _runnerStateSaveAverageTime;
+     _calculateHashAverageTime                 = _calculateHashThreadRawTime / _threadCount;
+     _calculateHashAverageCumulativeTime      += _calculateHashAverageTime;
      _checkHashAverageTime                     = _checkHashThreadRawTime / _threadCount;
      _checkHashAverageCumulativeTime          += _checkHashAverageTime;
      _ruleCheckingAverageTime                  = _ruleCheckingThreadRawTime / _threadCount;
@@ -246,6 +250,12 @@ class Engine final
          100.0  * ((double)(_runnerStateSaveAverageTime) / (double)(_currentStepTime)),
          1.0e-9 * (double) (_runnerStateSaveAverageCumulativeTime),
          100.0  * ((double) _runnerStateSaveAverageCumulativeTime) / (double)(_totalRunningTime));
+
+    LOG("[J++]  + Hash Calculation (Step/Total):           %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
+         1.0e-9 * (double) (_calculateHashAverageTime),
+         100.0  * ((double)(_calculateHashAverageTime) / (double)(_currentStepTime)),
+         1.0e-9 * (double) (_calculateHashAverageCumulativeTime),
+         100.0  * ((double) _calculateHashAverageCumulativeTime) / (double)(_totalRunningTime));
 
     LOG("[J++]  + Hash Checking (Step/Total):              %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
          1.0e-9 * (double) (_checkHashAverageTime),
@@ -358,18 +368,22 @@ class Engine final
         const auto t1 = jaffarCommon::now();
         r->advanceState(*inputItr);
         _runnerStateAdvanceThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t1);
-
-        // Getting state hash to check whether it has been seen before
+        
+        // Computing runner hash
         const auto t2 = jaffarCommon::now();
         const auto hash = r->computeHash();
+        _calculateHashThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t2);
+
+        // Checking if hash is repeated (i.e., has been seen before)
+        const auto t3 = jaffarCommon::now();
         bool hashExists = _hashDb->checkHashExists(hash);
-        _checkHashThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t2);
+        _checkHashThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t3);
 
         // If state is repeated then we are not interested in it, continue
         if (hashExists == true) continue;
 
         // Evaluating game rules based on the new state
-        const auto t3 = jaffarCommon::now();
+        const auto t4 = jaffarCommon::now();
         r->getGame()->evaluateRules();
 
         // Determining state type
@@ -377,43 +391,43 @@ class Engine final
 
         // Getting state type
         const auto stateType = r->getGame()->getStateType();
-        _ruleCheckingThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t3);
+        _ruleCheckingThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t4);
 
         // Now we have determined the state is not repeated, check if it's not a failed state
         if (stateType == Game::stateType_t::fail) continue;
         
         // Now that the state is not failed nor repeated, this is effectively a new state to add
-        const auto t4 = jaffarCommon::now();
+        const auto t5 = jaffarCommon::now();
         void* newStateData = nullptr;
 
         // Grab a free state from the state db
         newStateData = _stateDb->getFreeState();
-        _getFreeStateThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t4);
+        _getFreeStateThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t5);
 
         // If couldn't get any memory, simply drop the state
         if (newStateData == nullptr) continue;
 
         // Updating state reward
-        const auto t5 = jaffarCommon::now();
+        const auto t6 = jaffarCommon::now();
         r->getGame()->updateReward();
 
         // Getting state reward
         const auto reward = r->getGame()->getReward();  
-        _calculateRewardThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t5);  
+        _calculateRewardThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t6);  
 
         // If we are here, this is a new state to push into the next step's database
-        const auto t6 = jaffarCommon::now();
+        const auto t7 = jaffarCommon::now();
         _stateDb->pushState(reward, *r, newStateData);
-        _runnerStateSaveThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t6);
+        _runnerStateSaveThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t7);
 
         // If this is a win state, register it
-        if (stateType == Game::stateType_t::win) _winStatesFound.push_back(newStateData);
+        if (stateType == Game::stateType_t::win) _winStatesFound.insert({reward, newStateData});
       }
 
       // Return base state to the free state queue
-      const auto t7 = jaffarCommon::now();
+      const auto t8 = jaffarCommon::now();
       _stateDb->returnFreeState(baseStateData);
-      _returnFreeStateThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t7);
+      _returnFreeStateThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t8);
     }
   }
 
@@ -427,7 +441,7 @@ class Engine final
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
 
   // Set of win states found
-  std::vector<void*> _winStatesFound;
+  jaffarCommon::HashMap_t<float, void*> _winStatesFound;
 
   ///////////////// Configuration
 
@@ -465,6 +479,11 @@ class Engine final
   std::atomic<size_t> _runnerStateSaveThreadRawTime;
   std::atomic<size_t> _runnerStateSaveAverageTime;
   std::atomic<size_t> _runnerStateSaveAverageCumulativeTime = 0;
+
+  // Time spent calculating hash
+  std::atomic<size_t> _calculateHashThreadRawTime;
+  std::atomic<size_t> _calculateHashAverageTime;
+  std::atomic<size_t> _calculateHashAverageCumulativeTime = 0;
 
   // Time spent checking hash
   std::atomic<size_t> _checkHashThreadRawTime;

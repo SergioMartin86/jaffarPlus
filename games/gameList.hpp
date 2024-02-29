@@ -3,6 +3,7 @@
 #include <emulator.hpp>
 #include <game.hpp>
 #include "nes/microMachines.hpp"
+#include "nes/sprilo.hpp"
 #include "../emulators/emulatorList.hpp"
 #include <jaffarCommon/include/json.hpp>
 
@@ -26,6 +27,7 @@ namespace jaffarPlus
 
   // Trying to detect game by name
   DETECT_GAME(NES::MicroMachines);
+  DETECT_GAME(NES::Sprilo);
 
   // Check if game was recognized
   if (isRecognized == false) EXIT_WITH_ERROR("Game '%s' not recognized\n", gameName.c_str());

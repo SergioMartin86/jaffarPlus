@@ -1,0 +1,339 @@
+{
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size (Mb)": 10000,
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      5000,
+      5000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerNES",
+  "Rom File Path": "../../../subprojects/quickerNES/tests/roms/sprilo.nes",
+  "Rom File SHA1": "6EC09B9B51320A536A786D3D4719432B714C5779",
+  "Initial State File Path": "race03.state",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "None",
+  "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ]
+},
+ 
+"Runner Configuration":
+{
+  "Hash Step Tolerance": 0,
+
+  "Store Input History":
+  {
+  "Enabled": true,
+  "Maximum Step": 910
+  },
+
+  "Possible Inputs":
+  [
+   {
+     "Conditions":
+     [
+     ],
+ 
+     "Inputs":
+     [
+       "|..|.......A|",
+       "|..|...R...A|",
+       "|..|..L....A|"
+     ]
+   }
+  ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "NES / Sprilo",
+  "Frame Rate": 60.10,
+
+  "Print Properties":
+  [
+    "Current Lap",                   
+    "Timer",                     
+    "Player Pos X",                      
+    "Player Pos Y",         
+    "Lap Progress"
+  ],
+
+  "Hash Properties":
+  [
+    "Current Lap",                   
+    "Player Pos X",                      
+    "Player Pos Y",
+    "Lap Progress"    
+  ],
+
+  "Rules":
+  [
+    {
+     "Label": 1000,
+     "Conditions":
+     [
+      { "Property": "Current Lap", "Op": "==", "Value": 0 }
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Clear Lap Progress" },
+      { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 204, "Y": 176 }
+     ]
+    },
+
+    {
+      "Label": 1001,
+      "Conditions":
+      [
+        { "Property": "Current Lap", "Op": "==", "Value": 0 },
+        { "Property": "Player Pos Y", "Op": ">", "Value": 174 },
+        { "Property": "Lap Progress", "Op": "==", "Value": 0 }
+      ],
+      
+      "Satisfies": [ 1000 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 1000.0 },
+        { "Type": "Advance Lap Progress" },
+        { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 135, "Y": 187 }
+      ]
+    },
+
+    {
+      "Label": 1002,
+      "Conditions":
+      [
+        { "Property": "Current Lap", "Op": "==", "Value": 0 },
+        { "Property": "Player Pos X", "Op": "<", "Value": 138 },
+        { "Property": "Player Pos Y", "Op": ">", "Value": 180 },
+        { "Property": "Lap Progress", "Op": "==", "Value": 1 }
+      ],
+      
+      "Satisfies": [ 1001 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 1000.0 },
+        { "Type": "Advance Lap Progress" },
+        { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 45, "Y": 37 }
+      ]
+    },
+
+    {
+      "Label": 1003,
+      "Conditions":
+      [
+        { "Property": "Current Lap", "Op": "==", "Value": 0 },
+        { "Property": "Player Pos X", "Op": "<", "Value": 50 },
+        { "Property": "Player Pos Y", "Op": "<", "Value": 40 },
+        { "Property": "Lap Progress", "Op": "==", "Value": 2 }
+      ],
+      
+      "Satisfies": [ 1002 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 1000.0 },
+        { "Type": "Advance Lap Progress" },
+        { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 188, "Y": 119 }
+      ]
+    },
+
+    {
+      "Label": 2000,
+      "Conditions":
+      [
+       { "Property": "Current Lap", "Op": "==", "Value": 1 }
+      ],
+      
+      "Satisfies": [ 1003 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Clear Lap Progress" },
+       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 204, "Y": 176 }
+      ]
+     },
+ 
+     {
+       "Label": 2001,
+       "Conditions":
+       [
+         { "Property": "Current Lap", "Op": "==", "Value": 1 },
+         { "Property": "Player Pos Y", "Op": ">", "Value": 174 },
+         { "Property": "Lap Progress", "Op": "==", "Value": 0 }
+       ],
+       
+       "Satisfies": [ 2000 ],
+       
+       "Actions":
+       [
+         { "Type": "Add Reward", "Value": 1000.0 },
+         { "Type": "Advance Lap Progress" },
+         { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 135, "Y": 187 }
+       ]
+     },
+ 
+     {
+       "Label": 2002,
+       "Conditions":
+       [
+         { "Property": "Current Lap", "Op": "==", "Value": 1 },
+         { "Property": "Player Pos X", "Op": "<", "Value": 138 },
+         { "Property": "Player Pos Y", "Op": ">", "Value": 180 },
+         { "Property": "Lap Progress", "Op": "==", "Value": 1 }
+       ],
+       
+       "Satisfies": [ 2001 ],
+       
+       "Actions":
+       [
+         { "Type": "Add Reward", "Value": 1000.0 },
+         { "Type": "Advance Lap Progress" },
+         { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 45, "Y": 37 }
+       ]
+     },
+ 
+     {
+       "Label": 2003,
+       "Conditions":
+       [
+         { "Property": "Current Lap", "Op": "==", "Value": 1 },
+         { "Property": "Player Pos X", "Op": "<", "Value": 50 },
+         { "Property": "Player Pos Y", "Op": "<", "Value": 40 },
+         { "Property": "Lap Progress", "Op": "==", "Value": 2 }
+       ],
+       
+       "Satisfies": [ 2002 ],
+       
+       "Actions":
+       [
+         { "Type": "Add Reward", "Value": 1000.0 },
+         { "Type": "Advance Lap Progress" },
+         { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 188, "Y": 119 }
+       ]
+     },
+
+     {
+      "Label": 3000,
+      "Conditions":
+      [
+       { "Property": "Current Lap", "Op": "==", "Value": 2 }
+      ],
+      
+      "Satisfies": [ 2003 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Clear Lap Progress" },
+       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 204, "Y": 176 }
+      ]
+     },
+ 
+     {
+       "Label": 3001,
+       "Conditions":
+       [
+         { "Property": "Current Lap", "Op": "==", "Value": 2 },
+         { "Property": "Player Pos Y", "Op": ">", "Value": 174 },
+         { "Property": "Lap Progress", "Op": "==", "Value": 0 }
+       ],
+       
+       "Satisfies": [ 3000 ],
+       
+       "Actions":
+       [
+         { "Type": "Add Reward", "Value": 1000.0 },
+         { "Type": "Advance Lap Progress" },
+         { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 135, "Y": 187 }
+       ]
+     },
+ 
+     {
+       "Label": 3002,
+       "Conditions":
+       [
+         { "Property": "Current Lap", "Op": "==", "Value": 2 },
+         { "Property": "Player Pos X", "Op": "<", "Value": 138 },
+         { "Property": "Player Pos Y", "Op": ">", "Value": 180 },
+         { "Property": "Lap Progress", "Op": "==", "Value": 1 }
+       ],
+       
+       "Satisfies": [ 3001 ],
+       
+       "Actions":
+       [
+         { "Type": "Add Reward", "Value": 1000.0 },
+         { "Type": "Advance Lap Progress" },
+         { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 45, "Y": 37 }
+       ]
+     },
+ 
+     {
+       "Label": 23003,
+       "Conditions":
+       [
+         { "Property": "Current Lap", "Op": "==", "Value": 2 },
+         { "Property": "Player Pos X", "Op": "<", "Value": 50 },
+         { "Property": "Player Pos Y", "Op": "<", "Value": 40 },
+         { "Property": "Lap Progress", "Op": "==", "Value": 2 }
+       ],
+       
+       "Satisfies": [ 3002 ],
+       
+       "Actions":
+       [
+         { "Type": "Add Reward", "Value": 1000.0 },
+         { "Type": "Advance Lap Progress" },
+         { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 188, "Y": 119 }
+       ]
+     },
+
+
+    {
+      "Label": 1999,
+      "Conditions":
+      [
+        { "Property": "Current Lap", "Op": "==", "Value": 3 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" },
+        { "Type": "Clear Lap Progress" }
+      ]
+    }
+  ]
+ }
+}

@@ -32,7 +32,13 @@ void closeOutputWindow(SDL_Window* window)
   SDL_DestroyWindow(window);
 }
 
-bool mainCycle(const std::string& configFile, const std::string& solutionFile, bool disableRender, bool reproduceStart, SDL_Window* window)
+// Switch to toggle whether to reload the movie on reaching the end of the sequence
+bool isReload; 
+
+// Switch to toggle whether to reproduce the movie
+bool isReproduce; 
+
+bool mainCycle(const std::string& configFile, const std::string& solutionFile, bool disableRender, SDL_Window* window)
 {
   // If sequence file defined, load it and play it
   std::string solutionFileString;
@@ -89,12 +95,6 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
  
   // Finalization flag
   bool isFinalize = false;
-
-  // Switch to toggle whether to reload the movie on reaching the end of the sequence
-  bool isReload = false; 
-
-  // Switch to toggle whether to reproduce the movie
-  bool isReproduce = reproduceStart; 
 
   // Interactive section
   while (isFinalize == false)
@@ -235,6 +235,11 @@ int main(int argc, char *argv[])
     .default_value(false)
     .implicit_value(true);
 
+  program.add_argument("--reload")
+    .help("Reloads the solution after reaching the end")
+    .default_value(false)
+    .implicit_value(true);
+
   program.add_argument("--disableRender")
     .help("Do not render game window.")
     .default_value(false)
@@ -250,6 +255,9 @@ int main(int argc, char *argv[])
   // Parsin solution file
   const std::string solutionFile = program.get<std::string>("solutionFile");
 
+  // Getting reload flag
+  bool doReload = program.get<bool>("--reload");
+
   // Getting reproduce flag
   bool reproduceStart = program.get<bool>("--reproduce");
 
@@ -262,8 +270,12 @@ int main(int argc, char *argv[])
   // Creating output window
   auto window = disableRender ? nullptr : launchOutputWindow();
 
+  // Setting initial reproduction values
+  isReload = doReload; 
+  isReproduce = reproduceStart; 
+
   // Running main cycle
-  while (mainCycle(configFile, solutionFile, disableRender, reproduceStart, window));
+  while (mainCycle(configFile, solutionFile, disableRender, window));
 
   // Closing output window
   if (disableRender == false) closeOutputWindow(window);

@@ -1,11 +1,11 @@
 #pragma once
 
+#include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/serializers/contiguous.hpp>
 #include <jaffarCommon/include/serializers/differential.hpp>
 #include <jaffarCommon/include/deserializers/contiguous.hpp>
 #include <jaffarCommon/include/deserializers/differential.hpp>
-#include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/concurrent.hpp>
 #include "../runner.hpp"
 
@@ -24,6 +24,9 @@ class Base
   Base(Runner& r, const nlohmann::json& config)
   {
     ///////// Parsing configuration
+
+     // Getting maximum state db size in Mb
+    _maxSizeMb = JSON_GET_NUMBER(size_t, config, "Max Size (Mb)");
 
     // Parsing state compression configuration
     const auto& stateCompressionJs = JSON_GET_OBJECT(config, "Compression");
@@ -81,8 +84,19 @@ class Base
   virtual void* getFreeState() = 0;
   virtual void returnFreeState(void* const statePtr) = 0;
   virtual void* popState() = 0;
-  virtual void advanceStep() = 0;
   virtual size_t getStateCount() const = 0;
+
+  /**
+   * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
+  */
+  inline void advanceStep()
+  {
+    // Copying state pointers
+    for (auto& statePtr : _nextStateDb) _currentStateDb.push_back_no_lock(statePtr.second);
+
+    // Clearing next state db
+    _nextStateDb.clear();
+  }
 
   inline void pushState(const float reward, Runner& r, void* statePtr)
   {
@@ -158,6 +172,11 @@ class Base
   virtual void pushStateImpl(const float reward, void* statePtr) = 0;
   virtual void printInfoImpl() const = 0;
   
+    /**
+   * The next state database, where new states are stored as they are created
+  */
+  jaffarCommon::concurrentMultimap_t<float, void*> _nextStateDb;
+
   /**
    * The current state database used as read-only source of base states
   */
@@ -187,6 +206,11 @@ class Base
    * Maximum size (bytes) for the state database to grow
   */
   size_t _maxSize;
+
+  /**
+   * Configured maximum size (Mb) for the state database to grow to
+  */
+  size_t _maxSizeMb;
 
   /**
    * Number of maximum states in execution

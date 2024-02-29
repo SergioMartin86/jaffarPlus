@@ -86,8 +86,20 @@ class Driver final
       // Running engine step 
       _engine->runStep();
    }
-  }
 
+   // If win state(s) found, dump the best now
+   if (_engine->getWinStates().size() > 0)
+   {
+      // Getting best win state (best reward)
+      auto winState = _engine->getWinStates().begin()->second;
+
+      // Loading best state into runner
+      _engine->getStateDb()->loadStateIntoRunner(*_runner, winState);
+
+      // Dump Win State
+      _runner->dumpInputHistoryToFile("jaffar.best.sol");
+   }
+  }
 
   // Function to obtain driver based on configuration
   static std::unique_ptr<Driver> getDriver(const nlohmann::json& config)
