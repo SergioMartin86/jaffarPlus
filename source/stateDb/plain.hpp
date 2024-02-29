@@ -20,9 +20,6 @@ class Plain : public stateDb::Base
 
   Plain(Runner& r, const nlohmann::json& config) : stateDb::Base(r, config)
   {
-     // Getting maximum state db size in Mb
-    _maxSizeMb = JSON_GET_NUMBER(size_t, config, "Max Size (Mb)");
-
     // Converting it to pure bytes
     _maxSize = _maxSizeMb * 1024ul * 1024ul;
 
@@ -106,18 +103,6 @@ class Plain : public stateDb::Base
   }
 
   /**
-   * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
-  */
-  inline void advanceStep() override
-  {
-    // Copying state pointers
-    for (auto& statePtr : _nextStateDb) _currentStateDb.push_back_no_lock(statePtr.second);
-
-    // Clearing next state db
-    _nextStateDb.clear();
-  }
-
-  /**
    * Gets the current number of states in the current state database
   */
   inline size_t getStateCount() const override
@@ -126,16 +111,6 @@ class Plain : public stateDb::Base
   }
 
   private:
-
-  /**
-   * Maximum size (Mb) for the state database to grow to
-  */
-  double _maxSizeMb;
-
-  /**
-   * The next state database, where new states are stored as they are created
-  */
-  jaffarCommon::concurrentMultimap_t<float, void*> _nextStateDb;
 
   /**
    * This queue will hold pointers to all the free state storage

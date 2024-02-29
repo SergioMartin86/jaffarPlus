@@ -46,13 +46,18 @@ class Numa : public stateDb::Base
     for (int i = 0; i < _numaCount; i++) _scavengerQueues.push_back(std::make_unique<jaffarCommon::concurrentDeque<void*>>());
 
     // Getting maximum state db size in Mb and bytes
+    size_t numaSizeSum = 0;
     for (const auto& entry : maxSizePerNumaMbJs) 
     {
       if (entry.is_number_integer() == false) EXIT_WITH_ERROR("Entries in Max Size per NUMA Domain (Mb) must be a positive integer.");
       const auto sizeMb = entry.get<size_t>();
       _maxSizePerNumaMb.push_back(sizeMb);
       _maxSizePerNuma.push_back(sizeMb * 1024ul * 1024ul);
+      numaSizeSum += sizeMb;
     }
+
+    // Sanity check
+    if (numaSizeSum != _maxSizeMb) EXIT_WITH_ERROR("Maximum state database size (%lu mb) does not equal the sum of NUMA-specific max sizes (%lu mb)\n", _maxSizeMb, numaSizeSum);
 
     // Getting maximum allocatable memory in each NUMA domain
     std::vector<long long> maxFreeMemoryPerNuma(_numaCount);
@@ -229,18 +234,6 @@ class Numa : public stateDb::Base
   }
 
   /**
-   * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
-  */
-  inline void advanceStep() override
-  {
-    // Copying state pointers
-    for (auto& statePtr : _nextStateDb) _currentStateDb.push_back_no_lock(statePtr.second);
-
-    // Clearing next state db
-    _nextStateDb.clear();
-  }
-
-  /**
    * Gets the current number of states in the current state database
   */
   inline size_t getStateCount() const override
@@ -284,11 +277,6 @@ class Numa : public stateDb::Base
    * How far should each thread scavenge for a state belonging to its numa domain
   */
   size_t _scavengingDepth;
-
-  /**
-   * The next state database, where new states are stored as they are created
-  */
-  jaffarCommon::concurrentMultimap_t<float, void*> _nextStateDb;
 
   /**
    * This queue will hold pointers to all the free state storage

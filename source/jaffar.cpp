@@ -1,5 +1,5 @@
-#include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/extern/argparse/argparse.hpp>
+#include <jaffarCommon/include/json.hpp>
 #include <jaffarCommon/include/logger.hpp>
 #include <jaffarCommon/include/string.hpp>
 #include "driver.hpp"
