@@ -188,12 +188,6 @@ class Numa : public stateDb::Base
     if (success == false) EXIT_WITH_ERROR("Failed on pushing free state back. This must be a bug in Jaffar\n");
   }
 
-  inline void pushStateImpl(const float reward, void* statePtr) override
-  {
-    // Inserting state into the database
-    _nextStateDb.insert({reward, statePtr});
-  }
-
   inline void* popState() override
   {
     // Pointer to return 
