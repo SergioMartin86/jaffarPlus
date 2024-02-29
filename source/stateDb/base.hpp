@@ -118,7 +118,7 @@ class Base
     }
 
     // Calling particular implementation of the push state function
-    pushStateImpl(reward, statePtr);
+    _nextStateDb.insert({reward, statePtr});
   }
 
   /**
@@ -169,7 +169,6 @@ class Base
 
   protected:
 
-  virtual void pushStateImpl(const float reward, void* statePtr) = 0;
   virtual void printInfoImpl() const = 0;
   
     /**
