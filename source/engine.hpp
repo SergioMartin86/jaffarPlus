@@ -116,6 +116,10 @@ class Engine final
    */
   void initialize()
   {
+    // Initializing state counters
+    _totalBaseStatesProcessed = 0;
+    _totalNewStatesProcessed = 0;
+
     // Initializing cumulative timing
     _runnerStateAdvanceAverageCumulativeTime = 0;
     _runnerStateLoadAverageCumulativeTime = 0;
@@ -128,6 +132,7 @@ class Engine final
     _calculateRewardAverageCumulativeTime = 0;
     _advanceHashDbAverageCumulativeTime = 0;
     _advanceStateDbAverageCumulativeTime = 0;
+    _popBaseStateDbAverageCumulativeTime = 0;
 
     // Updating total running time
     _totalRunningTime = 0;
@@ -155,6 +160,7 @@ class Engine final
      _calculateRewardThreadRawTime = 0;
      _advanceHashDbThreadRawTime = 0;
      _advanceStateDbThreadRawTime = 0;
+     _popBaseStateDbThreadRawTime = 0;
 
      // Clearing win states vector
      _winStatesFound.clear();
@@ -177,8 +183,6 @@ class Engine final
      _stateDb->advanceStep();
      _advanceStateDbThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t1); 
 
-     // Update reference data (should be part of the differential state db, automatically with the best )
-
      // Processing step and cumulative timing
      _runnerStateAdvanceAverageTime            = _runnerStateAdvanceThreadRawTime / _threadCount;
      _runnerStateAdvanceAverageCumulativeTime += _runnerStateAdvanceAverageTime;
@@ -198,10 +202,17 @@ class Engine final
      _returnFreeStateAverageCumulativeTime    += _returnFreeStateAverageTime;
      _calculateRewardAverageTime               = _calculateRewardThreadRawTime / _threadCount;
      _calculateRewardAverageCumulativeTime    += _calculateRewardAverageTime;
+     _popBaseStateDbAverageTime                = _popBaseStateDbThreadRawTime / _threadCount;
+     _popBaseStateDbAverageCumulativeTime     += _popBaseStateDbAverageTime;
      _advanceHashDbAverageTime                 = _advanceHashDbThreadRawTime.load();
      _advanceHashDbAverageCumulativeTime      += _advanceHashDbAverageTime;
      _advanceStateDbAverageTime                = _advanceStateDbThreadRawTime.load();
      _advanceStateDbAverageCumulativeTime     += _advanceStateDbAverageTime;
+     
+
+     // Processing state counters
+     _totalBaseStatesProcessed += _stepBaseStatesProcessed;
+     _totalNewStatesProcessed  += _stepNewStatesProcessed;
 
      // Computing step time
      _currentStepTime = jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), tStep);
@@ -287,6 +298,12 @@ class Engine final
          1.0e-9 * (double) (_calculateRewardAverageCumulativeTime),
          100.0  * ((double) _calculateRewardAverageCumulativeTime) / (double)(_totalRunningTime));
 
+    LOG("[J++]  + Popping Base State (Step/Total):         %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
+         1.0e-9 * (double) (_popBaseStateDbAverageTime),
+         100.0  * ((double)(_popBaseStateDbAverageTime) / (double)(_currentStepTime)),
+         1.0e-9 * (double) (_popBaseStateDbAverageCumulativeTime),
+         100.0  * ((double) _popBaseStateDbAverageCumulativeTime) / (double)(_totalRunningTime));
+
     LOG("[J++]  + Advance Hash Db (Step/Total):            %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
          1.0e-9 * (double) (_advanceHashDbAverageTime),
          100.0  * ((double)(_advanceHashDbAverageTime) / (double)(_currentStepTime)),
@@ -299,8 +316,11 @@ class Engine final
          1.0e-9 * (double) (_advanceStateDbAverageCumulativeTime),
          100.0  * ((double) _advanceStateDbAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    LOG("[J++] Base States Performance:                     %.3f States/s\n", (double)_stepBaseStatesProcessed / (1.0e-9 * (double) _currentStepTime));
-    LOG("[J++] New States Performance:                      %.3f States/s\n", (double)_stepNewStatesProcessed / (1.0e-9 * (double) _currentStepTime));
+    LOG("[J++] Base States Processed:                       %.3f Mstates (Total: %.3f Mstates)\n", 1.0e-6 * (double)_stepBaseStatesProcessed, 1.0e-6 * (double)_totalBaseStatesProcessed);
+    LOG("[J++] New States Processed:                        %.3f Mstates (Total: %.3f Mstates)\n", 1.0e-6 * (double)_stepNewStatesProcessed, 1.0e-6 * (double)_totalNewStatesProcessed);
+
+    LOG("[J++] Base States Performance:                     %.3f Mstates/s (Average: %.3f Mstates/s)\n", 1.0e-6 * (double)_stepBaseStatesProcessed / (1.0e-9 * (double) _currentStepTime), 1.0e-6 * (double)_totalBaseStatesProcessed / (1.0e-9 * (double) _totalRunningTime));
+    LOG("[J++] New States Performance:                      %.3f Mstates/s (Average: %.3f Mstates/s)\n", 1.0e-6 * (double)_stepNewStatesProcessed  / (1.0e-9 * (double) _currentStepTime), 1.0e-6 * (double)_totalNewStatesProcessed  / (1.0e-9 * (double) _totalRunningTime));
 
     // Print state database information
     LOG("[J++] State Database Information:\n");
@@ -337,10 +357,12 @@ class Engine final
     auto& r = _runners[threadId];
 
     // Current base state to process
-    void* baseStateData;
+    const auto t = jaffarCommon::now();
+    void* baseStateData = _stateDb->popState();
+    _popBaseStateDbThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t);
 
     // While there are still states in the database, keep on grabbing them
-    while ((baseStateData = _stateDb->popState()) != nullptr)
+    while (baseStateData != nullptr)
     {
       // Increasing base state counter
       _stepBaseStatesProcessed++;
@@ -428,6 +450,11 @@ class Engine final
       const auto t8 = jaffarCommon::now();
       _stateDb->returnFreeState(baseStateData);
       _returnFreeStateThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t8);
+
+      // Pulling next state from the database
+      const auto t9 = jaffarCommon::now();
+      baseStateData = _stateDb->popState();
+      _popBaseStateDbThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t9);
     }
   }
 
@@ -457,68 +484,75 @@ class Engine final
   size_t _currentStepTime;
 
   // Total running time so far
-  size_t _totalRunningTime = 0;
+  size_t _totalRunningTime;
 
   // Counter for the number of base states processed
   std::atomic<size_t> _stepBaseStatesProcessed;
+  std::atomic<size_t> _totalBaseStatesProcessed;
 
   // Counter for the number of new states processed
   std::atomic<size_t> _stepNewStatesProcessed;
+  std::atomic<size_t> _totalNewStatesProcessed;
 
   // Time spent advancing runner state per step
   std::atomic<size_t> _runnerStateAdvanceThreadRawTime;
   std::atomic<size_t> _runnerStateAdvanceAverageTime;
-  std::atomic<size_t> _runnerStateAdvanceAverageCumulativeTime = 0;
+  std::atomic<size_t> _runnerStateAdvanceAverageCumulativeTime;
 
   // Time spent loading states into the runner
   std::atomic<size_t> _runnerStateLoadThreadRawTime;
   std::atomic<size_t> _runnerStateLoadAverageTime;
-  std::atomic<size_t> _runnerStateLoadAverageCumulativeTime = 0;
+  std::atomic<size_t> _runnerStateLoadAverageCumulativeTime;
 
   // Time spent saving runner states into the state db
   std::atomic<size_t> _runnerStateSaveThreadRawTime;
   std::atomic<size_t> _runnerStateSaveAverageTime;
-  std::atomic<size_t> _runnerStateSaveAverageCumulativeTime = 0;
+  std::atomic<size_t> _runnerStateSaveAverageCumulativeTime;
 
   // Time spent calculating hash
   std::atomic<size_t> _calculateHashThreadRawTime;
   std::atomic<size_t> _calculateHashAverageTime;
-  std::atomic<size_t> _calculateHashAverageCumulativeTime = 0;
+  std::atomic<size_t> _calculateHashAverageCumulativeTime;
 
   // Time spent checking hash
   std::atomic<size_t> _checkHashThreadRawTime;
   std::atomic<size_t> _checkHashAverageTime;
-  std::atomic<size_t> _checkHashAverageCumulativeTime = 0;
+  std::atomic<size_t> _checkHashAverageCumulativeTime;
 
   // Rule checking time
   std::atomic<size_t> _ruleCheckingThreadRawTime;
   std::atomic<size_t> _ruleCheckingAverageTime;
-  std::atomic<size_t> _ruleCheckingAverageCumulativeTime = 0;
+  std::atomic<size_t> _ruleCheckingAverageCumulativeTime;
 
   // Get free state time
   std::atomic<size_t> _getFreeStateThreadRawTime;
   std::atomic<size_t> _getFreeStateAverageTime;
-  std::atomic<size_t> _getFreeStateAverageCumulativeTime = 0;
+  std::atomic<size_t> _getFreeStateAverageCumulativeTime;
 
   // Return free state time
   std::atomic<size_t> _returnFreeStateThreadRawTime;
   std::atomic<size_t> _returnFreeStateAverageTime;
-  std::atomic<size_t> _returnFreeStateAverageCumulativeTime = 0;
+  std::atomic<size_t> _returnFreeStateAverageCumulativeTime;
 
   // Reward calculation time
   std::atomic<size_t> _calculateRewardThreadRawTime;
   std::atomic<size_t> _calculateRewardAverageTime;
-  std::atomic<size_t> _calculateRewardAverageCumulativeTime = 0;
+  std::atomic<size_t> _calculateRewardAverageCumulativeTime;
 
   // Advance Hash DB time
   std::atomic<size_t> _advanceHashDbThreadRawTime;
   std::atomic<size_t> _advanceHashDbAverageTime;
-  std::atomic<size_t> _advanceHashDbAverageCumulativeTime = 0;
+  std::atomic<size_t> _advanceHashDbAverageCumulativeTime;
 
   // Advance State DB time
   std::atomic<size_t> _advanceStateDbThreadRawTime;
   std::atomic<size_t> _advanceStateDbAverageTime;
-  std::atomic<size_t> _advanceStateDbAverageCumulativeTime = 0;
+  std::atomic<size_t> _advanceStateDbAverageCumulativeTime;
+
+  // Popping states from the State DB time
+  std::atomic<size_t> _popBaseStateDbThreadRawTime;
+  std::atomic<size_t> _popBaseStateDbAverageTime;
+  std::atomic<size_t> _popBaseStateDbAverageCumulativeTime;
 };
 
 } // namespace jaffarPlus

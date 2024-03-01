@@ -92,10 +92,8 @@ class Base
   inline void advanceStep()
   {
     // Copying state pointers
-    for (auto& statePtr : _nextStateDb) _currentStateDb.push_back_no_lock(statePtr.second);
-
-    // Clearing next state db
-    _nextStateDb.clear();
+    while (_nextStateDb.begin() != _nextStateDb.end()) 
+     _currentStateDb.push_back_no_lock(_nextStateDb.unsafe_extract(_nextStateDb.begin()).mapped());
   }
 
   inline void pushState(const float reward, Runner& r, void* statePtr)
