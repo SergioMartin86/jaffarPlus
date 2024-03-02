@@ -1,14 +1,19 @@
 {
+ "Driver Configuration":
+ {
+  "End On First Win State": true
+ },
+
  "Engine Configuration":
  {
   "State Database":
   {
     "Type": "Numa Aware",
-    "Max Size (Mb)": 40000,
+    "Max Size (Mb)": 20,
     "Max Size per NUMA Domain (Mb)":
     [ 
-      20000,
-      20000
+      10,
+      10
     ],
   
     "Scavenger Queues Size": 32,
@@ -71,6 +76,7 @@
 {
   "Game Name": "NES / Sprilo",
   "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
 
   "Print Properties":
   [

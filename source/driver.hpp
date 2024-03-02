@@ -69,20 +69,26 @@ class Driver final
   // Start running engine loop
   int run()
   {
+   // If using ncurses, initialize terminal now
+  jaffarCommon::initializeTerminal();
+
    // Showing initial state's information
    dumpInformation();
 
+   // Storage to print the exit reason
+   std::string exitReason;
+   
    // Running engine until a termination point
    while(true)
    {
       // If found winning state, report it now
-      if (_endOnFirstWinState && _engine->getWinStates().size() > 0)  { LOG("[J++] Success: A solution was found in %lu steps.\n", _currentStep); break; }
+      if (_endOnFirstWinState && _engine->getWinStates().size() > 0)  { exitReason = "Exiting on first solution found"; break; }
 
       // If ran out of states, finish now
-      if (_engine->getStateCount() == 0) { LOG("[J++] End: engine ran out of states at step %lu.\n", _currentStep); break; }
+      if (_engine->getStateCount() == 0) { exitReason = "Engine ran out of states"; break; }
 
       // If maximum step established and reached, finish now
-      if (_maxSteps > 0 && _currentStep >= _maxSteps) { LOG("[J++] End: Maximum step count (%lu) reached.\n", _currentStep); break; }
+      if (_maxSteps > 0 && _currentStep >= _maxSteps) { exitReason = "Maximum step count reached."; break; }
 
       // Running engine step 
       _engine->runStep();
@@ -97,8 +103,14 @@ class Driver final
       dumpInformation();
    }
 
+   // If using ncurses, terminate terminal now
+   jaffarCommon::finalizeTerminal();
+
    // Final report
    dumpInformation();
+
+   // Printing exit reason
+   LOG("[J++] Step %lu - Exit Reason: %s\n", _currentStep, exitReason.c_str());
 
    // Exit code depends on if win state was found
    if (_winStatesFound == 0) return -1;
@@ -107,6 +119,9 @@ class Driver final
 
   void dumpInformation()
   {
+    // If using ncurses, clear terminal before printing the information for this step
+    jaffarCommon::clearTerminal();
+
     // Updating best and worst states
     updateBestState();
     updateWorstState();
@@ -121,6 +136,9 @@ class Driver final
     // Dump Worst State
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _worstStateStorage);
     _runner->dumpInputHistoryToFile("jaffar.worst.sol");
+
+    // If using ncurses, refresh terminal now
+    jaffarCommon::refreshTerminal();
   }
 
   void updateWorstState()
@@ -210,7 +228,7 @@ class Driver final
    LOG("[J++] Game Information (Best State): \n");
    _runner->getGame()->printInfo();
    LOG("[J++] Emulator Information (Best State): \n");
-   _runner->getGame()->getEmulator()->printInfo();
+   _runner->getGame()->getEmulator()->printInfo(); 
 
    // Division rule to separate different steps
    LOG("[J++] --------------------------------------------------------------\n");

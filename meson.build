@@ -20,9 +20,10 @@ jaffarDependencies = [
 
 executable('jaffar',
   'source/jaffar.cpp',
-  cpp_args: jaffarCPPFlags,
+  cpp_args: [ jaffarCPPFlags, '-DNCURSES' ],
   sources : jaffarSources,
   dependencies : [ jaffarCommonDependencies, jaffarDependencies  ],
+  link_args: [ '-lncurses' ],
   include_directories : jaffarIncludes
 )
 
