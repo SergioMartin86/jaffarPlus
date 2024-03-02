@@ -120,18 +120,38 @@ class Base
   }
 
   /**
+   * Saves the runner state into the provided state data pointer 
+  */
+  inline void saveStateFromRunner(Runner& r, void* statePtr) const 
+  {
+    // Serializing the runner state into the memory received (if using differential compression)
+    if (_useDifferentialCompression == true)
+    {
+      jaffarCommon::serializer::Differential s(statePtr, _differentialStateSize, _referenceData, _stateSizeRaw, _useZlibCompression);
+      r.serializeState(s);
+    }
+
+    // Serializing the runner state into the memory received (if no compression is used)
+    if (_useDifferentialCompression == false)
+    {
+      jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
+      r.serializeState(s);
+    }
+  }
+
+  /**
    * Loads the state into the runner, performing the appropriate decompression (or not) procedure
   */
   inline void loadStateIntoRunner(Runner& r, const void* statePtr)
   {
-    // Serializing the runner state into the memory received (if using differential compression)
+    // Deserializing the runner state from the memory received (if using differential compression)
     if (_useDifferentialCompression == true)
     {
       jaffarCommon::deserializer::Differential d(statePtr, _differentialStateSize, _referenceData, _stateSizeRaw, _useZlibCompression);
       r.deserializeState(d);
     }
 
-    // Serializing the runner state into the memory received (if no compression is used)
+    // Deserializing the runner state from the memory received (if no compression is used)
     if (_useDifferentialCompression == false)
     {
       jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);

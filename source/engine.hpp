@@ -437,13 +437,17 @@ class Engine final
         const auto reward = r->getGame()->getReward();  
         _calculateRewardThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t6);  
 
-        // If we are here, this is a new state to push into the next step's database
+        // If this is a normal state, push into the state database
         const auto t7 = jaffarCommon::now();
-        _stateDb->pushState(reward, *r, newStateData);
+        if (stateType == Game::stateType_t::normal) _stateDb->pushState(reward, *r, newStateData);
         _runnerStateSaveThreadRawTime += jaffarCommon::timeDeltaNanoseconds(jaffarCommon::now(), t7);
 
         // If this is a win state, register it
-        if (stateType == Game::stateType_t::win) _winStatesFound.insert({reward, newStateData});
+        if (stateType == Game::stateType_t::win) 
+        {
+          _stateDb->saveStateFromRunner(*r, newStateData);
+          _winStatesFound.insert({reward, newStateData});
+        }
       }
 
       // Return base state to the free state queue
