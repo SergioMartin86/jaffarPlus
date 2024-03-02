@@ -502,6 +502,12 @@ class Game
       _rules[rule->getLabel()] = std::move(rule);
     }
 
+    // Checking all cross references are correct
+    for (const auto& rule : _rules)
+     for (const auto& label : rule.second->getSatisfyRuleLabels())
+      if (_rules.contains(label) == false)
+       EXIT_WITH_ERROR("Rule label %u referenced by rule %u in the 'Satisfies' array does not exist.\n", label, rule.first);
+
     // Create rule status vector
     _rulesStatus.resize(jaffarCommon::getByteStorageForBitCount(_rules.size()));
 
@@ -518,11 +524,24 @@ class Game
     // Getting rule action array
     const auto& actions = JSON_GET_ARRAY(ruleJs, "Actions");
 
+    // Parsing satisfies vector
+    const auto& satisfiesVectorJs = JSON_GET_ARRAY(ruleJs, "Satisfies");
+
     // Parsing rule conditions
     for (const auto& condition : conditions) rule.addCondition(parseCondition(condition));  
 
     // Parsing rule actions
     for (const auto& action : actions) parseRuleAction(rule, action);  
+
+    // Parsing satisfies vector
+    for (const auto& s : satisfiesVectorJs) 
+    {
+      // Check for correct format
+      if (s.is_number() == false) EXIT_WITH_ERROR("Wrong format provided in 'Satisfies' array in rule '%s'\n", ruleJs.dump(2).c_str());
+
+      // Adding the satisfies label
+      rule.addSatisfyRuleLabel(s.get<Rule::label_t>());
+    }
   }
 
   void parseRuleAction(Rule& rule, const nlohmann::json& actionJs) 

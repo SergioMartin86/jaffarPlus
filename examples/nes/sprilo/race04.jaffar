@@ -1,14 +1,19 @@
 {
+  "Driver Configuration":
+  {
+   "End On First Win State": false
+  },
+
  "Engine Configuration":
  {
   "State Database":
   {
     "Type": "Numa Aware",
-    "Max Size (Mb)": 2000,
+    "Max Size (Mb)": 20000,
     "Max Size per NUMA Domain (Mb)":
     [ 
-      1000,
-      1000
+      10000,
+      10000
     ],
   
     "Scavenger Queues Size": 32,
@@ -71,6 +76,7 @@
 {
   "Game Name": "NES / Sprilo",
   "Frame Rate": 60.10,
+  "Last Input Step Reward": -1.0,
 
   "Print Properties":
   [
@@ -322,12 +328,14 @@
       ]
     },
 
-
     {
       "Label": 1999,
       "Conditions":
       [
-        { "Property": "Current Lap", "Op": "==", "Value": 3 }
+        { "Property": "Current Lap", "Op": "==", "Value": 2 },
+        { "Property": "Player Pos Y", "Op": "<=", "Value": 40 },
+        { "Property": "Player Pos X", "Op": "<", "Value": 70 },
+        { "Property": "Player Angle", "Op": "==", "Value": 2 }
       ],
       
       "Satisfies": [ ],
@@ -335,7 +343,7 @@
       "Actions":
       [
         { "Type": "Trigger Win" },
-        { "Type": "Clear Lap Progress" }
+        { "Type": "Stop Processing Reward" }
       ]
     }
   ]

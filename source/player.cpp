@@ -275,7 +275,16 @@ int main(int argc, char *argv[])
   isReproduce = reproduceStart; 
 
   // Running main cycle
-  while (mainCycle(configFile, solutionFile, disableRender, window));
+  bool continueRunning = true;
+  while (continueRunning == true)
+  {
+    // Running main cycle
+    continueRunning = mainCycle(configFile, solutionFile, disableRender, window);
+
+    // If repeating, then wait a bit before repeating to prevent fast repetition of short movies
+    if (continueRunning == true) sleep(1);
+  }
+
 
   // Closing output window
   if (disableRender == false) closeOutputWindow(window);

@@ -21,6 +21,9 @@ class Sprilo final : public jaffarPlus::Game
 
   Sprilo(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
+    // Parsing configuration
+    _lastInputStepReward = JSON_GET_NUMBER(float, config, "Last Input Step Reward");
+
     // Getting emulator's low memory pointer
     _lowMem = _emulator->getProperty("LRAM").pointer;
 
@@ -29,7 +32,10 @@ class Sprilo final : public jaffarPlus::Game
     registerGameProperty("Timer",         &_lowMem[0x001B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Pos X",  &_lowMem[0x0002], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Pos Y",  &_lowMem[0x0003], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Angle",  &_lowMem[0x0004], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Lap Progress",  &_lowMem[0x07FF], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Last Input Step",  &_lastInputStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
     _currentLap                        = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Current Lap")]->getPointer();
@@ -37,18 +43,29 @@ class Sprilo final : public jaffarPlus::Game
     _playerPosX                        = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player Pos X")]->getPointer();
     _playerPosY                        = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player Pos Y")]->getPointer();
     _lapProgress                       = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Lap Progress")]->getPointer();
+
+    // Initializing time since last input counter
+    _lastInputStep = 0;
+    _currentStep = 0;
   }
 
   private:
 
   inline void advanceStateImpl(const std::string& input) override
   {
+    // Increasing counter if input is null
+    if (input != "|..|........|") _lastInputStep = _currentStep;
+
+    // Running emulator
     _emulator->advanceState(input);
+
+    // Advancing current step
+    _currentStep++;
   }
 
   inline void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
-    hashEngine.Update(&_lowMem[0x0000], 0x0019);
+    hashEngine.Update(&_lowMem[0x0001], 0x0018);
     hashEngine.Update(&_lowMem[0x001C], 0x0050);
   }
 
@@ -63,6 +80,7 @@ class Sprilo final : public jaffarPlus::Game
     _pointMagnet.intensity = 0.0;
     _pointMagnet.x = 0.0;
     _pointMagnet.y = 0.0;
+    _stopProcessingReward = false;
   }
 
   inline void ruleUpdatePostHook() override
@@ -75,16 +93,26 @@ class Sprilo final : public jaffarPlus::Game
 
   inline void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
+    serializer.pushContiguous(&_lastInputStep, sizeof(_lastInputStep));
+    serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
   }
 
   inline void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
+    deserializer.popContiguous(&_lastInputStep, sizeof(_lastInputStep));
+    deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
   }
 
   inline float calculateGameSpecificReward() const
   {
     // Getting rewards from rules
     float reward = 0.0;
+
+    // Subtracting reward for having made an input recently (for early termination)
+    reward += _lastInputStepReward * _lastInputStep;
+
+    // If this is a win state, then evaluate only w.r.t. how long since the last input
+    if (_stopProcessingReward) return reward;
 
     // Distance to point magnet
     reward += -1.0 * _pointMagnet.intensity * _player1DistanceToPoint;
@@ -133,6 +161,12 @@ class Sprilo final : public jaffarPlus::Game
       recognizedActionType = true;
     }
 
+    if (actionType == "Stop Processing Reward")
+    {
+      rule.addAction([this](){ _stopProcessingReward = true; });
+      recognizedActionType = true;
+    }
+
     return recognizedActionType;
   }
 
@@ -152,6 +186,10 @@ class Sprilo final : public jaffarPlus::Game
   uint8_t* _playerPosX;   
   uint8_t* _playerPosY;   
   uint8_t* _lapProgress; 
+ 
+  // Additions to make the last input as soon as possible
+  uint16_t _lastInputStep;
+  uint16_t _currentStep;
 
   // Game-Specific values
   float _player1DistanceToPointX;
@@ -160,6 +198,12 @@ class Sprilo final : public jaffarPlus::Game
 
   // Pointer to emulator's low memory storage
   uint8_t* _lowMem;
+
+  // Reward for the last time an input was made (for early termination)
+  float _lastInputStepReward;
+
+  // Specifies whether the reward should continue to be processed (for early termination)
+  bool _stopProcessingReward;
 };
 
 } // namespace NES

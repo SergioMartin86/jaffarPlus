@@ -37,6 +37,6 @@ int main(int argc, char *argv[])
   auto d = jaffarPlus::Driver::getDriver(config);
 
   // Running driver
-  d->run();
+  return d->run();
 }
 
