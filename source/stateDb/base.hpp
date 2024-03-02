@@ -56,6 +56,9 @@ class Base
 
     // Padding is the difference between the aligned state size and the raw one
     _stateSizePadding = _stateSize - _stateSizeEffective;
+
+    // Initialization message
+    LOG("[J++] Initializing State Database...\n");
   }
 
   virtual ~Base()
