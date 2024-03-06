@@ -17,25 +17,25 @@ class Driver final
   {
    // Creating runner from the configuration
    _runner = jaffarPlus::Runner::getRunner(
-    JSON_GET_OBJECT(config, "Emulator Configuration"),
-    JSON_GET_OBJECT(config, "Game Configuration"),
-    JSON_GET_OBJECT(config, "Runner Configuration"));
+    jaffarCommon::json::getObject(config, "Emulator Configuration"),
+    jaffarCommon::json::getObject(config, "Game Configuration"),
+    jaffarCommon::json::getObject(config, "Runner Configuration"));
 
    // Creating engine from the configuration
    _engine = jaffarPlus::Engine::getEngine(
-    JSON_GET_OBJECT(config, "Emulator Configuration"),
-    JSON_GET_OBJECT(config, "Game Configuration"),
-    JSON_GET_OBJECT(config, "Runner Configuration"),
-    JSON_GET_OBJECT(config, "Engine Configuration"));
+    jaffarCommon::json::getObject(config, "Emulator Configuration"),
+    jaffarCommon::json::getObject(config, "Game Configuration"),
+    jaffarCommon::json::getObject(config, "Runner Configuration"),
+    jaffarCommon::json::getObject(config, "Engine Configuration"));
 
    // Getting maximum number of steps (zero is not established)
    _maxSteps = _engine->getMaximumStep();
 
    // Getting driver configuration
-   const auto& driverConfig = JSON_GET_OBJECT(config, "Driver Configuration");
+   const auto& driverConfig = jaffarCommon::json::getObject(config, "Driver Configuration");
 
    // Getting end win delay config
-   _endOnFirstWinState = JSON_GET_BOOLEAN(driverConfig, "End On First Win State");
+   _endOnFirstWinState = jaffarCommon::json::getBoolean(driverConfig, "End On First Win State");
 
    // Allocating space for the current best and worst states
    _stateSize = _runner->getStateSize();
@@ -70,7 +70,7 @@ class Driver final
   int run()
   {
    // If using ncurses, initialize terminal now
-  jaffarCommon::initializeTerminal();
+  jaffarCommon::logger::initializeTerminal();
 
    // Showing initial state's information
    dumpInformation();
@@ -104,13 +104,13 @@ class Driver final
    }
 
    // If using ncurses, terminate terminal now
-   jaffarCommon::finalizeTerminal();
+   jaffarCommon::logger::finalizeTerminal();
 
    // Final report
    dumpInformation();
 
    // Printing exit reason
-   LOG("[J++] Step %lu - Exit Reason: %s\n", _currentStep, exitReason.c_str());
+   jaffarCommon::logger::log("[J++] Step %lu - Exit Reason: %s\n", _currentStep, exitReason.c_str());
 
    // Exit code depends on if win state was found
    if (_winStatesFound == 0) return -1;
@@ -120,7 +120,7 @@ class Driver final
   void dumpInformation()
   {
     // If using ncurses, clear terminal before printing the information for this step
-    jaffarCommon::clearTerminal();
+    jaffarCommon::logger::clearTerminal();
 
     // Updating best and worst states
     updateBestState();
@@ -138,7 +138,7 @@ class Driver final
     _runner->dumpInputHistoryToFile("jaffar.worst.sol");
 
     // If using ncurses, refresh terminal now
-    jaffarCommon::refreshTerminal();
+    jaffarCommon::logger::refreshTerminal();
   }
 
   void updateWorstState()
@@ -202,36 +202,36 @@ class Driver final
   void printInfo()
   {
     // Printing information
-    LOG("[J++] Emulator Name:                               '%s'\n", _runner->getGame()->getEmulator()->getName().c_str());
-    LOG("[J++] Game Name:                                   '%s'\n", _runner->getGame()->getName().c_str());
-    LOG("[J++] Current Step #:                              %lu (Max: %lu)\n", _currentStep, _maxSteps);
+    jaffarCommon::logger::log("[J++] Emulator Name:                               '%s'\n", _runner->getGame()->getEmulator()->getName().c_str());
+    jaffarCommon::logger::log("[J++] Game Name:                                   '%s'\n", _runner->getGame()->getName().c_str());
+    jaffarCommon::logger::log("[J++] Current Step #:                              %lu (Max: %lu)\n", _currentStep, _maxSteps);
 
     if (_winStatesFound == 0)
-    LOG("[J++] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
+    jaffarCommon::logger::log("[J++] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
     
     if (_winStatesFound > 0)
     {
-    LOG("[J++] Best Win State Reward:                       %.3f\n", _bestStateReward);
-    LOG("[J++] Win States Found:                            %lu\n", _winStatesFound);
+    jaffarCommon::logger::log("[J++] Best Win State Reward:                       %.3f\n", _bestStateReward);
+    jaffarCommon::logger::log("[J++] Win States Found:                            %lu\n", _winStatesFound);
     }
 
     // Printing engine information
-    LOG("[J++] Engine Information: \n");
+    jaffarCommon::logger::log("[J++] Engine Information: \n");
     _engine->printInfo();
 
     // Loading best state into runner
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage);
 
    // Printing best state information to screen
-   LOG("[J++] Runner Information (Best State): \n");
+   jaffarCommon::logger::log("[J++] Runner Information (Best State): \n");
    _runner->printInfo();
-   LOG("[J++] Game Information (Best State): \n");
+   jaffarCommon::logger::log("[J++] Game Information (Best State): \n");
    _runner->getGame()->printInfo();
-   LOG("[J++] Emulator Information (Best State): \n");
+   jaffarCommon::logger::log("[J++] Emulator Information (Best State): \n");
    _runner->getGame()->getEmulator()->printInfo(); 
 
    // Division rule to separate different steps
-   LOG("[J++] --------------------------------------------------------------\n");
+   jaffarCommon::logger::log("[J++] --------------------------------------------------------------\n");
   }
 
   // Function to obtain driver based on configuration

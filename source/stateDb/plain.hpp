@@ -1,11 +1,10 @@
 #pragma once
 
-#include <stdlib.h>
-#include <unistd.h>
+#include <cstdlib>
 #include <memory>
-#include <jaffarCommon/include/logger.hpp>
-#include <jaffarCommon/include/json.hpp>
-#include <jaffarCommon/include/concurrent.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/concurrent.hpp>
 #include "base.hpp"
 
 namespace jaffarPlus
@@ -30,11 +29,11 @@ class Plain : public stateDb::Base
     const size_t pageSize = sysconf(_SC_PAGESIZE);
 
     // Creating free state queue
-    _freeStateQueue = std::make_unique<jaffarCommon::atomicQueue_t<void*>>(_maxStates);
+    _freeStateQueue = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void*>>(_maxStates);
 
     // Allocating space for the states
     auto status = posix_memalign((void**)&_internalBuffer, pageSize, _maxSize);
-    if (status != 0) EXIT_WITH_ERROR("Could not allocate aligned memory for the state database");
+    if (status != 0) JAFFAR_THROW_RUNTIME("Could not allocate aligned memory for the state database");
     
     // Doing first touch for every page 
     #pragma omp parallel for 
@@ -79,7 +78,7 @@ class Plain : public stateDb::Base
     bool success = _freeStateQueue->try_push(statePtr);
 
     // If successful, return the pointer immediately
-    if (success == false) EXIT_WITH_ERROR("Failed on pushing free state back. This must be a bug in Jaffar\n");
+    if (success == false) JAFFAR_THROW_RUNTIME("Failed on pushing free state back. This must be a bug in Jaffar\n");
   }
 
   inline void* popState() override
@@ -109,7 +108,7 @@ class Plain : public stateDb::Base
   /**
    * This queue will hold pointers to all the free state storage
   */
-  std::unique_ptr<jaffarCommon::atomicQueue_t<void*>> _freeStateQueue;
+  std::unique_ptr<jaffarCommon::concurrent::atomicQueue_t<void*>> _freeStateQueue;
 
   /**
    * Internal buffer for the state database

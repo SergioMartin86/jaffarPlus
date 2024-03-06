@@ -5,11 +5,11 @@
 #include <map>
 #include <memory>
 #include <utility>
-#include <jaffarCommon/include/serializers/base.hpp>
-#include <jaffarCommon/include/deserializers/base.hpp>
-#include <jaffarCommon/include/bitwise.hpp>
-#include <jaffarCommon/include/hash.hpp>
-#include <jaffarCommon/include/json.hpp>
+#include <jaffarCommon/serializers/base.hpp>
+#include <jaffarCommon/deserializers/base.hpp>
+#include <jaffarCommon/bitwise.hpp>
+#include <jaffarCommon/hash.hpp>
+#include <jaffarCommon/json.hpp>
 #include "emulator.hpp"
 #include "rule.hpp"
 
@@ -32,31 +32,21 @@ class Game
   Game(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : _emulator(std::move(emulator))
   {
     // Getting emulator name (for runtime use)
-    _gameName = JSON_GET_STRING(config, "Game Name");
+    _gameName = jaffarCommon::json::getString(config, "Game Name");
 
     // Parsing printable game properties
-    _frameRate = JSON_GET_NUMBER(float, config, "Frame Rate");
+    _frameRate = jaffarCommon::json::getNumber<float>(config, "Frame Rate");
 
     // Marking printable properties
-    const auto& printPropertiesJs = JSON_GET_ARRAY(config, "Print Properties");
-    for (const auto& propertyJs : printPropertiesJs)
-    {
-      if (propertyJs.is_string() == false) EXIT_WITH_ERROR("Printable property entry is not a string");
-      const auto propertyName = propertyJs.get<std::string>();
-      _printablePropertyNames.push_back(propertyName);
-    }
+    const auto& printProperties = jaffarCommon::json::getArray<std::string>(config, "Print Properties");
+    for (const auto& property : printProperties) _printablePropertyNames.push_back(property);
 
      // Parsing hashable game properties
-    const auto& hashPropertiesJs = JSON_GET_ARRAY(config, "Hash Properties");
-    for (const auto& propertyJs : hashPropertiesJs)
-    {
-      if (propertyJs.is_string() == false) EXIT_WITH_ERROR("Hashable property entry is not a string");
-      const auto propertyName = propertyJs.get<std::string>();
-      _hashablePropertyNames.push_back(propertyName);
-    }
+    const auto& hashProperties = jaffarCommon::json::getArray<std::string>(config, "Hash Properties");
+    for (const auto& property : hashProperties) _hashablePropertyNames.push_back(property);
 
     // Storing rules JSON for later parsing
-    _rulesJs = JSON_GET_ARRAY(config, "Rules");  
+    _rulesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Rules");  
   };
 
   void initialize()
@@ -65,10 +55,10 @@ class Game
     for (const auto& property : _printablePropertyNames)
     {
       // Getting property name hash
-      const auto propertyHash = jaffarCommon::hashString(property);
+      const auto propertyHash = jaffarCommon::hash::hashString(property);
 
       // Checking the property is registered 
-      if (_propertyMap.contains(propertyHash) == false) EXIT_WITH_ERROR("Property '%s' is not registered in this game", property.c_str());
+      if (_propertyMap.contains(propertyHash) == false) JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game", property.c_str());
 
       // If so, add its pointer to the print property vector
       _propertyPrintVector.push_back(_propertyMap.at(propertyHash).get());
@@ -78,10 +68,10 @@ class Game
     for (const auto& property : _hashablePropertyNames)
     {
       // Getting property name hash
-      const auto propertyHash = jaffarCommon::hashString(property);
+      const auto propertyHash = jaffarCommon::hash::hashString(property);
 
       // Checking the property is registered 
-      if (_propertyMap.contains(propertyHash) == false) EXIT_WITH_ERROR("Property '%s' is not registered in this game", property.c_str());
+      if (_propertyMap.contains(propertyHash) == false) JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game", property.c_str());
 
       // If so, add its pointer to the print property vector
       _propertyHashVector.push_back(_propertyMap.at(propertyHash).get());
@@ -195,49 +185,49 @@ class Game
    for (const auto& p : _propertyPrintVector) maximumNameSize = std::max(maximumNameSize, p->getName().size());
 
    // Printing game state
-   LOG("[J++]  + Game State Type: ");
-   if (_stateType == stateType_t::normal) LOG("Normal");
-   if (_stateType == stateType_t::win) LOG("Win");
-   if (_stateType == stateType_t::fail) LOG("Fail");
-   if (_stateType == stateType_t::checkpoint) LOG("Checkpoint");
-   LOG("\n");
+   jaffarCommon::logger::log("[J++]  + Game State Type: ");
+   if (_stateType == stateType_t::normal) jaffarCommon::logger::log("Normal");
+   if (_stateType == stateType_t::win) jaffarCommon::logger::log("Win");
+   if (_stateType == stateType_t::fail) jaffarCommon::logger::log("Fail");
+   if (_stateType == stateType_t::checkpoint) jaffarCommon::logger::log("Checkpoint");
+   jaffarCommon::logger::log("\n");
 
    // Printing game state
-   LOG("[J++]  + Game State Reward: %f\n", _reward);
+   jaffarCommon::logger::log("[J++]  + Game State Reward: %f\n", _reward);
 
    // Printing rule status
-   LOG("[J++]  + Rule Status: ");
-   for (size_t i = 0; i < _rules.size(); i++) LOG("%d", jaffarCommon::getBitValue(_rulesStatus.data(), i) ? 1 : 0);
-   LOG("\n");
+   jaffarCommon::logger::log("[J++]  + Rule Status: ");
+   for (size_t i = 0; i < _rules.size(); i++) jaffarCommon::logger::log("%d", jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), i) ? 1 : 0);
+   jaffarCommon::logger::log("\n");
 
    // Printing game properties defined in the script file
-   LOG("[J++]  + Game Properties: \n");
+   jaffarCommon::logger::log("[J++]  + Game Properties: \n");
    for (const auto& p : _propertyPrintVector)
    {
      // Getting property name
      const auto& name = p->getName();
 
      // Printing property name first
-     LOG("[J++]    + '%s':", name.c_str());
+     jaffarCommon::logger::log("[J++]    + '%s':", name.c_str());
 
      // Calculating separation spaces for this property
      const auto propertySeparatorSize = separatorSize + maximumNameSize - name.size();
 
      // Printing separator spaces
-     for (size_t i = 0; i < propertySeparatorSize; i++) LOG(" ");
+     for (size_t i = 0; i < propertySeparatorSize; i++) jaffarCommon::logger::log(" ");
 
      // Then printing separator spaces
-     if (p->getDatatype() == Property::datatype_t::dt_int8)     LOG("0x%02X  (%03d)\n",  p->getValue<int8_t>()  , p->getValue<int8_t>()  );
-     if (p->getDatatype() == Property::datatype_t::dt_int16)    LOG("0x%04X  (%05d)\n",  p->getValue<int16_t>() , p->getValue<int16_t>() );
-     if (p->getDatatype() == Property::datatype_t::dt_int32)    LOG("0x%08X  (%10d)\n",  p->getValue<int32_t>() , p->getValue<int32_t>() );
-     if (p->getDatatype() == Property::datatype_t::dt_int64)    LOG("0x%16lX (%ld)\n",   p->getValue<int64_t>() , p->getValue<int64_t>() );
-     if (p->getDatatype() == Property::datatype_t::dt_uint8)    LOG("0x%02X  (%03u)\n",  p->getValue<uint8_t>() , p->getValue<uint8_t>() );
-     if (p->getDatatype() == Property::datatype_t::dt_uint16)   LOG("0x%04X  (%05u)\n",  p->getValue<uint16_t>(), p->getValue<uint16_t>());
-     if (p->getDatatype() == Property::datatype_t::dt_uint32)   LOG("0x%08X  (%10u)\n",  p->getValue<uint32_t>(), p->getValue<uint32_t>());
-     if (p->getDatatype() == Property::datatype_t::dt_uint64)   LOG("0x%16lX (%lu)\n",   p->getValue<uint64_t>(), p->getValue<uint64_t>());
-     if (p->getDatatype() == Property::datatype_t::dt_float32)  LOG("%f      (0x%X)\n",  p->getValue<float>(),    p->getValue<uint32_t>());
-     if (p->getDatatype() == Property::datatype_t::dt_float64)  LOG("%f      (0x%lX)\n", p->getValue<double>(),   p->getValue<uint64_t>());
-     if (p->getDatatype() == Property::datatype_t::dt_bool)     LOG("%1u\n",             p->getValue<bool>() );
+     if (p->getDatatype() == Property::datatype_t::dt_int8)     jaffarCommon::logger::log("0x%02X  (%03d)\n",  p->getValue<int8_t>()  , p->getValue<int8_t>()  );
+     if (p->getDatatype() == Property::datatype_t::dt_int16)    jaffarCommon::logger::log("0x%04X  (%05d)\n",  p->getValue<int16_t>() , p->getValue<int16_t>() );
+     if (p->getDatatype() == Property::datatype_t::dt_int32)    jaffarCommon::logger::log("0x%08X  (%10d)\n",  p->getValue<int32_t>() , p->getValue<int32_t>() );
+     if (p->getDatatype() == Property::datatype_t::dt_int64)    jaffarCommon::logger::log("0x%16lX (%ld)\n",   p->getValue<int64_t>() , p->getValue<int64_t>() );
+     if (p->getDatatype() == Property::datatype_t::dt_uint8)    jaffarCommon::logger::log("0x%02X  (%03u)\n",  p->getValue<uint8_t>() , p->getValue<uint8_t>() );
+     if (p->getDatatype() == Property::datatype_t::dt_uint16)   jaffarCommon::logger::log("0x%04X  (%05u)\n",  p->getValue<uint16_t>(), p->getValue<uint16_t>());
+     if (p->getDatatype() == Property::datatype_t::dt_uint32)   jaffarCommon::logger::log("0x%08X  (%10u)\n",  p->getValue<uint32_t>(), p->getValue<uint32_t>());
+     if (p->getDatatype() == Property::datatype_t::dt_uint64)   jaffarCommon::logger::log("0x%16lX (%lu)\n",   p->getValue<uint64_t>(), p->getValue<uint64_t>());
+     if (p->getDatatype() == Property::datatype_t::dt_float32)  jaffarCommon::logger::log("%f      (0x%X)\n",  p->getValue<float>(),    p->getValue<uint32_t>());
+     if (p->getDatatype() == Property::datatype_t::dt_float64)  jaffarCommon::logger::log("%f      (0x%lX)\n", p->getValue<double>(),   p->getValue<uint64_t>());
+     if (p->getDatatype() == Property::datatype_t::dt_bool)     jaffarCommon::logger::log("%1u\n",             p->getValue<bool>() );
    }
 
    // Printing game-specific stuff now
@@ -260,7 +250,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Evaluate rule only if it's not yet satisfied
-      if (jaffarCommon::getBitValue(_rulesStatus.data(), ruleIdx) == false)
+      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == false)
       {
         // Checking if conditions are met
         bool isSatisfied = rule.evaluate();
@@ -289,7 +279,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Run ations only if rule is satisfied
-      if (jaffarCommon::getBitValue(_rulesStatus.data(), ruleIdx) == true) for (const auto& action : rule.getActions()) action();
+      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true) for (const auto& action : rule.getActions()) action();
     }  
   }
 
@@ -308,7 +298,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Run actions
-      if (jaffarCommon::getBitValue(_rulesStatus.data(), ruleIdx) == true)
+      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
       {
        // Modify game state, depending on rule type
 
@@ -341,7 +331,7 @@ class Game
       const auto ruleIdx = rule.getIndex(); 
 
       // Run actions
-      if (jaffarCommon::getBitValue(_rulesStatus.data(), ruleIdx) == true)
+      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
       {
        // Getting reward from satisfied rule
        const auto ruleReward = rule.getReward();
@@ -357,28 +347,28 @@ class Game
     // Sanity check
     if (std::isfinite(_reward) == false)
     {
-      LOG("[J+] Error: Non finite reward detected: %f\n", _reward);
+      jaffarCommon::logger::log("[J+] Error: Non finite reward detected: %f\n", _reward);
       printInfo();
-      EXIT_WITH_ERROR("Invalid Reward");
+      JAFFAR_THROW_RUNTIME("Invalid Reward");
     } 
   }
 
   std::unique_ptr<Condition> parseCondition(const nlohmann::json& conditionJs)
   {
     // Parsing operator name
-    const auto& opName = JSON_GET_STRING(conditionJs, "Op");
+    const auto& opName = jaffarCommon::json::getString(conditionJs, "Op");
    
     // Getting operator type from its name
     const auto opType =  Condition::getOperatorType(opName);
 
     // Parsing first operand (property name)
-    const auto& property1Name = JSON_GET_STRING(conditionJs, "Property");
+    const auto& property1Name = jaffarCommon::json::getString(conditionJs, "Property");
 
     // Getting property name hash, for indexing
-    const auto property1NameHash = jaffarCommon::hashString(property1Name);
+    const auto property1NameHash = jaffarCommon::hash::hashString(property1Name);
 
     // Making sure the requested property exists in the property map
-    if (_propertyMap.contains(property1NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property1Name.c_str());
+    if (_propertyMap.contains(property1NameHash) == false) JAFFAR_THROW_LOGIC("[ERROR] Property '%s' has not been declared.\n", property1Name.c_str());
 
     // Getting property object
     const auto property1 = _propertyMap[property1NameHash].get();
@@ -387,8 +377,8 @@ class Game
     auto datatype1 = property1->getDatatype();
 
     // Parsing second operand (number)
-    if (conditionJs.contains("Value") == false) EXIT_WITH_ERROR("[ERROR] Rule condition missing 'Value' key.\n");
-    if (conditionJs["Value"].is_number() == false && conditionJs["Value"].is_string() == false) EXIT_WITH_ERROR("[ERROR] Wrong format for 'Value' entry in rule condition. It must be a string or number");
+    if (conditionJs.contains("Value") == false) JAFFAR_THROW_LOGIC("[ERROR] Rule condition missing 'Value' key.\n");
+    if (conditionJs["Value"].is_number() == false && conditionJs["Value"].is_string() == false) JAFFAR_THROW_LOGIC("[ERROR] Wrong format for 'Value' entry in rule condition. It must be a string or number");
 
     // If value is a number, take it as immediate
     if (conditionJs["Value"].is_number())
@@ -412,13 +402,13 @@ class Game
     if (conditionJs["Value"].is_string())
     {
       // Parsing second operand (property name)
-      const auto& property2Name = JSON_GET_STRING(conditionJs, "Value");
+      const auto& property2Name = jaffarCommon::json::getString(conditionJs, "Value");
 
       // Getting property name hash, for indexing
-      const auto property2NameHash = jaffarCommon::hashString(property2Name);
+      const auto property2NameHash = jaffarCommon::hash::hashString(property2Name);
 
       // Making sure the requested property exists in the property map
-      if (_propertyMap.contains(property2NameHash) == false) EXIT_WITH_ERROR("[ERROR] Property '%s' has not been declared.\n", property2Name.c_str());
+      if (_propertyMap.contains(property2NameHash) == false) JAFFAR_THROW_LOGIC("[ERROR] Property '%s' has not been declared.\n", property2Name.c_str());
 
       // Getting property object
       const auto property2 = _propertyMap[property2NameHash].get();
@@ -438,7 +428,7 @@ class Game
       if (datatype1 == Property::datatype_t::dt_bool)    return std::make_unique<_vCondition<bool>    >(opType, property1, property2, 0, 0);
     }
 
-    EXIT_WITH_ERROR("[ERROR] Rule contains an invalid 'Value' key.\n", conditionJs["Value"].dump().c_str());
+    JAFFAR_THROW_LOGIC("[ERROR] Rule contains an invalid 'Value' key.\n", conditionJs["Value"].dump().c_str());
   }
 
   // Returns pointer to the internal emulator
@@ -487,10 +477,10 @@ class Game
       const auto& ruleJs = rulesJson[idx];
 
       // Check if rule is a key/value object
-      if (ruleJs.is_object() == false) EXIT_WITH_ERROR("Passed rule is not a JSON object. Dump: \n %s", ruleJs.dump(2).c_str());
+      if (ruleJs.is_object() == false) JAFFAR_THROW_LOGIC("Passed rule is not a JSON object. Dump: \n %s", ruleJs.dump(2).c_str());
       
       // Getting rule label
-      auto label = JSON_GET_NUMBER(Rule::label_t, ruleJs, "Label");
+      auto label = jaffarCommon::json::getNumber<Rule::label_t>(ruleJs, "Label");
 
       // Creating new rule with the given label
       auto rule = std::make_unique<Rule>(idx, label);
@@ -506,26 +496,26 @@ class Game
     for (const auto& rule : _rules)
      for (const auto& label : rule.second->getSatisfyRuleLabels())
       if (_rules.contains(label) == false)
-       EXIT_WITH_ERROR("Rule label %u referenced by rule %u in the 'Satisfies' array does not exist.\n", label, rule.first);
+       JAFFAR_THROW_LOGIC("Rule label %u referenced by rule %u in the 'Satisfies' array does not exist.\n", label, rule.first);
 
     // Create rule status vector
-    _rulesStatus.resize(jaffarCommon::getByteStorageForBitCount(_rules.size()));
+    _rulesStatus.resize(jaffarCommon::bitwise::getByteStorageForBitCount(_rules.size()));
 
     // Clearing the status vector evaluation
-    for (size_t i = 0; i < _rules.size(); i++) jaffarCommon::setBitValue(_rulesStatus.data(), i, false);
+    for (size_t i = 0; i < _rules.size(); i++) jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), i, false);
   }
  
   // Individual rule parser 
   void parseRule(Rule& rule, const nlohmann::json& ruleJs) 
   {
     // Getting rule condition array
-    const auto& conditions = JSON_GET_ARRAY(ruleJs, "Conditions");
+    const auto& conditions = jaffarCommon::json::getArray<nlohmann::json>(ruleJs, "Conditions");
 
     // Getting rule action array
-    const auto& actions = JSON_GET_ARRAY(ruleJs, "Actions");
+    const auto& actions = jaffarCommon::json::getArray<nlohmann::json>(ruleJs, "Actions");
 
     // Parsing satisfies vector
-    const auto& satisfiesVectorJs = JSON_GET_ARRAY(ruleJs, "Satisfies");
+    const auto& satisfiesVectorJs = jaffarCommon::json::getArray<nlohmann::json>(ruleJs, "Satisfies");
 
     // Parsing rule conditions
     for (const auto& condition : conditions) rule.addCondition(parseCondition(condition));  
@@ -537,7 +527,7 @@ class Game
     for (const auto& s : satisfiesVectorJs) 
     {
       // Check for correct format
-      if (s.is_number() == false) EXIT_WITH_ERROR("Wrong format provided in 'Satisfies' array in rule '%s'\n", ruleJs.dump(2).c_str());
+      if (s.is_number() == false) JAFFAR_THROW_LOGIC("Wrong format provided in 'Satisfies' array in rule '%s'\n", ruleJs.dump(2).c_str());
 
       // Adding the satisfies label
       rule.addSatisfyRuleLabel(s.get<Rule::label_t>());
@@ -547,14 +537,14 @@ class Game
   void parseRuleAction(Rule& rule, const nlohmann::json& actionJs) 
   {
     // Getting action type
-    std::string actionType = JSON_GET_STRING(actionJs, "Type");
+    std::string actionType = jaffarCommon::json::getString(actionJs, "Type");
 
     // Running the action, depending on the type
     bool recognizedActionType = false;
 
     if (actionType == "Add Reward")
     {
-      rule.setReward(JSON_GET_NUMBER(float, actionJs, "Value"));
+      rule.setReward(jaffarCommon::json::getNumber<float>(actionJs, "Value"));
       recognizedActionType = true;
     }
 
@@ -576,7 +566,7 @@ class Game
     if (actionType == "Trigger Checkpoint")
     {
       rule.setCheckpointRule(true);
-      rule.setCheckpointTolerance(JSON_GET_NUMBER(size_t, actionJs, "Tolerance"));
+      rule.setCheckpointTolerance(jaffarCommon::json::getNumber<size_t>(actionJs, "Tolerance"));
       recognizedActionType = true;
     }
 
@@ -584,7 +574,7 @@ class Game
     if (recognizedActionType == false) recognizedActionType = parseRuleActionImpl(rule, actionType, actionJs);
 
     // If not recognized at all, then fail
-    if (recognizedActionType == false) EXIT_WITH_ERROR("[ERROR] Unrecognized action '%s' in rule %lu\n", actionType.c_str(), rule.getLabel());
+    if (recognizedActionType == false) JAFFAR_THROW_LOGIC("[ERROR] Unrecognized action '%s' in rule %lu\n", actionType.c_str(), rule.getLabel());
   }
 
   // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules
@@ -595,21 +585,21 @@ class Game
     {
       // Making sure referenced label exists
       auto it = _rules.find(satisfyRuleLabel);
-      if (it == _rules.end()) EXIT_WITH_ERROR("[ERROR] Unrecognized rule label %lu in satisfy array\n", satisfyRuleLabel);
+      if (it == _rules.end()) JAFFAR_THROW_LOGIC("[ERROR] Unrecognized rule label %lu in satisfy array\n", satisfyRuleLabel);
       auto& subRule = it->second;
 
       // Getting index from the subrule
       auto subRuleIdx = subRule->getIndex();
 
       // Only activate it if it hasn't been activated before
-      if (jaffarCommon::getBitValue(_rulesStatus.data(), subRuleIdx) == false) satisfyRule(*subRule);
+      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), subRuleIdx) == false) satisfyRule(*subRule);
     }
 
     // Getting rule index
     const auto ruleIdx = rule.getIndex(); 
 
     // Setting status to satisfied
-    jaffarCommon::setBitValue(_rulesStatus.data(), ruleIdx, true);
+    jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
   virtual void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const = 0;
@@ -657,7 +647,7 @@ class Game
   std::vector<const Property*> _propertyPrintVector;
 
   // Property map to store all registered properties for future reference, indexed by their name hash
-  std::map<jaffarCommon::hash_t, std::unique_ptr<Property>> _propertyMap;
+  std::map<jaffarCommon::hash::hash_t, std::unique_ptr<Property>> _propertyMap;
 
   // Inverse frame rate to play the game with, required for correct playback
   float _frameRate;

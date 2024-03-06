@@ -1,11 +1,11 @@
 #pragma once
 
 #include <nesInstance.hpp>
-#include <jaffarCommon/include/hash.hpp>
-#include <jaffarCommon/include/json.hpp>
-#include <jaffarCommon/include/logger.hpp>
-#include <jaffarCommon/include/serializers/base.hpp>
-#include <jaffarCommon/include/deserializers/base.hpp>
+#include <jaffarCommon/hash.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/serializers/base.hpp>
+#include <jaffarCommon/deserializers/base.hpp>
 #include <emulator.hpp>
 
 #ifdef _USE_SDL2
@@ -33,20 +33,20 @@ class QuickerNES final : public Emulator
   QuickerNES(const nlohmann::json& config) : Emulator(config)
   {
     // Getting initial state file from the configuration
-    _initialStateFilePath = JSON_GET_STRING(config, "Initial State File Path");
+    _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
     // Parsing controller configuration
-    auto controller1Type = JSON_GET_STRING(config, "Controller 1 Type");
-    auto controller2Type = JSON_GET_STRING(config, "Controller 2 Type");
+    auto controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
+    auto controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
 
     _quickerNES.setController1Type(controller1Type);
     _quickerNES.setController2Type(controller2Type);
 
     // Parsing rom file path
-    _romFilePath = JSON_GET_STRING(config, "Rom File Path");
+    _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
     // Parsing rom file SHA1
-    _romFileSHA1 = JSON_GET_STRING(config, "Rom File SHA1");
+    _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
 
     // Setting game's internal video buffer
     _curBlit = (int32_t*) malloc (sizeof(int32_t) * BLIT_SIZE);
@@ -64,12 +64,12 @@ class QuickerNES final : public Emulator
   {
     // Reading from ROM file
     std::string romFileData;
-    bool status = jaffarCommon::loadStringFromFile(romFileData, _romFilePath.c_str());
-    if (status == false) EXIT_WITH_ERROR("Could not find/read from ROM file: %s\n", _romFilePath.c_str());
+    bool status = jaffarCommon::file::loadStringFromFile(romFileData, _romFilePath.c_str());
+    if (status == false) JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _romFilePath.c_str());
 
     // Getting SHA1 of ROM for checksum
-    auto actualRomSHA1 = SHA1::GetHash((uint8_t *)romFileData.data(), romFileData.size());
-    if (_romFileSHA1 != actualRomSHA1) EXIT_WITH_ERROR("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());  
+    auto actualRomSHA1 = jaffarCommon::hash::getSHA1String(romFileData);
+    if (_romFileSHA1 != actualRomSHA1) JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());  
 
     // Loading rom into emulator
     _quickerNES.loadROM((uint8_t*)romFileData.data(), romFileData.size());
@@ -79,8 +79,8 @@ class QuickerNES final : public Emulator
     {
       // Reading from initial state file
       std::string initialState;
-      bool success = jaffarCommon::loadStringFromFile(initialState, _initialStateFilePath);
-      if (success == false) EXIT_WITH_ERROR("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
+      bool success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
+      if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
       // Deserializing initial state into the emulator
       jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
@@ -120,7 +120,7 @@ class QuickerNES final : public Emulator
      if (propertyName == "CHRR") return property_t(_quickerNES.getCHRMem(),       _quickerNES.getCHRMemSize());
      if (propertyName == "SPRT") return property_t(_quickerNES.getSpriteMem(),    _quickerNES.getSpriteMemSize());
 
-     EXIT_WITH_ERROR("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());  
+     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());  
   }
 
   inline void enableStateProperty(const std::string& property) override
@@ -221,10 +221,10 @@ class QuickerNES final : public Emulator
   inline void initializeVideoOutput(SDL_Window* window) override
   {
     m_window = window;
-    if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) EXIT_WITH_ERROR("Coult not create SDL renderer in NES emulator");
-    if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256))) EXIT_WITH_ERROR("Coult not create SDL texture in NES emulator");
+    if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) JAFFAR_THROW_RUNTIME("Coult not create SDL renderer in NES emulator");
+    if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256))) JAFFAR_THROW_RUNTIME("Coult not create SDL texture in NES emulator");
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-    if (!setScale(1)) EXIT_WITH_ERROR("Coult not set SDL scale in NES emulator");
+    if (!setScale(1)) JAFFAR_THROW_RUNTIME("Coult not set SDL scale in NES emulator");
   }
 
   inline void updateVideoOutput() override
@@ -232,7 +232,7 @@ class QuickerNES final : public Emulator
     void *nesPixels = nullptr;
     int pitch = 0;
 
-    if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0) EXIT_WITH_ERROR("Coult not lock texture in NES emulator");
+    if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0) JAFFAR_THROW_RUNTIME("Coult not lock texture in NES emulator");
 
     memcpy(nesPixels, _curBlit, sizeof(int32_t) * BLIT_SIZE);
     SDL_UnlockTexture(m_tex);
@@ -260,8 +260,8 @@ class QuickerNES final : public Emulator
   void printMemoryBlockHash(const std::string& blockName) const
   {
    auto p = getProperty(blockName);
-   auto hash = jaffarCommon::hashToString(jaffarCommon::calculateMetroHash(p.pointer, p.size));
-   LOG("[J++] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
+   auto hash = jaffarCommon::hash::hashToString(jaffarCommon::hash::calculateMetroHash(p.pointer, p.size));
+   jaffarCommon::logger::log("[J++] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }
 
   NESInstance _quickerNES;

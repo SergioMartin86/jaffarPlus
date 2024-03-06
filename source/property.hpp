@@ -2,11 +2,10 @@
 
 #include <string>
 #include <cstring>
-#include <jaffarCommon/include/hash.hpp>
+#include <jaffarCommon/hash.hpp>
 
 namespace jaffarPlus
 {
-
 
 class Property
 {
@@ -39,7 +38,7 @@ class Property
   _pointer(pointer),
   _datatype(datatype),
   _endianness(endianness),
-  _nameHash(jaffarCommon::hashString(name))
+  _nameHash(jaffarCommon::hash::hashString(name))
   {
   }
 
@@ -50,7 +49,7 @@ class Property
     if (endiannessName == "Little") return endianness_t::little;
     if (endiannessName == "Big")    return endianness_t::big;   
     
-    EXIT_WITH_ERROR("Endianness '%s' not recognized.", endiannessName.c_str());
+    JAFFAR_THROW_LOGIC("Endianness '%s' not recognized.", endiannessName.c_str());
   }
 
   static inline datatype_t parseDatatypeName(const std::string& datatypeName)
@@ -67,7 +66,7 @@ class Property
     if (datatypeName == "FLOAT32") return datatype_t::dt_float32; 
     if (datatypeName == "FLOAT64") return datatype_t::dt_float64; 
     
-    EXIT_WITH_ERROR("Data type '%s' not recognized.", datatypeName.c_str());
+    JAFFAR_THROW_LOGIC("Data type '%s' not recognized.", datatypeName.c_str());
   }
 
   static inline size_t getDatatypeSize(const datatype_t datatype)
@@ -87,7 +86,7 @@ class Property
       case dt_float64  : return 8; 
     }
 
-    EXIT_WITH_ERROR("Unidentified datatype %d\n", datatype);
+    JAFFAR_THROW_LOGIC("Unidentified datatype %d\n", datatype);
   }
 
   template <typename T> inline T getValue() const
@@ -95,7 +94,7 @@ class Property
     // Otherwise convert to big endian
     const auto size = getSize();
     const auto bufferSize = sizeof(T);
-    if (size != bufferSize) EXIT_WITH_ERROR("Incompatible datatypes while getting value of property '%s'", getName().c_str());
+    if (size != bufferSize) JAFFAR_THROW_LOGIC("Incompatible datatypes while getting value of property '%s'", getName().c_str());
 
     // If its little endian, return value as is
     if (_endianness == endianness_t::little) return *(T*)_pointer;
@@ -113,7 +112,7 @@ class Property
 
   datatype_t getDatatype() const { return _datatype; }
   std::string getName() const { return _name; } 
-  jaffarCommon::hash_t getNameHash() const { return _nameHash; }
+  jaffarCommon::hash::hash_t getNameHash() const { return _nameHash; }
   void* getPointer() const { return _pointer; }
 
   private:
@@ -122,7 +121,7 @@ class Property
   void* const _pointer;
   const datatype_t _datatype;
   const endianness_t _endianness;
-  const jaffarCommon::hash_t _nameHash;
+  const jaffarCommon::hash::hash_t _nameHash;
 };
 
 } // namespace jaffarPlus

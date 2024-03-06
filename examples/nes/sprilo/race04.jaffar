@@ -37,7 +37,7 @@
 "Emulator Configuration":
 {
   "Emulator Name": "QuickerNES",
-  "Rom File Path": "../../../subprojects/quickerNES/tests/roms/sprilo.nes",
+  "Rom File Path": "../../../extern/quickerNES/tests/roms/sprilo.nes",
   "Rom File SHA1": "6EC09B9B51320A536A786D3D4719432B714C5779",
   "Initial State File Path": "race04.state",
   "Controller 1 Type": "Joypad",

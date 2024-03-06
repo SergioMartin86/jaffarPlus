@@ -1,9 +1,9 @@
 #pragma once
 
 #include <atomic>
-#include <jaffarCommon/include/hash.hpp>
-#include <jaffarCommon/include/json.hpp>
-#include <jaffarCommon/include/concurrent.hpp>
+#include <jaffarCommon/hash.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/concurrent.hpp>
 
 namespace jaffarPlus
 {
@@ -26,13 +26,13 @@ class HashDb final
     const size_t age;
 
     // The internal set for the hash store
-    jaffarCommon::HashSet_t<jaffarCommon::hash_t> hashSet = { };
+    jaffarCommon::concurrent::HashSet_t<jaffarCommon::hash::hash_t> hashSet = { };
   };
 
   HashDb(const nlohmann::json& config)
   {
-   _maxStoreCount = JSON_GET_NUMBER(size_t, config, "Max Store Count");
-   _maxStoreSizeMb = JSON_GET_NUMBER(double, config, "Max Store Size (Mb)");
+   _maxStoreCount = jaffarCommon::json::getNumber<size_t>(config, "Max Store Count");
+   _maxStoreSizeMb = jaffarCommon::json::getNumber<double>(config, "Max Store Size (Mb)");
 
    // Calculating the maximum store size in entries
    _maxStoreEntries = std::floor((_maxStoreSizeMb / _bytesPerEntry) * 1024.0 * 1024.0);
@@ -53,19 +53,19 @@ class HashDb final
   // Function to print relevant information
   void printInfo() const
   {
-   LOG("[J++]  + Max Store Count:               %lu\n", _maxStoreCount);
-   LOG("[J++]  + Max Store Size:                %f Mb (%.2f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
-   LOG("[J++]  + Max Store Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
-   LOG("[J++]  + Total Max Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
+   jaffarCommon::logger::log("[J++]  + Max Store Count:               %lu\n", _maxStoreCount);
+   jaffarCommon::logger::log("[J++]  + Max Store Size:                %f Mb (%.2f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
+   jaffarCommon::logger::log("[J++]  + Max Store Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
+   jaffarCommon::logger::log("[J++]  + Total Max Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
 
    // Printing hash store information
-   LOG("[J++]  + Hash Stores (%lu / %lu):\n", _hashStores.size(), _maxStoreCount);
+   jaffarCommon::logger::log("[J++]  + Hash Stores (%lu / %lu):\n", _hashStores.size(), _maxStoreCount);
    
    auto itr = _hashStores.rbegin();
    size_t curHashStoreIdx = 0;
    while (itr != _hashStores.rend())
    {
-   LOG("[J++]    + [%02lu] - Age: %lu, Entries: %.3f M, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
+   jaffarCommon::logger::log("[J++]    + [%02lu] - Age: %lu, Entries: %.3f M, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
        itr->id,
        itr->age,
        (double)itr->hashSet.size() / (1024.0 * 1024.0) ,
@@ -81,7 +81,7 @@ class HashDb final
   /**
    * Function to check whether the provided hash is already present in any of the hash stores
   */
-  inline bool checkHashExists(const jaffarCommon::hash_t hash)
+  inline bool checkHashExists(const jaffarCommon::hash::hash_t hash)
   {
     // The current hash store is the latest to be entered
     auto itr = _hashStores.rbegin();
@@ -124,7 +124,7 @@ class HashDb final
   /**
    * This function simply inserts a hash without checking for collisions
   */
-  inline void insertHash(const jaffarCommon::hash_t hash)
+  inline void insertHash(const jaffarCommon::hash::hash_t hash)
   {
     // The current hash store is the latest to be entered
     auto itr = _hashStores.rbegin();

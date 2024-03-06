@@ -16,13 +16,13 @@ namespace jaffarPlus
   bool isRecognized = false;
 
   // Getting emulator name
-  const auto& emulatorName = JSON_GET_STRING(emulatorConfig, "Emulator Name");
+  const auto& emulatorName = jaffarCommon::json::getString(emulatorConfig, "Emulator Name");
 
   // Detecting emulator
   DETECT_EMULATOR(emulator::QuickerNES);
 
   // Check if recognized
-  if (isRecognized == false) EXIT_WITH_ERROR("Emulator '%s' not recognized\n", emulatorName.c_str());
+  if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized\n", emulatorName.c_str());
  
   // Initializing emulator
   e->initialize();

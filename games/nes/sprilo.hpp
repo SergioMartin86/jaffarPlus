@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jaffarCommon/include/json.hpp>
+#include <jaffarCommon/json.hpp>
 #include <game.hpp>
 #include <emulator.hpp>
 
@@ -22,7 +22,7 @@ class Sprilo final : public jaffarPlus::Game
   Sprilo(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // Parsing configuration
-    _lastInputStepReward = JSON_GET_NUMBER(float, config, "Last Input Step Reward");
+    _lastInputStepReward = jaffarCommon::json::getNumber<float>(config, "Last Input Step Reward");
 
     // Getting emulator's low memory pointer
     _lowMem = _emulator->getProperty("LRAM").pointer;
@@ -38,11 +38,11 @@ class Sprilo final : public jaffarPlus::Game
     registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _currentLap                        = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Current Lap")]->getPointer();
-    _timer                             = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Timer")]->getPointer();
-    _playerPosX                        = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player Pos X")]->getPointer();
-    _playerPosY                        = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Player Pos Y")]->getPointer();
-    _lapProgress                       = (uint8_t*)  _propertyMap[jaffarCommon::hashString("Lap Progress")]->getPointer();
+    _currentLap                        = (uint8_t*)  _propertyMap[jaffarCommon::hash::hashString("Current Lap")]->getPointer();
+    _timer                             = (uint8_t*)  _propertyMap[jaffarCommon::hash::hashString("Timer")]->getPointer();
+    _playerPosX                        = (uint8_t*)  _propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY                        = (uint8_t*)  _propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _lapProgress                       = (uint8_t*)  _propertyMap[jaffarCommon::hash::hashString("Lap Progress")]->getPointer();
 
     // Initializing time since last input counter
     _lastInputStep = 0;
@@ -129,10 +129,10 @@ class Sprilo final : public jaffarPlus::Game
   {
     if (std::abs(_pointMagnet.intensity) > 0.0f)
     {
-      LOG("[J++]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
-      LOG("[J++]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
-      LOG("[J++]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
-      LOG("[J++]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+      jaffarCommon::logger::log("[J++]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      jaffarCommon::logger::log("[J++]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+      jaffarCommon::logger::log("[J++]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+      jaffarCommon::logger::log("[J++]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
     } 
   } 
 
@@ -142,9 +142,9 @@ class Sprilo final : public jaffarPlus::Game
 
     if (actionType == "Set Point Magnet")
     {
-      auto intensity = JSON_GET_NUMBER(float, actionJs, "Intensity");
-      auto x = JSON_GET_NUMBER(float, actionJs, "X");
-      auto y = JSON_GET_NUMBER(float, actionJs, "Y");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto x = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y = jaffarCommon::json::getNumber<float>(actionJs, "Y");
       rule.addAction([=, this](){ this->_pointMagnet = pointMagnet_t { .intensity = intensity, .x = x, .y = y }; });
       recognizedActionType = true;
     }
