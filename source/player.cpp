@@ -1,9 +1,9 @@
 #include <chrono>
 #include <SDL.h>
-#include <jaffarCommon/include/json.hpp>
-#include <jaffarCommon/extern/argparse/argparse.hpp>
-#include <jaffarCommon/include/logger.hpp>
-#include <jaffarCommon/include/string.hpp>
+#include <jaffarCommon/json.hpp>
+#include <argparse/argparse.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/string.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
 #include "game.hpp"
@@ -19,10 +19,10 @@ SDL_Window* launchOutputWindow()
   // We can only call SDL_InitSubSystem once
   if (!SDL_WasInit(SDL_INIT_VIDEO))
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
-      EXIT_WITH_ERROR("Failed to initialize video: %s", SDL_GetError());
+      JAFFAR_THROW_LOGIC("Failed to initialize video: %s", SDL_GetError());
 
   auto window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
-  if (window == nullptr) EXIT_WITH_ERROR("Coult not open SDL window");
+  if (window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
 
   return window;
 }
@@ -42,24 +42,24 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
 {
   // If sequence file defined, load it and play it
   std::string solutionFileString;
-  if (jaffarCommon::loadStringFromFile(solutionFileString, solutionFile) == false) 
-    EXIT_WITH_ERROR("[ERROR] Could not find or read from solution sequence file: %s\n%s \n", solutionFile.c_str());
+  if (jaffarCommon::file::loadStringFromFile(solutionFileString, solutionFile) == false) 
+    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from solution sequence file: %s\n%s \n", solutionFile.c_str());
 
   // If config file defined, read it now
   std::string configFileString;
-  if (jaffarCommon::loadStringFromFile(configFileString, configFile) == false) 
-   EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str());
+  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false) 
+   JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str());
 
   // Parsing configuration file
   nlohmann::json config;
   try { config = nlohmann::json::parse(configFileString); }
-  catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
+  catch (const std::exception &err) { JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
   // Creating runner from the configuration
   auto r = jaffarPlus::Runner::getRunner(
-    JSON_GET_OBJECT(config, "Emulator Configuration"),
-    JSON_GET_OBJECT(config, "Game Configuration"),
-    JSON_GET_OBJECT(config, "Runner Configuration"));
+    jaffarCommon::json::getObject(config, "Emulator Configuration"),
+    jaffarCommon::json::getObject(config, "Game Configuration"),
+    jaffarCommon::json::getObject(config, "Runner Configuration"));
 
   // Enabling rendering
   if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
@@ -75,7 +75,7 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
   const auto stateSize = r->getStateSize();
 
   // Getting input sequence
-  const auto solutionSequence = jaffarCommon::split(solutionFileString, ' ');
+  const auto solutionSequence = jaffarCommon::string::split(solutionFileString, ' ');
 
   // Variable for current step in view
   ssize_t currentStep = 0;
@@ -84,8 +84,8 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
   const ssize_t sequenceLength = solutionSequence.size();
 
   // Printing information
-  LOG("[J+] ********** Creating Playback Sequence **********\n");
-  jaffarCommon::refreshTerminal();
+  jaffarCommon::logger::log("[J+] ********** Creating Playback Sequence **********\n");
+  jaffarCommon::logger::refreshTerminal();
 
   // Instantiating playback object
   jaffarPlus::Playback p(*r, solutionSequence); 
@@ -117,27 +117,27 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
     // Printing data and commands
     if (showFrameInfo)
     {
-      jaffarCommon::clearTerminal();
+      jaffarCommon::logger::clearTerminal();
 
-      LOG("[J+] ----------------------------------------------------------------\n");
-      LOG("[J+] Current Step #:              %lu / %lu\n", currentStep + 1, sequenceLength);
-      LOG("[J+] Playback:                    %s\n", isReproduce ? "Playing" : "Stopped");
-      LOG("[J+] On Finish:                   %s\n", isReload ? "Auto Reload" : "Stop");
-      LOG("[J+] Input:                       %s (0x%X)\n", inputString.c_str(), inputIndex);
-      LOG("[J+] Game Name:                  '%s'\n", r->getGame()->getName().c_str());
-      LOG("[J+] Emulator Name:              '%s'\n", r->getGame()->getEmulator()->getName().c_str());
-      LOG("[J+] State Hash:                  0x%lX%lX\n", hash.first, hash.second);
-      LOG("[J+] Config File:                '%s'\n", configFile.c_str());
-      LOG("[J+] Solution File:              '%s'\n", solutionFile.c_str());
-      LOG("[J+] State Size:                  %lu\n", stateSize);
-      LOG("[J+] Sequence Length:             %lu\n", sequenceLength);
-      LOG("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
+      jaffarCommon::logger::log("[J+] ----------------------------------------------------------------\n");
+      jaffarCommon::logger::log("[J+] Current Step #:              %lu / %lu\n", currentStep + 1, sequenceLength);
+      jaffarCommon::logger::log("[J+] Playback:                    %s\n", isReproduce ? "Playing" : "Stopped");
+      jaffarCommon::logger::log("[J+] On Finish:                   %s\n", isReload ? "Auto Reload" : "Stop");
+      jaffarCommon::logger::log("[J+] Input:                       %s (0x%X)\n", inputString.c_str(), inputIndex);
+      jaffarCommon::logger::log("[J+] Game Name:                  '%s'\n", r->getGame()->getName().c_str());
+      jaffarCommon::logger::log("[J+] Emulator Name:              '%s'\n", r->getGame()->getEmulator()->getName().c_str());
+      jaffarCommon::logger::log("[J+] State Hash:                  0x%lX%lX\n", hash.first, hash.second);
+      jaffarCommon::logger::log("[J+] Config File:                '%s'\n", configFile.c_str());
+      jaffarCommon::logger::log("[J+] Solution File:              '%s'\n", solutionFile.c_str());
+      jaffarCommon::logger::log("[J+] State Size:                  %lu\n", stateSize);
+      jaffarCommon::logger::log("[J+] Sequence Length:             %lu\n", sequenceLength);
+      jaffarCommon::logger::log("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
       p.printInfo(currentStep);
       
       // Only print commands if not in reproduce mode
-      LOG("[J+] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | r: autoreload | q: quit\n");
+      jaffarCommon::logger::log("[J+] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | r: autoreload | q: quit\n");
 
-      jaffarCommon::refreshTerminal();
+      jaffarCommon::logger::refreshTerminal();
     }
 
     // Resetting show frame info flag
@@ -156,11 +156,11 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
       currentStep++;
 
       // Get command without interrupting
-      command = jaffarCommon::getKeyPress();
+      command = jaffarCommon::logger::getKeyPress();
     } 
 
     // If it's not reproducing, grab command with a wait
-    if (isReproduce == false) command = jaffarCommon::waitForKeyPress();
+    if (isReproduce == false) command = jaffarCommon::logger::waitForKeyPress();
 
     // Advance/Rewind commands
     if (command == 'n') currentStep = currentStep - 1;
@@ -190,8 +190,8 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
       std::string saveData;
       saveData.resize(stateSize);
       memcpy(saveData.data(), stateData, stateSize);
-      if (jaffarCommon::saveStringToFile(saveData, saveFileName.c_str()) == false) EXIT_WITH_ERROR("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
-      LOG("[J+] Saved state to %s\n", saveFileName.c_str());
+      if (jaffarCommon::file::saveStringToFile(saveData, saveFileName.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
+      jaffarCommon::logger::log("[J+] Saved state to %s\n", saveFileName.c_str());
 
       // Do no show frame info again after this action
       showFrameInfo = false;
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
     
   // Try to parse arguments
   try { program.parse_args(argc, argv);  }
-  catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
+  catch (const std::runtime_error &err) { JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str()); }
 
   // Parsing config file
   const std::string configFile = program.get<std::string>("configFile");
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
   bool disableRender = program.get<bool>("--disableRender");
 
   // Initializing terminal
-  jaffarCommon::initializeTerminal();
+  jaffarCommon::logger::initializeTerminal();
 
   // Creating output window
   auto window = disableRender ? nullptr : launchOutputWindow();
@@ -290,5 +290,5 @@ int main(int argc, char *argv[])
   if (disableRender == false) closeOutputWindow(window);
 
   // Ending ncurses window
-  jaffarCommon::finalizeTerminal();
+  jaffarCommon::logger::finalizeTerminal();
 }

@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <string>
-#include "jaffarCommon/include/serializers/contiguous.hpp"
-#include "jaffarCommon/include/deserializers/contiguous.hpp"
-#include "jaffarCommon/include/hash.hpp"
+#include "jaffarCommon/serializers/contiguous.hpp"
+#include "jaffarCommon/deserializers/contiguous.hpp"
+#include "jaffarCommon/hash.hpp"
 #include "runner.hpp"
 
 namespace jaffarPlus
@@ -29,7 +29,7 @@ class Playback final
     void* rendererStateData;
 
     // Storage for the step's hash
-    jaffarCommon::hash_t stateHash;
+    jaffarCommon::hash::hash_t stateHash;
   };
 
   Playback(Runner& runner, const std::vector<std::string>& inputSequence) : _runner(&runner)
@@ -94,7 +94,7 @@ class Playback final
   inline std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
   inline jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }
   inline void* getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
-  inline jaffarCommon::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
+  inline jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
 
   inline void renderFrame(const size_t currentStep)
   {
@@ -111,11 +111,11 @@ class Playback final
     _runner->deserializeState(d);
 
     // Now printing information
-    LOG("[J+] Runner Information: \n");
+    jaffarCommon::logger::log("[J+] Runner Information: \n");
     _runner->printInfo();
-    LOG("[J+] Game Information: \n");
+    jaffarCommon::logger::log("[J+] Game Information: \n");
     _runner->getGame()->printInfo();
-    LOG("[J+] Emulator Information: \n");
+    jaffarCommon::logger::log("[J+] Emulator Information: \n");
     _runner->getGame()->getEmulator()->printInfo();
   }
 
@@ -124,7 +124,7 @@ class Playback final
   // Step getter
   step_t getStep(const size_t stepId) const
   {
-    if (stepId >= _sequence.size()) EXIT_WITH_ERROR("Requested step %lu which exceeds sequence size %lu", stepId, _sequence.size());
+    if (stepId >= _sequence.size()) JAFFAR_THROW_RUNTIME("Requested step %lu which exceeds sequence size %lu", stepId, _sequence.size());
     return _sequence.at(stepId);
   }
 

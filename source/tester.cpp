@@ -1,12 +1,12 @@
 #include <chrono>
-#include <jaffarCommon/include/json.hpp>
-#include <jaffarCommon/extern/argparse/argparse.hpp>
-#include <jaffarCommon/include/serializers/contiguous.hpp>
-#include <jaffarCommon/include/serializers/differential.hpp>
-#include <jaffarCommon/include/deserializers/contiguous.hpp>
-#include <jaffarCommon/include/deserializers/differential.hpp>
-#include <jaffarCommon/include/logger.hpp>
-#include <jaffarCommon/include/string.hpp>
+#include <argparse/argparse.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/serializers/contiguous.hpp>
+#include <jaffarCommon/serializers/differential.hpp>
+#include <jaffarCommon/deserializers/contiguous.hpp>
+#include <jaffarCommon/deserializers/differential.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/string.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
 #include "game.hpp"
@@ -32,19 +32,19 @@ int main(int argc, char *argv[])
 
   // Try to parse arguments
   try { program.parse_args(argc, argv);  }
-  catch (const std::runtime_error &err) { EXIT_WITH_ERROR("%s\n%s", err.what(), program.help().str().c_str()); }
+  catch (const std::runtime_error &err) { JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str()); }
 
   // Parsing config file
   const std::string configFile = program.get<std::string>("configFile");
   std::string configFileString;
-  if (jaffarCommon::loadStringFromFile(configFileString, configFile) == false) 
-    EXIT_WITH_ERROR("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
+  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false) 
+    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
 
   // If sequence file defined, load it and play it
   const std::string solutionFile = program.get<std::string>("solutionFile");
   std::string solutionFileString;
-  if (jaffarCommon::loadStringFromFile(solutionFileString, solutionFile) == false) 
-    EXIT_WITH_ERROR("[ERROR] Could not find or read from solution sequence file: %s\n%s \n", solutionFile.c_str(), program.help().str().c_str());
+  if (jaffarCommon::file::loadStringFromFile(solutionFileString, solutionFile) == false) 
+    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from solution sequence file: %s\n%s \n", solutionFile.c_str(), program.help().str().c_str());
 
   // Getting reproduce flag
   const std::string cycleType = program.get<std::string>("--cycleType");
@@ -54,27 +54,27 @@ int main(int argc, char *argv[])
   if (cycleType == "Simple") recognizedCycleType = true;
   if (cycleType == "Rerecord") recognizedCycleType = true;
   if (cycleType == "Full") recognizedCycleType = true;
-  if (recognizedCycleType == false) EXIT_WITH_ERROR("[ERROR] Unrecognized cycle type '%s'");
+  if (recognizedCycleType == false) JAFFAR_THROW_LOGIC("[ERROR] Unrecognized cycle type '%s'");
  
   // Parsing configuration file
   nlohmann::json config;
   try { config = nlohmann::json::parse(configFileString); }
-  catch (const std::exception &err) { EXIT_WITH_ERROR("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
+  catch (const std::exception &err) { JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
 
   // Parsing state compression configuration
-  const auto& stateCompressionJs = JSON_GET_OBJECT(config, "State Compression");
-  const auto useDifferentialCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Differential Compression");
-  const auto maximumDifferences = JSON_GET_NUMBER(size_t, stateCompressionJs, "Max Difference (bytes)");
-  const auto useZlibCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Zlib Compression");
+  const auto& stateCompressionJs = jaffarCommon::json::getObject(config, "State Compression");
+  const auto useDifferentialCompression = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Differential Compression");
+  const auto maximumDifferences = jaffarCommon::json::getNumber<size_t>(stateCompressionJs, "Max Difference (bytes)");
+  const auto useZlibCompression = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Zlib Compression");
 
   // Getting initial state file from the configuration
-  const auto initialStateFilePath = JSON_GET_STRING(config, "Initial State File Path");
+  const auto initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
     // Creating runner from the configuration
   auto r = jaffarPlus::Runner::getRunner(
-    JSON_GET_OBJECT(config, "Emulator Configuration"),
-    JSON_GET_OBJECT(config, "Game Configuration"),
-    JSON_GET_OBJECT(config, "Runner Configuration"));
+    jaffarCommon::json::getObject(config, "Emulator Configuration"),
+    jaffarCommon::json::getObject(config, "Game Configuration"),
+    jaffarCommon::json::getObject(config, "Runner Configuration"));
 
   // Disabling rendering
   r->getGame()->getEmulator()->disableRendering();
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
   const auto stateSize = r->getStateSize();
 
   // Getting input sequence
-  const auto solutionSequence = jaffarCommon::split(solutionFileString, ' ');
+  const auto solutionSequence = jaffarCommon::string::split(solutionFileString, ' ');
 
   // Getting sequence length
   const auto sequenceLength = solutionSequence.size();
@@ -92,20 +92,20 @@ int main(int argc, char *argv[])
   size_t differentialStateSize = r->getDifferentialStateSize(maximumDifferences);
 
   // Printing information
-  LOG("[J+] Emulator Name:                   '%s'\n", r->getGame()->getEmulator()->getName().c_str());
-  LOG("[J+] Game Name:                       '%s'\n", r->getGame()->getName().c_str());
-  LOG("[J+] Config File:                     '%s'\n", configFile.c_str());
-  LOG("[J+] Solution File:                   '%s'\n", solutionFile.c_str());
-  LOG("[J+] Cycle Type:                      '%s'\n", cycleType.c_str());
-  LOG("[J+] State Size:                       %lu\n", stateSize);
-  LOG("[J+] Use Differential Compression:     %s\n", useDifferentialCompression ? "true" : "false");
+  jaffarCommon::logger::log("[J+] Emulator Name:                   '%s'\n", r->getGame()->getEmulator()->getName().c_str());
+  jaffarCommon::logger::log("[J+] Game Name:                       '%s'\n", r->getGame()->getName().c_str());
+  jaffarCommon::logger::log("[J+] Config File:                     '%s'\n", configFile.c_str());
+  jaffarCommon::logger::log("[J+] Solution File:                   '%s'\n", solutionFile.c_str());
+  jaffarCommon::logger::log("[J+] Cycle Type:                      '%s'\n", cycleType.c_str());
+  jaffarCommon::logger::log("[J+] State Size:                       %lu\n", stateSize);
+  jaffarCommon::logger::log("[J+] Use Differential Compression:     %s\n", useDifferentialCompression ? "true" : "false");
   if (useDifferentialCompression == true)
   {
-  LOG("[J+]  + Using Zlib Compression:        %s\n", useZlibCompression ? "true" : "false");
-  LOG("[J+]  + Differential State Size:       %lu\n", differentialStateSize);
+  jaffarCommon::logger::log("[J+]  + Using Zlib Compression:        %s\n", useZlibCompression ? "true" : "false");
+  jaffarCommon::logger::log("[J+]  + Differential State Size:       %lu\n", differentialStateSize);
   } 
-  LOG("[J+] Sequence Length:                  %lu\n", sequenceLength);
-  LOG("[J+] ********** Running Test **********\n");
+  jaffarCommon::logger::log("[J+] Sequence Length:                  %lu\n", sequenceLength);
+  jaffarCommon::logger::log("[J+] ********** Running Test **********\n");
 
   // Serializing initial state
   auto currentState = (uint8_t *)malloc(stateSize);
@@ -172,20 +172,20 @@ int main(int argc, char *argv[])
   double elapsedTimeSeconds = (double)dt * 1.0e-9;
 
   // Printing time information
-  LOG("[J+] Elapsed time:                  %3.3fs\n", (double)dt * 1.0e-9);
-  LOG("[J+] Performance:                   %.3f inputs / s\n", (double)sequenceLength / elapsedTimeSeconds);
+  jaffarCommon::logger::log("[J+] Elapsed time:                  %3.3fs\n", (double)dt * 1.0e-9);
+  jaffarCommon::logger::log("[J+] Performance:                   %.3f inputs / s\n", (double)sequenceLength / elapsedTimeSeconds);
   if (useDifferentialCompression == true)
   {
-  LOG("[J+] Max Differential State Size:   %lu\n", maxDifferentialStateSize);
+  jaffarCommon::logger::log("[J+] Max Differential State Size:   %lu\n", maxDifferentialStateSize);
   } 
 
   // Printing Information
-  LOG("[J+] Runner Information:\n");
+  jaffarCommon::logger::log("[J+] Runner Information:\n");
   r->printInfo();
 
-  LOG("[J+] Emulator Information:\n");
+  jaffarCommon::logger::log("[J+] Emulator Information:\n");
   r->getGame()->getEmulator()->printInfo();
 
-  LOG("[J+] Game Information:\n");
+  jaffarCommon::logger::log("[J+] Game Information:\n");
   r->getGame()->printInfo();
 }

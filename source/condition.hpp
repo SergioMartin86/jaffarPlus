@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jaffarCommon/include/bitwise.hpp>
+#include <jaffarCommon/bitwise.hpp>
 #include "property.hpp"
 
 namespace jaffarPlus
@@ -38,7 +38,7 @@ class Condition
     if (operation == "BitTrue") return op_bit_true;
     if (operation == "BitFalse") return op_bit_false;
 
-    EXIT_WITH_ERROR("[Error] Unrecognized operator: %s\n", operation.c_str());
+    JAFFAR_THROW_LOGIC("[Error] Unrecognized operator: %s\n", operation.c_str());
 
     return op_equal;
   }
@@ -90,8 +90,8 @@ class _vCondition : public Condition
   static inline bool _opGreaterOrEqual(const T a, const T b) { return a >= b; }
   static inline bool _opLess(const T a, const T b) { return a < b; }
   static inline bool _opLessOrEqual(const T a, const T b) { return a <= b; }
-  static inline bool _opBitTrue(const T a, const T b) { return jaffarCommon::getBitFlag(a,b); }
-  static inline bool _opBitFalse(const T a, const T b) { return !jaffarCommon::getBitFlag(a,b); }
+  static inline bool _opBitTrue(const T a, const T b) { return jaffarCommon::bitwise::getBitFlag(a,b); }
+  static inline bool _opBitFalse(const T a, const T b) { return !jaffarCommon::bitwise::getBitFlag(a,b); }
 
   bool (*_opFcPtr)(const T, const T);
 

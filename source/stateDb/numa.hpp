@@ -1,12 +1,11 @@
 #pragma once
 
 #include <numa.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <cstdlib>
 #include <memory>
-#include <jaffarCommon/include/logger.hpp>
-#include <jaffarCommon/include/json.hpp>
-#include <jaffarCommon/include/concurrent.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/concurrent.hpp>
 #include "base.hpp"
 #include <utmpx.h>
 
@@ -29,35 +28,34 @@ class Numa : public stateDb::Base
   {
     // Checking whether the numa library calls are available
     const auto numaAvailable = numa_available();
-    if (numaAvailable != 0) EXIT_WITH_ERROR("NUMA State Db selected, but NUMA library is not available.");
+    if (numaAvailable != 0) JAFFAR_THROW_RUNTIME("NUMA State Db selected, but the system does not provide NUMA support.");
   
     // Getting number of noma domains
     _numaCount = numa_max_node() + 1;
     
     // Checking maximum db sizes per each numa 
-    const auto& maxSizePerNumaMbJs = JSON_GET_ARRAY(config, "Max Size per NUMA Domain (Mb)");
-    if (maxSizePerNumaMbJs.size() != (size_t)_numaCount) EXIT_WITH_ERROR("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, maxSizePerNumaMbJs.size());
+    const auto& maxSizePerNumaMbJs = jaffarCommon::json::getArray<size_t>(config, "Max Size per NUMA Domain (Mb)");
+    if (maxSizePerNumaMbJs.size() != (size_t)_numaCount) JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, maxSizePerNumaMbJs.size());
 
     // Getting scavenge depth
-    _scavengerQueuesSize = JSON_GET_NUMBER(size_t, config, "Scavenger Queues Size");
-    _scavengingDepth = JSON_GET_NUMBER(size_t, config, "Scavenging Depth");
+    _scavengerQueuesSize = jaffarCommon::json::getNumber<size_t>(config, "Scavenger Queues Size");
+    _scavengingDepth = jaffarCommon::json::getNumber<size_t>(config, "Scavenging Depth");
  
     // Creating scavenger queues
-    for (int i = 0; i < _numaCount; i++) _scavengerQueues.push_back(std::make_unique<jaffarCommon::concurrentDeque<void*>>());
+    for (int i = 0; i < _numaCount; i++) _scavengerQueues.push_back(std::make_unique<jaffarCommon::concurrent::concurrentDeque<void*>>());
 
     // Getting maximum state db size in Mb and bytes
     size_t numaSizeSum = 0;
     for (const auto& entry : maxSizePerNumaMbJs) 
     {
-      if (entry.is_number_integer() == false) EXIT_WITH_ERROR("Entries in Max Size per NUMA Domain (Mb) must be a positive integer.");
-      const auto sizeMb = entry.get<size_t>();
+      const auto sizeMb = entry;
       _maxSizePerNumaMb.push_back(sizeMb);
       _maxSizePerNuma.push_back(sizeMb * 1024ul * 1024ul);
       numaSizeSum += sizeMb;
     }
 
     // Sanity check
-    if (numaSizeSum != _maxSizeMb) EXIT_WITH_ERROR("Maximum state database size (%lu mb) does not equal the sum of NUMA-specific max sizes (%lu mb)\n", _maxSizeMb, numaSizeSum);
+    if (numaSizeSum != _maxSizeMb) JAFFAR_THROW_LOGIC("Maximum state database size (%lu mb) does not equal the sum of NUMA-specific max sizes (%lu mb)\n", _maxSizeMb, numaSizeSum);
 
     // Getting maximum allocatable memory in each NUMA domain
     std::vector<long long> maxFreeMemoryPerNuma(_numaCount);
@@ -71,7 +69,7 @@ class Numa : public stateDb::Base
     // Checking if this is enough memory to satisfy requirement
     for (int i = 0; i < _numaCount; i++)
      if (_maxSizePerNuma[i] > (size_t)maxFreeMemoryPerNuma[i])
-      EXIT_WITH_ERROR("The requested memory (%lu) for NUMA domain %d exceeds its available free space (%lu)\n", _maxSizePerNuma[i], i, maxFreeMemoryPerNuma[i]);
+      JAFFAR_THROW_RUNTIME("The requested memory (%lu) for NUMA domain %d exceeds its available free space (%lu)\n", _maxSizePerNuma[i], i, maxFreeMemoryPerNuma[i]);
 
     // Getting maximum number of states for each NUMA domain
     _maxStatesPerNuma.resize(_numaCount);
@@ -96,7 +94,7 @@ class Numa : public stateDb::Base
     for (int i = 0; i < _numaCount; i++) 
     {
       _internalBuffersStart[i] = (uint8_t*) numa_alloc_onnode(allocableBytesPerNuma[i], i);
-      if (_internalBuffersStart[i] == NULL) EXIT_WITH_ERROR("Error trying to allocate memory for numa domain %d\n", i);
+      if (_internalBuffersStart[i] == NULL) JAFFAR_THROW_RUNTIME("Error trying to allocate memory for numa domain %d\n", i);
       _internalBuffersEnd[i] = &_internalBuffersStart[i][allocableBytesPerNuma[i]];
     }
 
@@ -120,7 +118,7 @@ class Numa : public stateDb::Base
     _freeStateQueues.resize(_numaCount);
     for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++)
     {
-     _freeStateQueues[numaNodeIdx] = std::make_unique<jaffarCommon::atomicQueue_t<void*>>(_maxStatesPerNuma[numaNodeIdx]);
+     _freeStateQueues[numaNodeIdx] = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void*>>(_maxStatesPerNuma[numaNodeIdx]);
      for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx]; i++) 
       _freeStateQueues[numaNodeIdx]->try_push((void*) &_internalBuffersStart[numaNodeIdx][i * _stateSize]);
     }
@@ -132,7 +130,7 @@ class Numa : public stateDb::Base
   void printInfoImpl() const override
   {
    for (int i = 0; i < _numaCount; i++) 
-   LOG("[J++]  + NUMA Domain %d                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n", i, _maxStatesPerNuma[i], (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
+   jaffarCommon::logger::log("[J++]  + NUMA Domain %d                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n", i, _maxStatesPerNuma[i], (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
   }
 
   inline void* getFreeState() override
@@ -173,7 +171,7 @@ class Numa : public stateDb::Base
        return i;
 
     // Check for error
-    EXIT_WITH_ERROR("Did not find the corresponding numa domain for the provided state pointer. This must be a bug in Jaffar\n");
+    JAFFAR_THROW_RUNTIME("Did not find the corresponding numa domain for the provided state pointer. This must be a bug in Jaffar\n");
   }
 
   inline void returnFreeState(void* const statePtr) override
@@ -185,7 +183,7 @@ class Numa : public stateDb::Base
     bool success = _freeStateQueues[numaIdx]->try_push(statePtr);
 
     // Check for success
-    if (success == false) EXIT_WITH_ERROR("Failed on pushing free state back. This must be a bug in Jaffar\n");
+    if (success == false) JAFFAR_THROW_RUNTIME("Failed on pushing free state back. This must be a bug in Jaffar\n");
   }
 
   inline void* popState() override
@@ -260,7 +258,7 @@ class Numa : public stateDb::Base
   /**
    * Scavenger queues allow the thread to search for a state that belongs to it through the current state database
   */
-  std::vector<std::unique_ptr<jaffarCommon::concurrentDeque<void*>>> _scavengerQueues;
+  std::vector<std::unique_ptr<jaffarCommon::concurrent::concurrentDeque<void*>>> _scavengerQueues;
 
   /**
    * Size of the scavenger queues
@@ -275,7 +273,7 @@ class Numa : public stateDb::Base
   /**
    * This queue will hold pointers to all the free state storage
   */
-  std::vector<std::unique_ptr<jaffarCommon::atomicQueue_t<void*>>> _freeStateQueues;
+  std::vector<std::unique_ptr<jaffarCommon::concurrent::atomicQueue_t<void*>>> _freeStateQueues;
 
   /**
    * Start pointer for the internal buffers for the state database

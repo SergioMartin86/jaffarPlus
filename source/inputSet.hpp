@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jaffarCommon/include/json.hpp>
+#include <jaffarCommon/json.hpp>
 #include <vector>
 #include <unordered_set>
 #include "property.hpp"

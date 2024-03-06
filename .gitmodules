@@ -1,5 +1,5 @@
 [submodule "subprojects/quickerNES"]
-	path = subprojects/quickerNES
+	path = extern/quickerNES
 	url = https://github.com/SergioMartin86/quickerNES.git
 [submodule "extern/jaffarCommon"]
 	path = extern/jaffarCommon

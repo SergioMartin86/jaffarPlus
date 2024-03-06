@@ -2,6 +2,7 @@ project('jaffar++','c','cpp',
   version: '3.0.0',
   license: 'GPL-3.0-only',
   default_options : ['cpp_std=c++20', 'default_library=shared', 'buildtype=release'],
+  subproject_dir: 'extern'
 )
 
 # Accessing source directory
@@ -10,19 +11,19 @@ subdir('source')
 # Accessing emulators
 subdir('emulators')
 
-# Jaffar 
+# Grabbing jaffarCommon dependency
+jaffarCommonSubproject = subproject('jaffarCommon')
+jaffarCommonDependency = jaffarCommonSubproject.get_variable('jaffarCommonDependency')
 
-jaffarDependencies = [
-  dependency('openmp', required: true),
-  dependency('numa', required: true),
-  dependency('tbb', required: true)
-]
+# Jaffar dependencies all together
+jaffarDependencies = [ jaffarCommonDependency, emulatorDependencies]
+
+# Jaffar 
 
 executable('jaffar',
   'source/jaffar.cpp',
   cpp_args: [ jaffarCPPFlags, '-DNCURSES' ],
-  sources : jaffarSources,
-  dependencies : [ jaffarCommonDependencies, jaffarDependencies  ],
+  dependencies : jaffarDependencies,
   link_args: [ '-lncurses' ],
   include_directories : jaffarIncludes
 )
@@ -31,8 +32,7 @@ executable('jaffar',
 executable('jaffar-tester',
   'source/tester.cpp',
   cpp_args: jaffarCPPFlags,
-  sources : jaffarSources,
-  dependencies : jaffarCommonDependencies,
+  dependencies : jaffarDependencies,
   include_directories : jaffarIncludes
 )
 
@@ -47,7 +47,6 @@ executable('jaffar-player',
   'source/player.cpp',
   cpp_args: [ jaffarCPPFlags, '-DNCURSES', '-D_USE_SDL2' ],
   link_args: [ '-lncurses' ],
-  sources : jaffarSources,
-  dependencies : [ jaffarCommonDependencies, jaffarPlayerDependencies ],
+  dependencies : [ jaffarDependencies, jaffarPlayerDependencies ],
   include_directories : jaffarIncludes
 )

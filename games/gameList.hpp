@@ -5,7 +5,7 @@
 #include "nes/microMachines.hpp"
 #include "nes/sprilo.hpp"
 #include "../emulators/emulatorList.hpp"
-#include <jaffarCommon/include/json.hpp>
+#include <jaffarCommon/json.hpp>
 
 namespace jaffarPlus
 {
@@ -23,14 +23,14 @@ namespace jaffarPlus
   auto e = jaffarPlus::Emulator::getEmulator(emulatorConfig);
 
   // Getting game name
-  const auto& gameName = JSON_GET_STRING(gameConfig, "Game Name");
+  const auto& gameName = jaffarCommon::json::getString(gameConfig, "Game Name");
 
   // Trying to detect game by name
   DETECT_GAME(NES::MicroMachines);
   DETECT_GAME(NES::Sprilo);
 
   // Check if game was recognized
-  if (isRecognized == false) EXIT_WITH_ERROR("Game '%s' not recognized\n", gameName.c_str());
+  if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized\n", gameName.c_str());
 
   // Initializing game
   g->initialize();

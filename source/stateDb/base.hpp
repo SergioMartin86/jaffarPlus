@@ -1,12 +1,12 @@
 #pragma once
 
-#include <jaffarCommon/include/json.hpp>
-#include <jaffarCommon/include/logger.hpp>
-#include <jaffarCommon/include/serializers/contiguous.hpp>
-#include <jaffarCommon/include/serializers/differential.hpp>
-#include <jaffarCommon/include/deserializers/contiguous.hpp>
-#include <jaffarCommon/include/deserializers/differential.hpp>
-#include <jaffarCommon/include/concurrent.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/serializers/contiguous.hpp>
+#include <jaffarCommon/serializers/differential.hpp>
+#include <jaffarCommon/deserializers/contiguous.hpp>
+#include <jaffarCommon/deserializers/differential.hpp>
+#include <jaffarCommon/concurrent.hpp>
 #include "../runner.hpp"
 
 #define _JAFFAR_STATE_PADDING_BYTES 64
@@ -26,13 +26,13 @@ class Base
     ///////// Parsing configuration
 
      // Getting maximum state db size in Mb
-    _maxSizeMb = JSON_GET_NUMBER(size_t, config, "Max Size (Mb)");
+    _maxSizeMb = jaffarCommon::json::getNumber<size_t>(config, "Max Size (Mb)");
 
     // Parsing state compression configuration
-    const auto& stateCompressionJs = JSON_GET_OBJECT(config, "Compression");
-    _useDifferentialCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Differential Compression");
-    _maximumDifferences = JSON_GET_NUMBER(size_t, stateCompressionJs, "Max Difference (bytes)");
-    _useZlibCompression = JSON_GET_BOOLEAN(stateCompressionJs, "Use Zlib Compression");
+    const auto& stateCompressionJs = jaffarCommon::json::getObject(config, "Compression");
+    _useDifferentialCompression = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Differential Compression");
+    _maximumDifferences = jaffarCommon::json::getNumber<size_t>(stateCompressionJs, "Max Difference (bytes)");
+    _useZlibCompression = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Zlib Compression");
 
     ///////// Getting original state sizes from the runner
     
@@ -58,7 +58,7 @@ class Base
     _stateSizePadding = _stateSize - _stateSizeEffective;
 
     // Initialization message
-    LOG("[J++] Initializing State Database...\n");
+    jaffarCommon::logger::log("[J++] Initializing State Database...\n");
   }
 
   virtual ~Base()
@@ -73,13 +73,13 @@ class Base
    const size_t currentStateCount = getStateCount();
    const size_t currentStateBytes = currentStateCount * _stateSize;
 
-   LOG("[J++]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n", currentStateCount, (double)currentStateCount * 1.0e-6, _maxStates, (double)_maxStates * 1.0e-6, 100.0 * (double)currentStateCount / (double)_maxStates);
-   LOG("[J++]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n", (double)currentStateBytes / (1024.0 * 1024.0), (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
-   LOG("[J++]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
-   LOG("[J++]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
-   LOG("[J++]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
-   LOG("[J++]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
-   LOG("[J++]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
+   jaffarCommon::logger::log("[J++]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n", currentStateCount, (double)currentStateCount * 1.0e-6, _maxStates, (double)_maxStates * 1.0e-6, 100.0 * (double)currentStateCount / (double)_maxStates);
+   jaffarCommon::logger::log("[J++]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n", (double)currentStateBytes / (1024.0 * 1024.0), (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
+   jaffarCommon::logger::log("[J++]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
+   jaffarCommon::logger::log("[J++]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
+   jaffarCommon::logger::log("[J++]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
+   jaffarCommon::logger::log("[J++]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
+   jaffarCommon::logger::log("[J++]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
 
    printInfoImpl();
   }
@@ -102,7 +102,7 @@ class Base
   inline void pushState(const float reward, Runner& r, void* statePtr)
   {
     // Check that we got a free state (we did not overflow state memory)
-    if (statePtr == nullptr) EXIT_WITH_ERROR("Ran out of free states\n");
+    if (statePtr == nullptr) JAFFAR_THROW_RUNTIME("Ran out of free states\n");
 
     // Serializing the runner state into the memory received (if using differential compression)
     if (_useDifferentialCompression == true)
@@ -195,12 +195,12 @@ class Base
     /**
    * The next state database, where new states are stored as they are created
   */
-  jaffarCommon::concurrentMultimap_t<float, void*> _nextStateDb;
+  jaffarCommon::concurrent::concurrentMultimap_t<float, void*> _nextStateDb;
 
   /**
    * The current state database used as read-only source of base states
   */
-  jaffarCommon::concurrentDeque<void*> _currentStateDb;
+  jaffarCommon::concurrent::concurrentDeque<void*> _currentStateDb;
 
   /**
    * Stores the size occupied by each state (with padding)

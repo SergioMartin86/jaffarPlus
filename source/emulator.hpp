@@ -1,10 +1,10 @@
 #pragma once
 
 #include <string>
-#include <jaffarCommon/include/file.hpp>
-#include <jaffarCommon/include/json.hpp>
-#include <jaffarCommon/include/serializers/contiguous.hpp>
-#include <jaffarCommon/include/deserializers/contiguous.hpp>
+#include <jaffarCommon/file.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/serializers/contiguous.hpp>
+#include <jaffarCommon/deserializers/contiguous.hpp>
 
 #ifdef _USE_SDL2
 #include <SDL.h>
@@ -24,19 +24,13 @@ class Emulator
   Emulator(const nlohmann::json& config)
   {
     // Getting emulator name (for runtime use)
-    _emulatorName = JSON_GET_STRING(config, "Emulator Name");
+    _emulatorName = jaffarCommon::json::getString(config, "Emulator Name");
 
     // Getting disabled state properties
-    auto disabledStatePropertiesJs = JSON_GET_ARRAY(config, "Disabled State Properties");
-    for (const auto& property : disabledStatePropertiesJs)
-    {
-      // Sanity Check
-      if (property.is_string() == false) EXIT_WITH_ERROR("Disabled emulator properties entries should be strings");
-
-      // Getting property name
-      _disabledStateProperties.push_back(property.get<std::string>());
-    }
+    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    for (const auto& property : disabledStateProperties)  _disabledStateProperties.push_back(property);
   };
+  
   virtual ~Emulator() = default;
 
   // Initialization function
