@@ -42,7 +42,7 @@ class Numa : public stateDb::Base
     _scavengingDepth = jaffarCommon::json::getNumber<size_t>(config, "Scavenging Depth");
  
     // Creating scavenger queues
-    for (int i = 0; i < _numaCount; i++) _scavengerQueues.push_back(std::make_unique<jaffarCommon::concurrent::concurrentDeque<void*>>());
+    for (int i = 0; i < _numaCount; i++) _scavengerQueues.push_back(std::make_unique<jaffarCommon::concurrent::Deque<void*>>());
 
     // Getting maximum state db size in Mb and bytes
     size_t numaSizeSum = 0;
@@ -258,7 +258,7 @@ class Numa : public stateDb::Base
   /**
    * Scavenger queues allow the thread to search for a state that belongs to it through the current state database
   */
-  std::vector<std::unique_ptr<jaffarCommon::concurrent::concurrentDeque<void*>>> _scavengerQueues;
+  std::vector<std::unique_ptr<jaffarCommon::concurrent::Deque<void*>>> _scavengerQueues;
 
   /**
    * Size of the scavenger queues

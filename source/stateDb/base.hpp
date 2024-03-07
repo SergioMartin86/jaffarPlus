@@ -200,7 +200,7 @@ class Base
   /**
    * The current state database used as read-only source of base states
   */
-  jaffarCommon::concurrent::concurrentDeque<void*> _currentStateDb;
+  jaffarCommon::concurrent::Deque<void*> _currentStateDb;
 
   /**
    * Stores the size occupied by each state (with padding)
