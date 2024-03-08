@@ -1,0 +1,45 @@
+name: Build and Run Tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  # Build and run tests
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev 
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=debug -Db_coverage=true
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+    - name: Running coverage analysis
+      run: ninja coverage -C build
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: SergioMartin86/jaffarPlusPlus
+        fail_ci_if_error: true
+        files: build/meson-logs/coverage.xml
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
