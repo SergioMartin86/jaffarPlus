@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include "jaffarCommon/serializers/contiguous.hpp"
 #include "jaffarCommon/deserializers/contiguous.hpp"
 #include "jaffarCommon/hash.hpp"
+#include "jaffarCommon/serializers/contiguous.hpp"
 #include "runner.hpp"
+#include <string>
+#include <vector>
 
 namespace jaffarPlus
 {
@@ -13,8 +13,7 @@ namespace jaffarPlus
 class Playback final
 {
   public:
-
-  struct step_t 
+  struct step_t
   {
     // Storage for the step's input string
     std::string inputString;
@@ -23,16 +22,16 @@ class Playback final
     jaffarPlus::InputSet::inputIndex_t inputIndex;
 
     // Storage for the step's game state data
-    void* gameStateData;
+    void *gameStateData;
 
     // Storage for the step's renderer state data
-    void* rendererStateData;
+    void *rendererStateData;
 
     // Storage for the step's hash
     jaffarCommon::hash::hash_t stateHash;
   };
 
-  Playback(Runner& runner, const std::vector<std::string>& inputSequence) : _runner(&runner)
+  Playback(Runner &runner, const std::vector<std::string> &inputSequence) : _runner(&runner)
   {
     // Getting game state size
     _gameStateSize = _runner->getStateSize();
@@ -75,7 +74,7 @@ class Playback final
       // Advancing state
       _runner->advanceState(step.inputIndex);
 
-      // Evaluate game rules 
+      // Evaluate game rules
       _runner->getGame()->evaluateRules();
 
       // Determining new game state type
@@ -93,17 +92,17 @@ class Playback final
 
   inline std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
   inline jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }
-  inline void* getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
+  inline void *getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
   inline jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
 
   inline void renderFrame(const size_t currentStep)
   {
-    const auto& step = getStep(currentStep);
+    const auto &step = getStep(currentStep);
     jaffarCommon::deserializer::Contiguous d(step.rendererStateData, _rendererStateSize);
     _runner->getGame()->getEmulator()->deserializeRendererState(d);
     _runner->getGame()->getEmulator()->updateVideoOutput();
   }
-  
+
   void printInfo(const size_t stepId) const
   {
     // Deserializing appropriate state
@@ -120,7 +119,6 @@ class Playback final
   }
 
   private:
-
   // Step getter
   step_t getStep(const size_t stepId) const
   {
@@ -129,11 +127,11 @@ class Playback final
   }
 
   // Pointer to runner
-  Runner* _runner;
- 
+  Runner *_runner;
+
   // Storage for game state size
   size_t _gameStateSize;
- 
+
   // Storage for renderer state size
   size_t _rendererStateSize;
 

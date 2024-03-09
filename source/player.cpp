@@ -1,17 +1,17 @@
-#include <chrono>
-#include <SDL.h>
-#include <jaffarCommon/json.hpp>
-#include <argparse/argparse.hpp>
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/string.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
-#include "game.hpp"
 #include "emulator.hpp"
-#include "runner.hpp"
+#include "game.hpp"
 #include "playback.hpp"
+#include "runner.hpp"
+#include <SDL.h>
+#include <argparse/argparse.hpp>
+#include <chrono>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/string.hpp>
 
-SDL_Window* launchOutputWindow()
+SDL_Window *launchOutputWindow()
 {
   // Opening rendering window
   SDL_SetMainReady();
@@ -27,33 +27,39 @@ SDL_Window* launchOutputWindow()
   return window;
 }
 
-void closeOutputWindow(SDL_Window* window)
+void closeOutputWindow(SDL_Window *window)
 {
   SDL_DestroyWindow(window);
 }
 
 // Switch to toggle whether to reload the movie on reaching the end of the sequence
-bool isReload; 
+bool isReload;
 
 // Switch to toggle whether to reproduce the movie
-bool isReproduce; 
+bool isReproduce;
 
-bool mainCycle(const std::string& configFile, const std::string& solutionFile, bool disableRender, SDL_Window* window)
+bool mainCycle(const std::string &configFile, const std::string &solutionFile, bool disableRender, SDL_Window *window)
 {
   // If sequence file defined, load it and play it
   std::string solutionFileString;
-  if (jaffarCommon::file::loadStringFromFile(solutionFileString, solutionFile) == false) 
+  if (jaffarCommon::file::loadStringFromFile(solutionFileString, solutionFile) == false)
     JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from solution sequence file: %s\n%s \n", solutionFile.c_str());
 
   // If config file defined, read it now
   std::string configFileString;
-  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false) 
-   JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str());
+  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false)
+    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str());
 
   // Parsing configuration file
   nlohmann::json config;
-  try { config = nlohmann::json::parse(configFileString); }
-  catch (const std::exception &err) { JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
+  try
+  {
+    config = nlohmann::json::parse(configFileString);
+  }
+  catch (const std::exception &err)
+  {
+    JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
+  }
 
   // Creating runner from the configuration
   auto r = jaffarPlus::Runner::getRunner(
@@ -88,11 +94,11 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
   jaffarCommon::logger::refreshTerminal();
 
   // Instantiating playback object
-  jaffarPlus::Playback p(*r, solutionSequence); 
+  jaffarPlus::Playback p(*r, solutionSequence);
 
   // Flag to display frame information
   bool showFrameInfo = true;
- 
+
   // Finalization flag
   bool isFinalize = false;
 
@@ -133,7 +139,7 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
       jaffarCommon::logger::log("[J+] Sequence Length:             %lu\n", sequenceLength);
       jaffarCommon::logger::log("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
       p.printInfo(currentStep);
-      
+
       // Only print commands if not in reproduce mode
       jaffarCommon::logger::log("[J+] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | r: autoreload | q: quit\n");
 
@@ -146,18 +152,18 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
     // Specifies the command to execute next
     int command = 0;
 
-    // If it's reproducing, 
+    // If it's reproducing,
     if (isReproduce == true)
     {
       // Introducing sleep related to the frame rate
       usleep(inverseFrameRate);
 
-      // Advance to the next frame  
+      // Advance to the next frame
       currentStep++;
 
       // Get command without interrupting
       command = jaffarCommon::logger::getKeyPress();
-    } 
+    }
 
     // If it's not reproducing, grab command with a wait
     if (isReproduce == false) command = jaffarCommon::logger::waitForKeyPress();
@@ -174,9 +180,13 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
 
     // Correct current step if requested more than possible
     if (currentStep < 0) currentStep = 0;
-    
+
     // If not reloading on finish, simply stop
-    if (currentStep > sequenceLength && isReload == false) { currentStep = sequenceLength; isReproduce = false; }
+    if (currentStep > sequenceLength && isReload == false)
+    {
+      currentStep = sequenceLength;
+      isReproduce = false;
+    }
 
     // If reloading on finish, do it now
     if (currentStep > sequenceLength && isReload == true) break;
@@ -207,11 +217,11 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
     if (command == 'q') isFinalize = true;
   }
 
-  // Close game output 
+  // Close game output
   if (disableRender == false) r->getGame()->getEmulator()->finalizeVideoOutput();
 
   // returning false on exit to trigger the finalization
-  if (isFinalize) return false;  
+  if (isFinalize) return false;
 
   // Otherwise, keep looping
   return true;
@@ -219,7 +229,7 @@ bool mainCycle(const std::string& configFile, const std::string& solutionFile, b
 
 int main(int argc, char *argv[])
 {
- // Parsing command line arguments
+  // Parsing command line arguments
   argparse::ArgumentParser program("jaffar-tester", "1.0");
 
   program.add_argument("configFile")
@@ -244,10 +254,16 @@ int main(int argc, char *argv[])
     .help("Do not render game window.")
     .default_value(false)
     .implicit_value(true);
-    
+
   // Try to parse arguments
-  try { program.parse_args(argc, argv);  }
-  catch (const std::runtime_error &err) { JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str()); }
+  try
+  {
+    program.parse_args(argc, argv);
+  }
+  catch (const std::runtime_error &err)
+  {
+    JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str());
+  }
 
   // Parsing config file
   const std::string configFile = program.get<std::string>("configFile");
@@ -271,8 +287,8 @@ int main(int argc, char *argv[])
   auto window = disableRender ? nullptr : launchOutputWindow();
 
   // Setting initial reproduction values
-  isReload = doReload; 
-  isReproduce = reproduceStart; 
+  isReload = doReload;
+  isReproduce = reproduceStart;
 
   // Running main cycle
   bool continueRunning = true;
@@ -284,7 +300,6 @@ int main(int argc, char *argv[])
     // If repeating, then wait a bit before repeating to prevent fast repetition of short movies
     if (continueRunning == true) sleep(1);
   }
-
 
   // Closing output window
   if (disableRender == false) closeOutputWindow(window);

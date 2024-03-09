@@ -1,9 +1,9 @@
 #pragma once
 
+#include "condition.hpp"
+#include "property.hpp"
 #include <jaffarCommon/json.hpp>
 #include <vector>
-#include "property.hpp"
-#include "condition.hpp"
 
 namespace jaffarPlus
 {
@@ -11,19 +11,17 @@ namespace jaffarPlus
 class Rule final
 {
   public:
-
   typedef size_t label_t;
 
-  Rule(const size_t index, const label_t label) :
-   _index(index), 
-   _label(label)
-   {};
+  Rule(const size_t index, const label_t label) : _index(index),
+                                                  _label(label){};
   ~Rule() = default;
 
   // The rule is achieved only if all conditions are met
   inline bool evaluate() const
   {
-    for (const auto& c : _conditions) if(c->evaluate() == false) return false;
+    for (const auto &c : _conditions)
+      if (c->evaluate() == false) return false;
     return true;
   }
 
@@ -32,7 +30,7 @@ class Rule final
   void setFailRule(const bool isFailRule) { _isFailRule = isFailRule; }
   void setCheckpointRule(const bool isCheckpointRule) { _isCheckpointRule = isCheckpointRule; }
   void setCheckpointTolerance(const size_t checkPointTolerance) { _checkPointTolerance = checkPointTolerance; }
-  void addAction(const std::function<void()>& function) { _actions.push_back(function); }
+  void addAction(const std::function<void()> &function) { _actions.push_back(function); }
   void addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
   void addSatisfyRuleLabel(const label_t satisfyRuleLabel) { _satisfyRuleLabels.insert(satisfyRuleLabel); }
 
@@ -44,15 +42,14 @@ class Rule final
   size_t getCheckpointTolerance() const { return _checkPointTolerance; }
   std::unordered_set<label_t> getSatisfyRuleLabels() const { return _satisfyRuleLabels; }
   size_t getIndex() const { return _index; }
-  const std::vector<std::function<void()>>& getActions() const { return _actions; }
-  
-  private:
+  const std::vector<std::function<void()>> &getActions() const { return _actions; }
 
+  private:
   // Conditions are evaluated frequently, so this optimized for performance
   // Operands are pre-parsed as pointers/immediates and the evaluation function
   // is a template that is created at compilation time.
   std::unordered_set<std::unique_ptr<Condition>> _conditions;
-  
+
   // Internal index for sequential access
   const size_t _index;
 
