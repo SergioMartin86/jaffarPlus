@@ -210,60 +210,48 @@ class MicroMachines final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto x = jaffarCommon::json::getNumber<float>(actionJs, "X");
       auto y = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-      rule.addAction([=, this]()
-                     {
-                       this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y};
-                     });
+      auto action = [=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; };
+      rule.addAction(action);
       recognizedActionType = true;
     }
 
     if (actionType == "Set Player Current Lap Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]()
-                     {
-                       this->_playerCurrentLapMagnet = intensity;
-                     });
+      auto action = [=, this]() { this->_playerCurrentLapMagnet = intensity; };
+      rule.addAction(action);
       recognizedActionType = true;
     }
 
     if (actionType == "Set Player Lap Progress Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]()
-                     {
-                       this->_playerLapProgressMagnet = intensity;
-                     });
+      auto action = [=, this]() { this->_playerLapProgressMagnet = intensity; };
+      rule.addAction(action);
       recognizedActionType = true;
     }
 
     if (actionType == "Set Player Accel Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]()
-                     {
-                       this->_playerAccelMagnet = intensity;
-                     });
+      auto action = [=, this]() { this->_playerAccelMagnet = intensity; };
+      rule.addAction(action);
       recognizedActionType = true;
     }
 
     if (actionType == "Set Camera Distance Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]()
-                     {
-                       this->_cameraDistanceMagnet = intensity;
-                     });
+      auto action = [=, this]() { this->_cameraDistanceMagnet = intensity; };
+      rule.addAction(action);
       recognizedActionType = true;
     }
 
     if (actionType == "Set Recovery Timer Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]()
-                     {
-                       this->_recoveryTimerMagnet = intensity;
-                     });
+      auto action = [=, this]() { this->_recoveryTimerMagnet = intensity; };
+      rule.addAction(action);
       recognizedActionType = true;
     }
 
@@ -271,11 +259,8 @@ class MicroMachines final : public jaffarPlus::Game
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto angle = jaffarCommon::json::getNumber<float>(actionJs, "Angle");
-      rule.addAction([=, this]()
-                     {
-                       this->_player1AngleMagnet = angleMagnet_t{.intensity = intensity, .angle = angle};
-                       this->_player1DistanceToMagnetAngle = std::abs(*_player1Angle1 - _player1AngleMagnet.angle);
-                     });
+      auto action = [=, this]() { this->_player1AngleMagnet = angleMagnet_t{.intensity = intensity, .angle = angle}; };
+      rule.addAction(action);
       recognizedActionType = true;
     }
 

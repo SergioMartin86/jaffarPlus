@@ -142,37 +142,25 @@ class Sprilo final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto x = jaffarCommon::json::getNumber<float>(actionJs, "X");
       auto y = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-      rule.addAction([=, this]()
-                     {
-                       this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y};
-                     });
+      rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
       recognizedActionType = true;
     }
 
     if (actionType == "Advance Lap Progress")
     {
-      rule.addAction([this]()
-                     {
-                       *_lapProgress = *_lapProgress + 1;
-                     });
+      rule.addAction([this]() { *_lapProgress = *_lapProgress + 1; });
       recognizedActionType = true;
     }
 
     if (actionType == "Clear Lap Progress")
     {
-      rule.addAction([this]()
-                     {
-                       *_lapProgress = 0;
-                     });
+      rule.addAction([this]() { *_lapProgress = 0; });
       recognizedActionType = true;
     }
 
     if (actionType == "Stop Processing Reward")
     {
-      rule.addAction([this]()
-                     {
-                       _stopProcessingReward = true;
-                     });
+      rule.addAction([this]() { _stopProcessingReward = true; });
       recognizedActionType = true;
     }
 
