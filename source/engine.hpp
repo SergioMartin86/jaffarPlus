@@ -1,5 +1,12 @@
 #pragma once
 
+#include <omp.h>
+#include <jaffarCommon/deserializers/base.hpp>
+#include <jaffarCommon/hash.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/serializers/base.hpp>
+#include <jaffarCommon/timing.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
 #include "game.hpp"
@@ -7,13 +14,6 @@
 #include "runner.hpp"
 #include "stateDb/numa.hpp"
 #include "stateDb/plain.hpp"
-#include <jaffarCommon/deserializers/base.hpp>
-#include <jaffarCommon/hash.hpp>
-#include <jaffarCommon/json.hpp>
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/serializers/base.hpp>
-#include <jaffarCommon/timing.hpp>
-#include <omp.h>
 
 namespace jaffarPlus
 {

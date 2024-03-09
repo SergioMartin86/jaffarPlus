@@ -1,9 +1,10 @@
 #pragma once
 
+#include <vector>
+#include <unordered_set>
+#include <jaffarCommon/json.hpp>
 #include "condition.hpp"
 #include "property.hpp"
-#include <jaffarCommon/json.hpp>
-#include <vector>
 
 namespace jaffarPlus
 {

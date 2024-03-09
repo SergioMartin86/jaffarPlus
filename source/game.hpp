@@ -1,17 +1,17 @@
 #pragma once
 
-#include "emulator.hpp"
-#include "rule.hpp"
-#include <jaffarCommon/bitwise.hpp>
-#include <jaffarCommon/deserializers/base.hpp>
-#include <jaffarCommon/hash.hpp>
-#include <jaffarCommon/json.hpp>
-#include <jaffarCommon/serializers/base.hpp>
 #include <map>
 #include <memory>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <jaffarCommon/bitwise.hpp>
+#include <jaffarCommon/deserializers/base.hpp>
+#include <jaffarCommon/hash.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/serializers/base.hpp>
+#include "emulator.hpp"
+#include "rule.hpp"
 
 namespace jaffarPlus
 {

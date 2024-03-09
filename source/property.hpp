@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstring>
-#include <jaffarCommon/hash.hpp>
 #include <string>
+#include <jaffarCommon/hash.hpp>
 
 namespace jaffarPlus
 {

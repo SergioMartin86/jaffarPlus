@@ -1,12 +1,13 @@
 #pragma once
 
-#include <emulator.hpp>
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
+#include <emulator.hpp>
 #include <nesInstance.hpp>
+
 
 #ifdef _USE_SDL2
   #include <SDL.h>

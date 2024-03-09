@@ -1,7 +1,8 @@
 #pragma once
 
-#include "property.hpp"
 #include <jaffarCommon/bitwise.hpp>
+#include "property.hpp"
+
 
 namespace jaffarPlus
 {

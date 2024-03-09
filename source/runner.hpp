@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../games/gameList.hpp"
-#include "game.hpp"
-#include "inputSet.hpp"
+#include <memory>
+#include <set>
+#include <vector>
 #include <cstdint>
 #include <jaffarCommon/bitwise.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
@@ -12,9 +12,9 @@
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/serializers/differential.hpp>
-#include <memory>
-#include <set>
-#include <vector>
+#include "../games/gameList.hpp"
+#include "game.hpp"
+#include "inputSet.hpp"
 
 namespace jaffarPlus
 {

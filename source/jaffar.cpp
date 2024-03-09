@@ -1,8 +1,8 @@
-#include "driver.hpp"
 #include <argparse/argparse.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/string.hpp>
+#include "driver.hpp"
 
 int main(int argc, char *argv[])
 {

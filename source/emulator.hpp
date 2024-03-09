@@ -1,10 +1,10 @@
 #pragma once
 
+#include <string>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/file.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
-#include <string>
 
 #ifdef _USE_SDL2
   #include <SDL.h>
