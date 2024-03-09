@@ -3,7 +3,6 @@
 #include <jaffarCommon/bitwise.hpp>
 #include "property.hpp"
 
-
 namespace jaffarPlus
 {
 
