@@ -1,7 +1,8 @@
 {
  "Driver Configuration":
  {
-  "End On First Win State": true
+  "End On First Win State": true,
+  "Max Steps": 1000
  },
 
  "Engine Configuration":
@@ -9,7 +10,6 @@
   "State Database":
   {
     "Type": "Numa Aware",
-    "Max Size (Mb)": 20,
     "Max Size per NUMA Domain (Mb)":
     [ 
       10,
@@ -48,12 +48,6 @@
 "Runner Configuration":
 {
   "Hash Step Tolerance": 4,
-
-  "Store Input History":
-  {
-  "Enabled": true,
-  "Maximum Step": 1000
-  },
 
   "Possible Inputs":
   [

@@ -12,3 +12,8 @@ jaffarCPPFlags = [
   '-Wall',
   '-Werror'
   ]
+
+# Code coverage configuration
+if get_option('b_coverage')
+  jaffarCPPFlags += [ '-fno-inline', '-Wno-error=cpp' ]
+endif

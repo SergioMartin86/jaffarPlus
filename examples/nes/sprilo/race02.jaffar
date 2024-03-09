@@ -1,10 +1,15 @@
 {
+  "Driver Configuration":
+  {
+    "End On First Win State": false,
+    "Max Steps": 1150
+  },
+
  "Engine Configuration":
  {
   "State Database":
   {
     "Type": "Numa Aware",
-    "Max Size (Mb)": 4000,
     "Max Size per NUMA Domain (Mb)":
     [ 
       2000,
@@ -44,12 +49,6 @@
 {
   "Hash Step Tolerance": 0,
 
-  "Store Input History":
-  {
-  "Enabled": true,
-  "Maximum Step": 1150
-  },
-
   "Possible Inputs":
   [
    {
@@ -71,6 +70,7 @@
 {
   "Game Name": "NES / Sprilo",
   "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
 
   "Print Properties":
   [

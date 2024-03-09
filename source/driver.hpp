@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <cstdlib>
 #include "engine.hpp"
 #include "game.hpp"
 #include "runner.hpp"
@@ -9,32 +10,52 @@ namespace jaffarPlus
 {
 
 class Driver final
+
 {
   public:
+
+  enum exitReason_t 
+  {
+    /// Found a win state
+    winStateFound = 0,
+
+    /// Engine ran out of states
+    outOfStates = 1,
+
+    /// Maximum step reached
+    maximumStepReached = 2
+  };
+
   // Base constructor
   Driver(const nlohmann::json &config)
   {
-    // Creating runner from the configuration
-    _runner = jaffarPlus::Runner::getRunner(
-      jaffarCommon::json::getObject(config, "Emulator Configuration"),
-      jaffarCommon::json::getObject(config, "Game Configuration"),
-      jaffarCommon::json::getObject(config, "Runner Configuration"));
-
-    // Creating engine from the configuration
-    _engine = jaffarPlus::Engine::getEngine(
-      jaffarCommon::json::getObject(config, "Emulator Configuration"),
-      jaffarCommon::json::getObject(config, "Game Configuration"),
-      jaffarCommon::json::getObject(config, "Runner Configuration"),
-      jaffarCommon::json::getObject(config, "Engine Configuration"));
-
-    // Getting maximum number of steps (zero is not established)
-    _maxSteps = _engine->getMaximumStep();
-
     // Getting driver configuration
     const auto &driverConfig = jaffarCommon::json::getObject(config, "Driver Configuration");
 
     // Getting end win delay config
     _endOnFirstWinState = jaffarCommon::json::getBoolean(driverConfig, "End On First Win State");
+
+    // Getting maximum number of steps (zero is not established)
+    _maxSteps = jaffarCommon::json::getNumber<uint32_t>(driverConfig, "Max Steps");
+  
+    // For testing purposes, the maximum number of steps can be overriden via environment variables
+    if (auto* value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
+
+    // Getting component configurations
+    auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
+    auto gameConfig = jaffarCommon::json::getObject(config, "Game Configuration");
+    auto runnerConfig = jaffarCommon::json::getObject(config, "Runner Configuration");
+    auto engineConfig = jaffarCommon::json::getObject(config, "Engine Configuration");
+
+    // Overriding runner configuration based on the maximum number of steps to drive
+    runnerConfig["Store Input History"]["Enabled"] = _maxSteps > 0;
+    runnerConfig["Store Input History"]["Max Size (Steps)"] = _maxSteps;
+
+    // Creating runner from the configuration
+    _runner = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
+    
+    // Creating engine from the configuration
+    _engine = jaffarPlus::Engine::getEngine(emulatorConfig, gameConfig, runnerConfig, engineConfig);
 
     // Allocating space for the current best and worst states
     _stateSize = _runner->getStateSize();
@@ -74,8 +95,8 @@ class Driver final
     // Showing initial state's information
     dumpInformation();
 
-    // Storage to print the exit reason
-    std::string exitReason;
+    // Storage for the exit
+    exitReason_t exitReason;
 
     // Running engine until a termination point
     while (true)
@@ -83,21 +104,22 @@ class Driver final
       // If found winning state, report it now
       if (_endOnFirstWinState && _engine->getWinStates().size() > 0)
       {
-        exitReason = "Exiting on first solution found";
+        exitReason = exitReason_t::winStateFound;
         break;
-      }
+      } 
 
       // If ran out of states, finish now
       if (_engine->getStateCount() == 0)
       {
-        exitReason = "Engine ran out of states";
+        exitReason = exitReason_t::outOfStates;
         break;
       }
 
       // If maximum step established and reached, finish now
       if (_maxSteps > 0 && _currentStep >= _maxSteps)
       {
-        exitReason = "Maximum step count reached.";
+        if (_winStatesFound > 0)  exitReason = exitReason_t::winStateFound;
+        if (_winStatesFound == 0) exitReason = exitReason_t::maximumStepReached;
         break;
       }
 
@@ -120,12 +142,8 @@ class Driver final
     // Final report
     dumpInformation();
 
-    // Printing exit reason
-    jaffarCommon::logger::log("[J++] Step %lu - Exit Reason: %s\n", _currentStep, exitReason.c_str());
-
-    // Exit code depends on if win state was found
-    if (_winStatesFound == 0) return -1;
-    return 0;
+    // Otherwise return the reason why we stopped
+    return exitReason;
   }
 
   void dumpInformation()
@@ -258,8 +276,11 @@ class Driver final
     return d;
   }
 
+  // Function to get the last step
+  size_t getCurrentStep() { return _currentStep; }
+
   private:
-  
+
   // Pointer to the internal Jaffar engine
   std::unique_ptr<Engine> _engine;
 

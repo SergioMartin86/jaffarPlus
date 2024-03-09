@@ -52,9 +52,6 @@ class Engine final
     // Grabbing a runner to do continue initialization
     auto &r = *_runners[0];
 
-    // Getting maximum bumber of steps
-    _maxStepCount = r.getMaximumStep();
-
     // Creating State database
     const auto &stateDatabaseJs = jaffarCommon::json::getObject(engineConfig, "State Database");
     const auto &stateDatabaseType = jaffarCommon::json::getString(stateDatabaseJs, "Type");
@@ -240,7 +237,6 @@ class Engine final
   auto &getStateDb() const { return _stateDb; }
   auto getWinStates() const { return _winStatesFound; }
   auto getStateCount() const { return _stateDb->getStateCount(); }
-  auto getMaximumStep() const { return _maxStepCount; }
 
   /**
    * Information printing function
@@ -484,9 +480,6 @@ class Engine final
   jaffarCommon::concurrent::HashMap_t<float, void *> _winStatesFound;
 
   ///////////////// Configuration
-
-  // Maximum number of steps to run
-  size_t _maxStepCount;
 
   // Thread count (set by openMP)
   size_t _threadCount;

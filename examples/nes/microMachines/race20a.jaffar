@@ -1,4 +1,10 @@
 {
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 1800
+ },
+  
  "Engine Configuration":
  {
   "State Database":
@@ -43,12 +49,6 @@
 "Runner Configuration":
 {
   "Hash Step Tolerance": 4,
-
-  "Store Input History":
-  {
-  "Enabled": true,
-  "Maximum Step": 1800
-  },
 
   "Possible Inputs":
   [

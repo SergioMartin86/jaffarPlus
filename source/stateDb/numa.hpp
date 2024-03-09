@@ -4,6 +4,7 @@
 #include <memory>
 #include <numa.h>
 #include <utmpx.h>
+#include <cstdlib>
 #include <jaffarCommon/concurrent.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
@@ -48,14 +49,15 @@ class Numa : public stateDb::Base
     size_t numaSizeSum = 0;
     for (const auto &entry : maxSizePerNumaMbJs)
     {
-      const auto sizeMb = entry;
+      auto sizeMb = entry;
+
+      // For testing purposes, the maximum size 
+      if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = std::stoul(value) / _numaCount;
+
       _maxSizePerNumaMb.push_back(sizeMb);
       _maxSizePerNuma.push_back(sizeMb * 1024ul * 1024ul);
       numaSizeSum += sizeMb;
     }
-
-    // Sanity check
-    if (numaSizeSum != _maxSizeMb) JAFFAR_THROW_LOGIC("Maximum state database size (%lu mb) does not equal the sum of NUMA-specific max sizes (%lu mb)\n", _maxSizeMb, numaSizeSum);
 
     // Getting maximum allocatable memory in each NUMA domain
     std::vector<size_t> maxFreeMemoryPerNuma(_numaCount);
