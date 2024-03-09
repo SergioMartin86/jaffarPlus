@@ -52,8 +52,8 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install clang-format doxygen graphviz
     - name: Checking proper code styling (source)
-      run:  extern/jaffarCommon/.build-tools/check-style.sh source
+      run:  extern/jaffarCommon/.build-tools/check-style.sh check source
     - name: Checking proper code styling (games)
-      run:  extern/jaffarCommon/.build-tools/check-style.sh games
+      run:  extern/jaffarCommon/.build-tools/check-style.sh check games
     - name: Checking proper code styling (emulators)
-      run:  extern/jaffarCommon/.build-tools/check-style.sh emulators
+      run:  extern/jaffarCommon/.build-tools/check-style.sh check emulators
