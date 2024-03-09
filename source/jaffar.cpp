@@ -49,5 +49,23 @@ int main(int argc, char *argv[])
   auto d = jaffarPlus::Driver::getDriver(config);
 
   // Running driver
-  return d->run();
+  auto exitReason = d->run();
+
+  // Printing exit reason
+  std::string exitReasonString;
+  if (exitReason == jaffarPlus::Driver::exitReason_t::winStateFound) exitReasonString = "Solution found.";
+  if (exitReason == jaffarPlus::Driver::exitReason_t::outOfStates) exitReasonString = "Engine ran out of states.";
+  if (exitReason == jaffarPlus::Driver::exitReason_t::maximumStepReached) exitReasonString = "Maximum step count reached.";
+
+  // Getting current step
+  auto finalStep = d->getCurrentStep();
+
+  // Printing exit message
+  jaffarCommon::logger::log("[J++] Step %lu - Exit Reason: %s\n", finalStep, exitReasonString.c_str());
+
+  // For testing purposes, return zero if executed properly (regardless of exit reason) 
+  if (std::getenv("JAFFAR_OVERRIDE_RETURN_CODE")) return 0;
+
+  // Return exit reason
+  return exitReason;
 }

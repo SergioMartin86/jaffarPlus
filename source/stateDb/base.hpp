@@ -24,9 +24,6 @@ class Base
   {
     ///////// Parsing configuration
 
-    // Getting maximum state db size in Mb
-    _maxSizeMb = jaffarCommon::json::getNumber<size_t>(config, "Max Size (Mb)");
-
     // Parsing state compression configuration
     const auto &stateCompressionJs = jaffarCommon::json::getObject(config, "Compression");
     _useDifferentialCompression = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Differential Compression");
@@ -98,7 +95,7 @@ class Base
   {
     memcpy(_referenceData, referenceData, _stateSizeRaw);
   }
-  
+
   /**
    * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
    */
@@ -225,11 +222,6 @@ class Base
    * Maximum size (bytes) for the state database to grow
    */
   size_t _maxSize;
-
-  /**
-   * Configured maximum size (Mb) for the state database to grow to
-   */
-  size_t _maxSizeMb;
 
   /**
    * Number of maximum states in execution

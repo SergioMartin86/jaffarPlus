@@ -19,6 +19,12 @@ class Plain : public stateDb::Base
   public:
   Plain(Runner &r, const nlohmann::json &config) : stateDb::Base(r, config)
   {
+    // Getting maximum state db size in Mb
+    _maxSizeMb = jaffarCommon::json::getNumber<size_t>(config, "Max Size (Mb)");
+
+    // For testing purposes, the maximum size 
+    if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
+
     // Converting it to pure bytes
     _maxSize = _maxSizeMb * 1024ul * 1024ul;
 
@@ -116,6 +122,11 @@ class Plain : public stateDb::Base
    * Internal buffer for the state database
    */
   uint8_t *_internalBuffer;
+
+  /**
+   * Configured maximum size (Mb) for the state database to grow to
+   */
+  size_t _maxSizeMb;
 };
 
 } // namespace stateDb

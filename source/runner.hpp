@@ -29,7 +29,7 @@ class Runner final
 
     const auto &inputHistoryJs = jaffarCommon::json::getObject(config, "Store Input History");
     _inputHistoryEnabled = jaffarCommon::json::getBoolean(inputHistoryJs, "Enabled");
-    _maximumStep = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Maximum Step");
+    _inputHistoryMaxSize = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size (Steps)");
 
     // Storing game inputs for delayed parsing
     _possibleInputsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Possible Inputs");
@@ -47,7 +47,7 @@ class Runner final
       _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_currentInputIndex);
 
       // Total size in bits for the input history
-      size_t inputHistorySizeBits = _maximumStep * _inputIndexSizeBits;
+      size_t inputHistorySizeBits = _inputHistoryMaxSize * _inputIndexSizeBits;
 
       // Total size in bytes
       size_t inputHistorySizeBytes = inputHistorySizeBits / 8;
@@ -162,7 +162,7 @@ class Runner final
     if (_inputHistoryEnabled == true)
     {
       // Checking we haven't exeeded maximum step
-      if (_currentStep >= _maximumStep) JAFFAR_THROW_RUNTIME("[ERROR] Trying to advance step when storing input history and the maximum step (%lu) has been reached\n", _maximumStep);
+      if (_currentStep >= _inputHistoryMaxSize) JAFFAR_THROW_RUNTIME("[ERROR] Trying to advance step when storing input history and the maximum step (%lu) has been reached\n", _inputHistoryMaxSize);
 
       // Storing the new more in the input history
       setInput(_currentStep, inputIdx);
@@ -300,7 +300,7 @@ class Runner final
     if (_inputHistoryEnabled == true)
     {
       jaffarCommon::logger::log("[J++]    + Possible Input Count: %u (Encoded in %lu bits)\n", _currentInputIndex, _inputIndexSizeBits);
-      jaffarCommon::logger::log("[J++]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _maximumStep, _inputHistory.size(), _inputIndexSizeBits * _maximumStep);
+      jaffarCommon::logger::log("[J++]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _inputHistoryMaxSize, _inputHistory.size(), _inputIndexSizeBits * _inputHistoryMaxSize);
     }
 
     // Printing runner state
@@ -319,7 +319,9 @@ class Runner final
 
   inline uint32_t getHashStepToleranceStage() const { return _currentStep % (_hashStepTolerance + 1); }
   inline Game *getGame() const { return _game.get(); }
-  inline size_t getMaximumStep() const { return _maximumStep; }
+
+  inline bool getInputHistoryEnabled() const { return _inputHistoryEnabled; }
+  inline size_t getInputHistoryMaximumStep() const { return _inputHistoryMaxSize; }
 
   // Function to obtain runner based on game and emulator choice
   static std::unique_ptr<Runner> getRunner(const nlohmann::json &emulatorConfig, const nlohmann::json &gameConfig, const nlohmann::json &runnerConfig)
@@ -342,7 +344,7 @@ class Runner final
   std::unique_ptr<Game> _game;
 
   // Maximum step (max input history)
-  uint32_t _maximumStep;
+  uint32_t _inputHistoryMaxSize;
 
   // Storage for the current step of the runner
   uint32_t _currentStep = 0;
