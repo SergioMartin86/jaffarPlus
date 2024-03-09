@@ -1,13 +1,14 @@
 #pragma once
 
-#include "base.hpp"
 #include <cstdlib>
-#include <jaffarCommon/concurrent.hpp>
-#include <jaffarCommon/json.hpp>
-#include <jaffarCommon/logger.hpp>
 #include <memory>
 #include <numa.h>
 #include <utmpx.h>
+#include <jaffarCommon/concurrent.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/parallel.hpp>
+#include "base.hpp"
 
 namespace jaffarPlus
 {
@@ -57,11 +58,11 @@ class Numa : public stateDb::Base
     if (numaSizeSum != _maxSizeMb) JAFFAR_THROW_LOGIC("Maximum state database size (%lu mb) does not equal the sum of NUMA-specific max sizes (%lu mb)\n", _maxSizeMb, numaSizeSum);
 
     // Getting maximum allocatable memory in each NUMA domain
-    std::vector<long long> maxFreeMemoryPerNuma(_numaCount);
+    std::vector<size_t> maxFreeMemoryPerNuma(_numaCount);
     for (int i = 0; i < _numaCount; i++)
     {
-      long long freeMemory = 0;
-      numa_node_size64(i, &freeMemory);
+      size_t freeMemory = 0;
+      numa_node_size64(i, (long long*)&freeMemory);
       maxFreeMemoryPerNuma[i] = freeMemory;
     }
 
@@ -84,34 +85,39 @@ class Numa : public stateDb::Base
     }
 
     // Getting number of bytes to reserve for each NUMA domain
-    std::vector<long long> allocableBytesPerNuma(_numaCount);
-    for (int i = 0; i < _numaCount; i++) allocableBytesPerNuma[i] = _maxStatesPerNuma[i] * _stateSize;
+    _allocableBytesPerNuma.resize(_numaCount);
+    for (int i = 0; i < _numaCount; i++) _allocableBytesPerNuma[i] = _maxStatesPerNuma[i] * _stateSize;
 
     // Creating internal buffers, one per NUMA domain
     _internalBuffersStart.resize(_numaCount);
     _internalBuffersEnd.resize(_numaCount);
     for (int i = 0; i < _numaCount; i++)
     {
-      _internalBuffersStart[i] = (uint8_t *)numa_alloc_onnode(allocableBytesPerNuma[i], i);
+      _internalBuffersStart[i] = (uint8_t *)numa_alloc_onnode(_allocableBytesPerNuma[i], i);
       if (_internalBuffersStart[i] == NULL) JAFFAR_THROW_RUNTIME("Error trying to allocate memory for numa domain %d\n", i);
-      _internalBuffersEnd[i] = &_internalBuffersStart[i][allocableBytesPerNuma[i]];
+      _internalBuffersEnd[i] = &_internalBuffersStart[i][_allocableBytesPerNuma[i]];
     }
 
-// Determining the preferred numa domain for each thread. This depends on OpenMP using always the same set of threads.
-#pragma omp parallel
+    // Determining the preferred numa domain for each thread. This depends on OpenMP using always the same set of threads.
+    JAFFAR_PARALLEL
     {
       int cpu = sched_getcpu();
       int node = numa_node_of_cpu(cpu);
       preferredNumaDomain = node;
     }
+  }
 
+  ~Numa() = default;
+
+  void initialize() override
+  {
     // Getting system's page size (typically 4K but it may change in the future)
     const size_t pageSize = sysconf(_SC_PAGESIZE);
 
     // Initializing the internal buffers
     for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++)
-#pragma omp parallel for
-      for (long long i = 0; i < allocableBytesPerNuma[numaNodeIdx]; i += pageSize) _internalBuffersStart[numaNodeIdx][i] = 1;
+     JAFFAR_PARALLEL_FOR
+     for (size_t i = 0; i < _allocableBytesPerNuma[numaNodeIdx]; i += pageSize) _internalBuffersStart[numaNodeIdx][i] = 1;
 
     // Adding the state pointers to the free state queues
     _freeStateQueues.resize(_numaCount);
@@ -122,8 +128,6 @@ class Numa : public stateDb::Base
         _freeStateQueues[numaNodeIdx]->try_push((void *)&_internalBuffersStart[numaNodeIdx][i * _stateSize]);
     }
   }
-
-  ~Numa() = default;
 
   // Function to print relevant information
   void printInfoImpl() const override
@@ -284,6 +288,11 @@ class Numa : public stateDb::Base
    * End pointer for each of the internal buffers
    */
   std::vector<uint8_t *> _internalBuffersEnd;
+
+  /**
+   * Number of bytes to allocate per NUMA domain
+  */
+  std::vector<size_t> _allocableBytesPerNuma;
 };
 
 } // namespace stateDb

@@ -259,6 +259,7 @@ class Driver final
   }
 
   private:
+  
   // Pointer to the internal Jaffar engine
   std::unique_ptr<Engine> _engine;
 

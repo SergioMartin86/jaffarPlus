@@ -1,1 +1,6 @@
-    
+option('buildTests',
+  type : 'boolean',
+  value : true,
+  description : 'Build test programs and creates the test suite',
+  yield: true
+)

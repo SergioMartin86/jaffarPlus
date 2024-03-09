@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../runner.hpp"
 #include <jaffarCommon/concurrent.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/deserializers/differential.hpp>
@@ -8,6 +7,7 @@
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/serializers/differential.hpp>
+#include "../runner.hpp"
 
 #define _JAFFAR_STATE_PADDING_BYTES 64
 
@@ -83,11 +83,22 @@ class Base
     printInfoImpl();
   }
 
+  virtual void initialize() = 0;
   virtual void *getFreeState() = 0;
   virtual void returnFreeState(void *const statePtr) = 0;
   virtual void *popState() = 0;
   virtual size_t getStateCount() const = 0;
 
+  /**
+   * This function sets the reference data required for differential compression
+   *
+   * It must be of the same size as _stateSizeRaw
+   */
+  inline void setReferenceData(const void *referenceData)
+  {
+    memcpy(_referenceData, referenceData, _stateSizeRaw);
+  }
+  
   /**
    * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
    */
@@ -175,16 +186,6 @@ class Base
   inline void *getWorstState() const
   {
     return _currentStateDb.back();
-  }
-
-  /**
-   * This function sets the reference data required for differential compression
-   *
-   * It must be of the same size as _stateSizeRaw
-   */
-  inline void setReferenceData(const void *referenceData)
-  {
-    memcpy(_referenceData, referenceData, _stateSizeRaw);
   }
 
   protected:
