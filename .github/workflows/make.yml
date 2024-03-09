@@ -10,9 +10,7 @@ jobs:
 
   # Build and run tests
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
       with:
@@ -43,3 +41,19 @@ jobs:
       with:
         name: meson-logs
         path: build/meson-logs/
+
+  # Build documentation and checking proper style
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Installing apt packages
+      run: sudo apt install clang-format doxygen graphviz
+    - name: Checking proper code styling (source)
+      run:  extern/jaffarCommon/.build-tools/check-style.sh source
+    - name: Checking proper code styling (games)
+      run:  extern/jaffarCommon/.build-tools/check-style.sh games
+    - name: Checking proper code styling (emulators)
+      run:  extern/jaffarCommon/.build-tools/check-style.sh emulators
