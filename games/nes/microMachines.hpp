@@ -4,7 +4,6 @@
 #include <emulator.hpp>
 #include <game.hpp>
 
-
 namespace jaffarPlus
 {
 

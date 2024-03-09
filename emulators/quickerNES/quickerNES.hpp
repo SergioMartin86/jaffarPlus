@@ -8,7 +8,6 @@
 #include <emulator.hpp>
 #include <nesInstance.hpp>
 
-
 #ifdef _USE_SDL2
   #include <SDL.h>
 #endif
