@@ -1,46 +1,45 @@
 #pragma once
 
-#include <limits>
+#include "engine.hpp"
 #include "game.hpp"
 #include "runner.hpp"
-#include "engine.hpp"
+#include <limits>
 
 namespace jaffarPlus
 {
 
 class Driver final
 {
- public:
-
+  public:
   // Base constructor
-  Driver(const nlohmann::json& config) 
+  Driver(const nlohmann::json &config)
   {
-   // Creating runner from the configuration
-   _runner = jaffarPlus::Runner::getRunner(
-    jaffarCommon::json::getObject(config, "Emulator Configuration"),
-    jaffarCommon::json::getObject(config, "Game Configuration"),
-    jaffarCommon::json::getObject(config, "Runner Configuration"));
+    // Creating runner from the configuration
+    _runner = jaffarPlus::Runner::getRunner(
+      jaffarCommon::json::getObject(config, "Emulator Configuration"),
+      jaffarCommon::json::getObject(config, "Game Configuration"),
+      jaffarCommon::json::getObject(config, "Runner Configuration"));
 
-   // Creating engine from the configuration
-   _engine = jaffarPlus::Engine::getEngine(
-    jaffarCommon::json::getObject(config, "Emulator Configuration"),
-    jaffarCommon::json::getObject(config, "Game Configuration"),
-    jaffarCommon::json::getObject(config, "Runner Configuration"),
-    jaffarCommon::json::getObject(config, "Engine Configuration"));
+    // Creating engine from the configuration
+    _engine = jaffarPlus::Engine::getEngine(
+      jaffarCommon::json::getObject(config, "Emulator Configuration"),
+      jaffarCommon::json::getObject(config, "Game Configuration"),
+      jaffarCommon::json::getObject(config, "Runner Configuration"),
+      jaffarCommon::json::getObject(config, "Engine Configuration"));
 
-   // Getting maximum number of steps (zero is not established)
-   _maxSteps = _engine->getMaximumStep();
+    // Getting maximum number of steps (zero is not established)
+    _maxSteps = _engine->getMaximumStep();
 
-   // Getting driver configuration
-   const auto& driverConfig = jaffarCommon::json::getObject(config, "Driver Configuration");
+    // Getting driver configuration
+    const auto &driverConfig = jaffarCommon::json::getObject(config, "Driver Configuration");
 
-   // Getting end win delay config
-   _endOnFirstWinState = jaffarCommon::json::getBoolean(driverConfig, "End On First Win State");
+    // Getting end win delay config
+    _endOnFirstWinState = jaffarCommon::json::getBoolean(driverConfig, "End On First Win State");
 
-   // Allocating space for the current best and worst states
-   _stateSize = _runner->getStateSize();
-   _bestStateStorage  = (uint8_t*) malloc (_stateSize);
-   _worstStateStorage = (uint8_t*) malloc (_stateSize);
+    // Allocating space for the current best and worst states
+    _stateSize = _runner->getStateSize();
+    _bestStateStorage = (uint8_t *)malloc(_stateSize);
+    _worstStateStorage = (uint8_t *)malloc(_stateSize);
   }
 
   ~Driver()
@@ -52,45 +51,57 @@ class Driver final
   // Resets the execution back to the starting point
   void initialize()
   {
-   // Resetting step counter
-   _currentStep = 0;
+    // Resetting step counter
+    _currentStep = 0;
 
-   // Resetting win state counter
-   _winStatesFound = 0;
+    // Resetting win state counter
+    _winStatesFound = 0;
 
-   // Resetting best states reward
-   _bestWinStateReward = -std::numeric_limits<float>::infinity();
-   _bestStateReward    = -std::numeric_limits<float>::infinity();
+    // Resetting best states reward
+    _bestWinStateReward = -std::numeric_limits<float>::infinity();
+    _bestStateReward = -std::numeric_limits<float>::infinity();
 
-   // Resetting worst state reward
-   _worstStateReward = std::numeric_limits<float>::infinity();
+    // Resetting worst state reward
+    _worstStateReward = std::numeric_limits<float>::infinity();
   }
 
   // Start running engine loop
   int run()
   {
-   // If using ncurses, initialize terminal now
-  jaffarCommon::logger::initializeTerminal();
+    // If using ncurses, initialize terminal now
+    jaffarCommon::logger::initializeTerminal();
 
-   // Showing initial state's information
-   dumpInformation();
+    // Showing initial state's information
+    dumpInformation();
 
-   // Storage to print the exit reason
-   std::string exitReason;
-   
-   // Running engine until a termination point
-   while(true)
-   {
+    // Storage to print the exit reason
+    std::string exitReason;
+
+    // Running engine until a termination point
+    while (true)
+    {
       // If found winning state, report it now
-      if (_endOnFirstWinState && _engine->getWinStates().size() > 0)  { exitReason = "Exiting on first solution found"; break; }
+      if (_endOnFirstWinState && _engine->getWinStates().size() > 0)
+      {
+        exitReason = "Exiting on first solution found";
+        break;
+      }
 
       // If ran out of states, finish now
-      if (_engine->getStateCount() == 0) { exitReason = "Engine ran out of states"; break; }
+      if (_engine->getStateCount() == 0)
+      {
+        exitReason = "Engine ran out of states";
+        break;
+      }
 
       // If maximum step established and reached, finish now
-      if (_maxSteps > 0 && _currentStep >= _maxSteps) { exitReason = "Maximum step count reached."; break; }
+      if (_maxSteps > 0 && _currentStep >= _maxSteps)
+      {
+        exitReason = "Maximum step count reached.";
+        break;
+      }
 
-      // Running engine step 
+      // Running engine step
       _engine->runStep();
 
       // Summing amount of win states found
@@ -101,20 +112,20 @@ class Driver final
 
       // Printing information and dumping information and files
       dumpInformation();
-   }
+    }
 
-   // If using ncurses, terminate terminal now
-   jaffarCommon::logger::finalizeTerminal();
+    // If using ncurses, terminate terminal now
+    jaffarCommon::logger::finalizeTerminal();
 
-   // Final report
-   dumpInformation();
+    // Final report
+    dumpInformation();
 
-   // Printing exit reason
-   jaffarCommon::logger::log("[J++] Step %lu - Exit Reason: %s\n", _currentStep, exitReason.c_str());
+    // Printing exit reason
+    jaffarCommon::logger::log("[J++] Step %lu - Exit Reason: %s\n", _currentStep, exitReason.c_str());
 
-   // Exit code depends on if win state was found
-   if (_winStatesFound == 0) return -1;
-   return 0;
+    // Exit code depends on if win state was found
+    if (_winStatesFound == 0) return -1;
+    return 0;
   }
 
   void dumpInformation()
@@ -128,7 +139,7 @@ class Driver final
 
     // Showing current state of execution and dumping best states
     printInfo();
-    
+
     // Dump Best State
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage);
     _runner->dumpInputHistoryToFile("jaffar.best.sol");
@@ -179,7 +190,7 @@ class Driver final
     {
       // Getting best win state (best reward) for the current step
       auto winStateEntry = _engine->getWinStates().begin();
-    
+
       // Getting the reward of this step's winning state reward
       auto winStateReward = winStateEntry->first;
 
@@ -191,7 +202,7 @@ class Driver final
 
         // Getting new best win state's pointer
         auto bestWinStatePtr = winStateEntry->second;
-        
+
         // Saving win state into the storage
         memcpy(_bestStateStorage, bestWinStatePtr, _stateSize);
       }
@@ -207,12 +218,12 @@ class Driver final
     jaffarCommon::logger::log("[J++] Current Step #:                              %lu (Max: %lu)\n", _currentStep, _maxSteps);
 
     if (_winStatesFound == 0)
-    jaffarCommon::logger::log("[J++] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
-    
+      jaffarCommon::logger::log("[J++] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
+
     if (_winStatesFound > 0)
     {
-    jaffarCommon::logger::log("[J++] Best Win State Reward:                       %.3f\n", _bestStateReward);
-    jaffarCommon::logger::log("[J++] Win States Found:                            %lu\n", _winStatesFound);
+      jaffarCommon::logger::log("[J++] Best Win State Reward:                       %.3f\n", _bestStateReward);
+      jaffarCommon::logger::log("[J++] Win States Found:                            %lu\n", _winStatesFound);
     }
 
     // Printing engine information
@@ -222,33 +233,32 @@ class Driver final
     // Loading best state into runner
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage);
 
-   // Printing best state information to screen
-   jaffarCommon::logger::log("[J++] Runner Information (Best State): \n");
-   _runner->printInfo();
-   jaffarCommon::logger::log("[J++] Game Information (Best State): \n");
-   _runner->getGame()->printInfo();
-   jaffarCommon::logger::log("[J++] Emulator Information (Best State): \n");
-   _runner->getGame()->getEmulator()->printInfo(); 
+    // Printing best state information to screen
+    jaffarCommon::logger::log("[J++] Runner Information (Best State): \n");
+    _runner->printInfo();
+    jaffarCommon::logger::log("[J++] Game Information (Best State): \n");
+    _runner->getGame()->printInfo();
+    jaffarCommon::logger::log("[J++] Emulator Information (Best State): \n");
+    _runner->getGame()->getEmulator()->printInfo();
 
-   // Division rule to separate different steps
-   jaffarCommon::logger::log("[J++] --------------------------------------------------------------\n");
+    // Division rule to separate different steps
+    jaffarCommon::logger::log("[J++] --------------------------------------------------------------\n");
   }
 
   // Function to obtain driver based on configuration
-  static std::unique_ptr<Driver> getDriver(const nlohmann::json& config)
+  static std::unique_ptr<Driver> getDriver(const nlohmann::json &config)
   {
-      // Creating new engine
-      auto d = std::make_unique<Driver>(config);
+    // Creating new engine
+    auto d = std::make_unique<Driver>(config);
 
-      // Initializing engine
-      d->initialize();
+    // Initializing engine
+    d->initialize();
 
-      // Returning engine
-      return d;
+    // Returning engine
+    return d;
   }
 
   private:
-
   // Pointer to the internal Jaffar engine
   std::unique_ptr<Engine> _engine;
 
@@ -277,10 +287,10 @@ class Driver final
   float _worstStateReward;
 
   // Storage for the current best (win or otherwise) state
-  uint8_t* _bestStateStorage;
+  uint8_t *_bestStateStorage;
 
   // Storage for the current worst (win or otherwise) state
-  uint8_t* _worstStateStorage;
+  uint8_t *_worstStateStorage;
 
   // Storage size of a runner state
   size_t _stateSize;

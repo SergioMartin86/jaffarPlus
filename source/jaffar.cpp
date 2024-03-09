@@ -1,12 +1,12 @@
+#include "driver.hpp"
 #include <argparse/argparse.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/string.hpp>
-#include "driver.hpp"
 
 int main(int argc, char *argv[])
 {
- // Parsing command line arguments
+  // Parsing command line arguments
   argparse::ArgumentParser program("jaffar", "1.0");
 
   program.add_argument("configFile")
@@ -14,8 +14,14 @@ int main(int argc, char *argv[])
     .required();
 
   // Try to parse arguments
-  try { program.parse_args(argc, argv);  }
-  catch (const std::runtime_error &err) { JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str()); }
+  try
+  {
+    program.parse_args(argc, argv);
+  }
+  catch (const std::runtime_error &err)
+  {
+    JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str());
+  }
 
   // Getting config file name
   const std::string configFile = program.get<std::string>("configFile");
@@ -25,13 +31,19 @@ int main(int argc, char *argv[])
 
   // Loading script file contents
   std::string configFileString;
-  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false) 
+  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false)
     JAFFAR_THROW_RUNTIME("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str(), program.help().str().c_str());
 
   // Parsing JSON from script file
   nlohmann::json config;
-  try { config = nlohmann::json::parse(configFileString); }
-  catch (const std::exception &err) { JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what()); }
+  try
+  {
+    config = nlohmann::json::parse(configFileString);
+  }
+  catch (const std::exception &err)
+  {
+    JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
+  }
 
   // Creating driver to run the Jaffar engine
   auto d = jaffarPlus::Driver::getDriver(config);
@@ -39,4 +51,3 @@ int main(int argc, char *argv[])
   // Running driver
   return d->run();
 }
-
