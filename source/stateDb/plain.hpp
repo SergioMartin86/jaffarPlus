@@ -1,11 +1,12 @@
 #pragma once
 
-#include "base.hpp"
 #include <cstdlib>
+#include <memory>
 #include <jaffarCommon/concurrent.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
-#include <memory>
+#include <jaffarCommon/parallel.hpp>
+#include "base.hpp"
 
 namespace jaffarPlus
 {
@@ -24,26 +25,29 @@ class Plain : public stateDb::Base
     // Getting maximum number of states
     _maxStates = _maxSize / _stateSize;
 
-    // Getting system's page size (typically 4K but it may change in the future)
-    const size_t pageSize = sysconf(_SC_PAGESIZE);
-
     // Creating free state queue
     _freeStateQueue = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void *>>(_maxStates);
+  }
+
+  ~Plain() = default;
+
+  void initialize() override
+  {
+    // Getting system's page size (typically 4K but it may change in the future)
+    const size_t pageSize = sysconf(_SC_PAGESIZE);
 
     // Allocating space for the states
     auto status = posix_memalign((void **)&_internalBuffer, pageSize, _maxSize);
     if (status != 0) JAFFAR_THROW_RUNTIME("Could not allocate aligned memory for the state database");
 
-// Doing first touch for every page
-#pragma omp parallel for
+    // Doing first touch for every page
+    JAFFAR_PARALLEL_FOR
     for (size_t i = 0; i < _maxSize; i += pageSize) _internalBuffer[i] = 1;
 
     // Adding the state pointers to the free state queue
     for (size_t i = 0; i < _maxStates; i++)
       _freeStateQueue->try_push((void *)&_internalBuffer[i * _stateSize]);
   }
-
-  ~Plain() = default;
 
   // Function to print relevant information
   void printInfoImpl() const override

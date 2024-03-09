@@ -1,12 +1,12 @@
 #pragma once
 
-#include <omp.h>
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
 #include <jaffarCommon/timing.hpp>
+#include <jaffarCommon/parallel.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
 #include "game.hpp"
@@ -25,7 +25,7 @@ class Engine final
   Engine(const nlohmann::json &emulatorConfig, const nlohmann::json &gameConfig, const nlohmann::json &runnerConfig, const nlohmann::json &engineConfig)
   {
     // Getting number of threads
-    _threadCount = omp_get_max_threads();
+    _threadCount = jaffarCommon::parallel::getMaxThreadCount();
 
     // Sanity check
     if (_threadCount == 0) JAFFAR_THROW_LOGIC("The number of worker threads must be at least one. Provided: %lu\n", _threadCount);
@@ -33,11 +33,11 @@ class Engine final
     // Creating storage for the runnners (one per thread)
     _runners.resize(_threadCount);
 
-// Initializing runners, one per thread
-#pragma omp parallel
+    // Initializing runners, one per thread
+    JAFFAR_PARALLEL
     {
       // Getting my thread id
-      int threadId = omp_get_thread_num();
+      int threadId = jaffarCommon::parallel::getThreadId();
 
       // Creating runner from the configuration
       auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
@@ -70,6 +70,9 @@ class Engine final
       stateDatabaseTypeRecognized = true;
     }
     if (stateDatabaseTypeRecognized == false) JAFFAR_THROW_LOGIC("State database type '%s' not recognized", stateDatabaseType.c_str());
+
+    // Initializing state db
+    _stateDb->initialize();
 
     // Getting memory for the reference state
     const auto stateSize = r.getStateSize();
@@ -115,7 +118,7 @@ class Engine final
     const auto hash = r.computeHash();
 
     // Adding it to the hash DB
-    _hashDb->checkHashExists(hash);
+    _hashDb->insertHash(hash);
   };
 
   /**
@@ -179,8 +182,8 @@ class Engine final
     _stepBaseStatesProcessed = 0;
     _stepNewStatesProcessed = 0;
 
-// Performing one computation step in parallel
-#pragma omp parallel
+    // Performing one computation step in parallel
+    JAFFAR_PARALLEL
     workerFunction();
 
     // Advancing hash database state
@@ -357,7 +360,7 @@ class Engine final
   void workerFunction()
   {
     // Getting my thread id
-    const auto threadId = omp_get_thread_num();
+    const auto threadId = jaffarCommon::parallel::getThreadId();
 
     // Getting my runner
     auto &r = _runners[threadId];
