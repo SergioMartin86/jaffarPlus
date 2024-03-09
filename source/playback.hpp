@@ -1,11 +1,11 @@
 #pragma once
 
+#include <string>
+#include <vector>
 #include "jaffarCommon/deserializers/contiguous.hpp"
 #include "jaffarCommon/hash.hpp"
 #include "jaffarCommon/serializers/contiguous.hpp"
 #include "runner.hpp"
-#include <string>
-#include <vector>
 
 namespace jaffarPlus
 {

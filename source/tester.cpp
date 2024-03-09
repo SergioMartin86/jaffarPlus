@@ -1,10 +1,5 @@
-#include "../emulators/emulatorList.hpp"
-#include "../games/gameList.hpp"
-#include "emulator.hpp"
-#include "game.hpp"
-#include "runner.hpp"
-#include <argparse/argparse.hpp>
 #include <chrono>
+#include <argparse/argparse.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/deserializers/differential.hpp>
 #include <jaffarCommon/json.hpp>
@@ -12,6 +7,11 @@
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/serializers/differential.hpp>
 #include <jaffarCommon/string.hpp>
+#include "../emulators/emulatorList.hpp"
+#include "../games/gameList.hpp"
+#include "emulator.hpp"
+#include "game.hpp"
+#include "runner.hpp"
 
 int main(int argc, char *argv[])
 {

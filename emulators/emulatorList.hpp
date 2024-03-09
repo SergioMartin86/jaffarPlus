@@ -1,7 +1,7 @@
 #pragma once
 
-#include "quickerNES/quickerNES.hpp"
 #include <emulator.hpp>
+#include "quickerNES/quickerNES.hpp"
 
 namespace jaffarPlus
 {

@@ -1,8 +1,9 @@
 #pragma once
 
+#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
-#include <jaffarCommon/json.hpp>
+
 
 namespace jaffarPlus
 {

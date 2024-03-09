@@ -1,15 +1,15 @@
+#include <chrono>
+#include <SDL.h>
+#include <argparse/argparse.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/string.hpp>
 #include "../emulators/emulatorList.hpp"
 #include "../games/gameList.hpp"
 #include "emulator.hpp"
 #include "game.hpp"
 #include "playback.hpp"
 #include "runner.hpp"
-#include <SDL.h>
-#include <argparse/argparse.hpp>
-#include <chrono>
-#include <jaffarCommon/json.hpp>
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/string.hpp>
 
 SDL_Window *launchOutputWindow()
 {
