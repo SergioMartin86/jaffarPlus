@@ -138,7 +138,7 @@ class Numa : public stateDb::Base
       jaffarCommon::logger::log("[J++]  + NUMA Domain %d                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n", i, _maxStatesPerNuma[i], (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
   }
 
-  inline void *getFreeState() override
+  __INLINE__ void *getFreeState() override
   {
     // Storage for the new free state space
     void *stateSpace;
@@ -170,7 +170,7 @@ class Numa : public stateDb::Base
     return nullptr;
   }
 
-  inline int getStateNumaDomain(void *const statePtr)
+  __INLINE__ int getStateNumaDomain(void *const statePtr)
   {
     for (int i = 0; i < _numaCount; i++)
       if ((statePtr >= _internalBuffersStart[i]) && (statePtr <= _internalBuffersEnd[i]))
@@ -180,7 +180,7 @@ class Numa : public stateDb::Base
     JAFFAR_THROW_RUNTIME("Did not find the corresponding numa domain for the provided state pointer. This must be a bug in Jaffar\n");
   }
 
-  inline void returnFreeState(void *const statePtr) override
+  __INLINE__ void returnFreeState(void *const statePtr) override
   {
     // Finding out to which database this state pointer belongs to
     const auto numaIdx = getStateNumaDomain(statePtr);
@@ -192,7 +192,7 @@ class Numa : public stateDb::Base
     if (success == false) JAFFAR_THROW_RUNTIME("Failed on pushing free state back. This must be a bug in Jaffar\n");
   }
 
-  inline void *popState() override
+  __INLINE__ void *popState() override
   {
     // Pointer to return
     void *statePtr;
@@ -235,7 +235,7 @@ class Numa : public stateDb::Base
   /**
    * Gets the current number of states in the current state database
    */
-  inline size_t getStateCount() const override
+  __INLINE__ size_t getStateCount() const override
   {
     return _currentStateDb.wasSize();
   }

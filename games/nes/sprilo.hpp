@@ -17,7 +17,7 @@ class Sprilo final : public jaffarPlus::Game
 {
   public:
 
-  static inline std::string getName() { return "NES / Sprilo"; }
+  static __INLINE__ std::string getName() { return "NES / Sprilo"; }
 
   Sprilo(std::unique_ptr<Emulator> emulator, const nlohmann::json &config) : jaffarPlus::Game(std::move(emulator), config)
   {
@@ -27,7 +27,7 @@ class Sprilo final : public jaffarPlus::Game
 
   private:
 
-  inline void registerGameProperties() override
+  __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
     _lowMem = _emulator->getProperty("LRAM").pointer;
@@ -50,7 +50,7 @@ class Sprilo final : public jaffarPlus::Game
     _lapProgress = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Lap Progress")]->getPointer();
   }
 
-  inline void advanceStateImpl(const std::string &input) override
+  __INLINE__ void advanceStateImpl(const std::string &input) override
   {
     // Increasing counter if input is null
     if (input != "|..|........|") _lastInputStep = _currentStep;
@@ -62,18 +62,18 @@ class Sprilo final : public jaffarPlus::Game
     _currentStep++;
   }
 
-  inline void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
   {
     hashEngine.Update(&_lowMem[0x0001], 0x0018);
     hashEngine.Update(&_lowMem[0x001C], 0x0050);
   }
 
   // Updating derivative values after updating the internal state
-  inline void stateUpdatePostHook() override
+  __INLINE__ void stateUpdatePostHook() override
   {
   }
 
-  inline void ruleUpdatePreHook() override
+  __INLINE__ void ruleUpdatePreHook() override
   {
     // Resetting magnets ahead of rule re-evaluation
     _pointMagnet.intensity = 0.0;
@@ -82,7 +82,7 @@ class Sprilo final : public jaffarPlus::Game
     _stopProcessingReward = false;
   }
 
-  inline void ruleUpdatePostHook() override
+  __INLINE__ void ruleUpdatePostHook() override
   {
     // Updating distance to user-defined point
     _player1DistanceToPointX = std::abs((float)_pointMagnet.x - (float)*_playerPosX);
@@ -90,19 +90,19 @@ class Sprilo final : public jaffarPlus::Game
     _player1DistanceToPoint = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY);
   }
 
-  inline void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
   {
     serializer.pushContiguous(&_lastInputStep, sizeof(_lastInputStep));
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
   }
 
-  inline void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
   {
     deserializer.popContiguous(&_lastInputStep, sizeof(_lastInputStep));
     deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
   }
 
-  inline float calculateGameSpecificReward() const
+  __INLINE__ float calculateGameSpecificReward() const
   {
     // Getting rewards from rules
     float reward = 0.0;

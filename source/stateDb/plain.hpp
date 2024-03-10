@@ -61,7 +61,7 @@ class Plain : public stateDb::Base
   {
   }
 
-  inline void *getFreeState() override
+  __INLINE__ void *getFreeState() override
   {
     // Storage for the new free state space
     void *stateSpace;
@@ -82,7 +82,7 @@ class Plain : public stateDb::Base
     return nullptr;
   }
 
-  inline void returnFreeState(void *const statePtr) override
+  __INLINE__ void returnFreeState(void *const statePtr) override
   {
     // Trying to get free space for a new state
     bool success = _freeStateQueue->try_push(statePtr);
@@ -91,7 +91,7 @@ class Plain : public stateDb::Base
     if (success == false) JAFFAR_THROW_RUNTIME("Failed on pushing free state back. This must be a bug in Jaffar\n");
   }
 
-  inline void *popState() override
+  __INLINE__ void *popState() override
   {
     // Pointer to return
     void *statePtr;
@@ -108,7 +108,7 @@ class Plain : public stateDb::Base
   /**
    * Gets the current number of states in the current state database
    */
-  inline size_t getStateCount() const override
+  __INLINE__ size_t getStateCount() const override
   {
     return _currentStateDb.wasSize();
   }
