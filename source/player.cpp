@@ -84,7 +84,7 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
 
   // Enabling rendering
   if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
-  if (disableRender == true)  r->getGame()->getEmulator()->disableRendering();
+  if (disableRender == true) r->getGame()->getEmulator()->disableRendering();
 
   // Initializing emulator's video output
   if (disableRender == false) r->getGame()->getEmulator()->initializeVideoOutput(window);
