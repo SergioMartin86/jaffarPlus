@@ -1,3 +1,6 @@
+
+[![Build and Run Tests](https://github.com/SergioMartin86/jaffarPlusPlus/actions/workflows/make.yml/badge.svg)](https://github.com/SergioMartin86/jaffarPlusPlus/actions/workflows/make.yml) [![codecov](https://codecov.io/github/SergioMartin86/jaffarPlusPlus/graph/badge.svg?token=NF9W0XZ16h)](https://codecov.io/github/SergioMartin86/jaffarPlusPlus) 
+
 # JaffarPlus
 
 ![](jaffar.png)
