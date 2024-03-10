@@ -79,7 +79,7 @@ class Numa : public stateDb::Base
 
     // Getting maximum number of states for each NUMA domain
     _maxStatesPerNuma.resize(_numaCount);
-    for (int i = 0; i < _numaCount; i++) _maxStatesPerNuma[i] = _maxSizePerNuma[i] / _stateSize;
+    for (int i = 0; i < _numaCount; i++) _maxStatesPerNuma[i] = std::max(_maxSizePerNuma[i] / _stateSize, 1ul);
 
     // Getting totals for statistics
     _maxSize = 0;

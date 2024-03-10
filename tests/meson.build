@@ -2,16 +2,8 @@ testCommonCppArgs = [ '-Wfatal-errors', '-Wall', '-Werror' ]
 testCommonLinkArgs = [ '-lgtest_main', '-lgtest' ]
 testTimeout = 120
 
-# Jaffar Sequence Tester tool
-# This tool makes sure a given seqeuence runs correctly given a Jaffar script
-sequenceTester = executable('jaffar-sequence-tester',
-  '../source/testers/sequence-tester.cpp',
-  cpp_args: jaffarCPPFlags,
-  dependencies : jaffarDependencies,
-  include_directories : jaffarIncludes
-)
+###### Adding example validator test
 
-# Adding example validator test
 bash = find_program('bash')
 validateExamplesScript = 'validateExamples.sh'
 test('scriptValidator',
@@ -20,3 +12,16 @@ test('scriptValidator',
       timeout: testTimeout,
       args : [ validateExamplesScript ],
       suite : [ 'examples' ])
+
+######## Full run tests
+
+# Setting env variables
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=2' ]
+
+test('race01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/../examples/nes/sprilo/',
+      timeout: testTimeout,
+      args : 'race04_firstlap.jaffar',
+      env : testEnvVars,
+      suite : [ 'examples', 'nes', 'sprilo' ])

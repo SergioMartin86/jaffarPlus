@@ -2,7 +2,17 @@
  "Driver Configuration":
  {
    "End On First Win State": false,
-   "Max Steps": 910
+   "Max Steps": 910,
+
+   "Save Intermediate Results":
+   {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+   }
  },
 
  "Engine Configuration":
@@ -48,11 +58,6 @@
 "Runner Configuration":
 {
   "Hash Step Tolerance": 0,
-
-  "Store Input History":
-  {
-   "Enabled": true
-  },
 
   "Possible Inputs":
   [

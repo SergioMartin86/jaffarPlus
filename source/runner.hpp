@@ -259,10 +259,10 @@ class Runner final
   }
 
   // Function to dump current inputs to a file
-  bool dumpInputHistoryToFile(const std::string &filePath) const
+  std::string getInputHistoryString() const
   {
-    // If input history is not enable, simply return false
-    if (_inputHistoryEnabled == false) return false;
+    // Fail if input history is not enabled
+    if (_inputHistoryEnabled == false) return "";
 
     // Getting the history into a string
     std::string inputHistoryString;
@@ -284,11 +284,7 @@ class Runner final
       inputHistoryString += "\n";
     }
 
-    // Dumping file
-    bool success = jaffarCommon::file::saveStringToFile(inputHistoryString, filePath);
-
-    // Returning whether the dump succeeded
-    return success;
+    return inputHistoryString;
   }
 
   // Function to print relevant information
