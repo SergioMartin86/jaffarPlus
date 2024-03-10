@@ -42,10 +42,10 @@ class QuickerNES final : public Emulator
       std::string initialStateString;
       bool status = jaffarCommon::file::loadStringFromFile(initialStateString, _initialStateFilePath.c_str());
       if (status == false) JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _initialStateFilePath.c_str());
- 
+
       // Now do the proper override
       _initialStateFilePath = std::string(value);
-    } 
+    }
 
     // Parsing controller configuration
     _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
