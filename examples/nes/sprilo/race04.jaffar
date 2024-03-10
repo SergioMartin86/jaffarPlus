@@ -4,15 +4,15 @@
    "End On First Win State": false,
    "Max Steps": 830,
 
-    "Save Intermediate Results":
-    {
-      "Enabled": true,
-      "Frequency (s)": 1.0,
-      "Best Solution Path": "/tmp/jaffar.best.sol",
-      "Worst Solution Path": "/tmp/jaffar.worst.sol",
-      "Best State Path": "/tmp/jaffar.best.state",
-      "Worst State Path": "/tmp/jaffar.worst.state"
-    }
+   "Save Intermediate Results":
+   {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+   }
   },
 
  "Engine Configuration":
