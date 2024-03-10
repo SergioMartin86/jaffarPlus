@@ -11,6 +11,7 @@ namespace jaffarPlus
 class HashDb final
 {
   public:
+
   /**
    * A hash store represents a hash set, containing hashes of previously found states
    * It also contains an age, indicating how long ago it was created. The older
@@ -162,6 +163,7 @@ class HashDb final
   }
 
   private:
+
   /**
    * Calculated empirically, by filling a hash set with a huge number of distinct hashes
    * and measuring the maximum resident (memory) set size after execution.

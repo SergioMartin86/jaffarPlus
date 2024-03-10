@@ -13,6 +13,7 @@ class Driver final
 
 {
   public:
+
   enum exitReason_t
   {
     /// Found a win state
@@ -41,14 +42,14 @@ class Driver final
     if (auto *value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
 
     // Getting intermediate result configuration
-    const auto& saveIntermediateResultsJs = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
+    const auto &saveIntermediateResultsJs = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
     _saveIntermediateResultsEnabled = jaffarCommon::json::getBoolean(saveIntermediateResultsJs, "Enabled");
     _saveIntermediateFrequency = jaffarCommon::json::getNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
-    _saveIntermediateBestSolutionPath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path"); 
-    _saveIntermediateWorstSolutionPath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst Solution Path"); 
-    _saveIntermediateBestStatePath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best State Path"); 
-    _saveIntermediateWorstStatePath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst State Path"); 
-    
+    _saveIntermediateBestSolutionPath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path");
+    _saveIntermediateWorstSolutionPath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst Solution Path");
+    _saveIntermediateBestStatePath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best State Path");
+    _saveIntermediateWorstStatePath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst State Path");
+
     // Getting component configurations
     auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
     auto gameConfig = jaffarCommon::json::getObject(config, "Game Configuration");
@@ -95,7 +96,7 @@ class Driver final
     _bestStateStorage.resize(_stateSize);
     _worstStateStorage.resize(_stateSize);
   }
- 
+
   // Start running engine loop
   int run()
   {
@@ -114,7 +115,7 @@ class Driver final
     // Starting intermediate result saving thread
     std::thread intermediateResultSaverThread;
     if (_saveIntermediateResultsEnabled == true)
-     intermediateResultSaverThread = std::thread([this](){ intermediateResultSaveLoop(); });
+      intermediateResultSaverThread = std::thread([this]() { intermediateResultSaveLoop(); });
 
     // Running engine until a termination point
     while (true)
@@ -239,7 +240,7 @@ class Driver final
 
     // Making sure the intermediate result thread is not currently reading
     _updateIntermediateResultMutex.lock();
-    
+
     // Getting worst state so far
     auto worstState = _engine->getStateDb()->getWorstState();
 
@@ -369,6 +370,7 @@ class Driver final
   size_t getCurrentStep() { return _currentStep; }
 
   private:
+
   // Pointer to the internal Jaffar engine
   std::unique_ptr<Engine> _engine;
 
@@ -436,7 +438,6 @@ class Driver final
 
   // Update intermediate result mutex
   std::mutex _updateIntermediateResultMutex;
-
 };
 
 } // namespace jaffarPlus

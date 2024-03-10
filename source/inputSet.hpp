@@ -12,6 +12,7 @@ namespace jaffarPlus
 class InputSet final
 {
   public:
+
   // Type for input indexing
   typedef uint32_t inputIndex_t;
 
@@ -31,6 +32,7 @@ class InputSet final
   const std::unordered_set<inputIndex_t> &getInputIndexes() const { return _inputIndexes; }
 
   private:
+
   // Conditions are evaluated frequently, so this optimized for performance
   // Operands are pre-parsed as pointers/immediates and the evaluation function
   // is a template that is created at compilation time.

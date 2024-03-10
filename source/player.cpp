@@ -75,7 +75,7 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
 
   // Initializing runner
   r->initialize();
- 
+
   // Enabling rendering
   if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
 

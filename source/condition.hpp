@@ -9,6 +9,7 @@ namespace jaffarPlus
 class Condition
 {
   public:
+
   enum operator_t
   {
     op_equal,
@@ -43,6 +44,7 @@ class Condition
   }
 
   protected:
+
   const operator_t _opType;
 };
 
@@ -50,6 +52,7 @@ template <typename T>
 class _vCondition : public Condition
 {
   public:
+
   _vCondition(const operator_t opType, Property *property1, Property *property2, T immediate1, T immediate2) : Condition(opType),
                                                                                                                _property1(property1),
                                                                                                                _property2(property2),
@@ -80,6 +83,7 @@ class _vCondition : public Condition
   }
 
   private:
+
   static inline bool _opEqual(const T a, const T b) { return a == b; }
   static inline bool _opNotEqual(const T a, const T b) { return a != b; }
   static inline bool _opGreater(const T a, const T b) { return a > b; }

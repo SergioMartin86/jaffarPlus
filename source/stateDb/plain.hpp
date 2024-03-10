@@ -17,6 +17,7 @@ namespace stateDb
 class Plain : public stateDb::Base
 {
   public:
+
   Plain(Runner &r, const nlohmann::json &config) : stateDb::Base(r, config)
   {
     // Getting maximum state db size in Mb
@@ -113,6 +114,7 @@ class Plain : public stateDb::Base
   }
 
   private:
+
   /**
    * This queue will hold pointers to all the free state storage
    */

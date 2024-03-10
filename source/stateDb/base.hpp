@@ -20,6 +20,7 @@ namespace stateDb
 class Base
 {
   public:
+
   Base(Runner &r, const nlohmann::json &config) : _runner(&r)
   {
     ///////// Parsing configuration
@@ -192,6 +193,7 @@ class Base
   }
 
   protected:
+
   virtual void printInfoImpl() const = 0;
 
   Runner *const _runner;

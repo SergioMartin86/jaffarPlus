@@ -16,6 +16,7 @@ namespace NES
 class MicroMachines final : public jaffarPlus::Game
 {
   public:
+
   static inline std::string getName() { return "NES / Micro Machines"; }
 
   MicroMachines(std::unique_ptr<Emulator> emulator, const nlohmann::json &config) : jaffarPlus::Game(std::move(emulator), config)
@@ -23,6 +24,7 @@ class MicroMachines final : public jaffarPlus::Game
   }
 
   private:
+
   inline void registerGameProperties() override
   {
     // Getting emulator's low memory pointer

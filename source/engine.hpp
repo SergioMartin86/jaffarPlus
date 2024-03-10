@@ -21,6 +21,7 @@ namespace jaffarPlus
 class Engine final
 {
   public:
+
   // Base constructor
   Engine(const nlohmann::json &emulatorConfig, const nlohmann::json &gameConfig, const nlohmann::json &runnerConfig, const nlohmann::json &engineConfig)
   {
@@ -357,6 +358,7 @@ class Engine final
   }
 
   private:
+
   /**
    * The main worker function -- executes entirely in parallel
    */

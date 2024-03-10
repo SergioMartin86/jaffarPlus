@@ -26,6 +26,7 @@ namespace emulator
 class QuickerNES final : public Emulator
 {
   public:
+
   static std::string getName() { return "QuickerNES"; }
 
   // Constructor must only do configuration parsing
@@ -263,6 +264,7 @@ class QuickerNES final : public Emulator
 #endif
 
   private:
+
   void printMemoryBlockHash(const std::string &blockName) const
   {
     auto p = getProperty(blockName);
