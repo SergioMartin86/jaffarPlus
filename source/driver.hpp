@@ -53,21 +53,12 @@ class Driver final
 
     // Creating runner from the configuration
     _runner = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
-    
+
     // Creating engine from the configuration
     _engine = jaffarPlus::Engine::getEngine(emulatorConfig, gameConfig, runnerConfig, engineConfig);
-
-    // Allocating space for the current best and worst states
-    _stateSize = _runner->getStateSize();
-    _bestStateStorage = (uint8_t *)malloc(_stateSize);
-    _worstStateStorage = (uint8_t *)malloc(_stateSize);
   }
 
-  ~Driver()
-  {
-    free(_bestStateStorage);
-    free(_worstStateStorage);
-  }
+  ~Driver() {} 
 
   // Resets the execution back to the starting point
   void initialize()
@@ -84,11 +75,25 @@ class Driver final
 
     // Resetting worst state reward
     _worstStateReward = std::numeric_limits<float>::infinity();
+
+    // Initializing runner
+    _runner->initialize();
+
+    // Initializing engine
+    _engine->initialize();
+
+    // Allocating space for the current best and worst states
+    _stateSize = _runner->getStateSize();
+    _bestStateStorage = (uint8_t *)malloc(_stateSize);
+    _worstStateStorage = (uint8_t *)malloc(_stateSize);
   }
 
   // Start running engine loop
   int run()
   {
+    // Resetting engine
+    _engine->reset();
+    
     // If using ncurses, initialize terminal now
     jaffarCommon::logger::initializeTerminal();
 
@@ -268,9 +273,6 @@ class Driver final
   {
     // Creating new engine
     auto d = std::make_unique<Driver>(config);
-
-    // Initializing engine
-    d->initialize();
 
     // Returning engine
     return d;

@@ -35,19 +35,24 @@ class Numa : public stateDb::Base
     _numaCount = numa_max_node() + 1;
 
     // Checking maximum db sizes per each numa
-    const auto &maxSizePerNumaMbJs = jaffarCommon::json::getArray<size_t>(config, "Max Size per NUMA Domain (Mb)");
-    if (maxSizePerNumaMbJs.size() != (size_t)_numaCount) JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, maxSizePerNumaMbJs.size());
+    _maxSizePerNumaMb = jaffarCommon::json::getArray<size_t>(config, "Max Size per NUMA Domain (Mb)");
+    if (_maxSizePerNumaMb.size() != (size_t)_numaCount) JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, _maxSizePerNumaMb.size());
 
     // Getting scavenge depth
     _scavengerQueuesSize = jaffarCommon::json::getNumber<size_t>(config, "Scavenger Queues Size");
     _scavengingDepth = jaffarCommon::json::getNumber<size_t>(config, "Scavenging Depth");
+  }
 
+  ~Numa() = default;
+
+  void initializeImpl() override
+  {
     // Creating scavenger queues
     for (int i = 0; i < _numaCount; i++) _scavengerQueues.push_back(std::make_unique<jaffarCommon::concurrent::Deque<void *>>());
 
     // Getting maximum state db size in Mb and bytes
     size_t numaSizeSum = 0;
-    for (const auto &entry : maxSizePerNumaMbJs)
+    for (const auto &entry : _maxSizePerNumaMb)
     {
       auto sizeMb = entry;
 
@@ -107,12 +112,7 @@ class Numa : public stateDb::Base
       int node = numa_node_of_cpu(cpu);
       preferredNumaDomain = node;
     }
-  }
 
-  ~Numa() = default;
-
-  void initialize() override
-  {
     // Getting system's page size (typically 4K but it may change in the future)
     const size_t pageSize = sysconf(_SC_PAGESIZE);
 

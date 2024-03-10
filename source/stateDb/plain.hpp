@@ -24,7 +24,12 @@ class Plain : public stateDb::Base
 
     // For testing purposes, the maximum size 
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
+  }
 
+  ~Plain() = default;
+
+  void initializeImpl() override
+  {
     // Converting it to pure bytes
     _maxSize = _maxSizeMb * 1024ul * 1024ul;
 
@@ -33,12 +38,7 @@ class Plain : public stateDb::Base
 
     // Creating free state queue
     _freeStateQueue = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void *>>(_maxStates);
-  }
 
-  ~Plain() = default;
-
-  void initialize() override
-  {
     // Getting system's page size (typically 4K but it may change in the future)
     const size_t pageSize = sysconf(_SC_PAGESIZE);
 

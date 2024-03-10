@@ -29,9 +29,6 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
   // Check if recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized\n", emulatorName.c_str());
 
-  // Initializing emulator
-  e->initialize();
-
   // Returning emulator pointer
   return e;
 }

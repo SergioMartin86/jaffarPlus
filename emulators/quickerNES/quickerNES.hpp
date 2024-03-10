@@ -45,7 +45,7 @@ class QuickerNES final : public Emulator
     _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
   };
 
-  void initialize() override
+  void initializeImpl() override
   {
     // Setting game's internal video buffer
     ((emulator_t *)_quickerNES.getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
