@@ -4,6 +4,9 @@ scriptFiles=`find ../examples -name "*.jaffar"`
 
 set -e
 
+# Getting absolute path to the Jaffar engine
+jaffarPath=`realpath ../build/jaffar`
+
 # Override values
 export JAFFAR_OVERRIDE_RETURN_CODE=0
 export JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP=1
@@ -20,7 +23,8 @@ do
  echo ${fileName}
 
  pushd ${dirName}
-  echo "Testing script file: ${f}"
-  jaffar ${fileName}
+ echo "Folder: ${dirName}"
+ echo "Running Command: ${jaffarPath} ${fileName}"
+  ${jaffarPath} ${fileName}
  popd
 done
