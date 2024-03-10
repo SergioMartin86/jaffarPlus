@@ -36,7 +36,7 @@ class Numa : public stateDb::Base
 
     // Checking maximum db sizes per each numa
     _maxSizePerNumaMb = jaffarCommon::json::getArray<size_t>(config, "Max Size per NUMA Domain (Mb)");
-    if (_maxSizePerNumaMb.size() != (size_t)_numaCount) JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, _maxSizePerNumaMb.size());
+    if (_maxSizePerNumaMb.size() < (size_t)_numaCount) JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, _maxSizePerNumaMb.size());
 
     // Getting scavenge depth
     _scavengerQueuesSize = jaffarCommon::json::getNumber<size_t>(config, "Scavenger Queues Size");
@@ -52,9 +52,9 @@ class Numa : public stateDb::Base
 
     // Getting maximum state db size in Mb and bytes
     size_t numaSizeSum = 0;
-    for (const auto &entry : _maxSizePerNumaMb)
+    for (int i = 0; i < _numaCount; i++)
     {
-      auto sizeMb = entry;
+      auto sizeMb = _maxSizePerNumaMb[i];
 
       // For testing purposes, the maximum size
       if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = std::stoul(value) / _numaCount;
