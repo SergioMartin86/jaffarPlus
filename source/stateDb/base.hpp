@@ -20,7 +20,7 @@ namespace stateDb
 class Base
 {
   public:
-  Base(Runner &r, const nlohmann::json &config)
+  Base(Runner &r, const nlohmann::json &config) : _runner(&r)
   {
     ///////// Parsing configuration
 
@@ -29,17 +29,29 @@ class Base
     _useDifferentialCompression = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Differential Compression");
     _maximumDifferences = jaffarCommon::json::getNumber<size_t>(stateCompressionJs, "Max Difference (bytes)");
     _useZlibCompression = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Zlib Compression");
+  }
+
+  virtual ~Base()
+  {
+    // Freeing up reference data buffer
+    free(_referenceData);
+  }
+
+  void initialize()
+  {
+    // Initialization message
+    jaffarCommon::logger::log("[J++] Initializing State Database...\n");
 
     ///////// Getting original state sizes from the runner
 
     // Getting game state size
-    _stateSizeRaw = r.getStateSize();
+    _stateSizeRaw = _runner->getStateSize();
 
     // Creating storage for reference data
     _referenceData = malloc(_stateSizeRaw);
 
     // Getting differential state size
-    if (_useDifferentialCompression) _differentialStateSize = r.getDifferentialStateSize(_maximumDifferences);
+    if (_useDifferentialCompression) _differentialStateSize = _runner->getDifferentialStateSize(_maximumDifferences);
 
     // The effective state size is how many bytes does the runner really need to store a state
     _stateSizeEffective = _useDifferentialCompression ? _differentialStateSize : _stateSizeRaw;
@@ -53,14 +65,7 @@ class Base
     // Padding is the difference between the aligned state size and the raw one
     _stateSizePadding = _stateSize - _stateSizeEffective;
 
-    // Initialization message
-    jaffarCommon::logger::log("[J++] Initializing State Database...\n");
-  }
-
-  virtual ~Base()
-  {
-    // Freeing up reference data buffer
-    free(_referenceData);
+    // Calling specific initialization routine for the state db type
   }
 
   // Function to print relevant information
@@ -80,7 +85,7 @@ class Base
     printInfoImpl();
   }
 
-  virtual void initialize() = 0;
+  virtual void initializeImpl() = 0;
   virtual void *getFreeState() = 0;
   virtual void returnFreeState(void *const statePtr) = 0;
   virtual void *popState() = 0;
@@ -187,6 +192,8 @@ class Base
 
   protected:
   virtual void printInfoImpl() const = 0;
+
+  Runner* const _runner;
 
   /**
    * The next state database, where new states are stored as they are created

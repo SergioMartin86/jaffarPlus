@@ -36,7 +36,7 @@ class Engine final
     // Creating storage for the runnners (one per thread)
     _runners.resize(_threadCount);
 
-    // Initializing runners, one per thread
+    // Creating runners, one per thread
     JAFFAR_PARALLEL
     {
       // Getting my thread id
@@ -45,14 +45,11 @@ class Engine final
       // Creating runner from the configuration
       auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
 
-      // Disable emulator rendering
-      r->getGame()->getEmulator()->disableRendering();
-
       // Storing runner
       _runners[threadId] = std::move(r);
     }
 
-    // Grabbing a runner to do continue initialization
+    // Grabbing a runner to do continue build the state databases
     auto &r = *_runners[0];
 
     // Creating State database
@@ -71,13 +68,44 @@ class Engine final
     }
     if (stateDatabaseTypeRecognized == false) JAFFAR_THROW_LOGIC("State database type '%s' not recognized", stateDatabaseType.c_str());
 
-    // Initializing state db
+    // Creating hash database
+    _hashDb = std::make_unique<jaffarPlus::HashDb>(jaffarCommon::json::getObject(engineConfig, "Hash Database"));
+  };
+
+  /**
+   * Resets execution back to step zero and clears all databases and counters
+   */
+  void initialize()
+  {
+    // Initializing runners, one per thread
+    JAFFAR_PARALLEL
+    {
+      // Getting my thread id
+      int threadId = jaffarCommon::parallel::getThreadId();
+
+      // Creating thread's own runner
+      auto& r = _runners[threadId];
+       
+      // Initializing runner
+      r->initialize();
+
+      // Disable emulator rendering
+      r->getGame()->getEmulator()->disableRendering();
+    }
+
+    // Initializing State Db
     _stateDb->initialize();
+
+    // Initializing hash database
+    _hashDb->initialize();
+
+    // Grabbing a runner to do continue initialization
+    auto &r = *_runners[0];
 
     // Getting memory for the reference state
     const auto stateSize = r.getStateSize();
 
-    // Allocating memory
+      // Allocating memory
     uint8_t referenceData[stateSize];
 
     // Serializing the initial state without compression to use as reference
@@ -111,20 +139,14 @@ class Engine final
     // Advancing the step in the state database
     _stateDb->advanceStep();
 
-    // Creating hash database
-    _hashDb = std::make_unique<jaffarPlus::HashDb>(jaffarCommon::json::getObject(engineConfig, "Hash Database"));
-
     // Getting hash from first state
     const auto hash = r.computeHash();
 
     // Adding it to the hash DB
     _hashDb->insertHash(hash);
-  };
+  }
 
-  /**
-   * Resets execution back to step zero and clears all databases and counters
-   */
-  void initialize()
+  void reset()
   {
     // Initializing state counters
     _totalBaseStatesProcessed = 0;

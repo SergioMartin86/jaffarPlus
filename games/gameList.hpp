@@ -37,9 +37,6 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
   // Check if game was recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized\n", gameName.c_str());
 
-  // Initializing game
-  g->initialize();
-
   // Returning game pointer
   return g;
 }

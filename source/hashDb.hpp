@@ -32,7 +32,10 @@ class HashDb final
   {
     _maxStoreCount = jaffarCommon::json::getNumber<size_t>(config, "Max Store Count");
     _maxStoreSizeMb = jaffarCommon::json::getNumber<double>(config, "Max Store Size (Mb)");
+  }
 
+  inline void initialize()
+  {
     // Calculating the maximum store size in entries
     _maxStoreEntries = std::floor((_maxStoreSizeMb / _bytesPerEntry) * 1024.0 * 1024.0);
 

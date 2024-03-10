@@ -37,7 +37,16 @@ class Emulator
   virtual ~Emulator() = default;
 
   // Initialization function
-  virtual void initialize() = 0;
+  inline void initialize()
+  {
+    if (_isInitialized == true) JAFFAR_THROW_LOGIC("This emulator instance was already initialized");
+
+    // Calling emulator-specific initializer
+    initializeImpl();
+
+    // Set this as initialized
+    _isInitialized = true;
+  }
 
   // State advancing function
   virtual void advanceState(const std::string &move) = 0;
@@ -50,7 +59,11 @@ class Emulator
     return s.getOutputSize();
   }
 
+  inline bool isInitialized() const { return _isInitialized; }
+
   inline std::string getName() const { return _emulatorName; }
+
+  virtual void initializeImpl() = 0;
 
   virtual void serializeState(jaffarCommon::serializer::Base &serializer) const = 0;
   virtual void deserializeState(jaffarCommon::deserializer::Base &deserializer) = 0;
@@ -105,6 +118,9 @@ class Emulator
 
   // Emulator name (for runtime use)
   std::string _emulatorName;
+
+  // Stores whether the emulator has been initialized
+  bool _isInitialized = false;
 };
 
 } // namespace jaffarPlus

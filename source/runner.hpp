@@ -37,6 +37,11 @@ class Runner final
 
   void initialize()
   {
+    if (_isInitialized == true) JAFFAR_THROW_LOGIC("This runner instance was already initialized");
+
+    // Initializing emulator, if not already initialized
+    if (_game->isInitialized() == false) _game->initialize();
+
     // Parsing possible game inputs
     for (const auto &inputSetJs : _possibleInputsJs) _inputSets.insert(std::move(parseInputSet(inputSetJs)));
 
@@ -332,12 +337,11 @@ class Runner final
     // Creating new runner
     auto r = std::make_unique<Runner>(game, runnerConfig);
 
-    // Initializing runner
-    r->initialize();
-
     // Returning runner
     return r;
   }
+  
+  inline bool isInitialized() const { return _isInitialized; }
 
   private:
   // Pointer to the game instance
@@ -382,6 +386,9 @@ class Runner final
 
   // JSON of possible inputs stored for delayed parsing
   std::vector<nlohmann::json> _possibleInputsJs;
+
+  // Stores whether the game has been initialized
+  bool _isInitialized = false;
 };
 
 } // namespace jaffarPlus

@@ -50,6 +50,11 @@ class Game
 
   void initialize()
   {
+    if (_isInitialized == true) JAFFAR_THROW_LOGIC("This game instance was already initialized");
+
+    // Initializing emulator, if not already initialized
+    if (_emulator->isInitialized() == false) _emulator->initialize();
+
     // Getting game-specific properties
     registerGameProperties();
 
@@ -81,6 +86,9 @@ class Game
 
     // Now parsing rules
     parseRules(_rulesJs);
+
+    // Set this as initialized
+    _isInitialized = true;
   }
 
   Game() = delete;
@@ -452,7 +460,10 @@ class Game
   // Function to get game name in runtime
   inline std::string getName() const { return _gameName; }
 
+  inline bool isInitialized() const { return _isInitialized; }
+
   protected:
+  
   void registerGameProperty(const std::string &name, void *const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)
   {
     // Creating property
@@ -660,6 +671,9 @@ class Game
 
   // Temporal storage of the rules json for delayed parsing
   nlohmann::json _rulesJs;
+
+  // Stores whether the game has been initialized
+  bool _isInitialized = false;
 };
 
 } // namespace jaffarPlus
