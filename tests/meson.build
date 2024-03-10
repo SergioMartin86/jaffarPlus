@@ -11,17 +11,27 @@ test('scriptValidator',
       workdir : meson.current_source_dir(),
       timeout: testTimeout,
       args : [ validateExamplesScript ],
-      suite : [ 'examples' ])
+      suite : [ 'runs' ])
 
 ######## Full run tests
 
 # Setting env variables
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
 
-test('race01',
+## NES / SPrilo
+
+test('race04_short',
       jaffar,
       workdir : meson.current_source_dir() + '/nes/sprilo',
       timeout: testTimeout,
       args : 'race04_short.jaffar',
       env : testEnvVars,
-      suite : [ 'examples', 'nes', 'sprilo' ])
+      suite : [ 'runs', 'nes', 'sprilo' ])
+
+test('race04_short_reproduce',
+      jaffarPlayer,
+      workdir : meson.current_source_dir() + '/nes/sprilo',
+      timeout: testTimeout,
+      args : [ 'race04_short.jaffar', 'race04_short.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
+      env : testEnvVars,
+      suite : [ 'reproductions', 'nes', 'sprilo' ])

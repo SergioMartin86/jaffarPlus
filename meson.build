@@ -31,7 +31,7 @@ if meson.is_subproject() == false
   )
 
   # Jaffar Player tool
-  executable('jaffar-player',
+  jaffarPlayer = executable('jaffar-player',
     'source/player.cpp',
     cpp_args: [ jaffarCPPFlags, '-D_USE_SDL2' ],
     link_args: [ '-lncurses' ],

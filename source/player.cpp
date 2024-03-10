@@ -32,6 +32,12 @@ void closeOutputWindow(SDL_Window *window)
   SDL_DestroyWindow(window);
 }
 
+// Prevents the interactive player to stall for a keystroke
+bool isUnattended;
+
+// Determines that the reproduction must end on reaching the last step
+bool isExitOnEnd;
+
 // Switch to toggle whether to reload the movie on reaching the end of the sequence
 bool isReload;
 
@@ -78,6 +84,7 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
 
   // Enabling rendering
   if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
+  if (disableRender == true)  r->getGame()->getEmulator()->disableRendering();
 
   // Initializing emulator's video output
   if (disableRender == false) r->getGame()->getEmulator()->initializeVideoOutput(window);
@@ -175,7 +182,7 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
     }
 
     // If it's not reproducing, grab command with a wait
-    if (isReproduce == false) command = jaffarCommon::logger::waitForKeyPress();
+    if (isReproduce == false && isUnattended == false) command = jaffarCommon::logger::waitForKeyPress();
 
     // Advance/Rewind commands
     if (command == 'n') currentStep = currentStep - 1;
@@ -190,15 +197,18 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
     // Correct current step if requested more than possible
     if (currentStep < 0) currentStep = 0;
 
+    // If reloading on finish, do it now
+    if (currentStep > sequenceLength && isReload == true) break;
+
+    // If exiting on finish, do it now
+    if (currentStep > sequenceLength && isExitOnEnd == true) break;
+
     // If not reloading on finish, simply stop
-    if (currentStep > sequenceLength && isReload == false)
+    if (currentStep > sequenceLength)
     {
       currentStep = sequenceLength;
       isReproduce = false;
     }
-
-    // If reloading on finish, do it now
-    if (currentStep > sequenceLength && isReload == true) break;
 
     // Quicksave creation command
     if (command == 's')
@@ -259,6 +269,16 @@ int main(int argc, char *argv[])
     .default_value(false)
     .implicit_value(true);
 
+  program.add_argument("--exitOnEnd")
+    .help("Exits the program upon reaching the last step")
+    .default_value(false)
+    .implicit_value(true);
+
+  program.add_argument("--unattended")
+    .help("Indicates the player not to print the interactive prompt nor wait for inputs")
+    .default_value(false)
+    .implicit_value(true);
+
   program.add_argument("--disableRender")
     .help("Do not render game window.")
     .default_value(false)
@@ -289,6 +309,12 @@ int main(int argc, char *argv[])
   // Getting disablerender flag
   bool disableRender = program.get<bool>("--disableRender");
 
+  // Getting exitOnEnd flag
+  bool exitOnEnd = program.get<bool>("--exitOnEnd");
+
+  // Getting unattended flag
+  bool unattended = program.get<bool>("--unattended");
+
   // Initializing terminal
   jaffarCommon::logger::initializeTerminal();
 
@@ -298,6 +324,8 @@ int main(int argc, char *argv[])
   // Setting initial reproduction values
   isReload = doReload;
   isReproduce = reproduceStart;
+  isExitOnEnd = exitOnEnd;
+  isUnattended = unattended;
 
   // Running main cycle
   bool continueRunning = true;
@@ -305,6 +333,9 @@ int main(int argc, char *argv[])
   {
     // Running main cycle
     continueRunning = mainCycle(configFile, solutionFile, disableRender, window);
+
+    // If the exit-on-end flag is set, then do not repeat reproduction
+    if (exitOnEnd == true) break;
 
     // If repeating, then wait a bit before repeating to prevent fast repetition of short movies
     if (continueRunning == true) sleep(1);
