@@ -356,19 +356,6 @@ class Engine final
     _hashDb->printInfo();
   }
 
-  // Function to obtain engine based on game, emulator, and runner config
-  static std::unique_ptr<Engine> getEngine(const nlohmann::json &emulatorConfig, const nlohmann::json &gameConfig, const nlohmann::json &runnerConfig, const nlohmann::json &engineConfig)
-  {
-    // Creating new engine
-    auto e = std::make_unique<Engine>(emulatorConfig, gameConfig, runnerConfig, engineConfig);
-
-    // Initializing engine
-    e->initialize();
-
-    // Returning engine
-    return e;
-  }
-
   private:
   /**
    * The main worker function -- executes entirely in parallel
