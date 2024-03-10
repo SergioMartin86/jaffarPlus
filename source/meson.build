@@ -17,3 +17,8 @@ jaffarCPPFlags = [
 if get_option('b_coverage')
   jaffarCPPFlags += [ '-fno-inline', '-Wno-error=cpp' ]
 endif
+
+# Checking whether to use NCurses
+if get_option('useNCurses') == true
+  jaffarCPPFlags += [ '-fno-inline', '-Wno-error=cpp', '-DNCURSES' ]
+endif

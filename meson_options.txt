@@ -4,3 +4,11 @@ option('buildTests',
   description : 'Build test programs and creates the test suite',
   yield: true
 )
+
+option('useNCurses',
+  type : 'boolean',
+  value : true,
+  description : 'Enable NCurses for console output',
+  yield: true
+)
+

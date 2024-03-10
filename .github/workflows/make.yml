@@ -22,7 +22,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=debug -Db_coverage=true
+      run: meson setup build -Dbuildtype=debug -Db_coverage=true -DuseNCurses=false
     - name: Building project
       run: ninja -C build
     - name: Running tests
