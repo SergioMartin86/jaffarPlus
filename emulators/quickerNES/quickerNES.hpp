@@ -35,32 +35,25 @@ class QuickerNES final : public Emulator
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
     // Parsing controller configuration
-    auto controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
-    auto controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
-
-    _quickerNES.setController1Type(controller1Type);
-    _quickerNES.setController2Type(controller2Type);
+    _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
+    _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
 
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
     // Parsing rom file SHA1
     _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
-
-    // Setting game's internal video buffer
-    _curBlit = (int32_t *)malloc(sizeof(int32_t) * BLIT_SIZE);
-    _videoBuffer = (uint8_t *)malloc(BLIT_SIZE);
-    ((emulator_t *)_quickerNES.getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
   };
-
-  ~QuickerNES()
-  {
-    free(_curBlit);
-    free(_videoBuffer);
-  }
 
   void initialize() override
   {
+    // Setting game's internal video buffer
+    ((emulator_t *)_quickerNES.getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
+
+    // Setting controller types
+    _quickerNES.setController1Type(_controller1Type);
+    _quickerNES.setController2Type(_controller2Type);
+
     // Reading from ROM file
     std::string romFileData;
     bool status = jaffarCommon::file::loadStringFromFile(romFileData, _romFilePath.c_str());
@@ -156,8 +149,8 @@ class QuickerNES final : public Emulator
   const int32_t *NES_VIDEO_PALETTE = _initF_VideoPalette();
 
   // Storage for nes renderer state
-  int32_t *_curBlit;
-  uint8_t *_videoBuffer;
+  int32_t _curBlit[BLIT_SIZE];
+  uint8_t _videoBuffer[BLIT_SIZE];
 
   // Copied from bizinterface.cpp in BizHawk/quicknes
   inline void saveBlit(const void *ePtr, int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom)
@@ -270,6 +263,8 @@ class QuickerNES final : public Emulator
 
   NESInstance _quickerNES;
 
+  std::string _controller1Type;
+  std::string _controller2Type;
   std::string _romFilePath;
   std::string _romFileSHA1;
   std::string _initialStateFilePath;

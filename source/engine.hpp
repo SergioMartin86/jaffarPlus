@@ -30,6 +30,9 @@ class Engine final
     // Sanity check
     if (_threadCount == 0) JAFFAR_THROW_LOGIC("The number of worker threads must be at least one. Provided: %lu\n", _threadCount);
 
+    // Printing initial information
+    jaffarCommon::logger::log("[J++] Using %lu worker threads.\n", _threadCount);
+    
     // Creating storage for the runnners (one per thread)
     _runners.resize(_threadCount);
 
@@ -143,11 +146,6 @@ class Engine final
 
     // Updating total running time
     _totalRunningTime = 0;
-
-    // Resetting databases
-
-    // Printing initial information
-    jaffarCommon::logger::log("[J++] Using %lu worker threads.\n", _threadCount);
   }
 
   /**
