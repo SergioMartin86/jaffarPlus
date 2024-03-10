@@ -33,5 +33,4 @@ test('race04_short_reproduce',
       workdir : meson.current_source_dir() + '/nes/sprilo',
       timeout: testTimeout,
       args : [ 'race04_short.jaffar', 'race04_short.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
-      env : testEnvVars,
       suite : [ 'reproductions', 'nes', 'sprilo' ])

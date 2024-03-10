@@ -49,12 +49,12 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
   // If sequence file defined, load it and play it
   std::string solutionFileString;
   if (jaffarCommon::file::loadStringFromFile(solutionFileString, solutionFile) == false)
-    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from solution sequence file: %s\n%s \n", solutionFile.c_str());
+    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from solution sequence file: %s\n", solutionFile.c_str());
 
   // If config file defined, read it now
   std::string configFileString;
   if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false)
-    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from Jaffar config file: %s\n%s \n", configFile.c_str());
+    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from Jaffar config file: %s\n", configFile.c_str());
 
   // Parsing configuration file
   nlohmann::json config;
