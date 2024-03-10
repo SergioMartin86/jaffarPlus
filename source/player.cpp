@@ -72,7 +72,7 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
 
   // Creating runner from the configuration
   auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
-  
+
   // Enabling rendering
   if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
 

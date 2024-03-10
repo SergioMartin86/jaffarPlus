@@ -35,7 +35,7 @@ class QuickerNES final : public Emulator
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
     // For testing purposes, the initial state file can be overriden by environment variables
-    if (auto* value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
+    if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
     // Parsing controller configuration
     _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
@@ -45,13 +45,13 @@ class QuickerNES final : public Emulator
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
     // For testing purposes, the rom file path can be overriden by environment variables
-    if (auto* value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
+    if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
 
     // Parsing rom file SHA1
     _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
-    if (auto* value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
+    if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
   };
 
   void initializeImpl() override

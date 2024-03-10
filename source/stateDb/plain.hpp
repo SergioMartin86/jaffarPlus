@@ -23,7 +23,7 @@ class Plain : public stateDb::Base
     _maxSizeMb = jaffarCommon::json::getNumber<size_t>(config, "Max Size (Mb)");
 
     // For testing purposes, the maximum size can be overriden by environment variables
-    if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
+    if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
   }
 
   ~Plain() = default;

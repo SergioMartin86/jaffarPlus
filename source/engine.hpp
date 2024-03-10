@@ -32,7 +32,7 @@ class Engine final
 
     // Printing initial information
     jaffarCommon::logger::log("[J++] Using %lu worker threads.\n", _threadCount);
-    
+
     // Creating storage for the runnners (one per thread)
     _runners.resize(_threadCount);
 
@@ -84,8 +84,8 @@ class Engine final
       int threadId = jaffarCommon::parallel::getThreadId();
 
       // Creating thread's own runner
-      auto& r = _runners[threadId];
-       
+      auto &r = _runners[threadId];
+
       // Initializing runner
       r->initialize();
 
@@ -105,7 +105,7 @@ class Engine final
     // Getting memory for the reference state
     const auto stateSize = r.getStateSize();
 
-      // Allocating memory
+    // Allocating memory
     uint8_t referenceData[stateSize];
 
     // Serializing the initial state without compression to use as reference
