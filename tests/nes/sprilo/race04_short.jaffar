@@ -22,8 +22,8 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      10000,
-      10000
+      1,
+      1
     ],
   
     "Scavenger Queues Size": 32,
@@ -40,7 +40,7 @@
   "Hash Database":
   {
     "Max Store Count": 2,
-    "Max Store Size (Mb)": 10000
+    "Max Store Size (Mb)": 100
   }
 },
 
@@ -80,7 +80,7 @@
 {
   "Game Name": "NES / Sprilo",
   "Frame Rate": 60.10,
-  "Last Input Step Reward": -1.0,
+  "Last Input Step Reward": 0.0,
 
   "Print Properties":
   [
@@ -123,69 +123,10 @@
       "Conditions":
       [
         { "Property": "Current Lap", "Op": "==", "Value": 0 },
-        { "Property": "Player Pos X", "Op": ">", "Value": 190 },
-        { "Property": "Player Pos Y", "Op": ">", "Value": 150 },
-        { "Property": "Lap Progress", "Op": "==", "Value": 0 }
+        { "Property": "Player Pos X", "Op": ">", "Value": 150 }
       ],
       
       "Satisfies": [ 1000 ],
-      
-      "Actions":
-      [
-        { "Type": "Add Reward", "Value": 1000.0 },
-        { "Type": "Advance Lap Progress" },
-        { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 135, "Y": 186 }
-      ]
-    },
-
-    {
-      "Label": 1002,
-      "Conditions":
-      [
-        { "Property": "Current Lap", "Op": "==", "Value": 0 },
-        { "Property": "Player Pos X", "Op": "<", "Value": 140 },
-        { "Property": "Player Pos Y", "Op": ">", "Value": 180 },
-        { "Property": "Lap Progress", "Op": "==", "Value": 1 }
-      ],
-      
-      "Satisfies": [ 1001 ],
-      
-      "Actions":
-      [
-        { "Type": "Add Reward", "Value": 1000.0 },
-        { "Type": "Advance Lap Progress" },
-        { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 63, "Y": 38 }
-      ]
-    },
-
-    {
-      "Label": 1003,
-      "Conditions":
-      [
-        { "Property": "Current Lap", "Op": "==", "Value": 0 },
-        { "Property": "Player Pos X", "Op": "<", "Value": 66 },
-        { "Property": "Player Pos Y", "Op": "<", "Value": 42 },
-        { "Property": "Lap Progress", "Op": "==", "Value": 2 }
-      ],
-      
-      "Satisfies": [ 1002 ],
-      
-      "Actions":
-      [
-        { "Type": "Add Reward", "Value": 1000.0 },
-        { "Type": "Advance Lap Progress" },
-        { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 170, "Y": 53 }
-      ]
-    },
-
-    {
-      "Label": 2000,
-      "Conditions":
-      [
-       { "Property": "Current Lap", "Op": "==", "Value": 1 }
-      ],
-      
-      "Satisfies": [  ],
       
       "Actions":
       [
