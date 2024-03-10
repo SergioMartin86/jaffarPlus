@@ -40,6 +40,15 @@ class Driver final
     // For testing purposes, the maximum number of steps can be overriden via environment variables
     if (auto *value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
 
+    // Getting intermediate result configuration
+    const auto& saveIntermediateResultsJs = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
+    _saveIntermediateResultsEnabled = jaffarCommon::json::getBoolean(saveIntermediateResultsJs, "Enabled");
+    _saveIntermediateFrequency = jaffarCommon::json::getNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
+    _saveIntermediateBestSolutionPath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path"); 
+    _saveIntermediateWorstSolutionPath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst Solution Path"); 
+    _saveIntermediateBestStatePath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best State Path"); 
+    _saveIntermediateWorstStatePath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst State Path"); 
+    
     // Getting component configurations
     auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
     auto gameConfig = jaffarCommon::json::getObject(config, "Game Configuration");
@@ -83,21 +92,29 @@ class Driver final
 
     // Allocating space for the current best and worst states
     _stateSize = _runner->getStateSize();
-    _bestStateStorage = (uint8_t *)malloc(_stateSize);
-    _worstStateStorage = (uint8_t *)malloc(_stateSize);
+    _bestStateStorage.resize(_stateSize);
+    _worstStateStorage.resize(_stateSize);
   }
-
+ 
   // Start running engine loop
   int run()
   {
     // Resetting engine
     _engine->reset();
 
+    // Internal flag to indicate we are still running
+    _hasFinished = false;
+
     // If using ncurses, initialize terminal now
     jaffarCommon::logger::initializeTerminal();
 
     // Storage for the exit
     exitReason_t exitReason;
+
+    // Starting intermediate result saving thread
+    std::thread intermediateResultSaverThread;
+    if (_saveIntermediateResultsEnabled == true)
+     intermediateResultSaverThread = std::thread([this](){ intermediateResultSaveLoop(); });
 
     // Running engine until a termination point
     while (true)
@@ -124,8 +141,12 @@ class Driver final
         break;
       }
 
-      // Printing information and dumping information and files
-      dumpInformation();
+      // Updating best and worst states
+      updateBestState();
+      updateWorstState();
+
+      // Printing information
+      printInfo();
 
       // Running engine step
       _engine->runStep();
@@ -137,57 +158,115 @@ class Driver final
       _currentStep++;
     }
 
+    // Setting finalized flag
+    _hasFinished = true;
+
+    // Waiting for saver thread
+    if (_saveIntermediateResultsEnabled == true) intermediateResultSaverThread.join();
+
     // If using ncurses, terminate terminal now
     jaffarCommon::logger::finalizeTerminal();
 
+    // Updating and storing best states
+    updateBestState();
+    saveBestStateInformation();
+
     // Final report
-    if (_engine->getStateCount() > 0) dumpInformation();
+    printInfo();
 
     // Otherwise return the reason why we stopped
     return exitReason;
   }
 
-  void dumpInformation()
+  void saveBestStateInformation()
   {
-    // If using ncurses, clear terminal before printing the information for this step
-    jaffarCommon::logger::clearTerminal();
+    // Making sure the main thread is not currently writing
+    _updateIntermediateResultMutex.lock();
 
-    // Updating best and worst states
-    updateBestState();
-    updateWorstState();
+    // Saving best solution and state
+    jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath);
+    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath);
 
-    // Showing current state of execution and dumping best states
-    printInfo();
+    // Making sure the main thread is not currently writing
+    _updateIntermediateResultMutex.unlock();
+  }
 
-    // Dump Best State
-    _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage);
-    _runner->dumpInputHistoryToFile("jaffar.best.sol");
+  void saveWorstStateInformation()
+  {
+    // Making sure the main thread is not currently writing
+    _updateIntermediateResultMutex.lock();
 
-    // Dump Worst State
-    _engine->getStateDb()->loadStateIntoRunner(*_runner, _worstStateStorage);
-    _runner->dumpInputHistoryToFile("jaffar.worst.sol");
+    // Saving best solution and state
+    jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath);
+    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath);
 
-    // If using ncurses, refresh terminal now
-    jaffarCommon::logger::refreshTerminal();
+    // Making sure the main thread is not currently writing
+    _updateIntermediateResultMutex.unlock();
+  }
+
+  void intermediateResultSaveLoop()
+  {
+    // Timer for saving to file
+    auto lastSaveTime = jaffarCommon::timing::now();
+
+    // Run loop while the driver is still running
+    while (_hasFinished == false)
+    {
+      // Sleeping for 100ms intervals to prevent excessive overheads
+      usleep(100000);
+
+      // Getting time elapsed since last save
+      auto currentTime = jaffarCommon::timing::now();
+      auto timeElapsedSinceLastSave = jaffarCommon::timing::timeDeltaSeconds(currentTime, lastSaveTime);
+
+      // Checking if we need to save best state
+      if (timeElapsedSinceLastSave > _saveIntermediateFrequency && _currentStep > 1)
+      {
+        // Saving worst and best state information
+        saveBestStateInformation();
+        saveWorstStateInformation();
+
+        // Resetting timer
+        lastSaveTime = jaffarCommon::timing::now();
+      }
+    }
   }
 
   void updateWorstState()
   {
+    // If no states in database, there is nothing to update
+    if (_engine->getStateDb()->getStateCount() == 0) return;
+
+    // Making sure the intermediate result thread is not currently reading
+    _updateIntermediateResultMutex.lock();
+    
     // Getting worst state so far
     auto worstState = _engine->getStateDb()->getWorstState();
 
     // Saving worst state into the storage
-    memcpy(_worstStateStorage, worstState, _stateSize);
+    memcpy(_worstStateStorage.data(), worstState, _stateSize);
 
     // Loading worst state state into runner
-    _engine->getStateDb()->loadStateIntoRunner(*_runner, _worstStateStorage);
+    _engine->getStateDb()->loadStateIntoRunner(*_runner, _worstStateStorage.data());
+
+    // Saving worst solution into storage
+    _worstSolutionStorage = _runner->getInputHistoryString();
 
     // Updating worst state reward
     _worstStateReward = _runner->getGame()->getReward();
+
+    // Making sure the intermediate result thread is not currently reading
+    _updateIntermediateResultMutex.unlock();
   }
 
   void updateBestState()
   {
+    // If no states in database and no win states, there is nothing to update
+    if (_engine->getStateDb()->getStateCount() == 0 && _winStatesFound == 0) return;
+
+    // Making sure the intermediate result thread is not currently reading
+    _updateIntermediateResultMutex.lock();
+
     // If we haven't found any winning state, simply use the currently best state
     if (_winStatesFound == 0)
     {
@@ -195,13 +274,7 @@ class Driver final
       auto bestState = _engine->getStateDb()->getBestState();
 
       // Saving best state into the storage
-      memcpy(_bestStateStorage, bestState, _stateSize);
-
-      // Loading best state state into runner
-      _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage);
-
-      // Updating best state reward
-      _bestStateReward = _runner->getGame()->getReward();
+      memcpy(_bestStateStorage.data(), bestState, _stateSize);
     }
 
     // If we have found a winning state in this step that improves on the current best, save it now
@@ -223,14 +296,29 @@ class Driver final
         auto bestWinStatePtr = winStateEntry->second;
 
         // Saving win state into the storage
-        memcpy(_bestStateStorage, bestWinStatePtr, _stateSize);
+        memcpy(_bestStateStorage.data(), bestWinStatePtr, _stateSize);
       }
     }
+
+    // Loading best state state into runner
+    _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage.data());
+
+    // Updating best state reward
+    _bestStateReward = _runner->getGame()->getReward();
+
+    // Storing best solution
+    _bestSolutionStorage = _runner->getInputHistoryString();
+
+    // Making sure the intermediate result thread is not currently reading
+    _updateIntermediateResultMutex.unlock();
   }
 
   // Function to show current state of execution
   void printInfo()
   {
+    // If using ncurses, clear terminal before printing the information for this step
+    jaffarCommon::logger::clearTerminal();
+
     // Printing information
     jaffarCommon::logger::log("[J++] Emulator Name:                               '%s'\n", _runner->getGame()->getEmulator()->getName().c_str());
     jaffarCommon::logger::log("[J++] Game Name:                                   '%s'\n", _runner->getGame()->getName().c_str());
@@ -250,7 +338,7 @@ class Driver final
     _engine->printInfo();
 
     // Loading best state into runner
-    _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage);
+    _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage.data());
 
     // Printing best state information to screen
     jaffarCommon::logger::log("[J++] Runner Information (Best State): \n");
@@ -262,6 +350,9 @@ class Driver final
 
     // Division rule to separate different steps
     jaffarCommon::logger::log("[J++] --------------------------------------------------------------\n");
+
+    // If using ncurses, refresh terminal now
+    jaffarCommon::logger::refreshTerminal();
   }
 
   // Function to obtain driver based on configuration
@@ -306,13 +397,46 @@ class Driver final
   float _worstStateReward;
 
   // Storage for the current best (win or otherwise) state
-  uint8_t *_bestStateStorage;
+  std::string _bestStateStorage;
 
   // Storage for the current worst (win or otherwise) state
-  uint8_t *_worstStateStorage;
+  std::string _worstStateStorage;
+
+  // Storage for the current best (win or otherwise) state
+  std::string _bestSolutionStorage;
+
+  // Storage for the current worst (win or otherwise) state
+  std::string _worstSolutionStorage;
 
   // Storage size of a runner state
   size_t _stateSize;
+
+  // Internal flag to indicate the driver has finished
+  __volatile__ bool _hasFinished;
+
+  /////////////// Intermediate Result Storage
+
+  // Whether to store intermediate results at all
+  bool _saveIntermediateResultsEnabled;
+
+  // Maximum frequency by which to save intermediate results
+  float _saveIntermediateFrequency;
+
+  // Path to store the best solution found so far
+  std::string _saveIntermediateBestSolutionPath;
+
+  // Path to store the worst solution found so far
+  std::string _saveIntermediateWorstSolutionPath;
+
+  // Path to store the best state found so far
+  std::string _saveIntermediateBestStatePath;
+
+  // Path to store the worst solution found so far
+  std::string _saveIntermediateWorstStatePath;
+
+  // Update intermediate result mutex
+  std::mutex _updateIntermediateResultMutex;
+
 };
 
 } // namespace jaffarPlus

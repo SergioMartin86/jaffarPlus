@@ -22,7 +22,7 @@ jaffarDependencies = [ jaffarCommonDependency, emulatorDependencies]
 if meson.is_subproject() == false
 
   # Jaffar 
-  executable('jaffar',
+  jaffar = executable('jaffar',
     'source/jaffar.cpp',
     cpp_args: [ jaffarCPPFlags ],
     dependencies : jaffarDependencies,
