@@ -17,7 +17,7 @@ class MicroMachines final : public jaffarPlus::Game
 {
   public:
 
-  static inline std::string getName() { return "NES / Micro Machines"; }
+  static __INLINE__ std::string getName() { return "NES / Micro Machines"; }
 
   MicroMachines(std::unique_ptr<Emulator> emulator, const nlohmann::json &config) : jaffarPlus::Game(std::move(emulator), config)
   {
@@ -25,7 +25,7 @@ class MicroMachines final : public jaffarPlus::Game
 
   private:
 
-  inline void registerGameProperties() override
+  __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
     auto lowMem = _emulator->getProperty("LRAM").pointer;
@@ -94,20 +94,20 @@ class MicroMachines final : public jaffarPlus::Game
     _player1RecoveryTimer = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Recovery Timer")]->getPointer();
   }
 
-  inline void advanceStateImpl(const std::string &input) override
+  __INLINE__ void advanceStateImpl(const std::string &input) override
   {
     _player1LapsRemainingPrev = *_player1LapsRemaining;
 
     _emulator->advanceState(input);
   }
 
-  inline void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
   {
     hashEngine.Update(*_player1TankFireTimer > 0);
   }
 
   // Updating derivative values after updating the internal state
-  inline void stateUpdatePostHook() override
+  __INLINE__ void stateUpdatePostHook() override
   {
     _player1PosX = (uint16_t)*_player1PosX1 * 256 + (uint16_t)*_player1PosX2;
     _player1PosY = (uint16_t)*_player1PosY1 * 256 + (uint16_t)*_player1PosY2;
@@ -121,7 +121,7 @@ class MicroMachines final : public jaffarPlus::Game
     _player1DistanceToCamera = sqrtf(_player1DistanceToCameraX * _player1DistanceToCameraX + _player1DistanceToCameraY * _player1DistanceToCameraY);
   }
 
-  inline void ruleUpdatePreHook() override
+  __INLINE__ void ruleUpdatePreHook() override
   {
     // Resetting magnets ahead of rule re-evaluation
     _playerCurrentLapMagnet = 0.0;
@@ -137,7 +137,7 @@ class MicroMachines final : public jaffarPlus::Game
     _pointMagnet.y = 0.0;
   }
 
-  inline void ruleUpdatePostHook() override
+  __INLINE__ void ruleUpdatePostHook() override
   {
     // Updating distance to user-defined point
     _player1DistanceToPointX = std::abs((float)_pointMagnet.x - (float)_player1PosX);
@@ -147,19 +147,19 @@ class MicroMachines final : public jaffarPlus::Game
     _player1DistanceToMagnetAngle = std::abs(_player1AngleMagnet.angle - (float)*_player1Angle1);
   }
 
-  inline void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
   {
     // Storing previous lap count
     serializer.pushContiguous(&_player1LapsRemainingPrev, 1);
   }
 
-  inline void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
   {
     // Restoring previous lap count
     deserializer.popContiguous(&_player1LapsRemainingPrev, 1);
   }
 
-  inline float calculateGameSpecificReward() const
+  __INLINE__ float calculateGameSpecificReward() const
   {
     // Getting rewards from rules
     float reward = 0.0;

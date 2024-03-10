@@ -91,12 +91,12 @@ class Playback final
 
   ~Playback() {}
 
-  inline std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
-  inline jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }
-  inline void *getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
-  inline jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
+  __INLINE__ std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
+  __INLINE__ jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }
+  __INLINE__ void *getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
+  __INLINE__ jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
 
-  inline void renderFrame(const size_t currentStep)
+  __INLINE__ void renderFrame(const size_t currentStep)
   {
     const auto &step = getStep(currentStep);
     jaffarCommon::deserializer::Contiguous d(step.rendererStateData, _rendererStateSize);

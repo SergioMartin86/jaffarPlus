@@ -108,19 +108,19 @@ class QuickerNES final : public Emulator
     _quickerNES.advanceState(move);
   }
 
-  inline void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerNES.serializeState(serializer); };
-  inline void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerNES.deserializeState(deserializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerNES.serializeState(serializer); };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerNES.deserializeState(deserializer); };
 
-  inline void disableStateProperties()
+  __INLINE__ void disableStateProperties()
   {
     for (const auto &property : _disabledStateProperties) disableStateProperty(property);
   }
-  inline void enableStateProperties()
+  __INLINE__ void enableStateProperties()
   {
     for (const auto &property : _disabledStateProperties) enableStateProperty(property);
   }
 
-  inline void printInfo() const override
+  __INLINE__ void printInfo() const override
   {
     printMemoryBlockHash("LRAM");
     printMemoryBlockHash("SRAM");
@@ -140,12 +140,12 @@ class QuickerNES final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  inline void enableStateProperty(const std::string &property) override
+  __INLINE__ void enableStateProperty(const std::string &property) override
   {
     _quickerNES.enableStateBlock(property);
   }
 
-  inline void disableStateProperty(const std::string &property) override
+  __INLINE__ void disableStateProperty(const std::string &property) override
   {
     _quickerNES.disableStateBlock(property);
   }
@@ -172,7 +172,7 @@ class QuickerNES final : public Emulator
   uint8_t _videoBuffer[BLIT_SIZE];
 
   // Copied from bizinterface.cpp in BizHawk/quicknes
-  inline void saveBlit(const void *ePtr, int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom)
+  __INLINE__ void saveBlit(const void *ePtr, int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom)
   {
     const emulator_t *e = (emulator_t *)ePtr;
     const unsigned char *in_pixels = e->frame().pixels;
@@ -191,12 +191,12 @@ class QuickerNES final : public Emulator
       }
   }
 
-  inline void enableRendering() override { _quickerNES.enableRendering(); }
-  inline void disableRendering() override { _quickerNES.disableRendering(); }
-  inline void updateRendererState() override { saveBlit(_quickerNES.getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0); }
-  inline void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
-  inline void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
-  inline size_t getRendererStateSize() const
+  __INLINE__ void enableRendering() override { _quickerNES.enableRendering(); }
+  __INLINE__ void disableRendering() override { _quickerNES.disableRendering(); }
+  __INLINE__ void updateRendererState() override { saveBlit(_quickerNES.getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0); }
+  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
+  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
+  __INLINE__ size_t getRendererStateSize() const
   {
     jaffarCommon::serializer::Contiguous s;
     serializeRendererState(s);
@@ -233,7 +233,7 @@ class QuickerNES final : public Emulator
     return true;
   }
 
-  inline void initializeVideoOutput(SDL_Window *window) override
+  __INLINE__ void initializeVideoOutput(SDL_Window *window) override
   {
     m_window = window;
     if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) JAFFAR_THROW_RUNTIME("Coult not create SDL renderer in NES emulator");
@@ -242,7 +242,7 @@ class QuickerNES final : public Emulator
     if (!setScale(1)) JAFFAR_THROW_RUNTIME("Coult not set SDL scale in NES emulator");
   }
 
-  inline void updateVideoOutput() override
+  __INLINE__ void updateVideoOutput() override
   {
     void *nesPixels = nullptr;
     int pitch = 0;
@@ -259,17 +259,17 @@ class QuickerNES final : public Emulator
     SDL_RenderPresent(m_renderer);
   }
 
-  inline void finalizeVideoOutput() override
+  __INLINE__ void finalizeVideoOutput() override
   {
     if (m_tex) SDL_DestroyTexture(m_tex);
     if (m_renderer) SDL_DestroyRenderer(m_renderer);
   }
 #else
-  inline void initializeVideoOutput() override
+  __INLINE__ void initializeVideoOutput() override
   {
   }
-  inline void updateVideoOutput() override {}
-  inline void finalizeVideoOutput() override {}
+  __INLINE__ void updateVideoOutput() override {}
+  __INLINE__ void finalizeVideoOutput() override {}
 #endif
 
   private:

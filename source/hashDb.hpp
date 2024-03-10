@@ -35,7 +35,7 @@ class HashDb final
     _maxStoreSizeMb = jaffarCommon::json::getNumber<double>(config, "Max Store Size (Mb)");
   }
 
-  inline void initialize()
+  __INLINE__ void initialize()
   {
     // Calculating the maximum store size in entries
     _maxStoreEntries = std::floor((_maxStoreSizeMb / _bytesPerEntry) * 1024.0 * 1024.0);
@@ -84,7 +84,7 @@ class HashDb final
   /**
    * Function to check whether the provided hash is already present in any of the hash stores
    */
-  inline bool checkHashExists(const jaffarCommon::hash::hash_t hash)
+  __INLINE__ bool checkHashExists(const jaffarCommon::hash::hash_t hash)
   {
     // The current hash store is the latest to be entered
     auto itr = _hashStores.rbegin();
@@ -127,7 +127,7 @@ class HashDb final
   /**
    * This function simply inserts a hash without checking for collisions
    */
-  inline void insertHash(const jaffarCommon::hash::hash_t hash)
+  __INLINE__ void insertHash(const jaffarCommon::hash::hash_t hash)
   {
     // The current hash store is the latest to be entered
     auto itr = _hashStores.rbegin();
@@ -142,7 +142,7 @@ class HashDb final
    * The current age is increased, and if the current database exceeds its maximum
    * entries, it is send to the past db collection and a new one is created
    */
-  inline void advanceStep()
+  __INLINE__ void advanceStep()
   {
     // The current hash store is the latest to be entered
     auto itr = _hashStores.rbegin();

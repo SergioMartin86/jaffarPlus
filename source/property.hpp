@@ -41,9 +41,9 @@ class Property
   {
   }
 
-  inline size_t getSize() const { return getDatatypeSize(_datatype); }
+  __INLINE__ size_t getSize() const { return getDatatypeSize(_datatype); }
 
-  static inline endianness_t parseEndiannessName(const std::string &endiannessName)
+  static __INLINE__ endianness_t parseEndiannessName(const std::string &endiannessName)
   {
     if (endiannessName == "Little") return endianness_t::little;
     if (endiannessName == "Big") return endianness_t::big;
@@ -51,7 +51,7 @@ class Property
     JAFFAR_THROW_LOGIC("Endianness '%s' not recognized.", endiannessName.c_str());
   }
 
-  static inline datatype_t parseDatatypeName(const std::string &datatypeName)
+  static __INLINE__ datatype_t parseDatatypeName(const std::string &datatypeName)
   {
     if (datatypeName == "UINT8") return datatype_t::dt_uint8;
     if (datatypeName == "UINT16") return datatype_t::dt_uint16;
@@ -68,7 +68,7 @@ class Property
     JAFFAR_THROW_LOGIC("Data type '%s' not recognized.", datatypeName.c_str());
   }
 
-  static inline size_t getDatatypeSize(const datatype_t datatype)
+  static __INLINE__ size_t getDatatypeSize(const datatype_t datatype)
   {
     switch (datatype)
     {
@@ -89,7 +89,7 @@ class Property
   }
 
   template <typename T>
-  inline T getValue() const
+  __INLINE__ T getValue() const
   {
     // Otherwise convert to big endian
     const auto size = getSize();

@@ -38,7 +38,7 @@ class Emulator
   virtual ~Emulator() = default;
 
   // Initialization function
-  inline void initialize()
+  __INLINE__ void initialize()
   {
     if (_isInitialized == true) JAFFAR_THROW_LOGIC("This emulator instance was already initialized");
 
@@ -60,9 +60,9 @@ class Emulator
     return s.getOutputSize();
   }
 
-  inline bool isInitialized() const { return _isInitialized; }
+  __INLINE__ bool isInitialized() const { return _isInitialized; }
 
-  inline std::string getName() const { return _emulatorName; }
+  __INLINE__ std::string getName() const { return _emulatorName; }
 
   virtual void initializeImpl() = 0;
 

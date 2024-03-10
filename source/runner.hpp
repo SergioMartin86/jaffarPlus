@@ -139,7 +139,7 @@ class Runner final
   }
 
   // Function to advance state.
-  inline jaffarPlus::InputSet::inputIndex_t getInputIndex(const std::string &input) const
+  __INLINE__ jaffarPlus::InputSet::inputIndex_t getInputIndex(const std::string &input) const
   {
     // Getting input hash
     const auto inputHash = jaffarCommon::hash::hashString(input);
@@ -178,13 +178,13 @@ class Runner final
     _currentStep++;
   }
 
-  inline void setInput(const size_t stepId, const InputSet::inputIndex_t inputIdx)
+  __INLINE__ void setInput(const size_t stepId, const InputSet::inputIndex_t inputIdx)
   {
     // Using bit-encoded copy to store the new input
     jaffarCommon::bitwise::bitcopy(_inputHistory.data(), _inputHistory.size(), stepId, &inputIdx, sizeof(InputSet::inputIndex_t), 0, 1, _inputIndexSizeBits);
   }
 
-  inline InputSet::inputIndex_t getInput(const size_t stepId) const
+  __INLINE__ InputSet::inputIndex_t getInput(const size_t stepId) const
   {
     // Temporary storage for the new input
     InputSet::inputIndex_t inputIdx = 0;
@@ -197,7 +197,7 @@ class Runner final
   }
 
   // Serialization routine
-  inline void serializeState(jaffarCommon::serializer::Base &serializer) const
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const
   {
     // Performing differential serialization of the internal game instance
     _game->serializeState(serializer);
@@ -210,7 +210,7 @@ class Runner final
   }
 
   // Deeserialization routine
-  inline void deserializeState(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer)
   {
     // Performing differential serialization of the internal game instance
     _game->deserializeState(deserializer);
@@ -223,7 +223,7 @@ class Runner final
   }
 
   // Getting the maximum differntial state size
-  inline size_t getStateSize() const
+  __INLINE__ size_t getStateSize() const
   {
     jaffarCommon::serializer::Contiguous s;
     this->serializeState(s);
@@ -231,7 +231,7 @@ class Runner final
   }
 
   // Getting the maximum differntial state size
-  inline size_t getDifferentialStateSize(const size_t maxDifferences) const
+  __INLINE__ size_t getDifferentialStateSize(const size_t maxDifferences) const
   {
     jaffarCommon::serializer::Differential s;
     this->serializeState(s);
@@ -240,7 +240,7 @@ class Runner final
   }
 
   // This function computes the hash for the current runner state
-  inline jaffarCommon::hash::hash_t computeHash() const
+  __INLINE__ jaffarCommon::hash::hash_t computeHash() const
   {
     // Storage for hash calculation
     MetroHash128 hashEngine;
@@ -319,11 +319,11 @@ class Runner final
       jaffarCommon::logger::log("[J++]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
   }
 
-  inline uint32_t getHashStepToleranceStage() const { return _currentStep % (_hashStepTolerance + 1); }
-  inline Game *getGame() const { return _game.get(); }
+  __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentStep % (_hashStepTolerance + 1); }
+  __INLINE__ Game *getGame() const { return _game.get(); }
 
-  inline bool getInputHistoryEnabled() const { return _inputHistoryEnabled; }
-  inline size_t getInputHistoryMaximumStep() const { return _inputHistoryMaxSize; }
+  __INLINE__ bool getInputHistoryEnabled() const { return _inputHistoryEnabled; }
+  __INLINE__ size_t getInputHistoryMaximumStep() const { return _inputHistoryMaxSize; }
 
   // Function to obtain runner based on game and emulator choice
   static std::unique_ptr<Runner> getRunner(const nlohmann::json &emulatorConfig, const nlohmann::json &gameConfig, const nlohmann::json &runnerConfig)
@@ -338,7 +338,7 @@ class Runner final
     return r;
   }
 
-  inline bool isInitialized() const { return _isInitialized; }
+  __INLINE__ bool isInitialized() const { return _isInitialized; }
 
   private:
 

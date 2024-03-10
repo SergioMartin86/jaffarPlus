@@ -96,7 +96,7 @@ class Game
   virtual ~Game() = default;
 
   // Function to advance state.
-  inline void advanceState(const std::string &input)
+  __INLINE__ void advanceState(const std::string &input)
   {
     // Calling the pre-update hook
     stateUpdatePreHook();
@@ -109,7 +109,7 @@ class Game
   }
 
   // Differential serialization routine
-  inline void serializeState(jaffarCommon::serializer::Base &serializer) const
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const
   {
     // Serializing internal emulator state
     _emulator->serializeState(serializer);
@@ -128,7 +128,7 @@ class Game
   }
 
   // Differential deserialization routine
-  inline void deserializeState(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer)
   {
     // Calling the pre-update hook
     stateUpdatePreHook();
@@ -161,7 +161,7 @@ class Game
     ruleUpdatePostHook();
   }
 
-  inline size_t getDifferentialStateSize(const size_t maxDifferences) const
+  __INLINE__ size_t getDifferentialStateSize(const size_t maxDifferences) const
   {
     size_t stateSize = 0;
 
@@ -178,7 +178,7 @@ class Game
   }
 
   // This function computes the hash for the current state
-  inline void computeHash(MetroHash128 &hashEngine) const
+  __INLINE__ void computeHash(MetroHash128 &hashEngine) const
   {
     // Processing hashable game properties
     for (const auto &p : _propertyHashVector) hashEngine.Update(p->getPointer(), p->getSize());
@@ -246,7 +246,7 @@ class Game
   }
 
   // Evaluates the rule set on a given frame. Returns true if it is a fail.
-  inline void evaluateRules()
+  __INLINE__ void evaluateRules()
   {
     // Calling the pre-update hook
     ruleUpdatePreHook();
@@ -278,7 +278,7 @@ class Game
     ruleUpdatePostHook();
   }
 
-  inline void runGameSpecificRuleActions()
+  __INLINE__ void runGameSpecificRuleActions()
   {
     // First, checking if the rules have been satisfied
     for (auto &entry : _rules)
@@ -295,7 +295,7 @@ class Game
     }
   }
 
-  inline void updateGameStateType()
+  __INLINE__ void updateGameStateType()
   {
     // Clearing game state type before we evaluate satisfied rules
     _stateType = stateType_t::normal;
@@ -328,7 +328,7 @@ class Game
     }
   }
 
-  inline void updateReward()
+  __INLINE__ void updateReward()
   {
     // First, we resetting reward to zero
     _reward = 0.0;
@@ -444,24 +444,24 @@ class Game
   }
 
   // Returns pointer to the internal emulator
-  inline Emulator *getEmulator() const { return _emulator.get(); }
+  __INLINE__ Emulator *getEmulator() const { return _emulator.get(); }
 
   // Function to obtain emulator based on name
   static std::unique_ptr<Game> getGame(const nlohmann::json &emulatorConfig, const nlohmann::json &gameConfig);
 
   // Function to get the frame rate
-  inline float getFrameRate() const { return _frameRate; }
+  __INLINE__ float getFrameRate() const { return _frameRate; }
 
   // Function to get the reward
-  inline float getReward() const { return _reward; }
+  __INLINE__ float getReward() const { return _reward; }
 
   // Function to get the state type
-  inline stateType_t getStateType() const { return _stateType; }
+  __INLINE__ stateType_t getStateType() const { return _stateType; }
 
   // Function to get game name in runtime
-  inline std::string getName() const { return _gameName; }
+  __INLINE__ std::string getName() const { return _gameName; }
 
-  inline bool isInitialized() const { return _isInitialized; }
+  __INLINE__ bool isInitialized() const { return _isInitialized; }
 
   protected:
 
@@ -592,7 +592,7 @@ class Game
   }
 
   // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules
-  inline void satisfyRule(Rule &rule)
+  __INLINE__ void satisfyRule(Rule &rule)
   {
     // Recursively run actions for the yet unsatisfied rules that are satisfied by this one and mark them as satisfied
     for (const auto &satisfyRuleLabel : rule.getSatisfyRuleLabels())
@@ -626,10 +626,10 @@ class Game
   virtual bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) = 0;
 
   // Optional hooks
-  virtual inline void stateUpdatePreHook(){};
-  virtual inline void stateUpdatePostHook(){};
-  virtual inline void ruleUpdatePreHook(){};
-  virtual inline void ruleUpdatePostHook(){};
+  virtual __INLINE__ void stateUpdatePreHook(){};
+  virtual __INLINE__ void stateUpdatePostHook(){};
+  virtual __INLINE__ void ruleUpdatePreHook(){};
+  virtual __INLINE__ void ruleUpdatePostHook(){};
 
   // Current game state type
   stateType_t _stateType;

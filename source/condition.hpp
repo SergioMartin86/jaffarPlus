@@ -24,10 +24,10 @@ class Condition
 
   Condition(const operator_t opType) : _opType(opType) {}
 
-  virtual inline bool evaluate() const = 0;
+  virtual __INLINE__ bool evaluate() const = 0;
   virtual ~Condition() = default;
 
-  static inline operator_t getOperatorType(const std::string &operation)
+  static __INLINE__ operator_t getOperatorType(const std::string &operation)
   {
     if (operation == "==") return op_equal;
     if (operation == "!=") return op_not_equal;
@@ -73,7 +73,7 @@ class _vCondition : public Condition
     }
   }
 
-  inline bool evaluate() const
+  __INLINE__ bool evaluate() const
   {
     T immediate1 = _immediate1;
     T immediate2 = _immediate2;
@@ -84,14 +84,14 @@ class _vCondition : public Condition
 
   private:
 
-  static inline bool _opEqual(const T a, const T b) { return a == b; }
-  static inline bool _opNotEqual(const T a, const T b) { return a != b; }
-  static inline bool _opGreater(const T a, const T b) { return a > b; }
-  static inline bool _opGreaterOrEqual(const T a, const T b) { return a >= b; }
-  static inline bool _opLess(const T a, const T b) { return a < b; }
-  static inline bool _opLessOrEqual(const T a, const T b) { return a <= b; }
-  static inline bool _opBitTrue(const T a, const T b) { return jaffarCommon::bitwise::getBitFlag(a, b); }
-  static inline bool _opBitFalse(const T a, const T b) { return !jaffarCommon::bitwise::getBitFlag(a, b); }
+  static __INLINE__ bool _opEqual(const T a, const T b) { return a == b; }
+  static __INLINE__ bool _opNotEqual(const T a, const T b) { return a != b; }
+  static __INLINE__ bool _opGreater(const T a, const T b) { return a > b; }
+  static __INLINE__ bool _opGreaterOrEqual(const T a, const T b) { return a >= b; }
+  static __INLINE__ bool _opLess(const T a, const T b) { return a < b; }
+  static __INLINE__ bool _opLessOrEqual(const T a, const T b) { return a <= b; }
+  static __INLINE__ bool _opBitTrue(const T a, const T b) { return jaffarCommon::bitwise::getBitFlag(a, b); }
+  static __INLINE__ bool _opBitFalse(const T a, const T b) { return !jaffarCommon::bitwise::getBitFlag(a, b); }
 
   bool (*_opFcPtr)(const T, const T);
 

@@ -108,7 +108,7 @@ class Base
    *
    * It must be of the same size as _stateSizeRaw
    */
-  inline void setReferenceData(const void *referenceData)
+  __INLINE__ void setReferenceData(const void *referenceData)
   {
     memcpy(_currentReferenceData, referenceData, _stateSizeRaw);
     memcpy(_previousReferenceData, referenceData, _stateSizeRaw);
@@ -117,7 +117,7 @@ class Base
   /**
    * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
    */
-  inline void advanceStep()
+  __INLINE__ void advanceStep()
   {
     // Copying state pointers
     while (_nextStateDb.begin() != _nextStateDb.end())
@@ -130,7 +130,7 @@ class Base
     if (_currentStateDb.wasSize() > 0) memcpy(_currentReferenceData, _currentStateDb.front(), _stateSizeRaw);
   }
 
-  inline bool pushState(const float reward, Runner &r, void *statePtr)
+  __INLINE__ bool pushState(const float reward, Runner &r, void *statePtr)
   {
     // Check that we got a free state (we did not overflow state memory)
     if (statePtr == nullptr) JAFFAR_THROW_RUNTIME("Ran out of free states\n");
@@ -160,7 +160,7 @@ class Base
   /**
    * Saves the runner state into the provided state data pointer
    */
-  inline size_t saveStateFromRunner(Runner &r, void *statePtr) const
+  __INLINE__ size_t saveStateFromRunner(Runner &r, void *statePtr) const
   {
     // Storage for the state size after deserialization
     size_t serializedSize = 0;
@@ -187,7 +187,7 @@ class Base
   /**
    * Loads the state into the runner, performing the appropriate decompression (or not) procedure
    */
-  inline void loadStateIntoRunner(Runner &r, const void *statePtr)
+  __INLINE__ void loadStateIntoRunner(Runner &r, const void *statePtr)
   {
     // Deserializing the runner state from the memory received (if using differential compression)
     if (_useDifferentialCompression == true)
@@ -207,7 +207,7 @@ class Base
   /**
    * This function returns a pointer to the best state found in the current state database
    */
-  inline void *getBestState() const
+  __INLINE__ void *getBestState() const
   {
     return _currentStateDb.front();
   }
@@ -215,7 +215,7 @@ class Base
   /**
    * This function returns a pointer to the worst state found in the current state database
    */
-  inline void *getWorstState() const
+  __INLINE__ void *getWorstState() const
   {
     return _currentStateDb.back();
   }

@@ -20,7 +20,7 @@ class InputSet final
   ~InputSet() = default;
 
   // The input set is activated only if all conditions are met
-  inline bool evaluate() const
+  __INLINE__ bool evaluate() const
   {
     for (const auto &c : _conditions)
       if (c->evaluate() == false) return false;
