@@ -97,9 +97,6 @@ class Driver final
     // If using ncurses, initialize terminal now
     jaffarCommon::logger::initializeTerminal();
 
-    // Showing initial state's information
-    dumpInformation();
-
     // Storage for the exit
     exitReason_t exitReason;
 
@@ -128,6 +125,9 @@ class Driver final
         break;
       }
 
+      // Printing information and dumping information and files
+      dumpInformation();
+
       // Running engine step
       _engine->runStep();
 
@@ -136,16 +136,13 @@ class Driver final
 
       // Increasing step counter
       _currentStep++;
-
-      // Printing information and dumping information and files
-      dumpInformation();
     }
 
     // If using ncurses, terminate terminal now
     jaffarCommon::logger::finalizeTerminal();
 
     // Final report
-    dumpInformation();
+    if (_engine->getStateCount() > 0) dumpInformation();
 
     // Otherwise return the reason why we stopped
     return exitReason;
