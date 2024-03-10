@@ -55,7 +55,7 @@ class Driver final
     _runner = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
 
     // Creating engine from the configuration
-    _engine = jaffarPlus::Engine::getEngine(emulatorConfig, gameConfig, runnerConfig, engineConfig);
+    _engine = std::make_unique<Engine>(emulatorConfig, gameConfig, runnerConfig, engineConfig);
   }
 
   ~Driver() {} 
@@ -93,7 +93,7 @@ class Driver final
   {
     // Resetting engine
     _engine->reset();
-    
+
     // If using ncurses, initialize terminal now
     jaffarCommon::logger::initializeTerminal();
 

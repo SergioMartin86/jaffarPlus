@@ -66,6 +66,7 @@ class Base
     _stateSizePadding = _stateSize - _stateSizeEffective;
 
     // Calling specific initialization routine for the state db type
+    initializeImpl();
   }
 
   // Function to print relevant information
