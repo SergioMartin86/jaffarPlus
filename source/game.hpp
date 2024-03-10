@@ -50,6 +50,9 @@ class Game
 
   void initialize()
   {
+    // Getting game-specific properties
+    registerGameProperties();
+
     // Registering printable properties
     for (const auto &property : _printablePropertyNames)
     {
@@ -601,6 +604,7 @@ class Game
     jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
+  virtual void registerGameProperties() = 0;
   virtual void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const = 0;
   virtual void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) = 0;
   virtual float calculateGameSpecificReward() const = 0;

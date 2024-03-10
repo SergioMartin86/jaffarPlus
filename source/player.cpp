@@ -61,12 +61,18 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
     JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
   }
 
-  // Creating runner from the configuration
-  auto r = jaffarPlus::Runner::getRunner(
-    jaffarCommon::json::getObject(config, "Emulator Configuration"),
-    jaffarCommon::json::getObject(config, "Game Configuration"),
-    jaffarCommon::json::getObject(config, "Runner Configuration"));
+  // Getting component configurations
+  auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
+  auto gameConfig = jaffarCommon::json::getObject(config, "Game Configuration");
+  auto runnerConfig = jaffarCommon::json::getObject(config, "Runner Configuration");
 
+  // Overriding runner configuration based on the maximum number of steps to drive
+  runnerConfig["Store Input History"]["Enabled"] = false;
+  runnerConfig["Store Input History"]["Max Size (Steps)"] = 0;
+
+  // Creating runner from the configuration
+  auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
+  
   // Enabling rendering
   if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
 

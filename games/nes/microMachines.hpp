@@ -20,6 +20,13 @@ class MicroMachines final : public jaffarPlus::Game
 
   MicroMachines(std::unique_ptr<Emulator> emulator, const nlohmann::json &config) : jaffarPlus::Game(std::move(emulator), config)
   {
+
+  }
+
+  private:
+
+  inline void registerGameProperties() override
+  {
     // Getting emulator's low memory pointer
     auto lowMem = _emulator->getProperty("LRAM").pointer;
 
@@ -87,7 +94,6 @@ class MicroMachines final : public jaffarPlus::Game
     _player1RecoveryTimer = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Recovery Timer")]->getPointer();
   }
 
-  private:
   inline void advanceStateImpl(const std::string &input) override
   {
     _player1LapsRemainingPrev = *_player1LapsRemaining;

@@ -22,7 +22,12 @@ class Sprilo final : public jaffarPlus::Game
   {
     // Parsing configuration
     _lastInputStepReward = jaffarCommon::json::getNumber<float>(config, "Last Input Step Reward");
+  }
 
+  private:
+
+  inline void registerGameProperties() override
+  {
     // Getting emulator's low memory pointer
     _lowMem = _emulator->getProperty("LRAM").pointer;
 
@@ -42,13 +47,8 @@ class Sprilo final : public jaffarPlus::Game
     _playerPosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
     _playerPosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
     _lapProgress = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Lap Progress")]->getPointer();
-
-    // Initializing time since last input counter
-    _lastInputStep = 0;
-    _currentStep = 0;
   }
 
-  private:
   inline void advanceStateImpl(const std::string &input) override
   {
     // Increasing counter if input is null
@@ -185,8 +185,8 @@ class Sprilo final : public jaffarPlus::Game
   uint8_t *_lapProgress;
 
   // Additions to make the last input as soon as possible
-  uint16_t _lastInputStep;
-  uint16_t _currentStep;
+  uint16_t _lastInputStep = 0;
+  uint16_t _currentStep = 0;
 
   // Game-Specific values
   float _player1DistanceToPointX;
