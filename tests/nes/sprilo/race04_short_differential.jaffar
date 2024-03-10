@@ -1,0 +1,138 @@
+{
+  "Driver Configuration":
+  {
+   "End On First Win State": true,
+   "Max Steps": 400,
+
+    "Save Intermediate Results":
+    {
+      "Enabled": true,
+      "Frequency (s)": 1.0,
+      "Best Solution Path": "/tmp/jaffar.best.sol",
+      "Worst Solution Path": "/tmp/jaffar.worst.sol",
+      "Best State Path": "/tmp/jaffar.best.state",
+      "Worst State Path": "/tmp/jaffar.worst.state"
+    }
+  },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      1,
+      1
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": true, 
+      "Max Difference (bytes)": 500,
+      "Use Zlib Compression": true
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 100
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerNES",
+  "Rom File Path": "../../../extern/quickerNES/tests/roms/sprilo.nes",
+  "Rom File SHA1": "6EC09B9B51320A536A786D3D4719432B714C5779",
+  "Initial State File Path": "race04.state",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "None",
+  "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ]
+},
+ 
+"Runner Configuration":
+{
+  "Hash Step Tolerance": 0,
+
+  "Possible Inputs":
+  [
+   {
+     "Conditions":
+     [
+     ],
+ 
+     "Inputs":
+     [
+       "|..|.......A|",
+       "|..|...R...A|",
+       "|..|..L....A|"
+     ]
+   }
+  ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "NES / Sprilo",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Current Lap",                   
+    "Timer",                     
+    "Player Pos X",                      
+    "Player Pos Y",         
+    "Lap Progress"
+  ],
+
+  "Hash Properties":
+  [
+    "Current Lap",                   
+    "Player Pos X",                      
+    "Player Pos Y",
+    "Lap Progress"    
+  ],
+
+  "Rules":
+  [
+    {
+     "Label": 1000,
+     "Conditions":
+     [
+      { "Property": "Current Lap", "Op": "==", "Value": 0 }
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Add Reward", "Value": 10000.0 },
+      { "Type": "Clear Lap Progress" },
+      { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 204, "Y": 145 }
+     ]
+    },
+
+    {
+      "Label": 1001,
+      "Conditions":
+      [
+        { "Property": "Current Lap", "Op": "==", "Value": 0 },
+        { "Property": "Player Pos X", "Op": ">", "Value": 106 }
+      ],
+      
+      "Satisfies": [ 1000 ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+    }
+  ]
+ }
+}

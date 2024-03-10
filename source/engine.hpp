@@ -113,7 +113,7 @@ class Engine final
     jaffarCommon::serializer::Contiguous s(referenceData, stateSize);
     r.serializeState(s);
 
-    // Setting reference data
+    // Setting initial reference data, necessary for differential compression (if enabled)
     _stateDb->setReferenceData(referenceData);
 
     // Evaluate game rules on the initial state
@@ -167,8 +167,12 @@ class Engine final
     _advanceStateDbAverageCumulativeTime = 0;
     _popBaseStateDbAverageCumulativeTime = 0;
 
-    // Updating total running time
+    // Resetting total running time
     _totalRunningTime = 0;
+
+    // Resetting dropped state count
+    _droppedStatesNoStorage = 0;
+    _droppedStatesFailedSerialization = 0;
   }
 
   /**
@@ -349,6 +353,9 @@ class Engine final
     jaffarCommon::logger::log("[J++] Base States Performance:                     %.3f Mstates/s (Average: %.3f Mstates/s)\n", 1.0e-6 * (double)_stepBaseStatesProcessed / (1.0e-9 * (double)_currentStepTime), 1.0e-6 * (double)_totalBaseStatesProcessed / (1.0e-9 * (double)_totalRunningTime));
     jaffarCommon::logger::log("[J++] New States Performance:                      %.3f Mstates/s (Average: %.3f Mstates/s)\n", 1.0e-6 * (double)_stepNewStatesProcessed / (1.0e-9 * (double)_currentStepTime), 1.0e-6 * (double)_totalNewStatesProcessed / (1.0e-9 * (double)_totalRunningTime));
 
+    jaffarCommon::logger::log("[J++] Dropped States (No Storage Available):       %lu (%5.3f%% of New States Processed) \n", _droppedStatesNoStorage.load(), 100.0 * (double)_droppedStatesNoStorage.load() / (double)_totalNewStatesProcessed);
+    jaffarCommon::logger::log("[J++] Dropped States (Failed Serialization):       %lu\n", _droppedStatesFailedSerialization.load());
+
     // Print state database information
     jaffarCommon::logger::log("[J++] State Database Information:\n");
     _stateDb->printInfo();
@@ -441,7 +448,11 @@ class Engine final
         _getFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t5);
 
         // If couldn't get any memory, simply drop the state
-        if (newStateData == nullptr) continue;
+        if (newStateData == nullptr)
+        {
+          _droppedStatesNoStorage++;
+          continue;
+        }
 
         // Updating state reward
         const auto t6 = jaffarCommon::timing::now();
@@ -453,7 +464,20 @@ class Engine final
 
         // If this is a normal state, push into the state database
         const auto t7 = jaffarCommon::timing::now();
-        if (stateType == Game::stateType_t::normal) _stateDb->pushState(reward, *r, newStateData);
+
+        // Attempting to serialize state and push it into the database
+        // This might fail when using differential serialization due to insufficient space for differentials
+        // In that, case we just drop the state and continue, while keeping a counter
+        if (stateType == Game::stateType_t::normal)
+        {
+          auto success = _stateDb->pushState(reward, *r, newStateData);
+          if (success == false)
+          {
+            _droppedStatesFailedSerialization++;
+            continue;
+          }
+        }
+
         _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t7);
 
         // If this is a win state, register it
@@ -500,6 +524,12 @@ class Engine final
 
   // Total running time so far
   size_t _totalRunningTime;
+
+  // Counter for dropped states due to lack of free states
+  std::atomic<size_t> _droppedStatesNoStorage;
+
+  // Counter for dropped states due to failed (differential) serialization
+  std::atomic<size_t> _droppedStatesFailedSerialization;
 
   // Counter for the number of base states processed
   std::atomic<size_t> _stepBaseStatesProcessed;
