@@ -12,6 +12,7 @@ namespace jaffarPlus
 class Rule final
 {
   public:
+
   typedef size_t label_t;
 
   Rule(const size_t index, const label_t label) : _index(index),
@@ -46,6 +47,7 @@ class Rule final
   const std::vector<std::function<void()>> &getActions() const { return _actions; }
 
   private:
+
   // Conditions are evaluated frequently, so this optimized for performance
   // Operands are pre-parsed as pointers/immediates and the evaluation function
   // is a template that is created at compilation time.

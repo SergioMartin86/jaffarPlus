@@ -19,6 +19,7 @@ namespace jaffarPlus
 class Game
 {
   public:
+
   enum stateType_t
   {
     normal = 0,
@@ -463,6 +464,7 @@ class Game
   inline bool isInitialized() const { return _isInitialized; }
 
   protected:
+
   void registerGameProperty(const std::string &name, void *const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)
   {
     // Creating property

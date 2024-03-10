@@ -16,6 +16,7 @@ namespace NES
 class Sprilo final : public jaffarPlus::Game
 {
   public:
+
   static inline std::string getName() { return "NES / Sprilo"; }
 
   Sprilo(std::unique_ptr<Emulator> emulator, const nlohmann::json &config) : jaffarPlus::Game(std::move(emulator), config)
@@ -25,6 +26,7 @@ class Sprilo final : public jaffarPlus::Game
   }
 
   private:
+
   inline void registerGameProperties() override
   {
     // Getting emulator's low memory pointer

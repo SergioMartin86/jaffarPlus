@@ -25,6 +25,7 @@ thread_local static int preferredNumaDomain;
 class Numa : public stateDb::Base
 {
   public:
+
   Numa(Runner &r, const nlohmann::json &config) : stateDb::Base(r, config)
   {
     // Checking whether the numa library calls are available
@@ -240,6 +241,7 @@ class Numa : public stateDb::Base
   }
 
   private:
+
   /**
    * Number of numa domains
    */

@@ -10,6 +10,7 @@ namespace jaffarPlus
 class Property
 {
   public:
+
   enum datatype_t
   {
     dt_uint8, // Integer Little Endian
@@ -135,6 +136,7 @@ class Property
   void *getPointer() const { return _pointer; }
 
   private:
+
   const std::string _name;
   void *const _pointer;
   const datatype_t _datatype;

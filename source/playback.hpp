@@ -13,6 +13,7 @@ namespace jaffarPlus
 class Playback final
 {
   public:
+
   struct step_t
   {
     // Storage for the step's input string
@@ -119,6 +120,7 @@ class Playback final
   }
 
   private:
+
   // Step getter
   step_t getStep(const size_t stepId) const
   {

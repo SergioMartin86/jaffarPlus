@@ -23,6 +23,7 @@ struct property_t
 class Emulator
 {
   public:
+
   // Constructor must only do configuration parsing to perform dry runs
   Emulator(const nlohmann::json &config)
   {

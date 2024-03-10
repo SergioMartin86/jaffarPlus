@@ -22,6 +22,7 @@ namespace jaffarPlus
 class Runner final
 {
   public:
+
   // Base constructor
   Runner(std::unique_ptr<Game> &game, const nlohmann::json &config) : _game(std::move(game))
   {
@@ -340,6 +341,7 @@ class Runner final
   inline bool isInitialized() const { return _isInitialized; }
 
   private:
+
   // Pointer to the game instance
   std::unique_ptr<Game> _game;
 
