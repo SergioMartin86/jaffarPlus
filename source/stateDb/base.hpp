@@ -194,7 +194,7 @@ class Base
   protected:
   virtual void printInfoImpl() const = 0;
 
-  Runner* const _runner;
+  Runner *const _runner;
 
   /**
    * The next state database, where new states are stored as they are created

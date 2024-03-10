@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   // Creating driver to run the Jaffar engine
   auto d = jaffarPlus::Driver::getDriver(config);
 
-  // Initializing driver 
+  // Initializing driver
   d->initialize();
 
   // Running driver
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
   // Printing exit message
   jaffarCommon::logger::log("[J++] Step %lu - Exit Reason: %s\n", finalStep, exitReasonString.c_str());
 
-  // For testing purposes, return zero if executed properly (regardless of exit reason) 
+  // For testing purposes, return zero if executed properly (regardless of exit reason)
   if (std::getenv("JAFFAR_OVERRIDE_RETURN_CODE")) return 0;
 
   // Return exit reason

@@ -13,8 +13,7 @@ class Driver final
 
 {
   public:
-
-  enum exitReason_t 
+  enum exitReason_t
   {
     /// Found a win state
     winStateFound = 0,
@@ -37,9 +36,9 @@ class Driver final
 
     // Getting maximum number of steps (zero is not established)
     _maxSteps = jaffarCommon::json::getNumber<uint32_t>(driverConfig, "Max Steps");
-  
+
     // For testing purposes, the maximum number of steps can be overriden via environment variables
-    if (auto* value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
+    if (auto *value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
 
     // Getting component configurations
     auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
@@ -58,7 +57,7 @@ class Driver final
     _engine = std::make_unique<Engine>(emulatorConfig, gameConfig, runnerConfig, engineConfig);
   }
 
-  ~Driver() {} 
+  ~Driver() {}
 
   // Resets the execution back to the starting point
   void initialize()
@@ -108,7 +107,7 @@ class Driver final
       {
         exitReason = exitReason_t::winStateFound;
         break;
-      } 
+      }
 
       // If ran out of states, finish now
       if (_engine->getStateCount() == 0)
@@ -120,7 +119,7 @@ class Driver final
       // If maximum step established and reached, finish now
       if (_maxSteps > 0 && _currentStep >= _maxSteps)
       {
-        if (_winStatesFound > 0)  exitReason = exitReason_t::winStateFound;
+        if (_winStatesFound > 0) exitReason = exitReason_t::winStateFound;
         if (_winStatesFound == 0) exitReason = exitReason_t::maximumStepReached;
         break;
       }
@@ -279,7 +278,6 @@ class Driver final
   size_t getCurrentStep() { return _currentStep; }
 
   private:
-
   // Pointer to the internal Jaffar engine
   std::unique_ptr<Engine> _engine;
 

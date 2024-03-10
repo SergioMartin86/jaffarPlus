@@ -56,8 +56,8 @@ class Numa : public stateDb::Base
     {
       auto sizeMb = entry;
 
-      // For testing purposes, the maximum size 
-      if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = std::stoul(value) / _numaCount;
+      // For testing purposes, the maximum size
+      if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = std::stoul(value) / _numaCount;
 
       _maxSizePerNuma.push_back(sizeMb * 1024ul * 1024ul);
       numaSizeSum += sizeMb;
@@ -68,7 +68,7 @@ class Numa : public stateDb::Base
     for (int i = 0; i < _numaCount; i++)
     {
       size_t freeMemory = 0;
-      numa_node_size64(i, (long long*)&freeMemory);
+      numa_node_size64(i, (long long *)&freeMemory);
       maxFreeMemoryPerNuma[i] = freeMemory;
     }
 
@@ -117,8 +117,8 @@ class Numa : public stateDb::Base
 
     // Initializing the internal buffers
     for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++)
-     JAFFAR_PARALLEL_FOR
-     for (size_t i = 0; i < _allocableBytesPerNuma[numaNodeIdx]; i += pageSize) _internalBuffersStart[numaNodeIdx][i] = 1;
+      JAFFAR_PARALLEL_FOR
+    for (size_t i = 0; i < _allocableBytesPerNuma[numaNodeIdx]; i += pageSize) _internalBuffersStart[numaNodeIdx][i] = 1;
 
     // Adding the state pointers to the free state queues
     _freeStateQueues.resize(_numaCount);
@@ -292,7 +292,7 @@ class Numa : public stateDb::Base
 
   /**
    * Number of bytes to allocate per NUMA domain
-  */
+   */
   std::vector<size_t> _allocableBytesPerNuma;
 };
 

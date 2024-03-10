@@ -20,11 +20,9 @@ class MicroMachines final : public jaffarPlus::Game
 
   MicroMachines(std::unique_ptr<Emulator> emulator, const nlohmann::json &config) : jaffarPlus::Game(std::move(emulator), config)
   {
-
   }
 
   private:
-
   inline void registerGameProperties() override
   {
     // Getting emulator's low memory pointer

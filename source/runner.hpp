@@ -340,7 +340,7 @@ class Runner final
     // Returning runner
     return r;
   }
-  
+
   inline bool isInitialized() const { return _isInitialized; }
 
   private:

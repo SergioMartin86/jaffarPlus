@@ -25,7 +25,6 @@ class Sprilo final : public jaffarPlus::Game
   }
 
   private:
-
   inline void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
