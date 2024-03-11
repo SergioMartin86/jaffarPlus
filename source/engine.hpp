@@ -399,93 +399,13 @@ class Engine final
       // Trying out each possible input
       for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++)
       {
-        // Increasing new state counter
-        _stepNewStatesProcessed++;
-
-        // We don't need to reload the base state if it is the first input
+        // We only need to reload the base state data if this is not the first input 
         const auto t0 = jaffarCommon::timing::now();
         if (inputItr != possibleInputs.begin()) _stateDb->loadStateIntoRunner(*r, baseStateData);
         _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
-        // Now advancing state with the provided input
-        const auto t1 = jaffarCommon::timing::now();
-        r->advanceState(*inputItr);
-        _runnerStateAdvanceThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
-
-        // Computing runner hash
-        const auto t2 = jaffarCommon::timing::now();
-        const auto hash = r->computeHash();
-        _calculateHashThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t2);
-
-        // Checking if hash is repeated (i.e., has been seen before)
-        const auto t3 = jaffarCommon::timing::now();
-        bool hashExists = _hashDb->checkHashExists(hash);
-        _checkHashThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t3);
-
-        // If state is repeated then we are not interested in it, continue
-        if (hashExists == true) continue;
-
-        // Evaluating game rules based on the new state
-        const auto t4 = jaffarCommon::timing::now();
-        r->getGame()->evaluateRules();
-
-        // Determining state type
-        r->getGame()->updateGameStateType();
-
-        // Getting state type
-        const auto stateType = r->getGame()->getStateType();
-        _ruleCheckingThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t4);
-
-        // Now we have determined the state is not repeated, check if it's not a failed state
-        if (stateType == Game::stateType_t::fail) continue;
-
-        // Now that the state is not failed nor repeated, this is effectively a new state to add
-        const auto t5 = jaffarCommon::timing::now();
-        void *newStateData = nullptr;
-
-        // Grab a free state from the state db
-        newStateData = _stateDb->getFreeState();
-        _getFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t5);
-
-        // If couldn't get any memory, simply drop the state
-        if (newStateData == nullptr)
-        {
-          _droppedStatesNoStorage++;
-          continue;
-        }
-
-        // Updating state reward
-        const auto t6 = jaffarCommon::timing::now();
-        r->getGame()->updateReward();
-
-        // Getting state reward
-        const auto reward = r->getGame()->getReward();
-        _calculateRewardThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t6);
-
-        // If this is a normal state, push into the state database
-        const auto t7 = jaffarCommon::timing::now();
-
-        // Attempting to serialize state and push it into the database
-        // This might fail when using differential serialization due to insufficient space for differentials
-        // In that, case we just drop the state and continue, while keeping a counter
-        if (stateType == Game::stateType_t::normal)
-        {
-          auto success = _stateDb->pushState(reward, *r, newStateData);
-          if (success == false)
-          {
-            _droppedStatesFailedSerialization++;
-            continue;
-          }
-        }
-
-        _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t7);
-
-        // If this is a win state, register it
-        if (stateType == Game::stateType_t::win)
-        {
-          _stateDb->saveStateFromRunner(*r, newStateData);
-          _winStatesFound.insert({reward, newStateData});
-        }
+        // Running input
+        runInput(*r, *inputItr);
       }
 
       // Return base state to the free state queue
@@ -500,6 +420,107 @@ class Engine final
     }
   }
 
+  enum inputResult_t 
+  {
+    repeated,
+    dropped,
+    failed,
+    normal,
+    win
+  };
+
+  __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input)
+  {
+    // Increasing new state counter
+    _stepNewStatesProcessed++;
+
+    // Now advancing state with the provided input
+    const auto t1 = jaffarCommon::timing::now();
+    r.advanceState(input);
+    _runnerStateAdvanceThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
+
+    // Computing runner hash
+    const auto t2 = jaffarCommon::timing::now();
+    const auto hash = r.computeHash();
+    _calculateHashThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t2);
+
+    // Checking if hash is repeated (i.e., has been seen before)
+    const auto t3 = jaffarCommon::timing::now();
+    bool hashExists = _hashDb->checkHashExists(hash);
+    _checkHashThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t3);
+
+    // If state is repeated then we are not interested in it, continue
+    if (hashExists == true) return inputResult_t::repeated;
+
+    // Evaluating game rules based on the new state
+    const auto t4 = jaffarCommon::timing::now();
+    r.getGame()->evaluateRules();
+
+    // Determining state type
+    r.getGame()->updateGameStateType();
+
+    // Getting state type
+    const auto stateType = r.getGame()->getStateType();
+    _ruleCheckingThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t4);
+
+    // Now we have determined the state is not repeated, check if it's not a failed state
+    if (stateType == Game::stateType_t::fail) return inputResult_t::failed;
+
+    // Now that the state is not failed nor repeated, this is effectively a new state to add
+    const auto t5 = jaffarCommon::timing::now();
+    void *newStateData = nullptr;
+
+    // Grab a free state from the state db
+    newStateData = _stateDb->getFreeState();
+    _getFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t5);
+
+    // If couldn't get any memory, simply drop the state
+    if (newStateData == nullptr)
+    {
+      _droppedStatesNoStorage++;
+      return inputResult_t::dropped;
+    }
+
+    // Updating state reward
+    const auto t6 = jaffarCommon::timing::now();
+    r.getGame()->updateReward();
+
+    // Getting state reward
+    const auto reward = r.getGame()->getReward();
+    _calculateRewardThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t6);
+
+    // If this is a win state, register it and return
+    if (stateType == Game::stateType_t::win)
+    {
+      const auto t8 = jaffarCommon::timing::now();
+      _stateDb->saveStateFromRunner(r, newStateData);
+      _winStatesFound.insert({reward, newStateData});
+      _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
+      return inputResult_t::win;
+    }
+
+    // If this is a normal state and has possible inputs store it in the next state database
+    if (stateType == Game::stateType_t::normal)
+    {
+      // If this is a normal state, push into the state database
+      const auto t7 = jaffarCommon::timing::now();
+      auto success = _stateDb->pushState(reward, r, newStateData);
+      _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t7);
+
+      // Attempting to serialize state and push it into the database
+      // This might fail when using differential serialization due to insufficient space for differentials
+      // In that, case we just drop the state and continue, while keeping a counter
+      if (success == false)
+      {
+        _droppedStatesFailedSerialization++;
+        return inputResult_t::dropped;
+      }
+    }
+
+    // If store succeeded, return a normal execution
+    return inputResult_t::normal;
+  }
+ 
   // Collection of runners for the workers to use
   std::vector<std::unique_ptr<Runner>> _runners;
 

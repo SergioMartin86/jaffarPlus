@@ -19,6 +19,7 @@ if get_option('b_coverage')
 endif
 
 # Checking whether to use NCurses
+NCursesCPPFlags = [ ]
 if get_option('useNCurses') == true
-  jaffarCPPFlags += [ '-fno-inline', '-Wno-error=cpp', '-DNCURSES' ]
+  NCursesCPPFlags = [ '-DNCURSES' ]
 endif
