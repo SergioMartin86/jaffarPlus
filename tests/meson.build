@@ -36,6 +36,14 @@ test('race04_short_differential',
       env : testEnvVars,
       suite : [ 'runs', 'nes', 'sprilo' ])
 
+test('race04_short_plain',
+      jaffar,
+      workdir : meson.current_source_dir() + '/nes/sprilo',
+      timeout: testTimeout,
+      args : 'race04_short_plain.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'nes', 'sprilo' ])
+
 test('race04_short_reproduce',
       jaffarPlayer,
       workdir : meson.current_source_dir() + '/nes/sprilo',

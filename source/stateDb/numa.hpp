@@ -52,16 +52,12 @@ class Numa : public stateDb::Base
     for (int i = 0; i < _numaCount; i++) _scavengerQueues.push_back(std::make_unique<jaffarCommon::concurrent::Deque<void *>>());
 
     // Getting maximum state db size in Mb and bytes
-    size_t numaSizeSum = 0;
     for (int i = 0; i < _numaCount; i++)
     {
-      auto sizeMb = _maxSizePerNumaMb[i];
-
-      // For testing purposes, the maximum size
-      if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = std::stoul(value) / _numaCount;
-
-      _maxSizePerNuma.push_back(sizeMb * 1024ul * 1024ul);
-      numaSizeSum += sizeMb;
+      double sizeMb = _maxSizePerNumaMb[i];
+      // For testing purposes, the maximum size can be overriden via environment variables
+      if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = (double)std::stoul(value) / (double)_numaCount;
+      _maxSizePerNuma.push_back(std::ceil((double)sizeMb * 1024.0 * 1024.0));
     }
 
     // Getting maximum allocatable memory in each NUMA domain
