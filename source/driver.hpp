@@ -121,7 +121,7 @@ class Driver final
     while (true)
     {
       // If found winning state, report it now
-      if (_endOnFirstWinState && _engine->getWinStates().size() > 0)
+      if (_endOnFirstWinState && _engine->getStepWinStatesFound() > 0)
       {
         exitReason = exitReason_t::winStateFound;
         break;
@@ -153,7 +153,7 @@ class Driver final
       _engine->runStep();
 
       // Summing amount of win states found
-      _winStatesFound += _engine->getWinStates().size();
+      _winStatesFound += _engine->getStepWinStatesFound();
 
       // Increasing step counter
       _currentStep++;
@@ -279,25 +279,19 @@ class Driver final
     }
 
     // If we have found a winning state in this step that improves on the current best, save it now
-    if (_engine->getWinStates().size() > 0)
+    if (_engine->getStepWinStatesFound() > 0)
     {
       // Getting best win state (best reward) for the current step
-      auto winStateEntry = _engine->getWinStates().begin();
-
-      // Getting the reward of this step's winning state reward
-      auto winStateReward = winStateEntry->first;
+      auto winStateEntry = _engine->getStepBestWinState();
 
       // If the reward if better than the current best, then make it the new best state
-      if (winStateReward > _bestWinStateReward)
+      if (winStateEntry.reward > _bestWinStateReward)
       {
         // Saving new best
-        _bestWinStateReward = winStateReward;
-
-        // Getting new best win state's pointer
-        auto bestWinStatePtr = winStateEntry->second;
+        _bestWinStateReward = winStateEntry.reward;
 
         // Saving win state into the storage
-        memcpy(_bestStateStorage.data(), bestWinStatePtr, _stateSize);
+        memcpy(_bestStateStorage.data(), winStateEntry.stateData, _stateSize);
       }
     }
 

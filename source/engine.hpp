@@ -106,7 +106,10 @@ class Engine final
     // Getting memory for the reference state
     const auto stateSize = r.getStateSize();
 
-    // Allocating memory
+    // Allocating memory for the best win state
+    _stepBestWinState.stateData = malloc(stateSize);
+
+    // Allocating memory for reference data
     uint8_t referenceData[stateSize];
 
     // Serializing the initial state without compression to use as reference
@@ -197,12 +200,13 @@ class Engine final
     _advanceStateDbThreadRawTime = 0;
     _popBaseStateDbThreadRawTime = 0;
 
-    // Clearing win states vector
-    _winStatesFound.clear();
-
     // Clearing step counters
     _stepBaseStatesProcessed = 0;
     _stepNewStatesProcessed = 0;
+    _stepWinStatesFound = 0;
+
+    // Clearing win state reward
+    _stepBestWinState.reward = -std::numeric_limits<float>::infinity();
 
     // Performing one computation step in parallel
     JAFFAR_PARALLEL
@@ -260,7 +264,8 @@ class Engine final
   // Relevant data for the driver
 
   auto &getStateDb() const { return _stateDb; }
-  auto getWinStates() const { return _winStatesFound; }
+  auto getStepBestWinState() const { return _stepBestWinState; }
+  auto getStepWinStatesFound() const { return _stepWinStatesFound.load(); }
   auto getStateCount() const { return _stateDb->getStateCount(); }
 
   /**
@@ -366,6 +371,22 @@ class Engine final
 
   private:
 
+  enum inputResult_t 
+  {
+    repeated,
+    droppedNoStorage,
+    droppedFailedSerialization,
+    failed,
+    normal,
+    win
+  };
+  
+  struct winState
+  {
+    float reward;
+    void* stateData;
+  };
+
   /**
    * The main worker function -- executes entirely in parallel
    */
@@ -396,44 +417,51 @@ class Engine final
       // Getting possible inputs
       const auto &possibleInputs = r->getPossibleInputs();
 
+      // Flag to check whether to free up base state data
+      bool freeBaseStateData = true;
+
       // Trying out each possible input
       for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++)
       {
+        // Increasing new state counter
+        _stepNewStatesProcessed++;
+
         // We only need to reload the base state data if this is not the first input 
         const auto t0 = jaffarCommon::timing::now();
         if (inputItr != possibleInputs.begin()) _stateDb->loadStateIntoRunner(*r, baseStateData);
         _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
+        // If this is the last input, then reuse the base state as destination
+        void* freeState = nullptr;
+        if (std::next(inputItr) == possibleInputs.end()) freeState = baseStateData;
+
         // Running input
-        runInput(*r, *inputItr);
+        auto result = runInput(*r, *inputItr, freeState);
+
+        // Update counters depending on the outcomes
+        if (result == inputResult_t::win) _stepWinStatesFound++;
+        if (result == inputResult_t::droppedNoStorage) _droppedStatesNoStorage++;
+        if (result == inputResult_t::droppedFailedSerialization) _droppedStatesFailedSerialization++;
+        if (result == inputResult_t::droppedFailedSerialization) _droppedStatesFailedSerialization++;
+
+        // If used the base state data, there is no need to free it up later
+        if (freeState != nullptr && result == inputResult_t::normal) freeBaseStateData = false;
       }
 
       // Return base state to the free state queue
       const auto t8 = jaffarCommon::timing::now();
-      _stateDb->returnFreeState(baseStateData);
+      if (freeBaseStateData == true) _stateDb->returnFreeState(baseStateData);
       _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
 
       // Pulling next state from the database
       const auto t9 = jaffarCommon::timing::now();
-      baseStateData = _stateDb->popState();
+       baseStateData = _stateDb->popState();
       _popBaseStateDbThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t9);
     }
   }
 
-  enum inputResult_t 
+  __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input, void* freeState = nullptr)
   {
-    repeated,
-    dropped,
-    failed,
-    normal,
-    win
-  };
-
-  __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input)
-  {
-    // Increasing new state counter
-    _stepNewStatesProcessed++;
-
     // Now advancing state with the provided input
     const auto t1 = jaffarCommon::timing::now();
     r.advanceState(input);
@@ -467,19 +495,15 @@ class Engine final
     if (stateType == Game::stateType_t::fail) return inputResult_t::failed;
 
     // Now that the state is not failed nor repeated, this is effectively a new state to add
-    const auto t5 = jaffarCommon::timing::now();
-    void *newStateData = nullptr;
+    void *newStateData = freeState;
 
-    // Grab a free state from the state db
-    newStateData = _stateDb->getFreeState();
+    // It the free state was not provided, try and grab one from the state db
+    const auto t5 = jaffarCommon::timing::now();
+    if (newStateData == nullptr) newStateData = _stateDb->getFreeState();
     _getFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t5);
 
     // If couldn't get any memory, simply drop the state
-    if (newStateData == nullptr)
-    {
-      _droppedStatesNoStorage++;
-      return inputResult_t::dropped;
-    }
+    if (newStateData == nullptr) return inputResult_t::droppedNoStorage;
 
     // Updating state reward
     const auto t6 = jaffarCommon::timing::now();
@@ -492,10 +516,22 @@ class Engine final
     // If this is a win state, register it and return
     if (stateType == Game::stateType_t::win)
     {
-      const auto t8 = jaffarCommon::timing::now();
-      _stateDb->saveStateFromRunner(r, newStateData);
-      _winStatesFound.insert({reward, newStateData});
-      _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
+      ///////////// Best win state needs to be stored if its better than any previous one found
+
+      // Check if the new win state is the best and store it in that case
+      _stepBestWinStateLock.lock();
+      if (reward > _stepBestWinState.reward)
+      {
+        _stateDb->saveStateFromRunner(r, _stepBestWinState.stateData);
+        _stepBestWinState.reward = reward;
+      }
+      _stepBestWinStateLock.unlock();
+
+      // Freeing up the state data
+      const auto t7 = jaffarCommon::timing::now();
+      _stateDb->returnFreeState(newStateData);
+      _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t7);
+      
       return inputResult_t::win;
     }
 
@@ -503,17 +539,19 @@ class Engine final
     if (stateType == Game::stateType_t::normal)
     {
       // If this is a normal state, push into the state database
-      const auto t7 = jaffarCommon::timing::now();
+      const auto t8 = jaffarCommon::timing::now();
       auto success = _stateDb->pushState(reward, r, newStateData);
-      _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t7);
+      _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
 
       // Attempting to serialize state and push it into the database
       // This might fail when using differential serialization due to insufficient space for differentials
       // In that, case we just drop the state and continue, while keeping a counter
       if (success == false)
       {
-        _droppedStatesFailedSerialization++;
-        return inputResult_t::dropped;
+        const auto t9 = jaffarCommon::timing::now();
+        _stateDb->returnFreeState(newStateData);
+        _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t9);
+        return inputResult_t::droppedFailedSerialization;
       }
     }
 
@@ -531,7 +569,9 @@ class Engine final
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
 
   // Set of win states found
-  jaffarCommon::concurrent::HashMap_t<float, void *> _winStatesFound;
+  std::mutex _stepBestWinStateLock;
+  winState _stepBestWinState;
+  std::atomic<size_t> _stepWinStatesFound;
 
   ///////////////// Configuration
 

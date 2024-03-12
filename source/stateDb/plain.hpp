@@ -59,6 +59,7 @@ class Plain : public stateDb::Base
   // Function to print relevant information
   void printInfoImpl() const override
   {
+    jaffarCommon::logger::log("[J++]  + State Databse                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n", _maxStates, (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
   }
 
   __INLINE__ void *getFreeState() override
