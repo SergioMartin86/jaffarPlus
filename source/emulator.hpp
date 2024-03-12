@@ -17,7 +17,7 @@ namespace jaffarPlus
 struct property_t
 {
   uint8_t *pointer;
-  size_t size;
+  size_t   size;
 };
 
 class Emulator
@@ -69,7 +69,7 @@ class Emulator
   virtual void serializeState(jaffarCommon::serializer::Base &serializer) const = 0;
   virtual void deserializeState(jaffarCommon::deserializer::Base &deserializer) = 0;
 
-  virtual void enableStateProperty(const std::string &property) = 0;
+  virtual void enableStateProperty(const std::string &property)  = 0;
   virtual void disableStateProperty(const std::string &property) = 0;
 
   // Function to print debug information, whatever it might be

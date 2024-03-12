@@ -18,7 +18,8 @@ class Plain : public stateDb::Base
 {
   public:
 
-  Plain(Runner &r, const nlohmann::json &config) : stateDb::Base(r, config)
+  Plain(Runner &r, const nlohmann::json &config)
+    : stateDb::Base(r, config)
   {
     // Getting maximum state db size in Mb
     _maxSizeMb = jaffarCommon::json::getNumber<size_t>(config, "Max Size (Mb)");
@@ -52,14 +53,16 @@ class Plain : public stateDb::Base
     for (size_t i = 0; i < _maxSize; i += pageSize) _internalBuffer[i] = 1;
 
     // Adding the state pointers to the free state queue
-    for (size_t i = 0; i < _maxStates; i++)
-      _freeStateQueue->try_push((void *)&_internalBuffer[i * _stateSize]);
+    for (size_t i = 0; i < _maxStates; i++) _freeStateQueue->try_push((void *)&_internalBuffer[i * _stateSize]);
   }
 
   // Function to print relevant information
   void printInfoImpl() const override
   {
-    jaffarCommon::logger::log("[J++]  + State Databse                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n", _maxStates, (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
+    jaffarCommon::logger::log("[J++]  + State Databse                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n",
+                              _maxStates,
+                              (double)_maxSize / (1024.0 * 1024.0),
+                              (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
   }
 
   __INLINE__ void *getFreeState() override
@@ -109,10 +112,7 @@ class Plain : public stateDb::Base
   /**
    * Gets the current number of states in the current state database
    */
-  __INLINE__ size_t getStateCount() const override
-  {
-    return _currentStateDb.wasSize();
-  }
+  __INLINE__ size_t getStateCount() const override { return _currentStateDb.wasSize(); }
 
   private:
 

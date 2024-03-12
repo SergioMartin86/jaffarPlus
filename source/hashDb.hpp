@@ -31,7 +31,7 @@ class HashDb final
 
   HashDb(const nlohmann::json &config)
   {
-    _maxStoreCount = jaffarCommon::json::getNumber<size_t>(config, "Max Store Count");
+    _maxStoreCount  = jaffarCommon::json::getNumber<size_t>(config, "Max Store Count");
     _maxStoreSizeMb = jaffarCommon::json::getNumber<double>(config, "Max Store Size (Mb)");
   }
 
@@ -59,12 +59,13 @@ class HashDb final
     jaffarCommon::logger::log("[J++]  + Max Store Count:               %lu\n", _maxStoreCount);
     jaffarCommon::logger::log("[J++]  + Max Store Size:                %f Mb (%.2f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
     jaffarCommon::logger::log("[J++]  + Max Store Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
-    jaffarCommon::logger::log("[J++]  + Total Max Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
+    jaffarCommon::logger::log(
+      "[J++]  + Total Max Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
 
     // Printing hash store information
     jaffarCommon::logger::log("[J++]  + Hash Stores (%lu / %lu):\n", _hashStores.size(), _maxStoreCount);
 
-    auto itr = _hashStores.rbegin();
+    auto   itr             = _hashStores.rbegin();
     size_t curHashStoreIdx = 0;
     while (itr != _hashStores.rend())
     {
@@ -87,7 +88,7 @@ class HashDb final
   __INLINE__ bool checkHashExists(const jaffarCommon::hash::hash_t hash)
   {
     // The current hash store is the latest to be entered
-    auto itr = _hashStores.rbegin();
+    auto   itr             = _hashStores.rbegin();
     size_t curHashStoreIdx = 0;
 
     // Checking for the rest of the hash stores in reverse order, to increase chances of early collision detection
@@ -130,7 +131,7 @@ class HashDb final
   __INLINE__ void insertHash(const jaffarCommon::hash::hash_t hash)
   {
     // The current hash store is the latest to be entered
-    auto itr = _hashStores.rbegin();
+    auto  itr              = _hashStores.rbegin();
     auto &currentHashStore = *itr;
 
     // Inserting hash
@@ -145,7 +146,7 @@ class HashDb final
   __INLINE__ void advanceStep()
   {
     // The current hash store is the latest to be entered
-    auto itr = _hashStores.rbegin();
+    auto  itr              = _hashStores.rbegin();
     auto &currentHashStore = *itr;
 
     // If the current hash store exceeds the entry limit, push put a new one in

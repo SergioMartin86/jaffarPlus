@@ -54,17 +54,17 @@ class Engine final
     auto &r = *_runners[0];
 
     // Creating State database
-    const auto &stateDatabaseJs = jaffarCommon::json::getObject(engineConfig, "State Database");
-    const auto &stateDatabaseType = jaffarCommon::json::getString(stateDatabaseJs, "Type");
-    bool stateDatabaseTypeRecognized = false;
+    const auto &stateDatabaseJs             = jaffarCommon::json::getObject(engineConfig, "State Database");
+    const auto &stateDatabaseType           = jaffarCommon::json::getString(stateDatabaseJs, "Type");
+    bool        stateDatabaseTypeRecognized = false;
     if (stateDatabaseType == "Plain")
     {
-      _stateDb = std::make_unique<jaffarPlus::stateDb::Plain>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
+      _stateDb                    = std::make_unique<jaffarPlus::stateDb::Plain>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
       stateDatabaseTypeRecognized = true;
     }
     if (stateDatabaseType == "Numa Aware")
     {
-      _stateDb = std::make_unique<jaffarPlus::stateDb::Numa>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
+      _stateDb                    = std::make_unique<jaffarPlus::stateDb::Numa>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
       stateDatabaseTypeRecognized = true;
     }
     if (stateDatabaseTypeRecognized == false) JAFFAR_THROW_LOGIC("State database type '%s' not recognized", stateDatabaseType.c_str());
@@ -154,27 +154,27 @@ class Engine final
   {
     // Initializing state counters
     _totalBaseStatesProcessed = 0;
-    _totalNewStatesProcessed = 0;
+    _totalNewStatesProcessed  = 0;
 
     // Initializing cumulative timing
     _runnerStateAdvanceAverageCumulativeTime = 0;
-    _runnerStateLoadAverageCumulativeTime = 0;
-    _runnerStateSaveAverageCumulativeTime = 0;
-    _calculateHashAverageCumulativeTime = 0;
-    _checkHashAverageCumulativeTime = 0;
-    _ruleCheckingAverageCumulativeTime = 0;
-    _getFreeStateAverageCumulativeTime = 0;
-    _returnFreeStateAverageCumulativeTime = 0;
-    _calculateRewardAverageCumulativeTime = 0;
-    _advanceHashDbAverageCumulativeTime = 0;
-    _advanceStateDbAverageCumulativeTime = 0;
-    _popBaseStateDbAverageCumulativeTime = 0;
+    _runnerStateLoadAverageCumulativeTime    = 0;
+    _runnerStateSaveAverageCumulativeTime    = 0;
+    _calculateHashAverageCumulativeTime      = 0;
+    _checkHashAverageCumulativeTime          = 0;
+    _ruleCheckingAverageCumulativeTime       = 0;
+    _getFreeStateAverageCumulativeTime       = 0;
+    _returnFreeStateAverageCumulativeTime    = 0;
+    _calculateRewardAverageCumulativeTime    = 0;
+    _advanceHashDbAverageCumulativeTime      = 0;
+    _advanceStateDbAverageCumulativeTime     = 0;
+    _popBaseStateDbAverageCumulativeTime     = 0;
 
     // Resetting total running time
     _totalRunningTime = 0;
 
     // Resetting dropped state count
-    _droppedStatesNoStorage = 0;
+    _droppedStatesNoStorage           = 0;
     _droppedStatesFailedSerialization = 0;
   }
 
@@ -188,22 +188,22 @@ class Engine final
 
     // Clearing step timing
     _runnerStateAdvanceThreadRawTime = 0;
-    _runnerStateLoadThreadRawTime = 0;
-    _runnerStateSaveThreadRawTime = 0;
-    _calculateHashThreadRawTime = 0;
-    _checkHashThreadRawTime = 0;
-    _ruleCheckingThreadRawTime = 0;
-    _getFreeStateThreadRawTime = 0;
-    _returnFreeStateThreadRawTime = 0;
-    _calculateRewardThreadRawTime = 0;
-    _advanceHashDbThreadRawTime = 0;
-    _advanceStateDbThreadRawTime = 0;
-    _popBaseStateDbThreadRawTime = 0;
+    _runnerStateLoadThreadRawTime    = 0;
+    _runnerStateSaveThreadRawTime    = 0;
+    _calculateHashThreadRawTime      = 0;
+    _checkHashThreadRawTime          = 0;
+    _ruleCheckingThreadRawTime       = 0;
+    _getFreeStateThreadRawTime       = 0;
+    _returnFreeStateThreadRawTime    = 0;
+    _calculateRewardThreadRawTime    = 0;
+    _advanceHashDbThreadRawTime      = 0;
+    _advanceStateDbThreadRawTime     = 0;
+    _popBaseStateDbThreadRawTime     = 0;
 
     // Clearing step counters
     _stepBaseStatesProcessed = 0;
-    _stepNewStatesProcessed = 0;
-    _stepWinStatesFound = 0;
+    _stepNewStatesProcessed  = 0;
+    _stepWinStatesFound      = 0;
 
     // Clearing win state reward
     _stepBestWinState.reward = -std::numeric_limits<float>::infinity();
@@ -264,9 +264,9 @@ class Engine final
   // Relevant data for the driver
 
   auto &getStateDb() const { return _stateDb; }
-  auto getStepBestWinState() const { return _stepBestWinState; }
-  auto getStepWinStatesFound() const { return _stepWinStatesFound.load(); }
-  auto getStateCount() const { return _stateDb->getStateCount(); }
+  auto  getStepBestWinState() const { return _stepBestWinState; }
+  auto  getStepWinStatesFound() const { return _stepWinStatesFound.load(); }
+  auto  getStateCount() const { return _stateDb->getStateCount(); }
 
   /**
    * Information printing function
@@ -352,13 +352,23 @@ class Engine final
                               1.0e-9 * (double)(_advanceStateDbAverageCumulativeTime),
                               100.0 * ((double)_advanceStateDbAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J++] Base States Processed:                       %.3f Mstates (Total: %.3f Mstates)\n", 1.0e-6 * (double)_stepBaseStatesProcessed, 1.0e-6 * (double)_totalBaseStatesProcessed);
-    jaffarCommon::logger::log("[J++] New States Processed:                        %.3f Mstates (Total: %.3f Mstates)\n", 1.0e-6 * (double)_stepNewStatesProcessed, 1.0e-6 * (double)_totalNewStatesProcessed);
+    jaffarCommon::logger::log("[J++] Base States Processed:                       %.3f Mstates (Total: %.3f Mstates)\n",
+                              1.0e-6 * (double)_stepBaseStatesProcessed,
+                              1.0e-6 * (double)_totalBaseStatesProcessed);
+    jaffarCommon::logger::log("[J++] New States Processed:                        %.3f Mstates (Total: %.3f Mstates)\n",
+                              1.0e-6 * (double)_stepNewStatesProcessed,
+                              1.0e-6 * (double)_totalNewStatesProcessed);
 
-    jaffarCommon::logger::log("[J++] Base States Performance:                     %.3f Mstates/s (Average: %.3f Mstates/s)\n", 1.0e-6 * (double)_stepBaseStatesProcessed / (1.0e-9 * (double)_currentStepTime), 1.0e-6 * (double)_totalBaseStatesProcessed / (1.0e-9 * (double)_totalRunningTime));
-    jaffarCommon::logger::log("[J++] New States Performance:                      %.3f Mstates/s (Average: %.3f Mstates/s)\n", 1.0e-6 * (double)_stepNewStatesProcessed / (1.0e-9 * (double)_currentStepTime), 1.0e-6 * (double)_totalNewStatesProcessed / (1.0e-9 * (double)_totalRunningTime));
+    jaffarCommon::logger::log("[J++] Base States Performance:                     %.3f Mstates/s (Average: %.3f Mstates/s)\n",
+                              1.0e-6 * (double)_stepBaseStatesProcessed / (1.0e-9 * (double)_currentStepTime),
+                              1.0e-6 * (double)_totalBaseStatesProcessed / (1.0e-9 * (double)_totalRunningTime));
+    jaffarCommon::logger::log("[J++] New States Performance:                      %.3f Mstates/s (Average: %.3f Mstates/s)\n",
+                              1.0e-6 * (double)_stepNewStatesProcessed / (1.0e-9 * (double)_currentStepTime),
+                              1.0e-6 * (double)_totalNewStatesProcessed / (1.0e-9 * (double)_totalRunningTime));
 
-    jaffarCommon::logger::log("[J++] Dropped States (No Storage Available):       %lu (%5.3f%% of New States Processed) \n", _droppedStatesNoStorage.load(), 100.0 * (double)_droppedStatesNoStorage.load() / (double)_totalNewStatesProcessed);
+    jaffarCommon::logger::log("[J++] Dropped States (No Storage Available):       %lu (%5.3f%% of New States Processed) \n",
+                              _droppedStatesNoStorage.load(),
+                              100.0 * (double)_droppedStatesNoStorage.load() / (double)_totalNewStatesProcessed);
     jaffarCommon::logger::log("[J++] Dropped States (Failed Serialization):       %lu\n", _droppedStatesFailedSerialization.load());
 
     // Print state database information
@@ -371,7 +381,7 @@ class Engine final
 
   private:
 
-  enum inputResult_t 
+  enum inputResult_t
   {
     repeated,
     droppedNoStorage,
@@ -380,11 +390,11 @@ class Engine final
     normal,
     win
   };
-  
+
   struct winState
   {
     float reward;
-    void* stateData;
+    void *stateData;
   };
 
   /**
@@ -399,8 +409,8 @@ class Engine final
     auto &r = _runners[threadId];
 
     // Current base state to process
-    const auto t = jaffarCommon::timing::now();
-    void *baseStateData = _stateDb->popState();
+    const auto t             = jaffarCommon::timing::now();
+    void      *baseStateData = _stateDb->popState();
     _popBaseStateDbThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t);
 
     // While there are still states in the database, keep on grabbing them
@@ -426,13 +436,13 @@ class Engine final
         // Increasing new state counter
         _stepNewStatesProcessed++;
 
-        // We only need to reload the base state data if this is not the first input 
+        // We only need to reload the base state data if this is not the first input
         const auto t0 = jaffarCommon::timing::now();
         if (inputItr != possibleInputs.begin()) _stateDb->loadStateIntoRunner(*r, baseStateData);
         _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
         // If this is the last input, then reuse the base state as destination
-        void* freeState = nullptr;
+        void *freeState = nullptr;
         if (std::next(inputItr) == possibleInputs.end()) freeState = baseStateData;
 
         // Running input
@@ -455,12 +465,12 @@ class Engine final
 
       // Pulling next state from the database
       const auto t9 = jaffarCommon::timing::now();
-       baseStateData = _stateDb->popState();
+      baseStateData = _stateDb->popState();
       _popBaseStateDbThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t9);
     }
   }
 
-  __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input, void* freeState = nullptr)
+  __INLINE__ inputResult_t runInput(Runner &r, const InputSet::inputIndex_t input, void *freeState = nullptr)
   {
     // Now advancing state with the provided input
     const auto t1 = jaffarCommon::timing::now();
@@ -468,13 +478,13 @@ class Engine final
     _runnerStateAdvanceThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
 
     // Computing runner hash
-    const auto t2 = jaffarCommon::timing::now();
+    const auto t2   = jaffarCommon::timing::now();
     const auto hash = r.computeHash();
     _calculateHashThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t2);
 
     // Checking if hash is repeated (i.e., has been seen before)
-    const auto t3 = jaffarCommon::timing::now();
-    bool hashExists = _hashDb->checkHashExists(hash);
+    const auto t3         = jaffarCommon::timing::now();
+    bool       hashExists = _hashDb->checkHashExists(hash);
     _checkHashThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t3);
 
     // If state is repeated then we are not interested in it, continue
@@ -531,7 +541,7 @@ class Engine final
       const auto t7 = jaffarCommon::timing::now();
       _stateDb->returnFreeState(newStateData);
       _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t7);
-      
+
       return inputResult_t::win;
     }
 
@@ -539,8 +549,8 @@ class Engine final
     if (stateType == Game::stateType_t::normal)
     {
       // If this is a normal state, push into the state database
-      const auto t8 = jaffarCommon::timing::now();
-      auto success = _stateDb->pushState(reward, r, newStateData);
+      const auto t8      = jaffarCommon::timing::now();
+      auto       success = _stateDb->pushState(reward, r, newStateData);
       _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
 
       // Attempting to serialize state and push it into the database
@@ -558,7 +568,7 @@ class Engine final
     // If store succeeded, return a normal execution
     return inputResult_t::normal;
   }
- 
+
   // Collection of runners for the workers to use
   std::vector<std::unique_ptr<Runner>> _runners;
 
@@ -569,8 +579,8 @@ class Engine final
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
 
   // Set of win states found
-  std::mutex _stepBestWinStateLock;
-  winState _stepBestWinState;
+  std::mutex          _stepBestWinStateLock;
+  winState            _stepBestWinState;
   std::atomic<size_t> _stepWinStatesFound;
 
   ///////////////// Configuration

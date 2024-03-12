@@ -22,10 +22,12 @@ class Condition
     op_bit_false
   };
 
-  Condition(const operator_t opType) : _opType(opType) {}
+  Condition(const operator_t opType)
+    : _opType(opType)
+  {}
 
   virtual __INLINE__ bool evaluate() const = 0;
-  virtual ~Condition() = default;
+  virtual ~Condition()                     = default;
 
   static __INLINE__ operator_t getOperatorType(const std::string &operation)
   {
@@ -53,11 +55,12 @@ class _vCondition : public Condition
 {
   public:
 
-  _vCondition(const operator_t opType, Property *property1, Property *property2, T immediate1, T immediate2) : Condition(opType),
-                                                                                                               _property1(property1),
-                                                                                                               _property2(property2),
-                                                                                                               _immediate1(immediate1),
-                                                                                                               _immediate2(immediate2)
+  _vCondition(const operator_t opType, Property *property1, Property *property2, T immediate1, T immediate2)
+    : Condition(opType)
+    , _property1(property1)
+    , _property2(property2)
+    , _immediate1(immediate1)
+    , _immediate2(immediate2)
   {
     switch (_opType)
     {
@@ -97,8 +100,8 @@ class _vCondition : public Condition
 
   Property *const _property1;
   Property *const _property2;
-  const T _immediate1;
-  const T _immediate2;
+  const T         _immediate1;
+  const T         _immediate2;
 };
 
 } // namespace jaffarPlus

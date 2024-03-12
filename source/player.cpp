@@ -18,8 +18,7 @@ SDL_Window *launchOutputWindow()
 
   // We can only call SDL_InitSubSystem once
   if (!SDL_WasInit(SDL_INIT_VIDEO))
-    if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
-      JAFFAR_THROW_LOGIC("Failed to initialize video: %s", SDL_GetError());
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) JAFFAR_THROW_LOGIC("Failed to initialize video: %s", SDL_GetError());
 
   auto window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
   if (window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
@@ -27,10 +26,7 @@ SDL_Window *launchOutputWindow()
   return window;
 }
 
-void closeOutputWindow(SDL_Window *window)
-{
-  SDL_DestroyWindow(window);
-}
+void closeOutputWindow(SDL_Window *window) { SDL_DestroyWindow(window); }
 
 // Prevents the interactive player to stall for a keystroke
 bool isUnattended;
@@ -69,11 +65,11 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
 
   // Getting component configurations
   auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
-  auto gameConfig = jaffarCommon::json::getObject(config, "Game Configuration");
-  auto runnerConfig = jaffarCommon::json::getObject(config, "Runner Configuration");
+  auto gameConfig     = jaffarCommon::json::getObject(config, "Game Configuration");
+  auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
 
   // Overriding runner configuration based on the maximum number of steps to drive
-  runnerConfig["Store Input History"]["Enabled"] = false;
+  runnerConfig["Store Input History"]["Enabled"]          = false;
   runnerConfig["Store Input History"]["Max Size (Steps)"] = 0;
 
   // Creating runner from the configuration
@@ -90,7 +86,7 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
   if (disableRender == false) r->getGame()->getEmulator()->initializeVideoOutput(window);
 
   // Getting inverse frame rate from game
-  const auto frameRate = r->getGame()->getFrameRate();
+  const auto     frameRate        = r->getGame()->getFrameRate();
   const uint32_t inverseFrameRate = std::round((1.0 / frameRate) * 1.0e+6);
 
   // Getting game state size
@@ -251,38 +247,19 @@ int main(int argc, char *argv[])
   // Parsing command line arguments
   argparse::ArgumentParser program("jaffar-tester", "1.0");
 
-  program.add_argument("configFile")
-    .help("path to the Jaffar configuration script (.jaffar) file to run.")
-    .required();
+  program.add_argument("configFile").help("path to the Jaffar configuration script (.jaffar) file to run.").required();
 
-  program.add_argument("solutionFile")
-    .help("path to the solution sequence file (.sol) to reproduce.")
-    .required();
+  program.add_argument("solutionFile").help("path to the solution sequence file (.sol) to reproduce.").required();
 
-  program.add_argument("--reproduce")
-    .help("Starts playing from the start")
-    .default_value(false)
-    .implicit_value(true);
+  program.add_argument("--reproduce").help("Starts playing from the start").default_value(false).implicit_value(true);
 
-  program.add_argument("--reload")
-    .help("Reloads the solution after reaching the end")
-    .default_value(false)
-    .implicit_value(true);
+  program.add_argument("--reload").help("Reloads the solution after reaching the end").default_value(false).implicit_value(true);
 
-  program.add_argument("--exitOnEnd")
-    .help("Exits the program upon reaching the last step")
-    .default_value(false)
-    .implicit_value(true);
+  program.add_argument("--exitOnEnd").help("Exits the program upon reaching the last step").default_value(false).implicit_value(true);
 
-  program.add_argument("--unattended")
-    .help("Indicates the player not to print the interactive prompt nor wait for inputs")
-    .default_value(false)
-    .implicit_value(true);
+  program.add_argument("--unattended").help("Indicates the player not to print the interactive prompt nor wait for inputs").default_value(false).implicit_value(true);
 
-  program.add_argument("--disableRender")
-    .help("Do not render game window.")
-    .default_value(false)
-    .implicit_value(true);
+  program.add_argument("--disableRender").help("Do not render game window.").default_value(false).implicit_value(true);
 
   // Try to parse arguments
   try
@@ -322,9 +299,9 @@ int main(int argc, char *argv[])
   auto window = disableRender ? nullptr : launchOutputWindow();
 
   // Setting initial reproduction values
-  isReload = doReload;
-  isReproduce = reproduceStart;
-  isExitOnEnd = exitOnEnd;
+  isReload     = doReload;
+  isReproduce  = reproduceStart;
+  isExitOnEnd  = exitOnEnd;
   isUnattended = unattended;
 
   // Running main cycle

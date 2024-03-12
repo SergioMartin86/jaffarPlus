@@ -32,7 +32,8 @@ class Playback final
     jaffarCommon::hash::hash_t stateHash;
   };
 
-  Playback(Runner &runner, const std::vector<std::string> &inputSequence) : _runner(&runner)
+  Playback(Runner &runner, const std::vector<std::string> &inputSequence)
+    : _runner(&runner)
   {
     // Getting game state size
     _gameStateSize = _runner->getStateSize();
@@ -93,12 +94,12 @@ class Playback final
 
   __INLINE__ std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
   __INLINE__ jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }
-  __INLINE__ void *getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
+  __INLINE__ void                              *getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
   __INLINE__ jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
 
   __INLINE__ void renderFrame(const size_t currentStep)
   {
-    const auto &step = getStep(currentStep);
+    const auto                            &step = getStep(currentStep);
     jaffarCommon::deserializer::Contiguous d(step.rendererStateData, _rendererStateSize);
     _runner->getGame()->getEmulator()->deserializeRendererState(d);
     _runner->getGame()->getEmulator()->updateVideoOutput();
