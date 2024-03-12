@@ -26,7 +26,8 @@ class Numa : public stateDb::Base
 {
   public:
 
-  Numa(Runner &r, const nlohmann::json &config) : stateDb::Base(r, config)
+  Numa(Runner &r, const nlohmann::json &config)
+    : stateDb::Base(r, config)
   {
     // Checking whether the numa library calls are available
     const auto numaAvailable = numa_available();
@@ -37,11 +38,12 @@ class Numa : public stateDb::Base
 
     // Checking maximum db sizes per each numa
     _maxSizePerNumaMb = jaffarCommon::json::getArray<size_t>(config, "Max Size per NUMA Domain (Mb)");
-    if (_maxSizePerNumaMb.size() < (size_t)_numaCount) JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, _maxSizePerNumaMb.size());
+    if (_maxSizePerNumaMb.size() < (size_t)_numaCount)
+      JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, _maxSizePerNumaMb.size());
 
     // Getting scavenge depth
     _scavengerQueuesSize = jaffarCommon::json::getNumber<size_t>(config, "Scavenger Queues Size");
-    _scavengingDepth = jaffarCommon::json::getNumber<size_t>(config, "Scavenging Depth");
+    _scavengingDepth     = jaffarCommon::json::getNumber<size_t>(config, "Scavenging Depth");
   }
 
   ~Numa() = default;
@@ -79,7 +81,7 @@ class Numa : public stateDb::Base
     for (int i = 0; i < _numaCount; i++) _maxStatesPerNuma[i] = std::max(_maxSizePerNuma[i] / _stateSize, 1ul);
 
     // Getting totals for statistics
-    _maxSize = 0;
+    _maxSize   = 0;
     _maxStates = 0;
     for (int i = 0; i < _numaCount; i++)
     {
@@ -104,8 +106,8 @@ class Numa : public stateDb::Base
     // Determining the preferred numa domain for each thread. This depends on OpenMP using always the same set of threads.
     JAFFAR_PARALLEL
     {
-      int cpu = sched_getcpu();
-      int node = numa_node_of_cpu(cpu);
+      int cpu             = sched_getcpu();
+      int node            = numa_node_of_cpu(cpu);
       preferredNumaDomain = node;
     }
 
@@ -113,8 +115,7 @@ class Numa : public stateDb::Base
     const size_t pageSize = sysconf(_SC_PAGESIZE);
 
     // Initializing the internal buffers
-    for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++)
-      JAFFAR_PARALLEL_FOR
+    for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++) JAFFAR_PARALLEL_FOR
     for (size_t i = 0; i < _allocableBytesPerNuma[numaNodeIdx]; i += pageSize) _internalBuffersStart[numaNodeIdx][i] = 1;
 
     // Adding the state pointers to the free state queues
@@ -122,8 +123,7 @@ class Numa : public stateDb::Base
     for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++)
     {
       _freeStateQueues[numaNodeIdx] = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void *>>(_maxStatesPerNuma[numaNodeIdx]);
-      for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx]; i++)
-        _freeStateQueues[numaNodeIdx]->try_push((void *)&_internalBuffersStart[numaNodeIdx][i * _stateSize]);
+      for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx]; i++) _freeStateQueues[numaNodeIdx]->try_push((void *)&_internalBuffersStart[numaNodeIdx][i * _stateSize]);
     }
   }
 
@@ -131,7 +131,11 @@ class Numa : public stateDb::Base
   void printInfoImpl() const override
   {
     for (int i = 0; i < _numaCount; i++)
-      jaffarCommon::logger::log("[J++]  + NUMA Domain %d                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n", i, _maxStatesPerNuma[i], (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
+      jaffarCommon::logger::log("[J++]  + NUMA Domain %d                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n",
+                                i,
+                                _maxStatesPerNuma[i],
+                                (double)_maxSizePerNuma[i] / (1024.0 * 1024.0),
+                                (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
   }
 
   __INLINE__ void *getFreeState() override
@@ -169,8 +173,7 @@ class Numa : public stateDb::Base
   __INLINE__ int getStateNumaDomain(void *const statePtr)
   {
     for (int i = 0; i < _numaCount; i++)
-      if ((statePtr >= _internalBuffersStart[i]) && (statePtr <= _internalBuffersEnd[i]))
-        return i;
+      if ((statePtr >= _internalBuffersStart[i]) && (statePtr <= _internalBuffersEnd[i])) return i;
 
     // Check for error
     JAFFAR_THROW_RUNTIME("Did not find the corresponding numa domain for the provided state pointer. This must be a bug in Jaffar\n");
@@ -231,10 +234,7 @@ class Numa : public stateDb::Base
   /**
    * Gets the current number of states in the current state database
    */
-  __INLINE__ size_t getStateCount() const override
-  {
-    return _currentStateDb.wasSize();
-  }
+  __INLINE__ size_t getStateCount() const override { return _currentStateDb.wasSize(); }
 
   private:
 

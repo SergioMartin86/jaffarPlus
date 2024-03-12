@@ -9,9 +9,7 @@ int main(int argc, char *argv[])
   // Parsing command line arguments
   argparse::ArgumentParser program("jaffar", "1.0");
 
-  program.add_argument("configFile")
-    .help("path to the Jaffar configuration script (.jaffar) file to run.")
-    .required();
+  program.add_argument("configFile").help("path to the Jaffar configuration script (.jaffar) file to run.").required();
 
   // Try to parse arguments
   try

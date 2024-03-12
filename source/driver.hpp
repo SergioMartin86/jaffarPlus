@@ -43,21 +43,21 @@ class Driver final
 
     // Getting intermediate result configuration
     const auto &saveIntermediateResultsJs = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
-    _saveIntermediateResultsEnabled = jaffarCommon::json::getBoolean(saveIntermediateResultsJs, "Enabled");
-    _saveIntermediateFrequency = jaffarCommon::json::getNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
-    _saveIntermediateBestSolutionPath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path");
-    _saveIntermediateWorstSolutionPath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst Solution Path");
-    _saveIntermediateBestStatePath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best State Path");
-    _saveIntermediateWorstStatePath = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst State Path");
+    _saveIntermediateResultsEnabled       = jaffarCommon::json::getBoolean(saveIntermediateResultsJs, "Enabled");
+    _saveIntermediateFrequency            = jaffarCommon::json::getNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
+    _saveIntermediateBestSolutionPath     = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path");
+    _saveIntermediateWorstSolutionPath    = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst Solution Path");
+    _saveIntermediateBestStatePath        = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best State Path");
+    _saveIntermediateWorstStatePath       = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst State Path");
 
     // Getting component configurations
     auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
-    auto gameConfig = jaffarCommon::json::getObject(config, "Game Configuration");
-    auto runnerConfig = jaffarCommon::json::getObject(config, "Runner Configuration");
-    auto engineConfig = jaffarCommon::json::getObject(config, "Engine Configuration");
+    auto gameConfig     = jaffarCommon::json::getObject(config, "Game Configuration");
+    auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
+    auto engineConfig   = jaffarCommon::json::getObject(config, "Engine Configuration");
 
     // Overriding runner configuration based on the maximum number of steps to drive
-    runnerConfig["Store Input History"]["Enabled"] = _maxSteps > 0;
+    runnerConfig["Store Input History"]["Enabled"]          = _maxSteps > 0;
     runnerConfig["Store Input History"]["Max Size (Steps)"] = _maxSteps;
 
     // Creating runner from the configuration
@@ -80,7 +80,7 @@ class Driver final
 
     // Resetting best states reward
     _bestWinStateReward = -std::numeric_limits<float>::infinity();
-    _bestStateReward = -std::numeric_limits<float>::infinity();
+    _bestStateReward    = -std::numeric_limits<float>::infinity();
 
     // Resetting worst state reward
     _worstStateReward = std::numeric_limits<float>::infinity();
@@ -114,8 +114,7 @@ class Driver final
 
     // Starting intermediate result saving thread
     std::thread intermediateResultSaverThread;
-    if (_saveIntermediateResultsEnabled == true)
-      intermediateResultSaverThread = std::thread([this]() { intermediateResultSaveLoop(); });
+    if (_saveIntermediateResultsEnabled == true) intermediateResultSaverThread = std::thread([this]() { intermediateResultSaveLoop(); });
 
     // Running engine until a termination point
     while (true)
@@ -217,7 +216,7 @@ class Driver final
       usleep(100000);
 
       // Getting time elapsed since last save
-      auto currentTime = jaffarCommon::timing::now();
+      auto currentTime              = jaffarCommon::timing::now();
       auto timeElapsedSinceLastSave = jaffarCommon::timing::timeDeltaSeconds(currentTime, lastSaveTime);
 
       // Checking if we need to save best state
@@ -320,7 +319,8 @@ class Driver final
     jaffarCommon::logger::log("[J++] Current Step #:                              %lu (Max: %lu)\n", _currentStep, _maxSteps);
 
     if (_winStatesFound == 0)
-      jaffarCommon::logger::log("[J++] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
+      jaffarCommon::logger::log(
+        "[J++] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
 
     if (_winStatesFound > 0)
     {

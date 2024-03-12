@@ -33,13 +33,13 @@ class Property
   };
 
   Property() = delete;
-  Property(const std::string &name, void *const pointer, const datatype_t datatype, endianness_t endianness) : _name(name),
-                                                                                                               _pointer(pointer),
-                                                                                                               _datatype(datatype),
-                                                                                                               _endianness(endianness),
-                                                                                                               _nameHash(jaffarCommon::hash::hashString(name))
-  {
-  }
+  Property(const std::string &name, void *const pointer, const datatype_t datatype, endianness_t endianness)
+    : _name(name)
+    , _pointer(pointer)
+    , _datatype(datatype)
+    , _endianness(endianness)
+    , _nameHash(jaffarCommon::hash::hashString(name))
+  {}
 
   __INLINE__ size_t getSize() const { return getDatatypeSize(_datatype); }
 
@@ -92,7 +92,7 @@ class Property
   __INLINE__ T getValue() const
   {
     // Otherwise convert to big endian
-    const auto size = getSize();
+    const auto size       = getSize();
     const auto bufferSize = sizeof(T);
     if (size != bufferSize) JAFFAR_THROW_LOGIC("Incompatible datatypes while getting value of property '%s'", getName().c_str());
 
@@ -100,9 +100,9 @@ class Property
     if (_endianness == endianness_t::little) return *(T *)_pointer;
 
     // Converting to big endian value byte by byte
-    T value;
+    T          value;
     const auto sBuf = (uint8_t *)_pointer;
-    auto dBuf = (uint8_t *)&value;
+    auto       dBuf = (uint8_t *)&value;
     if (size == 1) { dBuf[0] = sBuf[0]; }
     if (size == 2)
     {
@@ -130,17 +130,17 @@ class Property
     return value;
   }
 
-  datatype_t getDatatype() const { return _datatype; }
-  std::string getName() const { return _name; }
+  datatype_t                 getDatatype() const { return _datatype; }
+  std::string                getName() const { return _name; }
   jaffarCommon::hash::hash_t getNameHash() const { return _nameHash; }
-  void *getPointer() const { return _pointer; }
+  void                      *getPointer() const { return _pointer; }
 
   private:
 
-  const std::string _name;
-  void *const _pointer;
-  const datatype_t _datatype;
-  const endianness_t _endianness;
+  const std::string                _name;
+  void *const                      _pointer;
+  const datatype_t                 _datatype;
+  const endianness_t               _endianness;
   const jaffarCommon::hash::hash_t _nameHash;
 };
 

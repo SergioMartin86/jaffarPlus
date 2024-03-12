@@ -22,14 +22,15 @@ class Game
 
   enum stateType_t
   {
-    normal = 0,
-    win = 1,
-    fail = 2,
+    normal     = 0,
+    win        = 1,
+    fail       = 2,
     checkpoint = 3
   };
 
   // Constructor that takes an already created emulator
-  Game(std::unique_ptr<Emulator> emulator, const nlohmann::json &config) : _emulator(std::move(emulator))
+  Game(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
+    : _emulator(std::move(emulator))
   {
     // Getting emulator name (for runtime use)
     _gameName = jaffarCommon::json::getString(config, "Game Name");
@@ -92,7 +93,7 @@ class Game
     _isInitialized = true;
   }
 
-  Game() = delete;
+  Game()          = delete;
   virtual ~Game() = default;
 
   // Function to advance state.
@@ -191,8 +192,8 @@ class Game
   void printInfo() const
   {
     // Getting maximum printable property name, for formatting purposes
-    const size_t separatorSize = 4;
-    size_t maximumNameSize = 0;
+    const size_t separatorSize   = 4;
+    size_t       maximumNameSize = 0;
     for (const auto &p : _propertyPrintVector) maximumNameSize = std::max(maximumNameSize, p->getName().size());
 
     // Printing game state
@@ -317,7 +318,7 @@ class Game
         // Evaluate checkpoint rule and store tolerance if specified
         if (rule.isCheckpointRule())
         {
-          _stateType = stateType_t::checkpoint;
+          _stateType           = stateType_t::checkpoint;
           _checkpointTolerance = rule.getCheckpointTolerance();
         }
 
@@ -390,7 +391,8 @@ class Game
 
     // Parsing second operand (number)
     if (conditionJs.contains("Value") == false) JAFFAR_THROW_LOGIC("[ERROR] Rule condition missing 'Value' key.\n");
-    if (conditionJs["Value"].is_number() == false && conditionJs["Value"].is_string() == false) JAFFAR_THROW_LOGIC("[ERROR] Wrong format for 'Value' entry in rule condition. It must be a string or number");
+    if (conditionJs["Value"].is_number() == false && conditionJs["Value"].is_string() == false)
+      JAFFAR_THROW_LOGIC("[ERROR] Wrong format for 'Value' entry in rule condition. It must be a string or number");
 
     // If value is a number, take it as immediate
     if (conditionJs["Value"].is_number())
@@ -509,8 +511,7 @@ class Game
     // Checking all cross references are correct
     for (const auto &rule : _rules)
       for (const auto &label : rule.second->getSatisfyRuleLabels())
-        if (_rules.contains(label) == false)
-          JAFFAR_THROW_LOGIC("Rule label %u referenced by rule %u in the 'Satisfies' array does not exist.\n", label, rule.first);
+        if (_rules.contains(label) == false) JAFFAR_THROW_LOGIC("Rule label %u referenced by rule %u in the 'Satisfies' array does not exist.\n", label, rule.first);
 
     // Create rule status vector
     _rulesStatus.resize(jaffarCommon::bitwise::getByteStorageForBitCount(_rules.size()));
@@ -616,14 +617,14 @@ class Game
     jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
-  virtual void registerGameProperties() = 0;
-  virtual void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const = 0;
-  virtual void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) = 0;
-  virtual float calculateGameSpecificReward() const = 0;
-  virtual void computeAdditionalHashing(MetroHash128 &hashEngine) const = 0;
-  virtual void printInfoImpl() const = 0;
-  virtual void advanceStateImpl(const std::string &input) = 0;
-  virtual bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) = 0;
+  virtual void  registerGameProperties()                                                                       = 0;
+  virtual void  serializeStateImpl(jaffarCommon::serializer::Base &serializer) const                           = 0;
+  virtual void  deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)                           = 0;
+  virtual float calculateGameSpecificReward() const                                                            = 0;
+  virtual void  computeAdditionalHashing(MetroHash128 &hashEngine) const                                       = 0;
+  virtual void  printInfoImpl() const                                                                          = 0;
+  virtual void  advanceStateImpl(const std::string &input)                                                     = 0;
+  virtual bool  parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) = 0;
 
   // Optional hooks
   virtual __INLINE__ void stateUpdatePreHook(){};

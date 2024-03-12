@@ -30,7 +30,8 @@ class QuickerNES final : public Emulator
   static std::string getName() { return "QuickerNES"; }
 
   // Constructor must only do configuration parsing
-  QuickerNES(const nlohmann::json &config) : Emulator(config)
+  QuickerNES(const nlohmann::json &config)
+    : Emulator(config)
   {
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
@@ -40,7 +41,7 @@ class QuickerNES final : public Emulator
     {
       // Even if we override, we'd like to test whether the originally specified rom still exists to ensure consistency in Github
       std::string initialStateString;
-      bool status = jaffarCommon::file::loadStringFromFile(initialStateString, _initialStateFilePath.c_str());
+      bool        status = jaffarCommon::file::loadStringFromFile(initialStateString, _initialStateFilePath.c_str());
       if (status == false) JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _initialStateFilePath.c_str());
 
       // Now do the proper override
@@ -75,12 +76,13 @@ class QuickerNES final : public Emulator
 
     // Reading from ROM file
     std::string romFileData;
-    bool status = jaffarCommon::file::loadStringFromFile(romFileData, _romFilePath.c_str());
+    bool        status = jaffarCommon::file::loadStringFromFile(romFileData, _romFilePath.c_str());
     if (status == false) JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _romFilePath.c_str());
 
     // Getting SHA1 of ROM for checksum
     auto actualRomSHA1 = jaffarCommon::hash::getSHA1String(romFileData);
-    if (_romFileSHA1 != actualRomSHA1) JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
+    if (_romFileSHA1 != actualRomSHA1)
+      JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
 
     // Loading rom into emulator
     _quickerNES.loadROM((uint8_t *)romFileData.data(), romFileData.size());
@@ -90,7 +92,7 @@ class QuickerNES final : public Emulator
     {
       // Reading from initial state file
       std::string initialState;
-      bool success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
+      bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
       if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
       // Deserializing initial state into the emulator
@@ -103,10 +105,7 @@ class QuickerNES final : public Emulator
   }
 
   // State advancing function
-  void advanceState(const std::string &move) override
-  {
-    _quickerNES.advanceState(move);
-  }
+  void advanceState(const std::string &move) override { _quickerNES.advanceState(move); }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerNES.serializeState(serializer); };
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerNES.deserializeState(deserializer); };
@@ -140,27 +139,18 @@ class QuickerNES final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) override
-  {
-    _quickerNES.enableStateBlock(property);
-  }
+  __INLINE__ void enableStateProperty(const std::string &property) override { _quickerNES.enableStateBlock(property); }
 
-  __INLINE__ void disableStateProperty(const std::string &property) override
-  {
-    _quickerNES.disableStateBlock(property);
-  }
+  __INLINE__ void disableStateProperty(const std::string &property) override { _quickerNES.disableStateBlock(property); }
 
   ////////// Rendering functions (some of these taken from https://github.com/Bindernews/HeadlessQuickNes / MIT License)
 
   // Function to initalize the video palette
   int32_t *_initF_VideoPalette()
   {
-    static int32_t VideoPalette[512];
+    static int32_t           VideoPalette[512];
     const emulator_t::rgb_t *palette = emulator_t::nes_colors;
-    for (int i = 0; i < 512; i++)
-    {
-      VideoPalette[i] = palette[i].red << 16 | palette[i].green << 8 | palette[i].blue | 0xff000000;
-    }
+    for (int i = 0; i < 512; i++) { VideoPalette[i] = palette[i].red << 16 | palette[i].green << 8 | palette[i].blue | 0xff000000; }
     return VideoPalette;
   }
 
@@ -174,7 +164,7 @@ class QuickerNES final : public Emulator
   // Copied from bizinterface.cpp in BizHawk/quicknes
   __INLINE__ void saveBlit(const void *ePtr, int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom)
   {
-    const emulator_t *e = (emulator_t *)ePtr;
+    const emulator_t    *e         = (emulator_t *)ePtr;
     const unsigned char *in_pixels = e->frame().pixels;
     if (in_pixels == NULL) return;
     int32_t *out_pixels = dest;
@@ -182,20 +172,20 @@ class QuickerNES final : public Emulator
     for (unsigned h = 0; h < emulator_t::image_height; h++, in_pixels += e->frame().pitch, out_pixels += emulator_t::image_width)
       for (unsigned w = 0; w < emulator_t::image_width; w++)
       {
-        unsigned col = e->frame().palette[in_pixels[w]];
+        unsigned                 col = e->frame().palette[in_pixels[w]];
         const emulator_t::rgb_t &rgb = e->nes_colors[col];
-        unsigned r = rgb.red;
-        unsigned g = rgb.green;
-        unsigned b = rgb.blue;
-        out_pixels[w] = (r << 16) | (g << 8) | (b << 0);
+        unsigned                 r   = rgb.red;
+        unsigned                 g   = rgb.green;
+        unsigned                 b   = rgb.blue;
+        out_pixels[w]                = (r << 16) | (g << 8) | (b << 0);
       }
   }
 
-  __INLINE__ void enableRendering() override { _quickerNES.enableRendering(); }
-  __INLINE__ void disableRendering() override { _quickerNES.disableRendering(); }
-  __INLINE__ void updateRendererState() override { saveBlit(_quickerNES.getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0); }
-  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
-  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
+  __INLINE__ void   enableRendering() override { _quickerNES.enableRendering(); }
+  __INLINE__ void   disableRendering() override { _quickerNES.disableRendering(); }
+  __INLINE__ void   updateRendererState() override { saveBlit(_quickerNES.getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0); }
+  __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
+  __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
   __INLINE__ size_t getRendererStateSize() const
   {
     jaffarCommon::serializer::Contiguous s;
@@ -237,7 +227,8 @@ class QuickerNES final : public Emulator
   {
     m_window = window;
     if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) JAFFAR_THROW_RUNTIME("Coult not create SDL renderer in NES emulator");
-    if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256))) JAFFAR_THROW_RUNTIME("Coult not create SDL texture in NES emulator");
+    if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256)))
+      JAFFAR_THROW_RUNTIME("Coult not create SDL texture in NES emulator");
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
     if (!setScale(1)) JAFFAR_THROW_RUNTIME("Coult not set SDL scale in NES emulator");
   }
@@ -245,7 +236,7 @@ class QuickerNES final : public Emulator
   __INLINE__ void updateVideoOutput() override
   {
     void *nesPixels = nullptr;
-    int pitch = 0;
+    int   pitch     = 0;
 
     if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0) JAFFAR_THROW_RUNTIME("Coult not lock texture in NES emulator");
 
@@ -265,9 +256,7 @@ class QuickerNES final : public Emulator
     if (m_renderer) SDL_DestroyRenderer(m_renderer);
   }
 #else
-  __INLINE__ void initializeVideoOutput() override
-  {
-  }
+  __INLINE__ void initializeVideoOutput() override {}
   __INLINE__ void updateVideoOutput() override {}
   __INLINE__ void finalizeVideoOutput() override {}
 #endif
@@ -276,7 +265,7 @@ class QuickerNES final : public Emulator
 
   void printMemoryBlockHash(const std::string &blockName) const
   {
-    auto p = getProperty(blockName);
+    auto p    = getProperty(blockName);
     auto hash = jaffarCommon::hash::hashToString(jaffarCommon::hash::calculateMetroHash(p.pointer, p.size));
     jaffarCommon::logger::log("[J++] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }

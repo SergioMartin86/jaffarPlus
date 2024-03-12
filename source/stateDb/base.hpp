@@ -21,15 +21,16 @@ class Base
 {
   public:
 
-  Base(Runner &r, const nlohmann::json &config) : _runner(&r)
+  Base(Runner &r, const nlohmann::json &config)
+    : _runner(&r)
   {
     ///////// Parsing configuration
 
     // Parsing state compression configuration
-    const auto &stateCompressionJs = jaffarCommon::json::getObject(config, "Compression");
-    _useDifferentialCompression = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Differential Compression");
+    const auto &stateCompressionJs  = jaffarCommon::json::getObject(config, "Compression");
+    _useDifferentialCompression     = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Differential Compression");
     _maximumDifferentialSizeAllowed = jaffarCommon::json::getNumber<size_t>(stateCompressionJs, "Max Difference (bytes)");
-    _useZlibCompression = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Zlib Compression");
+    _useZlibCompression             = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Zlib Compression");
   }
 
   void initialize()
@@ -57,8 +58,7 @@ class Base
     // We want to align each state to 512 bits (64 bytes) to favor vectorized access
     // Now calculating the necessary padding to reach the next multiple of 64 bytes
     _stateSize = _stateSizeEffective;
-    if (_stateSize % _JAFFAR_STATE_PADDING_BYTES != 0)
-      _stateSize = ((_stateSizeEffective / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
+    if (_stateSize % _JAFFAR_STATE_PADDING_BYTES != 0) _stateSize = ((_stateSizeEffective / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
 
     // Padding is the difference between the aligned state size and the raw one
     _stateSizePadding = _stateSize - _stateSizeEffective;
@@ -76,12 +76,24 @@ class Base
     const size_t currentStateCount = getStateCount();
     const size_t currentStateBytes = currentStateCount * _stateSize;
 
-    jaffarCommon::logger::log("[J++]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n", currentStateCount, (double)currentStateCount * 1.0e-6, _maxStates, (double)_maxStates * 1.0e-6, 100.0 * (double)currentStateCount / (double)_maxStates);
-    jaffarCommon::logger::log("[J++]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n", (double)currentStateBytes / (1024.0 * 1024.0), (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
+    jaffarCommon::logger::log("[J++]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n",
+                              currentStateCount,
+                              (double)currentStateCount * 1.0e-6,
+                              _maxStates,
+                              (double)_maxStates * 1.0e-6,
+                              100.0 * (double)currentStateCount / (double)_maxStates);
+    jaffarCommon::logger::log("[J++]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n",
+                              (double)currentStateBytes / (1024.0 * 1024.0),
+                              (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0),
+                              (double)_maxSize / (1024.0 * 1024.0),
+                              (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
     jaffarCommon::logger::log("[J++]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
     if (_useDifferentialCompression)
     {
-      jaffarCommon::logger::log("[J++]  + State Size Effective:          %lu bytes (Diffential: %lu + Contiguous: %lu)\n", _stateSizeEffective, _maximumDifferentialSizeAllowed, _stateSizeEffective - _maximumDifferentialSizeAllowed);
+      jaffarCommon::logger::log("[J++]  + State Size Effective:          %lu bytes (Diffential: %lu + Contiguous: %lu)\n",
+                                _stateSizeEffective,
+                                _maximumDifferentialSizeAllowed,
+                                _stateSizeEffective - _maximumDifferentialSizeAllowed);
     } else
     {
       jaffarCommon::logger::log("[J++]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
@@ -97,11 +109,11 @@ class Base
     printInfoImpl();
   }
 
-  virtual void initializeImpl() = 0;
-  virtual void *getFreeState() = 0;
-  virtual void returnFreeState(void *const statePtr) = 0;
-  virtual void *popState() = 0;
-  virtual size_t getStateCount() const = 0;
+  virtual void   initializeImpl()                      = 0;
+  virtual void  *getFreeState()                        = 0;
+  virtual void   returnFreeState(void *const statePtr) = 0;
+  virtual void  *popState()                            = 0;
+  virtual size_t getStateCount() const                 = 0;
 
   /**
    * This function sets the initial reference data required for differential compression
@@ -120,8 +132,7 @@ class Base
   __INLINE__ void advanceStep()
   {
     // Copying state pointers
-    while (_nextStateDb.begin() != _nextStateDb.end())
-      _currentStateDb.push_back_no_lock(_nextStateDb.unsafe_extract(_nextStateDb.begin()).mapped());
+    while (_nextStateDb.begin() != _nextStateDb.end()) _currentStateDb.push_back_no_lock(_nextStateDb.unsafe_extract(_nextStateDb.begin()).mapped());
 
     // Swapping the reference data pointers
     std::swap(_currentReferenceData, _previousReferenceData);
@@ -207,18 +218,12 @@ class Base
   /**
    * This function returns a pointer to the best state found in the current state database
    */
-  __INLINE__ void *getBestState() const
-  {
-    return _currentStateDb.front();
-  }
+  __INLINE__ void *getBestState() const { return _currentStateDb.front(); }
 
   /**
    * This function returns a pointer to the worst state found in the current state database
    */
-  __INLINE__ void *getWorstState() const
-  {
-    return _currentStateDb.back();
-  }
+  __INLINE__ void *getWorstState() const { return _currentStateDb.back(); }
 
   protected:
 

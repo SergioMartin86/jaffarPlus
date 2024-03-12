@@ -16,7 +16,7 @@ class InputSet final
   // Type for input indexing
   typedef uint32_t inputIndex_t;
 
-  InputSet() = default;
+  InputSet()  = default;
   ~InputSet() = default;
 
   // The input set is activated only if all conditions are met
@@ -27,8 +27,8 @@ class InputSet final
     return true;
   }
 
-  void addInput(const inputIndex_t inputIdx) { _inputIndexes.insert(inputIdx); }
-  void addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
+  void                                    addInput(const inputIndex_t inputIdx) { _inputIndexes.insert(inputIdx); }
+  void                                    addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
   const std::unordered_set<inputIndex_t> &getInputIndexes() const { return _inputIndexes; }
 
   private:

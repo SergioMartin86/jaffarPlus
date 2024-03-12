@@ -19,7 +19,8 @@ class Sprilo final : public jaffarPlus::Game
 
   static __INLINE__ std::string getName() { return "NES / Sprilo"; }
 
-  Sprilo(std::unique_ptr<Emulator> emulator, const nlohmann::json &config) : jaffarPlus::Game(std::move(emulator), config)
+  Sprilo(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
+    : jaffarPlus::Game(std::move(emulator), config)
   {
     // Parsing configuration
     _lastInputStepReward = jaffarCommon::json::getNumber<float>(config, "Last Input Step Reward");
@@ -43,10 +44,10 @@ class Sprilo final : public jaffarPlus::Game
     registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _currentLap = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Current Lap")]->getPointer();
-    _timer = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Timer")]->getPointer();
-    _playerPosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _playerPosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _currentLap  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Current Lap")]->getPointer();
+    _timer       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Timer")]->getPointer();
+    _playerPosX  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
     _lapProgress = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Lap Progress")]->getPointer();
   }
 
@@ -69,17 +70,15 @@ class Sprilo final : public jaffarPlus::Game
   }
 
   // Updating derivative values after updating the internal state
-  __INLINE__ void stateUpdatePostHook() override
-  {
-  }
+  __INLINE__ void stateUpdatePostHook() override {}
 
   __INLINE__ void ruleUpdatePreHook() override
   {
     // Resetting magnets ahead of rule re-evaluation
     _pointMagnet.intensity = 0.0;
-    _pointMagnet.x = 0.0;
-    _pointMagnet.y = 0.0;
-    _stopProcessingReward = false;
+    _pointMagnet.x         = 0.0;
+    _pointMagnet.y         = 0.0;
+    _stopProcessingReward  = false;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
@@ -87,7 +86,7 @@ class Sprilo final : public jaffarPlus::Game
     // Updating distance to user-defined point
     _player1DistanceToPointX = std::abs((float)_pointMagnet.x - (float)*_playerPosX);
     _player1DistanceToPointY = std::abs((float)_pointMagnet.y - (float)*_playerPosY);
-    _player1DistanceToPoint = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY);
+    _player1DistanceToPoint  = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY);
   }
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
@@ -141,8 +140,8 @@ class Sprilo final : public jaffarPlus::Game
     if (actionType == "Set Point Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto x = jaffarCommon::json::getNumber<float>(actionJs, "X");
-      auto y = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
       rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
       recognizedActionType = true;
     }
@@ -172,8 +171,8 @@ class Sprilo final : public jaffarPlus::Game
   struct pointMagnet_t
   {
     float intensity = 0.0; // How strong the magnet is
-    float x = 0.0;         // What is the x point of attraction
-    float y = 0.0;         // What is the y point of attraction
+    float x         = 0.0; // What is the x point of attraction
+    float y         = 0.0; // What is the y point of attraction
   };
 
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
@@ -187,7 +186,7 @@ class Sprilo final : public jaffarPlus::Game
 
   // Additions to make the last input as soon as possible
   uint16_t _lastInputStep = 0;
-  uint16_t _currentStep = 0;
+  uint16_t _currentStep   = 0;
 
   // Game-Specific values
   float _player1DistanceToPointX;
