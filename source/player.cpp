@@ -120,6 +120,9 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
     // Updating display
     if (disableRender == false) p.renderFrame(currentStep);
 
+    // Loading step data
+    p.loadStepData(currentStep);
+
     // Getting input string
     const auto &inputString = p.getStateInputString(currentStep);
 
@@ -128,9 +131,6 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
 
     // Getting state hash
     const auto hash = p.getStateHash(currentStep);
-
-    // Getting state data
-    const auto stateData = p.getStateData(currentStep);
 
     // Printing data and commands
     if (showFrameInfo)
@@ -150,7 +150,7 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
       jaffarCommon::logger::log("[J+] State Size:                  %lu\n", stateSize);
       jaffarCommon::logger::log("[J+] Sequence Length:             %lu\n", sequenceLength);
       jaffarCommon::logger::log("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
-      p.printInfo(currentStep);
+      p.printInfo();
 
       // Only print commands if not in reproduce mode
       jaffarCommon::logger::log("[J+] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | r: autoreload | q: quit\n");
@@ -213,8 +213,9 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
       std::string saveFileName = "quicksave.state";
 
       std::string saveData;
-      saveData.resize(stateSize);
-      memcpy(saveData.data(), stateData, stateSize);
+      size_t fullStateSize = r->getGame()->getEmulator()->getFullStateSize();
+      saveData.resize(fullStateSize);
+      r->getGame()->getEmulator()->saveFullState(saveData);
       if (jaffarCommon::file::saveStringToFile(saveData, saveFileName.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
       jaffarCommon::logger::log("[J+] Saved state to %s\n", saveFileName.c_str());
 

@@ -105,12 +105,15 @@ class Playback final
     _runner->getGame()->getEmulator()->updateVideoOutput();
   }
 
-  void printInfo(const size_t stepId) const
+  void loadStepData(const size_t stepId)
   {
     // Deserializing appropriate state
     jaffarCommon::deserializer::Contiguous d(getStateData(stepId), _gameStateSize);
     _runner->deserializeState(d);
+  }
 
+  void printInfo() const
+  {
     // Now printing information
     jaffarCommon::logger::log("[J+] Runner Information: \n");
     _runner->printInfo();

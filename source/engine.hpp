@@ -173,9 +173,16 @@ class Engine final
     // Resetting total running time
     _totalRunningTime = 0;
 
-    // Resetting dropped state count
+    // Resetting state counts
     _droppedStatesNoStorage           = 0;
     _droppedStatesFailedSerialization = 0;
+    _repeatedStates = 0;
+    _failedStates = 0;
+    _winStates      = 0;
+    _normalStates = 0;
+
+    // Resetting counter for the current step
+    _currentStep = 0;
   }
 
   /**
@@ -203,7 +210,7 @@ class Engine final
     // Clearing step counters
     _stepBaseStatesProcessed = 0;
     _stepNewStatesProcessed  = 0;
-    _stepWinStatesFound      = 0;
+
 
     // Clearing win state reward
     _stepBestWinState.reward = -std::numeric_limits<float>::infinity();
@@ -257,6 +264,9 @@ class Engine final
 
     // Computing total running time
     _totalRunningTime += _currentStepTime;
+
+    // Advancing step
+    _currentStep++;
   }
 
   ~Engine() = default;
@@ -265,7 +275,7 @@ class Engine final
 
   auto &getStateDb() const { return _stateDb; }
   auto  getStepBestWinState() const { return _stepBestWinState; }
-  auto  getStepWinStatesFound() const { return _stepWinStatesFound.load(); }
+  auto  getWinStatesFound() const { return _winStates.load(); }
   auto  getStateCount() const { return _stateDb->getStateCount(); }
 
   /**
@@ -369,7 +379,21 @@ class Engine final
     jaffarCommon::logger::log("[J++] Dropped States (No Storage Available):       %lu (%5.3f%% of New States Processed) \n",
                               _droppedStatesNoStorage.load(),
                               100.0 * (double)_droppedStatesNoStorage.load() / (double)_totalNewStatesProcessed);
-    jaffarCommon::logger::log("[J++] Dropped States (Failed Serialization):       %lu\n", _droppedStatesFailedSerialization.load());
+    jaffarCommon::logger::log("[J++] Dropped States (Failed Serialization):       %lu (%5.3f%% of New States Processed) \n",
+                              _droppedStatesFailedSerialization.load(),
+                              100.0 * (double)_droppedStatesFailedSerialization.load() / (double)_totalNewStatesProcessed);
+    jaffarCommon::logger::log("[J++] Failed States:                               %lu (%5.3f%% of New States Processed) \n",
+                              _failedStates.load(),
+                              100.0 * (double)_failedStates.load() / (double)_totalNewStatesProcessed);
+    jaffarCommon::logger::log("[J++] Repeated States:                             %lu (%5.3f%% of New States Processed) \n",
+                              _repeatedStates.load(),
+                              100.0 * (double)_repeatedStates.load() / (double)_totalNewStatesProcessed);
+    jaffarCommon::logger::log("[J++] Normal States:                               %lu (%5.3f%% of New States Processed) \n",
+                              _normalStates.load(),
+                              100.0 * (double)_normalStates.load() / (double)_totalNewStatesProcessed);
+    jaffarCommon::logger::log("[J++] Win States:                                  %lu (%5.3f%% of New States Processed) \n",
+                              _winStates.load(),
+                              100.0 * (double)_winStates.load() / (double)_totalNewStatesProcessed);
 
     // Print state database information
     jaffarCommon::logger::log("[J++] State Database Information:\n");
@@ -427,9 +451,6 @@ class Engine final
       // Getting possible inputs
       const auto &possibleInputs = r->getPossibleInputs();
 
-      // Flag to check whether to free up base state data
-      bool freeBaseStateData = true;
-
       // Trying out each possible input
       for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++)
       {
@@ -441,26 +462,22 @@ class Engine final
         if (inputItr != possibleInputs.begin()) _stateDb->loadStateIntoRunner(*r, baseStateData);
         _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
-        // If this is the last input, then reuse the base state as destination
-        void *freeState = nullptr;
-        if (std::next(inputItr) == possibleInputs.end()) freeState = baseStateData;
-
         // Running input
-        auto result = runInput(*r, *inputItr, freeState);
+        auto result = runInput(*r, *inputItr);
 
         // Update counters depending on the outcomes
-        if (result == inputResult_t::win) _stepWinStatesFound++;
+        if (result == inputResult_t::normal) _normalStates++;
+        if (result == inputResult_t::repeated) _repeatedStates++;
+        if (result == inputResult_t::failed) _failedStates++;
+        if (result == inputResult_t::win) _winStates++;
         if (result == inputResult_t::droppedNoStorage) _droppedStatesNoStorage++;
         if (result == inputResult_t::droppedFailedSerialization) _droppedStatesFailedSerialization++;
         if (result == inputResult_t::droppedFailedSerialization) _droppedStatesFailedSerialization++;
-
-        // If used the base state data, there is no need to free it up later
-        if (freeState != nullptr && result == inputResult_t::normal) freeBaseStateData = false;
       }
 
       // Return base state to the free state queue
       const auto t8 = jaffarCommon::timing::now();
-      if (freeBaseStateData == true) _stateDb->returnFreeState(baseStateData);
+      _stateDb->returnFreeState(baseStateData);
       _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
 
       // Pulling next state from the database
@@ -470,7 +487,7 @@ class Engine final
     }
   }
 
-  __INLINE__ inputResult_t runInput(Runner &r, const InputSet::inputIndex_t input, void *freeState = nullptr)
+  __INLINE__ inputResult_t runInput(Runner &r, const InputSet::inputIndex_t input)
   {
     // Now advancing state with the provided input
     const auto t1 = jaffarCommon::timing::now();
@@ -505,11 +522,8 @@ class Engine final
     if (stateType == Game::stateType_t::fail) return inputResult_t::failed;
 
     // Now that the state is not failed nor repeated, this is effectively a new state to add
-    void *newStateData = freeState;
-
-    // It the free state was not provided, try and grab one from the state db
     const auto t5 = jaffarCommon::timing::now();
-    if (newStateData == nullptr) newStateData = _stateDb->getFreeState();
+    void* newStateData = _stateDb->getFreeState();
     _getFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t5);
 
     // If couldn't get any memory, simply drop the state
@@ -542,6 +556,7 @@ class Engine final
       _stateDb->returnFreeState(newStateData);
       _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t7);
 
+      // Returning a win result
       return inputResult_t::win;
     }
 
@@ -558,9 +573,12 @@ class Engine final
       // In that, case we just drop the state and continue, while keeping a counter
       if (success == false)
       {
+        // Freeing up state memory
         const auto t9 = jaffarCommon::timing::now();
         _stateDb->returnFreeState(newStateData);
         _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t9);
+
+        // Returning dropped result by failed serialization
         return inputResult_t::droppedFailedSerialization;
       }
     }
@@ -568,6 +586,9 @@ class Engine final
     // If store succeeded, return a normal execution
     return inputResult_t::normal;
   }
+
+  // Counter for the current step
+  size_t _currentStep = 0;
 
   // Collection of runners for the workers to use
   std::vector<std::unique_ptr<Runner>> _runners;
@@ -581,7 +602,6 @@ class Engine final
   // Set of win states found
   std::mutex          _stepBestWinStateLock;
   winState            _stepBestWinState;
-  std::atomic<size_t> _stepWinStatesFound;
 
   ///////////////// Configuration
 
@@ -601,6 +621,18 @@ class Engine final
 
   // Counter for dropped states due to failed (differential) serialization
   std::atomic<size_t> _droppedStatesFailedSerialization;
+
+  // Counter for repeated states (detected via hash collision)
+  std::atomic<size_t> _repeatedStates;
+
+  // Counter for failed states (reached a point in the game that is considered a loss)
+  std::atomic<size_t> _failedStates;
+
+  // Counter for win states
+  std::atomic<size_t> _winStates;
+
+    // Counter for normal states
+  std::atomic<size_t> _normalStates;
 
   // Counter for the number of base states processed
   std::atomic<size_t> _stepBaseStatesProcessed;

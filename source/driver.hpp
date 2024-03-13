@@ -120,7 +120,7 @@ class Driver final
     while (true)
     {
       // If found winning state, report it now
-      if (_endOnFirstWinState && _engine->getStepWinStatesFound() > 0)
+      if (_endOnFirstWinState && _engine->getWinStatesFound() > 0)
       {
         exitReason = exitReason_t::winStateFound;
         break;
@@ -152,7 +152,7 @@ class Driver final
       _engine->runStep();
 
       // Summing amount of win states found
-      _winStatesFound += _engine->getStepWinStatesFound();
+      _winStatesFound = _engine->getWinStatesFound();
 
       // Increasing step counter
       _currentStep++;
@@ -278,7 +278,7 @@ class Driver final
     }
 
     // If we have found a winning state in this step that improves on the current best, save it now
-    if (_engine->getStepWinStatesFound() > 0)
+    if (_engine->getWinStatesFound() > 0)
     {
       // Getting best win state (best reward) for the current step
       auto winStateEntry = _engine->getStepBestWinState();
@@ -322,11 +322,7 @@ class Driver final
       jaffarCommon::logger::log(
         "[J++] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
 
-    if (_winStatesFound > 0)
-    {
-      jaffarCommon::logger::log("[J++] Best Win State Reward:                       %.3f\n", _bestStateReward);
-      jaffarCommon::logger::log("[J++] Win States Found:                            %lu\n", _winStatesFound);
-    }
+    if (_winStatesFound > 0)  jaffarCommon::logger::log("[J++] Best Win State Reward:                       %.3f\n", _bestStateReward);
 
     // Printing engine information
     jaffarCommon::logger::log("[J++] Engine Information: \n");
