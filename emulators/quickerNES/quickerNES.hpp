@@ -119,6 +119,31 @@ class QuickerNES final : public Emulator
     for (const auto &property : _disabledStateProperties) enableStateProperty(property);
   }
 
+  __INLINE__ void loadFullState(const std::string& state) override
+  {
+    enableStateProperties();
+    jaffarCommon::deserializer::Contiguous d(state.data(), state.size());
+    deserializeState(d);
+    disableStateProperties();
+  }
+
+  __INLINE__ void saveFullState(std::string& state) override
+  {
+    enableStateProperties();
+    jaffarCommon::serializer::Contiguous s(state.data(), state.size());
+    serializeState(s);
+    disableStateProperties();
+  }
+
+  size_t getFullStateSize() override
+  {
+    enableStateProperties();
+    jaffarCommon::serializer::Contiguous s;
+    serializeState(s);
+    disableStateProperties();
+    return s.getOutputSize();
+  }
+
   __INLINE__ void printInfo() const override
   {
     printMemoryBlockHash("LRAM");

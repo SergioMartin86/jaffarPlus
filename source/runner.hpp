@@ -169,7 +169,7 @@ class Runner final
     {
       // Checking we haven't exeeded maximum step
       if (_currentStep >= _inputHistoryMaxSize)
-        JAFFAR_THROW_RUNTIME("[ERROR] Trying to advance step when storing input history and the maximum step (%lu) has been reached\n", _inputHistoryMaxSize);
+        JAFFAR_THROW_RUNTIME("[ERROR] Trying to advance step when storing input history is enabled and the maximum step (%lu) has been reached\n", _inputHistoryMaxSize);
 
       // Storing the new more in the input history
       setInput(_currentStep, inputIdx);
