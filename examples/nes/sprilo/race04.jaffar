@@ -26,7 +26,7 @@
       1000
     ],
   
-    "Scavenger Queues Size": 32,
+    "Scavenger Queues Size": 64,
     "Scavenging Depth": 32,
 
     "Compression":
