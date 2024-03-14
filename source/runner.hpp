@@ -34,7 +34,23 @@ class Runner final
     _inputHistoryMaxSize       = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size (Steps)");
 
     // Storing game inputs for delayed parsing
-    _possibleInputsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Possible Inputs");
+    auto possibleInputsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Input Sets");
+
+    // Parsing possible game inputs
+    for (const auto &inputSetJs : possibleInputsJs) _inputSets.insert(std::move(parseInputSet(inputSetJs)));
+
+    // Stores whether to test candidate inputs
+    auto testCandidateInputs = jaffarCommon::json::getBoolean(config, "Test Candidate Inputs");
+ 
+    // If testing candidate inputs, parse them now
+    if (testCandidateInputs == true)
+    {
+      // Parsing candidate moves
+      auto candidateInputs = jaffarCommon::json::getArray<std::string>(config, "Candidate Inputs");
+  
+      // Registering candidate inputs
+      for (const auto &input : candidateInputs) _candidateInputIndexes.push_back(registerInput(input));
+    }
   }
 
   void initialize()
@@ -43,9 +59,6 @@ class Runner final
 
     // Initializing emulator, if not already initialized
     if (_game->isInitialized() == false) _game->initialize();
-
-    // Parsing possible game inputs
-    for (const auto &inputSetJs : _possibleInputsJs) _inputSets.insert(std::move(parseInputSet(inputSetJs)));
 
     // If storing input history, allocate input history storage
     if (_inputHistoryEnabled == true)
@@ -72,9 +85,6 @@ class Runner final
 
   std::unique_ptr<InputSet> parseInputSet(const nlohmann::json &inputSetJs)
   {
-    // Checking format
-    if (inputSetJs.is_object() == false) JAFFAR_THROW_LOGIC("[ERROR] Input set provided must be a JSON object type. Dump: %s.\n", inputSetJs.dump(2).c_str());
-
     // Creating new input set to add
     auto inputSet = std::make_unique<InputSet>();
 
@@ -82,47 +92,44 @@ class Runner final
     const auto &conditions = jaffarCommon::json::getArray<nlohmann::json>(inputSetJs, "Conditions");
 
     // Getting input string array
-    const auto &inputsJs = jaffarCommon::json::getArray<nlohmann::json>(inputSetJs, "Inputs");
+    const auto &inputsJs = jaffarCommon::json::getArray<std::string>(inputSetJs, "Inputs");
 
     // Parsing input set conditions
     for (const auto &condition : conditions) inputSet->addCondition(_game->parseCondition(condition));
 
     // Parsing input set inputs
-    for (const auto &inputJs : inputsJs)
+    for (const auto &input : inputsJs)  inputSet->addInput(registerInput(input));
+
+    // Returning new input set
+    return inputSet;
+  }
+
+  InputSet::inputIndex_t registerInput(const std::string& input)
+  {
+    // Getting input hash
+    const auto inputHash = jaffarCommon::hash::hashString(input);
+
+    // Getting index for the new input
+    InputSet::inputIndex_t inputIdx = 0;
+
+    // Checking if input has already been added globally. If not, add it
+    if (_inputHashMap.contains(inputHash) == false)
     {
-      // Checking format
-      if (inputJs.is_string() == false) JAFFAR_THROW_LOGIC("[ERROR] Inputs provided must be of string type. Dump: %s.\n", inputSetJs.dump(2).c_str());
+      // Getting input index and advancing it
+      inputIdx = _currentInputIndex++;
 
-      // Getting string input
-      const auto &input = inputJs.get<std::string>();
+      // Adding new input hash->index to the map
+      _inputHashMap[inputHash] = inputIdx;
 
-      // Getting input hash
-      const auto inputHash = jaffarCommon::hash::hashString(input);
-
-      // Getting index for the new input
-      InputSet::inputIndex_t inputIdx = 0;
-
-      // Checking if input has already been added globally. If not, add it
-      if (_inputHashMap.contains(inputHash) == false)
-      {
-        // Getting input index and advancing it
-        inputIdx = _currentInputIndex++;
-
-        // Adding new input hash->index to the map
-        _inputHashMap[inputHash] = inputIdx;
-
-        // Adding new input index->string to the map
-        _inputStringMap[inputIdx] = input;
-      }
-
-      // If it is, just get it from there
-      if (_inputHashMap.contains(inputHash) == true) inputIdx = _inputHashMap[inputHash];
-
-      // Register the new input
-      inputSet->addInput(inputIdx);
+      // Adding new input index->string to the map
+      _inputStringMap[inputIdx] = input;
     }
 
-    return inputSet;
+    // If it is, just get it from there
+    if (_inputHashMap.contains(inputHash) == true) inputIdx = _inputHashMap[inputHash];
+
+    // Returning this input's index (either new or the one registered before)
+    return inputIdx;
   }
 
   std::set<InputSet::inputIndex_t> getPossibleInputs() const
@@ -132,12 +139,18 @@ class Runner final
 
     // For all registered input sets, see which ones satisfy their conditions and add them
     for (const auto &inputSet : _inputSets)
-      if (inputSet->evaluate() == true) possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
+      if (inputSet->evaluate() == true) 
+       possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
 
     // Return possible inputs
     return possibleInputs;
   }
 
+  __INLINE__ const auto& getCandidateInputs() const
+  {
+    return _candidateInputIndexes;
+  }
+ 
   // Function to advance state.
   __INLINE__ jaffarPlus::InputSet::inputIndex_t getInputIndex(const std::string &input) const
   {
@@ -289,6 +302,11 @@ class Runner final
     return inputHistoryString;
   }
 
+  std::string getInputStringFromIndex(const InputSet::inputIndex_t input)
+  {
+    return _inputStringMap[input];
+  }
+
   // Function to print relevant information
   void printInfo() const
   {
@@ -383,11 +401,11 @@ class Runner final
   // Set of allowed input sets
   std::unordered_set<std::unique_ptr<InputSet>> _inputSets;
 
-  // JSON of possible inputs stored for delayed parsing
-  std::vector<nlohmann::json> _possibleInputsJs;
-
   // Stores whether the game has been initialized
   bool _isInitialized = false;
+
+  // Candidate input indexes
+  std::vector<InputSet::inputIndex_t> _candidateInputIndexes;
 };
 
 } // namespace jaffarPlus

@@ -37,6 +37,13 @@ class Engine final
     // Creating storage for the runnners (one per thread)
     _runners.resize(_threadCount);
 
+    // Checking if detecting new inputs
+    _evaluateCandidateInputs = jaffarCommon::json::getBoolean(engineConfig, "Evaluate Candidate Inputs");
+
+    // If detecting new inputs, ask the runner to register them
+    auto actualRunnerConfig = runnerConfig;
+    actualRunnerConfig["Register Candidate Inputs"] = _evaluateCandidateInputs;
+
     // Creating runners, one per thread
     JAFFAR_PARALLEL
     {
@@ -44,7 +51,7 @@ class Engine final
       int threadId = jaffarCommon::parallel::getThreadId();
 
       // Creating runner from the configuration
-      auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
+      auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, actualRunnerConfig);
 
       // Storing runner
       _runners[threadId] = std::move(r);
@@ -57,11 +64,13 @@ class Engine final
     const auto &stateDatabaseJs             = jaffarCommon::json::getObject(engineConfig, "State Database");
     const auto &stateDatabaseType           = jaffarCommon::json::getString(stateDatabaseJs, "Type");
     bool        stateDatabaseTypeRecognized = false;
+
     if (stateDatabaseType == "Plain")
     {
       _stateDb                    = std::make_unique<jaffarPlus::stateDb::Plain>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
       stateDatabaseTypeRecognized = true;
     }
+    
     if (stateDatabaseType == "Numa Aware")
     {
       _stateDb                    = std::make_unique<jaffarPlus::stateDb::Numa>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
@@ -283,6 +292,8 @@ class Engine final
    */
   void printInfo()
   {
+    jaffarCommon::logger::log("[J++] Evaluate Candidate Moves:                   %s\n", _evaluateCandidateInputs ? "true" : "false");
+
     // Printing information
     jaffarCommon::logger::log("[J++] Elapsed Time (Step/Total):                  %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
                               1.0e-9 * (double)(_currentStepTime),
@@ -401,6 +412,16 @@ class Engine final
 
     jaffarCommon::logger::log("[J++] Hash Database Information:\n");
     _hashDb->printInfo();
+
+    // Printing candidate moves
+    jaffarCommon::logger::log("[J++] Candidate Moves:\n");
+    for (const auto& entry : _candidateInputsDetected)
+    {
+      jaffarCommon::logger::log("[J++]  + Hash: %s\n", jaffarCommon::hash::hashToString(entry.first).c_str());
+      for (const auto input : entry.second)
+        jaffarCommon::logger::log("[J++]    + %3lu %s\n", input, _runners[0]->getInputStringFromIndex(input).c_str());
+    }
+     
   }
 
   private:
@@ -451,7 +472,7 @@ class Engine final
       // Getting possible inputs
       const auto &possibleInputs = r->getPossibleInputs();
 
-      // Trying out each possible input
+      // Trying out each possible input in the set
       for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++)
       {
         // Increasing new state counter
@@ -465,14 +486,46 @@ class Engine final
         // Running input
         auto result = runInput(*r, *inputItr);
 
-        // Update counters depending on the outcomes
-        if (result == inputResult_t::normal) _normalStates++;
-        if (result == inputResult_t::repeated) _repeatedStates++;
-        if (result == inputResult_t::failed) _failedStates++;
-        if (result == inputResult_t::win) _winStates++;
-        if (result == inputResult_t::droppedNoStorage) _droppedStatesNoStorage++;
-        if (result == inputResult_t::droppedFailedSerialization) _droppedStatesFailedSerialization++;
-        if (result == inputResult_t::droppedFailedSerialization) _droppedStatesFailedSerialization++;
+        // Updating counters
+        updateCounters(result);
+      }
+
+      // Getting candidate moves
+      auto candidateInputs = r->getCandidateInputs();
+
+      // Finding unique candidate inputs
+      std::vector<InputSet::inputIndex_t> uniqueCandidateInputs;
+      for (const auto& input : candidateInputs)
+       if (possibleInputs.contains(input) == false) 
+        uniqueCandidateInputs.push_back(input);
+
+      // Run each candidate input
+      for (const auto input : uniqueCandidateInputs)
+      {
+        // Getting discriminating hash key to identify this type of states
+        auto stateInputHash = r->getGame()->getStateInputHash();
+
+        // Making sure we don't try the input if it was already detected
+        if (_candidateInputsDetected.contains(stateInputHash))
+         if (_candidateInputsDetected[stateInputHash].contains(input))
+          continue;
+
+        // Increasing new state counter
+        _stepNewStatesProcessed++;
+
+        // Re-loading base state
+        const auto t0 = jaffarCommon::timing::now();
+        _stateDb->loadStateIntoRunner(*r, baseStateData);
+        _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
+
+        // Running input
+        auto result = runInput(*r, input);
+
+        // Updating counters
+        updateCounters(result);
+
+        // If this is not a repeated state, store it as new candidate input
+        if (result != inputResult_t::repeated) _candidateInputsDetected[stateInputHash].insert(input);
       }
 
       // Return base state to the free state queue
@@ -485,6 +538,17 @@ class Engine final
       baseStateData = _stateDb->popState();
       _popBaseStateDbThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t9);
     }
+  }
+
+  __INLINE__ void updateCounters(const inputResult_t result)
+  {
+    // Update counters depending on the outcomes
+    if (result == inputResult_t::normal) _normalStates++;
+    if (result == inputResult_t::repeated) _repeatedStates++;
+    if (result == inputResult_t::failed) _failedStates++;
+    if (result == inputResult_t::win) _winStates++;
+    if (result == inputResult_t::droppedNoStorage) _droppedStatesNoStorage++;
+    if (result == inputResult_t::droppedFailedSerialization) _droppedStatesFailedSerialization++;
   }
 
   __INLINE__ inputResult_t runInput(Runner &r, const InputSet::inputIndex_t input)
@@ -586,6 +650,12 @@ class Engine final
     // If store succeeded, return a normal execution
     return inputResult_t::normal;
   }
+
+  // Option to detect new moves during run
+  bool _evaluateCandidateInputs;
+
+  // Set of candidate inputs
+  jaffarCommon::concurrent::HashMap_t<jaffarCommon::hash::hash_t, jaffarCommon::concurrent::HashSet_t<InputSet::inputIndex_t>> _candidateInputsDetected;
 
   // Counter for the current step
   size_t _currentStep = 0;

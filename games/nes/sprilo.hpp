@@ -167,6 +167,12 @@ class Sprilo final : public jaffarPlus::Game
     return recognizedActionType;
   }
 
+  __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override
+  {
+    // There is no discriminating state element, so simply return a zero hash
+    return jaffarCommon::hash::hash_t();
+  }
+
   // Datatype to describe a point magnet
   struct pointMagnet_t
   {
