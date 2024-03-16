@@ -34,10 +34,10 @@ class Runner final
     _inputHistoryMaxSize       = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size (Steps)");
 
     // Storing game inputs for delayed parsing
-    auto possibleInputsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Input Sets");
+    auto allowedInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Allowed Input Sets");
 
     // Parsing possible game inputs
-    for (const auto &inputSetJs : possibleInputsJs) _inputSets.insert(std::move(parseInputSet(inputSetJs)));
+    for (const auto &inputSetJs : allowedInputSetsJs) _allowedInputSets.insert(std::move(parseInputSet(inputSetJs)));
 
     // Stores whether to test candidate inputs
     auto testCandidateInputs = jaffarCommon::json::getBoolean(config, "Test Candidate Inputs");
@@ -45,12 +45,13 @@ class Runner final
     // If testing candidate inputs, parse them now
     if (testCandidateInputs == true)
     {
-      // Parsing candidate moves
-      auto candidateInputs = jaffarCommon::json::getArray<std::string>(config, "Candidate Inputs");
-  
-      // Registering candidate inputs
-      for (const auto &input : candidateInputs) _candidateInputIndexes.push_back(registerInput(input));
+       // Getting candidate input sets
+       auto candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
+
+       // Parsin candidate input sets
+       for (const auto &inputSetJs : candidateInputSetsJs) _candidateInputSets.insert(std::move(parseInputSet(inputSetJs)));
     }
+      
   }
 
   void initialize()
@@ -132,13 +133,13 @@ class Runner final
     return inputIdx;
   }
 
-  std::set<InputSet::inputIndex_t> getPossibleInputs() const
+  std::set<InputSet::inputIndex_t> getInputsFromInputSets(const std::unordered_set<std::unique_ptr<InputSet>>& inputSets) const
   {
     // Storage for the possible input set
     std::set<InputSet::inputIndex_t> possibleInputs;
 
     // For all registered input sets, see which ones satisfy their conditions and add them
-    for (const auto &inputSet : _inputSets)
+    for (const auto &inputSet : inputSets)
       if (inputSet->evaluate() == true) 
        possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
 
@@ -146,9 +147,14 @@ class Runner final
     return possibleInputs;
   }
 
-  __INLINE__ const auto& getCandidateInputs() const
+  __INLINE__ const auto getAllowedInputs() const
   {
-    return _candidateInputIndexes;
+    return getInputsFromInputSets(_allowedInputSets);
+  }
+
+  __INLINE__ const auto getCandidateInputs() const
+  {
+    return getInputsFromInputSets(_candidateInputSets);
   }
  
   // Function to advance state.
@@ -330,11 +336,11 @@ class Runner final
     jaffarCommon::logger::log("[J++]  + Hash: %s\n", hash.c_str());
     jaffarCommon::logger::log("[J++]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
 
-    // Getting possible inputs
-    const auto &possibleInputs = getPossibleInputs();
+    // Getting allowed inputs
+    const auto &possibleInputs = getAllowedInputs();
 
     // Printing them
-    jaffarCommon::logger::log("[J++]  + Possible Inputs:\n");
+    jaffarCommon::logger::log("[J++]  + Allowed Inputs:\n");
     for (const auto inputIdx : possibleInputs) jaffarCommon::logger::log("[J++]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
   }
 
@@ -399,13 +405,13 @@ class Runner final
   std::map<InputSet::inputIndex_t, std::string> _inputStringMap;
 
   // Set of allowed input sets
-  std::unordered_set<std::unique_ptr<InputSet>> _inputSets;
+  std::unordered_set<std::unique_ptr<InputSet>> _allowedInputSets;
 
   // Stores whether the game has been initialized
   bool _isInitialized = false;
 
-  // Candidate input indexes
-  std::vector<InputSet::inputIndex_t> _candidateInputIndexes;
+  // Set of candidate input sets
+  std::unordered_set<std::unique_ptr<InputSet>> _candidateInputSets;
 };
 
 } // namespace jaffarPlus

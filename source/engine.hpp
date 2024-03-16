@@ -37,13 +37,6 @@ class Engine final
     // Creating storage for the runnners (one per thread)
     _runners.resize(_threadCount);
 
-    // Checking if detecting new inputs
-    _evaluateCandidateInputs = jaffarCommon::json::getBoolean(engineConfig, "Evaluate Candidate Inputs");
-
-    // If detecting new inputs, ask the runner to register them
-    auto actualRunnerConfig = runnerConfig;
-    actualRunnerConfig["Register Candidate Inputs"] = _evaluateCandidateInputs;
-
     // Creating runners, one per thread
     JAFFAR_PARALLEL
     {
@@ -51,7 +44,7 @@ class Engine final
       int threadId = jaffarCommon::parallel::getThreadId();
 
       // Creating runner from the configuration
-      auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, actualRunnerConfig);
+      auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
 
       // Storing runner
       _runners[threadId] = std::move(r);
@@ -292,8 +285,6 @@ class Engine final
    */
   void printInfo()
   {
-    jaffarCommon::logger::log("[J++] Evaluate Candidate Moves:                   %s\n", _evaluateCandidateInputs ? "true" : "false");
-
     // Printing information
     jaffarCommon::logger::log("[J++] Elapsed Time (Step/Total):                  %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
                               1.0e-9 * (double)(_currentStepTime),
@@ -470,7 +461,7 @@ class Engine final
       _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
       // Getting possible inputs
-      const auto &possibleInputs = r->getPossibleInputs();
+      const auto &possibleInputs = r->getAllowedInputs();
 
       // Trying out each possible input in the set
       for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++)
@@ -650,9 +641,6 @@ class Engine final
     // If store succeeded, return a normal execution
     return inputResult_t::normal;
   }
-
-  // Option to detect new moves during run
-  bool _evaluateCandidateInputs;
 
   // Set of candidate inputs
   jaffarCommon::concurrent::HashMap_t<jaffarCommon::hash::hash_t, jaffarCommon::concurrent::HashSet_t<InputSet::inputIndex_t>> _candidateInputsDetected;

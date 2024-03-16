@@ -55,7 +55,7 @@
 {
   "Hash Step Tolerance": 0,
 
-  "Possible Inputs":
+  "Allowed Input Sets":
   [
    {
      "Conditions":
@@ -69,7 +69,10 @@
        "|..|..L....A|"
      ]
    }
-  ]
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
 },
 
 "Game Configuration":

@@ -58,9 +58,9 @@
  
 "Runner Configuration":
 {
-  "Hash Step Tolerance": 4,
+  "Hash Step Tolerance": 0,
 
-  "Possible Inputs":
+  "Allowed Input Sets":
   [
    {
      "Conditions":
@@ -69,14 +69,17 @@
  
      "Inputs":
      [
-       "|..|.......A|",
-       "|..|...R....|",
-       "|..|..L.....|",
-       "|..|...R...A|",
-       "|..|..L....A|"
+      "|..|.......A|",
+      "|..|...R....|",
+      "|..|..L.....|",
+      "|..|...R...A|",
+      "|..|..L....A|"
      ]
    }
-  ]
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
 },
 
 "Game Configuration":
