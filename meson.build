@@ -25,7 +25,7 @@ if meson.is_subproject() == false
   jaffar = executable('jaffar',
     'source/jaffar.cpp',
     cpp_args: [ jaffarCPPFlags ],
-    dependencies : jaffarDependencies,
+    dependencies : [ jaffarDependencies, dependency('numa') ],
     include_directories : jaffarIncludes
   )
 

@@ -4,3 +4,6 @@
 [submodule "extern/jaffarCommon"]
 	path = extern/jaffarCommon
 	url = https://github.com/SergioMartin86/jaffarCommon.git
+[submodule "extern/quickerSDLPoP"]
+	path = extern/quickerSDLPoP
+	url = https://github.com/SergioMartin86/quickerSDLPoP.git
