@@ -5,10 +5,7 @@
 #include <jaffarCommon/file.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
-
-#ifdef _USE_SDL2
-  #include <SDL.h>
-#endif
+#include <SDL2/SDL.h>
 
 namespace jaffarPlus
 {
@@ -106,11 +103,7 @@ class Emulator
   virtual size_t getRendererStateSize() const = 0;
 
 // Opens the emulator's renderer window for output to screen
-#ifdef _USE_SDL2
   virtual void initializeVideoOutput(SDL_Window *window) = 0;
-#else
-  virtual void initializeVideoOutput() = 0;
-#endif
 
   // Update the contents of the emulator's renderer window
   virtual void updateVideoOutput() = 0;

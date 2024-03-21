@@ -16,7 +16,12 @@ jaffarCommonSubproject = subproject('jaffarCommon')
 jaffarCommonDependency = jaffarCommonSubproject.get_variable('jaffarCommonDependency')
 
 # Jaffar dependencies all together
-jaffarDependencies = [ jaffarCommonDependency, emulatorDependencies ]
+jaffarDependencies = [
+   jaffarCommonDependency,
+   emulatorDependencies,
+   dependency('sdl2'),
+   dependency('SDL2_image')
+  ]
 
 # Do not build any targets if this is a subproject
 if meson.is_subproject() == false
@@ -32,8 +37,8 @@ if meson.is_subproject() == false
   # Jaffar Player tool
   jaffarPlayer = executable('jaffar-player',
     'source/player.cpp',
-    cpp_args: [ jaffarCPPFlags, '-D_USE_SDL2', NCursesCPPFlags ],
-    dependencies : [ jaffarDependencies, dependency('sdl2'), dependency('SDL2_image')],
+    cpp_args: [ jaffarCPPFlags, NCursesCPPFlags ],
+    dependencies : [ jaffarDependencies ],
     include_directories : jaffarIncludes
   )
 

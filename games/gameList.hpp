@@ -3,6 +3,7 @@
 #include "../emulators/emulatorList.hpp"
 #include "nes/microMachines.hpp"
 #include "nes/sprilo.hpp"
+#include "sdlpop/princeOfPersia.hpp"
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -33,6 +34,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
   // Trying to detect game by name
   DETECT_GAME(NES::MicroMachines);
   DETECT_GAME(NES::Sprilo);
+  DETECT_GAME(sdlpop::PrinceOfPersia);
 
   // Check if game was recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized\n", gameName.c_str());
