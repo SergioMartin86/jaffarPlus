@@ -8,10 +8,6 @@
 #include <emulator.hpp>
 #include <nesInstance.hpp>
 
-#ifdef _USE_SDL2
-  #include <SDL.h>
-#endif
-
 // Relevant defines for rendering
 #define BLIT_SIZE 65536
 #define DEFAULT_WIDTH 256
@@ -105,7 +101,7 @@ class QuickerNES final : public Emulator
   }
 
   // State advancing function
-  void advanceState(const std::string &move) override { _quickerNES.advanceState(move); }
+  void advanceState(const std::string &input) override { _quickerNES.advanceState(input); }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerNES.serializeState(serializer); };
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerNES.deserializeState(deserializer); };
@@ -218,8 +214,6 @@ class QuickerNES final : public Emulator
     return s.getOutputSize();
   }
 
-#ifdef _USE_SDL2
-
   // Window pointer
   SDL_Window *m_window;
 
@@ -280,11 +274,6 @@ class QuickerNES final : public Emulator
     if (m_tex) SDL_DestroyTexture(m_tex);
     if (m_renderer) SDL_DestroyRenderer(m_renderer);
   }
-#else
-  __INLINE__ void initializeVideoOutput() override {}
-  __INLINE__ void updateVideoOutput() override {}
-  __INLINE__ void finalizeVideoOutput() override {}
-#endif
 
   private:
 

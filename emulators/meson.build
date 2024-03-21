@@ -1,1 +1,2 @@
 subdir('quickerNES')
+subdir('quickerSDLPoP')

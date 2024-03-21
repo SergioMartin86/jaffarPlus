@@ -2,6 +2,7 @@
 
 #include <emulator.hpp>
 #include "quickerNES/quickerNES.hpp"
+#include "quickerSDLPoP/quickerSDLPoP.hpp"
 
 namespace jaffarPlus
 {
@@ -25,6 +26,7 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
 
   // Detecting emulator
   DETECT_EMULATOR(emulator::QuickerNES);
+  DETECT_EMULATOR(emulator::QuickerSDLPoP);
 
   // Check if recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized\n", emulatorName.c_str());
