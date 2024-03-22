@@ -42,7 +42,7 @@ class Runner final
     // Getting candidate input sets
     _candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
   }
-  
+
   void initialize()
   {
     if (_isInitialized == true) JAFFAR_THROW_LOGIC("This runner instance was already initialized");
@@ -95,6 +95,9 @@ class Runner final
 
     // Parsing input set inputs
     for (const auto &input : inputsJs)  inputSet->addInput(registerInput(input));
+
+    // Keep track of maximum size (for better output)
+    _largestInputSetSize = std::max(_largestInputSetSize, inputSet->getInputIndexes().size());
 
     // Getting stop evaluating flag
     inputSet->setStopInputEvaluationFlag(jaffarCommon::json::getBoolean(inputSetJs, "Stop Input Evaluation"));
@@ -330,25 +333,28 @@ class Runner final
     auto hashStepToleranceStage = getHashStepToleranceStage();
 
     // Memory usage
-    jaffarCommon::logger::log("[J++]  + Input History Enabled: %s\n", _inputHistoryEnabled ? "true" : "false");
+    jaffarCommon::logger::log("[J+]  + Input History Enabled: %s\n", _inputHistoryEnabled ? "true" : "false");
     if (_inputHistoryEnabled == true)
     {
-      jaffarCommon::logger::log("[J++]    + Possible Input Count: %u (Encoded in %lu bits)\n", _currentInputIndex, _inputIndexSizeBits);
+      jaffarCommon::logger::log("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _currentInputIndex, _inputIndexSizeBits);
       jaffarCommon::logger::log(
-        "[J++]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _inputHistoryMaxSize, _inputHistory.size(), _inputIndexSizeBits * _inputHistoryMaxSize);
+        "[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _inputHistoryMaxSize, _inputHistory.size(), _inputIndexSizeBits * _inputHistoryMaxSize);
     }
 
     // Printing runner state
-    jaffarCommon::logger::log("[J++]  + Current Step: %u\n", _currentStep);
-    jaffarCommon::logger::log("[J++]  + Hash: %s\n", hash.c_str());
-    jaffarCommon::logger::log("[J++]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
+    jaffarCommon::logger::log("[J+]  + Current Step: %u\n", _currentStep);
+    jaffarCommon::logger::log("[J+]  + Hash: %s\n", hash.c_str());
+    jaffarCommon::logger::log("[J+]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
 
     // Getting allowed inputs
     const auto &possibleInputs = getAllowedInputs();
 
     // Printing them
-    jaffarCommon::logger::log("[J++]  + Allowed Inputs:\n");
-    for (const auto inputIdx : possibleInputs) jaffarCommon::logger::log("[J++]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
+    jaffarCommon::logger::log("[J+]  + Allowed Inputs:\n");
+
+    size_t currentInputIdx = 0;
+    for (const auto inputIdx : possibleInputs) { jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str()); currentInputIdx++;}
+    for (; currentInputIdx < _largestInputSetSize; currentInputIdx++)  jaffarCommon::logger::log("[J+]    + ----- \n");
   }
 
   __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentStep % (_hashStepTolerance + 1); }
@@ -431,6 +437,9 @@ class Runner final
   // Vector of allowed input sets
   std::vector<std::unique_ptr<InputSet>> _allowedInputSets;
   
+  // Largest input set sizedetected
+  size_t _largestInputSetSize = 0;
+
   // Whether to test for candidate inputs
   bool _testCandidateInputs;
 };

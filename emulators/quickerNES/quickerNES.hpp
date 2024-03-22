@@ -67,9 +67,6 @@ class QuickerNES final : public Emulator
 
   void initializeImpl() override
   {
-    // Setting game's internal video buffer
-    ((emulator_t *)_quickerNES.getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
-
     // Setting controller types
     _quickerNES.setController1Type(_controller1Type);
     _quickerNES.setController2Type(_controller2Type);
@@ -206,9 +203,30 @@ class QuickerNES final : public Emulator
       }
   }
 
-  __INLINE__ void   enableRendering() override { _quickerNES.enableRendering(); }
-  __INLINE__ void   disableRendering() override { _quickerNES.disableRendering(); }
-  __INLINE__ void   updateRendererState() override { saveBlit(_quickerNES.getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0); }
+  __INLINE__ void enableRendering(SDL_Window* window) override
+   {
+    // Setting game's internal video buffer
+    ((emulator_t *)_quickerNES.getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
+
+    // Creating SDL renderer
+    m_window = window;
+    if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) JAFFAR_THROW_RUNTIME("Coult not create SDL renderer in NES emulator");
+    if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256)))
+      JAFFAR_THROW_RUNTIME("Coult not create SDL texture in NES emulator");
+    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+    if (!setScale(1)) JAFFAR_THROW_RUNTIME("Coult not set SDL scale in NES emulator");
+
+    // Enabling rendering in the emulator
+     _quickerNES.enableRendering();
+   }
+   
+  __INLINE__ void   disableRendering() override
+   {
+     if (m_tex) SDL_DestroyTexture(m_tex);
+     if (m_renderer) SDL_DestroyRenderer(m_renderer);
+   }
+  
+  __INLINE__ void   updateRendererState(const size_t stepIdx, const std::string input) override { saveBlit(_quickerNES.getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0); }
   __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
   __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
   __INLINE__ size_t getRendererStateSize() const
@@ -246,17 +264,7 @@ class QuickerNES final : public Emulator
     return true;
   }
 
-  __INLINE__ void initializeVideoOutput(SDL_Window *window) override
-  {
-    m_window = window;
-    if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) JAFFAR_THROW_RUNTIME("Coult not create SDL renderer in NES emulator");
-    if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256)))
-      JAFFAR_THROW_RUNTIME("Coult not create SDL texture in NES emulator");
-    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-    if (!setScale(1)) JAFFAR_THROW_RUNTIME("Coult not set SDL scale in NES emulator");
-  }
-
-  __INLINE__ void updateVideoOutput() override
+  __INLINE__ void showRender() override
   {
     void *nesPixels = nullptr;
     int   pitch     = 0;
@@ -271,12 +279,6 @@ class QuickerNES final : public Emulator
     SDL_RenderCopy(m_renderer, m_tex, &NES_BLIT_RECT, &m_nesDest);
 
     SDL_RenderPresent(m_renderer);
-  }
-
-  __INLINE__ void finalizeVideoOutput() override
-  {
-    if (m_tex) SDL_DestroyTexture(m_tex);
-    if (m_renderer) SDL_DestroyRenderer(m_renderer);
   }
 
   private:

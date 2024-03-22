@@ -20,7 +20,7 @@ SDL_Window *launchOutputWindow()
   if (!SDL_WasInit(SDL_INIT_VIDEO))
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) JAFFAR_THROW_LOGIC("Failed to initialize video: %s", SDL_GetError());
 
-  auto window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
+  auto window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
   if (window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
 
   return window;
@@ -78,12 +78,8 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
   // Initializing runner
   r->initialize();
 
-  // Enabling rendering
-  if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
-  if (disableRender == true) r->getGame()->getEmulator()->disableRendering();
-
-  // Initializing emulator's video output
-  if (disableRender == false) r->getGame()->getEmulator()->initializeVideoOutput(window);
+  // Enabling rendering, if required
+  if (disableRender == false) r->getGame()->getEmulator()->enableRendering(window);
 
   // Getting inverse frame rate from game
   const auto     frameRate        = r->getGame()->getFrameRate();
@@ -105,8 +101,11 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
   jaffarCommon::logger::log("[J+] ********** Creating Playback Sequence **********\n");
   jaffarCommon::logger::refreshTerminal();
 
-  // Instantiating playback object
-  jaffarPlus::Playback p(*r, solutionSequence);
+  // Instantiating playback instance
+  jaffarPlus::Playback p(*r);
+
+  // Initializing playback instance
+  p.initialize(solutionSequence);
 
   // Flag to display frame information
   bool showFrameInfo = true;
@@ -234,7 +233,7 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
   }
 
   // Close game output
-  if (disableRender == false) r->getGame()->getEmulator()->finalizeVideoOutput();
+  if (disableRender == false) r->getGame()->getEmulator()->disableRendering();
 
   // returning false on exit to trigger the finalization
   if (isFinalize) return false;

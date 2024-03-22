@@ -48,10 +48,15 @@
 "Emulator Configuration":
 {
   "Emulator Name": "QuickerSDLPoP",
-  "Initial State File Path": "lvl01a.state",
+  "Initial State File": "lvl01a.state",
   "SDLPoP Root Path": "../../../extern/quickerSDLPoP/SDLPoPData/",
   "Levels File Path": "",
-  "Game Version": "1.4"
+  "Game Version": "1.4",
+  "Override RNG Enabled": true,
+  "Override RNG Value": 0,
+  "Override Loose Tile Sound Enabled": false,
+  "Override Loose Tile Sound Value": 0,
+  "Initialize Copy Protection": false
 },
  
 "Runner Configuration":

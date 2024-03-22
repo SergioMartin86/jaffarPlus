@@ -218,7 +218,7 @@ class Engine final
     _stepBestWinState.reward = -std::numeric_limits<float>::infinity();
 
     // Performing one computation step in parallel
-    //JAFFAR_PARALLEL
+    JAFFAR_PARALLEL
     workerFunction();
 
     // Advancing hash database state
