@@ -420,11 +420,11 @@ class PrinceOfPersia final : public jaffarPlus::Game
     for (int i = 0; i < _gameState->trobs_count; i++)
     {
       const auto &trob = _gameState->trobs[i];
-      const auto idx = (trob.room - 1) * 30 + trob.tilepos;
+      const auto roomIdx = trob.room - 1; 
+      const auto tileIdx = trob.tilepos - 1; 
 
-      jaffarCommon::logger::log("[J+]    + Type: %d, Room: %d, Idx: %d, Pos: %d, FG: %d, BG: %d\n", trob.type, trob.room, idx, trob.tilepos, _gameState->level.fg[idx], _gameState->level.bg[idx]);
+      jaffarCommon::logger::log("[J+]    + Type: %u, Room: %u, Pos: %u, FG: %u, BG: %u\n", trob.type, trob.room, trob.tilepos, _gameState->level.fg[roomIdx][tileIdx], _gameState->level.bg[roomIdx][tileIdx]);
     }
-
 
     // Getting current room
     int kidRoom = _gameState->Kid.room;

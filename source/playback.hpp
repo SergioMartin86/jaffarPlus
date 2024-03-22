@@ -32,7 +32,7 @@ class Playback final
     jaffarCommon::hash::hash_t stateHash;
   };
 
-  Playback(Runner &runner, const std::vector<std::string> &inputSequence)
+  Playback(Runner &runner)
     : _runner(&runner)
   {
     // Getting game state size
@@ -40,7 +40,10 @@ class Playback final
 
     // Getting renderer state size
     _rendererStateSize = _runner->getGame()->getEmulator()->getRendererStateSize();
+  };
 
+  void initialize(const std::vector<std::string> &inputSequence)
+  {
     // For each input in the sequence, store the game's state
     for (size_t i = 0; i <= inputSequence.size(); i++)
     {
@@ -67,7 +70,7 @@ class Playback final
       step.rendererStateData = malloc(_rendererStateSize);
 
       // Updating renderer state
-      _runner->getGame()->getEmulator()->updateRendererState();
+      _runner->getGame()->getEmulator()->updateRendererState(i, step.inputString);
 
       // Serializing renderer state
       jaffarCommon::serializer::Contiguous sr(step.rendererStateData, _rendererStateSize);
@@ -88,7 +91,8 @@ class Playback final
       // Adding step to the internal storage
       _sequence.push_back(step);
     }
-  };
+
+  }
 
   ~Playback() {}
 
@@ -102,7 +106,7 @@ class Playback final
     const auto                            &step = getStep(currentStep);
     jaffarCommon::deserializer::Contiguous d(step.rendererStateData, _rendererStateSize);
     _runner->getGame()->getEmulator()->deserializeRendererState(d);
-    _runner->getGame()->getEmulator()->updateVideoOutput();
+    _runner->getGame()->getEmulator()->showRender();
   }
 
   void loadStepData(const size_t stepId)

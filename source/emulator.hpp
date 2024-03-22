@@ -78,13 +78,13 @@ class Emulator
   /////// Render-related functions
 
   // This function enables rendering within the emulation core (does not output it to screen though)
-  virtual void enableRendering() = 0;
+  virtual void enableRendering(SDL_Window *window) = 0;
 
   // This function disables rendering within the emulation core (typically enables faster emulation)
   virtual void disableRendering() = 0;
 
   // Updates the internal state of the renderer with the current game state
-  virtual void updateRendererState() = 0;
+  virtual void updateRendererState(const size_t stepIdx, const std::string input) = 0;
 
   // This function gathers the necessary data for output rendering of a given state/frame
   virtual void serializeRendererState(jaffarCommon::serializer::Base &serializer) const = 0;
@@ -95,14 +95,8 @@ class Emulator
   // This function returns the size of the renderer state
   virtual size_t getRendererStateSize() const = 0;
 
-// Opens the emulator's renderer window for output to screen
-  virtual void initializeVideoOutput(SDL_Window *window) = 0;
-
-  // Update the contents of the emulator's renderer window
-  virtual void updateVideoOutput() = 0;
-
-  // Closes the emulator's renderer window
-  virtual void finalizeVideoOutput() = 0;
+  // Shows the contents of the emulator's renderer into the window
+  virtual void showRender() = 0;
 
   // Emulator name (for runtime use)
   std::string _emulatorName;
