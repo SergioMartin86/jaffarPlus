@@ -29,6 +29,10 @@ class QuickerNES final : public Emulator
   QuickerNES(const nlohmann::json &config)
     : Emulator(config)
   {
+    // Getting disabled state properties
+    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
+
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
@@ -160,9 +164,9 @@ class QuickerNES final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) override { _quickerNES.enableStateBlock(property); }
+  __INLINE__ void enableStateProperty(const std::string &property) { _quickerNES.enableStateBlock(property); }
 
-  __INLINE__ void disableStateProperty(const std::string &property) override { _quickerNES.disableStateBlock(property); }
+  __INLINE__ void disableStateProperty(const std::string &property) { _quickerNES.disableStateBlock(property); }
 
   ////////// Rendering functions (some of these taken from https://github.com/Bindernews/HeadlessQuickNes / MIT License)
 
@@ -281,9 +285,12 @@ class QuickerNES final : public Emulator
   {
     auto p    = getProperty(blockName);
     auto hash = jaffarCommon::hash::hashToString(jaffarCommon::hash::calculateMetroHash(p.pointer, p.size));
-    jaffarCommon::logger::log("[J++] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
+    jaffarCommon::logger::log("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }
 
+  // Collection of state blocks to disable during engine run
+  std::vector<std::string> _disabledStateProperties;
+  
   NESInstance _quickerNES;
 
   std::string _controller1Type;

@@ -34,32 +34,27 @@ class Runner final
     _inputHistoryMaxSize       = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size (Steps)");
 
     // Storing game inputs for delayed parsing
-    auto allowedInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Allowed Input Sets");
+    _allowedInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Allowed Input Sets");
 
-    // Parsing possible game inputs
-    for (const auto &inputSetJs : allowedInputSetsJs) _allowedInputSets.insert(std::move(parseInputSet(inputSetJs)));
+    // Stores candidate inputs
+    _testCandidateInputs = jaffarCommon::json::getBoolean(config, "Test Candidate Inputs");
 
-    // Stores whether to test candidate inputs
-    auto testCandidateInputs = jaffarCommon::json::getBoolean(config, "Test Candidate Inputs");
- 
-    // If testing candidate inputs, parse them now
-    if (testCandidateInputs == true)
-    {
-       // Getting candidate input sets
-       auto candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
-
-       // Parsin candidate input sets
-       for (const auto &inputSetJs : candidateInputSetsJs) _candidateInputSets.insert(std::move(parseInputSet(inputSetJs)));
-    }
-      
+    // Getting candidate input sets
+    _candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
   }
-
+  
   void initialize()
   {
     if (_isInitialized == true) JAFFAR_THROW_LOGIC("This runner instance was already initialized");
 
-    // Initializing emulator, if not already initialized
+    // Initializing game, if not already initialized
     if (_game->isInitialized() == false) _game->initialize();
+
+    // Parsing possible game inputs
+    for (const auto &inputSetJs : _allowedInputSetsJs) _allowedInputSets.push_back(std::move(parseInputSet(inputSetJs)));
+ 
+    // If testing candidate inputs, parse them now
+    if (_testCandidateInputs == true) for (const auto &inputSetJs : _candidateInputSetsJs) _candidateInputSets.push_back(std::move(parseInputSet(inputSetJs)));
 
     // If storing input history, allocate input history storage
     if (_inputHistoryEnabled == true)
@@ -101,6 +96,9 @@ class Runner final
     // Parsing input set inputs
     for (const auto &input : inputsJs)  inputSet->addInput(registerInput(input));
 
+    // Getting stop evaluating flag
+    inputSet->setStopInputEvaluationFlag(jaffarCommon::json::getBoolean(inputSetJs, "Stop Input Evaluation"));
+
     // Returning new input set
     return inputSet;
   }
@@ -133,15 +131,24 @@ class Runner final
     return inputIdx;
   }
 
-  std::set<InputSet::inputIndex_t> getInputsFromInputSets(const std::unordered_set<std::unique_ptr<InputSet>>& inputSets) const
+  std::set<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>>& inputSets) const
   {
     // Storage for the possible input set
     std::set<InputSet::inputIndex_t> possibleInputs;
 
     // For all registered input sets, see which ones satisfy their conditions and add them
     for (const auto &inputSet : inputSets)
-      if (inputSet->evaluate() == true) 
-       possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
+      if (inputSet->evaluate() == true)
+      {
+        possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
+        
+        // Getting stop evaluating flag
+        bool stopEvaluating = inputSet->getStopInputEvaluationFlag();
+
+        // If stop evaluation is set, then return now
+        if (stopEvaluating) break;
+      } 
+       
 
     // Return possible inputs
     return possibleInputs;
@@ -367,6 +374,9 @@ class Runner final
 
   private:
 
+  // Stores whether the game has been initialized
+  bool _isInitialized = false;
+
   // Pointer to the game instance
   std::unique_ptr<Game> _game;
 
@@ -404,14 +414,25 @@ class Runner final
   // Map for getting the allowed input from index
   std::map<InputSet::inputIndex_t, std::string> _inputStringMap;
 
-  // Set of allowed input sets
-  std::unordered_set<std::unique_ptr<InputSet>> _allowedInputSets;
 
-  // Stores whether the game has been initialized
-  bool _isInitialized = false;
+  ///////////////////////////////////////////
+  // Allowed and candidate input sets
+  //////////////////////////////////////////
+
+  // Allowed input configuration
+  std::vector<nlohmann::json> _allowedInputSetsJs;
+
+  // Candidate input configuration
+  std::vector<nlohmann::json> _candidateInputSetsJs;
 
   // Set of candidate input sets
-  std::unordered_set<std::unique_ptr<InputSet>> _candidateInputSets;
+  std::vector<std::unique_ptr<InputSet>> _candidateInputSets;
+
+  // Vector of allowed input sets
+  std::vector<std::unique_ptr<InputSet>> _allowedInputSets;
+  
+  // Whether to test for candidate inputs
+  bool _testCandidateInputs;
 };
 
 } // namespace jaffarPlus

@@ -56,20 +56,20 @@ class HashDb final
   // Function to print relevant information
   void printInfo() const
   {
-    jaffarCommon::logger::log("[J++]  + Max Store Count:               %lu\n", _maxStoreCount);
-    jaffarCommon::logger::log("[J++]  + Max Store Size:                %f Mb (%.2f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
-    jaffarCommon::logger::log("[J++]  + Max Store Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
+    jaffarCommon::logger::log("[J+]  + Max Store Count:               %lu\n", _maxStoreCount);
+    jaffarCommon::logger::log("[J+]  + Max Store Size:                %f Mb (%.2f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
+    jaffarCommon::logger::log("[J+]  + Max Store Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
     jaffarCommon::logger::log(
-      "[J++]  + Total Max Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
+      "[J+]  + Total Max Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries * _maxStoreCount, ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
 
     // Printing hash store information
-    jaffarCommon::logger::log("[J++]  + Hash Stores (%lu / %lu):\n", _hashStores.size(), _maxStoreCount);
+    jaffarCommon::logger::log("[J+]  + Hash Stores (%lu / %lu):\n", _hashStores.size(), _maxStoreCount);
 
     auto   itr             = _hashStores.rbegin();
     size_t curHashStoreIdx = 0;
     while (itr != _hashStores.rend())
     {
-      jaffarCommon::logger::log("[J++]    + [%02lu] - Age: %lu, Entries: %.3f M, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
+      jaffarCommon::logger::log("[J+]    + [%02lu] - Age: %lu, Entries: %.3f M, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
                                 itr->id,
                                 itr->age,
                                 (double)itr->hashSet.size() / (1024.0 * 1024.0),

@@ -136,18 +136,18 @@ class Numa : public stateDb::Base
   void printInfoImpl() const override
   {
     for (int i = 0; i < _numaCount; i++)
-      jaffarCommon::logger::log("[J++]  + NUMA Domain %d                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n",
+      jaffarCommon::logger::log("[J+]  + NUMA Domain %d                  Max States: %lu, Size: %.3f Mb (%.6f Gb)\n",
                                 i,
                                 _maxStatesPerNuma[i],
                                 (double)_maxSizePerNuma[i] / (1024.0 * 1024.0),
                                 (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
 
     size_t totalFreeStatesRequested = _numaNonLocalFreeStateCount + _numaLocalFreeStateCount + _numaFreeStateNotFoundCount;
-      jaffarCommon::logger::log("[J++] + Numa Locality Success Rate:                     %5.3f%%\n",
+      jaffarCommon::logger::log("[J+] + Numa Locality Success Rate:                     %5.3f%%\n",
                             100.0 * (double)_numaLocalFreeStateCount.load() / (double)totalFreeStatesRequested);
-      jaffarCommon::logger::log("[J++] + Numa Locality Fail Rate:                        %5.3f%%\n",
+      jaffarCommon::logger::log("[J+] + Numa Locality Fail Rate:                        %5.3f%%\n",
                             100.0 * (double)_numaNonLocalFreeStateCount.load() / (double)totalFreeStatesRequested);
-      jaffarCommon::logger::log("[J++] + Numa No Free State Found Rate:                  %5.3f%%\n",
+      jaffarCommon::logger::log("[J+] + Numa No Free State Found Rate:                  %5.3f%%\n",
                             100.0 * (double)_numaFreeStateNotFoundCount.load() / (double)totalFreeStatesRequested);
   }
 

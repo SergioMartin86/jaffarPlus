@@ -197,7 +197,7 @@ class Game
     for (const auto &p : _propertyPrintVector) maximumNameSize = std::max(maximumNameSize, p->getName().size());
 
     // Printing game state
-    jaffarCommon::logger::log("[J++]  + Game State Type: ");
+    jaffarCommon::logger::log("[J+]  + Game State Type: ");
     if (_stateType == stateType_t::normal) jaffarCommon::logger::log("Normal");
     if (_stateType == stateType_t::win) jaffarCommon::logger::log("Win");
     if (_stateType == stateType_t::fail) jaffarCommon::logger::log("Fail");
@@ -205,22 +205,22 @@ class Game
     jaffarCommon::logger::log("\n");
 
     // Printing game state
-    jaffarCommon::logger::log("[J++]  + Game State Reward: %f\n", _reward);
+    jaffarCommon::logger::log("[J+]  + Game State Reward: %f\n", _reward);
 
     // Printing rule status
-    jaffarCommon::logger::log("[J++]  + Rule Status: ");
+    jaffarCommon::logger::log("[J+]  + Rule Status: ");
     for (size_t i = 0; i < _rules.size(); i++) jaffarCommon::logger::log("%d", jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), i) ? 1 : 0);
     jaffarCommon::logger::log("\n");
 
     // Printing game properties defined in the script file
-    jaffarCommon::logger::log("[J++]  + Game Properties: \n");
+    jaffarCommon::logger::log("[J+]  + Game Properties: \n");
     for (const auto &p : _propertyPrintVector)
     {
       // Getting property name
       const auto &name = p->getName();
 
       // Printing property name first
-      jaffarCommon::logger::log("[J++]    + '%s':", name.c_str());
+      jaffarCommon::logger::log("[J+]    + '%s':", name.c_str());
 
       // Calculating separation spaces for this property
       const auto propertySeparatorSize = separatorSize + maximumNameSize - name.size();

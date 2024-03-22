@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   const std::string configFile = program.get<std::string>("configFile");
 
   // Reporting script file
-  jaffarCommon::logger::log("[J++] Loading script file: '%s'\n", configFile.c_str());
+  jaffarCommon::logger::log("[J+] Loading script file: '%s'\n", configFile.c_str());
 
   // Loading script file contents
   std::string configFileString;
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
   auto finalStep = d->getCurrentStep();
 
   // Printing exit message
-  jaffarCommon::logger::log("[J++] Step %lu - Exit Reason: %s\n", finalStep, exitReasonString.c_str());
+  jaffarCommon::logger::log("[J+] Step %lu - Exit Reason: %s\n", finalStep, exitReasonString.c_str());
 
   // For testing purposes, return zero if executed properly (regardless of exit reason)
   if (std::getenv("JAFFAR_OVERRIDE_RETURN_CODE")) return 0;

@@ -26,10 +26,6 @@ class Emulator
   {
     // Getting emulator name (for runtime use)
     _emulatorName = jaffarCommon::json::getString(config, "Emulator Name");
-
-    // Getting disabled state properties
-    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
-    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
   };
 
   virtual ~Emulator() = default;
@@ -66,9 +62,6 @@ class Emulator
   virtual void serializeState(jaffarCommon::serializer::Base &serializer) const = 0;
   virtual void deserializeState(jaffarCommon::deserializer::Base &deserializer) = 0;
 
-  virtual void enableStateProperty(const std::string &property)  = 0;
-  virtual void disableStateProperty(const std::string &property) = 0;
-  
   virtual void loadFullState(const std::string& state) = 0;
   virtual void saveFullState(std::string& state) = 0;
   virtual size_t getFullStateSize() = 0;
@@ -110,9 +103,6 @@ class Emulator
 
   // Closes the emulator's renderer window
   virtual void finalizeVideoOutput() = 0;
-
-  // Collection of state blocks to disable during engine run
-  std::vector<std::string> _disabledStateProperties;
 
   // Emulator name (for runtime use)
   std::string _emulatorName;

@@ -66,10 +66,6 @@ class QuickerSDLPoP final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) override {  }
-
-  __INLINE__ void disableStateProperty(const std::string &property) override { }
-
   __INLINE__ void   enableRendering() override { _QuickerSDLPoP->enableRendering(); }
   __INLINE__ void   disableRendering() override { _QuickerSDLPoP->disableRendering();  }
   __INLINE__ void   updateRendererState() override {  }
