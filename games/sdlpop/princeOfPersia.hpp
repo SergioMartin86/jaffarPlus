@@ -20,24 +20,20 @@ class PrinceOfPersia final : public jaffarPlus::Game
 {
   public:
 
-  static __INLINE__ std::string getName() { return "SDLPoP / Prince Of Persia"; }
+  static __INLINE__ std::string getName() { return "SDLPoP / Prince of Persia"; }
 
   PrinceOfPersia(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
     : jaffarPlus::Game(std::move(emulator), config)
   {
-    // Getting watch tile indexes
-    auto watchTileIndexesVector = jaffarCommon::json::getArray<uint16_t>(config, "Watch Tile Indexes");
-    _watchTileIndexes.insert(watchTileIndexesVector.begin(), watchTileIndexesVector.end());
-
-    // Getting watch mobs indexes
-    auto watchMobsIndexesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Watch Moving Object Indexes");
-    for (const auto& mobJs : watchMobsIndexesJs)
-    {
-      uint8_t room = jaffarCommon::json::getNumber<uint8_t>(mobJs, "Room");
-      uint8_t column = jaffarCommon::json::getNumber<uint8_t>(mobJs, "Column");
-      uint16_t index = room * 10 + column;
-      _watchMobsIndexes[index] = mobsIndex_t{.room = room, .column = column };
-    }
+    // // Getting watch mobs indexes
+    // auto watchMobsIndexesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Watch Moving Object Indexes");
+    // for (const auto& mobJs : watchMobsIndexesJs)
+    // {
+    //   uint8_t room = jaffarCommon::json::getNumber<uint8_t>(mobJs, "Room");
+    //   uint8_t column = jaffarCommon::json::getNumber<uint8_t>(mobJs, "Column");
+    //   uint16_t index = room * 10 + column;
+    //   _watchMobsIndexes[index] = mobsIndex_t{.room = room, .column = column };
+    // }
   }
 
   private:
@@ -128,14 +124,15 @@ class PrinceOfPersia final : public jaffarPlus::Game
     // Registering element properties
     std::string propertyName;
 
-    for (size_t i = 0; i < 720; i++)
-    {
-      propertyName = std::string("Foreground Element[") + std::to_string(i) + std::string("]");
-      registerGameProperty(propertyName,  &_gameState->level.fg[i] , Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-      
-      propertyName = std::string("Background Element[") + std::to_string(i) + std::string("]");
-      registerGameProperty(propertyName,  &_gameState->level.bg[i] , Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    }
+    for (size_t i = 0; i < 24; i++)
+     for (size_t j = 0; j < 30; j++)
+      {
+        propertyName = std::string("Foreground Element[") + std::to_string(i) + std::string("][") + std::to_string(j) + std::string("]");
+        registerGameProperty(propertyName,  &_gameState->level.fg[i][j] , Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+        
+        propertyName = std::string("Background Element[") + std::to_string(i) + std::string("][") + std::to_string(j) + std::string("]");
+        registerGameProperty(propertyName,  &_gameState->level.bg[i][j] , Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+      }
 
     // Registering room properties
     for (size_t i = 0; i < 24; i++)
@@ -202,15 +199,80 @@ class PrinceOfPersia final : public jaffarPlus::Game
 
   __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
   {
-     // Mobs are moving objects (falling tiles only afaik).
-    for (int i = 0; i < _gameState->mobs_count; i++)
-    {
-      const auto &mob = _gameState->mobs[i];
-      uint8_t room = mob.room;
-      uint8_t column = mob.xh;
-      uint16_t index = room * 10 + column;
-      if (_watchMobsIndexes.contains(index)) hashEngine.Update(mob);
-    }
+    hashEngine.Update(_gameState->checkpoint           );
+    hashEngine.Update(_gameState->upside_down          );
+    hashEngine.Update(_gameState->drawn_room           );
+    hashEngine.Update(_gameState->current_level        );
+    hashEngine.Update(_gameState->next_level           );
+    hashEngine.Update(_gameState->mobs_count           );
+    hashEngine.Update(_gameState->trobs_count          );
+    hashEngine.Update(_gameState->leveldoor_open       );
+    hashEngine.Update(_gameState->Kid.frame            );
+    hashEngine.Update(_gameState->Kid.x                );
+    hashEngine.Update(_gameState->Kid.y                );
+    hashEngine.Update(_gameState->Kid.direction        );
+    hashEngine.Update(_gameState->Kid.curr_col         );
+    hashEngine.Update(_gameState->Kid.curr_row         );
+    hashEngine.Update(_gameState->Kid.action           );
+    hashEngine.Update(_gameState->Kid.fall_x           );
+    hashEngine.Update(_gameState->Kid.fall_y           );
+    hashEngine.Update(_gameState->Kid.room             );
+    hashEngine.Update(_gameState->Kid.repeat           );
+    hashEngine.Update(_gameState->Kid.charid           );
+    hashEngine.Update(_gameState->Kid.sword            );
+    hashEngine.Update(_gameState->Kid.alive            );
+    hashEngine.Update(_gameState->Kid.curr_seq         );
+    hashEngine.Update(_gameState->hitp_curr            );
+    hashEngine.Update(_gameState->hitp_max             );
+    hashEngine.Update(_gameState->hitp_beg_lev         );
+    hashEngine.Update(_gameState->grab_timer           );
+    hashEngine.Update(_gameState->holding_sword        );
+    hashEngine.Update(_gameState->united_with_shadow   );
+    hashEngine.Update(_gameState->have_sword           );
+    hashEngine.Update(_gameState->kid_sword_strike     );
+    hashEngine.Update(_gameState->pickup_obj_type      );
+    hashEngine.Update(_gameState->offguard             );
+    hashEngine.Update(_gameState->Guard.frame          );
+    hashEngine.Update(_gameState->Guard.x              );
+    hashEngine.Update(_gameState->Guard.y              );
+    hashEngine.Update(_gameState->Guard.direction      );
+    hashEngine.Update(_gameState->Guard.curr_col       );
+    hashEngine.Update(_gameState->Guard.curr_row       );
+    hashEngine.Update(_gameState->Guard.action         );
+    hashEngine.Update(_gameState->Guard.fall_x         );
+    hashEngine.Update(_gameState->Guard.fall_y         );
+    hashEngine.Update(_gameState->Guard.room           );
+    hashEngine.Update(_gameState->Guard.repeat         );
+    hashEngine.Update(_gameState->Guard.charid         );
+    hashEngine.Update(_gameState->Guard.sword          );
+    hashEngine.Update(_gameState->Guard.alive          );
+    hashEngine.Update(_gameState->Guard.curr_seq       );
+    hashEngine.Update(_gameState->guardhp_curr         );
+    hashEngine.Update(_gameState->guardhp_max          );
+    hashEngine.Update(_gameState->demo_index           );
+    hashEngine.Update(_gameState->demo_time            );
+    hashEngine.Update(_gameState->curr_guard_color     );
+    hashEngine.Update(_gameState->guard_notice_timer   );
+    hashEngine.Update(_gameState->guard_skill          );
+    hashEngine.Update(_gameState->shadow_initialized   );
+    hashEngine.Update(_gameState->guard_refrac         );
+    hashEngine.Update(_gameState->justblocked          );
+    hashEngine.Update(_gameState->droppedout           );
+    hashEngine.Update(_gameState->prev_collision_row   );
+    hashEngine.Update(_gameState->flash_color          );
+    hashEngine.Update(_gameState->flash_time           );
+    hashEngine.Update(_gameState->need_level1_music    );
+    hashEngine.Update(_gameState->is_screaming         );
+    hashEngine.Update(_gameState->is_feather_fall      );
+    hashEngine.Update(_gameState->exit_room_timer      );
+    hashEngine.Update(_gameState->is_guard_notice      );
+    hashEngine.Update(_gameState->can_guard_see_kid    );
+    hashEngine.Update(_gameState->collision_row        );
+    hashEngine.Update(_gameState->jumped_through_mirror);
+    hashEngine.Update(_gameState->kidPreviousFrame     );
+
+    // Hashing all mobs by default
+    hashEngine.Update(_gameState->mobs);
   }
 
   // Updating derivative values after updating the internal state
@@ -314,6 +376,25 @@ class PrinceOfPersia final : public jaffarPlus::Game
 
   void printInfoImpl() const override
   {
+   // Calculating timing
+    size_t curMins = _gameState->globalStepCount / 720;
+    size_t curSecs = (_gameState->globalStepCount % 720) / 12;
+    size_t curMilliSecs = floor((double)(_gameState->globalStepCount % 12) / 0.012);
+
+    jaffarCommon::logger::log("[J+]  + Global Step Counter:  %05d\n", _gameState->globalStepCount);
+    jaffarCommon::logger::log("[J+]  + Current/Next Level:   %2d / %2d\n", _gameState->current_level, _gameState->next_level);
+    jaffarCommon::logger::log("[J+]  + Timer:                %2lu:%02lu.%03lu\n", curMins, curSecs, curMilliSecs);
+    jaffarCommon::logger::log("[J+]  + [Kid]                 Room: %d, Pos.x: %3d, Pos.y: %f (%3d), Frame: %3d, Action: %2d, Dir: %d, HP: %d/%d, Alive: %d\n", int(_gameState->Kid.room), int(_gameState->Kid.x), _kidPosY, int(_gameState->Kid.y), int(_gameState->Kid.frame), int(_gameState->Kid.action), int(_gameState->Kid.direction), int(_gameState->hitp_curr), int(_gameState->hitp_max), int(_gameState->Kid.alive));
+    jaffarCommon::logger::log("[J+]  + [Guard]               Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Color: %3u, Dir: %d, HP: %d/%d, Alive: %d\n", int(_gameState->Guard.room), int(_gameState->Guard.x), int(_gameState->Guard.y), int(_gameState->Guard.frame), int(_gameState->Guard.action), int(_gameState->curr_guard_color), int(_gameState->Guard.direction), int(_gameState->guardhp_curr), int(_gameState->guardhp_max), int(_gameState->Guard.alive));
+    jaffarCommon::logger::log("[J+]  + Exit Room Timer:      %d\n", _gameState->exit_room_timer);
+    jaffarCommon::logger::log("[J+]  + Kid Has Sword:        %d\n", _gameState->have_sword);
+
+    if (_gameState->current_level == 1) jaffarCommon::logger::log("[J+]  + Level 1 Need Music:   %d\n", _gameState->need_level1_music);
+    if (_gameState->current_level == 8) jaffarCommon::logger::log("[J+]  + Level Door Open:      %d\n", _gameState->leveldoor_open);
+    if (_gameState->current_level == 3) jaffarCommon::logger::log("[J+]  + Reached Checkpoint:   %s\n", _gameState->checkpoint ? "Yes" : "No");
+    if (_gameState->current_level == 7) jaffarCommon::logger::log("[J+]  + Feather Fall:         %d\n", _gameState->is_feather_fall);
+    if (_gameState->current_level == 12) jaffarCommon::logger::log("[J+]  + United With Shadow:   %d\n", _gameState->united_with_shadow);
+
     auto prevRNG1 = SDLPoPInstance::reverseRNGState(_gameState->random_seed);
     auto prevRNG2 = SDLPoPInstance::reverseRNGState(prevRNG1);
     auto prevRNG3 = SDLPoPInstance::reverseRNGState(prevRNG2);
@@ -335,7 +416,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       jaffarCommon::logger::log("[J+]    + Room: %d, X: %d, Y: %d, Speed: %d, Type: %d, Row: %d\n", mob.room, mob.xh, mob.y, mob.speed, mob.type, mob.row);
     }
 
-    jaffarCommon::logger::log("[J+]  + TR Tile Object:\n");
+    jaffarCommon::logger::log("[J+]  + Transformable Objects:\n");
     for (int i = 0; i < _gameState->trobs_count; i++)
     {
       const auto &trob = _gameState->trobs[i];
@@ -344,12 +425,6 @@ class PrinceOfPersia final : public jaffarPlus::Game
       jaffarCommon::logger::log("[J+]    + Type: %d, Room: %d, Idx: %d, Pos: %d, FG: %d, BG: %d\n", trob.type, trob.room, idx, trob.tilepos, _gameState->level.fg[idx], _gameState->level.bg[idx]);
     }
 
-    for (const auto& idx : _watchTileIndexes)
-    {
-      int room = (idx / 30) + 1;
-      int tileId = (idx % 30) + 1;
-      jaffarCommon::logger::log("[J+]   + Room: %02d, Tile: %02d, Idx: %03d, FG*: %03d, BG:  %03d\n", room, tileId, idx, _gameState->level.fg[idx], _gameState->level.bg[idx]);
-    }
 
     // Getting current room
     int kidRoom = _gameState->Kid.room;
@@ -480,15 +555,13 @@ class PrinceOfPersia final : public jaffarPlus::Game
  float _unitedWithShadowMagnet;
  float _guardHPMagnet;
 
- std::set<uint16_t> _watchTileIndexes;
+  //  struct mobsIndex_t
+  //  {
+  //    uint8_t room;
+  //    uint8_t column;
+  //  };
 
- struct mobsIndex_t
- {
-   uint8_t room;
-   uint8_t column;
- };
-
- std::map<uint16_t, mobsIndex_t> _watchMobsIndexes;
+  //  std::map<uint16_t, mobsIndex_t> _watchMobsIndexes;
 
 };
 

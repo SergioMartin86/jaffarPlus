@@ -36,7 +36,7 @@ class Base
   void initialize()
   {
     // Initialization message
-    jaffarCommon::logger::log("[J++] Initializing State Database...\n");
+    jaffarCommon::logger::log("[J+] Initializing State Database...\n");
 
     ///////// Getting original state sizes from the runner
 
@@ -76,35 +76,35 @@ class Base
     const size_t currentStateCount = getStateCount();
     const size_t currentStateBytes = currentStateCount * _stateSize;
 
-    jaffarCommon::logger::log("[J++]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n",
+    jaffarCommon::logger::log("[J+]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n",
                               currentStateCount,
                               (double)currentStateCount * 1.0e-6,
                               _maxStates,
                               (double)_maxStates * 1.0e-6,
                               100.0 * (double)currentStateCount / (double)_maxStates);
-    jaffarCommon::logger::log("[J++]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n",
+    jaffarCommon::logger::log("[J+]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n",
                               (double)currentStateBytes / (1024.0 * 1024.0),
                               (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0),
                               (double)_maxSize / (1024.0 * 1024.0),
                               (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
-    jaffarCommon::logger::log("[J++]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
+    jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
     if (_useDifferentialCompression)
     {
-      jaffarCommon::logger::log("[J++]  + State Size Effective:          %lu bytes (Diffential: %lu + Contiguous: %lu)\n",
+      jaffarCommon::logger::log("[J+]  + State Size Effective:          %lu bytes (Diffential: %lu + Contiguous: %lu)\n",
                                 _stateSizeEffective,
                                 _maximumDifferentialSizeAllowed,
                                 _stateSizeEffective - _maximumDifferentialSizeAllowed);
     } else
     {
-      jaffarCommon::logger::log("[J++]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
+      jaffarCommon::logger::log("[J+]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
     }
 
-    jaffarCommon::logger::log("[J++]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
-    jaffarCommon::logger::log("[J++]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
+    jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
+    jaffarCommon::logger::log("[J+]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
     if (_useDifferentialCompression)
     {
-      jaffarCommon::logger::log("[J++]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
-      jaffarCommon::logger::log("[J++]  + Maximum State Size Found       %lu bytes / Max Allowed: %lu bytes\n", _maximumStateSizeFound, _differentialStateSize);
+      jaffarCommon::logger::log("[J+]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
+      jaffarCommon::logger::log("[J+]  + Maximum State Size Found       %lu bytes / Max Allowed: %lu bytes\n", _maximumStateSizeFound, _differentialStateSize);
     }
     printInfoImpl();
   }

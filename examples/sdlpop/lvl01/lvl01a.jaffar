@@ -1,0 +1,432 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 1800,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+   "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+  
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size (Mb)": 400,
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      200,
+      200
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerSDLPoP",
+  "Initial State File Path": "lvl01a.state",
+  "SDLPoP Root Path": "../../../extern/quickerSDLPoP/SDLPoPData/",
+  "Levels File Path": "",
+  "Game Version": "1.4"
+},
+ 
+"Runner Configuration":
+{
+  "Hash Step Tolerance": 0,
+
+  "Allowed Input Sets":
+  [
+    {
+      "Description": "Not doing anything is always an option",
+      "Conditions":
+      [
+         
+      ],
+  
+      "Inputs":
+      [
+        "|.|.....|"
+      ],
+ 
+      "Stop Input Evaluation": false
+    },
+ 
+    {
+      "Description": "If cutscene, then only allow pressing shift",
+      "Conditions":
+      [
+         { "Property": "Current Level", "Op": "!=", "Value": "Next Level" }
+      ],
+  
+      "Inputs":
+      [
+        "|.|....S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "For level 1, if kid touches ground and music plays, try restarting level",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "==", "Value": 109 },
+         { "Property": "Need Level 1 Music", "Op": "==", "Value": 33 }
+      ],
+  
+      "Inputs":
+      [
+       "|r|.....|"
+      ],
+      
+      "Stop Input Evaluation": false
+    },
+ 
+    {
+      "Description": "For level 3, when checkpoint activates, try restarting level",
+      "Conditions":
+      [
+         { "Property": "Current Level", "Op": "==", "Value": 3 },
+         { "Property": "Kid Room", "Op": "==", "Value": 2 }
+      ],
+  
+      "Inputs":
+      [
+       "|r|.....|"
+      ],
+ 
+      "Stop Input Evaluation": false
+    },
+ 
+    {
+      "Description": "If bumped, there's nothing to do really",
+      "Conditions":
+      [
+         { "Property": "Kid Action", "Op": "==", "Value": 5 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|....S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If in mid air, try to grab onto something",
+      "Conditions":
+      [
+         { "Property": "Kid Action", "Op": "==", "Value": 3 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|....S|",
+       "|.|..U..|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If in free fall, hope to grab onto something",
+      "Conditions":
+      [
+         { "Property": "Kid Action", "Op": "==", "Value": 4 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|....S|",
+       "|.|..U..|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If on guarde, only try attacking commands",
+      "Conditions":
+      [
+         { "Property": "Kid Sword", "Op": "==", "Value": 2 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|....S|",
+       "|.|..U.S|",
+       "|.|...DS|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If standing, try all possible movements",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "==", "Value": 15 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|....S|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|L..D.|",
+       "|.|.R.D.|",
+       "|.|L...S|",
+       "|.|.R..S|",
+       "|.|.RU.S|",
+       "|.|L.U.S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If finishing turning, try all possible movements",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": ">=", "Value": 50 },
+         { "Property": "Kid Frame", "Op": "<", "Value": 53 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|....S|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|L..D.|",
+       "|.|.R.D.|",
+       "|.|L...S|",
+       "|.|.R..S|",
+       "|.|.RU.S|",
+       "|.|L.U.S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If turning frame, try most possible movements",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "==", "Value": 48 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|....S|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|L..D.|",
+       "|.|.R.D.|",
+       "|.|L...S|",
+       "|.|.R..S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If turning frame, try most possible movements",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "<", "Value": 4 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|L..D.|",
+       "|.|.R.D.|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "Starting jump up, check directions, jump and grab",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": ">=", "Value": 67 },
+         { "Property": "Kid Frame", "Op": "<", "Value": 70 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|....S|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|..U.S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "Running, all movement without shift",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "<", "Value": 15 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|L..D.|",
+       "|.|.R.D.|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "Hanging, up and shift are the only options",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": ">=", "Value": 87 },
+         { "Property": "Kid Frame", "Op": "<", "Value": 100 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|..U..|",
+       "|.|....S|",
+       "|.|..U.S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "Crouched, can only stand, drink, or bunny hop",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "==", "Value": 109 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|....S|",
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|...D.|",
+       "|.|L..D.|",
+       "|.|.R.D.|",
+       "|.|...DS|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "SDLPoP / Prince of Persia",
+  "Frame Rate": 12.0,
+
+  "Print Properties":
+  [
+    "Foreground Element[1][27]", "Background Element[1][27]"
+  ],
+
+  "Hash Properties":
+  [
+    "Foreground Element[1][27]", "Background Element[1][27]"
+  ],
+
+  "Rules":
+  [
+    {
+     "Label": 1000,
+     "Conditions":
+     [
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Set Kid Pos X Magnet", "Room": 1, "Position": 170, "Intensity": 1.0 },
+      { "Type": "Set Kid Pos Y Magnet", "Room": 1, "Position": 255, "Intensity": 1.0 }
+     ]
+    },
+
+    {
+      "Label": 1001,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 2 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     }
+  ]
+ }
+}

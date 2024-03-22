@@ -30,7 +30,9 @@ class InputSet final
   void                                    addInput(const inputIndex_t inputIdx) { _inputIndexes.insert(inputIdx); }
   void                                    addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
   const std::unordered_set<inputIndex_t> &getInputIndexes() const { return _inputIndexes; }
-
+  bool                                    getStopInputEvaluationFlag() const { return _stopInputEvaluation; }
+  void                                    setStopInputEvaluationFlag(const bool stopInputEvaluation) { _stopInputEvaluation = stopInputEvaluation; }
+  
   private:
 
   // Conditions are evaluated frequently, so this optimized for performance
@@ -40,6 +42,9 @@ class InputSet final
 
   // Storage for game-specific actions
   std::unordered_set<inputIndex_t> _inputIndexes;
+
+  // If this flag is true, then the other input sets after this will not be evaluated
+  bool _stopInputEvaluation;
 };
 
 } // namespace jaffarPlus

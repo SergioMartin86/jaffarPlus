@@ -314,33 +314,33 @@ class Driver final
     jaffarCommon::logger::clearTerminal();
 
     // Printing information
-    jaffarCommon::logger::log("[J++] Emulator Name:                               '%s'\n", _runner->getGame()->getEmulator()->getName().c_str());
-    jaffarCommon::logger::log("[J++] Game Name:                                   '%s'\n", _runner->getGame()->getName().c_str());
-    jaffarCommon::logger::log("[J++] Current Step #:                              %lu (Max: %lu)\n", _currentStep, _maxSteps);
+    jaffarCommon::logger::log("[J+] Emulator Name:                               '%s'\n", _runner->getGame()->getEmulator()->getName().c_str());
+    jaffarCommon::logger::log("[J+] Game Name:                                   '%s'\n", _runner->getGame()->getName().c_str());
+    jaffarCommon::logger::log("[J+] Current Step #:                              %lu (Max: %lu)\n", _currentStep, _maxSteps);
 
     if (_winStatesFound == 0)
       jaffarCommon::logger::log(
-        "[J++] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
+        "[J+] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
 
-    if (_winStatesFound > 0)  jaffarCommon::logger::log("[J++] Best Win State Reward:                       %.3f\n", _bestStateReward);
+    if (_winStatesFound > 0)  jaffarCommon::logger::log("[J+] Best Win State Reward:                       %.3f\n", _bestStateReward);
 
     // Printing engine information
-    jaffarCommon::logger::log("[J++] Engine Information: \n");
+    jaffarCommon::logger::log("[J+] Engine Information: \n");
     _engine->printInfo();
 
     // Loading best state into runner
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage.data());
 
     // Printing best state information to screen
-    jaffarCommon::logger::log("[J++] Runner Information (Best State): \n");
+    jaffarCommon::logger::log("[J+] Runner Information (Best State): \n");
     _runner->printInfo();
-    jaffarCommon::logger::log("[J++] Game Information (Best State): \n");
+    jaffarCommon::logger::log("[J+] Game Information (Best State): \n");
     _runner->getGame()->printInfo();
-    jaffarCommon::logger::log("[J++] Emulator Information (Best State): \n");
+    jaffarCommon::logger::log("[J+] Emulator Information (Best State): \n");
     _runner->getGame()->getEmulator()->printInfo();
 
     // Division rule to separate different steps
-    jaffarCommon::logger::log("[J++] --------------------------------------------------------------\n");
+    jaffarCommon::logger::log("[J+] --------------------------------------------------------------\n");
 
     // If using ncurses, refresh terminal now
     jaffarCommon::logger::refreshTerminal();
