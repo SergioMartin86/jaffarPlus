@@ -28,8 +28,8 @@ tools/llvm/
 tools/run-clang-format/
 *.p1r
 *.log
-*.sol
-
+jaffar.best.sol
+jaffar.worst.sol
 # Prerequisites
 *.d
 
