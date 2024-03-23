@@ -91,9 +91,6 @@ class Engine final
 
       // Initializing runner
       r->initialize();
-
-      // Disable emulator rendering
-      r->getGame()->getEmulator()->disableRendering();
     }
 
     // Initializing State Db
