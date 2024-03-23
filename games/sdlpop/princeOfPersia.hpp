@@ -412,7 +412,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
       auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-      auto action    = [=, this]() { if (_gameState->Kid.room == room) _kidPosXMagnet = pointMagnet_t{.intensity = intensity, .position = position}; };
+      auto action    = [=, this]() { _kidPosXMagnet = pointMagnet_t{ .intensity = _gameState->Kid.room == room ? intensity : 0.0f, .position = position}; };
       rule.addAction(action);
       recognizedActionType = true;
     }
@@ -422,7 +422,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
       auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-      auto action    = [=, this]() { if (_gameState->Kid.room == room) _kidPosYMagnet = pointMagnet_t{.intensity = intensity, .position = position}; };
+      auto action    = [=, this]() { _kidPosYMagnet = pointMagnet_t{ .intensity = _gameState->Kid.room == room ? intensity : 0.0f, .position = position}; };
       rule.addAction(action);
       recognizedActionType = true;
     }
@@ -432,7 +432,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
       auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-      auto action    = [=, this]() { if (_gameState->Guard.room == room) _guardPosXMagnet = pointMagnet_t{.intensity = intensity, .position = position}; };
+      auto action    = [=, this]() { _guardPosXMagnet = pointMagnet_t{.intensity = _gameState->Guard.room == room ? intensity : 0.0f, .position = position}; };
       rule.addAction(action);
       recognizedActionType = true;
     }
@@ -442,7 +442,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
       auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-      auto action    = [=, this]() { if (_gameState->Guard.room == room) _guardPosYMagnet = pointMagnet_t{.intensity = intensity, .position = position}; };
+      auto action    = [=, this]() { _guardPosYMagnet = pointMagnet_t{.intensity = _gameState->Guard.room == room ? intensity : 0.0f, .position = position}; };
       rule.addAction(action);
       recognizedActionType = true;
     }
