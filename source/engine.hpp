@@ -63,7 +63,7 @@ class Engine final
       _stateDb                    = std::make_unique<jaffarPlus::stateDb::Plain>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
       stateDatabaseTypeRecognized = true;
     }
-    
+
     if (stateDatabaseType == "Numa Aware")
     {
       _stateDb                    = std::make_unique<jaffarPlus::stateDb::Numa>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
@@ -175,10 +175,10 @@ class Engine final
     // Resetting state counts
     _droppedStatesNoStorage           = 0;
     _droppedStatesFailedSerialization = 0;
-    _repeatedStates = 0;
-    _failedStates = 0;
-    _winStates      = 0;
-    _normalStates = 0;
+    _repeatedStates                   = 0;
+    _failedStates                     = 0;
+    _winStates                        = 0;
+    _normalStates                     = 0;
 
     // Resetting counter for the current step
     _currentStep = 0;
@@ -209,7 +209,6 @@ class Engine final
     // Clearing step counters
     _stepBaseStatesProcessed = 0;
     _stepNewStatesProcessed  = 0;
-
 
     // Clearing win state reward
     _stepBestWinState.reward = -std::numeric_limits<float>::infinity();
@@ -403,13 +402,11 @@ class Engine final
 
     // Printing candidate moves
     jaffarCommon::logger::log("[J+] Candidate Moves:\n");
-    for (const auto& entry : _candidateInputsDetected)
+    for (const auto &entry : _candidateInputsDetected)
     {
       jaffarCommon::logger::log("[J+]  + Hash: %s\n", jaffarCommon::hash::hashToString(entry.first).c_str());
-      for (const auto input : entry.second)
-        jaffarCommon::logger::log("[J+]    + %3lu %s\n", input, _runners[0]->getInputStringFromIndex(input).c_str());
+      for (const auto input : entry.second) jaffarCommon::logger::log("[J+]    + %3lu %s\n", input, _runners[0]->getInputStringFromIndex(input).c_str());
     }
-     
   }
 
   private:
@@ -483,9 +480,8 @@ class Engine final
 
       // Finding unique candidate inputs
       std::vector<InputSet::inputIndex_t> uniqueCandidateInputs;
-      for (const auto& input : candidateInputs)
-       if (possibleInputs.contains(input) == false) 
-        uniqueCandidateInputs.push_back(input);
+      for (const auto &input : candidateInputs)
+        if (possibleInputs.contains(input) == false) uniqueCandidateInputs.push_back(input);
 
       // Run each candidate input
       for (const auto input : uniqueCandidateInputs)
@@ -495,8 +491,7 @@ class Engine final
 
         // Making sure we don't try the input if it was already detected
         if (_candidateInputsDetected.contains(stateInputHash))
-         if (_candidateInputsDetected[stateInputHash].contains(input))
-          continue;
+          if (_candidateInputsDetected[stateInputHash].contains(input)) continue;
 
         // Increasing new state counter
         _stepNewStatesProcessed++;
@@ -574,8 +569,8 @@ class Engine final
     if (stateType == Game::stateType_t::fail) return inputResult_t::failed;
 
     // Now that the state is not failed nor repeated, this is effectively a new state to add
-    const auto t5 = jaffarCommon::timing::now();
-    void* newStateData = _stateDb->getFreeState();
+    const auto t5           = jaffarCommon::timing::now();
+    void      *newStateData = _stateDb->getFreeState();
     _getFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t5);
 
     // If couldn't get any memory, simply drop the state
@@ -655,8 +650,8 @@ class Engine final
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
 
   // Set of win states found
-  std::mutex          _stepBestWinStateLock;
-  winState            _stepBestWinState;
+  std::mutex _stepBestWinStateLock;
+  winState   _stepBestWinState;
 
   ///////////////// Configuration
 
@@ -686,7 +681,7 @@ class Engine final
   // Counter for win states
   std::atomic<size_t> _winStates;
 
-    // Counter for normal states
+  // Counter for normal states
   std::atomic<size_t> _normalStates;
 
   // Counter for the number of base states processed

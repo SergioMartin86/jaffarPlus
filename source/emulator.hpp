@@ -62,9 +62,9 @@ class Emulator
   virtual void serializeState(jaffarCommon::serializer::Base &serializer) const = 0;
   virtual void deserializeState(jaffarCommon::deserializer::Base &deserializer) = 0;
 
-  virtual void loadFullState(const std::string& state) = 0;
-  virtual void saveFullState(std::string& state) = 0;
-  virtual size_t getFullStateSize() = 0;
+  virtual void   loadFullState(const std::string &state) = 0;
+  virtual void   saveFullState(std::string &state)       = 0;
+  virtual size_t getFullStateSize()                      = 0;
 
   // Function to print debug information, whatever it might be
   virtual void printInfo() const = 0;

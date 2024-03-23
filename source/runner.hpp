@@ -52,9 +52,10 @@ class Runner final
 
     // Parsing possible game inputs
     for (const auto &inputSetJs : _allowedInputSetsJs) _allowedInputSets.push_back(std::move(parseInputSet(inputSetJs)));
- 
+
     // If testing candidate inputs, parse them now
-    if (_testCandidateInputs == true) for (const auto &inputSetJs : _candidateInputSetsJs) _candidateInputSets.push_back(std::move(parseInputSet(inputSetJs)));
+    if (_testCandidateInputs == true)
+      for (const auto &inputSetJs : _candidateInputSetsJs) _candidateInputSets.push_back(std::move(parseInputSet(inputSetJs)));
 
     // If storing input history, allocate input history storage
     if (_inputHistoryEnabled == true)
@@ -94,7 +95,7 @@ class Runner final
     for (const auto &condition : conditions) inputSet->addCondition(_game->parseCondition(condition));
 
     // Parsing input set inputs
-    for (const auto &input : inputsJs)  inputSet->addInput(registerInput(input));
+    for (const auto &input : inputsJs) inputSet->addInput(registerInput(input));
 
     // Keep track of maximum size (for better output)
     _largestInputSetSize = std::max(_largestInputSetSize, inputSet->getInputIndexes().size());
@@ -106,7 +107,7 @@ class Runner final
     return inputSet;
   }
 
-  InputSet::inputIndex_t registerInput(const std::string& input)
+  InputSet::inputIndex_t registerInput(const std::string &input)
   {
     // Getting input hash
     const auto inputHash = jaffarCommon::hash::hashString(input);
@@ -134,7 +135,7 @@ class Runner final
     return inputIdx;
   }
 
-  std::set<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>>& inputSets) const
+  std::set<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>> &inputSets) const
   {
     // Storage for the possible input set
     std::set<InputSet::inputIndex_t> possibleInputs;
@@ -144,29 +145,22 @@ class Runner final
       if (inputSet->evaluate() == true)
       {
         possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
-        
+
         // Getting stop evaluating flag
         bool stopEvaluating = inputSet->getStopInputEvaluationFlag();
 
         // If stop evaluation is set, then return now
         if (stopEvaluating) break;
-      } 
-       
+      }
 
     // Return possible inputs
     return possibleInputs;
   }
 
-  __INLINE__ const auto getAllowedInputs() const
-  {
-    return getInputsFromInputSets(_allowedInputSets);
-  }
+  __INLINE__ const auto getAllowedInputs() const { return getInputsFromInputSets(_allowedInputSets); }
 
-  __INLINE__ const auto getCandidateInputs() const
-  {
-    return getInputsFromInputSets(_candidateInputSets);
-  }
- 
+  __INLINE__ const auto getCandidateInputs() const { return getInputsFromInputSets(_candidateInputSets); }
+
   // Function to advance state.
   __INLINE__ jaffarPlus::InputSet::inputIndex_t getInputIndex(const std::string &input) const
   {
@@ -234,7 +228,7 @@ class Runner final
 
     // Serializing input history data
     if (_inputHistoryEnabled == true) serializer.push(_inputHistory.data(), _inputHistory.size());
-    
+
     // Serializing current step
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
   }
@@ -318,10 +312,7 @@ class Runner final
     return inputHistoryString;
   }
 
-  std::string getInputStringFromIndex(const InputSet::inputIndex_t input)
-  {
-    return _inputStringMap[input];
-  }
+  std::string getInputStringFromIndex(const InputSet::inputIndex_t input) { return _inputStringMap[input]; }
 
   // Function to print relevant information
   void printInfo() const
@@ -353,8 +344,12 @@ class Runner final
     jaffarCommon::logger::log("[J+]  + Allowed Inputs:\n");
 
     size_t currentInputIdx = 0;
-    for (const auto inputIdx : possibleInputs) { jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str()); currentInputIdx++;}
-    for (; currentInputIdx < _largestInputSetSize; currentInputIdx++)  jaffarCommon::logger::log("[J+]    + ----- \n");
+    for (const auto inputIdx : possibleInputs)
+    {
+      jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
+      currentInputIdx++;
+    }
+    for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
   }
 
   __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentStep % (_hashStepTolerance + 1); }
@@ -420,7 +415,6 @@ class Runner final
   // Map for getting the allowed input from index
   std::map<InputSet::inputIndex_t, std::string> _inputStringMap;
 
-
   ///////////////////////////////////////////
   // Allowed and candidate input sets
   //////////////////////////////////////////
@@ -436,7 +430,7 @@ class Runner final
 
   // Vector of allowed input sets
   std::vector<std::unique_ptr<InputSet>> _allowedInputSets;
-  
+
   // Largest input set sizedetected
   size_t _largestInputSetSize = 0;
 

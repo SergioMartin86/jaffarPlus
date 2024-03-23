@@ -460,7 +460,7 @@ class Game
   // Functions for new input discovery
 
   virtual jaffarCommon::hash::hash_t getStateInputHash() = 0;
-  
+
   protected:
 
   void registerGameProperty(const std::string &name, void *const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)

@@ -322,7 +322,7 @@ class Driver final
       jaffarCommon::logger::log(
         "[J+] Current Reward (Best / Worst):               %.3f / %.3f (Diff: %.3f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
 
-    if (_winStatesFound > 0)  jaffarCommon::logger::log("[J+] Best Win State Reward:                       %.3f\n", _bestStateReward);
+    if (_winStatesFound > 0) jaffarCommon::logger::log("[J+] Best Win State Reward:                       %.3f\n", _bestStateReward);
 
     // Printing engine information
     jaffarCommon::logger::log("[J+] Engine Information: \n");
