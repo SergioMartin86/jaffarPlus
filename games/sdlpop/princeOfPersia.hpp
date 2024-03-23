@@ -124,14 +124,14 @@ class PrinceOfPersia final : public jaffarPlus::Game
     // Registering element properties
     std::string propertyName;
 
-    for (size_t i = 0; i < 24; i++)
-     for (size_t j = 0; j < 30; j++)
+    for (size_t i = 1; i <= 24; i++)
+     for (size_t j = 1; j <= 30; j++)
       {
         propertyName = std::string("Foreground Element[") + std::to_string(i) + std::string("][") + std::to_string(j) + std::string("]");
-        registerGameProperty(propertyName,  &_gameState->level.fg[i][j] , Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+        registerGameProperty(propertyName,  &_gameState->level.fg[i-1][j-1] , Property::datatype_t::dt_uint8 , Property::endianness_t::little);
         
         propertyName = std::string("Background Element[") + std::to_string(i) + std::string("][") + std::to_string(j) + std::string("]");
-        registerGameProperty(propertyName,  &_gameState->level.bg[i][j] , Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+        registerGameProperty(propertyName,  &_gameState->level.bg[i-1][j-1] , Property::datatype_t::dt_uint8 , Property::endianness_t::little);
       }
 
     // Registering room properties
@@ -318,12 +318,12 @@ class PrinceOfPersia final : public jaffarPlus::Game
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
   {
-    _emulator->serializeState(serializer);
+    // Nothing additional to serialize
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
   {
-    _emulator->deserializeState(deserializer);
+    // Nothing additional to serialize
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -523,8 +523,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
 
   __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override
   {
-    // There is no discriminating state element, so simply return a zero hash
-    return jaffarCommon::hash::hash_t();
+    return jaffarCommon::hash::calculateMetroHash(&_gameState->Kid.frame, sizeof(uint8_t));
   }
 
   private:

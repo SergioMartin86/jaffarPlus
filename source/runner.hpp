@@ -234,7 +234,7 @@ class Runner final
 
     // Serializing input history data
     if (_inputHistoryEnabled == true) serializer.push(_inputHistory.data(), _inputHistory.size());
-
+    
     // Serializing current step
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
   }

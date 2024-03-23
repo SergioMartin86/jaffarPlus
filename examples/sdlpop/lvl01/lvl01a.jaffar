@@ -20,7 +20,6 @@
   "State Database":
   {
     "Type": "Numa Aware",
-    "Max Size (Mb)": 400,
     "Max Size per NUMA Domain (Mb)":
     [ 
       200,
@@ -61,7 +60,7 @@
  
 "Runner Configuration":
 {
-  "Hash Step Tolerance": 0,
+  "Hash Step Tolerance": 4,
 
   "Allowed Input Sets":
   [
@@ -383,7 +382,38 @@
   ],
 
   "Test Candidate Inputs": false,
-  "Candidate Input Sets": [ ]
+  "Candidate Input Sets":
+  [
+    {
+      "Conditions":
+      [
+      ],
+  
+      "Inputs":
+      [
+        "|.|.....|",
+        "|.|....S|",
+        "|.|...D.|",
+        "|.|...DS|",
+        "|.|..U..|",
+        "|.|..U.S|",
+        "|.|.R...|",
+        "|.|.R..S|",
+        "|.|.R.D.|",
+        "|.|.R.DS|",
+        "|.|.RU..|",
+        "|.|.RU.S|",
+        "|.|L....|",
+        "|.|L...S|",
+        "|.|L..D.|",
+        "|.|L..DS|",
+        "|.|L.U..|",
+        "|.|L.U.S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    }
+  ]
 },
 
 "Game Configuration":
@@ -393,12 +423,14 @@
 
   "Print Properties":
   [
-    "Foreground Element[1][27]", "Background Element[1][27]"
+    "Foreground Element[1][27]", "Background Element[1][27]",
+    "Foreground Element[9][14]", "Background Element[9][14]"
   ],
 
   "Hash Properties":
   [
-    "Foreground Element[1][27]", "Background Element[1][27]"
+    "Foreground Element[1][27]", "Background Element[1][27]",
+    "Foreground Element[9][14]", "Background Element[9][14]"
   ],
 
   "Rules":
@@ -425,13 +457,94 @@
         { "Property": "Kid Room", "Op": "==", "Value": 2 }
       ],
       
-      "Satisfies": [ ],
+      "Satisfies": [ 1000 ],
       
       "Actions":
       [
-       { "Type": "Trigger Win" }
+        { "Type": "Add Reward", "Value": 1000.0 },
+        { "Type": "Set Kid Pos X Magnet", "Room": 2, "Position": 255, "Intensity": 1.0 }
       ]
-     }
+    },
+
+    {
+      "Label": 1002,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 3 }
+      ],
+      
+      "Satisfies": [ 1001 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 1000.0 },
+        { "Type": "Set Kid Pos X Magnet", "Room": 3, "Position": 255, "Intensity": 1.0 }
+      ]
+    },
+
+    {
+      "Label": 1003,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 9 }
+      ],
+      
+      "Satisfies": [ 1002 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 1000.0 },
+        { "Type": "Set Kid Pos X Magnet", "Room": 9, "Position": 80, "Intensity": 1.0 },
+        { "Type": "Set Kid Pos Y Magnet", "Room": 9, "Position": 0, "Intensity": 1.0 }
+      ]
+    },
+
+    {
+      "Label": 1004,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 9 },
+        { "Property": "Background Element[9][14]", "Op": ">", "Value": 0 }
+      ],
+      
+      "Satisfies": [ 1003 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 1000.0 },
+        { "Type": "Set Kid Pos X Magnet", "Room": 9, "Position": 130, "Intensity": 1.0 }
+      ]
+    },
+
+    {
+      "Label": 1005,
+      "Conditions":
+      [
+        { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+      ],
+      
+      "Satisfies": [ 1004 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 1000.0 }
+      ]
+    },
+
+    {
+      "Label": 1006,
+      "Conditions":
+      [
+        { "Property": "Current Level", "Op": "!=", "Value": "Next Level" }
+      ],
+      
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+    }
   ]
  }
 }
