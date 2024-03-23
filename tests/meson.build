@@ -18,7 +18,7 @@ test('scriptValidator',
 # Setting env variables
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
 
-## NES / SPrilo
+## NES / Sprilo
 
 test('race04_short_contiguous',
       jaffar,
@@ -50,3 +50,20 @@ test('race04_short_reproduce',
       timeout: testTimeout,
       args : [ 'race04_short_contiguous.jaffar', 'race04_short.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
       suite : [ 'reproductions', 'nes', 'sprilo' ])
+
+## SDLPoP / Prince Of Persia
+
+test('lvl01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/sdlpop',
+      timeout: testTimeout,
+      args : 'lvl01a.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'sdlpop' ])
+
+test('lvl01_reproduce',
+      jaffarPlayer,
+      workdir : meson.current_source_dir() + '/sdlpop',
+      timeout: testTimeout,
+      args : [ 'lvl01a.jaffar', 'lvl01a.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
+      suite : [ 'reproductions', 'sdlpop' ])
