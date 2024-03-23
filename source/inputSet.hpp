@@ -32,7 +32,7 @@ class InputSet final
   const std::unordered_set<inputIndex_t> &getInputIndexes() const { return _inputIndexes; }
   bool                                    getStopInputEvaluationFlag() const { return _stopInputEvaluation; }
   void                                    setStopInputEvaluationFlag(const bool stopInputEvaluation) { _stopInputEvaluation = stopInputEvaluation; }
-  
+
   private:
 
   // Conditions are evaluated frequently, so this optimized for performance

@@ -26,10 +26,7 @@ SDL_Window *launchOutputWindow()
   return window;
 }
 
-void closeOutputWindow(SDL_Window *window)
- {
-    SDL_DestroyWindow(window);
- }
+void closeOutputWindow(SDL_Window *window) { SDL_DestroyWindow(window); }
 
 // Prevents the interactive player to stall for a keystroke
 bool isUnattended;
@@ -43,7 +40,7 @@ bool isReload;
 // Switch to toggle whether to reproduce the movie
 bool isReproduce;
 
-bool mainCycle(jaffarPlus::Runner& r, const std::string &solutionFile, bool disableRender)
+bool mainCycle(jaffarPlus::Runner &r, const std::string &solutionFile, bool disableRender)
 {
   // If sequence file defined, load it and play it
   std::string solutionFileString;
@@ -180,7 +177,7 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string &solutionFile, bool disa
       std::string saveFileName = "quicksave.state";
 
       std::string saveData;
-      size_t fullStateSize = r.getGame()->getEmulator()->getFullStateSize();
+      size_t      fullStateSize = r.getGame()->getEmulator()->getFullStateSize();
       saveData.resize(fullStateSize);
       r.getGame()->getEmulator()->saveFullState(saveData);
       if (jaffarCommon::file::saveStringToFile(saveData, saveFileName.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
@@ -309,12 +306,12 @@ int main(int argc, char *argv[])
   r->serializeState(s);
 
   // Enabling rendering, if required
-  SDL_Window* window;
+  SDL_Window *window;
   if (disableRender == false)
   {
     window = launchOutputWindow();
     r->getGame()->getEmulator()->enableRendering(window);
-  } 
+  }
 
   // Running main cycle
   bool continueRunning = true;
@@ -335,7 +332,7 @@ int main(int argc, char *argv[])
       // Reloading the initial state
       jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
       r->deserializeState(d);
-    } 
+    }
   }
 
   // If redering was enabled, finish it now
@@ -346,9 +343,7 @@ int main(int argc, char *argv[])
 
     // Closing output window
     if (disableRender == false) closeOutputWindow(window);
-  } 
-  
-  
+  }
 
   // Ending ncurses window
   jaffarCommon::logger::finalizeTerminal();

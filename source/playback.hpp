@@ -91,7 +91,6 @@ class Playback final
       // Adding step to the internal storage
       _sequence.push_back(step);
     }
-
   }
 
   ~Playback() {}
