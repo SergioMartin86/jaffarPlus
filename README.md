@@ -20,6 +20,7 @@ Author
   + Github: https://github.com/SergioMartin86
   + Twitch: https://www.twitch.tv/eien86
   + Youtube: https://www.youtube.com/channel/UCSXpK3d6vUq58fjgF5jFoKA
+  + TASVideos: https://tasvideos.org/Users/Profile/eien86
    
 Contributions via pull requests are highly appreciated.
 
