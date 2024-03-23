@@ -67,6 +67,9 @@ class QuickerNES final : public Emulator
 
   void initializeImpl() override
   {
+    // Setting game's internal video buffer
+    ((emulator_t *)_quickerNES.getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
+
     // Setting controller types
     _quickerNES.setController1Type(_controller1Type);
     _quickerNES.setController2Type(_controller2Type);
@@ -205,9 +208,6 @@ class QuickerNES final : public Emulator
 
   __INLINE__ void enableRendering(SDL_Window* window) override
    {
-    // Setting game's internal video buffer
-    ((emulator_t *)_quickerNES.getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
-
     // Creating SDL renderer
     m_window = window;
     if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) JAFFAR_THROW_RUNTIME("Coult not create SDL renderer in NES emulator");

@@ -356,14 +356,6 @@ class Game
 
     // Adding any game-specific rewards
     _reward += calculateGameSpecificReward();
-
-    // Sanity check
-    if (std::isfinite(_reward) == false)
-    {
-      jaffarCommon::logger::log("[J+] Error: Non finite reward detected: %f\n", _reward);
-      printInfo();
-      JAFFAR_THROW_RUNTIME("Invalid Reward");
-    }
   }
 
   std::unique_ptr<Condition> parseCondition(const nlohmann::json &conditionJs)

@@ -190,20 +190,20 @@ class MicroMachines final : public jaffarPlus::Game
   {
     if (std::abs(_pointMagnet.intensity) > 0.0f)
     {
-      jaffarCommon::logger::log("[J++]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
-      jaffarCommon::logger::log("[J++]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
-      jaffarCommon::logger::log("[J++]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
-      jaffarCommon::logger::log("[J++]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
     }
 
     if (std::abs(_cameraDistanceMagnet) > 0.0f)
-      jaffarCommon::logger::log("[J++]  + Camera Distance Magnet                   Intensity: %.5f, Dist: %3.3f\n", _cameraDistanceMagnet, _player1DistanceToCamera);
-    if (std::abs(_recoveryTimerMagnet) > 0.0f) jaffarCommon::logger::log("[J++]  + Recovery Timer Magnet                    Intensity: %.5f\n", _recoveryTimerMagnet);
-    if (std::abs(_playerCurrentLapMagnet) > 0.0f) jaffarCommon::logger::log("[J++]  + Player Current Lap Magnet                Intensity: %.5f\n", _playerCurrentLapMagnet);
-    if (std::abs(_playerLapProgressMagnet) > 0.0f) jaffarCommon::logger::log("[J++]  + Player Lap Progress Magnet               Intensity: %.5f\n", _playerLapProgressMagnet);
-    if (std::abs(_playerAccelMagnet) > 0.0f) jaffarCommon::logger::log("[J++]  + Player Accel Magnet                      Intensity: %.5f\n", _playerAccelMagnet);
+      jaffarCommon::logger::log("[J+]  + Camera Distance Magnet                   Intensity: %.5f, Dist: %3.3f\n", _cameraDistanceMagnet, _player1DistanceToCamera);
+    if (std::abs(_recoveryTimerMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Recovery Timer Magnet                    Intensity: %.5f\n", _recoveryTimerMagnet);
+    if (std::abs(_playerCurrentLapMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Player Current Lap Magnet                Intensity: %.5f\n", _playerCurrentLapMagnet);
+    if (std::abs(_playerLapProgressMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Player Lap Progress Magnet               Intensity: %.5f\n", _playerLapProgressMagnet);
+    if (std::abs(_playerAccelMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Player Accel Magnet                      Intensity: %.5f\n", _playerAccelMagnet);
     if (std::abs(_player1AngleMagnet.intensity) > 0.0f)
-      jaffarCommon::logger::log("[J++]  + Player Angle Magnet                      Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n",
+      jaffarCommon::logger::log("[J+]  + Player Angle Magnet                      Intensity: %.5f, Angle: %3.0f, Dist: %3.0f\n",
                                 _player1AngleMagnet.intensity,
                                 _player1AngleMagnet.angle,
                                 _player1DistanceToMagnetAngle);

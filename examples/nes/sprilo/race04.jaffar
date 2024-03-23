@@ -71,7 +71,9 @@
        "|..|.......A|",
        "|..|...R...A|",
        "|..|..L....A|"
-     ]
+     ],
+
+     "Stop Input Evaluation": false
    }
   ],
 
@@ -149,7 +151,9 @@
         "|..|UDLR...A|",
         "|..|UDLR..B.|",
         "|..|UDLR..BA|"
-      ]
+      ],
+
+      "Stop Input Evaluation": false
     }
   ]
 },
