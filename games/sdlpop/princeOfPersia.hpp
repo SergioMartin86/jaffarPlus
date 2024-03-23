@@ -303,13 +303,10 @@ class PrinceOfPersia final : public jaffarPlus::Game
     _unitedWithShadowMagnet = 0.0;
     _guardHPMagnet = 0.0;
 
-    for (uint8_t i = 0; i < roomCount; i++) 
-    {
-      _kidPosXMagnet[i].intensity = 0.0;
-      _kidPosYMagnet[i].intensity = 0.0;
-      _guardPosXMagnet[i].intensity = 0.0;
-      _guardPosYMagnet[i].intensity = 0.0;
-    }
+    _kidPosXMagnet.intensity = 0.0;
+    _kidPosYMagnet.intensity = 0.0;
+    _guardPosXMagnet.intensity = 0.0;
+    _guardPosYMagnet.intensity = 0.0;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
@@ -334,25 +331,21 @@ class PrinceOfPersia final : public jaffarPlus::Game
     // Container for bounded value and difference with center
     float diff = 0.0;
 
-    // Getting current room
-    int kidRoom = _gameState->Kid.room;
-    int guardRoom = _gameState->Guard.room;
-
     // Evaluating kid magnet's reward on position X
-    diff = -255.0f + std::abs(_kidPosXMagnet[kidRoom].position - (float)_gameState->Kid.x);
-    reward += _kidPosXMagnet[kidRoom].intensity * -diff;
+    diff = -255.0f + std::abs(_kidPosXMagnet.position - (float)_gameState->Kid.x);
+    reward += _kidPosXMagnet.intensity * -diff;
 
     // Evaluating kid magnet's reward on position Y
-    diff = -255.0f + std::abs(_kidPosYMagnet[kidRoom].position - (float)_gameState->Kid.y);
-    reward += _kidPosYMagnet[kidRoom].intensity * -diff;
+    diff = -255.0f + std::abs(_kidPosYMagnet.position - (float)_gameState->Kid.y);
+    reward += _kidPosYMagnet.intensity * -diff;
 
     // Evaluating guard magnet's reward on position X
-    diff = -255.0f + std::abs(_guardPosXMagnet[guardRoom].position - (float)_gameState->Guard.x);
-    reward += _guardPosXMagnet[guardRoom].intensity * -diff;
+    diff = -255.0f + std::abs(_guardPosXMagnet.position - (float)_gameState->Guard.x);
+    reward += _guardPosXMagnet.intensity * -diff;
 
     // Evaluating guard magnet's reward on position Y
-    diff = -255.0f + std::abs(_guardPosYMagnet[guardRoom].position - (float)_gameState->Guard.y);
-    reward += _guardPosYMagnet[guardRoom].intensity * -diff;
+    diff = -255.0f + std::abs(_guardPosYMagnet.position - (float)_gameState->Guard.y);
+    reward += _guardPosYMagnet.intensity * -diff;
 
     // Kid Direction Magnet
     reward += _gameState->Kid.direction == 0 ? 1.0 : -1.0  * _kidDirectionMagnet;
@@ -426,20 +419,16 @@ class PrinceOfPersia final : public jaffarPlus::Game
       jaffarCommon::logger::log("[J+]    + Type: %u, Room: %u, Pos: %u, FG: %u, BG: %u\n", trob.type, trob.room, trob.tilepos, _gameState->level.fg[roomIdx][tileIdx], _gameState->level.bg[roomIdx][tileIdx]);
     }
 
-    // Getting current room
-    int kidRoom = _gameState->Kid.room;
-    int guardRoom = _gameState->Guard.room;
+    if (std::abs(_kidPosXMagnet.intensity) > 0.0f)   jaffarCommon::logger::log("[J+]  + Kid Pos X Magnet          - Intensity: %.1f, Center: %u\n", _kidPosXMagnet.intensity, _kidPosXMagnet.position);
+    if (std::abs(_kidPosYMagnet.intensity) > 0.0f)   jaffarCommon::logger::log("[J+]  + Kid Pos Y Magnet          - Intensity: %.1f, Center: %u\n", _kidPosYMagnet.intensity, _kidPosYMagnet.position);
+    if (std::abs(_kidDirectionMagnet) > 0.0f)        jaffarCommon::logger::log("[J+]  + Kid Direction Magnet      - Intensity: %.1f\n", _kidDirectionMagnet);
 
-    if (std::abs(_kidPosXMagnet[kidRoom].intensity) > 0.0f)     jaffarCommon::logger::log("[J+]  + Kid Pos X Magnet          - Intensity: %.1f, Center: %3.3f\n", _kidPosXMagnet[kidRoom].intensity, _kidPosXMagnet[kidRoom].position);
-    if (std::abs(_kidPosYMagnet[kidRoom].intensity) > 0.0f)     jaffarCommon::logger::log("[J+]  + Kid Pos Y Magnet          - Intensity: %.1f, Center: %3.3f\n", _kidPosYMagnet[kidRoom].intensity, _kidPosYMagnet[kidRoom].position);
-    if (std::abs(_kidDirectionMagnet) > 0.0f)                   jaffarCommon::logger::log("[J+]  + Kid Direction Magnet      - Intensity: %.1f\n", _kidDirectionMagnet);
+    if (std::abs(_guardPosXMagnet.intensity) > 0.0f) jaffarCommon::logger::log("[J+]  + Guard Pos X Magnet        - Intensity: %.1f, Center: %u\n", _guardPosXMagnet.intensity, _guardPosXMagnet.position);
+    if (std::abs(_guardPosYMagnet.intensity) > 0.0f) jaffarCommon::logger::log("[J+]  + Guard Pos Y Magnet        - Intensity: %.1f, Center: %u\n", _guardPosYMagnet.intensity, _guardPosYMagnet.position);
 
-    if (std::abs(_guardPosXMagnet[guardRoom].intensity) > 0.0f) jaffarCommon::logger::log("[J+]  + Guard Pos X Magnet        - Intensity: %.1f, Center: %3.3f\n", _guardPosXMagnet[guardRoom].intensity, _guardPosXMagnet[guardRoom].position);
-    if (std::abs(_guardPosYMagnet[guardRoom].intensity) > 0.0f) jaffarCommon::logger::log("[J+]  + Guard Pos Y Magnet        - Intensity: %.1f, Center: %3.3f\n", _guardPosYMagnet[guardRoom].intensity, _guardPosYMagnet[guardRoom].position);
-
-    if (std::abs(_levelDoorOpenMagnet) > 0.0f)                  jaffarCommon::logger::log("[J+]  + Level Door Open Magnet    - Intensity: %.1f\n", _levelDoorOpenMagnet);
-    if (std::abs(_unitedWithShadowMagnet) > 0.0f)               jaffarCommon::logger::log("[J+]  + United With Shadow Magnet - Intensity: %.1f\n", _unitedWithShadowMagnet);
-    if (std::abs(_guardHPMagnet) > 0.0f)                        jaffarCommon::logger::log("[J+]  + Guard HP Magnet           - Intensity: %.1f\n", _guardHPMagnet);
+    if (std::abs(_levelDoorOpenMagnet) > 0.0f)       jaffarCommon::logger::log("[J+]  + Level Door Open Magnet    - Intensity: %.1f\n", _levelDoorOpenMagnet);
+    if (std::abs(_unitedWithShadowMagnet) > 0.0f)    jaffarCommon::logger::log("[J+]  + United With Shadow Magnet - Intensity: %.1f\n", _unitedWithShadowMagnet);
+    if (std::abs(_guardHPMagnet) > 0.0f)             jaffarCommon::logger::log("[J+]  + Guard HP Magnet           - Intensity: %.1f\n", _guardHPMagnet);
   }
 
   bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
@@ -451,7 +440,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
       auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-      auto action    = [=, this]() { _kidPosXMagnet[room] = pointMagnet_t{.intensity = intensity, .position = position}; };
+      auto action    = [=, this]() { if (_gameState->Kid.room == room) _kidPosXMagnet = pointMagnet_t{.intensity = intensity, .position = position}; };
       rule.addAction(action);
       recognizedActionType = true;
     }
@@ -461,7 +450,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
       auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-      auto action    = [=, this]() { _kidPosYMagnet[room] = pointMagnet_t{.intensity = intensity, .position = position}; };
+      auto action    = [=, this]() { if (_gameState->Kid.room == room) _kidPosYMagnet = pointMagnet_t{.intensity = intensity, .position = position}; };
       rule.addAction(action);
       recognizedActionType = true;
     }
@@ -471,7 +460,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
       auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-      auto action    = [=, this]() { _guardPosXMagnet[room] = pointMagnet_t{.intensity = intensity, .position = position}; };
+      auto action    = [=, this]() { if (_gameState->Guard.room == room) _guardPosXMagnet = pointMagnet_t{.intensity = intensity, .position = position}; };
       rule.addAction(action);
       recognizedActionType = true;
     }
@@ -481,7 +470,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
       auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-      auto action    = [=, this]() { _guardPosYMagnet[room] = pointMagnet_t{.intensity = intensity, .position = position}; };
+      auto action    = [=, this]() { if (_gameState->Guard.room == room) _guardPosYMagnet = pointMagnet_t{.intensity = intensity, .position = position}; };
       rule.addAction(action);
       recognizedActionType = true;
     }
@@ -544,10 +533,10 @@ class PrinceOfPersia final : public jaffarPlus::Game
     uint8_t position  = 0; // Position
   };
 
- pointMagnet_t _kidPosXMagnet[roomCount];
- pointMagnet_t _kidPosYMagnet[roomCount];
- pointMagnet_t _guardPosXMagnet[roomCount];
- pointMagnet_t _guardPosYMagnet[roomCount];
+ pointMagnet_t _kidPosXMagnet;
+ pointMagnet_t _kidPosYMagnet;
+ pointMagnet_t _guardPosXMagnet;
+ pointMagnet_t _guardPosYMagnet;
 
  float _kidDirectionMagnet;
  float _levelDoorOpenMagnet;

@@ -22,8 +22,8 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      200,
-      200
+      2000,
+      2000
     ],
   
     "Scavenger Queues Size": 32,
@@ -419,7 +419,7 @@
 "Game Configuration":
 {
   "Game Name": "SDLPoP / Prince of Persia",
-  "Frame Rate": 12.0,
+  "Frame Rate": 24.0,
 
   "Print Properties":
   [
@@ -445,8 +445,8 @@
      
      "Actions":
      [
-      { "Type": "Set Kid Pos X Magnet", "Room": 1, "Position": 170, "Intensity": 1.0 },
-      { "Type": "Set Kid Pos Y Magnet", "Room": 1, "Position": 255, "Intensity": 1.0 }
+      { "Type": "Set Kid Pos X Magnet", "Room": 1, "Intensity": 1.0, "Position": 170 },
+      { "Type": "Set Kid Pos Y Magnet", "Room": 1, "Intensity": 1.0, "Position": 230 }
      ]
     },
 
@@ -462,7 +462,7 @@
       "Actions":
       [
         { "Type": "Add Reward", "Value": 1000.0 },
-        { "Type": "Set Kid Pos X Magnet", "Room": 2, "Position": 255, "Intensity": 1.0 }
+        { "Type": "Set Kid Pos X Magnet", "Room": 2, "Intensity": 1.0, "Position": 230 }
       ]
     },
 
@@ -478,7 +478,7 @@
       "Actions":
       [
         { "Type": "Add Reward", "Value": 1000.0 },
-        { "Type": "Set Kid Pos X Magnet", "Room": 3, "Position": 255, "Intensity": 1.0 }
+        { "Type": "Set Kid Pos X Magnet", "Room": 3, "Intensity": 1.0, "Position": 230 }
       ]
     },
 
@@ -494,8 +494,7 @@
       "Actions":
       [
         { "Type": "Add Reward", "Value": 1000.0 },
-        { "Type": "Set Kid Pos X Magnet", "Room": 9, "Position": 80, "Intensity": 1.0 },
-        { "Type": "Set Kid Pos Y Magnet", "Room": 9, "Position": 0, "Intensity": 1.0 }
+        { "Type": "Set Kid Pos X Magnet", "Room": 9, "Intensity": 1.0, "Position": 80  }
       ]
     },
 
@@ -512,7 +511,7 @@
       "Actions":
       [
         { "Type": "Add Reward", "Value": 1000.0 },
-        { "Type": "Set Kid Pos X Magnet", "Room": 9, "Position": 130, "Intensity": 1.0 }
+        { "Type": "Set Kid Pos X Magnet", "Room": 9, "Intensity": 1.0 , "Position": 130 }
       ]
     },
 
