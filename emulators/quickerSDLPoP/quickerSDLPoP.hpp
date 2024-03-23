@@ -61,8 +61,15 @@ class QuickerSDLPoP final : public Emulator
   // State advancing function
   void advanceState(const std::string &input) override { _QuickerSDLPoP->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _QuickerSDLPoP->serializeState(serializer); };
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _QuickerSDLPoP->deserializeState(deserializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override
+   {
+     _QuickerSDLPoP->serializeState(serializer);
+   };
+
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override
+   {
+     _QuickerSDLPoP->deserializeState(deserializer);
+   };
 
   __INLINE__ void loadFullState(const std::string& state) override
   {

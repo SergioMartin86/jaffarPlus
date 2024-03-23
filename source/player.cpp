@@ -26,7 +26,10 @@ SDL_Window *launchOutputWindow()
   return window;
 }
 
-void closeOutputWindow(SDL_Window *window) { SDL_DestroyWindow(window); }
+void closeOutputWindow(SDL_Window *window)
+ {
+    SDL_DestroyWindow(window);
+ }
 
 // Prevents the interactive player to stall for a keystroke
 bool isUnattended;
@@ -40,53 +43,12 @@ bool isReload;
 // Switch to toggle whether to reproduce the movie
 bool isReproduce;
 
-bool mainCycle(const std::string &configFile, const std::string &solutionFile, bool disableRender, SDL_Window *window)
+bool mainCycle(jaffarPlus::Runner& r, const std::string &solutionFile, bool disableRender)
 {
   // If sequence file defined, load it and play it
   std::string solutionFileString;
   if (jaffarCommon::file::loadStringFromFile(solutionFileString, solutionFile) == false)
     JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from solution sequence file: %s\n", solutionFile.c_str());
-
-  // If config file defined, read it now
-  std::string configFileString;
-  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false)
-    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from Jaffar config file: %s\n", configFile.c_str());
-
-  // Parsing configuration file
-  nlohmann::json config;
-  try
-  {
-    config = nlohmann::json::parse(configFileString);
-  }
-  catch (const std::exception &err)
-  {
-    JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
-  }
-
-  // Getting component configurations
-  auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
-  auto gameConfig     = jaffarCommon::json::getObject(config, "Game Configuration");
-  auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
-
-  // Overriding runner configuration based on the maximum number of steps to drive
-  runnerConfig["Store Input History"]["Enabled"]          = false;
-  runnerConfig["Store Input History"]["Max Size (Steps)"] = 0;
-
-  // Creating runner from the configuration
-  auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
-
-  // Initializing runner
-  r->initialize();
-
-  // Enabling rendering, if required
-  if (disableRender == false) r->getGame()->getEmulator()->enableRendering(window);
-
-  // Getting inverse frame rate from game
-  const auto     frameRate        = r->getGame()->getFrameRate();
-  const uint32_t inverseFrameRate = std::round((1.0 / frameRate) * 1.0e+6);
-
-  // Getting game state size
-  const auto stateSize = r->getStateSize();
 
   // Getting input sequence
   const auto solutionSequence = jaffarCommon::string::split(solutionFileString, ' ');
@@ -97,12 +59,19 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
   // Getting sequence length
   const ssize_t sequenceLength = solutionSequence.size();
 
+  // Getting inverse frame rate from game
+  const auto     frameRate        = r.getGame()->getFrameRate();
+  const uint32_t inverseFrameRate = std::round((1.0 / frameRate) * 1.0e+6);
+
+  // Getting game state size
+  const auto stateSize = r.getStateSize();
+
   // Printing information
   jaffarCommon::logger::log("[J+] ********** Creating Playback Sequence **********\n");
   jaffarCommon::logger::refreshTerminal();
 
   // Instantiating playback instance
-  jaffarPlus::Playback p(*r);
+  jaffarPlus::Playback p(r);
 
   // Initializing playback instance
   p.initialize(solutionSequence);
@@ -141,12 +110,11 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
       jaffarCommon::logger::log("[J+] Playback:                    %s\n", isReproduce ? "Playing" : "Stopped");
       jaffarCommon::logger::log("[J+] On Finish:                   %s\n", isReload ? "Auto Reload" : "Stop");
       jaffarCommon::logger::log("[J+] Input:                       %s (0x%X)\n", inputString.c_str(), inputIndex);
-      jaffarCommon::logger::log("[J+] Game Name:                  '%s'\n", r->getGame()->getName().c_str());
-      jaffarCommon::logger::log("[J+] Emulator Name:              '%s'\n", r->getGame()->getEmulator()->getName().c_str());
+      jaffarCommon::logger::log("[J+] Game Name:                  '%s'\n", r.getGame()->getName().c_str());
+      jaffarCommon::logger::log("[J+] Emulator Name:              '%s'\n", r.getGame()->getEmulator()->getName().c_str());
       jaffarCommon::logger::log("[J+] State Hash:                  0x%lX%lX\n", hash.first, hash.second);
-      jaffarCommon::logger::log("[J+] Config File:                '%s'\n", configFile.c_str());
-      jaffarCommon::logger::log("[J+] Solution File:              '%s'\n", solutionFile.c_str());
       jaffarCommon::logger::log("[J+] State Size:                  %lu\n", stateSize);
+      jaffarCommon::logger::log("[J+] Solution File:              '%s'\n", solutionFile.c_str());
       jaffarCommon::logger::log("[J+] Sequence Length:             %lu\n", sequenceLength);
       jaffarCommon::logger::log("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
       p.printInfo();
@@ -212,9 +180,9 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
       std::string saveFileName = "quicksave.state";
 
       std::string saveData;
-      size_t fullStateSize = r->getGame()->getEmulator()->getFullStateSize();
+      size_t fullStateSize = r.getGame()->getEmulator()->getFullStateSize();
       saveData.resize(fullStateSize);
-      r->getGame()->getEmulator()->saveFullState(saveData);
+      r.getGame()->getEmulator()->saveFullState(saveData);
       if (jaffarCommon::file::saveStringToFile(saveData, saveFileName.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
       jaffarCommon::logger::log("[J+] Saved state to %s\n", saveFileName.c_str());
 
@@ -231,9 +199,6 @@ bool mainCycle(const std::string &configFile, const std::string &solutionFile, b
     // Triggers the exit
     if (command == 'q') isFinalize = true;
   }
-
-  // Close game output
-  if (disableRender == false) r->getGame()->getEmulator()->disableRendering();
 
   // returning false on exit to trigger the finalization
   if (isFinalize) return false;
@@ -295,31 +260,95 @@ int main(int argc, char *argv[])
   // Initializing terminal
   jaffarCommon::logger::initializeTerminal();
 
-  // Creating output window
-  auto window = disableRender ? nullptr : launchOutputWindow();
-
   // Setting initial reproduction values
   isReload     = doReload;
   isReproduce  = reproduceStart;
   isExitOnEnd  = exitOnEnd;
   isUnattended = unattended;
 
+  // If config file defined, read it now
+  std::string configFileString;
+  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false)
+    JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from Jaffar config file: %s\n", configFile.c_str());
+
+  // Parsing configuration file
+  nlohmann::json config;
+  try
+  {
+    config = nlohmann::json::parse(configFileString);
+  }
+  catch (const std::exception &err)
+  {
+    JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
+  }
+
+  // Getting component configurations
+  auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
+  auto gameConfig     = jaffarCommon::json::getObject(config, "Game Configuration");
+  auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
+
+  // Overriding runner configuration based on the maximum number of steps to drive
+  runnerConfig["Store Input History"]["Enabled"]          = false;
+  runnerConfig["Store Input History"]["Max Size (Steps)"] = 0;
+
+  // Creating runner from the configuration
+  auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
+
+  // Initializing runner
+  r->initialize();
+
+  // Getting game state size
+  const auto stateSize = r->getStateSize();
+
+  // Storage for the initial state
+  std::string initialState;
+  initialState.resize(stateSize);
+
+  // Getting initial state
+  jaffarCommon::serializer::Contiguous s(initialState.data(), initialState.size());
+  r->serializeState(s);
+
+  // Enabling rendering, if required
+  SDL_Window* window;
+  if (disableRender == false)
+  {
+    window = launchOutputWindow();
+    r->getGame()->getEmulator()->enableRendering(window);
+  } 
+
   // Running main cycle
   bool continueRunning = true;
   while (continueRunning == true)
   {
     // Running main cycle
-    continueRunning = mainCycle(configFile, solutionFile, disableRender, window);
+    continueRunning = mainCycle(*r, solutionFile, disableRender);
 
     // If the exit-on-end flag is set, then do not repeat reproduction
     if (exitOnEnd == true) break;
 
-    // If repeating, then wait a bit before repeating to prevent fast repetition of short movies
-    if (continueRunning == true) sleep(1);
+    // If the playback repeats, then sleep and restore the initial state
+    if (continueRunning == true)
+    {
+      // If repeating, then wait a bit before repeating to prevent fast repetition of short movies
+      sleep(1);
+
+      // Reloading the initial state
+      jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
+      r->deserializeState(d);
+    } 
   }
 
-  // Closing output window
-  if (disableRender == false) closeOutputWindow(window);
+  // If redering was enabled, finish it now
+  if (disableRender == false)
+  {
+    // Finalizing game output
+    r->getGame()->getEmulator()->disableRendering();
+
+    // Closing output window
+    if (disableRender == false) closeOutputWindow(window);
+  } 
+  
+  
 
   // Ending ncurses window
   jaffarCommon::logger::finalizeTerminal();
