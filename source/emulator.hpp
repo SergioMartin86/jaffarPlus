@@ -78,7 +78,7 @@ class Emulator
   /////// Render-related functions
 
   // This function enables rendering within the emulation core (does not output it to screen though)
-  virtual void enableRendering(SDL_Window *window) = 0;
+  virtual void enableRendering() = 0;
 
   // This function disables rendering within the emulation core (typically enables faster emulation)
   virtual void disableRendering() = 0;
