@@ -18,9 +18,7 @@ jaffarCommonDependency = jaffarCommonSubproject.get_variable('jaffarCommonDepend
 # Jaffar dependencies all together
 jaffarDependencies = [
    jaffarCommonDependency,
-   emulatorDependencies,
-   dependency('sdl2'),
-   dependency('SDL2_image')
+   emulatorDependencies
   ]
 
 # Do not build any targets if this is a subproject

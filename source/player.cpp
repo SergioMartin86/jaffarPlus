@@ -11,23 +11,6 @@
 #include "playback.hpp"
 #include "runner.hpp"
 
-SDL_Window *launchOutputWindow()
-{
-  // Opening rendering window
-  SDL_SetMainReady();
-
-  // We can only call SDL_InitSubSystem once
-  if (!SDL_WasInit(SDL_INIT_VIDEO))
-    if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) JAFFAR_THROW_LOGIC("Failed to initialize video: %s", SDL_GetError());
-
-  auto window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
-  if (window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
-
-  return window;
-}
-
-void closeOutputWindow(SDL_Window *window) { SDL_DestroyWindow(window); }
-
 // Prevents the interactive player to stall for a keystroke
 bool isUnattended;
 
@@ -306,12 +289,7 @@ int main(int argc, char *argv[])
   r->serializeState(s);
 
   // Enabling rendering, if required
-  SDL_Window *window;
-  if (disableRender == false)
-  {
-    window = launchOutputWindow();
-    r->getGame()->getEmulator()->enableRendering(window);
-  }
+  if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
 
   // Running main cycle
   bool continueRunning = true;
@@ -336,14 +314,7 @@ int main(int argc, char *argv[])
   }
 
   // If redering was enabled, finish it now
-  if (disableRender == false)
-  {
-    // Finalizing game output
-    r->getGame()->getEmulator()->disableRendering();
-
-    // Closing output window
-    if (disableRender == false) closeOutputWindow(window);
-  }
+  if (disableRender == false) r->getGame()->getEmulator()->disableRendering();
 
   // Ending ncurses window
   jaffarCommon::logger::finalizeTerminal();

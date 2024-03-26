@@ -90,8 +90,26 @@ class QuickerSDLPoP final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableRendering(SDL_Window *window) override { _QuickerSDLPoP->enableRendering(window); }
-  __INLINE__ void disableRendering() override { _QuickerSDLPoP->disableRendering(); }
+  __INLINE__ void enableRendering() override
+   {
+    // Opening rendering window
+    SDL_SetMainReady();
+
+    // We can only call SDL_InitSubSystem once
+    if (!SDL_WasInit(SDL_INIT_VIDEO))
+      if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) JAFFAR_THROW_LOGIC("Failed to initialize video: %s", SDL_GetError());
+
+    _window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
+    if (_window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
+  
+     _QuickerSDLPoP->enableRendering(_window);
+   }
+
+   __INLINE__ void disableRendering() override
+   {
+     _QuickerSDLPoP->disableRendering();
+     SDL_DestroyWindow(_window);
+   }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
   {
@@ -140,6 +158,7 @@ class QuickerSDLPoP final : public Emulator
   // Internal render state variables
   size_t                      _renderStepIdx;
   SDLPoP::Controller::input_t _renderInput;
+  SDL_Window* _window;
 };
 
 } // namespace emulator
