@@ -277,6 +277,13 @@ int main(int argc, char *argv[])
   // Initializing runner
   r->initialize();
 
+  // Enabling rendering, if required
+  if (disableRender == false)
+  {
+    r->getGame()->getEmulator()->initializeVideoOutput();
+    r->getGame()->getEmulator()->enableRendering();
+  } 
+
   // Getting game state size
   const auto stateSize = r->getStateSize();
 
@@ -287,9 +294,6 @@ int main(int argc, char *argv[])
   // Getting initial state
   jaffarCommon::serializer::Contiguous s(initialState.data(), initialState.size());
   r->serializeState(s);
-
-  // Enabling rendering, if required
-  if (disableRender == false) r->getGame()->getEmulator()->enableRendering();
 
   // Running main cycle
   bool continueRunning = true;
@@ -314,7 +318,7 @@ int main(int argc, char *argv[])
   }
 
   // If redering was enabled, finish it now
-  if (disableRender == false) r->getGame()->getEmulator()->disableRendering();
+  if (disableRender == false) r->getGame()->getEmulator()->finalizeVideoOutput();
 
   // Ending ncurses window
   jaffarCommon::logger::finalizeTerminal();

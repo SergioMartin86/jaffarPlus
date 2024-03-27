@@ -90,8 +90,9 @@ class QuickerSDLPoP final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableRendering() override
-   {
+    // This function opens the video output (e.g., window)
+  void initializeVideoOutput() override
+  {
     // Opening rendering window
     SDL_SetMainReady();
 
@@ -101,14 +102,23 @@ class QuickerSDLPoP final : public Emulator
 
     _window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
-  
+  }
+
+  // This function closes the video output (e.g., window)
+  void finalizeVideoOutput() override
+  {
+     SDL_DestroyWindow(_window);
+  }
+
+  __INLINE__ void enableRendering() override
+   {
      _QuickerSDLPoP->enableRendering(_window);
    }
 
    __INLINE__ void disableRendering() override
    {
      _QuickerSDLPoP->disableRendering();
-     SDL_DestroyWindow(_window);
+
    }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override

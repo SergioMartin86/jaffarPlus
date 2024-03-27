@@ -77,6 +77,12 @@ class Emulator
 
   /////// Render-related functions
 
+  // This function opens the video output (e.g., window)
+  virtual void initializeVideoOutput() = 0;
+
+  // This function closes the video output (e.g., window)
+  virtual void finalizeVideoOutput() = 0;
+
   // This function enables rendering within the emulation core (does not output it to screen though)
   virtual void enableRendering() = 0;
 
