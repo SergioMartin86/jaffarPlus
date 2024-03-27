@@ -22,8 +22,7 @@ class ChristmasCraze final : public jaffarPlus::Game
 
   ChristmasCraze(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
     : jaffarPlus::Game(std::move(emulator), config)
-  {
-  }
+  {}
 
   private:
 
@@ -33,24 +32,24 @@ class ChristmasCraze final : public jaffarPlus::Game
     _lowMem = _emulator->getProperty("RAM").pointer;
 
     // Registering native game properties
-    registerGameProperty("Global Timer",     &_lowMem[0x000000], Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Player Pos X",           &_lowMem[0x004091], Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Player Pos Y",    &_lowMem[0x004095], Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Player Speed X",    &_lowMem[0x004099], Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Player Speed Y",    &_lowMem[0x00409D], Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Player Direction",    &_lowMem[0x0040AD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Game State",       &_lowMem[0x001FD6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Presents Grabbed",    &_lowMem[0x0040AD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Global Timer", &_lowMem[0x000000], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Pos X", &_lowMem[0x004091], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y", &_lowMem[0x004095], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Speed X", &_lowMem[0x004099], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Speed Y", &_lowMem[0x00409D], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Direction", &_lowMem[0x0040AD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Game State", &_lowMem[0x001FD6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Presents Grabbed", &_lowMem[0x0040AD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _globalTimer  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
-    _playerPosX  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _playerPosY  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
-    _playerDirection  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Direction")]->getPointer();
-    _playerSpeedX  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Speed X")]->getPointer();
-    _playerSpeedY  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Speed Y")]->getPointer();
-    _gameState  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Game State")]->getPointer();
-    _presentsGrabbed  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Presents Grabbed")]->getPointer();
+    _globalTimer     = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
+    _playerPosX      = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY      = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _playerDirection = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Direction")]->getPointer();
+    _playerSpeedX    = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Speed X")]->getPointer();
+    _playerSpeedY    = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Speed Y")]->getPointer();
+    _gameState       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Game State")]->getPointer();
+    _presentsGrabbed = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Presents Grabbed")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const std::string &input) override
@@ -59,9 +58,7 @@ class ChristmasCraze final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
-  {
-  }
+  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override {}
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
@@ -82,13 +79,9 @@ class ChristmasCraze final : public jaffarPlus::Game
     _player1DistanceToPoint  = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
-  {
-  }
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
-  {
-  }
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -151,9 +144,9 @@ class ChristmasCraze final : public jaffarPlus::Game
   uint16_t *_playerPosY;
   uint16_t *_playerSpeedX;
   uint16_t *_playerSpeedY;
-  uint8_t *_playerDirection;
-  uint8_t *_gameState;
-  uint8_t *_presentsGrabbed;
+  uint8_t  *_playerDirection;
+  uint8_t  *_gameState;
+  uint8_t  *_presentsGrabbed;
 
   // Game-Specific values
   float _player1DistanceToPointX;
