@@ -134,9 +134,7 @@ class QuickerSnes9x final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void printInfo() const override
-  {
-  }
+  __INLINE__ void printInfo() const override {}
 
   property_t getProperty(const std::string &propertyName) const override
   {
@@ -148,8 +146,7 @@ class QuickerSnes9x final : public Emulator
 
   __INLINE__ void enableStateProperty(const std::string &property) { _quickerSnes9x.enableStateBlock(property); }
   __INLINE__ void disableStateProperty(const std::string &property) { _quickerSnes9x.disableStateBlock(property); }
-  
-  
+
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
@@ -158,35 +155,17 @@ class QuickerSnes9x final : public Emulator
   }
 
   // This function closes the video output (e.g., window)
-  void finalizeVideoOutput() override
-  {
-    _quickerSnes9x.finalizeVideoOutput();
-  }
+  void finalizeVideoOutput() override { _quickerSnes9x.finalizeVideoOutput(); }
 
-  __INLINE__ void enableRendering() override
-   {
-     _quickerSnes9x.enableRendering();
-   }
+  __INLINE__ void enableRendering() override { _quickerSnes9x.enableRendering(); }
 
-  __INLINE__ void disableRendering() override
-   {
-     _quickerSnes9x.disableRendering();
-   }
+  __INLINE__ void disableRendering() override { _quickerSnes9x.disableRendering(); }
 
-  __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
-  {
+  __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
-  }
+  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializeState(serializer); }
 
-  __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base &serializer) const override 
-   {
-    serializeState(serializer);
-   }
-
-  __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
-   {
-    deserializeState(deserializer);
-   }
+  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializeState(deserializer); }
 
   __INLINE__ size_t getRendererStateSize() const
   {
@@ -195,10 +174,7 @@ class QuickerSnes9x final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void showRender() override
-  {
-    _quickerSnes9x.updateRenderer();
-  }
+  __INLINE__ void showRender() override { _quickerSnes9x.updateRenderer(); }
 
   private:
 

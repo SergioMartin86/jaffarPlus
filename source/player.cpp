@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
   {
     r->getGame()->getEmulator()->initializeVideoOutput();
     r->getGame()->getEmulator()->enableRendering();
-  } 
+  }
 
   // Getting game state size
   const auto stateSize = r->getStateSize();

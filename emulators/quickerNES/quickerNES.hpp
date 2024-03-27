@@ -206,7 +206,7 @@ class QuickerNES final : public Emulator
       }
   }
 
-    // This function opens the video output (e.g., window)
+  // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
     // Opening rendering window
@@ -218,7 +218,7 @@ class QuickerNES final : public Emulator
 
     m_window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
     if (m_window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
-    
+
     // Creating SDL renderer
     if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) JAFFAR_THROW_RUNTIME("Coult not create SDL renderer in NES emulator");
     if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256)))
@@ -235,15 +235,9 @@ class QuickerNES final : public Emulator
     if (m_window) SDL_DestroyWindow(m_window);
   }
 
-  __INLINE__ void enableRendering() override
-  {
-    _quickerNES.enableRendering();
-  }
+  __INLINE__ void enableRendering() override { _quickerNES.enableRendering(); }
 
-  __INLINE__ void disableRendering() override
-  {
-    _quickerNES.disableRendering();
-  }
+  __INLINE__ void disableRendering() override { _quickerNES.disableRendering(); }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
   {
