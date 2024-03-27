@@ -206,7 +206,8 @@ class QuickerNES final : public Emulator
       }
   }
 
-  __INLINE__ void enableRendering() override
+    // This function opens the video output (e.g., window)
+  void initializeVideoOutput() override
   {
     // Opening rendering window
     SDL_SetMainReady();
@@ -217,23 +218,31 @@ class QuickerNES final : public Emulator
 
     m_window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
     if (m_window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
-  
+    
     // Creating SDL renderer
     if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) JAFFAR_THROW_RUNTIME("Coult not create SDL renderer in NES emulator");
     if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256)))
       JAFFAR_THROW_RUNTIME("Coult not create SDL texture in NES emulator");
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
     if (!setScale(1)) JAFFAR_THROW_RUNTIME("Coult not set SDL scale in NES emulator");
+  }
 
-    // Enabling rendering in the emulator
+  // This function closes the video output (e.g., window)
+  void finalizeVideoOutput() override
+  {
+    if (m_tex) SDL_DestroyTexture(m_tex);
+    if (m_renderer) SDL_DestroyRenderer(m_renderer);
+    if (m_window) SDL_DestroyWindow(m_window);
+  }
+
+  __INLINE__ void enableRendering() override
+  {
     _quickerNES.enableRendering();
   }
 
   __INLINE__ void disableRendering() override
   {
-    if (m_tex) SDL_DestroyTexture(m_tex);
-    if (m_renderer) SDL_DestroyRenderer(m_renderer);
-    if (m_window) SDL_DestroyWindow(m_window);
+    _quickerNES.disableRendering();
   }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override

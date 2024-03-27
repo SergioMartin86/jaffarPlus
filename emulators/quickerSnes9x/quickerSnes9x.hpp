@@ -88,8 +88,7 @@ class QuickerSnes9x final : public Emulator
       if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
       // Deserializing initial state into the emulator
-      jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
-      deserializeState(d);
+      loadFullState(initialState);
     }
 
     // Now disabling state properties, as requested
@@ -141,32 +140,52 @@ class QuickerSnes9x final : public Emulator
 
   property_t getProperty(const std::string &propertyName) const override
   {
+    if (propertyName == "RAM") return property_t(_quickerSnes9x.getRAM(), _quickerSnes9x.getRAMSize());
+    if (propertyName == "SRAM") return property_t(_quickerSnes9x.getSRAM(), _quickerSnes9x.getSRAMSize());
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
   __INLINE__ void enableStateProperty(const std::string &property) { _quickerSnes9x.enableStateBlock(property); }
-
   __INLINE__ void disableStateProperty(const std::string &property) { _quickerSnes9x.disableStateBlock(property); }
+  
+  
+  // This function opens the video output (e.g., window)
+  void initializeVideoOutput() override
+  {
+    enableStateProperties();
+    _quickerSnes9x.initializeVideoOutput();
+  }
 
+  // This function closes the video output (e.g., window)
+  void finalizeVideoOutput() override
+  {
+    _quickerSnes9x.finalizeVideoOutput();
+  }
 
   __INLINE__ void enableRendering() override
-  {
-  }
+   {
+     _quickerSnes9x.enableRendering();
+   }
 
   __INLINE__ void disableRendering() override
-  {
-  }
+   {
+     _quickerSnes9x.disableRendering();
+   }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
   {
+
   }
+
   __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base &serializer) const override 
    {
+    serializeState(serializer);
    }
 
   __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
    {
+    deserializeState(deserializer);
    }
 
   __INLINE__ size_t getRendererStateSize() const
@@ -178,16 +197,10 @@ class QuickerSnes9x final : public Emulator
 
   __INLINE__ void showRender() override
   {
+    _quickerSnes9x.updateRenderer();
   }
 
   private:
-
-  void printMemoryBlockHash(const std::string &blockName) const
-  {
-    auto p    = getProperty(blockName);
-    auto hash = jaffarCommon::hash::hashToString(jaffarCommon::hash::calculateMetroHash(p.pointer, p.size));
-    jaffarCommon::logger::log("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
-  }
 
   // Collection of state blocks to disable during engine run
   std::vector<std::string> _disabledStateProperties;
