@@ -16,9 +16,10 @@ test('scriptValidator',
 ######## Full run tests
 
 # Setting env variables
-testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
 
 ## NES / Sprilo
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
 
 test('race04_short_contiguous',
       jaffar,
@@ -53,6 +54,8 @@ test('race04_short_reproduce',
 
 ## SDLPoP / Prince Of Persia
 
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
+
 test('lvl01',
       jaffar,
       workdir : meson.current_source_dir() + '/sdlpop',
@@ -67,3 +70,15 @@ test('lvl01_reproduce',
       timeout: testTimeout,
       args : [ 'lvl01a.jaffar', 'lvl01a.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
       suite : [ 'reproductions', 'sdlpop' ])
+
+## SNES / Christmas Craze
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/snes/christmasCraze',
+      timeout: testTimeout,
+      args : 'stage01.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'snes', 'christmasCraze' ])
