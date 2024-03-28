@@ -93,7 +93,15 @@ class Playback final
     }
   }
 
-  ~Playback() {}
+  ~Playback()
+  {
+    // Freeing up memory reserved during initialization
+    for (const auto& step : _sequence)
+    {
+      free(step.gameStateData);
+      free(step.rendererStateData);
+    }
+  }
 
   __INLINE__ std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
   __INLINE__ jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }

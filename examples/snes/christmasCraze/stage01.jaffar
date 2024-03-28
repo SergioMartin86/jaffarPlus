@@ -22,8 +22,8 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      10000,
-      10000
+      230000,
+      110000
     ],
   
     "Scavenger Queues Size": 32,
@@ -124,7 +124,7 @@
      
      "Actions":
      [
-      { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 600, "Y": 1740 }
+      { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 3191, "Y": 1792 }
      ]
     },
 
@@ -140,7 +140,7 @@
       "Actions":
       [
        { "Type": "Add Reward", "Value": 100000.0 },
-       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1794, "Y": 1024 }
+       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2100, "Y": 1024 }
       ]
      },
 
@@ -156,7 +156,7 @@
       "Actions":
       [
        { "Type": "Add Reward", "Value": 100000.0 },
-       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2282, "Y": 1024 }
+       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1770, "Y": 1024 }
       ]
      },
 
@@ -172,7 +172,7 @@
       "Actions":
       [
         { "Type": "Add Reward", "Value": 100000.0 },
-        { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2282, "Y": 1024 }
+        { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 580, "Y": 1740 }
       ]
      },
 
