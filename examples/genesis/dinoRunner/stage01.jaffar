@@ -58,7 +58,7 @@
  
 "Runner Configuration":
 {
-  "Hash Step Tolerance": 2,
+  "Hash Step Tolerance": 8,
 
   "Allowed Input Sets":
   [
@@ -98,6 +98,7 @@
 
   "Hash Properties":
   [
+    "Global Timer", 
     "Game Mode",
     "Score",
     "Player Pos Y",

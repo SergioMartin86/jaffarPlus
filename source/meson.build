@@ -10,7 +10,6 @@ jaffarIncludes = include_directories([
 jaffarCPPFlags = [
   '-Wfatal-errors',
   '-Wall',
-  '-Werror'
   ]
 
 # Code coverage configuration

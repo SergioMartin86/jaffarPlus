@@ -22,6 +22,9 @@ class Playback final
     // Storage for the step's input index
     jaffarPlus::InputSet::inputIndex_t inputIndex;
 
+    // Stores whether the move is allowed by the current move set
+    bool isInputAllowed;
+
     // Storage for the step's game state data
     void *gameStateData;
 
@@ -53,8 +56,11 @@ class Playback final
       // Setting step input string
       step.inputString = i < inputSequence.size() ? inputSequence[i] : "<End Of Sequence>";
 
+      // Checking if the input is allowed
+      step.isInputAllowed = _runner->isInputAllowed(step.inputString);
+
       // Getting input index
-      step.inputIndex = i < inputSequence.size() ? _runner->getInputIndex(step.inputString) : 0;
+      step.inputIndex = step.isInputAllowed ? _runner->getInputIndex(step.inputString) : 0;
 
       // Getting state hash
       step.stateHash = _runner->computeHash();
@@ -77,7 +83,8 @@ class Playback final
       _runner->getGame()->getEmulator()->serializeRendererState(sr);
 
       // Advancing state
-      _runner->advanceState(step.inputIndex);
+      if (i < inputSequence.size()) _runner->advanceState(step.inputString);
+      if (i == inputSequence.size()) _runner->advanceState(0);
 
       // Evaluate game rules
       _runner->getGame()->evaluateRules();
