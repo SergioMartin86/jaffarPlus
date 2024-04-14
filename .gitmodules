@@ -10,3 +10,6 @@
 [submodule "extern/quickerSnes9x"]
 	path = extern/quickerSnes9x
 	url = https://github.com/SergioMartin86/quickerSnes9x.git
+[submodule "extern/quickerGPGX"]
+	path = extern/quickerGPGX
+	url = https://github.com/SergioMartin86/quickerGPGX.git
