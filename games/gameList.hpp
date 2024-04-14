@@ -5,6 +5,7 @@
 #include "nes/sprilo.hpp"
 #include "sdlpop/princeOfPersia.hpp"
 #include "snes/christmasCraze.hpp"
+#include "genesis/dinoRunner.hpp"
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -33,10 +34,11 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
   const auto &gameName = jaffarCommon::json::getString(gameConfig, "Game Name");
 
   // Trying to detect game by name
-  DETECT_GAME(NES::MicroMachines);
-  DETECT_GAME(NES::Sprilo);
+  DETECT_GAME(nes::MicroMachines);
+  DETECT_GAME(nes::Sprilo);
   DETECT_GAME(sdlpop::PrinceOfPersia);
-  DETECT_GAME(SNES::ChristmasCraze);
+  DETECT_GAME(snes::ChristmasCraze);
+  DETECT_GAME(genesis::DinoRunner);
 
   // Check if game was recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized\n", gameName.c_str());

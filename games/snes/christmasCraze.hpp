@@ -11,7 +11,7 @@ namespace jaffarPlus
 namespace games
 {
 
-namespace SNES
+namespace snes
 {
 
 class ChristmasCraze final : public jaffarPlus::Game
@@ -157,7 +157,7 @@ class ChristmasCraze final : public jaffarPlus::Game
   uint8_t *_lowMem;
 };
 
-} // namespace SNES
+} // namespace snes
 
 } // namespace games
 
