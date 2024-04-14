@@ -175,6 +175,15 @@ class Runner final
     return inputIndex;
   }
 
+  bool isInputAllowed(const std::string& inputString)
+  {
+    // Getting input hash
+    const auto inputHash = jaffarCommon::hash::hashString(inputString);
+
+    // Returning true if found; false, otherwise
+    return _inputHashMap.contains(inputHash);
+  }
+
   // Function to advance state.
   void advanceState(const InputSet::inputIndex_t inputIdx)
   {
@@ -197,6 +206,16 @@ class Runner final
       // Storing the new more in the input history
       setInput(_currentStep, inputIdx);
     }
+
+    // Advancing step counter
+    _currentStep++;
+  }
+
+  // Function to advance state by passing the input string directly
+  void advanceState(const std::string& inputString)
+  {
+    // Performing the requested input
+    _game->advanceState(inputString);
 
     // Advancing step counter
     _currentStep++;

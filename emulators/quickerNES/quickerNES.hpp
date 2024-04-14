@@ -245,7 +245,7 @@ class QuickerNES final : public Emulator
   }
   __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
   __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
-  __INLINE__ size_t getRendererStateSize() const
+  __INLINE__ size_t getRendererStateSize() const override
   {
     jaffarCommon::serializer::Contiguous s;
     serializeRendererState(s);
