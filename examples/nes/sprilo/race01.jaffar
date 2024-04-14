@@ -22,8 +22,8 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      10,
-      10
+      100,
+      100
     ],
   
     "Scavenger Queues Size": 32,
