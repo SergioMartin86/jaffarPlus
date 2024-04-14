@@ -10,7 +10,7 @@ namespace jaffarPlus
 namespace games
 {
 
-namespace NES
+namespace nes
 {
 
 class MicroMachines final : public jaffarPlus::Game
@@ -344,7 +344,7 @@ class MicroMachines final : public jaffarPlus::Game
   float _player1DistanceToMagnetAngle;
 };
 
-} // namespace NES
+} // namespace nes
 
 } // namespace games
 

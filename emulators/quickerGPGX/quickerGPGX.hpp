@@ -63,7 +63,10 @@ class QuickerGPGX final : public Emulator
 
   void initializeImpl() override
   {
-        // Setting controller types
+    // Initializing emulator
+    _quickerGPGX.initialize();
+
+    // Setting controller types
     _quickerGPGX.setController1Type(_controller1Type);
     _quickerGPGX.setController2Type(_controller2Type);
 
@@ -78,7 +81,7 @@ class QuickerGPGX final : public Emulator
       JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
 
     // Loading rom into emulator
-    _quickerGPGX.loadROM(romFileData);
+    _quickerGPGX.loadROM(_romFilePath);
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)

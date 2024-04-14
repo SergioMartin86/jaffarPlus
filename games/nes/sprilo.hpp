@@ -10,7 +10,7 @@ namespace jaffarPlus
 namespace games
 {
 
-namespace NES
+namespace nes
 {
 
 class Sprilo final : public jaffarPlus::Game
@@ -209,7 +209,7 @@ class Sprilo final : public jaffarPlus::Game
   bool _stopProcessingReward;
 };
 
-} // namespace NES
+} // namespace nes
 
 } // namespace games
 
