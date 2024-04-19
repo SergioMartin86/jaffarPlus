@@ -22,8 +22,8 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      230,
-      110
+      50000,
+      50000
     ],
   
     "Scavenger Queues Size": 32,
@@ -53,28 +53,42 @@
   "System Type": "Sega Genesis",
   "Controller 1 Type": "Gamepad3B",
   "Controller 2 Type": "None",
-  "Disabled State Properties": [ "SATM", "VRAM" ]
+  "Disabled State Properties": [ ]
 },
  
 "Runner Configuration":
 {
-  "Hash Step Tolerance": 8,
+  "Hash Step Tolerance": 4,
 
   "Allowed Input Sets":
   [
-   {
-     "Conditions":
-     [
-     ],
- 
-     "Inputs":
-     [
-      "|..|........|",
-      "|..|....A...|"
-     ],
+    {
+      "Conditions":
+      [
+      ],
 
-     "Stop Input Evaluation": false
-   }
+      "Inputs":
+      [
+        "|..|........|"
+      ],
+
+      "Stop Input Evaluation": false
+    },
+
+    {
+      "Conditions":
+      [
+      { "Property": "Player Vel Y", "Op": "==", "Value": 0 }
+      ],
+
+      "Inputs":
+      [
+      "|..|....A...|"
+      ],
+
+      "Stop Input Evaluation": false
+    }
+
   ],
 
   "Test Candidate Inputs": false,

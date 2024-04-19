@@ -371,7 +371,7 @@ class Runner final
     for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
   }
 
-  __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentStep % (_hashStepTolerance + 1); }
+  __INLINE__ uint32_t getHashStepToleranceStage() const { return _hashStepTolerance == 0 ? 0 : _currentStep % _hashStepTolerance; }
   __INLINE__ Game    *getGame() const { return _game.get(); }
 
   __INLINE__ bool   getInputHistoryEnabled() const { return _inputHistoryEnabled; }
