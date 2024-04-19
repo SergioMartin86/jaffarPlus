@@ -52,7 +52,10 @@ class DinoRunner final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override {}
+  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  {
+    hashEngine.Update(_workRAM, 0x2000);
+  }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
@@ -81,6 +84,7 @@ class DinoRunner final : public jaffarPlus::Game
 
     // Distance to point magnet
     reward += -1.0 * _pointMagnet.intensity * _player1DistanceToPoint;
+    reward += 100.0 * (double)*_score;
 
     // Returning reward
     return reward;
