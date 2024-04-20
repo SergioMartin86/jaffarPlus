@@ -7,7 +7,7 @@ option('emulators',
     'QuickerSnes9x'
    ],
   value : [ ],
-  description : 'Selects the emulation cores to compile Jaffar to'
+  description : 'Selects the emulation cores to compile Jaffar with'
 )
 
 option('buildTests',
