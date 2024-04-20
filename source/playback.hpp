@@ -103,7 +103,7 @@ class Playback final
   ~Playback()
   {
     // Freeing up memory reserved during initialization
-    for (const auto& step : _sequence)
+    for (const auto &step : _sequence)
     {
       free(step.gameStateData);
       free(step.rendererStateData);
