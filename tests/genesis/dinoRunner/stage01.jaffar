@@ -1,0 +1,169 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 1000,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      50000,
+      50000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerGPGX",
+  "Rom File Path": "../../../extern/quickerGPGX/tests/roms/Dino-Runner.bin",
+  "Rom File SHA1": "0392D3D443B6A5738657A7823DFF8DAD67738E41",
+  "Initial State File Path": "stage01.state",
+  "System Type": "Sega Genesis",
+  "Controller 1 Type": "Gamepad3B",
+  "Controller 2 Type": "None",
+  "Disabled State Properties": [ ]
+},
+ 
+"Runner Configuration":
+{
+  "Hash Step Tolerance": 4,
+
+  "Allowed Input Sets":
+  [
+    {
+      "Conditions":
+      [
+      ],
+
+      "Inputs":
+      [
+        "|..|........|"
+      ],
+
+      "Stop Input Evaluation": false
+    },
+
+    {
+      "Conditions":
+      [
+      { "Property": "Player Vel Y", "Op": "==", "Value": 0 }
+      ],
+
+      "Inputs":
+      [
+      "|..|....A...|"
+      ],
+
+      "Stop Input Evaluation": false
+    }
+
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "Genesis / Dino Runner",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Global Timer",    
+    "Game Mode",
+    "Score",
+    "Player Pos Y",
+    "Player Vel Y"
+  ],
+
+  "Hash Properties":
+  [
+    "Global Timer", 
+    "Game Mode",
+    "Score",
+    "Player Pos Y",
+    "Player Vel Y"
+  ],
+
+  "Rules":
+  [
+   {
+     "Label": 1000,
+     "Conditions":
+     [
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Set Point Magnet", "Intensity": 1.0, "Y": 0 }
+     ]
+    },
+
+    {
+      "Label": 1998,
+      "Conditions":
+      [
+        { "Property": "Player Pos Y", "Op": "==", "Value": 6420 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+    },
+
+    {
+      "Label": 1999,
+      "Conditions":
+      [
+        { "Property": "Game Mode", "Op": "==", "Value": 0 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail" }
+      ]
+    }
+  ]
+ }
+}

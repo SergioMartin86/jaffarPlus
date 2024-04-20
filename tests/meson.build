@@ -99,3 +99,19 @@ test('stage01',
       suite : [ 'runs', 'snes', 'christmasCraze' ])
 
 endif
+
+if 'QuickerGPGX' in emulators
+
+## Genesis / Dino Runner
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/genesis/dinoRunner',
+      timeout: testTimeout,
+      args : 'stage01.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'genesis', 'dinoRunner' ])
+
+endif
