@@ -44,7 +44,7 @@ class QuickerGPGX final : public Emulator
     }
 
     // Parsing controller configuration
-    _systemType = jaffarCommon::json::getString(config, "System Type");
+    _systemType      = jaffarCommon::json::getString(config, "System Type");
     _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
     _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
 
@@ -100,20 +100,11 @@ class QuickerGPGX final : public Emulator
   }
 
   // State advancing function
-  void advanceState(const std::string &input) override
-  {
-    _quickerGPGX.advanceState(input);
-  }
+  void advanceState(const std::string &input) override { _quickerGPGX.advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override
-  {
-    _quickerGPGX.serializeState(serializer); 
-  };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerGPGX.serializeState(serializer); };
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override
-  {
-    _quickerGPGX.deserializeState(deserializer);
-  };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerGPGX.deserializeState(deserializer); };
 
   __INLINE__ void disableStateProperties()
   {
@@ -157,15 +148,9 @@ class QuickerGPGX final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) 
-  {
-    _quickerGPGX.enableStateBlock(property);
-  }
+  __INLINE__ void enableStateProperty(const std::string &property) { _quickerGPGX.enableStateBlock(property); }
 
-  __INLINE__ void disableStateProperty(const std::string &property)
-  { 
-    _quickerGPGX.disableStateBlock(property);
-  }
+  __INLINE__ void disableStateProperty(const std::string &property) { _quickerGPGX.disableStateBlock(property); }
 
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
@@ -175,35 +160,17 @@ class QuickerGPGX final : public Emulator
   }
 
   // This function closes the video output (e.g., window)
-  void finalizeVideoOutput() override
-  { 
-    _quickerGPGX.finalizeVideoOutput();
-  }
+  void finalizeVideoOutput() override { _quickerGPGX.finalizeVideoOutput(); }
 
-  __INLINE__ void enableRendering() override
-  {
-     _quickerGPGX.enableRendering();
-  }
+  __INLINE__ void enableRendering() override { _quickerGPGX.enableRendering(); }
 
-  __INLINE__ void disableRendering() override
-  {
-    _quickerGPGX.disableRendering();
-  }
+  __INLINE__ void disableRendering() override { _quickerGPGX.disableRendering(); }
 
-  __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
-  {
+  __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
-  }
+  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializeState(serializer); }
 
-  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
-  {
-    serializeState(serializer);
-  }
-
-  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
-  {
-    deserializeState(deserializer); 
-  }
+  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializeState(deserializer); }
 
   __INLINE__ size_t getRendererStateSize() const
   {
@@ -212,10 +179,7 @@ class QuickerGPGX final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void showRender() override
-  {
-    _quickerGPGX.updateRenderer(); 
-  }
+  __INLINE__ void showRender() override { _quickerGPGX.updateRenderer(); }
 
   private:
 

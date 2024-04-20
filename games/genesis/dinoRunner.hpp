@@ -32,18 +32,18 @@ class DinoRunner final : public jaffarPlus::Game
     _workRAM = _emulator->getProperty("RAM").pointer;
 
     // Registering native game properties
-    registerGameProperty("Game Mode",    &_workRAM[0x083E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Game Mode", &_workRAM[0x083E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Global Timer", &_workRAM[0x0AAA], Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Score",        &_workRAM[0x0842], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Score", &_workRAM[0x0842], Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Player Pos Y", &_workRAM[0x000C], Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Player Vel Y", &_workRAM[0x001A], Property::datatype_t::dt_int16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _gameMode        = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Game Mode")]->getPointer();
-    _globalTimer     = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
-    _score           = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
-    _playerPosY      = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
-    _playerVelY      = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Vel Y")]->getPointer();
+    _gameMode    = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Game Mode")]->getPointer();
+    _globalTimer = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
+    _score       = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
+    _playerPosY  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _playerVelY  = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Vel Y")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const std::string &input) override
@@ -52,10 +52,7 @@ class DinoRunner final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
-  {
-    hashEngine.Update(_workRAM, 0x2000);
-  }
+  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override { hashEngine.Update(_workRAM, 0x2000); }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
@@ -143,7 +140,7 @@ class DinoRunner final : public jaffarPlus::Game
   uint8_t *_workRAM;
 };
 
-} // namespace SNES
+} // namespace genesis
 
 } // namespace games
 

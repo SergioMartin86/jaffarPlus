@@ -175,7 +175,7 @@ class Runner final
     return inputIndex;
   }
 
-  bool isInputAllowed(const std::string& inputString)
+  bool isInputAllowed(const std::string &inputString)
   {
     // Getting input hash
     const auto inputHash = jaffarCommon::hash::hashString(inputString);
@@ -212,7 +212,7 @@ class Runner final
   }
 
   // Function to advance state by passing the input string directly
-  void advanceState(const std::string& inputString)
+  void advanceState(const std::string &inputString)
   {
     // Performing the requested input
     _game->advanceState(inputString);

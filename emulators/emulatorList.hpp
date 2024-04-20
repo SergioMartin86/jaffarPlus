@@ -3,19 +3,19 @@
 #include <emulator.hpp>
 
 #ifdef __JAFFAR_USE_QUICKERNES
-#include "quickerNES/quickerNES.hpp"
+  #include "quickerNES/quickerNES.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERSDLPOP
-#include "quickerSDLPoP/quickerSDLPoP.hpp"
+  #include "quickerSDLPoP/quickerSDLPoP.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERSNES9X
-#include "quickerSnes9x/quickerSnes9x.hpp"
+  #include "quickerSnes9x/quickerSnes9x.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERGPGX
-#include "quickerGPGX/quickerGPGX.hpp"
+  #include "quickerGPGX/quickerGPGX.hpp"
 #endif
 
 namespace jaffarPlus
@@ -38,23 +38,23 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
   // Getting emulator name
   const auto &emulatorName = jaffarCommon::json::getString(emulatorConfig, "Emulator Name");
 
-  // Detecting emulator
-  #ifdef __JAFFAR_USE_QUICKERNES
+// Detecting emulator
+#ifdef __JAFFAR_USE_QUICKERNES
   DETECT_EMULATOR(emulator::QuickerNES);
-  #endif
+#endif
 
-  #ifdef __JAFFAR_USE_QUICKERSDLPOP
+#ifdef __JAFFAR_USE_QUICKERSDLPOP
   DETECT_EMULATOR(emulator::QuickerSDLPoP);
-  #endif
+#endif
 
-  #ifdef __JAFFAR_USE_QUICKERSNES9X
+#ifdef __JAFFAR_USE_QUICKERSNES9X
   DETECT_EMULATOR(emulator::QuickerSnes9x);
-  #endif
+#endif
 
-  #ifdef __JAFFAR_USE_QUICKERGPGX
+#ifdef __JAFFAR_USE_QUICKERGPGX
   DETECT_EMULATOR(emulator::QuickerGPGX);
-  #endif
-  
+#endif
+
   // Check if recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized\n", emulatorName.c_str());
 
