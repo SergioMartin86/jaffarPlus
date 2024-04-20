@@ -18,6 +18,9 @@ export JAFFAR_QUICKERSNES9X_OVERRIDE_ROM_FILE_SHA1="7752CAA676D15D4D0C42F25548C3
 export JAFFAR_QUICKERSNES9X_OVERRIDE_ROM_FILE_PATH=`realpath snes/testRom.smc`
 export JAFFAR_QUICKERSNES9X_OVERRIDE_INITIAL_STATE_FILE_PATH=""
 
+# Getting emulator to test
+emulatorName=${1}
+
 for f in ${scriptFiles}
 do
  dirName=`dirname ${f}`
@@ -27,7 +30,19 @@ do
 
  pushd ${dirName}
  echo "Folder: ${dirName}"
- echo "Running Command: ${jaffarPath} ${fileName}"
-  ${jaffarPath} ${fileName}
+
+ # Checking if the selected emulator is being tested
+ set +e
+ cat ${fileName} | grep ${emulatorName}
+ emulatorFound=$?
+ set -e
+
+ if [ ${emulatorFound} -ne 0 ]; then
+   echo "Emulator not found, ignoring example"
+ else
+   echo "Running Command: ${jaffarPath} ${fileName}"
+   ${jaffarPath} ${fileName}
+ fi
+ 
  popd
 done

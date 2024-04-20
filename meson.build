@@ -5,6 +5,9 @@ project('jaffar++','c','cpp',
   subproject_dir: 'extern'
 )
 
+# Getting emulator list from the user configuration
+emulators = get_option('emulators')
+
 # Accessing source directory
 subdir('source')
 

@@ -1,10 +1,22 @@
 #pragma once
 
 #include <emulator.hpp>
+
+#ifdef __JAFFAR_USE_QUICKERNES
 #include "quickerNES/quickerNES.hpp"
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERSDLPOP
 #include "quickerSDLPoP/quickerSDLPoP.hpp"
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERSNES9X
 #include "quickerSnes9x/quickerSnes9x.hpp"
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERGPGX
 #include "quickerGPGX/quickerGPGX.hpp"
+#endif
 
 namespace jaffarPlus
 {
@@ -27,11 +39,22 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
   const auto &emulatorName = jaffarCommon::json::getString(emulatorConfig, "Emulator Name");
 
   // Detecting emulator
+  #ifdef __JAFFAR_USE_QUICKERNES
   DETECT_EMULATOR(emulator::QuickerNES);
-  DETECT_EMULATOR(emulator::QuickerSDLPoP);
-  DETECT_EMULATOR(emulator::QuickerSnes9x);
-  DETECT_EMULATOR(emulator::QuickerGPGX);
+  #endif
 
+  #ifdef __JAFFAR_USE_QUICKERSDLPOP
+  DETECT_EMULATOR(emulator::QuickerSDLPoP);
+  #endif
+
+  #ifdef __JAFFAR_USE_QUICKERSNES9X
+  DETECT_EMULATOR(emulator::QuickerSnes9x);
+  #endif
+
+  #ifdef __JAFFAR_USE_QUICKERGPGX
+  DETECT_EMULATOR(emulator::QuickerGPGX);
+  #endif
+  
   // Check if recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized\n", emulatorName.c_str());
 

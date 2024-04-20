@@ -8,8 +8,24 @@ on:
 
 jobs:
 
-  # Build and run tests
-  build:
+  # Build documentation and checking proper style
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Installing apt packages
+      run: sudo apt install clang-format doxygen graphviz
+    - name: Checking proper code styling
+      run:  |
+            cp extern/jaffarCommon/.clang-format .
+            extern/jaffarCommon/.build-tools/check-style.sh check source
+            extern/jaffarCommon/.build-tools/check-style.sh check games
+            extern/jaffarCommon/.build-tools/check-style.sh check emulators
+
+  # Build and run tests (QuickerNES) + Coverage Tests
+  build-QuickerNES:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -22,7 +38,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=debug -Db_coverage=true -DuseNCurses=false
+      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulators=QuickerNES
     - name: Building project
       run: ninja -C build
     - name: Running tests
@@ -42,18 +58,63 @@ jobs:
         name: meson-logs
         path: build/meson-logs/
 
-  # Build documentation and checking proper style
-  docs:
+
+  # Build and run tests (QuickerSDLPoP)
+  build-QuickerSDLPoP:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install clang-format doxygen graphviz
-    - name: Checking proper code styling
-      run:  |
-            cp extern/jaffarCommon/.clang-format .
-            extern/jaffarCommon/.build-tools/check-style.sh check source
-            extern/jaffarCommon/.build-tools/check-style.sh check games
-            extern/jaffarCommon/.build-tools/check-style.sh check emulators
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSDLPoP
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+
+  # Build and run tests (QuickerSnes9x)
+  build-QuickerSnes9x:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSnes9x
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+
+  # Build and run tests (QuickerGPGX)
+  build-QuickerGPGX:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerGPGX
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
