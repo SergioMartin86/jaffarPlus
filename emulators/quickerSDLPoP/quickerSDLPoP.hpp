@@ -100,7 +100,7 @@ class QuickerSDLPoP final : public Emulator
     if (!SDL_WasInit(SDL_INIT_VIDEO))
       if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) JAFFAR_THROW_LOGIC("Failed to initialize video: %s", SDL_GetError());
 
-    _window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
+    _window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 100, 100, SDL_WINDOW_RESIZABLE);
     if (_window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
   }
 
