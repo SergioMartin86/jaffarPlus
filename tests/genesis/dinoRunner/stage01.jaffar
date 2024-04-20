@@ -53,7 +53,7 @@
   "System Type": "Sega Genesis",
   "Controller 1 Type": "Gamepad3B",
   "Controller 2 Type": "None",
-  "Disabled State Properties": [ ]
+  "Disabled State Properties": [ "VRAM", "SATM" ]
 },
  
 "Runner Configuration":

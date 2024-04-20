@@ -22,8 +22,8 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      50000,
-      50000
+      5000,
+      5000
     ],
   
     "Scavenger Queues Size": 32,
@@ -53,7 +53,7 @@
   "System Type": "Sega Genesis",
   "Controller 1 Type": "Gamepad3B",
   "Controller 2 Type": "None",
-  "Disabled State Properties": [ ]
+  "Disabled State Properties": [ "VRAM", "SATM"  ]
 },
  
 "Runner Configuration":
