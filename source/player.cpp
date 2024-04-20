@@ -1,5 +1,4 @@
 #include <chrono>
-#include <SDL.h>
 #include <argparse/argparse.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>

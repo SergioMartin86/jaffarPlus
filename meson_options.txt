@@ -1,3 +1,15 @@
+option('emulators',
+  type : 'array',
+  choices : [
+    'QuickerNES',
+    'QuickerGPGX',
+    'QuickerSDLPoP',
+    'QuickerSnes9x'
+   ],
+  value : [ ],
+  description : 'Selects the emulation cores to compile Jaffar to'
+)
+
 option('buildTests',
   type : 'boolean',
   value : true,

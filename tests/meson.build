@@ -6,16 +6,23 @@ testTimeout = 120
 
 bash = find_program('bash')
 validateExamplesScript = 'validateExamples.sh'
-test('scriptValidator',
+
+foreach emulator : emulators
+
+test(emulator,
       bash,
       workdir : meson.current_source_dir(),
       timeout: testTimeout,
-      args : [ validateExamplesScript ],
-      suite : [ 'runs' ])
+      args : [ validateExamplesScript, emulator ],
+      suite : [ 'ScriptValidation' ])
+
+endforeach
 
 ######## Full run tests
 
 # Setting env variables
+
+if 'QuickerNES' in emulators
 
 ## NES / Sprilo
 
@@ -52,6 +59,10 @@ test('race04_short_reproduce',
       args : [ 'race04_short_contiguous.jaffar', 'race04_short.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
       suite : [ 'reproductions', 'nes', 'sprilo' ])
 
+endif 
+
+if 'QuickerSDLPoP' in emulators
+
 ## SDLPoP / Prince Of Persia
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
@@ -71,6 +82,10 @@ test('lvl01_reproduce',
       args : [ 'lvl01a.jaffar', 'lvl01a.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
       suite : [ 'reproductions', 'sdlpop' ])
 
+endif
+
+if 'QuickerSnes9x' in emulators
+
 ## SNES / Christmas Craze
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
@@ -82,3 +97,5 @@ test('stage01',
       args : 'stage01.jaffar',
       env : testEnvVars,
       suite : [ 'runs', 'snes', 'christmasCraze' ])
+
+endif
