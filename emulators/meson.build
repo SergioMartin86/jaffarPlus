@@ -17,3 +17,8 @@ if 'QuickerGPGX' in emulators
 jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERGPGX'
 subdir('quickerGPGX')
 endif
+
+if 'QuickerStella' in emulators
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERSTELLA'
+subdir('quickerStella')
+endif

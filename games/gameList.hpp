@@ -19,6 +19,10 @@
   #include "genesis/dinoRunner.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_QUICKERSTELLA
+  #include "a2600/hellway.hpp"
+#endif
+
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -62,6 +66,10 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 
 #ifdef __JAFFAR_USE_QUICKERGPGX
   DETECT_GAME(genesis::DinoRunner);
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERSTELLA
+  DETECT_GAME(a2600::Hellway);
 #endif
 
   // Check if game was recognized

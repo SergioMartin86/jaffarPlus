@@ -4,7 +4,8 @@ option('emulators',
     'QuickerNES',
     'QuickerGPGX',
     'QuickerSDLPoP',
-    'QuickerSnes9x'
+    'QuickerSnes9x',
+    'QuickerStella',
    ],
   value : [ ],
   description : 'Selects the emulation cores to compile Jaffar with'

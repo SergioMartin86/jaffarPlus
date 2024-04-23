@@ -18,6 +18,10 @@
   #include "quickerGPGX/quickerGPGX.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_QUICKERSTELLA
+  #include "quickerStella/quickerStella.hpp"
+#endif
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
@@ -53,6 +57,10 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
 
 #ifdef __JAFFAR_USE_QUICKERGPGX
   DETECT_EMULATOR(emulator::QuickerGPGX);
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERSTELLA
+  DETECT_EMULATOR(emulator::QuickerStella);
 #endif
 
   // Check if recognized
