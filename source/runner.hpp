@@ -41,6 +41,9 @@ class Runner final
 
     // Getting candidate input sets
     _candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
+
+    // Getting initial sequence file path
+    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
   }
 
   void initialize()
@@ -77,6 +80,21 @@ class Runner final
 
       // Clearing storage (set to zero)
       memset(_inputHistory.data(), 0, _inputHistory.size());
+    }
+
+    // Advancing the state using the initial sequence, if provided
+    if (_initialSequenceFilePath != "")
+    {
+      // Load initial sequence
+      std::string initialSequenceFileString;
+      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+      // Getting input sequence
+      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, ' ');
+
+      // Running inputs in the initial sequence
+      for (const auto& input : initialSequence) advanceState(input);
     }
   }
 
@@ -420,6 +438,9 @@ class Runner final
 
   // Storage for the input history
   std::vector<uint8_t> _inputHistory;
+
+  // File containing an initial sequence to run before starting
+  std::string _initialSequenceFilePath;
 
   ///////////////////////////////
   // Input processing variables

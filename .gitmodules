@@ -13,3 +13,6 @@
 [submodule "extern/quickerGPGX"]
 	path = extern/quickerGPGX
 	url = https://github.com/SergioMartin86/quickerGPGX.git
+[submodule "extern/quickerStella"]
+	path = extern/quickerStella
+	url = https://github.com/SergioMartin86/quickerStella.git
