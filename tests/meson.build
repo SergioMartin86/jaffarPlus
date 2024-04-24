@@ -115,3 +115,19 @@ test('stage01',
       suite : [ 'runs', 'genesis', 'dinoRunner' ])
 
 endif
+
+if 'QuickerStella' in emulators
+
+## A2600 / Hellway
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/a2600/hellway',
+      timeout: testTimeout,
+      args : 'stage01.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'a2600', 'hellway' ])
+      
+endif
