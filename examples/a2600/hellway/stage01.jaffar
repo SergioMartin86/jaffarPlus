@@ -22,8 +22,8 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      5000,
-      5000
+      50,
+      50
     ],
   
     "Scavenger Queues Size": 32,
@@ -68,15 +68,8 @@
 
       "Inputs":
       [
-        "|.....|.....|",
-        "|.....|....B|",
         "|.....|...RB|",
-        "|.....|..L.B|",
-        "|.....|..L..|",
-        "|.....|...R.|",
-        "|.....|.D...|",
-        "|.....|.DL..|",
-        "|.....|.D.R.|"
+        "|.....|..L.B|"
       ],
 
       "Stop Input Evaluation": false
@@ -96,7 +89,8 @@
   "Print Properties":
   [
     "Score",
-    "Car State"
+    "Car State",
+    "SubDistance"
   ],
 
   "Hash Properties":
@@ -111,7 +105,7 @@
       "Label": 1998,
       "Conditions":
       [
-        { "Property": "Score", "Op": ">=", "Value": 10 }
+        { "Property": "Score", "Op": ">=", "Value": 100 }
       ],
       
       "Satisfies": [ ],

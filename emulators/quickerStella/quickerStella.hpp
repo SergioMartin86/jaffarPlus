@@ -5,6 +5,7 @@
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
+#include <mutex>
 #include <emulator.hpp>
 #include <stellaInstance.hpp>
 
@@ -28,18 +29,6 @@ class QuickerStella final : public Emulator
     const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
     for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
 
-    // For testing purposes, the initial state file can be overriden by environment variables
-    if (auto *value = std::getenv("JAFFAR_QUICKERSTELLA_OVERRIDE_INITIAL_STATE_FILE_PATH"))
-    {
-      // Even if we override, we'd like to test whether the originally specified rom still exists to ensure consistency in Github
-      std::string initialStateString;
-      bool        status = jaffarCommon::file::loadStringFromFile(initialStateString, _initialStateFilePath.c_str());
-      if (status == false) JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _initialStateFilePath.c_str());
-
-      // Now do the proper override
-      _initialStateFilePath = std::string(value);
-    }
-
     // Parsing controller configuration
     _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
     _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
@@ -60,8 +49,10 @@ class QuickerStella final : public Emulator
   void initializeImpl() override
   {
     // Initializing emulator
+    _mutex.lock();
     _quickerStella.initialize();
-
+    _mutex.unlock();
+    
     // Setting controller types
     _quickerStella.setController1Type(_controller1Type);
     _quickerStella.setController2Type(_controller2Type);
@@ -78,18 +69,6 @@ class QuickerStella final : public Emulator
 
     // Loading rom into emulator
     _quickerStella.loadROM(_romFilePath);
-
-    // If initial state file defined, load it
-    if (_initialStateFilePath.empty() == false)
-    {
-      // Reading from initial state file
-      std::string initialState;
-      bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
-      if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
-
-      // Deserializing initial state into the emulator
-      loadFullState(initialState);
-    }
 
     // Now disabling state properties, as requested
     disableStateProperties();
@@ -188,7 +167,9 @@ class QuickerStella final : public Emulator
   std::string _controller2Type;
   std::string _romFilePath;
   std::string _romFileSHA1;
-  std::string _initialStateFilePath;
+
+  // Mutex required to avoid crashes during initialization
+  std::mutex _mutex;
 };
 
 } // namespace emulator
