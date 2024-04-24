@@ -52,7 +52,7 @@ class QuickerStella final : public Emulator
     _mutex.lock();
     _quickerStella.initialize();
     _mutex.unlock();
-    
+
     // Setting controller types
     _quickerStella.setController1Type(_controller1Type);
     _quickerStella.setController2Type(_controller2Type);

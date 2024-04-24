@@ -37,8 +37,8 @@ class Hellway final : public jaffarPlus::Game
     registerGameProperty("Car State", &_lowMem[0x4B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _score     = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
-    _subDistance    = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("SubDistance")]->getPointer();
+    _score       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
+    _subDistance = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("SubDistance")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const std::string &input) override
@@ -47,21 +47,14 @@ class Hellway final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
-   {
-    hashEngine.Update(_lowMem, 0x80);
-   }
+  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override { hashEngine.Update(_lowMem, 0x80); }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
 
-  __INLINE__ void ruleUpdatePreHook() override
-  {
-  }
+  __INLINE__ void ruleUpdatePreHook() override {}
 
-  __INLINE__ void ruleUpdatePostHook() override
-  {
-  }
+  __INLINE__ void ruleUpdatePostHook() override {}
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
 
@@ -79,9 +72,7 @@ class Hellway final : public jaffarPlus::Game
     return reward;
   }
 
-  void printInfoImpl() const override
-  {
-  }
+  void printInfoImpl() const override {}
 
   bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
   {
@@ -96,8 +87,8 @@ class Hellway final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  uint8_t  *_score;
-  uint8_t  *_subDistance;
+  uint8_t *_score;
+  uint8_t *_subDistance;
 
   // Pointer to emulator's low memory storage
   uint8_t *_lowMem;
