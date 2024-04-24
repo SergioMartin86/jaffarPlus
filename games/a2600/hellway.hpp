@@ -33,10 +33,12 @@ class Hellway final : public jaffarPlus::Game
 
     // Registering native game properties
     registerGameProperty("Score", &_lowMem[0x34], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("SubDistance", &_lowMem[0x11], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Car State", &_lowMem[0x4B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
     _score     = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
+    _subDistance    = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("SubDistance")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const std::string &input) override
@@ -71,7 +73,7 @@ class Hellway final : public jaffarPlus::Game
     float reward = 0.0;
 
     // Distance to point magnet
-    reward += 1.0 * *_score;
+    reward += 256.0 * *_score + *_subDistance;
 
     // Returning reward
     return reward;
@@ -94,8 +96,8 @@ class Hellway final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  // Magnets (used to determine state reward and have Jaffar favor a direction or action)
   uint8_t  *_score;
+  uint8_t  *_subDistance;
 
   // Pointer to emulator's low memory storage
   uint8_t *_lowMem;

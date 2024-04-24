@@ -94,7 +94,7 @@ class Runner final
       const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, ' ');
 
       // Running inputs in the initial sequence
-      for (const auto& input : initialSequence) advanceState(input);
+      for (const auto& input : initialSequence)   _game->advanceState(input);
     }
   }
 
