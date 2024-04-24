@@ -58,7 +58,8 @@
 "Runner Configuration":
 {
   "Hash Step Tolerance": 4,
-
+  "Initial Sequence File Path": "",
+  
   "Allowed Input Sets":
   [
    {
