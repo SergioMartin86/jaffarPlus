@@ -17,25 +17,28 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 
 ## Consoles
 
-| Console            | Core(s)                                                              | Target        |  Notes        |
-| --------           | -------                                                              | ------        | ------        |
-| Atari 2600         | [QuickerStella](https://github.com/SergioMartin86/quickerStella)     | -             | Experimental  |
-| NES                | [QuickerNES](https://github.com/SergioMartin86/quickerNES)           | Bizhawk 2.10  |               |
-| SNES               | [QuickerSnes9x](https://github.com/SergioMartin86/quickerSnes9x)     | Bizhawk 2.10  |               |
-| Sega Genesis       | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)         | Bizhawk 2.10  |               |
-| Sega CD            | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)         | Bizhawk 2.10  |               |
-| Sega SG-1000       | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)         | Bizhawk 2.10  |               |
-| Sega Master System | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)         | Bizhawk 2.10  |               |
+| Console            | Core(s)                                                                      | Target        |  Notes        |
+| --------           | -------                                                                      | ------        | ------        |
+| Atari 2600         | [QuickerStella](https://github.com/SergioMartin86/quickerStella)             | -             | Experimental, faster than libAtari2600Hawk  |
+| Atari 2600*        | [libAtari2600Hawk](https://github.com/CasualPokePlayer/libAtari2600Hawk)     | Bizhawk 2.10  |               |
+| NES                | [QuickerNES](https://github.com/SergioMartin86/quickerNES)                   | Bizhawk 2.10  |               |
+| SNES               | [QuickerSnes9x](https://github.com/SergioMartin86/quickerSnes9x)             | Bizhawk 2.10  |               |
+| Sega Genesis       | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 | Bizhawk 2.10  |               |
+| Sega CD            | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 | Bizhawk 2.10  |               |
+| Sega SG-1000       | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 | Bizhawk 2.10  |               |
+| Sega Master System | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 | Bizhawk 2.10  |               |
 
 ## Game-Specific
 
 | Game                                | Core(s)                                                                                  |   Target            |  Notes   |
 | --------                            | -------                                                                                  | ------            | ------   |
 | Prince of Persia (DOS / Apple ][)   | [QuickerSDLPoP](https://github.com/SergioMartin86/quickerSDLPoP)                         | LibTAS+PCem       |          |
-| Another World                       | [Fabother World](https://github.com/fabiensanglard/Another-World-Bytecode-Interpreter)   | *many*            |  All ports of AW use the same engine |
-| Super Mario Bros (NES)              | [Mario C++](https://github.com/MitchellSternke/Mario)                                    | Bizhawk 2.10      |  May desync against to console emulator |
-| Arkanoid (NES)                      | [Arkbot](https://github.com/sbroger/arkbot)                                              | Bizhawk 2.10      |          |
+| Another World*                      | [Fabother World](https://github.com/fabiensanglard/Another-World-Bytecode-Interpreter)   | *many*            |  All ports of AW use the same engine |
+| Super Mario Bros (NES)*              | [Mario C++](https://github.com/MitchellSternke/Mario)                                    | Bizhawk 2.10      |  May desync against to console emulator |
+| Arkanoid (NES)*                      | [Arkbot](https://github.com/sbroger/arkbot)                                              | Bizhawk 2.10      |          |
 
+
+* In development
 
 Author
 =============
