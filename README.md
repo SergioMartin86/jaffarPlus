@@ -37,7 +37,6 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 | Super Mario Bros (NES)*              | [Mario C++](https://github.com/MitchellSternke/Mario)                                    | Bizhawk 2.10      |  May desync against to console emulator |
 | Arkanoid (NES)*                      | [Arkbot](https://github.com/sbroger/arkbot)                                              | Bizhawk 2.10      |          |
 
-
 *In development
 
 Author
@@ -53,13 +52,18 @@ Author
 
 - Contributions via pull requests are highly appreciated.
 
-Thanks to:
-- TASVideos' staff (judges, encoders, admins, etc)
-- The Bizhawk development team (YoshiRulz, feos, Morilli, CasualPokePlayer, NattTheBear, Alyosha, feos, zeromus, etc)
-- Dávid Nagy and all SDLPoP developers
-- Gregory Montoir and Fabien Sanglard (authors of Fabother World)
-- Eke-Eke and all Genesis Plus GX developers
-- Shay Green, Christopher Snowhill and all QuickNES developers
-- sbroger (a.k.a Chef Stef), developer of Arkbot
-- Mitchell Sternke, developer of Mario C++
-- Alexander Lyashuk (mooskagh, crem) for kickstarting the idea of creating a TASing bot.
+- Thanks to:
+  + TASVideos' staff (judges, encoders, admins, etc)
+  + The Bizhawk development team (YoshiRulz, feos, Morilli, CasualPokePlayer, NattTheBear, Alyosha, feos, zeromus, and many others)
+  + Dávid Nagy and all SDLPoP developers
+  + Gregory Montoir and Fabien Sanglard (authors of Fabother World)
+  + Eke-Eke and all Genesis Plus GX developers
+  + Shay Green, Christopher Snowhill and all QuickNES developers
+  + sbroger (a.k.a Chef Stef), developer of Arkbot
+  + Mitchell Sternke, developer of Mario C++
+  + Alexander Lyashuk (mooskagh, crem) for kickstarting the idea of creating a TASing bot.
+  + The authors of the third party libraries used.
+
+- JaffarPlus is distributed freely under the GPL3 license for any purpose and use, as long as:
+  + The license and proper credits to its author are preserved
+  + If you publish a TAS or any public work using this software, I'd appreciate you mention it and linking this repository in your description
