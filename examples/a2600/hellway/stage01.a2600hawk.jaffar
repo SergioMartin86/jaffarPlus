@@ -1,0 +1,135 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 1000,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      50,
+      50
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "Atari2600Hawk",
+  "Rom File Path": "../../../extern/quickerStella/tests/roms/hellway.a26",
+  "Rom File SHA1": "8C209A10CCF24194CB888D5E750CF303AD050EF7",
+  "Controller 1 Type": "Gamepad",
+  "Controller 2 Type": "None",
+  "Disabled State Properties": [ ]
+},
+ 
+"Runner Configuration":
+{
+  "Hash Step Tolerance": 4,
+  "Initial Sequence File Path": "stage01.a2600hawk.initial.sol",
+
+  "Allowed Input Sets":
+  [
+    {
+      "Conditions":
+      [
+      ],
+
+      "Inputs":
+      [
+        "|.....|...RB|",
+        "|.....|..L.B|"
+      ],
+
+      "Stop Input Evaluation": false
+    }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "A2600 / Hellway",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Score",
+    "Car State",
+    "SubDistance"
+  ],
+
+  "Hash Properties":
+  [
+    "Score",
+    "Car State"
+  ],
+
+  "Rules":
+  [
+    {
+      "Label": 1998,
+      "Conditions":
+      [
+        { "Property": "Score", "Op": ">=", "Value": 100 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+    },
+
+    {
+      "Label": 1999,
+      "Conditions":
+      [
+        { "Property": "Car State", "Op": "==", "Value": 1 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail" }
+      ]
+    }
+  ]
+ }
+}

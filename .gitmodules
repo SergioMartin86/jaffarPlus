@@ -16,3 +16,6 @@
 [submodule "extern/quickerStella"]
 	path = extern/quickerStella
 	url = https://github.com/SergioMartin86/quickerStella.git
+[submodule "extern/atari2600Hawk"]
+	path = extern/atari2600Hawk
+	url = https://github.com/SergioMartin86/libAtari2600HawkTester.git

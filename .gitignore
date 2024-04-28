@@ -1,4 +1,5 @@
 run-clang-format
+.mono
 .clang-format
 *.bk
 .vscode

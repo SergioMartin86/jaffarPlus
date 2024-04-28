@@ -22,6 +22,10 @@
   #include "quickerStella/quickerStella.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_ATARI2600HAWK
+  #include "atari2600Hawk/atari2600Hawk.hpp"
+#endif
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
@@ -61,6 +65,10 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
 
 #ifdef __JAFFAR_USE_QUICKERSTELLA
   DETECT_EMULATOR(emulator::QuickerStella);
+#endif
+
+#ifdef __JAFFAR_USE_ATARI2600HAWK
+  DETECT_EMULATOR(emulator::Atari2600Hawk);
 #endif
 
   // Check if recognized
