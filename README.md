@@ -38,7 +38,7 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 | Arkanoid (NES)*                      | [Arkbot](https://github.com/sbroger/arkbot)                                              | Bizhawk 2.10      |          |
 
 
-* In development
+*In development
 
 Author
 =============
