@@ -1,6 +1,6 @@
 if 'QuickerNES' in emulators
 jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERNES'
-jaffarCPPFlags += '-D__JAFFAR_ENABLE_SNES'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_NES'
 subdir('quickerNES')
 endif
 

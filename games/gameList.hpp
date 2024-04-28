@@ -56,7 +56,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
   DETECT_GAME(nes::Sprilo);
 #endif
 
-#ifdef __JAFFAR_ENABLE_QUICKERSDLPOP
+#ifdef __JAFFAR_ENABLE_SDLPOP
   DETECT_GAME(sdlpop::PrinceOfPersia);
 #endif
 
