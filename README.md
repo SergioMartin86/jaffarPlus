@@ -55,7 +55,7 @@ Author
 
 Thanks to:
 - TASVideos' staff (judges, encoders, admins, etc)
-- The Bizhawk development team (YoshiRulz, feos, Morilli, NateTheBear, Alyosha, feos, zeromus, etc)
+- The Bizhawk development team (YoshiRulz, feos, Morilli, CasualPokePlayer, NattTheBear, Alyosha, feos, zeromus, etc)
 - Dávid Nagy and all SDLPoP developers
 - Gregory Montoir and Fabien Sanglard (authors of Fabother World)
 - Eke-Eke and all Genesis Plus GX developers

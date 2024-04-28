@@ -2,24 +2,24 @@
 
 #include "../emulators/emulatorList.hpp"
 
-#ifdef __JAFFAR_USE_QUICKERNES
+#ifdef __JAFFAR_ENABLE_NES
   #include "nes/microMachines.hpp"
   #include "nes/sprilo.hpp"
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERSDLPOP
+#ifdef __JAFFAR_ENABLE_SDLPOP
   #include "sdlpop/princeOfPersia.hpp"
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERSNES9X
+#ifdef __JAFFAR_ENABLE_SNES
   #include "snes/christmasCraze.hpp"
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERGPGX
+#ifdef __JAFFAR_ENABLE_GENESIS
   #include "genesis/dinoRunner.hpp"
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERSTELLA
+#ifdef __JAFFAR_ENABLE_A2600
   #include "a2600/hellway.hpp"
 #endif
 
@@ -51,24 +51,24 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
   const auto &gameName = jaffarCommon::json::getString(gameConfig, "Game Name");
 
 // Trying to detect game by name
-#ifdef __JAFFAR_USE_QUICKERNES
+#ifdef __JAFFAR_ENABLE_NES
   DETECT_GAME(nes::MicroMachines);
   DETECT_GAME(nes::Sprilo);
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERSDLPOP
+#ifdef __JAFFAR_ENABLE_QUICKERSDLPOP
   DETECT_GAME(sdlpop::PrinceOfPersia);
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERSNES9X
+#ifdef __JAFFAR_ENABLE_SNES
   DETECT_GAME(snes::ChristmasCraze);
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERGPGX
+#ifdef __JAFFAR_ENABLE_GENESIS
   DETECT_GAME(genesis::DinoRunner);
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERSTELLA
+#ifdef __JAFFAR_ENABLE_A2600
   DETECT_GAME(a2600::Hellway);
 #endif
 
