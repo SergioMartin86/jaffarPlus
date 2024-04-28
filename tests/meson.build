@@ -126,7 +126,23 @@ test('stage01',
       jaffar,
       workdir : meson.current_source_dir() + '/a2600/hellway',
       timeout: testTimeout,
-      args : 'stage01.jaffar',
+      args : 'stage01.stella.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'a2600', 'hellway' ])
+      
+endif
+
+if 'Atari2600Hawk' in emulators
+
+## A2600 / Hellway
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/a2600/hellway',
+      timeout: testTimeout,
+      args : 'stage01.a2600hawk.jaffar',
       env : testEnvVars,
       suite : [ 'runs', 'a2600', 'hellway' ])
       
