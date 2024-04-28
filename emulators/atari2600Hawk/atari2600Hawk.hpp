@@ -76,23 +76,23 @@ class Atari2600Hawk final : public Emulator
 
   // State advancing function
   void advanceState(const std::string &input) override
-   {
-     _Atari2600Hawk.advanceState(input);
+  {
+    _Atari2600Hawk.advanceState(input);
 
-     // Retreiving workram
-     for (size_t i = 0; i < 128; i++) _workRam[i] = _Atari2600Hawk.getWorkRamByte(i);
-   }
+    // Retreiving workram
+    for (size_t i = 0; i < 128; i++) _workRam[i] = _Atari2600Hawk.getWorkRamByte(i);
+  }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override
-   {
-     _Atari2600Hawk.serializeState(serializer);
-     serializer.pushContiguous(_workRam, 128);
-   };
-
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override 
   {
-     _Atari2600Hawk.deserializeState(deserializer);
-     deserializer.popContiguous(_workRam, 128);
+    _Atari2600Hawk.serializeState(serializer);
+    serializer.pushContiguous(_workRam, 128);
+  };
+
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override
+  {
+    _Atari2600Hawk.deserializeState(deserializer);
+    deserializer.popContiguous(_workRam, 128);
   };
 
   __INLINE__ void disableStateProperties()
@@ -133,7 +133,7 @@ class Atari2600Hawk final : public Emulator
   property_t getProperty(const std::string &propertyName) const override
   {
     uint64_t ramPtr = (uint64_t)_workRam;
-    if (propertyName == "RAM") return property_t((uint8_t*)ramPtr, 128);
+    if (propertyName == "RAM") return property_t((uint8_t *)ramPtr, 128);
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
@@ -159,16 +159,16 @@ class Atari2600Hawk final : public Emulator
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
   __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
-   {
-     serializeState(serializer);
-     serializer.pushContiguous(_Atari2600Hawk.getVideoBuffer(), _Atari2600Hawk.getVideoBufferSize());
-   }
+  {
+    serializeState(serializer);
+    serializer.pushContiguous(_Atari2600Hawk.getVideoBuffer(), _Atari2600Hawk.getVideoBufferSize());
+  }
 
   __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
-   {
-     deserializeState(deserializer);
-     deserializer.popContiguous(_Atari2600Hawk.getVideoBuffer(), _Atari2600Hawk.getVideoBufferSize());
-   }
+  {
+    deserializeState(deserializer);
+    deserializer.popContiguous(_Atari2600Hawk.getVideoBuffer(), _Atari2600Hawk.getVideoBufferSize());
+  }
 
   __INLINE__ size_t getRendererStateSize() const
   {
