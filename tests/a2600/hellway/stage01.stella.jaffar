@@ -57,7 +57,7 @@
 "Runner Configuration":
 {
   "Hash Step Tolerance": 4,
-  "Initial Sequence File Path": "stage01.initial.sol",
+  "Initial Sequence File Path": "stage01.stella.initial.sol",
 
   "Allowed Input Sets":
   [
