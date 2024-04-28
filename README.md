@@ -19,8 +19,8 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 
 | Console            | Core(s)                                                                      | Target        |  Notes        |
 | --------           | -------                                                                      | ------        | ------        |
-| Atari 2600         | [QuickerStella](https://github.com/SergioMartin86/quickerStella)             | -             | Experimental, faster than libAtari2600Hawk  |
-| Atari 2600*        | [libAtari2600Hawk](https://github.com/CasualPokePlayer/libAtari2600Hawk)     | Bizhawk 2.10  |               |
+| Atari 2600         | [QuickerStella](https://github.com/SergioMartin86/quickerStella)             | -             | Experimental, faster than Atari2600Hawk  |
+| Atari 2600        | [Atari2600Hawk](https://github.com/CasualPokePlayer/libAtari2600Hawk)         | Bizhawk 2.10  |               |
 | NES                | [QuickerNES](https://github.com/SergioMartin86/quickerNES)                   | Bizhawk 2.10  |               |
 | SNES               | [QuickerSnes9x](https://github.com/SergioMartin86/quickerSnes9x)             | Bizhawk 2.10  |               |
 | Sega Genesis       | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 | Bizhawk 2.10  |               |
