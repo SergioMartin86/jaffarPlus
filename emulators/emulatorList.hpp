@@ -50,34 +50,34 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
   // Getting emulator name
   const auto &emulatorName = jaffarCommon::json::getString(emulatorConfig, "Emulator Name");
 
-  // Detecting emulator
-  #ifdef __JAFFAR_USE_QUICKERNES
-    DETECT_EMULATOR(emulator::QuickerNES);
-  #endif
+// Detecting emulator
+#ifdef __JAFFAR_USE_QUICKERNES
+  DETECT_EMULATOR(emulator::QuickerNES);
+#endif
 
-  #ifdef __JAFFAR_USE_QUICKERSDLPOP
-    DETECT_EMULATOR(emulator::QuickerSDLPoP);
-  #endif
+#ifdef __JAFFAR_USE_QUICKERSDLPOP
+  DETECT_EMULATOR(emulator::QuickerSDLPoP);
+#endif
 
-  #ifdef __JAFFAR_USE_QUICKERSNES9X
-    DETECT_EMULATOR(emulator::QuickerSnes9x);
-  #endif
+#ifdef __JAFFAR_USE_QUICKERSNES9X
+  DETECT_EMULATOR(emulator::QuickerSnes9x);
+#endif
 
-  #ifdef __JAFFAR_USE_QUICKERGPGX
-    DETECT_EMULATOR(emulator::QuickerGPGX);
-  #endif
+#ifdef __JAFFAR_USE_QUICKERGPGX
+  DETECT_EMULATOR(emulator::QuickerGPGX);
+#endif
 
-  #ifdef __JAFFAR_USE_QUICKERSTELLA
-    DETECT_EMULATOR(emulator::QuickerStella);
-  #endif
+#ifdef __JAFFAR_USE_QUICKERSTELLA
+  DETECT_EMULATOR(emulator::QuickerStella);
+#endif
 
-  #ifdef __JAFFAR_USE_ATARI2600HAWK
-    DETECT_EMULATOR(emulator::Atari2600Hawk);
-  #endif
+#ifdef __JAFFAR_USE_ATARI2600HAWK
+  DETECT_EMULATOR(emulator::Atari2600Hawk);
+#endif
 
-  #ifdef __JAFFAR_USE_QUICKERSMBC
-    DETECT_EMULATOR(emulator::QuickerSMBC);
-  #endif
+#ifdef __JAFFAR_USE_QUICKERSMBC
+  DETECT_EMULATOR(emulator::QuickerSMBC);
+#endif
 
   // Check if recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized\n", emulatorName.c_str());

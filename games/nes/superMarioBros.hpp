@@ -21,8 +21,7 @@ class SuperMarioBros final : public jaffarPlus::Game
 
   SuperMarioBros(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
     : jaffarPlus::Game(std::move(emulator), config)
-  {
-  }
+  {}
 
   private:
 
@@ -50,9 +49,9 @@ class SuperMarioBros final : public jaffarPlus::Game
     _marioPosX3        = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Mario Pos X3")]->getPointer();
     _marioPosY1        = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Mario Pos Y1")]->getPointer();
     _marioPosY2        = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Mario Pos Y2")]->getPointer();
-    _marioVelX1        = (int8_t *) _propertyMap[jaffarCommon::hash::hashString("Mario Vel X1")]->getPointer();
+    _marioVelX1        = (int8_t *)_propertyMap[jaffarCommon::hash::hashString("Mario Vel X1")]->getPointer();
     _marioVelY1        = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Mario Vel Y1")]->getPointer();
-    _marioVelY2        = (int8_t *) _propertyMap[jaffarCommon::hash::hashString("Mario Vel Y2")]->getPointer();
+    _marioVelY2        = (int8_t *)_propertyMap[jaffarCommon::hash::hashString("Mario Vel Y2")]->getPointer();
     _marioWalkingFrame = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Mario Walking Frame")]->getPointer();
   }
 
@@ -91,13 +90,9 @@ class SuperMarioBros final : public jaffarPlus::Game
     _marioDistanceToPoint  = sqrtf(_marioDistanceToPointX * _marioDistanceToPointX + _marioDistanceToPointY * _marioDistanceToPointY);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
-  {
-  }
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
-  {
-  }
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -164,9 +159,9 @@ class SuperMarioBros final : public jaffarPlus::Game
   uint8_t *_marioPosY1;
   uint8_t *_marioPosY2;
 
-  int8_t *_marioVelX1;
+  int8_t  *_marioVelX1;
   uint8_t *_marioVelY1;
-  int8_t *_marioVelY2;
+  int8_t  *_marioVelY2;
 
   uint8_t *_marioWalkingFrame;
 

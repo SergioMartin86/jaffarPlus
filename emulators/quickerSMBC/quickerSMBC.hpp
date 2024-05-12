@@ -44,9 +44,9 @@ class QuickerSMBC final : public Emulator
       _initialStateFilePath = std::string(value);
     }
 
-    // Only load rom file if using player
-    #ifdef _JAFFAR_PLAYER
-    
+// Only load rom file if using player
+#ifdef _JAFFAR_PLAYER
+
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
@@ -59,7 +59,7 @@ class QuickerSMBC final : public Emulator
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERSMBC_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
-    #endif
+#endif
   };
 
   void initializeImpl() override
@@ -69,8 +69,8 @@ class QuickerSMBC final : public Emulator
     _quickerSMBC.initialize();
     _mutex.unlock();
 
-    // Only load rom file if using player
-    #ifdef _JAFFAR_PLAYER
+// Only load rom file if using player
+#ifdef _JAFFAR_PLAYER
 
     // Reading from ROM file
     std::string romFileData;
@@ -82,15 +82,14 @@ class QuickerSMBC final : public Emulator
     if (_romFileSHA1 != actualRomSHA1)
       JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
 
-    #endif 
-    
+#endif
+
     // Loading rom into emulator
     _quickerSMBC.loadROM(_romFilePath);
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
     {
-      
       // Reading from initial state file
       std::string initialState;
       bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
@@ -174,16 +173,16 @@ class QuickerSMBC final : public Emulator
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
   __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
-   {
-     serializer.push(_quickerSMBC.getVideoBufferPointer(), _quickerSMBC.getVideoBufferSize());
-     serializeState(serializer);
-   }
+  {
+    serializer.push(_quickerSMBC.getVideoBufferPointer(), _quickerSMBC.getVideoBufferSize());
+    serializeState(serializer);
+  }
 
   __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
-   {
-     deserializer.pop(_quickerSMBC.getVideoBufferPointer(), _quickerSMBC.getVideoBufferSize());
-     deserializeState(deserializer);
-   }
+  {
+    deserializer.pop(_quickerSMBC.getVideoBufferPointer(), _quickerSMBC.getVideoBufferSize());
+    deserializeState(deserializer);
+  }
 
   __INLINE__ size_t getRendererStateSize() const
   {
