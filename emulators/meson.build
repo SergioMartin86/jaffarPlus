@@ -40,5 +40,6 @@ endif
 
 if 'QuickerSMBC' in emulators
 jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERSMBC'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_SMBC'
 subdir('quickerSMBC')
 endif
