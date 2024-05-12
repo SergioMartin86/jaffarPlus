@@ -34,7 +34,7 @@ test('race04_short_contiguous',
       timeout: testTimeout,
       args : 'race04_short_contiguous.jaffar',
       env : testEnvVars,
-      suite : [ 'runs', 'nes', 'sprilo' ])
+      suite : [ 'runs', 'quickerNES', 'sprilo' ])
 
 test('race04_short_differential',
       jaffar,
@@ -42,7 +42,7 @@ test('race04_short_differential',
       timeout: testTimeout,
       args : 'race04_short_differential.jaffar',
       env : testEnvVars,
-      suite : [ 'runs', 'nes', 'sprilo' ])
+      suite : [ 'runs', 'quickerNES', 'sprilo' ])
 
 test('race04_short_plain',
       jaffar,
@@ -50,16 +50,28 @@ test('race04_short_plain',
       timeout: testTimeout,
       args : 'race04_short_plain.jaffar',
       env : testEnvVars,
-      suite : [ 'runs', 'nes', 'sprilo' ])
+      suite : [ 'runs', 'quickerNES', 'sprilo' ])
 
 test('race04_short_reproduce',
       jaffarPlayer,
       workdir : meson.current_source_dir() + '/nes/sprilo',
       timeout: testTimeout,
       args : [ 'race04_short_contiguous.jaffar', 'race04_short.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
-      suite : [ 'reproductions', 'nes', 'sprilo' ])
+      suite : [ 'reproductions', 'quickerNES', 'sprilo' ])
 
-endif 
+## NES / Super Mario Bros
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/nes/superMarioBros',
+      timeout: testTimeout,
+      args : 'world101a.quickerNES.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'quickerNES', 'superMarioBros' ])
+      
+endif
 
 if 'QuickerSDLPoP' in emulators
 
@@ -96,7 +108,7 @@ test('stage01',
       timeout: testTimeout,
       args : 'stage01.jaffar',
       env : testEnvVars,
-      suite : [ 'runs', 'snes', 'christmasCraze' ])
+      suite : [ 'runs', 'QuickerSnes9x', 'christmasCraze' ])
 
 endif
 
@@ -112,7 +124,7 @@ test('stage01',
       timeout: testTimeout,
       args : 'stage01.jaffar',
       env : testEnvVars,
-      suite : [ 'runs', 'genesis', 'dinoRunner' ])
+      suite : [ 'runs', 'QuickerGPGX', 'dinoRunner' ])
 
 endif
 
@@ -128,7 +140,7 @@ test('stage01',
       timeout: testTimeout,
       args : 'stage01.stella.jaffar',
       env : testEnvVars,
-      suite : [ 'runs', 'a2600', 'hellway' ])
+      suite : [ 'runs', 'QuickerStella', 'hellway' ])
       
 endif
 
@@ -144,6 +156,22 @@ test('stage01',
       timeout: testTimeout,
       args : 'stage01.a2600hawk.jaffar',
       env : testEnvVars,
-      suite : [ 'runs', 'a2600', 'hellway' ])
+      suite : [ 'runs', 'Atari2600Hawk', 'hellway' ])
       
 endif
+
+if 'QuickerSMBC' in emulators
+
+## NES / Super Mario Bros
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/nes/superMarioBros',
+      timeout: testTimeout,
+      args : 'world101a.quickerSMBC.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'QuickerSMBC', 'superMarioBros' ])
+endif
+
