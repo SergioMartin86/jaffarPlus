@@ -37,3 +37,8 @@ jaffarCPPFlags += '-D__JAFFAR_USE_ATARI2600HAWK'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_A2600'
 subdir('atari2600Hawk')
 endif
+
+if 'QuickerSMBC' in emulators
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERSMBC'
+subdir('quickerSMBC')
+endif

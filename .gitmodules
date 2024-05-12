@@ -19,3 +19,6 @@
 [submodule "extern/atari2600Hawk"]
 	path = extern/atari2600Hawk
 	url = https://github.com/SergioMartin86/libAtari2600HawkTester.git
+[submodule "extern/quickerSMBC"]
+	path = extern/quickerSMBC
+	url = https://github.com/SergioMartin86/quickerSMBC.git

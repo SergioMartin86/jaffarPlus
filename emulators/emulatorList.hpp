@@ -26,6 +26,10 @@
   #include "atari2600Hawk/atari2600Hawk.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_QUICKERSMBC
+  #include "quickerSMBC/quickerSMBC.hpp"
+#endif
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
