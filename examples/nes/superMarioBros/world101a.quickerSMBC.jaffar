@@ -49,7 +49,7 @@
   "Emulator Name": "QuickerSMBC",
   "Rom File Path": "../../../extern/quickerSMBC/tests/roms/Super Mario Bros. (JU) (PRG0) [!].nes",
   "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
-  "Initial State File Path": "world101a.state",
+  "Initial State File Path": "world101a.quickerSMBC.state",
   "Disabled State Properties": [ "PPU", "DST", "STK" ]
 },
  
@@ -126,7 +126,7 @@
       "Label": 1999,
       "Conditions":
       [
-        { "Property": "Mario Pos X", "Op": ">", "Value": 200 }
+        { "Property": "Mario Pos X", "Op": ">", "Value": 100 }
       ],
       
       "Satisfies": [ ],

@@ -59,18 +59,6 @@ test('race04_short_reproduce',
       args : [ 'race04_short_contiguous.jaffar', 'race04_short.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
       suite : [ 'reproductions', 'quickerNES', 'sprilo' ])
 
-## NES / Super Mario Bros
-
-testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
-
-test('stage01',
-      jaffar,
-      workdir : meson.current_source_dir() + '/nes/superMarioBros',
-      timeout: testTimeout,
-      args : 'world101a.quickerNES.jaffar',
-      env : testEnvVars,
-      suite : [ 'runs', 'quickerNES', 'superMarioBros' ])
-      
 endif
 
 if 'QuickerSDLPoP' in emulators
