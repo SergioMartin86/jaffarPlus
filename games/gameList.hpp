@@ -23,6 +23,14 @@
   #include "a2600/hellway.hpp"
 #endif
 
+#ifdef __JAFFAR_ENABLE_A2600
+  #include "a2600/hellway.hpp"
+#endif
+
+#ifdef __JAFFAR_ENABLE_SMBC
+  #include "nes/superMarioBros.hpp"
+#endif
+
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -71,6 +79,11 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 #ifdef __JAFFAR_ENABLE_A2600
   DETECT_GAME(a2600::Hellway);
 #endif
+
+#ifdef __JAFFAR_ENABLE_SMBC
+  DETECT_GAME(nes::SuperMarioBros);
+#endif
+
 
   // Check if game was recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized\n", gameName.c_str());
