@@ -40,9 +40,12 @@ class QuickerNES final : public Emulator
     if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_INITIAL_STATE_FILE_PATH"))
     {
       // Even if we override, we'd like to test whether the originally specified rom still exists to ensure consistency in Github
-      std::string initialStateString;
-      bool        status = jaffarCommon::file::loadStringFromFile(initialStateString, _initialStateFilePath.c_str());
-      if (status == false) JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _initialStateFilePath.c_str());
+      if (_initialStateFilePath != "")
+      {
+        std::string initialStateString;
+        bool        status = jaffarCommon::file::loadStringFromFile(initialStateString, _initialStateFilePath.c_str());
+        if (status == false) JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _initialStateFilePath.c_str());
+      }
 
       // Now do the proper override
       _initialStateFilePath = std::string(value);
