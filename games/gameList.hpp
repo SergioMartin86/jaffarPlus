@@ -27,7 +27,7 @@
   #include "a2600/hellway.hpp"
 #endif
 
-#ifdef __JAFFAR_ENABLE_SMBC
+#if defined(__JAFFAR_ENABLE_SMBC) || defined(__JAFFAR_ENABLE_NES)
   #include "nes/superMarioBros.hpp"
 #endif
 
