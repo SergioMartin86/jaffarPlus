@@ -30,6 +30,11 @@
   #include "quickerSMBC/quickerSMBC.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_QUICKERRAW
+  #include "quickerRAW/quickerRAW.hpp"
+#endif
+
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
@@ -77,6 +82,10 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
 
 #ifdef __JAFFAR_USE_QUICKERSMBC
   DETECT_EMULATOR(emulator::QuickerSMBC);
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERRAW
+  DETECT_EMULATOR(emulator::QuickerRAW);
 #endif
 
   // Check if recognized

@@ -22,3 +22,6 @@
 [submodule "extern/quickerSMBC"]
 	path = extern/quickerSMBC
 	url = https://github.com/SergioMartin86/quickerSMBC.git
+[submodule "extern/quickerRAW"]
+	path = extern/quickerRAW
+	url = https://github.com/SergioMartin86/QuickerRAW.git

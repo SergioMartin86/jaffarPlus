@@ -7,7 +7,8 @@ option('emulators',
     'QuickerSnes9x',
     'QuickerStella',
     'Atari2600Hawk',
-    'QuickerSMBC'
+    'QuickerSMBC',
+    'QuickerRAW',
    ],
   value : [ ],
   description : 'Selects the emulation cores to compile Jaffar with'
