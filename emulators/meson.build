@@ -43,3 +43,9 @@ jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERSMBC'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_SMBC'
 subdir('quickerSMBC')
 endif
+
+if 'QuickerRAW' in emulators
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERRAW'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_RAW'
+subdir('quickerRAW')
+endif
