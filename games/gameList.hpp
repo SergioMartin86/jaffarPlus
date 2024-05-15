@@ -31,6 +31,10 @@
   #include "nes/superMarioBros.hpp"
 #endif
 
+#ifdef __JAFFAR_ENABLE_RAW
+  #include "raw/anotherWorld.hpp"
+#endif
+
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -82,6 +86,10 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 
 #if defined(__JAFFAR_ENABLE_SMBC) || defined(__JAFFAR_ENABLE_NES)
   DETECT_GAME(nes::SuperMarioBros);
+#endif
+
+#ifdef __JAFFAR_ENABLE_RAW
+  DETECT_GAME(raw::AnotherWorld);
 #endif
 
   // Check if game was recognized

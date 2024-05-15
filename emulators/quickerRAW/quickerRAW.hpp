@@ -104,7 +104,9 @@ class QuickerRAW final : public Emulator
 
   property_t getProperty(const std::string &propertyName) const override
   {
-    if (propertyName == "LRAM") return property_t(_quickerRAW.getRamPointer(), 0x800);
+    if (propertyName == "RAM") return property_t(_quickerRAW.getRamPointer(), 512);
+    if (propertyName == "Threads Data") return property_t((uint8_t*)_quickerRAW.getThreadsData(), _quickerRAW.getThreadsDataSize());
+    if (propertyName == "Script Stack Data") return property_t((uint8_t*)_quickerRAW.getScriptStackData(), _quickerRAW.getScriptStackDataSize());
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
