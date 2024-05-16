@@ -162,4 +162,3 @@ test('stage01',
       env : testEnvVars,
       suite : [ 'runs', 'QuickerSMBC', 'superMarioBros' ])
 endif
-
