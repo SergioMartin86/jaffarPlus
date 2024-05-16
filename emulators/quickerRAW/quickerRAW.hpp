@@ -118,7 +118,7 @@ class QuickerRAW final : public Emulator
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
-    enableStateProperties();
+    // enableStateProperties();
     _quickerRAW.initializeVideoOutput();
   }
 
@@ -129,20 +129,23 @@ class QuickerRAW final : public Emulator
 
   __INLINE__ void disableRendering() override { _quickerRAW.disableRendering(); }
 
-  __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
+  __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
+  {
+
+  }
 
   __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
   {
+    serializeState(serializer);
     serializer.push(_quickerRAW.getPixelsPtr(), _quickerRAW.getPixelsSize());
     serializer.push(_quickerRAW.getPalettePtr(), _quickerRAW.getPaletteSize());
-    serializeState(serializer);
   }
 
   __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
   {
+    deserializeState(deserializer);
     deserializer.pop(_quickerRAW.getPixelsPtr(), _quickerRAW.getPixelsSize());
     deserializer.pop(_quickerRAW.getPalettePtr(), _quickerRAW.getPaletteSize());
-    deserializeState(deserializer);
   }
 
   __INLINE__ size_t getRendererStateSize() const

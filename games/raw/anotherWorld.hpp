@@ -18,7 +18,7 @@ class AnotherWorld final : public jaffarPlus::Game
 {
   public:
 
-  static __INLINE__ std::string getName() { return "A2600 / AnotherWorld"; }
+  static __INLINE__ std::string getName() { return "RAW / AnotherWorld"; }
 
   AnotherWorld(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
     : jaffarPlus::Game(std::move(emulator), config)
@@ -99,7 +99,7 @@ class AnotherWorld final : public jaffarPlus::Game
      jaffarCommon::serializer::Contiguous s(_tempStorage, _tempStorageSize);
      _emulator->serializeState(s);
 
-     // Advancing emulator state
+    //  Advancing emulator state
      _emulator->advanceState(".....");
 
      // Hashing state now
@@ -117,10 +117,22 @@ class AnotherWorld final : public jaffarPlus::Game
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
 
-  __INLINE__ void ruleUpdatePreHook() override {}
+  __INLINE__ void ruleUpdatePreHook() override
+   {
+     // Resetting magnets ahead of rule re-evaluation
+    _pointMagnet.intensity = 0.0;
+    _pointMagnet.x         = 0.0;
+    _pointMagnet.y         = 0.0;
+   }
 
-  __INLINE__ void ruleUpdatePostHook() override {}
-
+  __INLINE__ void ruleUpdatePostHook() override
+   {
+    // Updating distance to user-defined point
+    _lesterDistanceToPointX = std::abs(_pointMagnet.x - (float)*_lesterPosX);
+    _lesterDistanceToPointY = std::abs(_pointMagnet.y - (float)*_lesterPosY);
+    _lesterDistanceToPoint  = sqrtf(_lesterDistanceToPointX * _lesterDistanceToPointX + _lesterDistanceToPointY * _lesterDistanceToPointY);
+   }
+   
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
@@ -131,17 +143,36 @@ class AnotherWorld final : public jaffarPlus::Game
     float reward = 0.0;
 
     // Distance to point magnet
-    reward += 256.0 * *_score + *_subDistance;
+    reward += -1.0 * _pointMagnet.intensity * _lesterDistanceToPoint;
 
     // Returning reward
     return reward;
   }
 
-  void printInfoImpl() const override {}
+
+  void printInfoImpl() const override
+  {
+    if (std::abs(_pointMagnet.intensity) > 0.0f)
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _lesterDistanceToPointX);
+      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _lesterDistanceToPointY);
+      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _lesterDistanceToPoint);
+    }
+  }
 
   bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
   {
     bool recognizedActionType = false;
+
+    if (actionType == "Set Point Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
+      recognizedActionType = true;
+    }
 
     return recognizedActionType;
   }
@@ -152,13 +183,26 @@ class AnotherWorld final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
+  // Datatype to describe a point magnet
+  struct pointMagnet_t
+  {
+    float intensity = 0.0; // How strong the magnet is
+    float x         = 0.0; // What is the x point of attraction
+    float y         = 0.0; // What is the y point of attraction
+  };
+
+  // Magnets (used to determine state reward and have Jaffar favor a direction or action)
+  pointMagnet_t _pointMagnet;
+
   // Temporary storage for the emulator state for calculating hash
   uint8_t* _tempStorage;
   size_t _tempStorageSize;
 
-  uint8_t *_score;
-  uint8_t *_subDistance;
-
+  // Game-Specific values
+  float _lesterDistanceToPointX;
+  float _lesterDistanceToPointY;
+  float _lesterDistanceToPoint;
+  
   // Pointer to emulator's low memory storage
   int16_t *_ram;
   int16_t* _threadsData;
