@@ -105,8 +105,8 @@ class QuickerRAW final : public Emulator
   property_t getProperty(const std::string &propertyName) const override
   {
     if (propertyName == "RAM") return property_t(_quickerRAW.getRamPointer(), 512);
-    if (propertyName == "Threads Data") return property_t((uint8_t*)_quickerRAW.getThreadsData(), _quickerRAW.getThreadsDataSize());
-    if (propertyName == "Script Stack Data") return property_t((uint8_t*)_quickerRAW.getScriptStackData(), _quickerRAW.getScriptStackDataSize());
+    if (propertyName == "Threads Data") return property_t((uint8_t *)_quickerRAW.getThreadsData(), _quickerRAW.getThreadsDataSize());
+    if (propertyName == "Script Stack Data") return property_t((uint8_t *)_quickerRAW.getScriptStackData(), _quickerRAW.getScriptStackDataSize());
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
@@ -129,10 +129,7 @@ class QuickerRAW final : public Emulator
 
   __INLINE__ void disableRendering() override { _quickerRAW.disableRendering(); }
 
-  __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
-  {
-
-  }
+  __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
   __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
   {
@@ -166,8 +163,7 @@ class QuickerRAW final : public Emulator
 
   std::string _initialStateFilePath;
   std::string _gameDataPath;
-  std::mutex _mutex;
-
+  std::mutex  _mutex;
 };
 
 } // namespace emulator

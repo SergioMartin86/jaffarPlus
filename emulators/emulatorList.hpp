@@ -34,7 +34,6 @@
   #include "quickerRAW/quickerRAW.hpp"
 #endif
 
-
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
