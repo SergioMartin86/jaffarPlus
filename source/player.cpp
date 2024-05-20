@@ -30,7 +30,7 @@ bool mainCycle(jaffarPlus::Runner &r, const std::string &solutionFile, bool disa
     JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from solution sequence file: %s\n", solutionFile.c_str());
 
   // Getting input sequence
-  const auto solutionSequence = jaffarCommon::string::split(solutionFileString, ' ');
+  const auto solutionSequence = jaffarCommon::string::split(solutionFileString, '\0');
 
   // Variable for current step in view
   ssize_t currentStep = 0;

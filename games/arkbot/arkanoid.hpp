@@ -1,7 +1,9 @@
 #pragma once
 
+#include <memory>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/json.hpp>
+#include <emulators/quickerArkBot/quickerArkBot.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
 
@@ -22,12 +24,15 @@ class Arkanoid final : public jaffarPlus::Game
 
   Arkanoid(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
     : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  {
+    _arkState = dynamic_cast<jaffarPlus::emulator::QuickerArkBot*>(_emulator.get())->getGameState();
+  }
 
   private:
 
   __INLINE__ void registerGameProperties() override
   {
+    registerGameProperty("Score", &_arkState->score, Property::datatype_t::dt_uint32, Property::endianness_t::little);
   }
 
   __INLINE__ void advanceStateImpl(const std::string &input) override
@@ -38,6 +43,7 @@ class Arkanoid final : public jaffarPlus::Game
 
   __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
   {
+    hashEngine.Update(*_arkState);
   }
 
   // Updating derivative values after updating the internal state
@@ -80,6 +86,9 @@ class Arkanoid final : public jaffarPlus::Game
     // There is no discriminating state element, so simply return a zero hash
     return jaffarCommon::hash::hash_t();
   }
+
+  GameState* _arkState;
+
 
 };
 

@@ -36,6 +36,10 @@ class QuickerArkBot final : public Emulator
     // Getting initial state file from the configuration
     _initialScore = jaffarCommon::json::getNumber<uint32_t>(config, "Initial Score");
 
+    // Parsing controller configuration
+    _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
+    _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
+
     #ifdef _JAFFAR_PLAYER
      // Parsing rom file path
      _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
@@ -52,6 +56,10 @@ class QuickerArkBot final : public Emulator
 
   void initializeImpl() override
   {
+    // Setting controller types
+    _quickerArkBot->setController1Type(_controller1Type);
+    _quickerArkBot->setController2Type(_controller2Type);
+
     // Initializing emulator
     _quickerArkBot->initialize(_romFilePath);
   }
@@ -90,7 +98,10 @@ class QuickerArkBot final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void printInfo() const override {}
+  __INLINE__ void printInfo() const override
+  {
+    _quickerArkBot->printInformation();
+  }
 
   property_t getProperty(const std::string &propertyName) const override
   {
@@ -112,7 +123,6 @@ class QuickerArkBot final : public Emulator
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
-    // enableStateProperties();
     _quickerArkBot->initializeVideoOutput();
   }
 
@@ -134,11 +144,13 @@ class QuickerArkBot final : public Emulator
   __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
   {
     serializeState(serializer);
+    serializer.push(_quickerArkBot->getBlitPointer(), _quickerArkBot->getBlitSize());
   }
 
   __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
   {
     deserializeState(deserializer);
+    deserializer.pop(_quickerArkBot->getBlitPointer(), _quickerArkBot->getBlitSize());
   }
 
   __INLINE__ size_t getRendererStateSize() const
@@ -147,6 +159,8 @@ class QuickerArkBot final : public Emulator
     serializeRendererState(s);
     return s.getOutputSize();
   }
+
+  GameState* getGameState() { return _quickerArkBot->getGameState(); }
 
   __INLINE__ void showRender() override
    {
@@ -159,6 +173,8 @@ class QuickerArkBot final : public Emulator
   std::string _romFilePath = "";
   uint8_t _initialLevel;
   uint32_t _initialScore;
+  std::string _controller1Type;
+  std::string _controller2Type;
 };
 
 } // namespace emulator

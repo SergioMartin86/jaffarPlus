@@ -91,10 +91,13 @@ class Runner final
         JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
 
       // Getting input sequence
-      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, ' ');
+      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
 
       // Running inputs in the initial sequence
       for (const auto &input : initialSequence) _game->advanceState(input);
+      
+      // Call the post-initialization hook
+      _game->postInitialSequenceHook();
     }
   }
 

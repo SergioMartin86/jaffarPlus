@@ -1,0 +1,121 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 1000,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      50,
+      50
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerArkBot",
+  "Rom File Path": "../../extern/quickerArkBot/tests/Arkanoid (U) [!].nes",
+  "Initial State File Path": "",
+  "Disabled State Properties": [ ],
+  "Controller 1 Type": "Arkanoid",
+  "Controller 2 Type": "None",
+  "Initial Level": 1,
+  "Initial Score": 0
+},
+ 
+"Runner Configuration":
+{
+  "Hash Step Tolerance": 4,
+  "Initial Sequence File Path": "lvl01.arkanoid.initial.sol",
+
+  "Allowed Input Sets":
+  [
+    {
+      "Conditions":
+      [
+      ],
+
+      "Inputs":
+      [
+        "|..|   80,.|",
+        "|..|   80,F|",
+        "|..|  120,.|",
+        "|..|   60,.|"
+      ],
+
+      "Stop Input Evaluation": false
+    }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "ArkBot / Arkanoid",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Score"
+  ],
+
+  "Hash Properties":
+  [
+    "Score"
+  ],
+
+  "Rules":
+  [
+    {
+      "Label": 1999,
+      "Conditions":
+      [
+        { "Property": "Score", "Op": ">", "Value": 0 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+    }
+  ]
+ }
+}
