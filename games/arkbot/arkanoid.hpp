@@ -25,15 +25,12 @@ class Arkanoid final : public jaffarPlus::Game
   Arkanoid(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
     : jaffarPlus::Game(std::move(emulator), config)
   {
-    _arkState = dynamic_cast<jaffarPlus::emulator::QuickerArkBot*>(_emulator.get())->getGameState();
+    _arkState = dynamic_cast<jaffarPlus::emulator::QuickerArkBot *>(_emulator.get())->getGameState();
   }
 
   private:
 
-  __INLINE__ void registerGameProperties() override
-  {
-    registerGameProperty("Score", &_arkState->score, Property::datatype_t::dt_uint32, Property::endianness_t::little);
-  }
+  __INLINE__ void registerGameProperties() override { registerGameProperty("Score", &_arkState->score, Property::datatype_t::dt_uint32, Property::endianness_t::little); }
 
   __INLINE__ void advanceStateImpl(const std::string &input) override
   {
@@ -41,21 +38,14 @@ class Arkanoid final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
-  {
-    hashEngine.Update(*_arkState);
-  }
+  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override { hashEngine.Update(*_arkState); }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
 
-  __INLINE__ void ruleUpdatePreHook() override
-  {
-  }
+  __INLINE__ void ruleUpdatePreHook() override {}
 
-  __INLINE__ void ruleUpdatePostHook() override
-  {
-  }
+  __INLINE__ void ruleUpdatePostHook() override {}
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
 
@@ -70,9 +60,7 @@ class Arkanoid final : public jaffarPlus::Game
     return reward;
   }
 
-  void printInfoImpl() const override
-  {
-  }
+  void printInfoImpl() const override {}
 
   bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
   {
@@ -87,9 +75,7 @@ class Arkanoid final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  GameState* _arkState;
-
-
+  GameState *_arkState;
 };
 
 } // namespace arkbot

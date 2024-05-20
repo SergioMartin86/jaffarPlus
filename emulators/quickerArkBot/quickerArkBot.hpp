@@ -22,14 +22,15 @@ class QuickerArkBot final : public Emulator
   static std::string getName() { return "QuickerArkBot"; }
 
   // Constructor must only do configuration parsing
-  QuickerArkBot(const nlohmann::json &config) : Emulator(config)
+  QuickerArkBot(const nlohmann::json &config)
+    : Emulator(config)
   {
     // Verifying only if reproducing video
     bool isVerify = false;
-    #ifdef _JAFFAR_PLAYER
+#ifdef _JAFFAR_PLAYER
     isVerify = true;
-    #endif
-     
+#endif
+
     // Getting initial state file from the configuration
     _initialLevel = jaffarCommon::json::getNumber<uint8_t>(config, "Initial Level");
 
@@ -40,19 +41,16 @@ class QuickerArkBot final : public Emulator
     _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
     _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
 
-    #ifdef _JAFFAR_PLAYER
-     // Parsing rom file path
-     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
-    #endif
+#ifdef _JAFFAR_PLAYER
+    // Parsing rom file path
+    _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
+#endif
 
     // Allocating emulator
     _quickerArkBot = new ark::EmuInstance(_initialLevel, _initialScore, isVerify);
   };
 
-  ~QuickerArkBot()
-  {
-    delete _quickerArkBot;
-  }
+  ~QuickerArkBot() { delete _quickerArkBot; }
 
   void initializeImpl() override
   {
@@ -65,20 +63,11 @@ class QuickerArkBot final : public Emulator
   }
 
   // State advancing function
-  void advanceState(const std::string &input) override
-  {
-     _quickerArkBot->advanceState(input);
-  }
+  void advanceState(const std::string &input) override { _quickerArkBot->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override
-   {
-     _quickerArkBot->serializeState(serializer);
-   };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerArkBot->serializeState(serializer); };
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override
-   {
-    _quickerArkBot->deserializeState(deserializer);
-   };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerArkBot->deserializeState(deserializer); };
 
   __INLINE__ void loadFullState(const std::string &state) override
   {
@@ -98,10 +87,7 @@ class QuickerArkBot final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void printInfo() const override
-  {
-    _quickerArkBot->printInformation();
-  }
+  __INLINE__ void printInfo() const override { _quickerArkBot->printInformation(); }
 
   property_t getProperty(const std::string &propertyName) const override
   {
@@ -112,21 +98,14 @@ class QuickerArkBot final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property)
-   {
-   }
+  __INLINE__ void enableStateProperty(const std::string &property) {}
 
-  __INLINE__ void disableStateProperty(const std::string &property)
-   {
-   }
+  __INLINE__ void disableStateProperty(const std::string &property) {}
 
   // This function opens the video output (e.g., window)
-  void initializeVideoOutput() override
-  {
-    _quickerArkBot->initializeVideoOutput();
-  }
+  void initializeVideoOutput() override { _quickerArkBot->initializeVideoOutput(); }
 
-  __INLINE__ void postInitialSequenceHook() override 
+  __INLINE__ void postInitialSequenceHook() override
   {
     // Resetting arkbot after playing the initial sequence
     _quickerArkBot->doSoftReset();
@@ -160,21 +139,18 @@ class QuickerArkBot final : public Emulator
     return s.getOutputSize();
   }
 
-  GameState* getGameState() { return _quickerArkBot->getGameState(); }
+  GameState *getGameState() { return _quickerArkBot->getGameState(); }
 
-  __INLINE__ void showRender() override
-   {
-     _quickerArkBot->updateRenderer();
-   }
+  __INLINE__ void showRender() override { _quickerArkBot->updateRenderer(); }
 
   private:
 
-  ark::EmuInstance* _quickerArkBot;
-  std::string _romFilePath = "";
-  uint8_t _initialLevel;
-  uint32_t _initialScore;
-  std::string _controller1Type;
-  std::string _controller2Type;
+  ark::EmuInstance *_quickerArkBot;
+  std::string       _romFilePath = "";
+  uint8_t           _initialLevel;
+  uint32_t          _initialScore;
+  std::string       _controller1Type;
+  std::string       _controller2Type;
 };
 
 } // namespace emulator

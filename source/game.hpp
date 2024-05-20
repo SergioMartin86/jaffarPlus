@@ -459,7 +459,7 @@ class Game
   __INLINE__ bool isInitialized() const { return _isInitialized; }
 
   // Optional hook to update the game state after running an initial sequence
-  virtual __INLINE__ void postInitialSequenceHook(){ _emulator->postInitialSequenceHook(); };
+  virtual __INLINE__ void postInitialSequenceHook() { _emulator->postInitialSequenceHook(); };
 
   // Functions for new input discovery
 
