@@ -25,3 +25,6 @@
 [submodule "extern/quickerRAW"]
 	path = extern/quickerRAW
 	url = https://github.com/SergioMartin86/QuickerRAW.git
+[submodule "extern/quickerArkBot"]
+	path = extern/quickerArkBot
+	url = https://github.com/SergioMartin86/QuickerArkBot.git

@@ -34,6 +34,10 @@
   #include "quickerRAW/quickerRAW.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_QUICKERARKBOT
+  #include "quickerArkBot/quickerArkBot.hpp"
+#endif
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
@@ -85,6 +89,10 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
 
 #ifdef __JAFFAR_USE_QUICKERRAW
   DETECT_EMULATOR(emulator::QuickerRAW);
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERARKBOT
+  DETECT_EMULATOR(emulator::QuickerArkBot);
 #endif
 
   // Check if recognized
