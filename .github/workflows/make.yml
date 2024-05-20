@@ -215,7 +215,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerRAW
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerArkBot
     - name: Building project
       run: ninja -C build
     - name: Running tests

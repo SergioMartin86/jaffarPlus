@@ -95,7 +95,7 @@ class Runner final
 
       // Running inputs in the initial sequence
       for (const auto &input : initialSequence) _game->advanceState(input);
-      
+
       // Call the post-initialization hook
       _game->postInitialSequenceHook();
     }
