@@ -34,7 +34,7 @@
   #include "quickerRAW/quickerRAW.hpp"
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERARKBOT
+#ifdef __JAFFAR_USE_ARKBOT
   #include "quickerArkBot/quickerArkBot.hpp"
 #endif
 
@@ -91,7 +91,7 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
   DETECT_EMULATOR(emulator::QuickerRAW);
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERARKBOT
+#ifdef __JAFFAR_USE_ARKBOT
   DETECT_EMULATOR(emulator::QuickerArkBot);
 #endif
 

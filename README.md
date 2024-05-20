@@ -30,14 +30,12 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 
 ## Game-Specific
 
-| Game                                | Core(s)                                                                                  |   Target            |  Notes   |
-| --------                            | -------                                                                                  | ------            | ------   |
-| Prince of Persia (DOS / Apple ][)   | [QuickerSDLPoP](https://github.com/SergioMartin86/quickerSDLPoP)                         | LibTAS+PCem       |          |
-| Another World                       | [Fabother World](https://github.com/fabiensanglard/Another-World-Bytecode-Interpreter)   | *many*            |  All ports of AW use the same engine |
-| Super Mario Bros (NES)              | [QuickerSMBC](https://github.com/SergioMartin86/quickerSMBC)                             | -                 |  Inaccurate in transitions, but good for solving levels |
-| Arkanoid (NES)*                     | [Arkbot](https://github.com/sbroger/arkbot)                                              | -                 |          |
-
-*In development
+| Game                                | Core(s)                                                           |   Target      |  Notes   |
+| --------                            | -------                                                           | ------        | ------   |
+| Prince of Persia (DOS / Apple ][)   | [QuickerSDLPoP](https://github.com/SergioMartin86/quickerSDLPoP)  | LibTAS+PCem   |          |
+| Another World                       | [QuickerRaw](https://github.com/SergioMartin86/QuickerRAW)        | *many*        |  All ports of AW use the same engine |
+| Super Mario Bros (NES)              | [QuickerSMBC](https://github.com/SergioMartin86/quickerSMBC)      | Bizhawk 2.9.2 |  Inaccurate in transitions, but good for solving levels |
+| Arkanoid (NES)                      | [QuickerArkbot](https://github.com/SergioMartin86/quickerArkBot)  | Bizhawk 2.9.2 |          |
 
 Author
 =============

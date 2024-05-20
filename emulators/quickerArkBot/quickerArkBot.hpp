@@ -24,36 +24,36 @@ class QuickerArkBot final : public Emulator
   // Constructor must only do configuration parsing
   QuickerArkBot(const nlohmann::json &config) : Emulator(config)
   {
-    // // Getting disabled state properties
-    // const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
-    // for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
+    // Verifying only if reproducing video
+    bool isVerify = false;
+    #ifdef _JAFFAR_PLAYER
+    isVerify = true;
+    #endif
+     
+    // Getting initial state file from the configuration
+    _initialLevel = jaffarCommon::json::getNumber<uint8_t>(config, "Initial Level");
 
-    // // Getting initial state file from the configuration
-    // _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
+    // Getting initial state file from the configuration
+    _initialScore = jaffarCommon::json::getNumber<uint32_t>(config, "Initial Score");
 
-    // // Parsing rom file path
-    // _gameDataPath = jaffarCommon::json::getString(config, "Game Data Path");
+    #ifdef _JAFFAR_PLAYER
+     // Parsing rom file path
+     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
+    #endif
+
+    // Allocating emulator
+    _quickerArkBot = new ark::EmuInstance(_initialLevel, _initialScore, isVerify);
   };
+
+  ~QuickerArkBot()
+  {
+    delete _quickerArkBot;
+  }
 
   void initializeImpl() override
   {
-    // // Initializing emulator
-    // _quickerArkBot.initialize(_gameDataPath);
-
-    // // If initial state file defined, load it
-    // if (_initialStateFilePath.empty() == false)
-    // {
-    //   // Reading from initial state file
-    //   std::string initialState;
-    //   bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
-    //   if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
-
-    //   // Deserializing initial state into the emulator
-    //   loadFullState(initialState);
-    // }
-
-    // // Now disabling state properties, as requested
-    // disableStateProperties();
+    // Initializing emulator
+    _quickerArkBot->initialize(_romFilePath);
   }
 
   // State advancing function
@@ -72,36 +72,21 @@ class QuickerArkBot final : public Emulator
     _quickerArkBot->deserializeState(deserializer);
    };
 
-  __INLINE__ void disableStateProperties()
-  {
-    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
-  }
-  __INLINE__ void enableStateProperties()
-  {
-    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
-  }
-
   __INLINE__ void loadFullState(const std::string &state) override
   {
-    enableStateProperties();
     jaffarCommon::deserializer::Contiguous d(state.data(), state.size());
     deserializeState(d);
-    disableStateProperties();
   }
   __INLINE__ void saveFullState(std::string &state) override
   {
-    enableStateProperties();
     jaffarCommon::serializer::Contiguous s(state.data(), state.size());
     serializeState(s);
-    disableStateProperties();
   }
 
   size_t getFullStateSize() override
   {
-    enableStateProperties();
     jaffarCommon::serializer::Contiguous s;
     serializeState(s);
-    disableStateProperties();
     return s.getOutputSize();
   }
 
@@ -130,6 +115,12 @@ class QuickerArkBot final : public Emulator
     // enableStateProperties();
     _quickerArkBot->initializeVideoOutput();
   }
+
+  __INLINE__ void postInitialSequenceHook() override 
+  {
+    // Resetting arkbot after playing the initial sequence
+    _quickerArkBot->doSoftReset();
+  };
 
   // This function closes the video output (e.g., window)
   void finalizeVideoOutput() override { _quickerArkBot->finalizeVideoOutput(); }
@@ -164,13 +155,10 @@ class QuickerArkBot final : public Emulator
 
   private:
 
-  // Collection of state blocks to disable during engine run
-  std::vector<std::string> _disabledStateProperties;
-
   ark::EmuInstance* _quickerArkBot;
-
-  std::string _initialStateFilePath;
-  std::string _gameDataPath;
+  std::string _romFilePath = "";
+  uint8_t _initialLevel;
+  uint32_t _initialScore;
 };
 
 } // namespace emulator

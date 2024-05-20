@@ -51,6 +51,6 @@ subdir('quickerRAW')
 endif
 
 if 'QuickerArkBot' in emulators
-jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERARKBOT'
+jaffarCPPFlags += '-D__JAFFAR_USE_ARKBOT'
 subdir('quickerArkBot')
 endif
