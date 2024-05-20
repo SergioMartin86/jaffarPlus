@@ -49,3 +49,8 @@ jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERRAW'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_RAW'
 subdir('quickerRAW')
 endif
+
+if 'QuickerArkBot' in emulators
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERARKBOT'
+subdir('quickerArkBot')
+endif

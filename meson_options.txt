@@ -9,6 +9,7 @@ option('emulators',
     'Atari2600Hawk',
     'QuickerSMBC',
     'QuickerRAW',
+    'QuickerArkBot'
    ],
   value : [ ],
   description : 'Selects the emulation cores to compile Jaffar with'
