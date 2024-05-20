@@ -162,3 +162,19 @@ test('stage01',
       env : testEnvVars,
       suite : [ 'runs', 'QuickerSMBC', 'superMarioBros' ])
 endif
+
+
+if 'QuickerArkBot' in emulators
+
+## ArkBot / Arkanoid
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/arkbot',
+      timeout: testTimeout,
+      args : 'lvl01.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'QuickerArkBot', 'arkanoid' ])
+endif

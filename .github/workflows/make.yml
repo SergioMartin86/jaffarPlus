@@ -200,3 +200,23 @@ jobs:
     # Disabling tests for RAW because I cannot upload the game data files
     #- name: Running tests
     #  run: ninja test -C build
+
+  # Build and run tests (QuickerArkBot)
+  build-QuickerArkBot:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerRAW
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build

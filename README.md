@@ -5,7 +5,7 @@
 
 ![](jaffar.png)
 
-High-performance bot for tool-assisted speedrunning, JaffarPlus is:
+Jaffar is a high-performance general-purpose breath-first search optimizer. This project is specially tailored for the production tool-assisted speedruns (TAS). Its features are:
 
 * High-Performance: Tailored for multi-core CPUs, especially for high core counts.
 * Multi-Platform: Supports games from multiple consoles/game emulators
@@ -35,7 +35,7 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 | Prince of Persia (DOS / Apple ][)   | [QuickerSDLPoP](https://github.com/SergioMartin86/quickerSDLPoP)  | LibTAS+PCem   |          |
 | Another World                       | [QuickerRaw](https://github.com/SergioMartin86/QuickerRAW)        | *many*        |  All ports of AW use the same engine |
 | Super Mario Bros (NES)              | [QuickerSMBC](https://github.com/SergioMartin86/quickerSMBC)      | Bizhawk 2.9.2 |  Inaccurate in transitions, but good for solving levels |
-| Arkanoid (NES)                      | [QuickerArkbot](https://github.com/SergioMartin86/quickerArkBot)  | Bizhawk 2.9.2 |          |
+| Arkanoid (NES)                      | [QuickerArkbot](https://github.com/SergioMartin86/quickerArkBot)  | Bizhawk 2.9.2 (NesHawk Core) |          |
 
 Author
 =============
