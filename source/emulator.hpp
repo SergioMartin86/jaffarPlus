@@ -101,6 +101,9 @@ class Emulator
   // This function returns the size of the renderer state
   virtual size_t getRendererStateSize() const = 0;
 
+  // This function is an optional hook for setting up the emulator after a running an initial sequence
+  virtual void postInitialSequenceHook() {};
+
   // Shows the contents of the emulator's renderer into the window
   virtual void showRender() = 0;
 

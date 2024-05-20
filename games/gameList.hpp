@@ -35,6 +35,10 @@
   #include "raw/anotherWorld.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_ARKBOT
+  #include "arkbot/arkanoid.hpp"
+#endif
+
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -90,6 +94,10 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 
 #ifdef __JAFFAR_ENABLE_RAW
   DETECT_GAME(raw::AnotherWorld);
+#endif
+
+#ifdef __JAFFAR_ENABLE_ARKBOT
+  DETECT_GAME(arkbot::Arkanoid);
 #endif
 
   // Check if game was recognized
