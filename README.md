@@ -5,7 +5,7 @@
 
 ![](jaffar.png)
 
-Jaffar is a high-performance general-purpose breath-first search optimizer. This project is specially tailored for the production tool-assisted speedruns (TAS). Its features are:
+JaffarPlus is a high-performance general-purpose breath-first search optimizer. This project is specially tailored for the production tool-assisted speedruns (TAS). Its features are:
 
 * High-Performance: Tailored for multi-core CPUs, especially for high core counts.
 * Multi-Platform: Supports games from multiple consoles/game emulators
@@ -13,7 +13,7 @@ Jaffar is a high-performance general-purpose breath-first search optimizer. This
 
 This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solver for the original Prince of Persia (DOS).
 
-# Supported Emulators
+# Built-in Emulator Support
 
 ## Consoles
 
