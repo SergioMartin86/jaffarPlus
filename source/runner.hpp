@@ -12,7 +12,7 @@
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/serializers/differential.hpp>
-#include "../games/gameList.hpp"
+#include <gameList.hpp>
 #include "game.hpp"
 #include "inputSet.hpp"
 

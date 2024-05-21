@@ -3,8 +3,8 @@
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/string.hpp>
-#include "../emulators/emulatorList.hpp"
-#include "../games/gameList.hpp"
+#include <gameList.hpp>
+#include <emulatorList.hpp>
 #include "emulator.hpp"
 #include "game.hpp"
 #include "playback.hpp"
