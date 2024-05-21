@@ -7,8 +7,8 @@
 #include <jaffarCommon/serializers/base.hpp>
 #include <jaffarCommon/timing.hpp>
 #include <jaffarCommon/parallel.hpp>
-#include "../emulators/emulatorList.hpp"
-#include "../games/gameList.hpp"
+#include <gameList.hpp>
+#include <emulatorList.hpp>
 #include "game.hpp"
 #include "hashDb.hpp"
 #include "runner.hpp"

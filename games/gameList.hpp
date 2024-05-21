@@ -3,7 +3,6 @@
 #include "../emulators/emulatorList.hpp"
 
 #ifdef __JAFFAR_ENABLE_NES
-  #include "nes/microMachines.hpp"
   #include "nes/sprilo.hpp"
 #endif
 
@@ -68,7 +67,6 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 
 // Trying to detect game by name
 #ifdef __JAFFAR_ENABLE_NES
-  DETECT_GAME(nes::MicroMachines);
   DETECT_GAME(nes::Sprilo);
 #endif
 
