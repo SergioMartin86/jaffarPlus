@@ -1,0 +1,222 @@
+name: Build and Run Tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  # Build documentation and checking proper style
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Installing apt packages
+      run: sudo apt install clang-format doxygen graphviz
+    - name: Checking proper code styling
+      run:  |
+            cp extern/jaffarCommon/.clang-format .
+            extern/jaffarCommon/.build-tools/check-style.sh check source
+            extern/jaffarCommon/.build-tools/check-style.sh check games
+            extern/jaffarCommon/.build-tools/check-style.sh check emulators
+
+  # Build and run tests (QuickerNES) + Coverage Tests
+  build-QuickerNES:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulators=QuickerNES
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+    - name: Running coverage analysis
+      run: ninja coverage -C build
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: SergioMartin86/jaffarPlusPlus
+        fail_ci_if_error: true
+        files: build/meson-logs/coverage.xml
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
+
+
+  # Build and run tests (QuickerSDLPoP)
+  build-QuickerSDLPoP:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSDLPoP
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+
+  # Build and run tests (QuickerSnes9x)
+  build-QuickerSnes9x:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSnes9x
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+
+  # Build and run tests (QuickerGPGX)
+  build-QuickerGPGX:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerGPGX
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+
+  # Build and run tests (QuickerStella)
+  build-QuickerStella:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerStella
+    - name: Building project
+      run: ninja -C build
+    # Disabling tests for stella because it does not run correctly in the CI  
+    #- name: Running tests
+    #  run: ninja test -C build
+
+  # Build and run tests (Atari2600Hawk)
+  build-Atari2600Hawk:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=Atari2600Hawk
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build      
+
+  # Build and run tests (Atari2600Hawk)
+  build-QuickerSMBC:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSMBC
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+
+  # Build and run tests (QuickerRAW)
+  build-QuickerRAW:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerRAW
+    - name: Building project
+      run: ninja -C build
+    # Disabling tests for RAW because I cannot upload the game data files
+    #- name: Running tests
+    #  run: ninja test -C build
+
+  # Build and run tests (QuickerArkBot)
+  build-QuickerArkBot:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerArkBot
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build

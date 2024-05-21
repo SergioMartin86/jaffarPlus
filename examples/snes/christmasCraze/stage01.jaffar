@@ -1,0 +1,212 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 1000,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+   "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      230000,
+      110000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerSnes9x",
+  "Rom File Path": "../../../extern/quickerSnes9x/tests/roms/Christmas_Craze.smc",
+  "Rom File SHA1": "7752CAA676D15D4D0C42F25548C3E86128A416DB",
+  "Initial State File Path": "stage01.state",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "None",
+  "Disabled State Properties": [ "SRA", "VRA", "CTL", "PPU" ]
+},
+ 
+"Runner Configuration":
+{
+  "Hash Step Tolerance": 4,
+  "Initial Sequence File Path": "",
+
+  "Allowed Input Sets":
+  [
+   {
+     "Conditions":
+     [
+     ],
+ 
+     "Inputs":
+     [
+      "|..|.......B....|",
+      "|..|..L.........|",
+      "|..|...R........|",
+      "|..|..L....B....|",
+      "|..|...R...B....|"
+     ],
+
+     "Stop Input Evaluation": false
+   }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "SNES / Christmas Craze",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Global Timer",    
+    "Player Pos X",    
+    "Player Pos Y",    
+    "Player Speed X",  
+    "Player Speed Y",  
+    "Player Direction", 
+    "Game State",      
+    "Presents Grabbed"
+  ],
+
+  "Hash Properties":
+  [
+    "Player Pos X",    
+    "Player Pos Y",    
+    "Player Speed X",  
+    "Player Speed Y",  
+    "Player Direction", 
+    "Game State",      
+    "Presents Grabbed"
+  ],
+
+  "Rules":
+  [
+   {
+     "Label": 1000,
+     "Conditions":
+     [
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 3191, "Y": 1792 }
+     ]
+    },
+
+    {
+      "Label": 1001,
+      "Conditions":
+      [
+        { "Property": "Presents Grabbed", "Op": "==", "Value": 1 }
+      ],
+      
+      "Satisfies": [ 1000 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 100000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2100, "Y": 1024 }
+      ]
+     },
+
+     {
+      "Label": 1002,
+      "Conditions":
+      [
+        { "Property": "Presents Grabbed", "Op": "==", "Value": 2 }
+      ],
+      
+      "Satisfies": [ 1001 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 100000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 1770, "Y": 1024 }
+      ]
+     },
+
+     {
+      "Label": 1003,
+      "Conditions":
+      [
+        { "Property": "Presents Grabbed", "Op": "==", "Value": 3 }
+      ],
+      
+      "Satisfies": [ 1002 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 100000.0 },
+        { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 580, "Y": 1740 }
+      ]
+     },
+
+     {
+      "Label": 1004,
+      "Conditions":
+      [
+        { "Property": "Presents Grabbed", "Op": "==", "Value": 4 }
+      ],
+      
+      "Satisfies": [ 1003 ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     },
+
+
+    {
+      "Label": 1999,
+      "Conditions":
+      [
+        { "Property": "Game State", "Op": "==", "Value": 3 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail" }
+      ]
+    }
+  ]
+ }
+}
