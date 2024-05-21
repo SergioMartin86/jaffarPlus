@@ -1,3 +1,30 @@
-[submodule "extern/json"]
-	path = extern/json
-	url = https://github.com/nlohmann/json.git
+[submodule "subprojects/quickerNES"]
+	path = extern/quickerNES
+	url = https://github.com/SergioMartin86/quickerNES.git
+[submodule "extern/jaffarCommon"]
+	path = extern/jaffarCommon
+	url = https://github.com/SergioMartin86/jaffarCommon.git
+[submodule "extern/quickerSDLPoP"]
+	path = extern/quickerSDLPoP
+	url = https://github.com/SergioMartin86/quickerSDLPoP.git
+[submodule "extern/quickerSnes9x"]
+	path = extern/quickerSnes9x
+	url = https://github.com/SergioMartin86/quickerSnes9x.git
+[submodule "extern/quickerGPGX"]
+	path = extern/quickerGPGX
+	url = https://github.com/SergioMartin86/quickerGPGX.git
+[submodule "extern/quickerStella"]
+	path = extern/quickerStella
+	url = https://github.com/SergioMartin86/quickerStella.git
+[submodule "extern/atari2600Hawk"]
+	path = extern/atari2600Hawk
+	url = https://github.com/SergioMartin86/libAtari2600HawkTester.git
+[submodule "extern/quickerSMBC"]
+	path = extern/quickerSMBC
+	url = https://github.com/SergioMartin86/quickerSMBC.git
+[submodule "extern/quickerRAW"]
+	path = extern/quickerRAW
+	url = https://github.com/SergioMartin86/QuickerRAW.git
+[submodule "extern/quickerArkBot"]
+	path = extern/quickerArkBot
+	url = https://github.com/SergioMartin86/QuickerArkBot.git

@@ -1,3 +1,6 @@
+run-clang-format
+.mono
+.clang-format
 *.bk
 .vscode
 *.a26
@@ -26,8 +29,8 @@ tools/llvm/
 tools/run-clang-format/
 *.p1r
 *.log
-*.sol
-
+jaffar.best.sol
+jaffar.worst.sol
 # Prerequisites
 *.d
 
