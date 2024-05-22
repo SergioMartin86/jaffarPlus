@@ -47,7 +47,7 @@
 "Emulator Configuration":
 {
   "Emulator Name": "Atari2600Hawk",
-  "Rom File Path": "../../../extern/quickerStella/tests/roms/hellway.a26",
+  "Rom File Path": "../../../extern/atari2600Hawk/tests/roms/hellway.a26",
   "Rom File SHA1": "8C209A10CCF24194CB888D5E750CF303AD050EF7",
   "Controller 1 Type": "Gamepad",
   "Controller 2 Type": "None",

@@ -177,7 +177,7 @@ jobs:
     - name: Running tests
       run: ninja test -C build      
 
-  # Build and run tests (Atari2600Hawk)
+  # Build and run tests (QuickerSMBC)
   build-QuickerSMBC:
     runs-on: ubuntu-latest
     steps:
