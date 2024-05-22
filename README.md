@@ -1,5 +1,5 @@
 
-[![Build and Run Tests](https://github.com/SergioMartin86/jaffarPlusPlus/actions/workflows/make.yml/badge.svg)](https://github.com/SergioMartin86/jaffarPlusPlus/actions/workflows/make.yml) [![codecov](https://codecov.io/gh/SergioMartin86/jaffarPlus/graph/badge.svg?token=B9KMR864ZP)](https://codecov.io/gh/SergioMartin86/jaffarPlus)
+[![Build and Run Tests](https://github.com/SergioMartin86/jaffarPlus/actions/workflows/make.yml/badge.svg)](https://github.com/SergioMartin86/jaffarPlus/actions/workflows/make.yml) [![codecov](https://codecov.io/gh/SergioMartin86/jaffarPlus/graph/badge.svg?token=B9KMR864ZP)](https://codecov.io/gh/SergioMartin86/jaffarPlus)
 
 # JaffarPlus
 
