@@ -29,12 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout JaffarPlus
-      run: | 
-            git submodule init extern/jaffarPlus
-            git submodule update extern/jaffarPlus
     - name: Checkout QuickerNES
-      working-directory: ./extern/jaffarPlus
       run: | 
             git submodule init extern/quickerNES
             git submodule update --recursive extern/quickerNES
@@ -71,12 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout JaffarPlus
-      run: | 
-            git submodule init extern/jaffarPlus
-            git submodule update extern/jaffarPlus
     - name: Checkout QuickerSDLPoP
-      working-directory: ./extern/jaffarPlus
       run: | 
             git submodule init extern/quickerSDLPoP
             git submodule update --recursive extern/quickerSDLPoP
@@ -98,12 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout JaffarPlus
-      run: | 
-            git submodule init extern/jaffarPlus
-            git submodule update extern/jaffarPlus
     - name: Checkout QuickerSnes9x
-      working-directory: ./extern/jaffarPlus
       run: | 
             git submodule init extern/quickerSnes9x
             git submodule update --recursive extern/quickerSnes9x
@@ -125,12 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout JaffarPlus
-      run: | 
-            git submodule init extern/jaffarPlus
-            git submodule update extern/jaffarPlus
     - name: Checkout QuickerGPGX
-      working-directory: ./extern/jaffarPlus
       run: | 
             git submodule init extern/quickerGPGX
             git submodule update --recursive extern/quickerGPGX
@@ -152,12 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout JaffarPlus
-      run: | 
-            git submodule init extern/jaffarPlus
-            git submodule update extern/jaffarPlus
     - name: Checkout QuickerStella
-      working-directory: ./extern/jaffarPlus
       run: | 
             git submodule init extern/quickerStella
             git submodule update --recursive extern/quickerStella
@@ -180,17 +155,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout JaffarPlus
-      run: | 
-            git submodule init extern/jaffarPlus
-            git submodule update extern/jaffarPlus
     - name: Checkout Atari2600Hawk
-      working-directory: ./extern/jaffarPlus
       run: | 
             git submodule init extern/atari2600Hawk
             git submodule update --recursive extern/atari2600Hawk
     - name: Checkout Atari2600Hawk
-      working-directory: ./extern/jaffarPlus/extern/atari2600Hawk
+      working-directory: extern/atari2600Hawk
       run: | 
             git submodule init source/base/core
             git submodule update --recursive source/base/core
@@ -212,12 +182,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout JaffarPlus
-      run: | 
-            git submodule init extern/jaffarPlus
-            git submodule update extern/jaffarPlus
     - name: Checkout QuickerSMBC
-      working-directory: ./extern/jaffarPlus
       run: | 
             git submodule init extern/quickerSMBC
             git submodule update --recursive extern/quickerSMBC
@@ -239,12 +204,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout JaffarPlus
-      run: | 
-            git submodule init extern/jaffarPlus
-            git submodule update extern/jaffarPlus
     - name: Checkout QuickerRAW
-      working-directory: ./extern/jaffarPlus
       run: | 
             git submodule init extern/quickerRAW
             git submodule update --recursive extern/quickerRAW
@@ -267,12 +227,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout JaffarPlus
-      run: | 
-            git submodule init extern/jaffarPlus
-            git submodule update extern/jaffarPlus
     - name: Checkout QuickerArkBot
-      working-directory: ./extern/jaffarPlus
       run: | 
             git submodule init extern/quickerArkBot
             git submodule update --recursive extern/quickerArkBot
