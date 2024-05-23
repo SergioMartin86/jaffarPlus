@@ -62,9 +62,14 @@ class Emulator
   virtual void serializeState(jaffarCommon::serializer::Base &serializer) const = 0;
   virtual void deserializeState(jaffarCommon::deserializer::Base &deserializer) = 0;
 
-  virtual void   loadFullState(const std::string &state) = 0;
-  virtual void   saveFullState(std::string &state)       = 0;
-  virtual size_t getFullStateSize()                      = 0;
+  __INLINE__ void disableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
+  }
+  __INLINE__ void enableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
+  }
 
   // Function to print debug information, whatever it might be
   virtual void printInfo() const = 0;
@@ -107,11 +112,20 @@ class Emulator
   // Shows the contents of the emulator's renderer into the window
   virtual void showRender() = 0;
 
+  protected:
+
+  virtual void enableStateProperty(const std::string &property) = 0;
+
+  virtual void disableStateProperty(const std::string &property) = 0;
+
   // Emulator name (for runtime use)
   std::string _emulatorName;
 
   // Stores whether the emulator has been initialized
   bool _isInitialized = false;
+  
+  // Collection of state blocks to disable during engine run
+  std::vector<std::string> _disabledStateProperties;
 };
 
 } // namespace jaffarPlus
