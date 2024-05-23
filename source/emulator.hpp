@@ -24,6 +24,10 @@ class Emulator
   // Constructor must only do configuration parsing to perform dry runs
   Emulator(const nlohmann::json &config)
   {
+    // Getting disabled state properties
+    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
+
     // Getting emulator name (for runtime use)
     _emulatorName = jaffarCommon::json::getString(config, "Emulator Name");
   };

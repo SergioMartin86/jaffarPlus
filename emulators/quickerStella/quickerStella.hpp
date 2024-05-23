@@ -25,10 +25,6 @@ class QuickerStella final : public Emulator
   QuickerStella(const nlohmann::json &config)
     : Emulator(config)
   {
-    // Getting disabled state properties
-    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
-    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
-
     // Parsing controller configuration
     _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
     _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
