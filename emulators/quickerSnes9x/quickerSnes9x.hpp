@@ -24,10 +24,6 @@ class QuickerSnes9x final : public Emulator
   QuickerSnes9x(const nlohmann::json &config)
     : Emulator(config)
   {
-    // Getting disabled state properties
-    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
-    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
-
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
