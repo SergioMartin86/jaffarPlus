@@ -113,40 +113,6 @@ class QuickerNES final : public Emulator
   __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerNES.serializeState(serializer); };
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerNES.deserializeState(deserializer); };
 
-  __INLINE__ void disableStateProperties()
-  {
-    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
-  }
-  __INLINE__ void enableStateProperties()
-  {
-    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
-  }
-
-  __INLINE__ void loadFullState(const std::string &state) override
-  {
-    enableStateProperties();
-    jaffarCommon::deserializer::Contiguous d(state.data(), state.size());
-    deserializeState(d);
-    disableStateProperties();
-  }
-
-  __INLINE__ void saveFullState(std::string &state) override
-  {
-    enableStateProperties();
-    jaffarCommon::serializer::Contiguous s(state.data(), state.size());
-    serializeState(s);
-    disableStateProperties();
-  }
-
-  size_t getFullStateSize() override
-  {
-    enableStateProperties();
-    jaffarCommon::serializer::Contiguous s;
-    serializeState(s);
-    disableStateProperties();
-    return s.getOutputSize();
-  }
-
   __INLINE__ void printInfo() const override
   {
     printMemoryBlockHash("LRAM");
@@ -167,9 +133,9 @@ class QuickerNES final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) { _quickerNES.enableStateBlock(property); }
+  __INLINE__ void enableStateProperty(const std::string &property) override { _quickerNES.enableStateBlock(property); }
 
-  __INLINE__ void disableStateProperty(const std::string &property) { _quickerNES.disableStateBlock(property); }
+  __INLINE__ void disableStateProperty(const std::string &property) override { _quickerNES.disableStateBlock(property); }
 
   ////////// Rendering functions (some of these taken from https://github.com/Bindernews/HeadlessQuickNes / MIT License)
 
@@ -308,9 +274,6 @@ class QuickerNES final : public Emulator
     auto hash = jaffarCommon::hash::hashToString(jaffarCommon::hash::calculateMetroHash(p.pointer, p.size));
     jaffarCommon::logger::log("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }
-
-  // Collection of state blocks to disable during engine run
-  std::vector<std::string> _disabledStateProperties;
 
   NESInstance _quickerNES;
 

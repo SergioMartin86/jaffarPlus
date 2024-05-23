@@ -159,9 +159,10 @@ bool mainCycle(jaffarPlus::Runner &r, const std::string &solutionFile, bool disa
       std::string saveFileName = "quicksave.state";
 
       std::string saveData;
-      size_t      fullStateSize = r.getGame()->getEmulator()->getFullStateSize();
-      saveData.resize(fullStateSize);
-      r.getGame()->getEmulator()->saveFullState(saveData);
+      size_t      stateSize = r.getGame()->getEmulator()->getStateSize();
+      saveData.resize(stateSize);
+      jaffarCommon::serializer::Contiguous s(saveData.data(), stateSize);
+      r.getGame()->getEmulator()->serializeState(s);
       if (jaffarCommon::file::saveStringToFile(saveData, saveFileName.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
       jaffarCommon::logger::log("[J+] Saved state to %s\n", saveFileName.c_str());
 
@@ -282,6 +283,9 @@ int main(int argc, char *argv[])
     r->getGame()->getEmulator()->initializeVideoOutput();
     r->getGame()->getEmulator()->enableRendering();
   }
+
+  // Enable all emulator state properties before creating state storage
+  r->getGame()->getEmulator()->enableStateProperties();
 
   // Getting game state size
   const auto stateSize = r->getStateSize();

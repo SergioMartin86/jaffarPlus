@@ -95,39 +95,6 @@ class Atari2600Hawk final : public Emulator
     deserializer.popContiguous(_workRam, 128);
   };
 
-  __INLINE__ void disableStateProperties()
-  {
-    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
-  }
-  __INLINE__ void enableStateProperties()
-  {
-    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
-  }
-
-  __INLINE__ void loadFullState(const std::string &state) override
-  {
-    enableStateProperties();
-    jaffarCommon::deserializer::Contiguous d(state.data(), state.size());
-    deserializeState(d);
-    disableStateProperties();
-  }
-  __INLINE__ void saveFullState(std::string &state) override
-  {
-    enableStateProperties();
-    jaffarCommon::serializer::Contiguous s(state.data(), state.size());
-    serializeState(s);
-    disableStateProperties();
-  }
-
-  size_t getFullStateSize() override
-  {
-    enableStateProperties();
-    jaffarCommon::serializer::Contiguous s;
-    serializeState(s);
-    disableStateProperties();
-    return s.getOutputSize();
-  }
-
   __INLINE__ void printInfo() const override {}
 
   property_t getProperty(const std::string &propertyName) const override
@@ -138,9 +105,9 @@ class Atari2600Hawk final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) { _Atari2600Hawk.enableStateBlock(property); }
+  __INLINE__ void enableStateProperty(const std::string &property) override { _Atari2600Hawk.enableStateBlock(property); }
 
-  __INLINE__ void disableStateProperty(const std::string &property) { _Atari2600Hawk.disableStateBlock(property); }
+  __INLINE__ void disableStateProperty(const std::string &property) override { _Atari2600Hawk.disableStateBlock(property); }
 
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
