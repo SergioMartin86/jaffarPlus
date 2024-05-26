@@ -24,8 +24,7 @@ class Game
   {
     normal     = 0,
     win        = 1,
-    fail       = 2,
-    checkpoint = 3
+    fail       = 2
   };
 
   // Constructor that takes an already created emulator
@@ -121,6 +120,9 @@ class Game
     // Serializing reward
     serializer.pushContiguous(&_reward, sizeof(_reward));
 
+    // Serializing checkpoint level
+    serializer.pushContiguous(&_checkpointLevel, sizeof(_checkpointLevel));
+
     // Serializing state type
     serializer.pushContiguous(&_stateType, sizeof(_stateType));
 
@@ -146,7 +148,10 @@ class Game
     // Deserializing reward
     deserializer.popContiguous(&_reward, sizeof(_reward));
 
-    // Serializing state type
+    // Deserializing checkpoint level
+    deserializer.popContiguous(&_checkpointLevel, sizeof(_checkpointLevel));
+
+    // Deserializing state type
     deserializer.popContiguous(&_stateType, sizeof(_stateType));
 
     // Calling the pre-rule update hook
@@ -201,7 +206,6 @@ class Game
     if (_stateType == stateType_t::normal) jaffarCommon::logger::log("Normal");
     if (_stateType == stateType_t::win) jaffarCommon::logger::log("Win");
     if (_stateType == stateType_t::fail) jaffarCommon::logger::log("Fail");
-    if (_stateType == stateType_t::checkpoint) jaffarCommon::logger::log("Checkpoint");
     jaffarCommon::logger::log("\n");
 
     // Printing game state
@@ -301,6 +305,9 @@ class Game
     // Clearing game state type before we evaluate satisfied rules
     _stateType = stateType_t::normal;
 
+    // Clearing checkpoint level and tolerance
+    _checkpointLevel = 0;
+
     // Second, we run the specified actions for the satisfied rules in label order
     for (auto &entry : _rules)
     {
@@ -318,9 +325,9 @@ class Game
         // Evaluate checkpoint rule and store tolerance if specified
         if (rule.isCheckpointRule())
         {
-          _stateType           = stateType_t::checkpoint;
+          _checkpointLevel++;
           _checkpointTolerance = rule.getCheckpointTolerance();
-        }
+        }   
 
         // Winning in the same rule superseeds checkpoint, and failing superseed everything
         if (rule.isWinRule()) _stateType = stateType_t::win;
@@ -451,6 +458,12 @@ class Game
 
   // Function to get the state type
   __INLINE__ stateType_t getStateType() const { return _stateType; }
+
+  // Function to get the state's checkpoint level
+  __INLINE__ size_t getCheckpointLevel() const { return _checkpointLevel; }
+
+  // Function to get the state's checkpoint level
+  __INLINE__ size_t getCheckpointTolerance() const { return _checkpointTolerance; }
 
   // Function to get game name in runtime
   __INLINE__ std::string getName() const { return _gameName; }
@@ -637,6 +650,9 @@ class Game
 
   // Current game state reward
   float _reward = 0.0;
+
+  // Represents the current state's checkpoint level
+  size_t _checkpointLevel = 0;
 
   // For game states that represent checkpoints, store their tolerance here
   size_t _checkpointTolerance = 0;
