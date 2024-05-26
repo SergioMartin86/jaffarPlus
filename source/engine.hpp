@@ -182,9 +182,9 @@ class Engine final
     _normalStates                     = 0;
 
     // Resetting checkpoint counters
-    _checkpointLevel = 0;
+    _checkpointLevel     = 0;
     _checkpointTolerance = 0;
-    _checkpointCutoff = 0;
+    _checkpointCutoff    = 0;
 
     // Resetting counter for the current step
     _currentStep = 0;
@@ -469,8 +469,7 @@ class Engine final
       const auto &possibleInputs = r->getAllowedInputs();
 
       // Trying out each possible input in the set
-      for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++) 
-        runNewInput(*r, baseStateData, *inputItr);
+      for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr);
 
       // Getting candidate moves
       auto candidateInputs = r->getCandidateInputs();
@@ -509,7 +508,7 @@ class Engine final
     }
   }
 
-  __INLINE__ inputResult_t runNewInput(Runner &r, const void* baseStateData, const InputSet::inputIndex_t input)
+  __INLINE__ inputResult_t runNewInput(Runner &r, const void *baseStateData, const InputSet::inputIndex_t input)
   {
     // Increasing new state counter
     _stepNewStatesProcessed++;
@@ -532,13 +531,13 @@ class Engine final
     if (result == inputResult_t::droppedCheckpoint) _droppedStatesCheckpoint++;
 
     // Checking whether this state's checkpoint is new
-    const auto stateCheckpointLevel = r.getGame()->getCheckpointLevel();
+    const auto stateCheckpointLevel     = r.getGame()->getCheckpointLevel();
     const auto stateCheckpointTolerance = r.getGame()->getCheckpointTolerance();
     if (stateCheckpointLevel > _checkpointLevel)
     {
-      _checkpointLevel = stateCheckpointLevel;
+      _checkpointLevel     = stateCheckpointLevel;
       _checkpointTolerance = stateCheckpointTolerance;
-      _checkpointCutoff = _currentStep + stateCheckpointTolerance;
+      _checkpointCutoff    = _currentStep + stateCheckpointTolerance;
     }
 
     // Returning result
@@ -577,7 +576,7 @@ class Engine final
       // If state does not meet checkpoint, then do not process it further
       if (stateCheckpointLevel < _checkpointLevel) return inputResult_t::droppedCheckpoint;
     }
-    
+
     // Determining state type
     r.getGame()->updateGameStateType();
 

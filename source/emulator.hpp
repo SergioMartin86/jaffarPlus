@@ -127,7 +127,7 @@ class Emulator
 
   // Stores whether the emulator has been initialized
   bool _isInitialized = false;
-  
+
   // Collection of state blocks to disable during engine run
   std::vector<std::string> _disabledStateProperties;
 };

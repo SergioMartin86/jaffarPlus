@@ -22,9 +22,9 @@ class Game
 
   enum stateType_t
   {
-    normal     = 0,
-    win        = 1,
-    fail       = 2
+    normal = 0,
+    win    = 1,
+    fail   = 2
   };
 
   // Constructor that takes an already created emulator
@@ -327,7 +327,7 @@ class Game
         {
           _checkpointLevel++;
           _checkpointTolerance = rule.getCheckpointTolerance();
-        }   
+        }
 
         // Winning in the same rule superseeds checkpoint, and failing superseed everything
         if (rule.isWinRule()) _stateType = stateType_t::win;
