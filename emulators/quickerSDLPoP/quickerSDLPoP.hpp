@@ -65,9 +65,9 @@ class QuickerSDLPoP final : public Emulator
 
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _QuickerSDLPoP->deserializeState(deserializer); };
 
-  __INLINE__ void enableStateProperty(const std::string &property) override { }
+  __INLINE__ void enableStateProperty(const std::string &property) override {}
 
-  __INLINE__ void disableStateProperty(const std::string &property) override { }
+  __INLINE__ void disableStateProperty(const std::string &property) override {}
 
   __INLINE__ void loadFullState(const std::string &state) override
   {
