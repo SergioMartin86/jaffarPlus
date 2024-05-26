@@ -175,10 +175,16 @@ class Engine final
     // Resetting state counts
     _droppedStatesNoStorage           = 0;
     _droppedStatesFailedSerialization = 0;
+    _droppedStatesCheckpoint          = 0;
     _repeatedStates                   = 0;
     _failedStates                     = 0;
     _winStates                        = 0;
     _normalStates                     = 0;
+
+    // Resetting checkpoint counters
+    _checkpointLevel = 0;
+    _checkpointTolerance = 0;
+    _checkpointCutoff = 0;
 
     // Resetting counter for the current step
     _currentStep = 0;
@@ -360,6 +366,7 @@ class Engine final
                               1.0e-9 * (double)(_advanceStateDbAverageCumulativeTime),
                               100.0 * ((double)_advanceStateDbAverageCumulativeTime) / (double)(_totalRunningTime));
 
+    jaffarCommon::logger::log("[J+] Checkpoint (Level/Tolerance/Cutoff):         %lu / %lu / %lu\n", _checkpointLevel, _checkpointTolerance, _checkpointCutoff);
     jaffarCommon::logger::log("[J+] Base States Processed:                       %.3f Mstates (Total: %.3f Mstates)\n",
                               1.0e-6 * (double)_stepBaseStatesProcessed,
                               1.0e-6 * (double)_totalBaseStatesProcessed);
@@ -380,6 +387,9 @@ class Engine final
     jaffarCommon::logger::log("[J+] Dropped States (Failed Serialization):       %lu (%5.3f%% of New States Processed) \n",
                               _droppedStatesFailedSerialization.load(),
                               100.0 * (double)_droppedStatesFailedSerialization.load() / (double)_totalNewStatesProcessed);
+    jaffarCommon::logger::log("[J+] Dropped States (Checkpoint):                 %lu (%5.3f%% of New States Processed) \n",
+                              _droppedStatesCheckpoint.load(),
+                              100.0 * (double)_droppedStatesCheckpoint.load() / (double)_totalNewStatesProcessed);
     jaffarCommon::logger::log("[J+] Failed States:                               %lu (%5.3f%% of New States Processed) \n",
                               _failedStates.load(),
                               100.0 * (double)_failedStates.load() / (double)_totalNewStatesProcessed);
@@ -416,6 +426,7 @@ class Engine final
     repeated,
     droppedNoStorage,
     droppedFailedSerialization,
+    droppedCheckpoint,
     failed,
     normal,
     win
@@ -458,22 +469,8 @@ class Engine final
       const auto &possibleInputs = r->getAllowedInputs();
 
       // Trying out each possible input in the set
-      for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++)
-      {
-        // Increasing new state counter
-        _stepNewStatesProcessed++;
-
-        // We only need to reload the base state data if this is not the first input
-        const auto t0 = jaffarCommon::timing::now();
-        if (inputItr != possibleInputs.begin()) _stateDb->loadStateIntoRunner(*r, baseStateData);
-        _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
-
-        // Running input
-        auto result = runInput(*r, *inputItr);
-
-        // Updating counters
-        updateCounters(result);
-      }
+      for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++) 
+        runNewInput(*r, baseStateData, *inputItr);
 
       // Getting candidate moves
       auto candidateInputs = r->getCandidateInputs();
@@ -493,19 +490,8 @@ class Engine final
         if (_candidateInputsDetected.contains(stateInputHash))
           if (_candidateInputsDetected[stateInputHash].contains(input)) continue;
 
-        // Increasing new state counter
-        _stepNewStatesProcessed++;
-
-        // Re-loading base state
-        const auto t0 = jaffarCommon::timing::now();
-        _stateDb->loadStateIntoRunner(*r, baseStateData);
-        _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
-
         // Running input
-        auto result = runInput(*r, input);
-
-        // Updating counters
-        updateCounters(result);
+        const auto result = runNewInput(*r, baseStateData, input);
 
         // If this is not a repeated state, store it as new candidate input
         if (result != inputResult_t::repeated) _candidateInputsDetected[stateInputHash].insert(input);
@@ -523,8 +509,19 @@ class Engine final
     }
   }
 
-  __INLINE__ void updateCounters(const inputResult_t result)
+  __INLINE__ inputResult_t runNewInput(Runner &r, const void* baseStateData, const InputSet::inputIndex_t input)
   {
+    // Increasing new state counter
+    _stepNewStatesProcessed++;
+
+    // Re-loading base state
+    const auto t0 = jaffarCommon::timing::now();
+    _stateDb->loadStateIntoRunner(r, baseStateData);
+    _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
+
+    // Running input
+    const auto result = runInput(r, input);
+
     // Update counters depending on the outcomes
     if (result == inputResult_t::normal) _normalStates++;
     if (result == inputResult_t::repeated) _repeatedStates++;
@@ -532,6 +529,20 @@ class Engine final
     if (result == inputResult_t::win) _winStates++;
     if (result == inputResult_t::droppedNoStorage) _droppedStatesNoStorage++;
     if (result == inputResult_t::droppedFailedSerialization) _droppedStatesFailedSerialization++;
+    if (result == inputResult_t::droppedCheckpoint) _droppedStatesCheckpoint++;
+
+    // Checking whether this state's checkpoint is new
+    const auto stateCheckpointLevel = r.getGame()->getCheckpointLevel();
+    const auto stateCheckpointTolerance = r.getGame()->getCheckpointTolerance();
+    if (stateCheckpointLevel > _checkpointLevel)
+    {
+      _checkpointLevel = stateCheckpointLevel;
+      _checkpointTolerance = stateCheckpointTolerance;
+      _checkpointCutoff = _currentStep + stateCheckpointTolerance;
+    }
+
+    // Returning result
+    return result;
   }
 
   __INLINE__ inputResult_t runInput(Runner &r, const InputSet::inputIndex_t input)
@@ -558,6 +569,15 @@ class Engine final
     const auto t4 = jaffarCommon::timing::now();
     r.getGame()->evaluateRules();
 
+    // Checking whether this state meets checkpoint
+    if (_currentStep > _checkpointCutoff)
+    {
+      const auto stateCheckpointLevel = r.getGame()->getCheckpointLevel();
+
+      // If state does not meet checkpoint, then do not process it further
+      if (stateCheckpointLevel < _checkpointLevel) return inputResult_t::droppedCheckpoint;
+    }
+    
     // Determining state type
     r.getGame()->updateGameStateType();
 
@@ -653,6 +673,11 @@ class Engine final
   std::mutex _stepBestWinStateLock;
   winState   _stepBestWinState;
 
+  // Checkpoint information
+  size_t _checkpointLevel;
+  size_t _checkpointTolerance;
+  size_t _checkpointCutoff;
+
   ///////////////// Configuration
 
   // Thread count (set by openMP)
@@ -671,6 +696,9 @@ class Engine final
 
   // Counter for dropped states due to failed (differential) serialization
   std::atomic<size_t> _droppedStatesFailedSerialization;
+
+  // Counter for dropped states due to not meeting checkpoint
+  std::atomic<size_t> _droppedStatesCheckpoint;
 
   // Counter for repeated states (detected via hash collision)
   std::atomic<size_t> _repeatedStates;
