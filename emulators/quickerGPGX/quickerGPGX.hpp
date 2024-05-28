@@ -88,7 +88,8 @@ class QuickerGPGX final : public Emulator
       if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
       // Deserializing initial state into the emulator
-      loadFullState(initialState);
+      jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
+      deserializeState(d);
     }
 
     // Now disabling state properties, as requested
