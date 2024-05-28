@@ -48,7 +48,7 @@ class QuickerSDLPoP final : public Emulator
       std::string stateFileData;
       if (jaffarCommon::file::loadStringFromFile(stateFileData, _stateFilePath) == false) JAFFAR_THROW_LOGIC("Could not initial state file: %s\n", _stateFilePath.c_str());
 
-      jaffarCommon::deserializer::Contiguous deserializer(state.data());
+      jaffarCommon::deserializer::Contiguous deserializer(stateFileData.data(), stateFileData.size());
       _QuickerSDLPoP->deserializeState(deserializer);
     }
 
