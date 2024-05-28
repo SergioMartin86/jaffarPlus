@@ -29,16 +29,7 @@ class QuickerSnes9x final : public Emulator
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
     // For testing purposes, the initial state file can be overriden by environment variables
-    if (auto *value = std::getenv("JAFFAR_QUICKERSNES9X_OVERRIDE_INITIAL_STATE_FILE_PATH"))
-    {
-      // Even if we override, we'd like to test whether the originally specified rom still exists to ensure consistency in Github
-      std::string initialStateString;
-      bool        status = jaffarCommon::file::loadStringFromFile(initialStateString, _initialStateFilePath.c_str());
-      if (status == false) JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _initialStateFilePath.c_str());
-
-      // Now do the proper override
-      _initialStateFilePath = std::string(value);
-    }
+    if (auto *value = std::getenv("JAFFAR_QUICKERSNES9X_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
     // Parsing controller configuration
     _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
@@ -85,6 +76,7 @@ class QuickerSnes9x final : public Emulator
       if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
       // Deserializing initial state into the emulator
+      enableStateProperties();
       jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
       deserializeState(d);
     }
