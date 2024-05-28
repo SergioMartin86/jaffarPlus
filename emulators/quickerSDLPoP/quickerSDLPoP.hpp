@@ -47,7 +47,9 @@ class QuickerSDLPoP final : public Emulator
     {
       std::string stateFileData;
       if (jaffarCommon::file::loadStringFromFile(stateFileData, _stateFilePath) == false) JAFFAR_THROW_LOGIC("Could not initial state file: %s\n", _stateFilePath.c_str());
-      loadFullState(stateFileData);
+
+      jaffarCommon::deserializer::Contiguous deserializer(state.data());
+      _QuickerSDLPoP->deserializeState(deserializer);
     }
 
     // Check if RNG elements need overriding
@@ -56,6 +58,9 @@ class QuickerSDLPoP final : public Emulator
 
     // Check if copy protection needs initializing
     if (_initializeCopyProtection) _QuickerSDLPoP->initializeCopyProtection();
+
+    // Resetting global step counter
+    _QuickerSDLPoP->getGameState()->globalStepCount = 0;
   }
 
   // State advancing function
@@ -68,31 +73,6 @@ class QuickerSDLPoP final : public Emulator
   __INLINE__ void enableStateProperty(const std::string &property) override {}
 
   __INLINE__ void disableStateProperty(const std::string &property) override {}
-
-  __INLINE__ void loadFullState(const std::string &state) override
-  {
-    jaffarCommon::deserializer::Contiguous deserializer(state.data());
-    _QuickerSDLPoP->deserializeState(deserializer);
-
-    // Resetting global step counter
-    _QuickerSDLPoP->getGameState()->globalStepCount = 0;
-  }
-
-  __INLINE__ void saveFullState(std::string &state) override
-  {
-    jaffarCommon::serializer::Contiguous s(state.data(), state.size());
-    serializeState(s);
-  }
-
-  size_t getFullStateSize() override { return _QuickerSDLPoP->getFullStateSize(); }
-
-  __INLINE__ void printInfo() const override {}
-
-  property_t getProperty(const std::string &propertyName) const override
-  {
-    if (propertyName == "Game State") return property_t((uint8_t *)_QuickerSDLPoP->getGameState(), _QuickerSDLPoP->getFullStateSize());
-    JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
-  }
 
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
@@ -141,7 +121,7 @@ class QuickerSDLPoP final : public Emulator
     deserializer.pop(&_renderInput, sizeof(_renderInput));
   }
 
-  __INLINE__ size_t getRendererStateSize() const override { return _QuickerSDLPoP->getFullStateSize() + sizeof(_renderStepIdx) + sizeof(_renderInput); }
+  __INLINE__ size_t getRendererStateSize() const override { return _QuickerSDLPoP->getStateSize() + sizeof(_renderStepIdx) + sizeof(_renderInput); }
 
   __INLINE__ void showRender() override { _QuickerSDLPoP->updateRenderer(_renderStepIdx, _renderInput); }
 
