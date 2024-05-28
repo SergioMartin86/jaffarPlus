@@ -121,7 +121,7 @@ class QuickerSDLPoP final : public Emulator
     deserializer.pop(&_renderInput, sizeof(_renderInput));
   }
 
-  __INLINE__ size_t getRendererStateSize() const override { return _QuickerSDLPoP->getStateSize() + sizeof(_renderStepIdx) + sizeof(_renderInput); }
+  __INLINE__ size_t getRendererStateSize() const override { return getStateSize() + sizeof(_renderStepIdx) + sizeof(_renderInput); }
 
   __INLINE__ void showRender() override { _QuickerSDLPoP->updateRenderer(_renderStepIdx, _renderInput); }
 
