@@ -48,7 +48,7 @@ class QuickerSDLPoP final : public Emulator
       std::string stateFileData;
       if (jaffarCommon::file::loadStringFromFile(stateFileData, _stateFilePath) == false) JAFFAR_THROW_LOGIC("Could not initial state file: %s\n", _stateFilePath.c_str());
 
-      jaffarCommon::deserializer::Contiguous deserializer(stateFileData.data(), stateFileData.size());
+      jaffarCommon::deserializer::Contiguous deserializer(stateFileData.data());
       _QuickerSDLPoP->deserializeState(deserializer);
     }
 
@@ -73,6 +73,14 @@ class QuickerSDLPoP final : public Emulator
   __INLINE__ void enableStateProperty(const std::string &property) override {}
 
   __INLINE__ void disableStateProperty(const std::string &property) override {}
+
+  __INLINE__ void printInfo() const override {}
+
+  __INLINE__ property_t getProperty(const std::string &propertyName) const override
+  {
+    if (propertyName == "Game State") return property_t((uint8_t *)_QuickerSDLPoP->getGameState(), _QuickerSDLPoP->getFullStateSize());
+    JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
+  }
 
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
