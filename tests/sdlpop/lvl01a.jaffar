@@ -48,6 +48,7 @@
 {
   "Emulator Name": "QuickerSDLPoP",
   "Initial State File": "lvl01a.state",
+  "Disabled State Properties": [],
   "SDLPoP Root Path": "../../extern/quickerSDLPoP/SDLPoPData/",
   "Levels File Path": "",
   "Game Version": "1.4",
