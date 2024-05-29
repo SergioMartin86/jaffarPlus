@@ -5,7 +5,7 @@
 
 ![](jaffar.png)
 
-JaffarPlus is a high-performance general-purpose breath-first search optimizer. This project is specially tailored for the production tool-assisted speedruns (TAS). Its features are:
+JaffarPlus is a high-performance general-purpose breadth-first search optimizer. This project is specially tailored for the production of tool-assisted speedruns (TAS). Its features are:
 
 * High-Performance: Tailored for multi-core CPUs, especially for high core counts.
 * Multi-Platform: Supports games from multiple consoles/game emulators
