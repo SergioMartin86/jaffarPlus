@@ -73,7 +73,7 @@ class QuickerArkBot final : public Emulator
 
   property_t getProperty(const std::string &propertyName) const override
   {
-    if (propertyName == "ArkBot State") return property_t((uint8_t*)_quickerArkBot->getGameState(), sizeof(GameState));
+    if (propertyName == "ArkBot State") return property_t((uint8_t *)_quickerArkBot->getGameState(), sizeof(GameState));
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
