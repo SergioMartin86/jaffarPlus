@@ -30,7 +30,7 @@ class Arkanoid final : public jaffarPlus::Game
 
   private:
 
-  __INLINE__ void registerGameProperties() override {}
+  __INLINE__ void registerGameProperties() override { registerGameProperty("Score", &_arkState->score, Property::datatype_t::dt_uint32, Property::endianness_t::little); }
 
   __INLINE__ void advanceStateImpl(const std::string &input) override
   {
