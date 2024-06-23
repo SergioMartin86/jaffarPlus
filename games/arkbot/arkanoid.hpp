@@ -30,9 +30,7 @@ class Arkanoid final : public jaffarPlus::Game
 
   private:
 
-  __INLINE__ void registerGameProperties() override 
-  {
-  }
+  __INLINE__ void registerGameProperties() override {}
 
   __INLINE__ void advanceStateImpl(const std::string &input) override
   {
