@@ -44,6 +44,9 @@ class QuickerArkBot final : public Emulator
 #ifdef _JAFFAR_PLAYER
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
+
+    // Parsing initial RAM data path
+    _ramDataFilePath = jaffarCommon::json::getString(config, "RAM Data File Path");
 #endif
 
     // Allocating emulator
@@ -60,6 +63,20 @@ class QuickerArkBot final : public Emulator
 
     // Initializing emulator
     _quickerArkBot->initialize(_romFilePath);
+
+#ifdef _JAFFAR_PLAYER
+
+    // Loading initial RAM state file
+    std::string ramData;
+    {
+      auto success = jaffarCommon::file::loadStringFromFile(ramData, _ramDataFilePath);
+      if (success == false) JAFFAR_THROW_LOGIC("Could not find RAM data file: %s\n", _ramDataFilePath.c_str());
+    }
+
+    // Setting initial ram data for quickerNES
+    memcpy(_quickerArkBot->getRamPointer(), ramData.data(), 0x800);
+
+#endif
   }
 
   // State advancing function
@@ -126,7 +143,8 @@ class QuickerArkBot final : public Emulator
   private:
 
   ark::EmuInstance *_quickerArkBot;
-  std::string       _romFilePath = "";
+  std::string       _romFilePath     = "";
+  std::string       _ramDataFilePath = "";
   uint8_t           _initialLevel;
   uint32_t          _initialScore;
   std::string       _controller1Type;
