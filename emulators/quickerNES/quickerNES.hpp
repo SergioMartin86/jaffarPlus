@@ -50,6 +50,9 @@ class QuickerNES final : public Emulator
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
+
+    // Getting Nametable size to use
+    _NTABBlockSize = jaffarCommon::json::getNumber<size_t>(config, "Nametable Block Size");
   };
 
   void initializeImpl() override
@@ -90,6 +93,9 @@ class QuickerNES final : public Emulator
 
     // Now disabling state properties, as requested
     disableStateProperties();
+
+    // Setting Nametable block size to serialize. Some games don't use the entire memory so it's ok to reduce it
+    _quickerNES.setNTABBlockSize(_NTABBlockSize);
   }
 
   // State advancing function
@@ -262,6 +268,7 @@ class QuickerNES final : public Emulator
 
   NESInstance _quickerNES;
 
+  size_t _NTABBlockSize;
   std::string _controller1Type;
   std::string _controller2Type;
   std::string _romFilePath;
