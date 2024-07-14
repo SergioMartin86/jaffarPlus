@@ -268,7 +268,7 @@ class QuickerNES final : public Emulator
 
   NESInstance _quickerNES;
 
-  size_t _NTABBlockSize;
+  size_t      _NTABBlockSize;
   std::string _controller1Type;
   std::string _controller2Type;
   std::string _romFilePath;
