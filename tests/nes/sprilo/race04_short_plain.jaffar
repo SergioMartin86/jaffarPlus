@@ -48,7 +48,8 @@
   "Initial State File Path": "race04.state",
   "Controller 1 Type": "Joypad",
   "Controller 2 Type": "None",
-  "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ]
+  "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ],
+  "Nametable Block Size": 2048
 },
  
 "Runner Configuration":

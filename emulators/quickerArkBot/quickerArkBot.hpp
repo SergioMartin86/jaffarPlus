@@ -66,15 +66,18 @@ class QuickerArkBot final : public Emulator
 
 #ifdef _JAFFAR_PLAYER
 
-    // Loading initial RAM state file
-    std::string ramData;
+    if (_ramDataFilePath != "")
     {
-      auto success = jaffarCommon::file::loadStringFromFile(ramData, _ramDataFilePath);
-      if (success == false) JAFFAR_THROW_LOGIC("Could not find RAM data file: %s\n", _ramDataFilePath.c_str());
-    }
+      // Loading initial RAM state file
+      std::string ramData;
+      {
+        auto success = jaffarCommon::file::loadStringFromFile(ramData, _ramDataFilePath);
+        if (success == false) JAFFAR_THROW_LOGIC("Could not find RAM data file: %s\n", _ramDataFilePath.c_str());
+      }
 
-    // Setting initial ram data for quickerNES
-    memcpy(_quickerArkBot->getRamPointer(), ramData.data(), 0x800);
+      // Setting initial ram data for quickerNES
+      memcpy(_quickerArkBot->getRamPointer(), ramData.data(), 0x800);
+    }
 
 #endif
   }
