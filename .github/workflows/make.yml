@@ -36,9 +36,9 @@ jobs:
     - name: Create build directory
       run: mkdir build
     - name: Installing meson and ninja
-      run: python3 -m pip install meson ninja
+      run: python3 -m pip install meson ninja gcovr
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulators=QuickerNES
     - name: Building project
@@ -75,7 +75,7 @@ jobs:
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSDLPoP
     - name: Building project
@@ -97,7 +97,7 @@ jobs:
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSnes9x
     - name: Building project
@@ -119,7 +119,7 @@ jobs:
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerGPGX
     - name: Building project
@@ -141,7 +141,7 @@ jobs:
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerStella
     - name: Building project
@@ -169,7 +169,7 @@ jobs:
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=Atari2600Hawk
     - name: Building project
@@ -191,7 +191,7 @@ jobs:
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSMBC
     - name: Building project
@@ -213,7 +213,7 @@ jobs:
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerRAW
     - name: Building project
@@ -236,7 +236,7 @@ jobs:
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev gcovr libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerArkBot
     - name: Building project
