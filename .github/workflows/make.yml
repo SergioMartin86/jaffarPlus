@@ -46,7 +46,7 @@ jobs:
     - name: Running tests
       run: ninja test -C build
     - name: Running coverage analysis
-      run: ninja coverage -C build
+      run: ninja coverage-xml -C build
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4.0.1
       with:
