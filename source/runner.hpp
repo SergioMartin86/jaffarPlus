@@ -36,6 +36,9 @@ class Runner final
     // Storing game inputs for delayed parsing
     _allowedInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Allowed Input Sets");
 
+    // Print option: do not print placeholders for inputs not supported in this frame
+    _showEmptyInputSlots = jaffarCommon::json::getBoolean(config, "Show Empty Input Slots");
+
     // Stores candidate inputs
     _testCandidateInputs = jaffarCommon::json::getBoolean(config, "Test Candidate Inputs");
 
@@ -178,7 +181,30 @@ class Runner final
     return possibleInputs;
   }
 
-  __INLINE__ const auto getAllowedInputs() const { return getInputsFromInputSets(_allowedInputSets); }
+  __INLINE__ const auto getAllowedInputs() const
+  {
+    // Getting possible inputs based on the configuration file
+    auto allowedInputs = getInputsFromInputSets(_allowedInputSets);
+
+    // Getting additional inputs based on the custom game function
+    const auto additionalAllowedGameInputs = _game->getAdditionalAllowedInputs();
+
+    // For each additional game input, parse it and get its code
+    for (const auto &input : additionalAllowedGameInputs)
+    {
+      // Computing input hash
+      const auto inputHash = jaffarCommon::hash::hashString(input);
+
+      // Getting index for input
+      if (_inputHashMap.contains(inputHash) == false) JAFFAR_THROW_LOGIC("[ERROR] Input '%s' provided but has not been registered as allowed input first.\n", input.c_str());
+      const auto inputIdx = _inputHashMap.at(inputHash);
+
+      // Inserting input index
+      allowedInputs.insert(inputIdx);
+    }
+
+    return allowedInputs;
+  }
 
   __INLINE__ const auto getCandidateInputs() const { return getInputsFromInputSets(_candidateInputSets); }
 
@@ -389,7 +415,8 @@ class Runner final
       jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
       currentInputIdx++;
     }
-    for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
+    if (_showEmptyInputSlots)
+      for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
   }
 
   __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentStep % (_hashStepTolerance + 1); }
@@ -479,6 +506,9 @@ class Runner final
 
   // Whether to test for candidate inputs
   bool _testCandidateInputs;
+
+  // Show a placeholder for inputs not supported in this frame
+  bool _showEmptyInputSlots;
 };
 
 } // namespace jaffarPlus

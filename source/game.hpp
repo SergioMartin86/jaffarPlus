@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <memory>
 #include <unordered_set>
 #include <utility>
@@ -390,7 +391,7 @@ class Game
 
     // Parsing second operand (number)
     if (conditionJs.contains("Value") == false) JAFFAR_THROW_LOGIC("[ERROR] Rule condition missing 'Value' key.\n");
-    if (conditionJs["Value"].is_number() == false && conditionJs["Value"].is_string() == false)
+    if (conditionJs["Value"].is_number() == false && conditionJs["Value"].is_string() == false && conditionJs["Value"].is_boolean() == false)
       JAFFAR_THROW_LOGIC("[ERROR] Wrong format for 'Value' entry in rule condition. It must be a string or number");
 
     // If value is a number, take it as immediate
@@ -408,6 +409,11 @@ class Game
 
       if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>>(opType, property1, nullptr, 0, conditionJs["Value"].get<float>());
       if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>>(opType, property1, nullptr, 0, conditionJs["Value"].get<double>());
+    }
+
+    // If value is a boolean, take it as immediate
+    if (conditionJs["Value"].is_boolean())
+    {
       if (datatype1 == Property::datatype_t::dt_bool) return std::make_unique<_vCondition<bool>>(opType, property1, nullptr, 0, conditionJs["Value"].get<bool>());
     }
 
@@ -474,9 +480,11 @@ class Game
   // Optional hook to update the game state after running an initial sequence
   virtual __INLINE__ void postInitialSequenceHook() { _emulator->postInitialSequenceHook(); };
 
-  // Functions for new input discovery
-
+  // Function for new input discovery
   virtual jaffarCommon::hash::hash_t getStateInputHash() = 0;
+
+  // Function to enable a game code to provide additional allowed inputs based on complex decisions
+  virtual __INLINE__ std::set<std::string> getAdditionalAllowedInputs() { return {}; }
 
   protected:
 
