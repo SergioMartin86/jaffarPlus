@@ -233,31 +233,71 @@ class Engine final
     _stateDb->advanceStep();
     _advanceStateDbThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
 
-    // Processing step and cumulative timing
+    // Processing thread-average step timing
     _runnerStateAdvanceAverageTime = _runnerStateAdvanceThreadRawTime / _threadCount;
+    _runnerStateLoadAverageTime    = _runnerStateLoadThreadRawTime / _threadCount;
+    _runnerStateSaveAverageTime    = _runnerStateSaveThreadRawTime / _threadCount;
+    _calculateHashAverageTime      = _calculateHashThreadRawTime / _threadCount;
+    _checkHashAverageTime          = _checkHashThreadRawTime / _threadCount;
+    _ruleCheckingAverageTime       = _ruleCheckingThreadRawTime / _threadCount;
+    _getFreeStateAverageTime       = _getFreeStateThreadRawTime / _threadCount;
+    _returnFreeStateAverageTime    = _returnFreeStateThreadRawTime / _threadCount;
+    _calculateRewardAverageTime    = _calculateRewardThreadRawTime / _threadCount;
+    _popBaseStateDbAverageTime     = _popBaseStateDbThreadRawTime / _threadCount;
+    _getAllowedInputsAverageTime   = _getAllowedInputsThreadRawTime / _threadCount;
+    _getCandidateInputsAverageTime = _getCandidateInputsThreadRawTime / _threadCount;
+    _advanceHashDbAverageTime      = _advanceHashDbThreadRawTime.load();
+    _advanceStateDbAverageTime     = _advanceStateDbThreadRawTime.load();
+
+    // Sub-total thread-average step timing
+    _subTotalAverageTime = 0;
+    _subTotalAverageTime += _runnerStateAdvanceAverageTime;
+    _subTotalAverageTime += _runnerStateLoadAverageTime;
+    _subTotalAverageTime += _runnerStateSaveAverageTime;
+    _subTotalAverageTime += _calculateHashAverageTime;
+    _subTotalAverageTime += _checkHashAverageTime;
+    _subTotalAverageTime += _ruleCheckingAverageTime;
+    _subTotalAverageTime += _getFreeStateAverageTime;
+    _subTotalAverageTime += _returnFreeStateAverageTime;
+    _subTotalAverageTime += _calculateRewardAverageTime;
+    _subTotalAverageTime += _getAllowedInputsAverageTime;
+    _subTotalAverageTime += _getCandidateInputsAverageTime;
+    _subTotalAverageTime += _popBaseStateDbAverageTime;
+    _subTotalAverageTime += _advanceHashDbAverageTime;
+    _subTotalAverageTime += _advanceStateDbAverageTime;
+
+    // Processing cumulative timing
     _runnerStateAdvanceAverageCumulativeTime += _runnerStateAdvanceAverageTime;
-    _runnerStateLoadAverageTime = _runnerStateLoadThreadRawTime / _threadCount;
     _runnerStateLoadAverageCumulativeTime += _runnerStateLoadAverageTime;
-    _runnerStateSaveAverageTime = _runnerStateSaveThreadRawTime / _threadCount;
     _runnerStateSaveAverageCumulativeTime += _runnerStateSaveAverageTime;
-    _calculateHashAverageTime = _calculateHashThreadRawTime / _threadCount;
     _calculateHashAverageCumulativeTime += _calculateHashAverageTime;
-    _checkHashAverageTime = _checkHashThreadRawTime / _threadCount;
     _checkHashAverageCumulativeTime += _checkHashAverageTime;
-    _ruleCheckingAverageTime = _ruleCheckingThreadRawTime / _threadCount;
     _ruleCheckingAverageCumulativeTime += _ruleCheckingAverageTime;
-    _getFreeStateAverageTime = _getFreeStateThreadRawTime / _threadCount;
     _getFreeStateAverageCumulativeTime += _getFreeStateAverageTime;
-    _returnFreeStateAverageTime = _returnFreeStateThreadRawTime / _threadCount;
     _returnFreeStateAverageCumulativeTime += _returnFreeStateAverageTime;
-    _calculateRewardAverageTime = _calculateRewardThreadRawTime / _threadCount;
     _calculateRewardAverageCumulativeTime += _calculateRewardAverageTime;
-    _popBaseStateDbAverageTime = _popBaseStateDbThreadRawTime / _threadCount;
     _popBaseStateDbAverageCumulativeTime += _popBaseStateDbAverageTime;
-    _advanceHashDbAverageTime = _advanceHashDbThreadRawTime.load();
+    _getAllowedInputsAverageCumulativeTime += _getAllowedInputsAverageTime;
+    _getCandidateInputsAverageCumulativeTime += _getCandidateInputsAverageTime;
     _advanceHashDbAverageCumulativeTime += _advanceHashDbAverageTime;
-    _advanceStateDbAverageTime = _advanceStateDbThreadRawTime.load();
     _advanceStateDbAverageCumulativeTime += _advanceStateDbAverageTime;
+
+    // Sub-total cumulative time calculation
+    _subTotalAverageCumulativeTime = 0;
+    _subTotalAverageCumulativeTime += _runnerStateAdvanceAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _runnerStateLoadAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _runnerStateSaveAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _calculateHashAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _checkHashAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _ruleCheckingAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _getFreeStateAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _returnFreeStateAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _calculateRewardAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _popBaseStateDbAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _getAllowedInputsAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _getCandidateInputsAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _advanceHashDbAverageCumulativeTime;
+    _subTotalAverageCumulativeTime += _advanceStateDbAverageCumulativeTime;
 
     // Processing state counters
     _totalBaseStatesProcessed += _stepBaseStatesProcessed;
@@ -290,9 +330,9 @@ class Engine final
     // Printing information
     jaffarCommon::logger::log("[J+] Elapsed Time (Step/Total):                  %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
                               1.0e-9 * (double)(_currentStepTime),
-                              100.0,
+                              100.0 * ((double)(_subTotalAverageTime) / (double)(_currentStepTime)),
                               1.0e-9 * (double)(_totalRunningTime),
-                              100.0);
+                              100.0 * ((double)_subTotalAverageCumulativeTime) / (double)(_totalRunningTime));
 
     jaffarCommon::logger::log("[J+]  + Runner State Avance (Step/Total):        %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
                               1.0e-9 * (double)(_runnerStateAdvanceAverageTime),
@@ -353,6 +393,18 @@ class Engine final
                               100.0 * ((double)(_popBaseStateDbAverageTime) / (double)(_currentStepTime)),
                               1.0e-9 * (double)(_popBaseStateDbAverageCumulativeTime),
                               100.0 * ((double)_popBaseStateDbAverageCumulativeTime) / (double)(_totalRunningTime));
+
+    jaffarCommon::logger::log("[J+]  + Get Allowed Inputs (Step/Total):         %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
+                              1.0e-9 * (double)(_getAllowedInputsAverageTime),
+                              100.0 * ((double)(_getAllowedInputsAverageTime) / (double)(_currentStepTime)),
+                              1.0e-9 * (double)(_getAllowedInputsAverageCumulativeTime),
+                              100.0 * ((double)_getAllowedInputsAverageCumulativeTime) / (double)(_totalRunningTime));
+
+    jaffarCommon::logger::log("[J+]  + Get Candidate Inputs (Step/Total):       %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
+                              1.0e-9 * (double)(_getCandidateInputsAverageTime),
+                              100.0 * ((double)(_getCandidateInputsAverageTime) / (double)(_currentStepTime)),
+                              1.0e-9 * (double)(_getCandidateInputsAverageCumulativeTime),
+                              100.0 * ((double)_getCandidateInputsAverageCumulativeTime) / (double)(_totalRunningTime));
 
     jaffarCommon::logger::log("[J+]  + Advance Hash Db (Step/Total):            %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n",
                               1.0e-9 * (double)(_advanceHashDbAverageTime),
@@ -466,13 +518,17 @@ class Engine final
       _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
       // Getting possible inputs
+      const auto t1 = jaffarCommon::timing::now();
       const auto &possibleInputs = r->getAllowedInputs();
+      _getAllowedInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
 
       // Trying out each possible input in the set
       for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr);
 
       // Getting candidate moves
+      const auto t2 = jaffarCommon::timing::now();
       auto candidateInputs = r->getCandidateInputs();
+      _getCandidateInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t2);
 
       // Finding unique candidate inputs
       std::vector<InputSet::inputIndex_t> uniqueCandidateInputs;
@@ -764,6 +820,16 @@ class Engine final
   std::atomic<size_t> _calculateRewardAverageTime;
   std::atomic<size_t> _calculateRewardAverageCumulativeTime;
 
+  // Get candidate inputs time
+  std::atomic<size_t> _getAllowedInputsThreadRawTime;
+  std::atomic<size_t> _getAllowedInputsAverageTime;
+  std::atomic<size_t> _getAllowedInputsAverageCumulativeTime;
+
+  // Get candidate inputs time
+  std::atomic<size_t> _getCandidateInputsThreadRawTime;
+  std::atomic<size_t> _getCandidateInputsAverageTime;
+  std::atomic<size_t> _getCandidateInputsAverageCumulativeTime;
+
   // Advance Hash DB time
   std::atomic<size_t> _advanceHashDbThreadRawTime;
   std::atomic<size_t> _advanceHashDbAverageTime;
@@ -778,6 +844,10 @@ class Engine final
   std::atomic<size_t> _popBaseStateDbThreadRawTime;
   std::atomic<size_t> _popBaseStateDbAverageTime;
   std::atomic<size_t> _popBaseStateDbAverageCumulativeTime;
+
+  // Sub-total calculation
+  size_t _subTotalAverageTime;
+  size_t _subTotalAverageCumulativeTime;
 };
 
 } // namespace jaffarPlus
