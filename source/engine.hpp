@@ -518,7 +518,7 @@ class Engine final
       _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
       // Getting possible inputs
-      const auto t1 = jaffarCommon::timing::now();
+      const auto  t1             = jaffarCommon::timing::now();
       const auto &possibleInputs = r->getAllowedInputs();
       _getAllowedInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
 
@@ -526,8 +526,8 @@ class Engine final
       for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr);
 
       // Getting candidate moves
-      const auto t2 = jaffarCommon::timing::now();
-      auto candidateInputs = r->getCandidateInputs();
+      const auto t2              = jaffarCommon::timing::now();
+      auto       candidateInputs = r->getCandidateInputs();
       _getCandidateInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t2);
 
       // Finding unique candidate inputs
