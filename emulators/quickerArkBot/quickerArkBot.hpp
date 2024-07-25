@@ -105,12 +105,6 @@ class QuickerArkBot final : public Emulator
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override { _quickerArkBot->initializeVideoOutput(); }
 
-  __INLINE__ void postInitialSequenceHook() override
-  {
-    // Resetting arkbot after playing the initial sequence
-    _quickerArkBot->doSoftReset();
-  };
-
   // This function closes the video output (e.g., window)
   void finalizeVideoOutput() override { _quickerArkBot->finalizeVideoOutput(); }
 
@@ -142,6 +136,8 @@ class QuickerArkBot final : public Emulator
   GameState *getGameState() { return _quickerArkBot->getGameState(); }
 
   __INLINE__ void showRender() override { _quickerArkBot->updateRenderer(); }
+
+  __INLINE__ void doSoftReset() { _quickerArkBot->doSoftReset(); };
 
   private:
 

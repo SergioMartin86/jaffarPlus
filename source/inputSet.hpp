@@ -14,7 +14,7 @@ class InputSet final
   public:
 
   // Type for input indexing
-  typedef uint32_t inputIndex_t;
+  typedef size_t inputIndex_t;
 
   InputSet()  = default;
   ~InputSet() = default;
