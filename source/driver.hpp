@@ -56,10 +56,6 @@ class Driver final
     auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
     auto engineConfig   = jaffarCommon::json::getObject(config, "Engine Configuration");
 
-    // Overriding runner configuration based on the maximum number of steps to drive
-    runnerConfig["Store Input History"]["Enabled"]          = _maxSteps > 0;
-    runnerConfig["Store Input History"]["Max Size (Steps)"] = _maxSteps;
-
     // Creating runner from the configuration
     _runner = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
 

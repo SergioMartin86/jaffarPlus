@@ -30,6 +30,9 @@ class Emulator
 
     // Getting emulator name (for runtime use)
     _emulatorName = jaffarCommon::json::getString(config, "Emulator Name");
+
+    // Getting initial sequence file path
+    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
   };
 
   virtual ~Emulator() = default;
@@ -44,6 +47,21 @@ class Emulator
 
     // Set this as initialized
     _isInitialized = true;
+
+    // Advancing the state using the initial sequence, if provided
+    if (_initialSequenceFilePath != "")
+    {
+      // Load initial sequence
+      std::string initialSequenceFileString;
+      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+      // Getting input sequence
+      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+
+      // Running inputs in the initial sequence
+      for (const auto &input : initialSequence) advanceState(input);
+    }
   }
 
   // State advancing function
@@ -110,9 +128,6 @@ class Emulator
   // This function returns the size of the renderer state
   virtual size_t getRendererStateSize() const = 0;
 
-  // This function is an optional hook for setting up the emulator after a running an initial sequence
-  virtual void postInitialSequenceHook(){};
-
   // Shows the contents of the emulator's renderer into the window
   virtual void showRender() = 0;
 
@@ -130,6 +145,9 @@ class Emulator
 
   // Collection of state blocks to disable during engine run
   std::vector<std::string> _disabledStateProperties;
+
+  // File containing an initial sequence to run before starting
+  std::string _initialSequenceFilePath;
 };
 
 } // namespace jaffarPlus

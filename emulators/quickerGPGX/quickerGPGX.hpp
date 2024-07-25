@@ -139,9 +139,6 @@ class QuickerGPGX final : public Emulator
 
   private:
 
-  // Collection of state blocks to disable during engine run
-  std::vector<std::string> _disabledStateProperties;
-
   gpgx::EmuInstance _quickerGPGX;
 
   std::string _systemType;

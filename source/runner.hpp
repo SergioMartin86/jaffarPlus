@@ -31,10 +31,13 @@ class Runner final
 
     const auto &inputHistoryJs = jaffarCommon::json::getObject(config, "Store Input History");
     _inputHistoryEnabled       = jaffarCommon::json::getBoolean(inputHistoryJs, "Enabled");
-    _inputHistoryMaxSize       = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size (Steps)");
+    _inputHistoryMaxSize       = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size");
 
     // Storing game inputs for delayed parsing
     _allowedInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Allowed Input Sets");
+
+    // Print option: do not print allowed inputs
+    _showAllowedInputs = jaffarCommon::json::getBoolean(config, "Show Allowed Inputs");
 
     // Print option: do not print placeholders for inputs not supported in this frame
     _showEmptyInputSlots = jaffarCommon::json::getBoolean(config, "Show Empty Input Slots");
@@ -44,9 +47,6 @@ class Runner final
 
     // Getting candidate input sets
     _candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
-
-    // Getting initial sequence file path
-    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
   }
 
   void initialize()
@@ -83,24 +83,6 @@ class Runner final
 
       // Clearing storage (set to zero)
       memset(_inputHistory.data(), 0, _inputHistory.size());
-    }
-
-    // Advancing the state using the initial sequence, if provided
-    if (_initialSequenceFilePath != "")
-    {
-      // Load initial sequence
-      std::string initialSequenceFileString;
-      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
-        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
-
-      // Getting input sequence
-      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
-
-      // Running inputs in the initial sequence
-      for (const auto &input : initialSequence) _game->advanceState(input);
-
-      // Call the post-initialization hook
-      _game->postInitialSequenceHook();
     }
   }
 
@@ -232,7 +214,7 @@ class Runner final
   }
 
   // Function to advance state.
-  void advanceState(const InputSet::inputIndex_t inputIdx)
+  __INLINE__ void advanceState(const InputSet::inputIndex_t inputIdx)
   {
     // Safety check
     if (_inputStringMap.contains(inputIdx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", inputIdx);
@@ -243,19 +225,11 @@ class Runner final
     // Performing the requested input
     _game->advanceState(inputString);
 
-    // If storing input history, do it now
-    if (_inputHistoryEnabled == true)
-    {
-      // Checking we haven't exeeded maximum step
-      if (_currentStep >= _inputHistoryMaxSize)
-        JAFFAR_THROW_RUNTIME("[ERROR] Trying to advance step when storing input history is enabled and the maximum step (%lu) has been reached\n", _inputHistoryMaxSize);
-
-      // Storing the new more in the input history
-      setInput(_currentStep, inputIdx);
-    }
+    // If storing input history, do it now. Unless we've reached the maximum
+    if (_inputHistoryEnabled == true && _currentInputCount < _inputHistoryMaxSize) setInput(_currentInputCount, inputIdx);
 
     // Advancing step counter
-    _currentStep++;
+    _currentInputCount++;
   }
 
   // Function to advance state by passing the input string directly
@@ -265,7 +239,7 @@ class Runner final
     _game->advanceState(inputString);
 
     // Advancing step counter
-    _currentStep++;
+    _currentInputCount++;
   }
 
   __INLINE__ void setInput(const size_t stepId, const InputSet::inputIndex_t inputIdx)
@@ -296,7 +270,7 @@ class Runner final
     if (_inputHistoryEnabled == true) serializer.push(_inputHistory.data(), _inputHistory.size());
 
     // Serializing current step
-    serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
+    serializer.pushContiguous(&_currentInputCount, sizeof(_currentInputCount));
   }
 
   // Deeserialization routine
@@ -309,7 +283,7 @@ class Runner final
     if (_inputHistoryEnabled == true) deserializer.pop(_inputHistory.data(), _inputHistory.size());
 
     // Deserializing current step
-    deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
+    deserializer.popContiguous(&_currentInputCount, sizeof(_currentInputCount));
   }
 
   // Getting the maximum differntial state size
@@ -358,8 +332,8 @@ class Runner final
     // Getting the history into a string
     std::string inputHistoryString;
 
-    // For each entry, add the input string
-    for (size_t i = 0; i < _currentStep; i++)
+    // For each entry, add the input string up to the current step or the maximum size
+    for (size_t i = 0; i < _currentInputCount && i < _inputHistoryMaxSize; i++)
     {
       // Getting input index
       const auto inputIdx = getInput(i);
@@ -399,27 +373,31 @@ class Runner final
     }
 
     // Printing runner state
-    jaffarCommon::logger::log("[J+]  + Current Step: %u\n", _currentStep);
+    jaffarCommon::logger::log("[J+]  + Current Input Count: %u\n", _currentInputCount);
     jaffarCommon::logger::log("[J+]  + Hash: %s\n", hash.c_str());
     jaffarCommon::logger::log("[J+]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
 
-    // Getting allowed inputs
-    const auto &possibleInputs = getAllowedInputs();
-
-    // Printing them
-    jaffarCommon::logger::log("[J+]  + Allowed Inputs:\n");
-
-    size_t currentInputIdx = 0;
-    for (const auto inputIdx : possibleInputs)
+    // Check whether we want to print inputs
+    if (_showAllowedInputs == true)
     {
-      jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
-      currentInputIdx++;
+      // Getting allowed inputs
+      const auto &possibleInputs = getAllowedInputs();
+
+      // Printing them
+      jaffarCommon::logger::log("[J+]  + Allowed Inputs:\n");
+
+      size_t currentInputIdx = 0;
+      for (const auto inputIdx : possibleInputs)
+      {
+        jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
+        currentInputIdx++;
+      }
+      if (_showEmptyInputSlots)
+        for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
     }
-    if (_showEmptyInputSlots)
-      for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
   }
 
-  __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentStep % (_hashStepTolerance + 1); }
+  __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentInputCount % (_hashStepTolerance + 1); }
   __INLINE__ Game    *getGame() const { return _game.get(); }
 
   __INLINE__ bool   getInputHistoryEnabled() const { return _inputHistoryEnabled; }
@@ -452,7 +430,7 @@ class Runner final
   uint32_t _inputHistoryMaxSize;
 
   // Storage for the current step of the runner
-  uint32_t _currentStep = 0;
+  uint32_t _currentInputCount = 0;
 
   // Storage for the hash step tolerance
   uint32_t _hashStepTolerance;
@@ -468,9 +446,6 @@ class Runner final
 
   // Storage for the input history
   std::vector<uint8_t> _inputHistory;
-
-  // File containing an initial sequence to run before starting
-  std::string _initialSequenceFilePath;
 
   ///////////////////////////////
   // Input processing variables
@@ -509,6 +484,9 @@ class Runner final
 
   // Show a placeholder for inputs not supported in this frame
   bool _showEmptyInputSlots;
+
+  // Show allowed inputs enable/disable
+  bool _showAllowedInputs;
 };
 
 } // namespace jaffarPlus

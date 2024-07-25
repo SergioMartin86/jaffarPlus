@@ -89,6 +89,9 @@ class Game
     // Now parsing rules
     parseRules(_rulesJs);
 
+    // Calling game-specific initializer
+    initializeImpl();
+
     // Set this as initialized
     _isInitialized = true;
   }
@@ -477,9 +480,6 @@ class Game
   // Returns whether the game was initialized
   __INLINE__ bool isInitialized() const { return _isInitialized; }
 
-  // Optional hook to update the game state after running an initial sequence
-  virtual __INLINE__ void postInitialSequenceHook() { _emulator->postInitialSequenceHook(); };
-
   // Function for new input discovery
   virtual jaffarCommon::hash::hash_t getStateInputHash() = 0;
 
@@ -638,6 +638,7 @@ class Game
     jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
+  virtual void  initializeImpl(){};
   virtual void  registerGameProperties()                                                                       = 0;
   virtual void  serializeStateImpl(jaffarCommon::serializer::Base &serializer) const                           = 0;
   virtual void  deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)                           = 0;

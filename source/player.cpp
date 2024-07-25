@@ -267,10 +267,6 @@ int main(int argc, char *argv[])
   auto gameConfig     = jaffarCommon::json::getObject(config, "Game Configuration");
   auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
 
-  // Overriding runner configuration based on the maximum number of steps to drive
-  runnerConfig["Store Input History"]["Enabled"]          = false;
-  runnerConfig["Store Input History"]["Max Size (Steps)"] = 0;
-
   // Creating runner from the configuration
   auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
 
