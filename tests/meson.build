@@ -7,8 +7,6 @@ testTimeout = 120
 bash = find_program('bash')
 validateExamplesScript = 'validateExamples.sh'
 
-foreach emulator : emulators
-
 test(emulator,
       bash,
       workdir : meson.current_source_dir(),
@@ -16,13 +14,11 @@ test(emulator,
       args : [ validateExamplesScript, emulator ],
       suite : [ 'ScriptValidation' ])
 
-endforeach
-
 ######## Full run tests
 
 # Setting env variables
 
-if 'QuickerNES' in emulators
+if emulator == 'QuickerNES'
 
 ## NES / Sprilo
 
@@ -61,7 +57,7 @@ test('race04_short_reproduce',
 
 endif
 
-if 'QuickerSDLPoP' in emulators
+if emulator == 'QuickerSDLPoP'
 
 ## SDLPoP / Prince Of Persia
 
@@ -84,7 +80,7 @@ test('lvl01_reproduce',
 
 endif
 
-if 'QuickerSnes9x' in emulators
+if emulator == 'QuickerSnes9x'
 
 ## SNES / Christmas Craze
 
@@ -100,7 +96,7 @@ test('stage01',
 
 endif
 
-if 'QuickerGPGX' in emulators
+if emulator == 'QuickerGPGX'
 
 ## Genesis / Dino Runner
 
@@ -116,7 +112,7 @@ test('stage01',
 
 endif
 
-if 'QuickerStella' in emulators
+if emulator == 'QuickerStella'
 
 ## A2600 / Hellway
 
@@ -132,7 +128,7 @@ test('stage01',
       
 endif
 
-if 'Atari2600Hawk' in emulators
+if emulator == 'Atari2600Hawk'
 
 ## A2600 / Hellway
 
@@ -148,7 +144,7 @@ test('stage01',
       
 endif
 
-if 'QuickerSMBC' in emulators
+if emulator == 'QuickerSMBC'
 
 ## NES / Super Mario Bros
 
@@ -164,7 +160,7 @@ test('stage01',
 endif
 
 
-if 'QuickerArkBot' in emulators
+if emulator == 'QuickerArkBot'
 
 ## ArkBot / Arkanoid
 

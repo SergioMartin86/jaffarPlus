@@ -67,7 +67,7 @@ class Runner final
     if (_inputHistoryEnabled == true)
     {
       // Calculating bit storage for the possible inputs index
-      _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_currentInputIndex);
+      _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex);
 
       // Total size in bits for the input history
       size_t inputHistorySizeBits = _inputHistoryMaxSize * _inputIndexSizeBits;
@@ -119,23 +119,19 @@ class Runner final
     const auto inputHash = jaffarCommon::hash::hashString(input);
 
     // Getting index for the new input
-    InputSet::inputIndex_t inputIdx = 0;
+    InputSet::inputIndex_t inputIdx = _game->getEmulator()->registerInput(input);
+    
+    // Adding new input hash->index to the map
+    _inputHashMap[inputHash] = inputIdx;
 
-    // Checking if input has already been added globally. If not, add it
-    if (_inputHashMap.contains(inputHash) == false)
-    {
-      // Getting input index and advancing it
-      inputIdx = _currentInputIndex++;
-
-      // Adding new input hash->index to the map
-      _inputHashMap[inputHash] = inputIdx;
-
-      // Adding new input index->string to the map
-      _inputStringMap[inputIdx] = input;
-    }
+    // Adding new input index->string to the map
+    _inputStringMap[inputIdx] = input;
 
     // If it is, just get it from there
     if (_inputHashMap.contains(inputHash) == true) inputIdx = _inputHashMap[inputHash];
+
+    // Register maximum input index to determine how many bytes to use for input history storage
+    _maxInputIndex = std::max(_maxInputIndex, inputIdx);
 
     // Returning this input's index (either new or the one registered before)
     return inputIdx;
@@ -169,21 +165,7 @@ class Runner final
     auto allowedInputs = getInputsFromInputSets(_allowedInputSets);
 
     // Getting additional inputs based on the custom game function
-    const auto additionalAllowedGameInputs = _game->getAdditionalAllowedInputs();
-
-    // For each additional game input, parse it and get its code
-    for (const auto &input : additionalAllowedGameInputs)
-    {
-      // Computing input hash
-      const auto inputHash = jaffarCommon::hash::hashString(input);
-
-      // Getting index for input
-      if (_inputHashMap.contains(inputHash) == false) JAFFAR_THROW_LOGIC("[ERROR] Input '%s' provided but has not been registered as allowed input first.\n", input.c_str());
-      const auto inputIdx = _inputHashMap.at(inputHash);
-
-      // Inserting input index
-      allowedInputs.insert(inputIdx);
-    }
+    _game->getAdditionalAllowedInputs(allowedInputs);
 
     return allowedInputs;
   }
@@ -219,24 +201,11 @@ class Runner final
     // Safety check
     if (_inputStringMap.contains(inputIdx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", inputIdx);
 
-    // Getting input string
-    const auto &inputString = _inputStringMap[inputIdx];
-
     // Performing the requested input
-    _game->advanceState(inputString);
+    _game->advanceState(inputIdx);
 
     // If storing input history, do it now. Unless we've reached the maximum
     if (_inputHistoryEnabled == true && _currentInputCount < _inputHistoryMaxSize) setInput(_currentInputCount, inputIdx);
-
-    // Advancing step counter
-    _currentInputCount++;
-  }
-
-  // Function to advance state by passing the input string directly
-  void advanceState(const std::string &inputString)
-  {
-    // Performing the requested input
-    _game->advanceState(inputString);
 
     // Advancing step counter
     _currentInputCount++;
@@ -367,7 +336,7 @@ class Runner final
     jaffarCommon::logger::log("[J+]  + Input History Enabled: %s\n", _inputHistoryEnabled ? "true" : "false");
     if (_inputHistoryEnabled == true)
     {
-      jaffarCommon::logger::log("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _currentInputIndex, _inputIndexSizeBits);
+      jaffarCommon::logger::log("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _maxInputIndex, _inputIndexSizeBits);
       jaffarCommon::logger::log(
         "[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _inputHistoryMaxSize, _inputHistory.size(), _inputIndexSizeBits * _inputHistoryMaxSize);
     }
@@ -451,8 +420,8 @@ class Runner final
   // Input processing variables
   //////////////////////////////
 
-  // Storage for the index to use to register a new input. Should start at zero
-  InputSet::inputIndex_t _currentInputIndex = 0;
+  // Storage for the maximum index to use to register a new input
+  InputSet::inputIndex_t _maxInputIndex = 0;
 
   // Hash map for input indexing
   std::map<jaffarCommon::hash::hash_t, InputSet::inputIndex_t> _inputHashMap;
