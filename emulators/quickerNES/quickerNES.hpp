@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
@@ -56,16 +57,22 @@ class QuickerNES final : public Emulator
 
     // Getting Nametable size to use
     _NTABBlockSize = jaffarCommon::json::getNumber<size_t>(config, "Nametable Block Size");
+
+    // Getting disabled state properties
+    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
+
+    // Creating internal emulator instance
+    _quickerNES = std::make_unique<NESInstance>(config);
   };
 
+  // Function to get a reference to the input parser from the base emulator
+  jaffar::InputParser *getInputParser() const override { return _quickerNES->getInputParser(); }
+  
   void initializeImpl() override
   {
     // Setting game's internal video buffer
-    ((emulator_t *)_quickerNES.getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
-
-    // Setting controller types
-    _quickerNES.setController1Type(_controller1Type);
-    _quickerNES.setController2Type(_controller2Type);
+    ((emulator_t *)_quickerNES->getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
 
     // Reading from ROM file
     std::string romFileData;
@@ -78,7 +85,10 @@ class QuickerNES final : public Emulator
       JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
 
     // Loading rom into emulator
-    _quickerNES.loadROM((uint8_t *)romFileData.data(), romFileData.size());
+    _quickerNES->loadROM((uint8_t *)romFileData.data(), romFileData.size());
+
+    // Getting input parser from the internal emulator
+    const auto inputParser = _quickerNES->getInputParser();
 
     // Advancing the state using the initial sequence, if provided
     if (_initialSequenceFilePath != "")
@@ -92,7 +102,7 @@ class QuickerNES final : public Emulator
         const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
 
         // Running inputs in the initial sequence
-        for (const auto &input : initialSequence) advanceState(input);
+        for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
     }
 
     // If initial state file defined, load it
@@ -113,14 +123,14 @@ class QuickerNES final : public Emulator
     disableStateProperties();
 
     // Setting Nametable block size to serialize. Some games don't use the entire memory so it's ok to reduce it
-    _quickerNES.setNTABBlockSize(_NTABBlockSize);
+    _quickerNES->setNTABBlockSize(_NTABBlockSize);
   }
 
   // State advancing function
-  void advanceState(const std::string &input) override { _quickerNES.advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t &input) override { _quickerNES->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerNES.serializeState(serializer); };
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerNES.deserializeState(deserializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerNES->serializeState(serializer); };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerNES->deserializeState(deserializer); };
 
   __INLINE__ void printInfo() const override
   {
@@ -133,18 +143,18 @@ class QuickerNES final : public Emulator
 
   property_t getProperty(const std::string &propertyName) const override
   {
-    if (propertyName == "LRAM") return property_t(_quickerNES.getLowMem(), _quickerNES.getLowMemSize());
-    if (propertyName == "SRAM") return property_t(_quickerNES.getWorkMem(), _quickerNES.getWorkMemSize());
-    if (propertyName == "NTAB") return property_t(_quickerNES.getNametableMem(), _quickerNES.getNametableMemSize());
-    if (propertyName == "CHRR") return property_t(_quickerNES.getCHRMem(), _quickerNES.getCHRMemSize());
-    if (propertyName == "SPRT") return property_t(_quickerNES.getSpriteMem(), _quickerNES.getSpriteMemSize());
+    if (propertyName == "LRAM") return property_t(_quickerNES->getLowMem(), _quickerNES->getLowMemSize());
+    if (propertyName == "SRAM") return property_t(_quickerNES->getWorkMem(), _quickerNES->getWorkMemSize());
+    if (propertyName == "NTAB") return property_t(_quickerNES->getNametableMem(), _quickerNES->getNametableMemSize());
+    if (propertyName == "CHRR") return property_t(_quickerNES->getCHRMem(), _quickerNES->getCHRMemSize());
+    if (propertyName == "SPRT") return property_t(_quickerNES->getSpriteMem(), _quickerNES->getSpriteMemSize());
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) override { _quickerNES.enableStateBlock(property); }
+  __INLINE__ void enableStateProperty(const std::string &property) { _quickerNES->enableStateBlock(property); }
 
-  __INLINE__ void disableStateProperty(const std::string &property) override { _quickerNES.disableStateBlock(property); }
+  __INLINE__ void disableStateProperty(const std::string &property) { _quickerNES->disableStateBlock(property); }
 
   ////////// Rendering functions (some of these taken from https://github.com/Bindernews/HeadlessQuickNes / MIT License)
 
@@ -213,13 +223,13 @@ class QuickerNES final : public Emulator
     if (m_window) SDL_DestroyWindow(m_window);
   }
 
-  __INLINE__ void enableRendering() override { _quickerNES.enableRendering(); }
+  __INLINE__ void enableRendering() override { _quickerNES->enableRendering(); }
 
-  __INLINE__ void disableRendering() override { _quickerNES.disableRendering(); }
+  __INLINE__ void disableRendering() override { _quickerNES->disableRendering(); }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
   {
-    saveBlit(_quickerNES.getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0);
+    saveBlit(_quickerNES->getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0);
   }
   __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
   __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
@@ -277,6 +287,15 @@ class QuickerNES final : public Emulator
 
   private:
 
+  __INLINE__ void disableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
+  }
+  __INLINE__ void enableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
+  }
+  
   void printMemoryBlockHash(const std::string &blockName) const
   {
     auto p    = getProperty(blockName);
@@ -284,7 +303,7 @@ class QuickerNES final : public Emulator
     jaffarCommon::logger::log("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }
 
-  NESInstance _quickerNES;
+  std::unique_ptr<NESInstance> _quickerNES;
 
   size_t      _NTABBlockSize;
   std::string _controller1Type;
@@ -294,6 +313,9 @@ class QuickerNES final : public Emulator
 
   std::string _initialStateFilePath;
   std::string _initialSequenceFilePath;
+
+  // Collection of state blocks to disable during engine run
+  std::vector<std::string> _disabledStateProperties;
 };
 
 } // namespace emulator

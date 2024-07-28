@@ -2,7 +2,7 @@
   "Driver Configuration":
   {
    "End On First Win State": true,
-   "Max Steps": 400,
+   "Max Steps": 0,
 
     "Save Intermediate Results":
     {
@@ -46,6 +46,7 @@
   "Rom File Path": "../../../extern/quickerNES/tests/roms/sprilo.nes",
   "Rom File SHA1": "6EC09B9B51320A536A786D3D4719432B714C5779",
   "Initial State File Path": "race04.state",
+  "Initial Sequence File Path": "",
   "Controller 1 Type": "Joypad",
   "Controller 2 Type": "None",
   "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ],
@@ -55,7 +56,14 @@
 "Runner Configuration":
 {
   "Hash Step Tolerance": 0,
-  "Initial Sequence File Path": "",
+  "Show Empty Input Slots": false,
+  "Show Allowed Inputs": false,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 400
+  },
 
   "Allowed Input Sets":
   [
