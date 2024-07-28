@@ -45,6 +45,9 @@ class QuickerNES final : public Emulator
     // For testing purposes, the rom file path can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
 
+    // Getting initial sequence file path
+    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+
     // Parsing rom file SHA1
     _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
 
@@ -76,6 +79,21 @@ class QuickerNES final : public Emulator
 
     // Loading rom into emulator
     _quickerNES.loadROM((uint8_t *)romFileData.data(), romFileData.size());
+
+    // Advancing the state using the initial sequence, if provided
+    if (_initialSequenceFilePath != "")
+    {
+      // Load initial sequence
+      std::string initialSequenceFileString;
+      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+      // Getting input sequence
+      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+
+      // Running inputs in the initial sequence
+      for (const auto &input : initialSequence) advanceState(input);
+    }
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
@@ -273,7 +291,9 @@ class QuickerNES final : public Emulator
   std::string _controller2Type;
   std::string _romFilePath;
   std::string _romFileSHA1;
+  
   std::string _initialStateFilePath;
+  std::string _initialSequenceFilePath;
 };
 
 } // namespace emulator

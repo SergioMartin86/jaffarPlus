@@ -32,7 +32,7 @@ class Arkanoid final : public jaffarPlus::Game
 
   __INLINE__ void registerGameProperties() override { registerGameProperty("Score", &_arkState->score, Property::datatype_t::dt_uint32, Property::endianness_t::little); }
 
-  __INLINE__ void advanceStateImpl(const std::string &input) override
+  __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     // Running emulator
     _emulator->advanceState(input);

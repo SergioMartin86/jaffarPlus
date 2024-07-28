@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <inputParser.hpp>
+#include <inputSet.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/file.hpp>
 #include <jaffarCommon/json.hpp>
@@ -24,15 +26,8 @@ class Emulator
   // Constructor must only do configuration parsing to perform dry runs
   Emulator(const nlohmann::json &config)
   {
-    // Getting disabled state properties
-    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
-    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
-
     // Getting emulator name (for runtime use)
     _emulatorName = jaffarCommon::json::getString(config, "Emulator Name");
-
-    // Getting initial sequence file path
-    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
   };
 
   virtual ~Emulator() = default;
@@ -47,25 +42,27 @@ class Emulator
 
     // Set this as initialized
     _isInitialized = true;
+  }
 
-    // Advancing the state using the initial sequence, if provided
-    if (_initialSequenceFilePath != "")
-    {
-      // Load initial sequence
-      std::string initialSequenceFileString;
-      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
-        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+  // Function to register inputs, to prevent the emulator from having to decode string inputs every time
+  // If the entry is already registered, the registration function will simply return the previously registered id
+  __INLINE__ InputSet::inputIndex_t registerInput(const std::string inputString)
+  {
+    // Registration is done only at the beginning with linear complexity O(n) to optimize for read access O(1)
+    for (size_t i = 0; i < _inputMap.size(); i++) if (inputString == _inputMap[i].inputString) return i;
 
-      // Getting input sequence
-      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+    // Otherwise, getting decoded input data from the emulator
+    auto inputData = getInputParser()->parseInputString(inputString);
 
-      // Running inputs in the initial sequence
-      for (const auto &input : initialSequence) advanceState(input);
-    }
+    // Otherwise, register it as a new entry
+    _inputMap.push_back( { inputString, inputData } );
+
+    // Returning current index
+    return _inputMap.size() - 1;
   }
 
   // State advancing function
-  virtual void advanceState(const std::string &move) = 0;
+  void advanceState(const InputSet::inputIndex_t input) { advanceStateImpl(_inputMap[input].inputData); };
 
   // State serialization / deserialization functions
   size_t getStateSize() const
@@ -84,14 +81,8 @@ class Emulator
   virtual void serializeState(jaffarCommon::serializer::Base &serializer) const = 0;
   virtual void deserializeState(jaffarCommon::deserializer::Base &deserializer) = 0;
 
-  __INLINE__ void disableStateProperties()
-  {
-    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
-  }
-  __INLINE__ void enableStateProperties()
-  {
-    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
-  }
+  // Function to get a reference to the input parser from the base emulator
+  virtual jaffar::InputParser* getInputParser() const = 0;
 
   // Function to print debug information, whatever it might be
   virtual void printInfo() const = 0;
@@ -133,9 +124,8 @@ class Emulator
 
   protected:
 
-  virtual void enableStateProperty(const std::string &property) = 0;
-
-  virtual void disableStateProperty(const std::string &property) = 0;
+  // Function to advance state
+  virtual void advanceStateImpl(const jaffar::input_t &input) = 0;
 
   // Emulator name (for runtime use)
   std::string _emulatorName;
@@ -143,11 +133,20 @@ class Emulator
   // Stores whether the emulator has been initialized
   bool _isInitialized = false;
 
-  // Collection of state blocks to disable during engine run
-  std::vector<std::string> _disabledStateProperties;
+  private:
 
-  // File containing an initial sequence to run before starting
-  std::string _initialSequenceFilePath;
+  // Struct that holds the string of an input together with its emulator-specific input data
+  struct inputEntry_t
+  {
+    // Input string
+    std::string inputString;
+
+    // Emulator-specific input data
+    jaffar::input_t inputData;
+  };
+
+  // Storage that maps an input id to its input data
+  std::vector<inputEntry_t> _inputMap;
 };
 
 } // namespace jaffarPlus

@@ -100,7 +100,7 @@ class Game
   virtual ~Game() = default;
 
   // Function to advance state.
-  __INLINE__ void advanceState(const std::string &input)
+  __INLINE__ void advanceState(const InputSet::inputIndex_t input)
   {
     // Calling the pre-update hook
     stateUpdatePreHook();
@@ -484,7 +484,7 @@ class Game
   virtual jaffarCommon::hash::hash_t getStateInputHash() = 0;
 
   // Function to enable a game code to provide additional allowed inputs based on complex decisions
-  virtual __INLINE__ std::set<std::string> getAdditionalAllowedInputs() { return {}; }
+  virtual __INLINE__ void getAdditionalAllowedInputs(std::set<InputSet::inputIndex_t>& allowedInputSet) {  }
 
   protected:
 
@@ -645,7 +645,7 @@ class Game
   virtual float calculateGameSpecificReward() const                                                            = 0;
   virtual void  computeAdditionalHashing(MetroHash128 &hashEngine) const                                       = 0;
   virtual void  printInfoImpl() const                                                                          = 0;
-  virtual void  advanceStateImpl(const std::string &input)                                                     = 0;
+  virtual void  advanceStateImpl(const InputSet::inputIndex_t input)                                          = 0;
   virtual bool  parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) = 0;
 
   // Optional hooks

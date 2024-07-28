@@ -1,5 +1,5 @@
-option('emulators',
-  type : 'array',
+option('emulator',
+  type : 'combo',
   choices : [
     'QuickerNES',
     'QuickerGPGX',
@@ -11,7 +11,6 @@ option('emulators',
     'QuickerRAW',
     'QuickerArkBot'
    ],
-  value : [ ],
   description : 'Selects the emulation cores to compile Jaffar with'
 )
 

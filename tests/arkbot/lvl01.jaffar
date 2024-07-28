@@ -2,7 +2,7 @@
  "Driver Configuration":
  {
   "End On First Win State": true,
-  "Max Steps": 1000,
+  "Max Steps": 0,
 
   "Save Intermediate Results":
   {
@@ -47,19 +47,21 @@
 "Emulator Configuration":
 {
   "Emulator Name": "QuickerArkBot",
-  "Rom File Path": "../../extern/quickerArkBot/tests/Arkanoid (U) [!].nes",
-  "Initial State File Path": "",
-  "Disabled State Properties": [ ],
-  "Controller 1 Type": "Arkanoid",
-  "Controller 2 Type": "None",
   "Initial Level": 1,
   "Initial Score": 0
 },
  
 "Runner Configuration":
 {
-  "Hash Step Tolerance": 4,
-  "Initial Sequence File Path": "lvl01.arkanoid.initial.sol",
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": false,
+  "Show Allowed Inputs": false,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 910
+  },
 
   "Allowed Input Sets":
   [
