@@ -71,19 +71,19 @@ class Property
   static __INLINE__ size_t getDatatypeSize(const datatype_t datatype)
   {
     switch (datatype)
-    {
-    case dt_uint8: return 1;
-    case dt_uint16: return 2;
-    case dt_uint32: return 4;
-    case dt_uint64: return 8;
-    case dt_int8: return 1;
-    case dt_int16: return 2;
-    case dt_int32: return 4;
-    case dt_int64: return 8;
-    case dt_bool: return 1;
-    case dt_float32: return 4;
-    case dt_float64: return 8;
-    }
+      {
+      case dt_uint8: return 1;
+      case dt_uint16: return 2;
+      case dt_uint32: return 4;
+      case dt_uint64: return 8;
+      case dt_int8: return 1;
+      case dt_int16: return 2;
+      case dt_int32: return 4;
+      case dt_int64: return 8;
+      case dt_bool: return 1;
+      case dt_float32: return 4;
+      case dt_float64: return 8;
+      }
 
     JAFFAR_THROW_LOGIC("Unidentified datatype %d\n", datatype);
   }
@@ -105,27 +105,27 @@ class Property
     auto       dBuf = (uint8_t *)&value;
     if (size == 1) { dBuf[0] = sBuf[0]; }
     if (size == 2)
-    {
-      dBuf[0] = sBuf[1];
-      dBuf[1] = sBuf[0];
+      {
+        dBuf[0] = sBuf[1];
+        dBuf[1] = sBuf[0];
     }
     if (size == 4)
-    {
-      dBuf[0] = sBuf[3];
-      dBuf[1] = sBuf[2];
-      dBuf[2] = sBuf[1];
-      dBuf[3] = sBuf[0];
+      {
+        dBuf[0] = sBuf[3];
+        dBuf[1] = sBuf[2];
+        dBuf[2] = sBuf[1];
+        dBuf[3] = sBuf[0];
     }
     if (size == 8)
-    {
-      dBuf[0] = sBuf[7];
-      dBuf[1] = sBuf[6];
-      dBuf[2] = sBuf[5];
-      dBuf[3] = sBuf[4];
-      dBuf[4] = sBuf[3];
-      dBuf[5] = sBuf[2];
-      dBuf[6] = sBuf[1];
-      dBuf[7] = sBuf[0];
+      {
+        dBuf[0] = sBuf[7];
+        dBuf[1] = sBuf[6];
+        dBuf[2] = sBuf[5];
+        dBuf[3] = sBuf[4];
+        dBuf[4] = sBuf[3];
+        dBuf[5] = sBuf[2];
+        dBuf[6] = sBuf[1];
+        dBuf[7] = sBuf[0];
     }
     return value;
   }

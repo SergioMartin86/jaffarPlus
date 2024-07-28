@@ -49,13 +49,14 @@ class Emulator
   __INLINE__ InputSet::inputIndex_t registerInput(const std::string inputString)
   {
     // Registration is done only at the beginning with linear complexity O(n) to optimize for read access O(1)
-    for (size_t i = 0; i < _inputMap.size(); i++) if (inputString == _inputMap[i].inputString) return i;
+    for (size_t i = 0; i < _inputMap.size(); i++)
+      if (inputString == _inputMap[i].inputString) return i;
 
     // Otherwise, getting decoded input data from the emulator
     auto inputData = getInputParser()->parseInputString(inputString);
 
     // Otherwise, register it as a new entry
-    _inputMap.push_back( { inputString, inputData } );
+    _inputMap.push_back({inputString, inputData});
 
     // Returning current index
     return _inputMap.size() - 1;
@@ -82,7 +83,7 @@ class Emulator
   virtual void deserializeState(jaffarCommon::deserializer::Base &deserializer) = 0;
 
   // Function to get a reference to the input parser from the base emulator
-  virtual jaffar::InputParser* getInputParser() const = 0;
+  virtual jaffar::InputParser *getInputParser() const = 0;
 
   // Function to print debug information, whatever it might be
   virtual void printInfo() const = 0;

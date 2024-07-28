@@ -59,15 +59,15 @@ class Engine final
     bool        stateDatabaseTypeRecognized = false;
 
     if (stateDatabaseType == "Plain")
-    {
-      _stateDb                    = std::make_unique<jaffarPlus::stateDb::Plain>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
-      stateDatabaseTypeRecognized = true;
+      {
+        _stateDb                    = std::make_unique<jaffarPlus::stateDb::Plain>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
+        stateDatabaseTypeRecognized = true;
     }
 
     if (stateDatabaseType == "Numa Aware")
-    {
-      _stateDb                    = std::make_unique<jaffarPlus::stateDb::Numa>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
-      stateDatabaseTypeRecognized = true;
+      {
+        _stateDb                    = std::make_unique<jaffarPlus::stateDb::Numa>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
+        stateDatabaseTypeRecognized = true;
     }
     if (stateDatabaseTypeRecognized == false) JAFFAR_THROW_LOGIC("State database type '%s' not recognized", stateDatabaseType.c_str());
 
@@ -465,10 +465,10 @@ class Engine final
     // Printing candidate moves
     jaffarCommon::logger::log("[J+] Candidate Moves:\n");
     for (const auto &entry : _candidateInputsDetected)
-    {
-      jaffarCommon::logger::log("[J+]  + Hash: %s\n", jaffarCommon::hash::hashToString(entry.first).c_str());
-      for (const auto input : entry.second) jaffarCommon::logger::log("[J+]    + %3lu %s\n", input, _runners[0]->getInputStringFromIndex(input).c_str());
-    }
+      {
+        jaffarCommon::logger::log("[J+]  + Hash: %s\n", jaffarCommon::hash::hashToString(entry.first).c_str());
+        for (const auto input : entry.second) jaffarCommon::logger::log("[J+]    + %3lu %s\n", input, _runners[0]->getInputStringFromIndex(input).c_str());
+      }
   }
 
   private:
@@ -508,60 +508,60 @@ class Engine final
 
     // While there are still states in the database, keep on grabbing them
     while (baseStateData != nullptr)
-    {
-      // Increasing base state counter
-      _stepBaseStatesProcessed++;
-
-      // Load state into runner via the state database
-      const auto t0 = jaffarCommon::timing::now();
-      _stateDb->loadStateIntoRunner(*r, baseStateData);
-      _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
-
-      // Getting possible inputs
-      const auto  t1             = jaffarCommon::timing::now();
-      const auto &possibleInputs = r->getAllowedInputs();
-      _getAllowedInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
-
-      // Trying out each possible input in the set
-      for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr);
-
-      // Getting candidate moves
-      const auto t2              = jaffarCommon::timing::now();
-      auto       candidateInputs = r->getCandidateInputs();
-      _getCandidateInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t2);
-
-      // Finding unique candidate inputs
-      std::vector<InputSet::inputIndex_t> uniqueCandidateInputs;
-      for (const auto &input : candidateInputs)
-        if (possibleInputs.contains(input) == false) uniqueCandidateInputs.push_back(input);
-
-      // Run each candidate input
-      for (const auto input : uniqueCandidateInputs)
       {
-        // Getting discriminating hash key to identify this type of states
-        auto stateInputHash = r->getGame()->getStateInputHash();
+        // Increasing base state counter
+        _stepBaseStatesProcessed++;
 
-        // Making sure we don't try the input if it was already detected
-        if (_candidateInputsDetected.contains(stateInputHash))
-          if (_candidateInputsDetected[stateInputHash].contains(input)) continue;
+        // Load state into runner via the state database
+        const auto t0 = jaffarCommon::timing::now();
+        _stateDb->loadStateIntoRunner(*r, baseStateData);
+        _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
-        // Running input
-        const auto result = runNewInput(*r, baseStateData, input);
+        // Getting possible inputs
+        const auto  t1             = jaffarCommon::timing::now();
+        const auto &possibleInputs = r->getAllowedInputs();
+        _getAllowedInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
 
-        // If this is not a repeated state, store it as new candidate input
-        if (result != inputResult_t::repeated) _candidateInputsDetected[stateInputHash].insert(input);
+        // Trying out each possible input in the set
+        for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr);
+
+        // Getting candidate moves
+        const auto t2              = jaffarCommon::timing::now();
+        auto       candidateInputs = r->getCandidateInputs();
+        _getCandidateInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t2);
+
+        // Finding unique candidate inputs
+        std::vector<InputSet::inputIndex_t> uniqueCandidateInputs;
+        for (const auto &input : candidateInputs)
+          if (possibleInputs.contains(input) == false) uniqueCandidateInputs.push_back(input);
+
+        // Run each candidate input
+        for (const auto input : uniqueCandidateInputs)
+          {
+            // Getting discriminating hash key to identify this type of states
+            auto stateInputHash = r->getGame()->getStateInputHash();
+
+            // Making sure we don't try the input if it was already detected
+            if (_candidateInputsDetected.contains(stateInputHash))
+              if (_candidateInputsDetected[stateInputHash].contains(input)) continue;
+
+            // Running input
+            const auto result = runNewInput(*r, baseStateData, input);
+
+            // If this is not a repeated state, store it as new candidate input
+            if (result != inputResult_t::repeated) _candidateInputsDetected[stateInputHash].insert(input);
+          }
+
+        // Return base state to the free state queue
+        const auto t8 = jaffarCommon::timing::now();
+        _stateDb->returnFreeState(baseStateData);
+        _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
+
+        // Pulling next state from the database
+        const auto t9 = jaffarCommon::timing::now();
+        baseStateData = _stateDb->popState();
+        _popBaseStateDbThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t9);
       }
-
-      // Return base state to the free state queue
-      const auto t8 = jaffarCommon::timing::now();
-      _stateDb->returnFreeState(baseStateData);
-      _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
-
-      // Pulling next state from the database
-      const auto t9 = jaffarCommon::timing::now();
-      baseStateData = _stateDb->popState();
-      _popBaseStateDbThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t9);
-    }
   }
 
   __INLINE__ inputResult_t runNewInput(Runner &r, const void *baseStateData, const InputSet::inputIndex_t input)
@@ -590,10 +590,10 @@ class Engine final
     const auto stateCheckpointLevel     = r.getGame()->getCheckpointLevel();
     const auto stateCheckpointTolerance = r.getGame()->getCheckpointTolerance();
     if (stateCheckpointLevel > _checkpointLevel)
-    {
-      _checkpointLevel     = stateCheckpointLevel;
-      _checkpointTolerance = stateCheckpointTolerance;
-      _checkpointCutoff    = _currentStep + stateCheckpointTolerance;
+      {
+        _checkpointLevel     = stateCheckpointLevel;
+        _checkpointTolerance = stateCheckpointTolerance;
+        _checkpointCutoff    = _currentStep + stateCheckpointTolerance;
     }
 
     // Returning result
@@ -626,11 +626,11 @@ class Engine final
 
     // Checking whether this state meets checkpoint
     if (_currentStep > _checkpointCutoff)
-    {
-      const auto stateCheckpointLevel = r.getGame()->getCheckpointLevel();
+      {
+        const auto stateCheckpointLevel = r.getGame()->getCheckpointLevel();
 
-      // If state does not meet checkpoint, then do not process it further
-      if (stateCheckpointLevel < _checkpointLevel) return inputResult_t::droppedCheckpoint;
+        // If state does not meet checkpoint, then do not process it further
+        if (stateCheckpointLevel < _checkpointLevel) return inputResult_t::droppedCheckpoint;
     }
 
     // Determining state type
@@ -661,48 +661,48 @@ class Engine final
 
     // If this is a win state, register it and return
     if (stateType == Game::stateType_t::win)
-    {
-      ///////////// Best win state needs to be stored if its better than any previous one found
-
-      // Check if the new win state is the best and store it in that case
-      _stepBestWinStateLock.lock();
-      if (reward > _stepBestWinState.reward)
       {
-        _stateDb->saveStateFromRunner(r, _stepBestWinState.stateData);
-        _stepBestWinState.reward = reward;
-      }
-      _stepBestWinStateLock.unlock();
+        ///////////// Best win state needs to be stored if its better than any previous one found
 
-      // Freeing up the state data
-      const auto t7 = jaffarCommon::timing::now();
-      _stateDb->returnFreeState(newStateData);
-      _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t7);
+        // Check if the new win state is the best and store it in that case
+        _stepBestWinStateLock.lock();
+        if (reward > _stepBestWinState.reward)
+          {
+            _stateDb->saveStateFromRunner(r, _stepBestWinState.stateData);
+            _stepBestWinState.reward = reward;
+        }
+        _stepBestWinStateLock.unlock();
 
-      // Returning a win result
-      return inputResult_t::win;
+        // Freeing up the state data
+        const auto t7 = jaffarCommon::timing::now();
+        _stateDb->returnFreeState(newStateData);
+        _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t7);
+
+        // Returning a win result
+        return inputResult_t::win;
     }
 
     // If this is a normal state and has possible inputs store it in the next state database
     if (stateType == Game::stateType_t::normal)
-    {
-      // If this is a normal state, push into the state database
-      const auto t8      = jaffarCommon::timing::now();
-      auto       success = _stateDb->pushState(reward, r, newStateData);
-      _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
-
-      // Attempting to serialize state and push it into the database
-      // This might fail when using differential serialization due to insufficient space for differentials
-      // In that, case we just drop the state and continue, while keeping a counter
-      if (success == false)
       {
-        // Freeing up state memory
-        const auto t9 = jaffarCommon::timing::now();
-        _stateDb->returnFreeState(newStateData);
-        _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t9);
+        // If this is a normal state, push into the state database
+        const auto t8      = jaffarCommon::timing::now();
+        auto       success = _stateDb->pushState(reward, r, newStateData);
+        _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t8);
 
-        // Returning dropped result by failed serialization
-        return inputResult_t::droppedFailedSerialization;
-      }
+        // Attempting to serialize state and push it into the database
+        // This might fail when using differential serialization due to insufficient space for differentials
+        // In that, case we just drop the state and continue, while keeping a counter
+        if (success == false)
+          {
+            // Freeing up state memory
+            const auto t9 = jaffarCommon::timing::now();
+            _stateDb->returnFreeState(newStateData);
+            _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t9);
+
+            // Returning dropped result by failed serialization
+            return inputResult_t::droppedFailedSerialization;
+        }
     }
 
     // If store succeeded, return a normal execution

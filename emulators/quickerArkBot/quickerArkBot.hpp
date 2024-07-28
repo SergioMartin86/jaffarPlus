@@ -43,13 +43,9 @@ class QuickerArkBot final : public Emulator
     _quickerArkBot->initialize();
   }
 
-
   // Function to get a reference to the input parser from the base emulator
-  virtual jaffar::InputParser* getInputParser() const 
-  {
-     return _quickerArkBot->getInputParser(); 
-  }
-  
+  virtual jaffar::InputParser *getInputParser() const { return _quickerArkBot->getInputParser(); }
+
   // State advancing function
   void advanceStateImpl(const jaffar::input_t &input) override { _quickerArkBot->advanceState(input); }
 
@@ -67,26 +63,20 @@ class QuickerArkBot final : public Emulator
   }
 
   // This function opens the video output (e.g., window)
-  void initializeVideoOutput() override {  }
+  void initializeVideoOutput() override {}
 
   // This function closes the video output (e.g., window)
-  void finalizeVideoOutput() override {  }
+  void finalizeVideoOutput() override {}
 
-  __INLINE__ void enableRendering() override { }
+  __INLINE__ void enableRendering() override {}
 
-  __INLINE__ void disableRendering() override {  }
+  __INLINE__ void disableRendering() override {}
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
-  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
-  {
-    serializeState(serializer);
-  }
+  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializeState(serializer); }
 
-  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
-  {
-    deserializeState(deserializer);
-  }
+  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializeState(deserializer); }
 
   __INLINE__ size_t getRendererStateSize() const
   {
@@ -97,7 +87,7 @@ class QuickerArkBot final : public Emulator
 
   GameState *getGameState() { return _quickerArkBot->getGameState(); }
 
-  __INLINE__ void showRender() override { }
+  __INLINE__ void showRender() override {}
 
   __INLINE__ void doSoftReset() { _quickerArkBot->doSoftReset(); };
 

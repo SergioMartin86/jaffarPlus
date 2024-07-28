@@ -114,45 +114,45 @@ class Driver final
 
     // Running engine until a termination point
     while (true)
-    {
-      // If found winning state, report it now
-      if (_endOnFirstWinState && _engine->getWinStatesFound() > 0)
       {
-        exitReason = exitReason_t::winStateFound;
-        break;
+        // If found winning state, report it now
+        if (_endOnFirstWinState && _engine->getWinStatesFound() > 0)
+          {
+            exitReason = exitReason_t::winStateFound;
+            break;
+        }
+
+        // If ran out of states, finish now
+        if (_engine->getStateCount() == 0)
+          {
+            exitReason = exitReason_t::outOfStates;
+            break;
+        }
+
+        // If maximum step established and reached, finish now
+        if (_maxSteps > 0 && _currentStep >= _maxSteps)
+          {
+            if (_winStatesFound > 0) exitReason = exitReason_t::winStateFound;
+            if (_winStatesFound == 0) exitReason = exitReason_t::maximumStepReached;
+            break;
+        }
+
+        // Updating best and worst states
+        updateBestState();
+        updateWorstState();
+
+        // Printing information
+        printInfo();
+
+        // Running engine step
+        _engine->runStep();
+
+        // Summing amount of win states found
+        _winStatesFound = _engine->getWinStatesFound();
+
+        // Increasing step counter
+        _currentStep++;
       }
-
-      // If ran out of states, finish now
-      if (_engine->getStateCount() == 0)
-      {
-        exitReason = exitReason_t::outOfStates;
-        break;
-      }
-
-      // If maximum step established and reached, finish now
-      if (_maxSteps > 0 && _currentStep >= _maxSteps)
-      {
-        if (_winStatesFound > 0) exitReason = exitReason_t::winStateFound;
-        if (_winStatesFound == 0) exitReason = exitReason_t::maximumStepReached;
-        break;
-      }
-
-      // Updating best and worst states
-      updateBestState();
-      updateWorstState();
-
-      // Printing information
-      printInfo();
-
-      // Running engine step
-      _engine->runStep();
-
-      // Summing amount of win states found
-      _winStatesFound = _engine->getWinStatesFound();
-
-      // Increasing step counter
-      _currentStep++;
-    }
 
     // Setting finalized flag
     _hasFinished = true;
@@ -207,25 +207,25 @@ class Driver final
 
     // Run loop while the driver is still running
     while (_hasFinished == false)
-    {
-      // Sleeping for 100ms intervals to prevent excessive overheads
-      usleep(100000);
-
-      // Getting time elapsed since last save
-      auto currentTime              = jaffarCommon::timing::now();
-      auto timeElapsedSinceLastSave = jaffarCommon::timing::timeDeltaSeconds(currentTime, lastSaveTime);
-
-      // Checking if we need to save best state
-      if (timeElapsedSinceLastSave > _saveIntermediateFrequency && _currentStep > 1)
       {
-        // Saving worst and best state information
-        saveBestStateInformation();
-        saveWorstStateInformation();
+        // Sleeping for 100ms intervals to prevent excessive overheads
+        usleep(100000);
 
-        // Resetting timer
-        lastSaveTime = jaffarCommon::timing::now();
+        // Getting time elapsed since last save
+        auto currentTime              = jaffarCommon::timing::now();
+        auto timeElapsedSinceLastSave = jaffarCommon::timing::timeDeltaSeconds(currentTime, lastSaveTime);
+
+        // Checking if we need to save best state
+        if (timeElapsedSinceLastSave > _saveIntermediateFrequency && _currentStep > 1)
+          {
+            // Saving worst and best state information
+            saveBestStateInformation();
+            saveWorstStateInformation();
+
+            // Resetting timer
+            lastSaveTime = jaffarCommon::timing::now();
+        }
       }
-    }
   }
 
   void updateWorstState()
@@ -265,29 +265,29 @@ class Driver final
 
     // If we haven't found any winning state, simply use the currently best state
     if (_winStatesFound == 0)
-    {
-      // Getting best state so far
-      auto bestState = _engine->getStateDb()->getBestState();
+      {
+        // Getting best state so far
+        auto bestState = _engine->getStateDb()->getBestState();
 
-      // Saving best state into the storage
-      memcpy(_bestStateStorage.data(), bestState, _stateSize);
+        // Saving best state into the storage
+        memcpy(_bestStateStorage.data(), bestState, _stateSize);
     }
 
     // If we have found a winning state in this step that improves on the current best, save it now
     if (_engine->getWinStatesFound() > 0)
-    {
-      // Getting best win state (best reward) for the current step
-      auto winStateEntry = _engine->getStepBestWinState();
-
-      // If the reward if better than the current best, then make it the new best state
-      if (winStateEntry.reward > _bestWinStateReward)
       {
-        // Saving new best
-        _bestWinStateReward = winStateEntry.reward;
+        // Getting best win state (best reward) for the current step
+        auto winStateEntry = _engine->getStepBestWinState();
 
-        // Saving win state into the storage
-        memcpy(_bestStateStorage.data(), winStateEntry.stateData, _stateSize);
-      }
+        // If the reward if better than the current best, then make it the new best state
+        if (winStateEntry.reward > _bestWinStateReward)
+          {
+            // Saving new best
+            _bestWinStateReward = winStateEntry.reward;
+
+            // Saving win state into the storage
+            memcpy(_bestStateStorage.data(), winStateEntry.stateData, _stateSize);
+        }
     }
 
     // Loading best state state into runner

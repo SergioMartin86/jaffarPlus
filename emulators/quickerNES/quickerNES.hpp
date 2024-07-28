@@ -82,31 +82,31 @@ class QuickerNES final : public Emulator
 
     // Advancing the state using the initial sequence, if provided
     if (_initialSequenceFilePath != "")
-    {
-      // Load initial sequence
-      std::string initialSequenceFileString;
-      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
-        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+      {
+        // Load initial sequence
+        std::string initialSequenceFileString;
+        if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
 
-      // Getting input sequence
-      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+        // Getting input sequence
+        const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
 
-      // Running inputs in the initial sequence
-      for (const auto &input : initialSequence) advanceState(input);
+        // Running inputs in the initial sequence
+        for (const auto &input : initialSequence) advanceState(input);
     }
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
-    {
-      // Reading from initial state file
-      std::string initialState;
-      bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
-      if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
+      {
+        // Reading from initial state file
+        std::string initialState;
+        bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
+        if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
-      // Deserializing initial state into the emulator
-      enableStateProperties();
-      jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
-      deserializeState(d);
+        // Deserializing initial state into the emulator
+        enableStateProperties();
+        jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
+        deserializeState(d);
     }
 
     // Now disabling state properties, as requested
@@ -174,14 +174,14 @@ class QuickerNES final : public Emulator
 
     for (unsigned h = 0; h < emulator_t::image_height; h++, in_pixels += e->frame().pitch, out_pixels += emulator_t::image_width)
       for (unsigned w = 0; w < emulator_t::image_width; w++)
-      {
-        unsigned                 col = e->frame().palette[in_pixels[w]];
-        const emulator_t::rgb_t &rgb = e->nes_colors[col];
-        unsigned                 r   = rgb.red;
-        unsigned                 g   = rgb.green;
-        unsigned                 b   = rgb.blue;
-        out_pixels[w]                = (r << 16) | (g << 8) | (b << 0);
-      }
+        {
+          unsigned                 col = e->frame().palette[in_pixels[w]];
+          const emulator_t::rgb_t &rgb = e->nes_colors[col];
+          unsigned                 r   = rgb.red;
+          unsigned                 g   = rgb.green;
+          unsigned                 b   = rgb.blue;
+          out_pixels[w]                = (r << 16) | (g << 8) | (b << 0);
+        }
   }
 
   // This function opens the video output (e.g., window)
@@ -291,7 +291,7 @@ class QuickerNES final : public Emulator
   std::string _controller2Type;
   std::string _romFilePath;
   std::string _romFileSHA1;
-  
+
   std::string _initialStateFilePath;
   std::string _initialSequenceFilePath;
 };

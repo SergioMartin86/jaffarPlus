@@ -73,15 +73,15 @@ class QuickerSMBC final : public Emulator
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
-    {
-      // Reading from initial state file
-      std::string initialState;
-      bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
-      if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
+      {
+        // Reading from initial state file
+        std::string initialState;
+        bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
+        if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
-      // Deserializing initial state into the emulator
-      jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
-      deserializeState(d);
+        // Deserializing initial state into the emulator
+        jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
+        deserializeState(d);
     }
 
     // Now disabling state properties, as requested
