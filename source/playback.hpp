@@ -53,14 +53,19 @@ class Playback final
       // Creating new step
       step_t step;
 
+      // Checking if this is the end of the sequence
+      bool isEndOfSequence = i == inputSequence.size();
+
       // Setting step input string
-      step.inputString = i < inputSequence.size() ? inputSequence[i] : "<End Of Sequence>";
+      step.inputString = isEndOfSequence == false ? inputSequence[i] : "<End Of Sequence>";
 
       // Checking if the input is allowed
       step.isInputAllowed = _runner->isInputAllowed(step.inputString);
 
       // Getting input index
-      step.inputIndex = step.isInputAllowed ? _runner->getInputIndex(step.inputString) : 0;
+      if (isEndOfSequence == true) step.inputIndex = 0;
+      if (isEndOfSequence == false && step.isInputAllowed == true) step.inputIndex = _runner->getInputIndex(step.inputString);
+      if (isEndOfSequence == false && step.isInputAllowed == false) step.inputIndex = _runner->registerInput(step.inputString);
 
       // Getting state hash
       step.stateHash = _runner->computeHash();
@@ -83,7 +88,7 @@ class Playback final
       _runner->getGame()->getEmulator()->serializeRendererState(sr);
 
       // Advancing state
-      if (i < inputSequence.size()) _runner->advanceState(step.inputString);
+      if (i < inputSequence.size()) _runner->advanceState(step.inputIndex);
       if (i == inputSequence.size()) _runner->advanceState(0);
 
       // Evaluate game rules
