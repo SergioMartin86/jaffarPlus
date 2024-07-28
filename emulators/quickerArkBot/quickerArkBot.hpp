@@ -44,7 +44,7 @@ class QuickerArkBot final : public Emulator
   }
 
   // Function to get a reference to the input parser from the base emulator
-  virtual jaffar::InputParser *getInputParser() const { return _quickerArkBot->getInputParser(); }
+  jaffar::InputParser *getInputParser() const override { return _quickerArkBot->getInputParser(); }
 
   // State advancing function
   void advanceStateImpl(const jaffar::input_t &input) override { _quickerArkBot->advanceState(input); }

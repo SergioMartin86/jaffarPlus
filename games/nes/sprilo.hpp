@@ -49,12 +49,15 @@ class Sprilo final : public jaffarPlus::Game
     _playerPosX  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
     _playerPosY  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
     _lapProgress = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Lap Progress")]->getPointer();
+
+    // Getting index for a non input 
+    _nullInputIdx = _emulator->registerInput("|..|........|");
   }
 
-  __INLINE__ void advanceStateImpl(const std::string &input) override
+  __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     // Increasing counter if input is null
-    if (input != "|..|........|") _lastInputStep = _currentStep;
+    if (input != _nullInputIdx) _lastInputStep = _currentStep;
 
     // Running emulator
     _emulator->advanceState(input);
@@ -207,6 +210,9 @@ class Sprilo final : public jaffarPlus::Game
 
   // Specifies whether the reward should continue to be processed (for early termination)
   bool _stopProcessingReward;
+
+  // Null input index to remember the last valid input
+  InputSet::inputIndex_t _nullInputIdx;
 };
 
 } // namespace nes

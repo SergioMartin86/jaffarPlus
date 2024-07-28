@@ -89,7 +89,7 @@ class Playback final
 
         // Advancing state
         if (i < inputSequence.size()) _runner->advanceState(step.inputIndex);
-        if (i == inputSequence.size()) _runner->advanceState(0);
+        if (i == inputSequence.size()) _runner->advanceState(_sequence.rbegin()->inputIndex);
 
         // Evaluate game rules
         _runner->getGame()->evaluateRules();
