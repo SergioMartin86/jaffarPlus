@@ -45,10 +45,10 @@ class HashDb final
 
     // Resizing counter vectors
     for (size_t i = 0; i < _maxStoreCount; i++)
-    {
-      _queryCounters.emplace_back(std::make_unique<std::atomic<size_t>>(0));
-      _collisionCounters.emplace_back(std::make_unique<std::atomic<size_t>>(0));
-    }
+      {
+        _queryCounters.emplace_back(std::make_unique<std::atomic<size_t>>(0));
+        _collisionCounters.emplace_back(std::make_unique<std::atomic<size_t>>(0));
+      }
   }
 
   ~HashDb() = default;
@@ -68,18 +68,18 @@ class HashDb final
     auto   itr             = _hashStores.rbegin();
     size_t curHashStoreIdx = 0;
     while (itr != _hashStores.rend())
-    {
-      jaffarCommon::logger::log("[J+]    + [%02lu] - Age: %lu, Entries: %.3f M, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
-                                itr->id,
-                                itr->age,
-                                (double)itr->hashSet.size() / (1024.0 * 1024.0),
-                                (_bytesPerEntry * (double)itr->hashSet.size()) / (1024.0 * 1024.0),
-                                _queryCounters[curHashStoreIdx]->load(),
-                                _collisionCounters[curHashStoreIdx]->load(),
-                                100.0 * (double)_collisionCounters[curHashStoreIdx]->load() / (double)_queryCounters[curHashStoreIdx]->load());
-      itr++;
-      curHashStoreIdx++;
-    }
+      {
+        jaffarCommon::logger::log("[J+]    + [%02lu] - Age: %lu, Entries: %.3f M, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
+                                  itr->id,
+                                  itr->age,
+                                  (double)itr->hashSet.size() / (1024.0 * 1024.0),
+                                  (_bytesPerEntry * (double)itr->hashSet.size()) / (1024.0 * 1024.0),
+                                  _queryCounters[curHashStoreIdx]->load(),
+                                  _collisionCounters[curHashStoreIdx]->load(),
+                                  100.0 * (double)_collisionCounters[curHashStoreIdx]->load() / (double)_queryCounters[curHashStoreIdx]->load());
+        itr++;
+        curHashStoreIdx++;
+      }
   }
 
   /**
@@ -93,33 +93,33 @@ class HashDb final
 
     // Checking for the rest of the hash stores in reverse order, to increase chances of early collision detection
     while (itr != _hashStores.rend())
-    {
-      // Increasing query count for this hash store position
-      _queryCounters[curHashStoreIdx]->operator++();
-
-      // Flag to indicate whether a collision has been found
-      bool collisionFound = false;
-
-      // If it is the first hash db, check at the same time as we insert
-      if (curHashStoreIdx == 0) collisionFound = itr->hashSet.insert(hash).second == false;
-
-      // Otherwise, we simply check (no inserts)
-      if (curHashStoreIdx > 0) collisionFound = itr->hashSet.contains(hash);
-
-      // If collision is found, register it and return
-      if (collisionFound == true)
       {
-        // Increasing counter for collisions
-        _collisionCounters[curHashStoreIdx]->operator++();
+        // Increasing query count for this hash store position
+        _queryCounters[curHashStoreIdx]->operator++();
 
-        // True means a collision was found
-        return true;
+        // Flag to indicate whether a collision has been found
+        bool collisionFound = false;
+
+        // If it is the first hash db, check at the same time as we insert
+        if (curHashStoreIdx == 0) collisionFound = itr->hashSet.insert(hash).second == false;
+
+        // Otherwise, we simply check (no inserts)
+        if (curHashStoreIdx > 0) collisionFound = itr->hashSet.contains(hash);
+
+        // If collision is found, register it and return
+        if (collisionFound == true)
+          {
+            // Increasing counter for collisions
+            _collisionCounters[curHashStoreIdx]->operator++();
+
+            // True means a collision was found
+            return true;
+        }
+
+        // Increasing indexing
+        itr++;
+        curHashStoreIdx++;
       }
-
-      // Increasing indexing
-      itr++;
-      curHashStoreIdx++;
-    }
 
     // If no hits, then it's not collided
     return false;
@@ -151,12 +151,12 @@ class HashDb final
 
     // If the current hash store exceeds the entry limit, push put a new one in
     if (currentHashStore.hashSet.size() > _maxStoreEntries)
-    {
-      // First, if we already reached the maximum hash stores, then discard the oldest one first
-      if (_hashStores.size() == _maxStoreCount) _hashStores.pop_front();
+      {
+        // First, if we already reached the maximum hash stores, then discard the oldest one first
+        if (_hashStores.size() == _maxStoreCount) _hashStores.pop_front();
 
-      // Now create the new one, by pushing it from the back
-      _hashStores.push_back(hashStore_t({.id = _currentHashStoreId++, .age = _currentAge}));
+        // Now create the new one, by pushing it from the back
+        _hashStores.push_back(hashStore_t({.id = _currentHashStoreId++, .age = _currentAge}));
     }
 
     // Increasing age

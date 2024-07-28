@@ -60,21 +60,21 @@ class Numa : public stateDb::Base
 
     // Getting maximum state db size in Mb and bytes
     for (int i = 0; i < _numaCount; i++)
-    {
-      double sizeMb = _maxSizePerNumaMb[i];
-      // For testing purposes, the maximum size can be overriden via environment variables
-      if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = (double)std::stoul(value) / (double)_numaCount;
-      _maxSizePerNuma.push_back(std::ceil((double)sizeMb * 1024.0 * 1024.0));
-    }
+      {
+        double sizeMb = _maxSizePerNumaMb[i];
+        // For testing purposes, the maximum size can be overriden via environment variables
+        if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = (double)std::stoul(value) / (double)_numaCount;
+        _maxSizePerNuma.push_back(std::ceil((double)sizeMb * 1024.0 * 1024.0));
+      }
 
     // Getting maximum allocatable memory in each NUMA domain
     std::vector<size_t> maxFreeMemoryPerNuma(_numaCount);
     for (int i = 0; i < _numaCount; i++)
-    {
-      size_t freeMemory = 0;
-      numa_node_size64(i, (long long *)&freeMemory);
-      maxFreeMemoryPerNuma[i] = freeMemory;
-    }
+      {
+        size_t freeMemory = 0;
+        numa_node_size64(i, (long long *)&freeMemory);
+        maxFreeMemoryPerNuma[i] = freeMemory;
+      }
 
     // Checking if this is enough memory to satisfy requirement
     for (int i = 0; i < _numaCount; i++)
@@ -89,10 +89,10 @@ class Numa : public stateDb::Base
     _maxSize   = 0;
     _maxStates = 0;
     for (int i = 0; i < _numaCount; i++)
-    {
-      _maxSize += _maxSizePerNuma[i];
-      _maxStates += _maxStatesPerNuma[i];
-    }
+      {
+        _maxSize += _maxSizePerNuma[i];
+        _maxStates += _maxStatesPerNuma[i];
+      }
 
     // Getting number of bytes to reserve for each NUMA domain
     _allocableBytesPerNuma.resize(_numaCount);
@@ -102,11 +102,11 @@ class Numa : public stateDb::Base
     _internalBuffersStart.resize(_numaCount);
     _internalBuffersEnd.resize(_numaCount);
     for (int i = 0; i < _numaCount; i++)
-    {
-      _internalBuffersStart[i] = (uint8_t *)numa_alloc_onnode(_allocableBytesPerNuma[i], i);
-      if (_internalBuffersStart[i] == NULL) JAFFAR_THROW_RUNTIME("Error trying to allocate memory for numa domain %d\n", i);
-      _internalBuffersEnd[i] = &_internalBuffersStart[i][_allocableBytesPerNuma[i]];
-    }
+      {
+        _internalBuffersStart[i] = (uint8_t *)numa_alloc_onnode(_allocableBytesPerNuma[i], i);
+        if (_internalBuffersStart[i] == NULL) JAFFAR_THROW_RUNTIME("Error trying to allocate memory for numa domain %d\n", i);
+        _internalBuffersEnd[i] = &_internalBuffersStart[i][_allocableBytesPerNuma[i]];
+      }
 
     // Determining the preferred numa domain for each thread. This depends on OpenMP using always the same set of threads.
     JAFFAR_PARALLEL
@@ -126,10 +126,10 @@ class Numa : public stateDb::Base
     // Adding the state pointers to the free state queues
     _freeStateQueues.resize(_numaCount);
     for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++)
-    {
-      _freeStateQueues[numaNodeIdx] = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void *>>(_maxStatesPerNuma[numaNodeIdx]);
-      for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx]; i++) _freeStateQueues[numaNodeIdx]->try_push((void *)&_internalBuffersStart[numaNodeIdx][i * _stateSize]);
-    }
+      {
+        _freeStateQueues[numaNodeIdx] = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void *>>(_maxStatesPerNuma[numaNodeIdx]);
+        for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx]; i++) _freeStateQueues[numaNodeIdx]->try_push((void *)&_internalBuffersStart[numaNodeIdx][i * _stateSize]);
+      }
   }
 
   // Function to print relevant information
@@ -165,12 +165,12 @@ class Numa : public stateDb::Base
     // Trying all other free state queues now
     for (int i = 0; (size_t)i < _freeStateQueues.size(); i++)
       if (i != preferredNumaDomain)
-      {
-        // Trying to get free space for a new state
-        bool success = _freeStateQueues[i]->try_pop(stateSpace);
+        {
+          // Trying to get free space for a new state
+          bool success = _freeStateQueues[i]->try_pop(stateSpace);
 
-        // If successful, return the pointer immediately
-        if (success == true) return stateSpace;
+          // If successful, return the pointer immediately
+          if (success == true) return stateSpace;
       }
 
     // If failed, then try to get it from the back of the current state database
@@ -217,59 +217,59 @@ class Numa : public stateDb::Base
     // Check the numa's scavenger queue first
     bool success = _scavengerQueues[preferredNumaDomain]->try_pop(statePtr);
     if (success == true)
-    {
-      _numaLocalFreeStateCount++;
-      return statePtr;
+      {
+        _numaLocalFreeStateCount++;
+        return statePtr;
     }
 
     // Starting scavenging process
     for (size_t i = 0; i < _scavengingDepth; i++)
-    {
-      // Trying to pop the next state from the current state database
-      success = _currentStateDb.pop_front_get(statePtr);
-
-      // If no success, break cycle
-      if (success == false) break;
-
-      // Otherwise, check whether state is in the preferred numa domain
-      const auto isPreferredNuma = isStateInNumaDomain(statePtr, preferredNumaDomain);
-
-      // If its my preferred numa, return it immediately
-      if (isPreferredNuma == true)
       {
-        _numaLocalFreeStateCount++;
-        return statePtr;
+        // Trying to pop the next state from the current state database
+        success = _currentStateDb.pop_front_get(statePtr);
+
+        // If no success, break cycle
+        if (success == false) break;
+
+        // Otherwise, check whether state is in the preferred numa domain
+        const auto isPreferredNuma = isStateInNumaDomain(statePtr, preferredNumaDomain);
+
+        // If its my preferred numa, return it immediately
+        if (isPreferredNuma == true)
+          {
+            _numaLocalFreeStateCount++;
+            return statePtr;
+        }
+
+        // Otherwise, place it in the corresponding scavenge queue
+        if (isPreferredNuma == false)
+          {
+            // Get numa domain of state
+            const auto numaIdx = getStateNumaDomain(statePtr);
+
+            // Push state into the appropriate scavenget queue
+            auto success = _scavengerQueues[numaIdx]->try_push(statePtr);
+
+            // If the queue was full, then go ahead and run the state
+            if (success == false) return statePtr;
+        }
       }
-
-      // Otherwise, place it in the corresponding scavenge queue
-      if (isPreferredNuma == false)
-      {
-        // Get numa domain of state
-        const auto numaIdx = getStateNumaDomain(statePtr);
-
-        // Push state into the appropriate scavenget queue
-        auto success = _scavengerQueues[numaIdx]->try_push(statePtr);
-
-        // If the queue was full, then go ahead and run the state
-        if (success == false) return statePtr;
-      }
-    }
 
     // If still no success, check the other scavenger queues
     for (int i = 0; i < _numaCount; i++)
       if (i != preferredNumaDomain)
-      {
-        bool success = _scavengerQueues[i]->try_pop(statePtr);
-        if (success == true)
         {
-          // For statistics, get numa domain of state
-          const auto numaIdx = getStateNumaDomain(statePtr);
+          bool success = _scavengerQueues[i]->try_pop(statePtr);
+          if (success == true)
+            {
+              // For statistics, get numa domain of state
+              const auto numaIdx = getStateNumaDomain(statePtr);
 
-          if (numaIdx == preferredNumaDomain) _numaLocalFreeStateCount++;
-          if (numaIdx != preferredNumaDomain) _numaNonLocalFreeStateCount++;
+              if (numaIdx == preferredNumaDomain) _numaLocalFreeStateCount++;
+              if (numaIdx != preferredNumaDomain) _numaNonLocalFreeStateCount++;
 
-          return statePtr;
-        }
+              return statePtr;
+          }
       }
 
     // If no success at all, just return a nullptr

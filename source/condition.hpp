@@ -63,17 +63,17 @@ class _vCondition : public Condition
     , _immediate2(immediate2)
   {
     switch (_opType)
-    {
-    case op_equal: _opFcPtr = _opEqual; break;
-    case op_not_equal: _opFcPtr = _opNotEqual; break;
-    case op_greater: _opFcPtr = _opGreater; break;
-    case op_greater_or_equal: _opFcPtr = _opGreaterOrEqual; break;
-    case op_less: _opFcPtr = _opLess; break;
-    case op_less_or_equal: _opFcPtr = _opLessOrEqual; break;
-    case op_bit_true: _opFcPtr = _opBitTrue; break;
-    case op_bit_false: _opFcPtr = _opBitFalse; break;
-    default: break;
-    }
+      {
+      case op_equal: _opFcPtr = _opEqual; break;
+      case op_not_equal: _opFcPtr = _opNotEqual; break;
+      case op_greater: _opFcPtr = _opGreater; break;
+      case op_greater_or_equal: _opFcPtr = _opGreaterOrEqual; break;
+      case op_less: _opFcPtr = _opLess; break;
+      case op_less_or_equal: _opFcPtr = _opLessOrEqual; break;
+      case op_bit_true: _opFcPtr = _opBitTrue; break;
+      case op_bit_false: _opFcPtr = _opBitFalse; break;
+      default: break;
+      }
   }
 
   __INLINE__ bool evaluate() const

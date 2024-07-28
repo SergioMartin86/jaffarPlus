@@ -89,22 +89,22 @@ class Base
                               (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
     jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
     if (_useDifferentialCompression)
-    {
-      jaffarCommon::logger::log("[J+]  + State Size Effective:          %lu bytes (Diffential: %lu + Contiguous: %lu)\n",
-                                _stateSizeEffective,
-                                _maximumDifferentialSizeAllowed,
-                                _stateSizeEffective - _maximumDifferentialSizeAllowed);
+      {
+        jaffarCommon::logger::log("[J+]  + State Size Effective:          %lu bytes (Diffential: %lu + Contiguous: %lu)\n",
+                                  _stateSizeEffective,
+                                  _maximumDifferentialSizeAllowed,
+                                  _stateSizeEffective - _maximumDifferentialSizeAllowed);
     } else
-    {
-      jaffarCommon::logger::log("[J+]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
-    }
+      {
+        jaffarCommon::logger::log("[J+]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
+      }
 
     jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
     jaffarCommon::logger::log("[J+]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
     if (_useDifferentialCompression)
-    {
-      jaffarCommon::logger::log("[J+]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
-      jaffarCommon::logger::log("[J+]  + Maximum State Size Found       %lu bytes / Max Allowed: %lu bytes\n", _maximumStateSizeFound, _differentialStateSize);
+      {
+        jaffarCommon::logger::log("[J+]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
+        jaffarCommon::logger::log("[J+]  + Maximum State Size Found       %lu bytes / Max Allowed: %lu bytes\n", _maximumStateSizeFound, _differentialStateSize);
     }
     printInfoImpl();
   }
@@ -149,14 +149,14 @@ class Base
     // Encoding internal runner state into the state pointer
     size_t stateSize = 0;
     try
-    {
-      stateSize = saveStateFromRunner(r, statePtr);
-    }
+      {
+        stateSize = saveStateFromRunner(r, statePtr);
+      }
     catch (const std::runtime_error &x)
-    {
-      // If failed return false
-      return false;
-    }
+      {
+        // If failed return false
+        return false;
+      }
 
     // If using differential compression, it is important to keep track of the current compression size
     _maximumStateSizeFound = std::max(_maximumStateSizeFound, stateSize);
@@ -178,18 +178,18 @@ class Base
 
     // Serializing the runner state into the memory received (if using differential compression)
     if (_useDifferentialCompression == true)
-    {
-      jaffarCommon::serializer::Differential s(statePtr, _differentialStateSize, _currentReferenceData, _stateSizeRaw, _useZlibCompression);
-      r.serializeState(s);
-      serializedSize = s.getOutputSize();
+      {
+        jaffarCommon::serializer::Differential s(statePtr, _differentialStateSize, _currentReferenceData, _stateSizeRaw, _useZlibCompression);
+        r.serializeState(s);
+        serializedSize = s.getOutputSize();
     }
 
     // Serializing the runner state into the memory received (if no compression is used)
     if (_useDifferentialCompression == false)
-    {
-      jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
-      r.serializeState(s);
-      serializedSize = s.getOutputSize();
+      {
+        jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
+        r.serializeState(s);
+        serializedSize = s.getOutputSize();
     }
 
     return serializedSize;
@@ -202,16 +202,16 @@ class Base
   {
     // Deserializing the runner state from the memory received (if using differential compression)
     if (_useDifferentialCompression == true)
-    {
-      jaffarCommon::deserializer::Differential d(statePtr, _differentialStateSize, _previousReferenceData, _stateSizeRaw, _useZlibCompression);
-      r.deserializeState(d);
+      {
+        jaffarCommon::deserializer::Differential d(statePtr, _differentialStateSize, _previousReferenceData, _stateSizeRaw, _useZlibCompression);
+        r.deserializeState(d);
     }
 
     // Deserializing the runner state from the memory received (if no compression is used)
     if (_useDifferentialCompression == false)
-    {
-      jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
-      r.deserializeState(d);
+      {
+        jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
+        r.deserializeState(d);
     }
   }
 

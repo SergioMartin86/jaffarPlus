@@ -65,24 +65,24 @@ class Runner final
 
     // If storing input history, allocate input history storage
     if (_inputHistoryEnabled == true)
-    {
-      // Calculating bit storage for the possible inputs index
-      _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex);
+      {
+        // Calculating bit storage for the possible inputs index
+        _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex);
 
-      // Total size in bits for the input history
-      size_t inputHistorySizeBits = _inputHistoryMaxSize * _inputIndexSizeBits;
+        // Total size in bits for the input history
+        size_t inputHistorySizeBits = _inputHistoryMaxSize * _inputIndexSizeBits;
 
-      // Total size in bytes
-      size_t inputHistorySizeBytes = inputHistorySizeBits / 8;
+        // Total size in bytes
+        size_t inputHistorySizeBytes = inputHistorySizeBits / 8;
 
-      // Add one byte if not perfectly divisible by 8
-      if (inputHistorySizeBits % 8 > 0) inputHistorySizeBytes++;
+        // Add one byte if not perfectly divisible by 8
+        if (inputHistorySizeBits % 8 > 0) inputHistorySizeBytes++;
 
-      // Allocating storage now
-      _inputHistory.resize(inputHistorySizeBytes);
+        // Allocating storage now
+        _inputHistory.resize(inputHistorySizeBytes);
 
-      // Clearing storage (set to zero)
-      memset(_inputHistory.data(), 0, _inputHistory.size());
+        // Clearing storage (set to zero)
+        memset(_inputHistory.data(), 0, _inputHistory.size());
     }
   }
 
@@ -120,7 +120,7 @@ class Runner final
 
     // Getting index for the new input
     InputSet::inputIndex_t inputIdx = _game->getEmulator()->registerInput(input);
-    
+
     // Adding new input hash->index to the map
     _inputHashMap[inputHash] = inputIdx;
 
@@ -145,14 +145,14 @@ class Runner final
     // For all registered input sets, see which ones satisfy their conditions and add them
     for (const auto &inputSet : inputSets)
       if (inputSet->evaluate() == true)
-      {
-        possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
+        {
+          possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
 
-        // Getting stop evaluating flag
-        bool stopEvaluating = inputSet->getStopInputEvaluationFlag();
+          // Getting stop evaluating flag
+          bool stopEvaluating = inputSet->getStopInputEvaluationFlag();
 
-        // If stop evaluation is set, then return now
-        if (stopEvaluating) break;
+          // If stop evaluation is set, then return now
+          if (stopEvaluating) break;
       }
 
     // Return possible inputs
@@ -303,20 +303,20 @@ class Runner final
 
     // For each entry, add the input string up to the current step or the maximum size
     for (size_t i = 0; i < _currentInputCount && i < _inputHistoryMaxSize; i++)
-    {
-      // Getting input index
-      const auto inputIdx = getInput(i);
+      {
+        // Getting input index
+        const auto inputIdx = getInput(i);
 
-      // Safety check
-      if (_inputStringMap.contains(inputIdx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", inputIdx);
+        // Safety check
+        if (_inputStringMap.contains(inputIdx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", inputIdx);
 
-      // Getting input string
-      const std::string &inputString = _inputStringMap.at(inputIdx);
+        // Getting input string
+        const std::string &inputString = _inputStringMap.at(inputIdx);
 
-      // Adding it to the story
-      inputHistoryString += inputString;
-      inputHistoryString += "\n";
-    }
+        // Adding it to the story
+        inputHistoryString += inputString;
+        inputHistoryString += "\n";
+      }
 
     return inputHistoryString;
   }
@@ -335,10 +335,10 @@ class Runner final
     // Memory usage
     jaffarCommon::logger::log("[J+]  + Input History Enabled: %s\n", _inputHistoryEnabled ? "true" : "false");
     if (_inputHistoryEnabled == true)
-    {
-      jaffarCommon::logger::log("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _maxInputIndex, _inputIndexSizeBits);
-      jaffarCommon::logger::log(
-        "[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _inputHistoryMaxSize, _inputHistory.size(), _inputIndexSizeBits * _inputHistoryMaxSize);
+      {
+        jaffarCommon::logger::log("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _maxInputIndex, _inputIndexSizeBits);
+        jaffarCommon::logger::log(
+          "[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _inputHistoryMaxSize, _inputHistory.size(), _inputIndexSizeBits * _inputHistoryMaxSize);
     }
 
     // Printing runner state
@@ -348,21 +348,21 @@ class Runner final
 
     // Check whether we want to print inputs
     if (_showAllowedInputs == true)
-    {
-      // Getting allowed inputs
-      const auto &possibleInputs = getAllowedInputs();
-
-      // Printing them
-      jaffarCommon::logger::log("[J+]  + Allowed Inputs:\n");
-
-      size_t currentInputIdx = 0;
-      for (const auto inputIdx : possibleInputs)
       {
-        jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
-        currentInputIdx++;
-      }
-      if (_showEmptyInputSlots)
-        for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
+        // Getting allowed inputs
+        const auto &possibleInputs = getAllowedInputs();
+
+        // Printing them
+        jaffarCommon::logger::log("[J+]  + Allowed Inputs:\n");
+
+        size_t currentInputIdx = 0;
+        for (const auto inputIdx : possibleInputs)
+          {
+            jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
+            currentInputIdx++;
+          }
+        if (_showEmptyInputSlots)
+          for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
     }
   }
 

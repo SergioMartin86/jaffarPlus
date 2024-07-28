@@ -42,9 +42,9 @@ namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
   if (emulatorName == EMULATOR::getName())                                                                                                                                         \
-  {                                                                                                                                                                                \
-    e            = std::make_unique<EMULATOR>(emulatorConfig);                                                                                                                     \
-    isRecognized = true;                                                                                                                                                           \
+    {                                                                                                                                                                              \
+      e            = std::make_unique<EMULATOR>(emulatorConfig);                                                                                                                   \
+      isRecognized = true;                                                                                                                                                         \
   }
 
 std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorConfig)

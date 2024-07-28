@@ -49,70 +49,70 @@ class Playback final
   {
     // For each input in the sequence, store the game's state
     for (size_t i = 0; i <= inputSequence.size(); i++)
-    {
-      // Creating new step
-      step_t step;
+      {
+        // Creating new step
+        step_t step;
 
-      // Checking if this is the end of the sequence
-      bool isEndOfSequence = i == inputSequence.size();
+        // Checking if this is the end of the sequence
+        bool isEndOfSequence = i == inputSequence.size();
 
-      // Setting step input string
-      step.inputString = isEndOfSequence == false ? inputSequence[i] : "<End Of Sequence>";
+        // Setting step input string
+        step.inputString = isEndOfSequence == false ? inputSequence[i] : "<End Of Sequence>";
 
-      // Checking if the input is allowed
-      step.isInputAllowed = _runner->isInputAllowed(step.inputString);
+        // Checking if the input is allowed
+        step.isInputAllowed = _runner->isInputAllowed(step.inputString);
 
-      // Getting input index
-      if (isEndOfSequence == true) step.inputIndex = 0;
-      if (isEndOfSequence == false && step.isInputAllowed == true) step.inputIndex = _runner->getInputIndex(step.inputString);
-      if (isEndOfSequence == false && step.isInputAllowed == false) step.inputIndex = _runner->registerInput(step.inputString);
+        // Getting input index
+        if (isEndOfSequence == true) step.inputIndex = 0;
+        if (isEndOfSequence == false && step.isInputAllowed == true) step.inputIndex = _runner->getInputIndex(step.inputString);
+        if (isEndOfSequence == false && step.isInputAllowed == false) step.inputIndex = _runner->registerInput(step.inputString);
 
-      // Getting state hash
-      step.stateHash = _runner->computeHash();
+        // Getting state hash
+        step.stateHash = _runner->computeHash();
 
-      // Allocating space for the game state data
-      step.gameStateData = malloc(_gameStateSize);
+        // Allocating space for the game state data
+        step.gameStateData = malloc(_gameStateSize);
 
-      // Serializing game state
-      jaffarCommon::serializer::Contiguous sg(step.gameStateData, _gameStateSize);
-      _runner->serializeState(sg);
+        // Serializing game state
+        jaffarCommon::serializer::Contiguous sg(step.gameStateData, _gameStateSize);
+        _runner->serializeState(sg);
 
-      // Allocating space for the renderer state data
-      step.rendererStateData = malloc(_rendererStateSize);
+        // Allocating space for the renderer state data
+        step.rendererStateData = malloc(_rendererStateSize);
 
-      // Updating renderer state
-      _runner->getGame()->getEmulator()->updateRendererState(i, step.inputString);
+        // Updating renderer state
+        _runner->getGame()->getEmulator()->updateRendererState(i, step.inputString);
 
-      // Serializing renderer state
-      jaffarCommon::serializer::Contiguous sr(step.rendererStateData, _rendererStateSize);
-      _runner->getGame()->getEmulator()->serializeRendererState(sr);
+        // Serializing renderer state
+        jaffarCommon::serializer::Contiguous sr(step.rendererStateData, _rendererStateSize);
+        _runner->getGame()->getEmulator()->serializeRendererState(sr);
 
-      // Advancing state
-      if (i < inputSequence.size()) _runner->advanceState(step.inputIndex);
-      if (i == inputSequence.size()) _runner->advanceState(0);
+        // Advancing state
+        if (i < inputSequence.size()) _runner->advanceState(step.inputIndex);
+        if (i == inputSequence.size()) _runner->advanceState(0);
 
-      // Evaluate game rules
-      _runner->getGame()->evaluateRules();
+        // Evaluate game rules
+        _runner->getGame()->evaluateRules();
 
-      // Determining new game state type
-      _runner->getGame()->updateGameStateType();
+        // Determining new game state type
+        _runner->getGame()->updateGameStateType();
 
-      // Updating game reward
-      _runner->getGame()->updateReward();
+        // Updating game reward
+        _runner->getGame()->updateReward();
 
-      // Adding step to the internal storage
-      _sequence.push_back(step);
-    }
+        // Adding step to the internal storage
+        _sequence.push_back(step);
+      }
   }
 
   ~Playback()
   {
     // Freeing up memory reserved during initialization
     for (const auto &step : _sequence)
-    {
-      free(step.gameStateData);
-      free(step.rendererStateData);
-    }
+      {
+        free(step.gameStateData);
+        free(step.rendererStateData);
+      }
   }
 
   __INLINE__ std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }

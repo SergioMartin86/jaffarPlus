@@ -44,12 +44,12 @@ class QuickerSDLPoP final : public Emulator
 
     // If an initial state is provided, load it now
     if (_stateFilePath != "")
-    {
-      std::string stateFileData;
-      if (jaffarCommon::file::loadStringFromFile(stateFileData, _stateFilePath) == false) JAFFAR_THROW_LOGIC("Could not initial state file: %s\n", _stateFilePath.c_str());
+      {
+        std::string stateFileData;
+        if (jaffarCommon::file::loadStringFromFile(stateFileData, _stateFilePath) == false) JAFFAR_THROW_LOGIC("Could not initial state file: %s\n", _stateFilePath.c_str());
 
-      jaffarCommon::deserializer::Contiguous deserializer(stateFileData.data());
-      _QuickerSDLPoP->deserializeState(deserializer);
+        jaffarCommon::deserializer::Contiguous deserializer(stateFileData.data());
+        _QuickerSDLPoP->deserializeState(deserializer);
     }
 
     // Check if RNG elements need overriding

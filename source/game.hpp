@@ -62,29 +62,29 @@ class Game
 
     // Registering printable properties
     for (const auto &property : _printablePropertyNames)
-    {
-      // Getting property name hash
-      const auto propertyHash = jaffarCommon::hash::hashString(property);
+      {
+        // Getting property name hash
+        const auto propertyHash = jaffarCommon::hash::hashString(property);
 
-      // Checking the property is registered
-      if (_propertyMap.contains(propertyHash) == false) JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game", property.c_str());
+        // Checking the property is registered
+        if (_propertyMap.contains(propertyHash) == false) JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game", property.c_str());
 
-      // If so, add its pointer to the print property vector
-      _propertyPrintVector.push_back(_propertyMap.at(propertyHash).get());
-    }
+        // If so, add its pointer to the print property vector
+        _propertyPrintVector.push_back(_propertyMap.at(propertyHash).get());
+      }
 
     // Registering hashable properties
     for (const auto &property : _hashablePropertyNames)
-    {
-      // Getting property name hash
-      const auto propertyHash = jaffarCommon::hash::hashString(property);
+      {
+        // Getting property name hash
+        const auto propertyHash = jaffarCommon::hash::hashString(property);
 
-      // Checking the property is registered
-      if (_propertyMap.contains(propertyHash) == false) JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game", property.c_str());
+        // Checking the property is registered
+        if (_propertyMap.contains(propertyHash) == false) JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game", property.c_str());
 
-      // If so, add its pointer to the print property vector
-      _propertyHashVector.push_back(_propertyMap.at(propertyHash).get());
-    }
+        // If so, add its pointer to the print property vector
+        _propertyHashVector.push_back(_propertyMap.at(propertyHash).get());
+      }
 
     // Now parsing rules
     parseRules(_rulesJs);
@@ -223,32 +223,32 @@ class Game
     // Printing game properties defined in the script file
     jaffarCommon::logger::log("[J+]  + Game Properties: \n");
     for (const auto &p : _propertyPrintVector)
-    {
-      // Getting property name
-      const auto &name = p->getName();
+      {
+        // Getting property name
+        const auto &name = p->getName();
 
-      // Printing property name first
-      jaffarCommon::logger::log("[J+]    + '%s':", name.c_str());
+        // Printing property name first
+        jaffarCommon::logger::log("[J+]    + '%s':", name.c_str());
 
-      // Calculating separation spaces for this property
-      const auto propertySeparatorSize = separatorSize + maximumNameSize - name.size();
+        // Calculating separation spaces for this property
+        const auto propertySeparatorSize = separatorSize + maximumNameSize - name.size();
 
-      // Printing separator spaces
-      for (size_t i = 0; i < propertySeparatorSize; i++) jaffarCommon::logger::log(" ");
+        // Printing separator spaces
+        for (size_t i = 0; i < propertySeparatorSize; i++) jaffarCommon::logger::log(" ");
 
-      // Then printing separator spaces
-      if (p->getDatatype() == Property::datatype_t::dt_int8) jaffarCommon::logger::log("0x%02X  (%03d)\n", p->getValue<int8_t>(), p->getValue<int8_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_int16) jaffarCommon::logger::log("0x%04X  (%05d)\n", p->getValue<int16_t>(), p->getValue<int16_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_int32) jaffarCommon::logger::log("0x%08X  (%10d)\n", p->getValue<int32_t>(), p->getValue<int32_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_int64) jaffarCommon::logger::log("0x%16lX (%ld)\n", p->getValue<int64_t>(), p->getValue<int64_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_uint8) jaffarCommon::logger::log("0x%02X  (%03u)\n", p->getValue<uint8_t>(), p->getValue<uint8_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_uint16) jaffarCommon::logger::log("0x%04X  (%05u)\n", p->getValue<uint16_t>(), p->getValue<uint16_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_uint32) jaffarCommon::logger::log("0x%08X  (%10u)\n", p->getValue<uint32_t>(), p->getValue<uint32_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_uint64) jaffarCommon::logger::log("0x%16lX (%lu)\n", p->getValue<uint64_t>(), p->getValue<uint64_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_float32) jaffarCommon::logger::log("%f      (0x%X)\n", p->getValue<float>(), p->getValue<uint32_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_float64) jaffarCommon::logger::log("%f      (0x%lX)\n", p->getValue<double>(), p->getValue<uint64_t>());
-      if (p->getDatatype() == Property::datatype_t::dt_bool) jaffarCommon::logger::log("%1u\n", p->getValue<bool>());
-    }
+        // Then printing separator spaces
+        if (p->getDatatype() == Property::datatype_t::dt_int8) jaffarCommon::logger::log("0x%02X  (%03d)\n", p->getValue<int8_t>(), p->getValue<int8_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_int16) jaffarCommon::logger::log("0x%04X  (%05d)\n", p->getValue<int16_t>(), p->getValue<int16_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_int32) jaffarCommon::logger::log("0x%08X  (%10d)\n", p->getValue<int32_t>(), p->getValue<int32_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_int64) jaffarCommon::logger::log("0x%16lX (%ld)\n", p->getValue<int64_t>(), p->getValue<int64_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_uint8) jaffarCommon::logger::log("0x%02X  (%03u)\n", p->getValue<uint8_t>(), p->getValue<uint8_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_uint16) jaffarCommon::logger::log("0x%04X  (%05u)\n", p->getValue<uint16_t>(), p->getValue<uint16_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_uint32) jaffarCommon::logger::log("0x%08X  (%10u)\n", p->getValue<uint32_t>(), p->getValue<uint32_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_uint64) jaffarCommon::logger::log("0x%16lX (%lu)\n", p->getValue<uint64_t>(), p->getValue<uint64_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_float32) jaffarCommon::logger::log("%f      (0x%X)\n", p->getValue<float>(), p->getValue<uint32_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_float64) jaffarCommon::logger::log("%f      (0x%lX)\n", p->getValue<double>(), p->getValue<uint64_t>());
+        if (p->getDatatype() == Property::datatype_t::dt_bool) jaffarCommon::logger::log("%1u\n", p->getValue<bool>());
+      }
 
     // Printing game-specific stuff now
     printInfoImpl();
@@ -262,23 +262,23 @@ class Game
 
     // Second, check which unsatisfied rules have been satisfied now
     for (auto &entry : _rules)
-    {
-      // Getting rule
-      auto &rule = *entry.second;
-
-      // Getting rule index
-      const auto ruleIdx = rule.getIndex();
-
-      // Evaluate rule only if it's not yet satisfied
-      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == false)
       {
-        // Checking if conditions are met
-        bool isSatisfied = rule.evaluate();
+        // Getting rule
+        auto &rule = *entry.second;
 
-        // If it's achieved, update its status and run its actions
-        if (isSatisfied) satisfyRule(rule);
+        // Getting rule index
+        const auto ruleIdx = rule.getIndex();
+
+        // Evaluate rule only if it's not yet satisfied
+        if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == false)
+          {
+            // Checking if conditions are met
+            bool isSatisfied = rule.evaluate();
+
+            // If it's achieved, update its status and run its actions
+            if (isSatisfied) satisfyRule(rule);
+        }
       }
-    }
 
     // Running game-specific rule actions
     runGameSpecificRuleActions();
@@ -291,17 +291,17 @@ class Game
   {
     // First, checking if the rules have been satisfied
     for (auto &entry : _rules)
-    {
-      // Getting rule
-      auto &rule = *entry.second;
+      {
+        // Getting rule
+        auto &rule = *entry.second;
 
-      // Getting rule index
-      const auto ruleIdx = rule.getIndex();
+        // Getting rule index
+        const auto ruleIdx = rule.getIndex();
 
-      // Run ations only if rule is satisfied
-      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
-        for (const auto &action : rule.getActions()) action();
-    }
+        // Run ations only if rule is satisfied
+        if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
+          for (const auto &action : rule.getActions()) action();
+      }
   }
 
   __INLINE__ void updateGameStateType()
@@ -314,30 +314,30 @@ class Game
 
     // Second, we run the specified actions for the satisfied rules in label order
     for (auto &entry : _rules)
-    {
-      // Getting rule
-      auto &rule = *entry.second;
-
-      // Getting rule index
-      const auto ruleIdx = rule.getIndex();
-
-      // Run actions
-      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
       {
-        // Modify game state, depending on rule type
+        // Getting rule
+        auto &rule = *entry.second;
 
-        // Evaluate checkpoint rule and store tolerance if specified
-        if (rule.isCheckpointRule())
-        {
-          _checkpointLevel++;
-          _checkpointTolerance = rule.getCheckpointTolerance();
+        // Getting rule index
+        const auto ruleIdx = rule.getIndex();
+
+        // Run actions
+        if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
+          {
+            // Modify game state, depending on rule type
+
+            // Evaluate checkpoint rule and store tolerance if specified
+            if (rule.isCheckpointRule())
+              {
+                _checkpointLevel++;
+                _checkpointTolerance = rule.getCheckpointTolerance();
+            }
+
+            // Winning in the same rule superseeds checkpoint, and failing superseed everything
+            if (rule.isWinRule()) _stateType = stateType_t::win;
+            if (rule.isFailRule()) _stateType = stateType_t::fail;
         }
-
-        // Winning in the same rule superseeds checkpoint, and failing superseed everything
-        if (rule.isWinRule()) _stateType = stateType_t::win;
-        if (rule.isFailRule()) _stateType = stateType_t::fail;
       }
-    }
   }
 
   __INLINE__ void updateReward()
@@ -347,23 +347,23 @@ class Game
 
     // Second, we get the reward from every satisfied rule
     for (auto &entry : _rules)
-    {
-      // Getting rule
-      auto &rule = *entry.second;
-
-      // Getting rule index
-      const auto ruleIdx = rule.getIndex();
-
-      // Run actions
-      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
       {
-        // Getting reward from satisfied rule
-        const auto ruleReward = rule.getReward();
+        // Getting rule
+        auto &rule = *entry.second;
 
-        // Adding it to the state reward
-        _reward += ruleReward;
+        // Getting rule index
+        const auto ruleIdx = rule.getIndex();
+
+        // Run actions
+        if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
+          {
+            // Getting reward from satisfied rule
+            const auto ruleReward = rule.getReward();
+
+            // Adding it to the state reward
+            _reward += ruleReward;
+        }
       }
-    }
 
     // Adding any game-specific rewards
     _reward += calculateGameSpecificReward();
@@ -399,55 +399,55 @@ class Game
 
     // If value is a number, take it as immediate
     if (conditionJs["Value"].is_number())
-    {
-      if (datatype1 == Property::datatype_t::dt_uint8) return std::make_unique<_vCondition<uint8_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint8_t>());
-      if (datatype1 == Property::datatype_t::dt_uint16) return std::make_unique<_vCondition<uint16_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint16_t>());
-      if (datatype1 == Property::datatype_t::dt_uint32) return std::make_unique<_vCondition<uint32_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint32_t>());
-      if (datatype1 == Property::datatype_t::dt_uint64) return std::make_unique<_vCondition<uint64_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint64_t>());
+      {
+        if (datatype1 == Property::datatype_t::dt_uint8) return std::make_unique<_vCondition<uint8_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint8_t>());
+        if (datatype1 == Property::datatype_t::dt_uint16) return std::make_unique<_vCondition<uint16_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint16_t>());
+        if (datatype1 == Property::datatype_t::dt_uint32) return std::make_unique<_vCondition<uint32_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint32_t>());
+        if (datatype1 == Property::datatype_t::dt_uint64) return std::make_unique<_vCondition<uint64_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<uint64_t>());
 
-      if (datatype1 == Property::datatype_t::dt_int8) return std::make_unique<_vCondition<int8_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<int8_t>());
-      if (datatype1 == Property::datatype_t::dt_int16) return std::make_unique<_vCondition<int16_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<int16_t>());
-      if (datatype1 == Property::datatype_t::dt_int32) return std::make_unique<_vCondition<int32_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<int32_t>());
-      if (datatype1 == Property::datatype_t::dt_int64) return std::make_unique<_vCondition<int64_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<int64_t>());
+        if (datatype1 == Property::datatype_t::dt_int8) return std::make_unique<_vCondition<int8_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<int8_t>());
+        if (datatype1 == Property::datatype_t::dt_int16) return std::make_unique<_vCondition<int16_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<int16_t>());
+        if (datatype1 == Property::datatype_t::dt_int32) return std::make_unique<_vCondition<int32_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<int32_t>());
+        if (datatype1 == Property::datatype_t::dt_int64) return std::make_unique<_vCondition<int64_t>>(opType, property1, nullptr, 0, conditionJs["Value"].get<int64_t>());
 
-      if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>>(opType, property1, nullptr, 0, conditionJs["Value"].get<float>());
-      if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>>(opType, property1, nullptr, 0, conditionJs["Value"].get<double>());
+        if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>>(opType, property1, nullptr, 0, conditionJs["Value"].get<float>());
+        if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>>(opType, property1, nullptr, 0, conditionJs["Value"].get<double>());
     }
 
     // If value is a boolean, take it as immediate
     if (conditionJs["Value"].is_boolean())
-    {
-      if (datatype1 == Property::datatype_t::dt_bool) return std::make_unique<_vCondition<bool>>(opType, property1, nullptr, 0, conditionJs["Value"].get<bool>());
+      {
+        if (datatype1 == Property::datatype_t::dt_bool) return std::make_unique<_vCondition<bool>>(opType, property1, nullptr, 0, conditionJs["Value"].get<bool>());
     }
 
     // If value is a string, take value as property number 2
     if (conditionJs["Value"].is_string())
-    {
-      // Parsing second operand (property name)
-      const auto &property2Name = jaffarCommon::json::getString(conditionJs, "Value");
+      {
+        // Parsing second operand (property name)
+        const auto &property2Name = jaffarCommon::json::getString(conditionJs, "Value");
 
-      // Getting property name hash, for indexing
-      const auto property2NameHash = jaffarCommon::hash::hashString(property2Name);
+        // Getting property name hash, for indexing
+        const auto property2NameHash = jaffarCommon::hash::hashString(property2Name);
 
-      // Making sure the requested property exists in the property map
-      if (_propertyMap.contains(property2NameHash) == false) JAFFAR_THROW_LOGIC("[ERROR] Property '%s' has not been declared.\n", property2Name.c_str());
+        // Making sure the requested property exists in the property map
+        if (_propertyMap.contains(property2NameHash) == false) JAFFAR_THROW_LOGIC("[ERROR] Property '%s' has not been declared.\n", property2Name.c_str());
 
-      // Getting property object
-      const auto property2 = _propertyMap[property2NameHash].get();
+        // Getting property object
+        const auto property2 = _propertyMap[property2NameHash].get();
 
-      if (datatype1 == Property::datatype_t::dt_uint8) return std::make_unique<_vCondition<uint8_t>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_uint16) return std::make_unique<_vCondition<uint16_t>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_uint32) return std::make_unique<_vCondition<uint32_t>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_uint64) return std::make_unique<_vCondition<uint64_t>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_uint8) return std::make_unique<_vCondition<uint8_t>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_uint16) return std::make_unique<_vCondition<uint16_t>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_uint32) return std::make_unique<_vCondition<uint32_t>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_uint64) return std::make_unique<_vCondition<uint64_t>>(opType, property1, property2, 0, 0);
 
-      if (datatype1 == Property::datatype_t::dt_int8) return std::make_unique<_vCondition<int8_t>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_int16) return std::make_unique<_vCondition<int16_t>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_int32) return std::make_unique<_vCondition<int32_t>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_int64) return std::make_unique<_vCondition<int64_t>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_int8) return std::make_unique<_vCondition<int8_t>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_int16) return std::make_unique<_vCondition<int16_t>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_int32) return std::make_unique<_vCondition<int32_t>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_int64) return std::make_unique<_vCondition<int64_t>>(opType, property1, property2, 0, 0);
 
-      if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>>(opType, property1, property2, 0, 0);
-      if (datatype1 == Property::datatype_t::dt_bool) return std::make_unique<_vCondition<bool>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_float32) return std::make_unique<_vCondition<float>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_float64) return std::make_unique<_vCondition<double>>(opType, property1, property2, 0, 0);
+        if (datatype1 == Property::datatype_t::dt_bool) return std::make_unique<_vCondition<bool>>(opType, property1, property2, 0, 0);
     }
 
     JAFFAR_THROW_LOGIC("[ERROR] Rule contains an invalid 'Value' key.\n", conditionJs["Value"].dump().c_str());
@@ -484,7 +484,7 @@ class Game
   virtual jaffarCommon::hash::hash_t getStateInputHash() = 0;
 
   // Function to enable a game code to provide additional allowed inputs based on complex decisions
-  virtual __INLINE__ void getAdditionalAllowedInputs(std::set<InputSet::inputIndex_t>& allowedInputSet) {  }
+  virtual __INLINE__ void getAdditionalAllowedInputs(std::set<InputSet::inputIndex_t> &allowedInputSet) {}
 
   protected:
 
@@ -509,25 +509,25 @@ class Game
 
     // Evaluate each rule
     for (size_t idx = 0; idx < rulesJson.size(); idx++)
-    {
-      // Getting specific rule json object
-      const auto &ruleJs = rulesJson[idx];
+      {
+        // Getting specific rule json object
+        const auto &ruleJs = rulesJson[idx];
 
-      // Check if rule is a key/value object
-      if (ruleJs.is_object() == false) JAFFAR_THROW_LOGIC("Passed rule is not a JSON object. Dump: \n %s", ruleJs.dump(2).c_str());
+        // Check if rule is a key/value object
+        if (ruleJs.is_object() == false) JAFFAR_THROW_LOGIC("Passed rule is not a JSON object. Dump: \n %s", ruleJs.dump(2).c_str());
 
-      // Getting rule label
-      auto label = jaffarCommon::json::getNumber<Rule::label_t>(ruleJs, "Label");
+        // Getting rule label
+        auto label = jaffarCommon::json::getNumber<Rule::label_t>(ruleJs, "Label");
 
-      // Creating new rule with the given label
-      auto rule = std::make_unique<Rule>(idx, label);
+        // Creating new rule with the given label
+        auto rule = std::make_unique<Rule>(idx, label);
 
-      // Parsing json into a rule class
-      parseRule(*rule, ruleJs);
+        // Parsing json into a rule class
+        parseRule(*rule, ruleJs);
 
-      // Adding new rule to the collection
-      _rules[rule->getLabel()] = std::move(rule);
-    }
+        // Adding new rule to the collection
+        _rules[rule->getLabel()] = std::move(rule);
+      }
 
     // Checking all cross references are correct
     for (const auto &rule : _rules)
@@ -561,13 +561,13 @@ class Game
 
     // Parsing satisfies vector
     for (const auto &s : satisfiesVectorJs)
-    {
-      // Check for correct format
-      if (s.is_number() == false) JAFFAR_THROW_LOGIC("Wrong format provided in 'Satisfies' array in rule '%s'\n", ruleJs.dump(2).c_str());
+      {
+        // Check for correct format
+        if (s.is_number() == false) JAFFAR_THROW_LOGIC("Wrong format provided in 'Satisfies' array in rule '%s'\n", ruleJs.dump(2).c_str());
 
-      // Adding the satisfies label
-      rule.addSatisfyRuleLabel(s.get<Rule::label_t>());
-    }
+        // Adding the satisfies label
+        rule.addSatisfyRuleLabel(s.get<Rule::label_t>());
+      }
   }
 
   void parseRuleAction(Rule &rule, const nlohmann::json &actionJs)
@@ -579,31 +579,31 @@ class Game
     bool recognizedActionType = false;
 
     if (actionType == "Add Reward")
-    {
-      rule.setReward(jaffarCommon::json::getNumber<float>(actionJs, "Value"));
-      recognizedActionType = true;
+      {
+        rule.setReward(jaffarCommon::json::getNumber<float>(actionJs, "Value"));
+        recognizedActionType = true;
     }
 
     // Storing fail state
     if (actionType == "Trigger Fail")
-    {
-      rule.setFailRule(true);
-      recognizedActionType = true;
+      {
+        rule.setFailRule(true);
+        recognizedActionType = true;
     }
 
     // Storing win state
     if (actionType == "Trigger Win")
-    {
-      rule.setWinRule(true);
-      recognizedActionType = true;
+      {
+        rule.setWinRule(true);
+        recognizedActionType = true;
     }
 
     // Storing checkpoint flags
     if (actionType == "Trigger Checkpoint")
-    {
-      rule.setCheckpointRule(true);
-      rule.setCheckpointTolerance(jaffarCommon::json::getNumber<size_t>(actionJs, "Tolerance"));
-      recognizedActionType = true;
+      {
+        rule.setCheckpointRule(true);
+        rule.setCheckpointTolerance(jaffarCommon::json::getNumber<size_t>(actionJs, "Tolerance"));
+        recognizedActionType = true;
     }
 
     // If not recognized yet, it must be a game specific action
@@ -618,18 +618,18 @@ class Game
   {
     // Recursively run actions for the yet unsatisfied rules that are satisfied by this one and mark them as satisfied
     for (const auto &satisfyRuleLabel : rule.getSatisfyRuleLabels())
-    {
-      // Making sure referenced label exists
-      auto it = _rules.find(satisfyRuleLabel);
-      if (it == _rules.end()) JAFFAR_THROW_LOGIC("[ERROR] Unrecognized rule label %lu in satisfy array\n", satisfyRuleLabel);
-      auto &subRule = it->second;
+      {
+        // Making sure referenced label exists
+        auto it = _rules.find(satisfyRuleLabel);
+        if (it == _rules.end()) JAFFAR_THROW_LOGIC("[ERROR] Unrecognized rule label %lu in satisfy array\n", satisfyRuleLabel);
+        auto &subRule = it->second;
 
-      // Getting index from the subrule
-      auto subRuleIdx = subRule->getIndex();
+        // Getting index from the subrule
+        auto subRuleIdx = subRule->getIndex();
 
-      // Only activate it if it hasn't been activated before
-      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), subRuleIdx) == false) satisfyRule(*subRule);
-    }
+        // Only activate it if it hasn't been activated before
+        if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), subRuleIdx) == false) satisfyRule(*subRule);
+      }
 
     // Getting rule index
     const auto ruleIdx = rule.getIndex();
@@ -638,21 +638,21 @@ class Game
     jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
-  virtual void  initializeImpl(){};
+  virtual void  initializeImpl() {};
   virtual void  registerGameProperties()                                                                       = 0;
   virtual void  serializeStateImpl(jaffarCommon::serializer::Base &serializer) const                           = 0;
   virtual void  deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)                           = 0;
   virtual float calculateGameSpecificReward() const                                                            = 0;
   virtual void  computeAdditionalHashing(MetroHash128 &hashEngine) const                                       = 0;
   virtual void  printInfoImpl() const                                                                          = 0;
-  virtual void  advanceStateImpl(const InputSet::inputIndex_t input)                                          = 0;
+  virtual void  advanceStateImpl(const InputSet::inputIndex_t input)                                           = 0;
   virtual bool  parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) = 0;
 
   // Optional hooks
-  virtual __INLINE__ void stateUpdatePreHook(){};
-  virtual __INLINE__ void stateUpdatePostHook(){};
-  virtual __INLINE__ void ruleUpdatePreHook(){};
-  virtual __INLINE__ void ruleUpdatePostHook(){};
+  virtual __INLINE__ void stateUpdatePreHook() {};
+  virtual __INLINE__ void stateUpdatePostHook() {};
+  virtual __INLINE__ void ruleUpdatePreHook() {};
+  virtual __INLINE__ void ruleUpdatePostHook() {};
 
   // Current game state type
   stateType_t _stateType;

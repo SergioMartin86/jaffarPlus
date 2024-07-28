@@ -13,13 +13,13 @@ int main(int argc, char *argv[])
 
   // Try to parse arguments
   try
-  {
-    program.parse_args(argc, argv);
-  }
+    {
+      program.parse_args(argc, argv);
+    }
   catch (const std::runtime_error &err)
-  {
-    JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str());
-  }
+    {
+      JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str());
+    }
 
   // Getting config file name
   const std::string configFile = program.get<std::string>("configFile");
@@ -35,13 +35,13 @@ int main(int argc, char *argv[])
   // Parsing JSON from script file
   nlohmann::json config;
   try
-  {
-    config = nlohmann::json::parse(configFileString);
-  }
+    {
+      config = nlohmann::json::parse(configFileString);
+    }
   catch (const std::exception &err)
-  {
-    JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
-  }
+    {
+      JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
+    }
 
   // Creating driver to run the Jaffar engine
   auto d = jaffarPlus::Driver::getDriver(config);
