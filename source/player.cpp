@@ -280,9 +280,6 @@ int main(int argc, char *argv[])
     r->getGame()->getEmulator()->enableRendering();
   }
 
-  // Enable all emulator state properties before creating state storage
-  r->getGame()->getEmulator()->enableStateProperties();
-
   // Getting game state size
   const auto stateSize = r->getStateSize();
 
