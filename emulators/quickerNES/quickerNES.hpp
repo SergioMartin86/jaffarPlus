@@ -36,10 +36,6 @@ class QuickerNES final : public Emulator
     // For testing purposes, the initial state file can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
-    // Parsing controller configuration
-    _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
-    _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
-
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
@@ -87,24 +83,6 @@ class QuickerNES final : public Emulator
     // Loading rom into emulator
     _quickerNES->loadROM((uint8_t *)romFileData.data(), romFileData.size());
 
-    // Getting input parser from the internal emulator
-    const auto inputParser = _quickerNES->getInputParser();
-
-    // Advancing the state using the initial sequence, if provided
-    if (_initialSequenceFilePath != "")
-      {
-        // Load initial sequence
-        std::string initialSequenceFileString;
-        if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
-          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
-
-        // Getting input sequence
-        const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
-
-        // Running inputs in the initial sequence
-        for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
-    }
-
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
       {
@@ -124,6 +102,24 @@ class QuickerNES final : public Emulator
 
     // Setting Nametable block size to serialize. Some games don't use the entire memory so it's ok to reduce it
     _quickerNES->setNTABBlockSize(_NTABBlockSize);
+
+    // Getting input parser from the internal emulator
+    const auto inputParser = _quickerNES->getInputParser();
+
+    // Advancing the state using the initial sequence, if provided
+    if (_initialSequenceFilePath != "")
+      {
+        // Load initial sequence
+        std::string initialSequenceFileString;
+        if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+        // Getting input sequence
+        const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+
+        // Running inputs in the initial sequence
+        for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+    }
   }
 
   // State advancing function
@@ -306,8 +302,6 @@ class QuickerNES final : public Emulator
   std::unique_ptr<NESInstance> _quickerNES;
 
   size_t      _NTABBlockSize;
-  std::string _controller1Type;
-  std::string _controller2Type;
   std::string _romFilePath;
   std::string _romFileSHA1;
 
