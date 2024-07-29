@@ -64,7 +64,7 @@ class QuickerNES final : public Emulator
 
   // Function to get a reference to the input parser from the base emulator
   jaffar::InputParser *getInputParser() const override { return _quickerNES->getInputParser(); }
-  
+
   void initializeImpl() override
   {
     // Setting game's internal video buffer
@@ -291,7 +291,7 @@ class QuickerNES final : public Emulator
   {
     for (const auto &property : _disabledStateProperties) enableStateProperty(property);
   }
-  
+
   void printMemoryBlockHash(const std::string &blockName) const
   {
     auto p    = getProperty(blockName);
