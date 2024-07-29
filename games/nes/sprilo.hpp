@@ -50,7 +50,7 @@ class Sprilo final : public jaffarPlus::Game
     _playerPosY  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
     _lapProgress = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Lap Progress")]->getPointer();
 
-    // Getting index for a non input 
+    // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
   }
 

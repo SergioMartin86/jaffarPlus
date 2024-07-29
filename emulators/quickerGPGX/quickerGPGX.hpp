@@ -33,7 +33,7 @@ class QuickerGPGX final : public Emulator
 
     // Getting initial sequence file path
     _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
-    
+
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
@@ -49,7 +49,7 @@ class QuickerGPGX final : public Emulator
     // Getting disabled state properties
     const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
     for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
-    
+
     // Creating internal emulator instance
     _quickerGPGX = std::make_unique<gpgx::EmuInstance>(config);
   };
@@ -111,7 +111,7 @@ class QuickerGPGX final : public Emulator
   jaffar::InputParser *getInputParser() const override { return _quickerGPGX->getInputParser(); }
 
   // State advancing function
-  void advanceStateImpl(const jaffar::input_t& input) override { _quickerGPGX->advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t &input) override { _quickerGPGX->advanceState(input); }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerGPGX->serializeState(serializer); };
 
@@ -138,7 +138,7 @@ class QuickerGPGX final : public Emulator
   {
     for (const auto &property : _disabledStateProperties) enableStateProperty(property);
   }
-  
+
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
@@ -167,7 +167,6 @@ class QuickerGPGX final : public Emulator
   }
 
   __INLINE__ void showRender() override { _quickerGPGX->updateRenderer(); }
-
 
   private:
 
