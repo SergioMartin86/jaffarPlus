@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
@@ -30,11 +31,9 @@ class QuickerGPGX final : public Emulator
     // For testing purposes, the initial state file can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERGPGX_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
-    // Parsing controller configuration
-    _systemType      = jaffarCommon::json::getString(config, "System Type");
-    _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
-    _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
-
+    // Getting initial sequence file path
+    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+    
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
@@ -46,16 +45,19 @@ class QuickerGPGX final : public Emulator
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERGPGX_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
+
+    // Getting disabled state properties
+    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
+    
+    // Creating internal emulator instance
+    _quickerGPGX = std::make_unique<gpgx::EmuInstance>(config);
   };
 
   void initializeImpl() override
   {
     // Initializing emulator
-    _quickerGPGX.initialize();
-
-    // Setting controller types
-    _quickerGPGX.setController1Type(_controller1Type);
-    _quickerGPGX.setController2Type(_controller2Type);
+    _quickerGPGX->initialize();
 
     // Reading from ROM file
     std::string romFileData;
@@ -68,9 +70,8 @@ class QuickerGPGX final : public Emulator
       JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
 
     // Loading rom into emulator
-    _quickerGPGX.loadROM(_romFilePath);
+    _quickerGPGX->loadROM(_romFilePath);
 
-    // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
       {
         // Reading from initial state file
@@ -86,41 +87,71 @@ class QuickerGPGX final : public Emulator
 
     // Now disabling state properties, as requested
     disableStateProperties();
+
+    // Getting input parser from the internal emulator
+    const auto inputParser = _quickerGPGX->getInputParser();
+
+    // Advancing the state using the initial sequence, if provided
+    if (_initialSequenceFilePath != "")
+      {
+        // Load initial sequence
+        std::string initialSequenceFileString;
+        if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+        // Getting input sequence
+        const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+
+        // Running inputs in the initial sequence
+        for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+    }
   }
 
+  // Function to get a reference to the input parser from the base emulator
+  jaffar::InputParser *getInputParser() const override { return _quickerGPGX->getInputParser(); }
+
   // State advancing function
-  void advanceState(const std::string &input) override { _quickerGPGX.advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t& input) override { _quickerGPGX->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerGPGX.serializeState(serializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerGPGX->serializeState(serializer); };
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerGPGX.deserializeState(deserializer); };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerGPGX->deserializeState(deserializer); };
 
   __INLINE__ void printInfo() const override {}
 
   property_t getProperty(const std::string &propertyName) const override
   {
-    if (propertyName == "RAM") return property_t(_quickerGPGX.getWorkRamPointer(), _quickerGPGX.getWorkRamSize());
+    if (propertyName == "RAM") return property_t(_quickerGPGX->getWorkRamPointer(), _quickerGPGX->getWorkRamSize());
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) override { _quickerGPGX.enableStateBlock(property); }
+  __INLINE__ void enableStateProperty(const std::string &property) { _quickerGPGX->enableStateBlock(property); }
 
-  __INLINE__ void disableStateProperty(const std::string &property) override { _quickerGPGX.disableStateBlock(property); }
+  __INLINE__ void disableStateProperty(const std::string &property) { _quickerGPGX->disableStateBlock(property); }
 
+  __INLINE__ void disableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
+  }
+  __INLINE__ void enableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
+  }
+  
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
     enableStateProperties();
-    _quickerGPGX.initializeVideoOutput();
+    _quickerGPGX->initializeVideoOutput();
   }
 
   // This function closes the video output (e.g., window)
-  void finalizeVideoOutput() override { _quickerGPGX.finalizeVideoOutput(); }
+  void finalizeVideoOutput() override { _quickerGPGX->finalizeVideoOutput(); }
 
-  __INLINE__ void enableRendering() override { _quickerGPGX.enableRendering(); }
+  __INLINE__ void enableRendering() override { _quickerGPGX->enableRendering(); }
 
-  __INLINE__ void disableRendering() override { _quickerGPGX.disableRendering(); }
+  __INLINE__ void disableRendering() override { _quickerGPGX->disableRendering(); }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
@@ -135,18 +166,20 @@ class QuickerGPGX final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void showRender() override { _quickerGPGX.updateRenderer(); }
+  __INLINE__ void showRender() override { _quickerGPGX->updateRenderer(); }
+
 
   private:
 
-  gpgx::EmuInstance _quickerGPGX;
+  std::unique_ptr<gpgx::EmuInstance> _quickerGPGX;
 
-  std::string _systemType;
-  std::string _controller1Type;
-  std::string _controller2Type;
   std::string _romFilePath;
   std::string _romFileSHA1;
   std::string _initialStateFilePath;
+  std::string _initialSequenceFilePath;
+
+  // Collection of state blocks to disable during engine run
+  std::vector<std::string> _disabledStateProperties;
 };
 
 } // namespace emulator
