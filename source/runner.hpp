@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <set>
+#include <unordered_set>
 #include <vector>
 #include <cstdint>
 #include <jaffarCommon/bitwise.hpp>
@@ -137,10 +137,10 @@ class Runner final
     return inputIdx;
   }
 
-  std::set<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>> &inputSets) const
+  std::unordered_set<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>> &inputSets) const
   {
     // Storage for the possible input set
-    std::set<InputSet::inputIndex_t> possibleInputs;
+    std::unordered_set<InputSet::inputIndex_t> possibleInputs;
 
     // For all registered input sets, see which ones satisfy their conditions and add them
     for (const auto &inputSet : inputSets)
@@ -361,6 +361,7 @@ class Runner final
             jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
             currentInputIdx++;
           }
+          
         if (_showEmptyInputSlots)
           for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
     }

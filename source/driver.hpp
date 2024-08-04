@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <chrono>
 #include <cstdlib>
 #include "engine.hpp"
 #include "game.hpp"
@@ -27,8 +28,13 @@ class Driver final
   };
 
   // Base constructor
-  Driver(const nlohmann::json &config)
+  Driver(const std::string& configFilePath, const nlohmann::json &config) :
+  _configFilePath(configFilePath)
   {
+    // Getting job identifier from the system timer
+    auto currentTime = std::chrono::system_clock::now();
+    _jobId = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch()).count();
+
     // Getting driver configuration
     const auto &driverConfig = jaffarCommon::json::getObject(config, "Driver Configuration");
 
@@ -180,8 +186,15 @@ class Driver final
     _updateIntermediateResultMutex.lock();
 
     // Saving best solution and state
+    std::string timeSuffix = std::string(".") + std::to_string(_jobId);
+
+    // Saving files with standard name
     jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath);
     jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath);
+
+    // Saving files with a time suffix
+    jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath + timeSuffix);
+    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath + timeSuffix);
 
     // Making sure the main thread is not currently writing
     _updateIntermediateResultMutex.unlock();
@@ -193,8 +206,15 @@ class Driver final
     _updateIntermediateResultMutex.lock();
 
     // Saving best solution and state
+    std::string timeSuffix = std::string(".") + std::to_string(_jobId);
+
+    // Saving best solution and state
     jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath);
     jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath);
+
+    // Saving best solution and state
+    jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath + timeSuffix);
+    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath + timeSuffix);
 
     // Making sure the main thread is not currently writing
     _updateIntermediateResultMutex.unlock();
@@ -310,6 +330,8 @@ class Driver final
     jaffarCommon::logger::clearTerminal();
 
     // Printing information
+    jaffarCommon::logger::log("[J+] Job Id:                                      %lu\n", _jobId);
+    jaffarCommon::logger::log("[J+] Script File:                                 '%s'\n", _configFilePath.c_str());
     jaffarCommon::logger::log("[J+] Emulator Name:                               '%s'\n", _runner->getGame()->getEmulator()->getName().c_str());
     jaffarCommon::logger::log("[J+] Game Name:                                   '%s'\n", _runner->getGame()->getName().c_str());
     jaffarCommon::logger::log("[J+] Current Step #:                              %lu (Max: %lu)\n", _currentStep, _maxSteps);
@@ -343,10 +365,10 @@ class Driver final
   }
 
   // Function to obtain driver based on configuration
-  static std::unique_ptr<Driver> getDriver(const nlohmann::json &config)
+  static std::unique_ptr<Driver> getDriver(const std::string& configFilePath, const nlohmann::json &config)
   {
     // Creating new engine
-    auto d = std::make_unique<Driver>(config);
+    auto d = std::make_unique<Driver>(configFilePath, config);
 
     // Returning engine
     return d;
@@ -357,11 +379,17 @@ class Driver final
 
   private:
 
+  // Remember path to config file for reference
+  const std::string _configFilePath;
+
   // Pointer to the internal Jaffar engine
   std::unique_ptr<Engine> _engine;
 
   // Pointer to runner to use for printing information and saving partial results
   std::unique_ptr<Runner> _runner;
+
+  // Job identifier -- to have a way for distinguishing intermediate values between different jobs
+  size_t _jobId;
 
   // Getting maximum number of steps (zero = not established)
   size_t _maxSteps;

@@ -41,7 +41,7 @@ class Numa : public stateDb::Base
     if (_maxSizePerNumaMb.size() < (size_t)_numaCount)
       JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, _maxSizePerNumaMb.size());
 
-    // Getting scavenge depth
+    // Getting scavenge depth for stae databases
     _scavengerQueuesSize = jaffarCommon::json::getNumber<size_t>(config, "Scavenger Queues Size");
     _scavengingDepth     = jaffarCommon::json::getNumber<size_t>(config, "Scavenging Depth");
   }
@@ -50,10 +50,16 @@ class Numa : public stateDb::Base
 
   void initializeImpl() override
   {
-    // Setting counters
+    // Setting counters for database state popping
+    _numaNonLocalDatabaseStateCount = 0;
+    _numaLocalDatabaseStateCount    = 0;
+    _numaDatabaseStateNotFoundCount = 0;
+
+    // Setting counters for free state getting
     _numaNonLocalFreeStateCount = 0;
     _numaLocalFreeStateCount    = 0;
     _numaFreeStateNotFoundCount = 0;
+    _numaStealingFreeStateCount = 0;
 
     // Creating scavenger queues
     for (int i = 0; i < _numaCount; i++) _scavengerQueues.push_back(std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void *>>(_scavengerQueuesSize));
@@ -142,12 +148,25 @@ class Numa : public stateDb::Base
                                 (double)_maxSizePerNuma[i] / (1024.0 * 1024.0),
                                 (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
 
-    size_t totalFreeStatesRequested = _numaNonLocalFreeStateCount + _numaLocalFreeStateCount + _numaFreeStateNotFoundCount;
-    jaffarCommon::logger::log("[J+] + Numa Locality Success Rate:                     %5.3f%%\n",
+    
+    size_t totalDatabaseStatesRequested = _numaNonLocalDatabaseStateCount + _numaLocalDatabaseStateCount + _numaDatabaseStateNotFoundCount;
+    jaffarCommon::logger::log("[J+] + Database Popping State Rates:\n");
+    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:                     %5.3f%%\n",
+                              100.0 * (double)_numaLocalDatabaseStateCount.load() / (double)totalDatabaseStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                        %5.3f%%\n",
+                              100.0 * (double)_numaNonLocalDatabaseStateCount.load() / (double)totalDatabaseStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa No DB State Found Rate:                    %5.3f%%\n",
+                              100.0 * (double)_numaDatabaseStateNotFoundCount.load() / (double)totalDatabaseStatesRequested);
+
+    size_t totalFreeStatesRequested = _numaNonLocalFreeStateCount + _numaLocalFreeStateCount + _numaFreeStateNotFoundCount + _numaStealingFreeStateCount;
+    jaffarCommon::logger::log("[J+] + Get Free State Rates:\n");
+    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:                     %5.3f%%\n",
                               100.0 * (double)_numaLocalFreeStateCount.load() / (double)totalFreeStatesRequested);
-    jaffarCommon::logger::log("[J+] + Numa Locality Fail Rate:                        %5.3f%%\n",
+    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                        %5.3f%%\n",
                               100.0 * (double)_numaNonLocalFreeStateCount.load() / (double)totalFreeStatesRequested);
-    jaffarCommon::logger::log("[J+] + Numa No Free State Found Rate:                  %5.3f%%\n",
+    jaffarCommon::logger::log("[J+]  + State DB Stealing Rate:                         %5.3f%%\n",
+                              100.0 * (double)_numaStealingFreeStateCount.load() / (double)totalFreeStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa No Free State Found Rate:                  %5.3f%%\n",
                               100.0 * (double)_numaFreeStateNotFoundCount.load() / (double)totalFreeStatesRequested);
   }
 
@@ -160,7 +179,11 @@ class Numa : public stateDb::Base
     bool success = _freeStateQueues[preferredNumaDomain]->try_pop(stateSpace);
 
     // If successful, return the pointer immediately
-    if (success == true) return stateSpace;
+    if (success == true)
+    {
+      _numaLocalFreeStateCount++;
+      return stateSpace;
+    } 
 
     // Trying all other free state queues now
     for (int i = 0; (size_t)i < _freeStateQueues.size(); i++)
@@ -170,16 +193,25 @@ class Numa : public stateDb::Base
           bool success = _freeStateQueues[i]->try_pop(stateSpace);
 
           // If successful, return the pointer immediately
-          if (success == true) return stateSpace;
+          if (success == true)
+          {
+            _numaNonLocalFreeStateCount++;
+            return stateSpace;
+          } 
       }
 
     // If failed, then try to get it from the back of the current state database
     success = _currentStateDb.pop_back_get(stateSpace);
 
     // If successful, return the pointer immediately
-    if (success == true) return stateSpace;
+    if (success == true)
+    {
+      _numaStealingFreeStateCount++;
+      return stateSpace;
+    } 
 
     // Otherwise, return a null pointer. The state will be discarded
+    _numaFreeStateNotFoundCount++;
     return nullptr;
   }
 
@@ -237,7 +269,7 @@ class Numa : public stateDb::Base
         // If its my preferred numa, return it immediately
         if (isPreferredNuma == true)
           {
-            _numaLocalFreeStateCount++;
+            _numaLocalDatabaseStateCount++;
             return statePtr;
         }
 
@@ -251,8 +283,12 @@ class Numa : public stateDb::Base
             auto success = _scavengerQueues[numaIdx]->try_push(statePtr);
 
             // If the queue was full, then go ahead and run the state
-            if (success == false) return statePtr;
-        }
+            if (success == false)
+            {
+              _numaNonLocalDatabaseStateCount++;
+              return statePtr;
+            } 
+         }
       }
 
     // If still no success, check the other scavenger queues
@@ -262,18 +298,13 @@ class Numa : public stateDb::Base
           bool success = _scavengerQueues[i]->try_pop(statePtr);
           if (success == true)
             {
-              // For statistics, get numa domain of state
-              const auto numaIdx = getStateNumaDomain(statePtr);
-
-              if (numaIdx == preferredNumaDomain) _numaLocalFreeStateCount++;
-              if (numaIdx != preferredNumaDomain) _numaNonLocalFreeStateCount++;
-
+              _numaNonLocalDatabaseStateCount++;
               return statePtr;
-          }
-      }
+           }
+        }
 
     // If no success at all, just return a nullptr
-    _numaFreeStateNotFoundCount++;
+    _numaDatabaseStateNotFoundCount++;
     return nullptr;
   }
 
@@ -290,6 +321,21 @@ class Numa : public stateDb::Base
   int _numaCount;
 
   /**
+   * Count of local database states retrieved
+  */
+  std::atomic<size_t> _numaLocalDatabaseStateCount;
+
+  /**
+   * Count of non-local database states retrieved
+  */
+  std::atomic<size_t> _numaNonLocalDatabaseStateCount;
+
+  /**
+   * Count of non-local database states retrieved
+  */
+  std::atomic<size_t> _numaDatabaseStateNotFoundCount;
+
+  /**
    * Count of local free states retrieved
   */
   std::atomic<size_t> _numaLocalFreeStateCount;
@@ -300,7 +346,12 @@ class Numa : public stateDb::Base
   std::atomic<size_t> _numaNonLocalFreeStateCount;
 
   /**
-   * Count of non-local free states retrieved
+   * Count of free states stolen from the back of the state databse
+  */
+  std::atomic<size_t> _numaStealingFreeStateCount;
+
+  /**
+   * Count of free states failed to be retrieved
   */
   std::atomic<size_t> _numaFreeStateNotFoundCount;
 
