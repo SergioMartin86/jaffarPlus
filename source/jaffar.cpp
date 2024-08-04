@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     }
 
   // Creating driver to run the Jaffar engine
-  auto d = jaffarPlus::Driver::getDriver(config);
+  auto d = jaffarPlus::Driver::getDriver(configFile, config);
 
   // Initializing driver
   d->initialize();

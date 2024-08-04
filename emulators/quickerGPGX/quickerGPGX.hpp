@@ -50,6 +50,9 @@ class QuickerGPGX final : public Emulator
     const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
     for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
 
+    // Getting work ram serialization size
+    _workRamSerializationSize = jaffarCommon::json::getNumber<size_t>(config, "Work RAM Serialization Size");
+
     // Creating internal emulator instance
     _quickerGPGX = std::make_unique<gpgx::EmuInstance>(config);
   };
@@ -133,10 +136,12 @@ class QuickerGPGX final : public Emulator
   __INLINE__ void disableStateProperties()
   {
     for (const auto &property : _disabledStateProperties) disableStateProperty(property);
+    setWorkRamSerializationSize(_workRamSerializationSize);
   }
   __INLINE__ void enableStateProperties()
   {
     for (const auto &property : _disabledStateProperties) enableStateProperty(property);
+    setWorkRamSerializationSize(0x10000);
   }
 
   // This function opens the video output (e.g., window)
@@ -179,6 +184,8 @@ class QuickerGPGX final : public Emulator
 
   // Collection of state blocks to disable during engine run
   std::vector<std::string> _disabledStateProperties;
+
+  size_t _workRamSerializationSize;
 };
 
 } // namespace emulator

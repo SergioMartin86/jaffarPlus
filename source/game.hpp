@@ -484,7 +484,7 @@ class Game
   virtual jaffarCommon::hash::hash_t getStateInputHash() = 0;
 
   // Function to enable a game code to provide additional allowed inputs based on complex decisions
-  virtual __INLINE__ void getAdditionalAllowedInputs(std::set<InputSet::inputIndex_t> &allowedInputSet) {}
+  virtual __INLINE__ void getAdditionalAllowedInputs(std::unordered_set<InputSet::inputIndex_t> &allowedInputSet) {}
 
   protected:
 
