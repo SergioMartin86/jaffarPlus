@@ -3,7 +3,7 @@ quickerNESSubproject = subproject('quickerNES', default_options : 'buildQuickNES
 endif
 
 if emulator == 'QuickerNESArkanoid'
-quickerNESSubproject = subproject('quickerNES', default_options : 'buildQuickNES=false, enableArkanoidInputs=true')
+quickerNESSubproject = subproject('quickerNES', default_options : [ 'buildQuickNES=false', 'enableArkanoidInputs=true'])
 endif
 
 # Getting QuickerNES dependency
