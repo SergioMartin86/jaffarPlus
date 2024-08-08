@@ -1,7 +1,7 @@
 # Getting emulator from the user configuration
 emulator = get_option('emulator')
 
-if emulator == 'QuickerNES'
+if emulator == 'QuickerNES' or emulator == 'QuickerNESArkanoid'
 jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERNES'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_NES'
 subdir('quickerNES')
