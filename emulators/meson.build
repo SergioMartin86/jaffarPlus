@@ -5,6 +5,11 @@ if emulator == 'QuickerNES' or emulator == 'QuickerNESArkanoid'
 jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERNES'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_NES'
 subdir('quickerNES')
+
+if emulator == 'QuickerNESArkanoid'
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERNES_ARKANOID'
+endif
+
 endif
 
 if emulator == 'QuickerSDLPoP'
