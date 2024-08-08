@@ -60,6 +60,27 @@ jobs:
         name: meson-logs
         path: build/meson-logs/
 
+  # Build and run tests (QuickerNESArkanoid)
+  build-QuickerNESArkanoid:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Checkout QuickerNES
+      run: | 
+            git submodule init extern/quickerNES
+            git submodule update --recursive extern/quickerNES
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja gcovr
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulators=QuickerNESArkanoid
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
 
   # Build and run tests (QuickerSDLPoP)
   build-QuickerSDLPoP:

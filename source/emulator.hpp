@@ -23,6 +23,16 @@ class Emulator
 {
   public:
 
+  // Struct that holds the string of an input together with its emulator-specific input data
+  struct inputEntry_t
+  {
+    // Input string
+    std::string inputString;
+
+    // Emulator-specific input data
+    jaffar::input_t inputData;
+  };
+
   // Constructor must only do configuration parsing to perform dry runs
   Emulator(const nlohmann::json &config)
   {
@@ -61,6 +71,9 @@ class Emulator
     // Returning current index
     return _inputMap.size() - 1;
   }
+
+  // Function to return the information about a previously registered input
+  __INLINE__ const inputEntry_t& getRegisteredInput(const InputSet::inputIndex_t inputIdx) const { return _inputMap[(size_t)inputIdx]; }
 
   // State advancing function
   void advanceState(const InputSet::inputIndex_t input) { advanceStateImpl(_inputMap[input].inputData); };
@@ -135,16 +148,6 @@ class Emulator
   bool _isInitialized = false;
 
   private:
-
-  // Struct that holds the string of an input together with its emulator-specific input data
-  struct inputEntry_t
-  {
-    // Input string
-    std::string inputString;
-
-    // Emulator-specific input data
-    jaffar::input_t inputData;
-  };
 
   // Storage that maps an input id to its input data
   std::vector<inputEntry_t> _inputMap;

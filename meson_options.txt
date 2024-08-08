@@ -2,6 +2,7 @@ option('emulator',
   type : 'combo',
   choices : [
     'QuickerNES',
+    'QuickerNESArkanoid',
     'QuickerGPGX',
     'QuickerSDLPoP',
     'QuickerSnes9x',
@@ -11,7 +12,7 @@ option('emulator',
     'QuickerRAW',
     'QuickerArkBot'
    ],
-  description : 'Selects the emulation cores to compile Jaffar with'
+  description : 'Selects the emulation core to compile Jaffar with'
 )
 
 option('emulatorsFolder',
@@ -40,4 +41,3 @@ option('useNCurses',
   description : 'Enable NCurses for console output',
   yield: true
 )
-
