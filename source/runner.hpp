@@ -361,7 +361,7 @@ class Runner final
             jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
             currentInputIdx++;
           }
-          
+
         if (_showEmptyInputSlots)
           for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
     }

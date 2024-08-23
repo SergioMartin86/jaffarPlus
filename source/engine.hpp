@@ -518,7 +518,7 @@ class Engine final
         _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
         // Getting allowed inputs
-        const auto  t1             = jaffarCommon::timing::now();
+        const auto t1            = jaffarCommon::timing::now();
         const auto allowedInputs = r->getAllowedInputs();
         _getAllowedInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
 

@@ -126,16 +126,15 @@ class QuickerNES final : public Emulator
 
     // Pushing initial RAM data
     if (_initialRAMDataFilePath != "")
-    {
-      // Load initial RAM Data
-      std::string initialRAMDataString;
-      if (jaffarCommon::file::loadStringFromFile(initialRAMDataString, _initialRAMDataFilePath) == false)
-        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from RAM Data file: %s\n", _initialRAMDataFilePath.c_str());
-    
-      // Pushing data into RAM
-      memcpy(_quickerNES->getLowMem(), initialRAMDataString.data(), 0x800);
+      {
+        // Load initial RAM Data
+        std::string initialRAMDataString;
+        if (jaffarCommon::file::loadStringFromFile(initialRAMDataString, _initialRAMDataFilePath) == false)
+          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from RAM Data file: %s\n", _initialRAMDataFilePath.c_str());
+
+        // Pushing data into RAM
+        memcpy(_quickerNES->getLowMem(), initialRAMDataString.data(), 0x800);
     }
-    
   }
 
   // State advancing function
