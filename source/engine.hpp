@@ -517,15 +517,15 @@ class Engine final
         _stateDb->loadStateIntoRunner(*r, baseStateData);
         _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t0);
 
-        // Getting possible inputs
+        // Getting allowed inputs
         const auto  t1             = jaffarCommon::timing::now();
-        const auto &possibleInputs = r->getAllowedInputs();
+        const auto allowedInputs = r->getAllowedInputs();
         _getAllowedInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t1);
 
         // Trying out each possible input in the set
-        for (auto inputItr = possibleInputs.begin(); inputItr != possibleInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr);
+        for (auto inputItr = allowedInputs.begin(); inputItr != allowedInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr);
 
-        // Getting candidate moves
+        // Getting candidate inputs
         const auto t2              = jaffarCommon::timing::now();
         auto       candidateInputs = r->getCandidateInputs();
         _getCandidateInputsThreadRawTime += jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), t2);
@@ -533,7 +533,7 @@ class Engine final
         // Finding unique candidate inputs
         std::vector<InputSet::inputIndex_t> uniqueCandidateInputs;
         for (const auto &input : candidateInputs)
-          if (possibleInputs.contains(input) == false) uniqueCandidateInputs.push_back(input);
+          if (allowedInputs.contains(input) == false) uniqueCandidateInputs.push_back(input);
 
         // Run each candidate input
         for (const auto input : uniqueCandidateInputs)
