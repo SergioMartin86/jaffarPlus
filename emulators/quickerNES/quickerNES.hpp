@@ -51,6 +51,9 @@ class QuickerNES final : public Emulator
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
+    // Parsing initial RAM Data file
+    _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+
     // Getting Nametable size to use
     _NTABBlockSize = jaffarCommon::json::getNumber<size_t>(config, "Nametable Block Size");
 
@@ -120,6 +123,19 @@ class QuickerNES final : public Emulator
         // Running inputs in the initial sequence
         for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
     }
+
+    // Pushing initial RAM data
+    if (_initialRAMDataFilePath != "")
+    {
+      // Load initial RAM Data
+      std::string initialRAMDataString;
+      if (jaffarCommon::file::loadStringFromFile(initialRAMDataString, _initialRAMDataFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from RAM Data file: %s\n", _initialRAMDataFilePath.c_str());
+    
+      // Pushing data into RAM
+      memcpy(_quickerNES->getLowMem(), initialRAMDataString.data(), 0x800);
+    }
+    
   }
 
   // State advancing function
@@ -307,6 +323,7 @@ class QuickerNES final : public Emulator
 
   std::string _initialStateFilePath;
   std::string _initialSequenceFilePath;
+  std::string _initialRAMDataFilePath;
 
   // Collection of state blocks to disable during engine run
   std::vector<std::string> _disabledStateProperties;

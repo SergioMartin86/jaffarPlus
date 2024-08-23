@@ -334,7 +334,10 @@ class Driver final
     jaffarCommon::logger::log("[J+] Script File:                                 '%s'\n", _configFilePath.c_str());
     jaffarCommon::logger::log("[J+] Emulator Name:                               '%s'\n", _runner->getGame()->getEmulator()->getName().c_str());
     jaffarCommon::logger::log("[J+] Game Name:                                   '%s'\n", _runner->getGame()->getName().c_str());
-    jaffarCommon::logger::log("[J+] Current Step #:                              %lu (Max: %lu)\n", _currentStep, _maxSteps);
+    jaffarCommon::logger::log("[J+] Current Step #:                              %lu", _currentStep); 
+    if (_maxSteps > 0) 
+    jaffarCommon::logger::log(" (Max: %lu)", _maxSteps);
+    jaffarCommon::logger::log("\n"); 
 
     if (_winStatesFound == 0)
       jaffarCommon::logger::log(
