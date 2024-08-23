@@ -148,7 +148,6 @@ class Numa : public stateDb::Base
                                 (double)_maxSizePerNuma[i] / (1024.0 * 1024.0),
                                 (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
 
-    
     size_t totalDatabaseStatesRequested = _numaNonLocalDatabaseStateCount + _numaLocalDatabaseStateCount + _numaDatabaseStateNotFoundCount;
     jaffarCommon::logger::log("[J+] + Database Popping State Rates:\n");
     jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:                     %5.3f%%\n",
@@ -180,10 +179,10 @@ class Numa : public stateDb::Base
 
     // If successful, return the pointer immediately
     if (success == true)
-    {
-      _numaLocalFreeStateCount++;
-      return stateSpace;
-    } 
+      {
+        _numaLocalFreeStateCount++;
+        return stateSpace;
+    }
 
     // Trying all other free state queues now
     for (int i = 0; (size_t)i < _freeStateQueues.size(); i++)
@@ -194,10 +193,10 @@ class Numa : public stateDb::Base
 
           // If successful, return the pointer immediately
           if (success == true)
-          {
-            _numaNonLocalFreeStateCount++;
-            return stateSpace;
-          } 
+            {
+              _numaNonLocalFreeStateCount++;
+              return stateSpace;
+          }
       }
 
     // If failed, then try to get it from the back of the current state database
@@ -205,10 +204,10 @@ class Numa : public stateDb::Base
 
     // If successful, return the pointer immediately
     if (success == true)
-    {
-      _numaStealingFreeStateCount++;
-      return stateSpace;
-    } 
+      {
+        _numaStealingFreeStateCount++;
+        return stateSpace;
+    }
 
     // Otherwise, return a null pointer. The state will be discarded
     _numaFreeStateNotFoundCount++;
@@ -284,11 +283,11 @@ class Numa : public stateDb::Base
 
             // If the queue was full, then go ahead and run the state
             if (success == false)
-            {
-              _numaNonLocalDatabaseStateCount++;
-              return statePtr;
-            } 
-         }
+              {
+                _numaNonLocalDatabaseStateCount++;
+                return statePtr;
+            }
+        }
       }
 
     // If still no success, check the other scavenger queues
@@ -300,8 +299,8 @@ class Numa : public stateDb::Base
             {
               _numaNonLocalDatabaseStateCount++;
               return statePtr;
-           }
-        }
+          }
+      }
 
     // If no success at all, just return a nullptr
     _numaDatabaseStateNotFoundCount++;

@@ -28,12 +28,12 @@ class Driver final
   };
 
   // Base constructor
-  Driver(const std::string& configFilePath, const nlohmann::json &config) :
-  _configFilePath(configFilePath)
+  Driver(const std::string &configFilePath, const nlohmann::json &config)
+    : _configFilePath(configFilePath)
   {
     // Getting job identifier from the system timer
     auto currentTime = std::chrono::system_clock::now();
-    _jobId = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch()).count();
+    _jobId           = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch()).count();
 
     // Getting driver configuration
     const auto &driverConfig = jaffarCommon::json::getObject(config, "Driver Configuration");
@@ -334,10 +334,9 @@ class Driver final
     jaffarCommon::logger::log("[J+] Script File:                                 '%s'\n", _configFilePath.c_str());
     jaffarCommon::logger::log("[J+] Emulator Name:                               '%s'\n", _runner->getGame()->getEmulator()->getName().c_str());
     jaffarCommon::logger::log("[J+] Game Name:                                   '%s'\n", _runner->getGame()->getName().c_str());
-    jaffarCommon::logger::log("[J+] Current Step #:                              %lu", _currentStep); 
-    if (_maxSteps > 0) 
-    jaffarCommon::logger::log(" (Max: %lu)", _maxSteps);
-    jaffarCommon::logger::log("\n"); 
+    jaffarCommon::logger::log("[J+] Current Step #:                              %lu", _currentStep);
+    if (_maxSteps > 0) jaffarCommon::logger::log(" (Max: %lu)", _maxSteps);
+    jaffarCommon::logger::log("\n");
 
     if (_winStatesFound == 0)
       jaffarCommon::logger::log(
@@ -368,7 +367,7 @@ class Driver final
   }
 
   // Function to obtain driver based on configuration
-  static std::unique_ptr<Driver> getDriver(const std::string& configFilePath, const nlohmann::json &config)
+  static std::unique_ptr<Driver> getDriver(const std::string &configFilePath, const nlohmann::json &config)
   {
     // Creating new engine
     auto d = std::make_unique<Driver>(configFilePath, config);

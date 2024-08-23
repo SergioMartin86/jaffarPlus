@@ -638,7 +638,7 @@ class Game
     jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
-  virtual void  initializeImpl() {};
+  virtual void  initializeImpl(){};
   virtual void  registerGameProperties()                                                                       = 0;
   virtual void  serializeStateImpl(jaffarCommon::serializer::Base &serializer) const                           = 0;
   virtual void  deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)                           = 0;
@@ -649,10 +649,10 @@ class Game
   virtual bool  parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) = 0;
 
   // Optional hooks
-  virtual __INLINE__ void stateUpdatePreHook() {};
-  virtual __INLINE__ void stateUpdatePostHook() {};
-  virtual __INLINE__ void ruleUpdatePreHook() {};
-  virtual __INLINE__ void ruleUpdatePostHook() {};
+  virtual __INLINE__ void stateUpdatePreHook(){};
+  virtual __INLINE__ void stateUpdatePostHook(){};
+  virtual __INLINE__ void ruleUpdatePreHook(){};
+  virtual __INLINE__ void ruleUpdatePostHook(){};
 
   // Current game state type
   stateType_t _stateType;

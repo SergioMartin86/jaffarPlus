@@ -73,7 +73,7 @@ class Emulator
   }
 
   // Function to return the information about a previously registered input
-  __INLINE__ const inputEntry_t& getRegisteredInput(const InputSet::inputIndex_t inputIdx) const { return _inputMap[(size_t)inputIdx]; }
+  __INLINE__ const inputEntry_t &getRegisteredInput(const InputSet::inputIndex_t inputIdx) const { return _inputMap[(size_t)inputIdx]; }
 
   // State advancing function
   void advanceState(const InputSet::inputIndex_t input) { advanceStateImpl(_inputMap[input].inputData); };
