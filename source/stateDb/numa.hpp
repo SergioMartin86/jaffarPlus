@@ -248,52 +248,52 @@ class Numa : public stateDb::Base
     // Check the numa's scavenger queue first
     bool success = _scavengerQueues[preferredNumaDomain]->try_pop(statePtr);
     if (success == true)
-      {
+    {
         _numaLocalFreeStateCount++;
         return statePtr;
     }
 
     // Starting scavenging process
     for (size_t i = 0; i < _scavengingDepth; i++)
+    {
+      // Trying to pop the next state from the current state database
+      success = _currentStateDb.pop_front_get(statePtr);
+
+      // If no success, break cycle
+      if (success == false) break;
+
+      // Otherwise, check whether state is in the preferred numa domain
+      const auto isPreferredNuma = isStateInNumaDomain(statePtr, preferredNumaDomain);
+
+      // If its my preferred numa, return it immediately
+      if (isPreferredNuma == true)
       {
-        // Trying to pop the next state from the current state database
-        success = _currentStateDb.pop_front_get(statePtr);
-
-        // If no success, break cycle
-        if (success == false) break;
-
-        // Otherwise, check whether state is in the preferred numa domain
-        const auto isPreferredNuma = isStateInNumaDomain(statePtr, preferredNumaDomain);
-
-        // If its my preferred numa, return it immediately
-        if (isPreferredNuma == true)
-          {
-            _numaLocalDatabaseStateCount++;
-            return statePtr;
-        }
-
-        // Otherwise, place it in the corresponding scavenge queue
-        if (isPreferredNuma == false)
-          {
-            // Get numa domain of state
-            const auto numaIdx = getStateNumaDomain(statePtr);
-
-            // Push state into the appropriate scavenget queue
-            auto success = _scavengerQueues[numaIdx]->try_push(statePtr);
-
-            // If the queue was full, then go ahead and run the state
-            if (success == false)
-              {
-                _numaNonLocalDatabaseStateCount++;
-                return statePtr;
-            }
-        }
+          _numaLocalDatabaseStateCount++;
+          return statePtr;
       }
+
+      // Otherwise, place it in the corresponding scavenge queue
+      if (isPreferredNuma == false)
+        {
+          // Get numa domain of state
+          const auto numaIdx = getStateNumaDomain(statePtr);
+
+          // Push state into the appropriate scavenget queue
+          auto success = _scavengerQueues[numaIdx]->try_push(statePtr);
+
+          // If the queue was full, then go ahead and run the state
+          if (success == false)
+            {
+              _numaNonLocalDatabaseStateCount++;
+              return statePtr;
+          }
+      }
+    }
 
     // If still no success, check the other scavenger queues
     for (int i = 0; i < _numaCount; i++)
       if (i != preferredNumaDomain)
-        {
+      {
           bool success = _scavengerQueues[i]->try_pop(statePtr);
           if (success == true)
             {
