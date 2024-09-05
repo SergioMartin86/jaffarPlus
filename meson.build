@@ -15,11 +15,12 @@ subdir('emulators')
 jaffarCommonSubproject = subproject('jaffarCommon')
 jaffarCommonDependency = jaffarCommonSubproject.get_variable('jaffarCommonDependency')
 
-# Jaffar dependencies all together
-jaffarDependencies = [
-   jaffarCommonDependency,
-   emulatorDependencies
-  ]
+# Creating Jaffar's own dependency
+jaffarDependency = declare_dependency(
+  dependencies: [ jaffarCommonDependency, emulatorDependencies, ],
+  compile_args: jaffarCPPFlags,
+  include_directories: jaffarIncludes
+)
 
 # Do not build any targets if this is a subproject
 if meson.is_subproject() == false
@@ -27,17 +28,15 @@ if meson.is_subproject() == false
   # Jaffar 
   jaffar = executable('jaffar',
     'source/jaffar.cpp',
-    cpp_args: [ jaffarCPPFlags ],
-    dependencies : [ jaffarDependencies, dependency('numa') ],
-    include_directories : jaffarIncludes
+    cpp_args: [ ],
+    dependencies : [ jaffarDependency, dependency('numa') ],
   )
 
   # Jaffar Player tool
   jaffarPlayer = executable('jaffar-player',
     'source/player.cpp',
-    cpp_args: [ jaffarCPPFlags, NCursesCPPFlags, '-D_JAFFAR_PLAYER' ],
-    dependencies : [ jaffarDependencies ],
-    include_directories : jaffarIncludes
+    cpp_args: [ NCursesCPPFlags, '-D_JAFFAR_PLAYER' ],
+    dependencies : [ jaffarDependency ],
   )
 
   # Build test suite if requested

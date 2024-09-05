@@ -2,16 +2,8 @@
 emulatorDependencies = []
 
 # Common Jaffar include dirs
-includeDirs = [ '.' ]
+includeDirs = [ '.', '../emulators' ]
 includeFlags = [ ]
-
-# If no custom emulator folder was specified, add the default one
-emulatorsFolder = get_option('emulatorsFolder')
-if  emulatorsFolder == ''
-  includeDirs += '../emulators'
-else # Oterwise, add it manually
-  includeFlags += '-I' + emulatorsFolder
-endif
 
 # If no custom game folder was specified, add the default one
 gamesFolder = get_option('gamesFolder')
@@ -30,7 +22,6 @@ jaffarCPPFlags = [
   '-Wall',
   includeFlags
   ]
-
 
 # Code coverage configuration
 if get_option('b_coverage')
