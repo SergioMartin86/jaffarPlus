@@ -15,18 +15,11 @@ option('emulator',
   description : 'Selects the emulation core to compile Jaffar with'
 )
 
-option('emulatorsFolder',
-  type : 'string',
-  value : '',
-  description : 'Allows setting a custom emulators folder',
-)
-
 option('gamesFolder',
   type : 'string',
   value : '',
   description : 'Allows setting a custom games folder',
 )
-
 
 option('buildTests',
   type : 'boolean',
