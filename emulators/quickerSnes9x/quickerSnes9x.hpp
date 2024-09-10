@@ -25,15 +25,17 @@ class QuickerSnes9x final : public Emulator
   QuickerSnes9x(const nlohmann::json &config)
     : Emulator(config)
   {
+    // Creating emulator
+    _quickerSnes9x = std::make_unique<snes9x::EmuInstance>(config);
+
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
     // For testing purposes, the initial state file can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERSNES9X_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
-    // Parsing controller configuration
-    _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
-    _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
+    // Getting initial sequence file path
+    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
 
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
@@ -50,10 +52,6 @@ class QuickerSnes9x final : public Emulator
 
   void initializeImpl() override
   {
-    // Setting controller types
-    _quickerSnes9x.setController1Type(_controller1Type);
-    _quickerSnes9x.setController2Type(_controller2Type);
-
     // Reading from ROM file
     std::string romFileData;
     bool        status = jaffarCommon::file::loadStringFromFile(romFileData, _romFilePath.c_str());
@@ -65,7 +63,7 @@ class QuickerSnes9x final : public Emulator
       JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
 
     // Loading rom into emulator
-    _quickerSnes9x.loadROM(romFileData);
+    _quickerSnes9x->loadROM(romFileData);
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
@@ -83,40 +81,70 @@ class QuickerSnes9x final : public Emulator
 
     // Now disabling state properties, as requested
     disableStateProperties();
+
+    // Getting input parser from the internal emulator
+    const auto inputParser = _quickerSnes9x->getInputParser();
+
+    // Advancing the state using the initial sequence, if provided
+    if (_initialSequenceFilePath != "")
+    {
+      // Load initial sequence
+      std::string initialSequenceFileString;
+      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+      // Getting input sequence
+      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+
+      // Running inputs in the initial sequence
+      for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+    }
   }
 
-  // State advancing function
-  void advanceState(const std::string &input) override { _quickerSnes9x.advanceState(input); }
+  __INLINE__ void disableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
+  }
+  __INLINE__ void enableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
+  }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerSnes9x.serializeState(serializer); };
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerSnes9x.deserializeState(deserializer); };
+  // Function to get a reference to the input parser from the base emulator
+  jaffar::InputParser *getInputParser() const override { return _quickerSnes9x->getInputParser(); }
+
+  // State advancing function
+  void advanceStateImpl(const jaffar::input_t &input) override { _quickerSnes9x->advanceState(input); }
+
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerSnes9x->serializeState(serializer); };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerSnes9x->deserializeState(deserializer); };
 
   __INLINE__ void printInfo() const override {}
 
   property_t getProperty(const std::string &propertyName) const override
   {
-    if (propertyName == "RAM") return property_t(_quickerSnes9x.getRAM(), _quickerSnes9x.getRAMSize());
-    if (propertyName == "SRAM") return property_t(_quickerSnes9x.getSRAM(), _quickerSnes9x.getSRAMSize());
+    if (propertyName == "RAM") return property_t(_quickerSnes9x->getRAM(), _quickerSnes9x->getRAMSize());
+    if (propertyName == "SRAM") return property_t(_quickerSnes9x->getSRAM(), _quickerSnes9x->getSRAMSize());
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) override { _quickerSnes9x.enableStateBlock(property); }
-  __INLINE__ void disableStateProperty(const std::string &property) override { _quickerSnes9x.disableStateBlock(property); }
+  __INLINE__ void enableStateProperty(const std::string &property) { _quickerSnes9x->enableStateBlock(property); }
+  __INLINE__ void disableStateProperty(const std::string &property) { _quickerSnes9x->disableStateBlock(property); }
 
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
     enableStateProperties();
-    _quickerSnes9x.initializeVideoOutput();
+    _quickerSnes9x->initializeVideoOutput();
   }
 
   // This function closes the video output (e.g., window)
-  void finalizeVideoOutput() override { _quickerSnes9x.finalizeVideoOutput(); }
+  void finalizeVideoOutput() override { _quickerSnes9x->finalizeVideoOutput(); }
 
-  __INLINE__ void enableRendering() override { _quickerSnes9x.enableRendering(); }
+  __INLINE__ void enableRendering() override { _quickerSnes9x->enableRendering(); }
 
-  __INLINE__ void disableRendering() override { _quickerSnes9x.disableRendering(); }
+  __INLINE__ void disableRendering() override { _quickerSnes9x->disableRendering(); }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
@@ -131,20 +159,19 @@ class QuickerSnes9x final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void showRender() override { _quickerSnes9x.updateRenderer(); }
+  __INLINE__ void showRender() override { _quickerSnes9x->updateRenderer(); }
 
   private:
 
   // Collection of state blocks to disable during engine run
   std::vector<std::string> _disabledStateProperties;
 
-  snes9x::EmuInstance _quickerSnes9x;
+  std::unique_ptr<snes9x::EmuInstance> _quickerSnes9x;
 
-  std::string _controller1Type;
-  std::string _controller2Type;
   std::string _romFilePath;
   std::string _romFileSHA1;
   std::string _initialStateFilePath;
+  std::string _initialSequenceFilePath;
 };
 
 } // namespace emulator
