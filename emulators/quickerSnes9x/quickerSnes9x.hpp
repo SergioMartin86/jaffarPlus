@@ -48,6 +48,13 @@ class QuickerSnes9x final : public Emulator
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERSNES9X_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
+
+    // Getting disabled state properties
+    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
+
+    // Getting work ram serialization size
+    _workRamSerializationSize = jaffarCommon::json::getNumber<size_t>(config, "Work RAM Serialization Size");
   };
 
   void initializeImpl() override
@@ -103,10 +110,12 @@ class QuickerSnes9x final : public Emulator
 
   __INLINE__ void disableStateProperties()
   {
+    _quickerSnes9x->setStateRAMSize(_workRamSerializationSize);
     for (const auto &property : _disabledStateProperties) disableStateProperty(property);
   }
   __INLINE__ void enableStateProperties()
   {
+    _quickerSnes9x->setStateRAMSize(0x20000);
     for (const auto &property : _disabledStateProperties) enableStateProperty(property);
   }
 
@@ -172,6 +181,8 @@ class QuickerSnes9x final : public Emulator
   std::string _romFileSHA1;
   std::string _initialStateFilePath;
   std::string _initialSequenceFilePath;
+
+    size_t _workRamSerializationSize;
 };
 
 } // namespace emulator

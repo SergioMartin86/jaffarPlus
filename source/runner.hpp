@@ -67,7 +67,7 @@ class Runner final
     if (_inputHistoryEnabled == true)
       {
         // Calculating bit storage for the possible inputs index
-        _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex);
+        _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex + 1);
 
         // Total size in bits for the input history
         size_t inputHistorySizeBits = _inputHistoryMaxSize * _inputIndexSizeBits;
@@ -126,9 +126,6 @@ class Runner final
 
     // Adding new input index->string to the map
     _inputStringMap[inputIdx] = input;
-
-    // If it is, just get it from there
-    if (_inputHashMap.contains(inputHash) == true) inputIdx = _inputHashMap[inputHash];
 
     // Register maximum input index to determine how many bytes to use for input history storage
     _maxInputIndex = std::max(_maxInputIndex, inputIdx);
@@ -198,15 +195,15 @@ class Runner final
   // Function to advance state.
   __INLINE__ void advanceState(const InputSet::inputIndex_t inputIdx)
   {
-    // Safety check
-    if (_inputStringMap.contains(inputIdx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", inputIdx);
+    // Safety check -- Disabled, for performance
+    // if (_inputStringMap.contains(inputIdx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", inputIdx);
 
     // Performing the requested input
     _game->advanceState(inputIdx);
 
     // If storing input history, do it now. Unless we've reached the maximum
     if (_inputHistoryEnabled == true && _currentInputCount < _inputHistoryMaxSize) setInput(_currentInputCount, inputIdx);
-
+    
     // Advancing step counter
     _currentInputCount++;
   }
