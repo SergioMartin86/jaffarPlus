@@ -203,7 +203,7 @@ class Runner final
 
     // If storing input history, do it now. Unless we've reached the maximum
     if (_inputHistoryEnabled == true && _currentInputCount < _inputHistoryMaxSize) setInput(_currentInputCount, inputIdx);
-    
+
     // Advancing step counter
     _currentInputCount++;
   }

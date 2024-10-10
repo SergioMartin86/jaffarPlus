@@ -75,8 +75,7 @@ class Playback final
 
         // Checking for repeats
         for (size_t stepIdx = 0; stepIdx < i; stepIdx++)
-         if (_hashMap[stepIdx] == step.stateHash)
-          step._repeatedHashSteps.push_back(stepIdx);
+          if (_hashMap[stepIdx] == step.stateHash) step._repeatedHashSteps.push_back(stepIdx);
 
         // Entering state hash into the map to check for repeated inputs
         _hashMap[i] = step.stateHash;
@@ -129,7 +128,7 @@ class Playback final
   __INLINE__ std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
   __INLINE__ jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }
   __INLINE__ void                              *getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
-  __INLINE__ const std::vector<size_t>          getStateRepeatedHashSteps(const size_t currentStep) const { return getStep(currentStep)._repeatedHashSteps; }
+  __INLINE__ const std::vector<size_t> getStateRepeatedHashSteps(const size_t currentStep) const { return getStep(currentStep)._repeatedHashSteps; }
   __INLINE__ jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
 
   __INLINE__ void renderFrame(const size_t currentStep)

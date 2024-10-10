@@ -215,7 +215,7 @@ class QuickerGPGX final : public Emulator
   // Collection of state blocks to disable during engine run
   std::vector<std::string> _disabledStateProperties;
 
-  size_t _workRamSerializationSize;
+  size_t      _workRamSerializationSize;
   std::string _initialRAMDataFilePath;
   std::string _initialVRAMDataFilePath;
 };
