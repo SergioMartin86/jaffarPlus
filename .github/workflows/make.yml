@@ -40,7 +40,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulators=QuickerNES
+      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulator=QuickerNES
     - name: Building project
       run: ninja -C build
     - name: Running tests
@@ -76,7 +76,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulators=QuickerNESArkanoid
+      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulator=QuickerNESArkanoid
     - name: Building project
       run: ninja -C build
     - name: Running tests
@@ -98,7 +98,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSDLPoP
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerSDLPoP
     - name: Building project
       run: ninja -C build
     - name: Running tests
@@ -120,7 +120,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSnes9x
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerSnes9x
     - name: Building project
       run: ninja -C build
     - name: Running tests
@@ -142,7 +142,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerGPGX
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerGPGX
     - name: Building project
       run: ninja -C build
     - name: Running tests
@@ -164,7 +164,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerStella
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerStella
     - name: Building project
       run: ninja -C build
     # Disabling tests for stella because it does not run correctly in the CI  
@@ -192,7 +192,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=Atari2600Hawk
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=Atari2600Hawk
     - name: Building project
       run: ninja -C build
     - name: Running tests
@@ -214,7 +214,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerSMBC
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerSMBC
     - name: Building project
       run: ninja -C build
     - name: Running tests
@@ -236,7 +236,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerRAW
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerRAW
     - name: Building project
       run: ninja -C build
     # Disabling tests for RAW because I cannot upload the game data files
@@ -259,7 +259,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulators=QuickerArkBot
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerArkBot
     - name: Building project
       run: ninja -C build
     - name: Running tests

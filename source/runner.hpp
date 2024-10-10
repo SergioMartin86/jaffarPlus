@@ -67,7 +67,7 @@ class Runner final
     if (_inputHistoryEnabled == true)
       {
         // Calculating bit storage for the possible inputs index
-        _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex + 1);
+        _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex);
 
         // Total size in bits for the input history
         size_t inputHistorySizeBits = _inputHistoryMaxSize * _inputIndexSizeBits;
@@ -128,7 +128,7 @@ class Runner final
     _inputStringMap[inputIdx] = input;
 
     // Register maximum input index to determine how many bytes to use for input history storage
-    _maxInputIndex = std::max(_maxInputIndex, inputIdx);
+    _maxInputIndex = std::max(_maxInputIndex, inputIdx + 1);
 
     // Returning this input's index (either new or the one registered before)
     return inputIdx;
