@@ -53,6 +53,12 @@ class QuickerGPGX final : public Emulator
     // Getting work ram serialization size
     _workRamSerializationSize = jaffarCommon::json::getNumber<size_t>(config, "Work RAM Serialization Size");
 
+    // Parsing initial RAM Data file
+    _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+
+    // Parsing initial Video RAM Data file
+    _initialVRAMDataFilePath = jaffarCommon::json::getString(config, "Initial Video RAM Data File Path");
+
     // Creating internal emulator instance
     _quickerGPGX = std::make_unique<gpgx::EmuInstance>(config);
   };
@@ -107,6 +113,30 @@ class QuickerGPGX final : public Emulator
 
         // Running inputs in the initial sequence
         for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+    }
+
+    // Pushing initial RAM data
+    if (_initialRAMDataFilePath != "")
+      {
+        // Load initial RAM Data
+        std::string initialRAMDataString;
+        if (jaffarCommon::file::loadStringFromFile(initialRAMDataString, _initialRAMDataFilePath) == false)
+          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from RAM Data file: %s\n", _initialRAMDataFilePath.c_str());
+
+        // Pushing data into RAM
+        memcpy(_quickerGPGX->getWorkRamPointer(), initialRAMDataString.data(), initialRAMDataString.size());
+    }
+
+    // Pushing initial Video RAM data
+    if (_initialVRAMDataFilePath != "")
+      {
+        // Load initial RAM Data
+        std::string initialVRAMDataString;
+        if (jaffarCommon::file::loadStringFromFile(initialVRAMDataString, _initialVRAMDataFilePath) == false)
+          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from Video RAM Data file: %s\n", _initialVRAMDataFilePath.c_str());
+
+        // Pushing data into RAM
+        memcpy(_quickerGPGX->getVideoRamPointer(), initialVRAMDataString.data(), initialVRAMDataString.size());
     }
   }
 
@@ -186,6 +216,8 @@ class QuickerGPGX final : public Emulator
   std::vector<std::string> _disabledStateProperties;
 
   size_t _workRamSerializationSize;
+  std::string _initialRAMDataFilePath;
+  std::string _initialVRAMDataFilePath;
 };
 
 } // namespace emulator

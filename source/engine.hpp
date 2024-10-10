@@ -170,6 +170,7 @@ class Engine final
     _returnFreeStateAverageCumulativeTime    = 0;
     _calculateRewardAverageCumulativeTime    = 0;
     _advanceHashDbAverageCumulativeTime      = 0;
+    _getAllowedInputsAverageCumulativeTime   = 0;
     _advanceStateDbAverageCumulativeTime     = 0;
     _popBaseStateDbAverageCumulativeTime     = 0;
 
@@ -213,6 +214,7 @@ class Engine final
     _returnFreeStateThreadRawTime    = 0;
     _calculateRewardThreadRawTime    = 0;
     _advanceHashDbThreadRawTime      = 0;
+    _getAllowedInputsThreadRawTime   = 0;
     _advanceStateDbThreadRawTime     = 0;
     _popBaseStateDbThreadRawTime     = 0;
 
