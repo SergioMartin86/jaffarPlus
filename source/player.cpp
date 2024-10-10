@@ -66,17 +66,18 @@ bool mainCycle(jaffarPlus::Runner &r, const std::string &solutionFile, bool disa
 
   // Checking for repeated state hashes
   std::vector<ssize_t> repeatedHashStates;
-  for (ssize_t i = 0; i < sequenceLength; i++) 
-  {
-    const auto repeatedHashSteps = p.getStateRepeatedHashSteps(i);
-    if (repeatedHashSteps.size() > 0) repeatedHashStates.push_back(i);
-  }
+  for (ssize_t i = 0; i < sequenceLength; i++)
+    {
+      const auto repeatedHashSteps = p.getStateRepeatedHashSteps(i);
+      if (repeatedHashSteps.size() > 0) repeatedHashStates.push_back(i);
+    }
 
   // Interactive section
   while (isFinalize == false)
     {
       // Updating display
-      if (disableRender == false) if (currentStep % frameskip == 0) p.renderFrame(currentStep);
+      if (disableRender == false)
+        if (currentStep % frameskip == 0) p.renderFrame(currentStep);
 
       // Loading step data
       p.loadStepData(currentStep);
@@ -103,16 +104,23 @@ bool mainCycle(jaffarPlus::Runner &r, const std::string &solutionFile, bool disa
           jaffarCommon::logger::log("[J+] Playback:                    %s\n", isReproduce ? "Playing" : "Stopped");
           jaffarCommon::logger::log("[J+] Input:                       %s (0x%X)\n", inputString.c_str(), inputIndex);
           jaffarCommon::logger::log("[J+] On Finish:                   %s\n", isReload ? "Auto Reload" : "Stop");
-          
+
           jaffarCommon::logger::log("[J+] Repeated Hash Steps:         [ ");
-          if (repeatedHashStates.size() < 5)  for (const auto step : repeatedHashStates) jaffarCommon::logger::log(" %ld ", step);
-          else                                { for (size_t i = 0; i < 5; i++) jaffarCommon::logger::log(" %ld ", repeatedHashStates[i]);  jaffarCommon::logger::log(" ... "); } 
+          if (repeatedHashStates.size() < 5)
+            for (const auto step : repeatedHashStates) jaffarCommon::logger::log(" %ld ", step);
+          else
+            {
+              for (size_t i = 0; i < 5; i++) jaffarCommon::logger::log(" %ld ", repeatedHashStates[i]);
+              jaffarCommon::logger::log(" ... ");
+            }
           jaffarCommon::logger::log(" ] \n");
 
           jaffarCommon::logger::log("[J+] Game Name:                  '%s'\n", r.getGame()->getName().c_str());
           jaffarCommon::logger::log("[J+] Emulator Name:              '%s'\n", r.getGame()->getEmulator()->getName().c_str());
           jaffarCommon::logger::log("[J+] State Hash:                  0x%lX%lX\n", hash.first, hash.second);
-          jaffarCommon::logger::log("[J+] State Repeated Hash Steps:   [ "); for (const auto step : repeatedHashSteps) jaffarCommon::logger::log(" %lu ", step);  jaffarCommon::logger::log(" ] \n");
+          jaffarCommon::logger::log("[J+] State Repeated Hash Steps:   [ ");
+          for (const auto step : repeatedHashSteps) jaffarCommon::logger::log(" %lu ", step);
+          jaffarCommon::logger::log(" ] \n");
           jaffarCommon::logger::log("[J+] State Size:                  %lu\n", stateSize);
           jaffarCommon::logger::log("[J+] Solution File:              '%s'\n", solutionFile.c_str());
           jaffarCommon::logger::log("[J+] Sequence Length:             %lu\n", sequenceLength);

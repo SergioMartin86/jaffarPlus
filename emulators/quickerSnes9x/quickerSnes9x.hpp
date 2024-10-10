@@ -94,17 +94,17 @@ class QuickerSnes9x final : public Emulator
 
     // Advancing the state using the initial sequence, if provided
     if (_initialSequenceFilePath != "")
-    {
-      // Load initial sequence
-      std::string initialSequenceFileString;
-      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
-        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+      {
+        // Load initial sequence
+        std::string initialSequenceFileString;
+        if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
 
-      // Getting input sequence
-      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+        // Getting input sequence
+        const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
 
-      // Running inputs in the initial sequence
-      for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+        // Running inputs in the initial sequence
+        for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
     }
   }
 
@@ -182,7 +182,7 @@ class QuickerSnes9x final : public Emulator
   std::string _initialStateFilePath;
   std::string _initialSequenceFilePath;
 
-    size_t _workRamSerializationSize;
+  size_t _workRamSerializationSize;
 };
 
 } // namespace emulator

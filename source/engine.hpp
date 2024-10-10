@@ -247,12 +247,13 @@ class Engine final
 
     // Getting maximum thread step time
     _maxThreadStepTimeThreadId = 0;
-    _maxThreadStepTime = _threadStepTime[0];
-    for (size_t i = 0; i < _threadCount; i++) if (_threadStepTime[i] > _maxThreadStepTime)
-    {
-      _maxThreadStepTimeThreadId = i;
-      _maxThreadStepTime = _threadStepTime[i];
-    }
+    _maxThreadStepTime         = _threadStepTime[0];
+    for (size_t i = 0; i < _threadCount; i++)
+      if (_threadStepTime[i] > _maxThreadStepTime)
+        {
+          _maxThreadStepTimeThreadId = i;
+          _maxThreadStepTime         = _threadStepTime[i];
+      }
 
     // Processing thread-average step timing
     _runnerStateAdvanceAverageTime = _runnerStateAdvanceThreadRawTime / _threadCount;
@@ -797,8 +798,8 @@ class Engine final
 
   // Thread-specific running time of current step
   std::vector<size_t> _threadStepTime;
-  size_t _maxThreadStepTime;
-  size_t _maxThreadStepTimeThreadId;
+  size_t              _maxThreadStepTime;
+  size_t              _maxThreadStepTimeThreadId;
 
   // Total running time so far
   size_t _totalRunningTime;
