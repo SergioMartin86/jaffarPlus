@@ -81,7 +81,7 @@ class QuickerGPGX final : public Emulator
     // Loading rom into emulator
     _quickerGPGX->loadROM(_romFilePath);
 
-    if (_initialStateFilePath.empty() == false)
+    if (_initialStateFilePath != "")
       {
         // Reading from initial state file
         std::string initialState;
