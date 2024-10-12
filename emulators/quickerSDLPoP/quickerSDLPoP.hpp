@@ -63,16 +63,15 @@ class QuickerSDLPoP final : public Emulator
     _QuickerSDLPoP->getGameState()->globalStepCount = 0;
   }
 
+  // Function to get a reference to the input parser from the base emulator
+  jaffar::InputParser *getInputParser() const override { return _QuickerSDLPoP->getInputParser(); }
+
   // State advancing function
-  void advanceState(const std::string &input) override { _QuickerSDLPoP->advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t &input) override { _QuickerSDLPoP->advanceState(input); }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _QuickerSDLPoP->serializeState(serializer); };
 
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _QuickerSDLPoP->deserializeState(deserializer); };
-
-  __INLINE__ void enableStateProperty(const std::string &property) override {}
-
-  __INLINE__ void disableStateProperty(const std::string &property) override {}
 
   __INLINE__ void printInfo() const override {}
 
@@ -106,13 +105,7 @@ class QuickerSDLPoP final : public Emulator
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
   {
     _renderStepIdx = stepIdx;
-
-    SDLPoP::Controller          controller;
-    SDLPoP::Controller::input_t newInput;
-
-    bool isInputValid = controller.parseInputString(input);
-    if (isInputValid == true) newInput = controller.getParsedInput();
-    _renderInput = newInput;
+    _renderInput   = input != "<End Of Sequence>" ? getInputParser()->parseInputString(input) : jaffar::input_t();
   }
 
   __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
@@ -148,9 +141,9 @@ class QuickerSDLPoP final : public Emulator
   bool     _initializeCopyProtection;
 
   // Internal render state variables
-  size_t                      _renderStepIdx;
-  SDLPoP::Controller::input_t _renderInput;
-  SDL_Window                 *_window;
+  size_t          _renderStepIdx;
+  jaffar::input_t _renderInput;
+  SDL_Window     *_window;
 };
 
 } // namespace emulator
