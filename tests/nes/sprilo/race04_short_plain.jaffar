@@ -47,6 +47,7 @@
   "Rom File SHA1": "6EC09B9B51320A536A786D3D4719432B714C5779",
   "Initial State File Path": "race04.state",
   "Initial Sequence File Path": "",
+  "Initial RAM Data File Path": "",
   "Controller 1 Type": "Joypad",
   "Controller 2 Type": "None",
   "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ],
