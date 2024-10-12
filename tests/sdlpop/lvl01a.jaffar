@@ -2,7 +2,7 @@
  "Driver Configuration":
  {
   "End On First Win State": true,
-  "Max Steps": 1800,
+  "Max Steps": 0,
 
   "Save Intermediate Results":
   {
@@ -61,9 +61,16 @@
  
 "Runner Configuration":
 {
-  "Hash Step Tolerance": 4,
-  "Initial Sequence File Path": "",
+  "Hash Step Tolerance": 1,
+  "Show Empty Input Slots": false,
+  "Show Allowed Inputs": false,
 
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 1800
+  },
+  
   "Allowed Input Sets":
   [
     {

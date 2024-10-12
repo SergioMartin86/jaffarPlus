@@ -191,7 +191,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
       }
   }
 
-  __INLINE__ void advanceStateImpl(const std::string &input) override { _emulator->advanceState(input); }
+  __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override { _emulator->advanceState(input); }
 
   __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
   {
