@@ -51,13 +51,21 @@
   "Rom File SHA1": "8C209A10CCF24194CB888D5E750CF303AD050EF7",
   "Controller 1 Type": "Gamepad",
   "Controller 2 Type": "None",
+  "Initial Sequence File Path": "stage01.stella.initial.sol",
   "Disabled State Properties": [ ]
 },
  
 "Runner Configuration":
 {
   "Hash Step Tolerance": 4,
-  "Initial Sequence File Path": "stage01.stella.initial.sol",
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 1000
+  },
 
   "Allowed Input Sets":
   [
