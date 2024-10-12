@@ -46,7 +46,7 @@ class QuickerSMBC final : public Emulator
 #endif
 
     // Creating internal emulator instance
-   _quickerSMBC = std::make_unique<smbc::EmuInstance>(config);
+    _quickerSMBC = std::make_unique<smbc::EmuInstance>(config);
   };
 
   void initializeImpl() override
@@ -105,10 +105,7 @@ class QuickerSMBC final : public Emulator
   }
 
   // This function opens the video output (e.g., window)
-  void initializeVideoOutput() override
-  {
-    _quickerSMBC->initializeVideoOutput();
-  }
+  void initializeVideoOutput() override { _quickerSMBC->initializeVideoOutput(); }
 
   // This function closes the video output (e.g., window)
   void finalizeVideoOutput() override { _quickerSMBC->finalizeVideoOutput(); }
