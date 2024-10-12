@@ -110,6 +110,14 @@ test('stage01',
       env : testEnvVars,
       suite : [ 'runs', 'QuickerGPGX', 'dinoRunner' ])
 
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/genesis/avuado',
+      timeout: testTimeout,
+      args : 'stage01.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'QuickerGPGX', 'avuado' ])
+
 endif
 
 if emulator == 'QuickerStella'

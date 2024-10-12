@@ -58,7 +58,7 @@
   "Controller 1 Type": "Gamepad3B",
   "Controller 2 Type": "None",
   "Disabled State Properties": [ "VRAM", "SATM"  ],
-  "Work RAM Serialization Size": 10000
+  "Work RAM Serialization Size": 65536
 },
  
 "Runner Configuration":
