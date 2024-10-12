@@ -56,8 +56,15 @@
  
 "Runner Configuration":
 {
-  "Hash Step Tolerance": 4,
-  "Initial Sequence File Path": "",
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 1000
+  },
 
   "Allowed Input Sets":
   [
