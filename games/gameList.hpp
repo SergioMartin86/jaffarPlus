@@ -16,6 +16,7 @@
 
 #ifdef __JAFFAR_ENABLE_GENESIS
   #include "genesis/dinoRunner.hpp"
+  #include "genesis/avuado.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_A2600
@@ -80,6 +81,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 
 #ifdef __JAFFAR_ENABLE_GENESIS
   DETECT_GAME(genesis::DinoRunner);
+  DETECT_GAME(genesis::Avuado);
 #endif
 
 #ifdef __JAFFAR_ENABLE_A2600
