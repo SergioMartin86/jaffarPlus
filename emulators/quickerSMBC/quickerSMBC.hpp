@@ -44,13 +44,16 @@ class QuickerSMBC final : public Emulator
     if (auto *value = std::getenv("JAFFAR_QUICKERSMBC_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
 #endif
+
+    // Creating internal emulator instance
+   _quickerSMBC = std::make_unique<smbc::EmuInstance>(config);
   };
 
   void initializeImpl() override
   {
     // Initializing emulator
     _mutex.lock();
-    _quickerSMBC.initialize();
+    _quickerSMBC->initialize();
     _mutex.unlock();
 
 // Only load rom file if using player
@@ -69,7 +72,7 @@ class QuickerSMBC final : public Emulator
 #endif
 
     // Loading rom into emulator
-    _quickerSMBC.loadROM(_romFilePath);
+    _quickerSMBC->loadROM(_romFilePath);
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
@@ -83,56 +86,48 @@ class QuickerSMBC final : public Emulator
         jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
         deserializeState(d);
     }
-
-    // Now disabling state properties, as requested
-    disableStateProperties();
   }
 
   // State advancing function
-  void advanceState(const std::string &input) override { _quickerSMBC.advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t &input) override { _quickerSMBC->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerSMBC.serializeState(serializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerSMBC->serializeState(serializer); };
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerSMBC.deserializeState(deserializer); };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerSMBC->deserializeState(deserializer); };
 
   __INLINE__ void printInfo() const override {}
 
   property_t getProperty(const std::string &propertyName) const override
   {
-    if (propertyName == "LRAM") return property_t(_quickerSMBC.getRamPointer(), 0x800);
+    if (propertyName == "LRAM") return property_t(_quickerSMBC->getRamPointer(), 0x800);
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) override { _quickerSMBC.enableStateBlock(property); }
-
-  __INLINE__ void disableStateProperty(const std::string &property) override { _quickerSMBC.disableStateBlock(property); }
-
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
-    enableStateProperties();
-    _quickerSMBC.initializeVideoOutput();
+    _quickerSMBC->initializeVideoOutput();
   }
 
   // This function closes the video output (e.g., window)
-  void finalizeVideoOutput() override { _quickerSMBC.finalizeVideoOutput(); }
+  void finalizeVideoOutput() override { _quickerSMBC->finalizeVideoOutput(); }
 
-  __INLINE__ void enableRendering() override { _quickerSMBC.enableRendering(); }
+  __INLINE__ void enableRendering() override { _quickerSMBC->enableRendering(); }
 
-  __INLINE__ void disableRendering() override { _quickerSMBC.disableRendering(); }
+  __INLINE__ void disableRendering() override { _quickerSMBC->disableRendering(); }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
   __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
   {
-    serializer.push(_quickerSMBC.getVideoBufferPointer(), _quickerSMBC.getVideoBufferSize());
+    serializer.push(_quickerSMBC->getVideoBufferPointer(), _quickerSMBC->getVideoBufferSize());
     serializeState(serializer);
   }
 
   __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
   {
-    deserializer.pop(_quickerSMBC.getVideoBufferPointer(), _quickerSMBC.getVideoBufferSize());
+    deserializer.pop(_quickerSMBC->getVideoBufferPointer(), _quickerSMBC->getVideoBufferSize());
     deserializeState(deserializer);
   }
 
@@ -143,14 +138,14 @@ class QuickerSMBC final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void showRender() override { _quickerSMBC.updateRenderer(); }
+  __INLINE__ void showRender() override { _quickerSMBC->updateRenderer(); }
+
+  // Function to get a reference to the input parser from the base emulator
+  jaffar::InputParser *getInputParser() const override { return _quickerSMBC->getInputParser(); }
 
   private:
 
-  // Collection of state blocks to disable during engine run
-  std::vector<std::string> _disabledStateProperties;
-
-  smbc::EmuInstance _quickerSMBC;
+  std::unique_ptr<smbc::EmuInstance> _quickerSMBC;
 
   std::string _romFilePath = "";
   std::string _romFileSHA1;
