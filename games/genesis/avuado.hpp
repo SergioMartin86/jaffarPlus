@@ -37,9 +37,9 @@ class Avuado final : public jaffarPlus::Game
     registerGameProperty("Player Pos X", &_workRAM[0x02B0C], Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _score       = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
-    _playerPosX  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _shotPosY    = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Shot Pos Y")]->getPointer();
+    _score      = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
+    _playerPosX = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _shotPosY   = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Shot Pos Y")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -53,13 +53,9 @@ class Avuado final : public jaffarPlus::Game
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
 
-  __INLINE__ void ruleUpdatePreHook() override
-  {
-  }
+  __INLINE__ void ruleUpdatePreHook() override {}
 
-  __INLINE__ void ruleUpdatePostHook() override
-  {
-  }
+  __INLINE__ void ruleUpdatePostHook() override {}
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
 
@@ -77,9 +73,7 @@ class Avuado final : public jaffarPlus::Game
     return reward;
   }
 
-  void printInfoImpl() const override
-  {
-  }
+  void printInfoImpl() const override {}
 
   bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
   {
@@ -95,9 +89,8 @@ class Avuado final : public jaffarPlus::Game
   }
 
   uint16_t *_score;
-  uint16_t  *_playerPosX;
-  uint16_t  *_shotPosY;
-
+  uint16_t *_playerPosX;
+  uint16_t *_shotPosY;
 
   // Pointer to emulator's low memory storage
   uint8_t *_workRAM;

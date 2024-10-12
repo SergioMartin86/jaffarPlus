@@ -85,9 +85,12 @@ class AnotherWorld final : public jaffarPlus::Game
     _gameTimer       = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Game Timer")]->getPointer();
     _elevatorPosY    = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Elevator Pos Y")]->getPointer();
     _fumesState      = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Fumes State")]->getPointer();
+
+    // Getting index for a non input
+    _nullInputIdx = _emulator->registerInput(".....");
   }
 
-  __INLINE__ void advanceStateImpl(const std::string &input) override
+  __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     // Running emulator
     _emulator->advanceState(input);
@@ -100,7 +103,7 @@ class AnotherWorld final : public jaffarPlus::Game
     _emulator->serializeState(s);
 
     //  Advancing emulator state
-    _emulator->advanceState(".....");
+    _emulator->advanceState(_nullInputIdx);
 
     // Hashing state now
     hashEngine.Update((uint8_t *)_threadsData, _threadsDataSize);
@@ -231,6 +234,9 @@ class AnotherWorld final : public jaffarPlus::Game
   int16_t *_gameTimer;
   int16_t *_elevatorPosY;
   int16_t *_fumesState;
+
+  // Null input index to remember the last valid input
+  InputSet::inputIndex_t _nullInputIdx;
 };
 
 } // namespace raw
