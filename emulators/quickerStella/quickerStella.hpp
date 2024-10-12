@@ -25,10 +25,6 @@ class QuickerStella final : public Emulator
   QuickerStella(const nlohmann::json &config)
     : Emulator(config)
   {
-    // Parsing controller configuration
-    _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
-    _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
-
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
@@ -40,18 +36,21 @@ class QuickerStella final : public Emulator
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_QUICKERSTELLA_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
+
+    // Getting disabled state properties
+    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
+
+    // Creating internal emulator instance
+    _quickerStella = std::make_unique<stella::EmuInstance>(config);
   };
 
   void initializeImpl() override
   {
     // Initializing emulator
     _mutex.lock();
-    _quickerStella.initialize();
+    _quickerStella->initialize();
     _mutex.unlock();
-
-    // Setting controller types
-    _quickerStella.setController1Type(_controller1Type);
-    _quickerStella.setController2Type(_controller2Type);
 
     // Reading from ROM file
     std::string romFileData;
@@ -64,45 +63,55 @@ class QuickerStella final : public Emulator
       JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
 
     // Loading rom into emulator
-    _quickerStella.loadROM(_romFilePath);
-
-    // Now disabling state properties, as requested
-    disableStateProperties();
+    _quickerStella->loadROM(_romFilePath);
   }
 
+  // Function to get a reference to the input parser from the base emulator
+  jaffar::InputParser *getInputParser() const override { return _quickerStella->getInputParser(); }
+
   // State advancing function
-  void advanceState(const std::string &input) override { _quickerStella.advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t &input) override { _quickerStella->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerStella.serializeState(serializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerStella->serializeState(serializer); };
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerStella.deserializeState(deserializer); };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerStella->deserializeState(deserializer); };
 
   __INLINE__ void printInfo() const override {}
 
   property_t getProperty(const std::string &propertyName) const override
   {
-    if (propertyName == "RAM") return property_t(_quickerStella.getWorkRamPointer(), _quickerStella.getWorkRamSize());
+    if (propertyName == "RAM") return property_t(_quickerStella->getWorkRamPointer(), _quickerStella->getWorkRamSize());
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) override { _quickerStella.enableStateBlock(property); }
+  __INLINE__ void disableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
+  }
 
-  __INLINE__ void disableStateProperty(const std::string &property) override { _quickerStella.disableStateBlock(property); }
+  __INLINE__ void enableStateProperties()
+  {
+    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
+  }
+
+  __INLINE__ void enableStateProperty(const std::string &property) { _quickerStella->enableStateBlock(property); }
+
+  __INLINE__ void disableStateProperty(const std::string &property) { _quickerStella->disableStateBlock(property); }
 
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
     enableStateProperties();
-    _quickerStella.initializeVideoOutput();
+    _quickerStella->initializeVideoOutput();
   }
 
   // This function closes the video output (e.g., window)
-  void finalizeVideoOutput() override { _quickerStella.finalizeVideoOutput(); }
+  void finalizeVideoOutput() override { _quickerStella->finalizeVideoOutput(); }
 
-  __INLINE__ void enableRendering() override { _quickerStella.enableRendering(); }
+  __INLINE__ void enableRendering() override { _quickerStella->enableRendering(); }
 
-  __INLINE__ void disableRendering() override { _quickerStella.disableRendering(); }
+  __INLINE__ void disableRendering() override { _quickerStella->disableRendering(); }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
@@ -117,17 +126,15 @@ class QuickerStella final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void showRender() override { _quickerStella.updateRenderer(); }
+  __INLINE__ void showRender() override { _quickerStella->updateRenderer(); }
 
   private:
+
+  std::unique_ptr<stella::EmuInstance> _quickerStella;
 
   // Collection of state blocks to disable during engine run
   std::vector<std::string> _disabledStateProperties;
 
-  stella::EmuInstance _quickerStella;
-
-  std::string _controller1Type;
-  std::string _controller2Type;
   std::string _romFilePath;
   std::string _romFileSHA1;
 

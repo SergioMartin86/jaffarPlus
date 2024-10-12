@@ -41,7 +41,7 @@ class Hellway final : public jaffarPlus::Game
     _subDistance = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("SubDistance")]->getPointer();
   }
 
-  __INLINE__ void advanceStateImpl(const std::string &input) override
+  __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     // Running emulator
     _emulator->advanceState(input);
