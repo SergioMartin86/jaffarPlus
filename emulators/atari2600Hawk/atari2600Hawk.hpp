@@ -25,14 +25,6 @@ class Atari2600Hawk final : public Emulator
   Atari2600Hawk(const nlohmann::json &config)
     : Emulator(config)
   {
-    // Getting disabled state properties
-    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
-    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
-
-    // Parsing controller configuration
-    _controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
-    _controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
-
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
@@ -44,18 +36,17 @@ class Atari2600Hawk final : public Emulator
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto *value = std::getenv("JAFFAR_Atari2600Hawk_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
+
+    // Creating internal emulator instance
+    _Atari2600Hawk = std::make_unique<libA2600Hawk::EmuInstance>(config);
   };
 
   void initializeImpl() override
   {
     // Initializing emulator
     _mutex.lock();
-    _Atari2600Hawk.initialize();
+    _Atari2600Hawk->initialize();
     _mutex.unlock();
-
-    // Setting controller types
-    _Atari2600Hawk.setController1Type(_controller1Type);
-    _Atari2600Hawk.setController2Type(_controller2Type);
 
     // Reading from ROM file
     std::string romFileData;
@@ -68,30 +59,27 @@ class Atari2600Hawk final : public Emulator
       JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
 
     // Loading rom into emulator
-    _Atari2600Hawk.loadROM(_romFilePath);
-
-    // Now disabling state properties, as requested
-    disableStateProperties();
+    _Atari2600Hawk->loadROM(_romFilePath);
   }
 
   // State advancing function
-  void advanceState(const std::string &input) override
+  void advanceStateImpl(const jaffar::input_t &input) override
   {
-    _Atari2600Hawk.advanceState(input);
+    _Atari2600Hawk->advanceState(input);
 
     // Retreiving workram
-    for (size_t i = 0; i < 128; i++) _workRam[i] = _Atari2600Hawk.getWorkRamByte(i);
+    for (size_t i = 0; i < 128; i++) _workRam[i] = _Atari2600Hawk->getWorkRamByte(i);
   }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override
   {
-    _Atari2600Hawk.serializeState(serializer);
+    _Atari2600Hawk->serializeState(serializer);
     serializer.pushContiguous(_workRam, 128);
   };
 
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override
   {
-    _Atari2600Hawk.deserializeState(deserializer);
+    _Atari2600Hawk->deserializeState(deserializer);
     deserializer.popContiguous(_workRam, 128);
   };
 
@@ -105,36 +93,28 @@ class Atari2600Hawk final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) override { _Atari2600Hawk.enableStateBlock(property); }
-
-  __INLINE__ void disableStateProperty(const std::string &property) override { _Atari2600Hawk.disableStateBlock(property); }
-
   // This function opens the video output (e.g., window)
-  void initializeVideoOutput() override
-  {
-    enableStateProperties();
-    _Atari2600Hawk.initializeVideoOutput();
-  }
+  void initializeVideoOutput() override { _Atari2600Hawk->initializeVideoOutput(); }
 
   // This function closes the video output (e.g., window)
-  void finalizeVideoOutput() override { _Atari2600Hawk.finalizeVideoOutput(); }
+  void finalizeVideoOutput() override { _Atari2600Hawk->finalizeVideoOutput(); }
 
-  __INLINE__ void enableRendering() override { _Atari2600Hawk.enableRendering(); }
+  __INLINE__ void enableRendering() override { _Atari2600Hawk->enableRendering(); }
 
-  __INLINE__ void disableRendering() override { _Atari2600Hawk.disableRendering(); }
+  __INLINE__ void disableRendering() override { _Atari2600Hawk->disableRendering(); }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
   __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
   {
     serializeState(serializer);
-    serializer.pushContiguous(_Atari2600Hawk.getVideoBuffer(), _Atari2600Hawk.getVideoBufferSize());
+    serializer.pushContiguous(_Atari2600Hawk->getVideoBuffer(), _Atari2600Hawk->getVideoBufferSize());
   }
 
   __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
   {
     deserializeState(deserializer);
-    deserializer.popContiguous(_Atari2600Hawk.getVideoBuffer(), _Atari2600Hawk.getVideoBufferSize());
+    deserializer.popContiguous(_Atari2600Hawk->getVideoBuffer(), _Atari2600Hawk->getVideoBufferSize());
   }
 
   __INLINE__ size_t getRendererStateSize() const
@@ -144,17 +124,15 @@ class Atari2600Hawk final : public Emulator
     return s.getOutputSize();
   }
 
-  __INLINE__ void showRender() override { _Atari2600Hawk.updateRenderer(); }
+  __INLINE__ void showRender() override { _Atari2600Hawk->updateRenderer(); }
+
+  // Function to get a reference to the input parser from the base emulator
+  jaffar::InputParser *getInputParser() const override { return _Atari2600Hawk->getInputParser(); }
 
   private:
 
-  // Collection of state blocks to disable during engine run
-  std::vector<std::string> _disabledStateProperties;
+  std::unique_ptr<libA2600Hawk::EmuInstance> _Atari2600Hawk;
 
-  libA2600Hawk::EmuInstance _Atari2600Hawk;
-
-  std::string _controller1Type;
-  std::string _controller2Type;
   std::string _romFilePath;
   std::string _romFileSHA1;
 
