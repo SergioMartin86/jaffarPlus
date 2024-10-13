@@ -50,15 +50,24 @@
   "Rom File Path": "../../../extern/quickerSnes9x/tests/roms/Christmas_Craze.smc",
   "Rom File SHA1": "7752CAA676D15D4D0C42F25548C3E86128A416DB",
   "Initial State File Path": "stage01.state",
+  "Initial Sequence File Path": "",
   "Controller 1 Type": "Joypad",
   "Controller 2 Type": "None",
-  "Disabled State Properties": [ "SRA", "VRA", "CTL", "PPU" ]
+  "Disabled State Properties": [ "SRA", "VRA", "CTL", "PPU" ],
+  "Work RAM Serialization Size": 131072
 },
  
 "Runner Configuration":
 {
   "Hash Step Tolerance": 4,
-  "Initial Sequence File Path": "",
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 1000
+  },
 
   "Allowed Input Sets":
   [
