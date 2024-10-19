@@ -31,6 +31,9 @@ class QuickerRAW final : public Emulator
     // Parsing rom file path
     _gameDataPath = jaffarCommon::json::getString(config, "Game Data Path");
 
+    // Parsing initial RAM Data file
+    _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+
     // Instantiating emulator
     _quickerRAW = std::make_unique<rawspace::EmuInstance>(config);
   };
@@ -53,8 +56,29 @@ class QuickerRAW final : public Emulator
         jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
         deserializeState(d);
     }
-
+    
     _mutex.unlock();
+
+    // Pushing initial RAM data
+    if (_initialRAMDataFilePath != "")
+    {
+        // Load initial RAM Data
+        std::string initialRAMDataString;
+        if (jaffarCommon::file::loadStringFromFile(initialRAMDataString, _initialRAMDataFilePath) == false)
+          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from RAM Data file: %s\n", _initialRAMDataFilePath.c_str());
+
+       // Verifying RAM Data file size
+       if (initialRAMDataString.size() != 256) JAFFAR_THROW_LOGIC("[ERROR] Wrong RAM file size %lu != 256\n", initialRAMDataString.size());
+
+        // Pushing data into RAM
+        uint8_t* oldRAM = (uint8_t*)_quickerRAW->getRamPointer();
+        uint8_t* newRAM = (uint8_t*) initialRAMDataString.data();
+        for (size_t i = 0; i < 128; i++)
+        {
+           oldRAM[i*2 + 0] = newRAM[i*2 + 1];
+           oldRAM[i*2 + 1] = newRAM[i*2 + 0];
+        }
+    }
   }
 
   // Function to get a reference to the input parser from the base emulator
@@ -71,7 +95,7 @@ class QuickerRAW final : public Emulator
 
   property_t getProperty(const std::string &propertyName) const override
   {
-    if (propertyName == "RAM") return property_t(_quickerRAW->getRamPointer(), 512);
+    if (propertyName == "RAM") return property_t(_quickerRAW->getRamPointer(), 256);
     if (propertyName == "Threads Data") return property_t((uint8_t *)_quickerRAW->getThreadsData(), _quickerRAW->getThreadsDataSize());
     if (propertyName == "Script Stack Data") return property_t((uint8_t *)_quickerRAW->getScriptStackData(), _quickerRAW->getScriptStackDataSize());
 
@@ -127,6 +151,7 @@ class QuickerRAW final : public Emulator
   std::string _initialStateFilePath;
   std::string _gameDataPath;
   std::mutex  _mutex;
+  std::string _initialRAMDataFilePath;
 };
 
 } // namespace emulator
