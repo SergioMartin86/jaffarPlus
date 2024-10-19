@@ -30,8 +30,12 @@
   #include "quickerSMBC/quickerSMBC.hpp"
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERRAW
-  #include "quickerRAW/quickerRAW.hpp"
+#ifdef __JAFFAR_USE_QUICKERNEORAW
+  #include "quickerNEORAW/quickerNEORAW.hpp"
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERRAWGL
+  #include "quickerRAWGL/quickerRAWGL.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_ARKBOT
@@ -87,8 +91,12 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
   DETECT_EMULATOR(emulator::QuickerSMBC);
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERRAW
-  DETECT_EMULATOR(emulator::QuickerRAW);
+#ifdef __JAFFAR_USE_QUICKERNEORAW
+  DETECT_EMULATOR(emulator::QuickerNEORAW);
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERRAWGL
+  DETECT_EMULATOR(emulator::QuickerRAWGL);
 #endif
 
 #ifdef __JAFFAR_USE_ARKBOT
