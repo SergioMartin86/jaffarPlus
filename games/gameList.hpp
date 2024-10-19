@@ -31,7 +31,7 @@
   #include "nes/superMarioBros.hpp"
 #endif
 
-#ifdef __JAFFAR_ENABLE_RAW
+#if defined(__JAFFAR_ENABLE_NEORAW) || defined(__JAFFAR_ENABLE_RAWGL)
   #include "raw/anotherWorld.hpp"
 #endif
 
@@ -92,7 +92,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
   DETECT_GAME(nes::SuperMarioBros);
 #endif
 
-#ifdef __JAFFAR_ENABLE_RAW
+#if defined(__JAFFAR_ENABLE_NEORAW) || defined(__JAFFAR_ENABLE_RAWGL)
   DETECT_GAME(raw::AnotherWorld);
 #endif
 

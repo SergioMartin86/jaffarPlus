@@ -46,16 +46,25 @@
 
 "Emulator Configuration":
 {
-  "Emulator Name": "QuickerRAW",
+  "Emulator Name": "QuickerNEORAW",
   "Game Data Path": "../../extern/quickerRAW/tests/gameData",
   "Initial State File Path": "stage01.state",
+  "Initial RAM Data File Path": "stage01.state",
   "Disabled State Properties": [ "NVS" ]
 },
  
 "Runner Configuration":
 {
-  "Hash Step Tolerance": 4,
-  "Initial Sequence File Path": "",
+  "Frameskip Rate": 0,
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": false,
+  "Show Allowed Inputs": false,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 1000
+  },
 
   "Allowed Input Sets":
   [

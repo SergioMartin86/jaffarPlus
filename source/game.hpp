@@ -486,6 +486,10 @@ class Game
   // Function to enable a game code to provide additional allowed inputs based on complex decisions
   virtual __INLINE__ void getAdditionalAllowedInputs(std::unordered_set<InputSet::inputIndex_t> &allowedInputSet) {}
 
+  // Player-specific commands
+  virtual void playerPrintCommands() const {};          // If the game has any specific player commands, print them now
+  virtual void playerParseCommand(const int command){}; // If the game has any specific player commands, print them now
+
   protected:
 
   void registerGameProperty(const std::string &name, void *const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)

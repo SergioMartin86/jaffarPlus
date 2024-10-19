@@ -22,9 +22,12 @@
 [submodule "extern/quickerSMBC"]
 	path = extern/quickerSMBC
 	url = https://github.com/SergioMartin86/quickerSMBC.git
-[submodule "extern/quickerRAW"]
-	path = extern/quickerRAW
-	url = https://github.com/SergioMartin86/QuickerRAW.git
 [submodule "extern/quickerArkBot"]
 	path = extern/quickerArkBot
 	url = https://github.com/SergioMartin86/QuickerArkBot.git
+[submodule "extern/quickerRAWGL"]
+	path = extern/quickerRAWGL
+	url = https://github.com/SergioMartin86/quickerRAWGL.git
+[submodule "extern/QuickerNEORAW"]
+	path = extern/quickerNEORAW
+	url = https://github.com/SergioMartin86/QuickerNEORAW.git
