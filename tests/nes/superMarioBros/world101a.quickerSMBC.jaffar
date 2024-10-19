@@ -46,7 +46,6 @@
 
 "Emulator Configuration":
 {
-  "Frameskip Rate": 0,
   "Emulator Name": "QuickerSMBC",
   "Rom File Path": "../../../extern/quickerSMBC/tests/roms/Super Mario Bros. (JU) (PRG0) [!].nes",
   "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
@@ -57,6 +56,7 @@
  
 "Runner Configuration":
 {
+  "Frameskip Rate": 0,
   "Hash Step Tolerance": 0,
   "Show Empty Input Slots": true,
   "Show Allowed Inputs": true,
