@@ -47,6 +47,10 @@ class Runner final
 
     // Getting candidate input sets
     _candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
+
+    // Getting frameskip information
+    const auto& frameskipJs = jaffarCommon::json::getObject(config, "Frameskip");
+    parseFrameskipConfiguration(frameskipJs);
   }
 
   void initialize()
@@ -84,6 +88,18 @@ class Runner final
         // Clearing storage (set to zero)
         memset(_inputHistory.data(), 0, _inputHistory.size());
     }
+  }
+
+  void parseFrameskipConfiguration(const nlohmann::json &frameskipJs)
+  {
+     // Getting frame skip rate
+     _frameskipRate = jaffarCommon::json::getNumber<size_t>(frameskipJs, "Rate");
+
+     // Getting frame skip input
+     _frameskipInputString = jaffarCommon::json::getString(frameskipJs, "Input");
+
+     // Registering frameskip input
+     _frameskipInputIdx = registerInput(_frameskipInputString);
   }
 
   std::unique_ptr<InputSet> parseInputSet(const nlohmann::json &inputSetJs)
@@ -169,7 +185,7 @@ class Runner final
 
   __INLINE__ const auto getCandidateInputs() const { return getInputsFromInputSets(_candidateInputSets); }
 
-  // Function to advance state.
+  // Function to get the input index of a given input
   __INLINE__ jaffarPlus::InputSet::inputIndex_t getInputIndex(const std::string &input) const
   {
     // Getting input hash
@@ -201,6 +217,19 @@ class Runner final
     // Performing the requested input
     _game->advanceState(inputIdx);
 
+    // Pushing normal input into the history
+    pushInput(inputIdx);
+
+    // If frameskip was set, execute it now
+    for (size_t i = 0; i < _frameskipRate; i++)
+    {
+      _game->advanceState(_frameskipInputIdx);
+      pushInput(_frameskipInputIdx);
+    }
+  }
+
+  __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx)
+  {
     // If storing input history, do it now. Unless we've reached the maximum
     if (_inputHistoryEnabled == true && _currentInputCount < _inputHistoryMaxSize) setInput(_currentInputCount, inputIdx);
 
@@ -343,6 +372,14 @@ class Runner final
     jaffarCommon::logger::log("[J+]  + Hash: %s\n", hash.c_str());
     jaffarCommon::logger::log("[J+]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
 
+    // Printing frameskip information
+    if (_frameskipRate > 0)
+    {
+      jaffarCommon::logger::log("[J+]  + Frameskip:\n");
+      jaffarCommon::logger::log("[J+]    + Rate: %lu\n", _frameskipRate);
+      jaffarCommon::logger::log("[J+]    + Input: %s (%u)\n", _frameskipInputString.c_str(), _frameskipInputIdx);
+    }
+
     // Check whether we want to print inputs
     if (_showAllowedInputs == true)
       {
@@ -426,6 +463,19 @@ class Runner final
 
   // Map for getting the allowed input from index
   std::map<InputSet::inputIndex_t, std::string> _inputStringMap;
+
+  ///////////////////////////////
+  //  Frameskip. These are frames that are simply skipped over, but they inputs registered nevertheless
+  //////////////////////////////
+
+  // How many frames to skip
+  size_t _frameskipRate;
+
+  // The input to use during skipped frames
+  std::string _frameskipInputString;
+
+  // Index of the input to use during skipped frames
+  InputSet::inputIndex_t _frameskipInputIdx;
 
   ///////////////////////////////////////////
   // Allowed and candidate input sets

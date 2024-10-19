@@ -127,9 +127,12 @@ bool mainCycle(jaffarPlus::Runner &r, const std::string &solutionFile, bool disa
           jaffarCommon::logger::log("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
           p.printInfo();
 
-          // Only print commands if not in reproduce mode
+          // Print General Commands
           jaffarCommon::logger::log("[J+] Commands: n: -1 m: +1 | h: -10 | j: +10 | y: -100 | u: +100 | k: -1000 | i: +1000 | s: quicksave | p: play | r: autoreload | q: quit\n");
 
+          // Print any game-specific commands (optional)
+          r.getGame()->playerPrintCommands();
+          
           jaffarCommon::logger::refreshTerminal();
       }
 
@@ -207,6 +210,9 @@ bool mainCycle(jaffarPlus::Runner &r, const std::string &solutionFile, bool disa
 
       // Triggers the exit
       if (command == 'q') isFinalize = true;
+
+      // Handle any game-specific commands
+      if (command == 't') r.getGame()->playerParseCommand(command);
     }
 
   // returning false on exit to trigger the finalization
@@ -300,6 +306,9 @@ int main(int argc, char *argv[])
   auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
   auto gameConfig     = jaffarCommon::json::getObject(config, "Game Configuration");
   auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
+
+  // Disabling frameskip, if enabled
+  runnerConfig["Frameskip"]["Rate"] = 0;
 
   // Creating runner from the configuration
   auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
