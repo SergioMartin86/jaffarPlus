@@ -487,8 +487,8 @@ class Game
   virtual __INLINE__ void getAdditionalAllowedInputs(std::unordered_set<InputSet::inputIndex_t> &allowedInputSet) {}
 
   // Player-specific commands
-  virtual void playerPrintCommands() const {}; // If the game has any specific player commands, print them now
-  virtual void playerParseCommand(const int command) {}; // If the game has any specific player commands, print them now 
+  virtual void playerPrintCommands() const {};          // If the game has any specific player commands, print them now
+  virtual void playerParseCommand(const int command){}; // If the game has any specific player commands, print them now
 
   protected:
 
@@ -641,8 +641,6 @@ class Game
     // Setting status to satisfied
     jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
-
-
 
   virtual void  initializeImpl(){};
   virtual void  registerGameProperties()                                                                       = 0;

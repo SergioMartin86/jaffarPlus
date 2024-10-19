@@ -220,15 +220,15 @@ jobs:
     - name: Running tests
       run: ninja test -C build
 
-  # Build and run tests (QuickerRAW)
-  build-QuickerRAW:
+  # Build and run tests (QuickerNEORAW)
+  build-QuickerNEORAW:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout QuickerRAW
+    - name: Checkout QuickerNEORAW
       run: | 
-            git submodule init extern/quickerRAW
-            git submodule update --recursive extern/quickerRAW
+            git submodule init extern/quickerNEORAW
+            git submodule update --recursive extern/quickerNEORAW
     - name: Create build directory
       run: mkdir build
     - name: Installing meson and ninja
@@ -236,10 +236,10 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerRAW
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerNEORAW
     - name: Building project
       run: ninja -C build
-    # Disabling tests for RAW because I cannot upload the game data files
+    # Disabling tests for NEORAW because I cannot upload the game data files
     #- name: Running tests
     #  run: ninja test -C build
 
