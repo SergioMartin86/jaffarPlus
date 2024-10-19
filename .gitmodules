@@ -29,5 +29,5 @@
 	path = extern/quickerRAWGL
 	url = https://github.com/SergioMartin86/quickerRAWGL.git
 [submodule "extern/QuickerNEORAW"]
-	path = extern/QuickerNEORAW
+	path = extern/quickerNEORAW
 	url = https://github.com/SergioMartin86/QuickerNEORAW.git

@@ -132,7 +132,7 @@ bool mainCycle(jaffarPlus::Runner &r, const std::string &solutionFile, bool disa
 
           // Print any game-specific commands (optional)
           r.getGame()->playerPrintCommands();
-          
+
           jaffarCommon::logger::refreshTerminal();
       }
 

@@ -60,7 +60,8 @@
  
 "Runner Configuration":
 {
-  "Hash Step Tolerance": 0,
+  "Frameskip Rate": 0,
+  "Hash Step To}lerance": 0,
   "Show Empty Input Slots": false,
   "Show Allowed Inputs": false,
 

@@ -52,10 +52,10 @@ jaffarCPPFlags += '-D__JAFFAR_ENABLE_SMBC'
 subdir('quickerSMBC')
 endif
 
-if emulator == 'QuickerRAW'
-jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERRAW'
-jaffarCPPFlags += '-D__JAFFAR_ENABLE_RAW'
-subdir('quickerRAW')
+if emulator == 'QuickerNEORAW'
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERNEORAW'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_NEORAW'
+subdir('quickerNEORAW')
 endif
 
 if emulator == 'QuickerArkBot'
