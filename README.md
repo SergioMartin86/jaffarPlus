@@ -33,7 +33,8 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 | Game                                | Core(s)                                                           |   Target      |  Notes   |
 | --------                            | -------                                                           | ------        | ------   |
 | Prince of Persia                    | [QuickerSDLPoP](https://github.com/SergioMartin86/quickerSDLPoP)  | LibTAS+PCem   |  Many PoP ports use this same (AppleII / DOS) game logic |
-| Another World                       | [QuickerRaw](https://github.com/SergioMartin86/QuickerRAW)        | *many*        |  All ports of AW use the same engine |
+| Another World                       | [QuickerNEORAW](https://github.com/SergioMartin86/QuickerNEORAW)  | DOS           |  This AW interpreter only works with DOS files |
+| Another World                       | [QuickerRAWGL](https://github.com/SergioMartin86/QuickerRAWGL)    | Multiple      |  This AW interpreter works with most AW ports |
 | Super Mario Bros (NES)              | [QuickerSMBC](https://github.com/SergioMartin86/quickerSMBC)      | Bizhawk 2.9.2 |  Inaccurate in transitions, but good for solving levels |
 | Arkanoid (NES)                      | [QuickerArkbot](https://github.com/SergioMartin86/quickerArkBot)  | Bizhawk 2.9.2 (NesHawk Core) |          |
 
