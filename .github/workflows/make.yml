@@ -257,7 +257,7 @@ jobs:
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev 
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerRAWGL
     - name: Building project
