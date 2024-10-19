@@ -58,6 +58,12 @@ jaffarCPPFlags += '-D__JAFFAR_ENABLE_NEORAW'
 subdir('quickerNEORAW')
 endif
 
+if emulator == 'QuickerRAWGL'
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERRAWGL'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_RAWGL'
+subdir('quickerRAWGL')
+endif
+
 if emulator == 'QuickerArkBot'
 jaffarCPPFlags += '-D__JAFFAR_USE_ARKBOT'
 subdir('quickerArkBot')
