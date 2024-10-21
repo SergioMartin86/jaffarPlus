@@ -25,14 +25,14 @@ class QuickerRAWGL final : public Emulator
   QuickerRAWGL(const nlohmann::json &config)
     : Emulator(config)
   {
-    // Getting initial state file from the configuration
-    _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
-
     // Parsing rom file path
     _gameDataPath = jaffarCommon::json::getString(config, "Game Data Path");
 
     // Parsing initial RAM Data file
     _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+
+    // Getting initial sequence file path
+    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
 
     // Instantiating emulator
     _quickerRAWGL = std::make_unique<rawspace::EmuInstance>(config);
@@ -43,21 +43,25 @@ class QuickerRAWGL final : public Emulator
     // Initializing emulator
     _mutex.lock();
     _quickerRAWGL->initialize(_gameDataPath);
-
-    // If initial state file defined, load it
-    if (_initialStateFilePath.empty() == false)
-      {
-        // Reading from initial state file
-        std::string initialState;
-        bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
-        if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
-
-        // Deserializing initial state into the emulator
-        jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
-        deserializeState(d);
-    }
-
     _mutex.unlock();
+
+    // Advancing the state using the initial sequence, if provided
+    if (_initialSequenceFilePath != "")
+      {
+        // Getting input parser from the internal emulator
+        const auto inputParser = _quickerRAWGL->getInputParser();
+
+        // Load initial sequence
+        std::string initialSequenceFileString;
+        if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+        // Getting input sequence
+        const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+
+        // Running inputs in the initial sequence
+        for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+    }
 
     // Pushing initial RAM data
     if (_initialRAMDataFilePath != "")
@@ -148,8 +152,8 @@ class QuickerRAWGL final : public Emulator
 
   std::unique_ptr<rawspace::EmuInstance> _quickerRAWGL;
 
-  std::string _initialStateFilePath;
   std::string _gameDataPath;
+  std::string _initialSequenceFilePath;
   std::mutex  _mutex;
   std::string _initialRAMDataFilePath;
 };
