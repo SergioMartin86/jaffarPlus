@@ -33,6 +33,8 @@ class Base
     _useZlibCompression             = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Zlib Compression");
   }
 
+  virtual ~Base() = default;
+
   void initialize()
   {
     // Initialization message
