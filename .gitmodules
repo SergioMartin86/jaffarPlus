@@ -31,3 +31,6 @@
 [submodule "extern/QuickerNEORAW"]
 	path = extern/quickerNEORAW
 	url = https://github.com/SergioMartin86/QuickerNEORAW.git
+[submodule "extern/quickerMGBA"]
+	path = extern/quickerMGBA
+	url = https://github.com/SergioMartin86/quickerMGBA.git

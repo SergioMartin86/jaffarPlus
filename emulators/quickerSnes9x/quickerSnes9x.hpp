@@ -161,7 +161,7 @@ class QuickerSnes9x final : public Emulator
 
   __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializeState(deserializer); }
 
-  __INLINE__ size_t getRendererStateSize() const
+  __INLINE__ size_t getRendererStateSize() const override
   {
     jaffarCommon::serializer::Contiguous s;
     serializeRendererState(s);
