@@ -60,11 +60,11 @@ class Runner final
     if (_game->isInitialized() == false) _game->initialize();
 
     // Parsing possible game inputs
-    for (const auto &inputSetJs : _allowedInputSetsJs) _allowedInputSets.push_back(std::move(parseInputSet(inputSetJs)));
+    for (const auto &inputSetJs : _allowedInputSetsJs) _allowedInputSets.push_back(parseInputSet(inputSetJs));
 
     // If testing candidate inputs, parse them now
     if (_testCandidateInputs == true)
-      for (const auto &inputSetJs : _candidateInputSetsJs) _candidateInputSets.push_back(std::move(parseInputSet(inputSetJs)));
+      for (const auto &inputSetJs : _candidateInputSetsJs) _candidateInputSets.push_back(parseInputSet(inputSetJs));
 
     // If storing input history, allocate input history storage
     if (_inputHistoryEnabled == true)
@@ -420,9 +420,6 @@ class Runner final
 
   // Storage for the hash step tolerance
   uint32_t _hashStepTolerance;
-
-  // Storage for the calculated hash step tolerance stage
-  uint32_t _hashStepToleranceStage;
 
   // Specifies whether to store the input history
   bool _inputHistoryEnabled;
