@@ -68,3 +68,9 @@ if emulator == 'QuickerArkBot'
 jaffarCPPFlags += '-D__JAFFAR_USE_ARKBOT'
 subdir('quickerArkBot')
 endif
+
+if emulator == 'QuickerMGBA'
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERMGBA'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_GBA'
+subdir('quickerMGBA')
+endif

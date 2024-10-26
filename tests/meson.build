@@ -174,3 +174,18 @@ test('stage01',
       env : testEnvVars,
       suite : [ 'runs', 'QuickerArkBot', 'arkanoid' ])
 endif
+
+if emulator == 'QuickerMGBA'
+
+## QuickerMGBA / Toll Runner
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/gba/tollRunner',
+      timeout: testTimeout,
+      args : 'stage01.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'QuickerMGBA', 'tollRunner' ])
+endif
