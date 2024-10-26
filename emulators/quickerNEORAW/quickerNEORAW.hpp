@@ -33,6 +33,7 @@ class QuickerNEORAW final : public Emulator
 
     // Parsing initial RAM Data file
     _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+    _initialRAMDataEndiannes = jaffarCommon::json::getString(config, "Initial RAM Data Endiannes");
 
     // Instantiating emulator
     _quickerNEORAW = std::make_unique<rawspace::EmuInstance>(config);
@@ -73,19 +74,30 @@ class QuickerNEORAW final : public Emulator
         // Pushing data into RAM
         uint8_t *oldRAM = (uint8_t *)_quickerNEORAW->getRamPointer();
         uint8_t *newRAM = (uint8_t *)initialRAMDataString.data();
-        for (size_t i = 0; i < 128; i++)
-          {
-            oldRAM[i * 2 + 0] = newRAM[i * 2 + 1];
-            oldRAM[i * 2 + 1] = newRAM[i * 2 + 0];
-          }
+        if (_initialRAMDataEndiannes == "Big Endian")
+        {
+          for (size_t i = 0; i < 128; i++)
+            {
+              oldRAM[i * 2 + 0] = newRAM[i * 2 + 1];
+              oldRAM[i * 2 + 1] = newRAM[i * 2 + 0];
+            }
+        }
+        else memcpy(oldRAM, newRAM, 256);
     }
+    
+    #ifndef _JAFFAR_PLAYER
+    _quickerNEORAW->disableStateBlock("NVS");
+    #endif
   }
 
   // Function to get a reference to the input parser from the base emulator
   jaffar::InputParser *getInputParser() const override { return _quickerNEORAW->getInputParser(); }
 
   // State advancing function
-  void advanceStateImpl(const jaffar::input_t &input) override { _quickerNEORAW->advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t &input) override 
+  {
+    _quickerNEORAW->advanceState(input);
+  }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerNEORAW->serializeState(serializer); };
 
@@ -105,7 +117,6 @@ class QuickerNEORAW final : public Emulator
   // This function opens the video output (e.g., window)
   void initializeVideoOutput() override
   {
-    // enableStateProperties();
     _quickerNEORAW->initializeVideoOutput();
   }
 
@@ -152,6 +163,7 @@ class QuickerNEORAW final : public Emulator
   std::string _gameDataPath;
   std::mutex  _mutex;
   std::string _initialRAMDataFilePath;
+  std::string _initialRAMDataEndiannes;
 };
 
 } // namespace emulator
