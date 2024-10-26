@@ -111,7 +111,6 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
   DETECT_EMULATOR(emulator::QuickerMGBA);
 #endif
 
-
   // Check if recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized\n", emulatorName.c_str());
 
