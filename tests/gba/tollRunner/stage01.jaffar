@@ -46,19 +46,14 @@
 
 "Emulator Configuration":
 {
-  "Emulator Name": "QuickerGPGX",
-  "Rom File Path": "../../../extern/quickerGPGX/tests/roms/avuado-1st-version.bin",
-  "Rom File SHA1": "2EAA8193AEE0296498B1C41326856DFDD5B5223A",
+  "Emulator Name": "QuickerMGBA",
+  "Rom File Path": "../../../extern/quickerMGBA/tests/roms/tollrunner_jam.gba",
+  "Rom File SHA1": "6F8A4C68FA3280E70C45AAC2EC8EC27631613937",
   "Initial State File Path": "",
-  "Initial RAM Data File Path": "",
   "Initial Sequence File Path": "stage01.initial.sol",
-  "Initial Video RAM Data File Path": "",
   "Bios File Path": "",
-  "System Type": "Sega Genesis",
-  "Controller 1 Type": "Gamepad3B",
-  "Controller 2 Type": "None",
-  "Disabled State Properties": [ "VRAM", "SATM"  ],
-  "Work RAM Serialization Size": 65536
+  "Controller Type": "Gameboy Advance",
+  "Disabled State Properties": [   ]
 },
  
 "Runner Configuration":
@@ -83,10 +78,9 @@
 
       "Inputs":
       [
-        "|..|........|",
-        "|..|..L.....|",
-        "|..|...R....|",
-        "|..|.....B..|"
+        "|    0,    0,    0,    0,...........|",
+        "|    0,    0,    0,    0,..L........|",
+        "|    0,    0,    0,    0,...R.......|"
       ],
 
       "Stop Input Evaluation": false
@@ -100,43 +94,31 @@
 
 "Game Configuration":
 {
-  "Game Name": "Genesis / Avuado",
+  "Game Name": "GBA / Toll Runner",
   "Frame Rate": 60.10,
   "Last Input Step Reward": 0.0,
 
   "Print Properties":
   [
-    "Score",
-    "Player Pos X",
-    "Shot Pos Y"
+    "Mouse Pos X",
+    "Mouse Pos Y",
+    "Score"
   ],
 
   "Hash Properties":
   [
+    "Mouse Pos X",
+    "Mouse Pos Y",
+    "Score"
   ],
 
   "Rules":
   [
     {
-      "Label": 1000,
-      "Conditions":
-      [
-        { "Property": "Shot Pos Y", "Op": "!=", "Value": 0 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Add Reward", "Value": 1000.0 }
-      ]
-    },
-
-    {
       "Label": 1998,
       "Conditions":
       [
-        { "Property": "Score", "Op": ">", "Value": 0 }
+        { "Property": "Mouse Pos Y", "Op": "<", "Value": 1880 }
       ],
       
       "Satisfies": [ ],

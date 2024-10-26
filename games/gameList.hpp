@@ -39,6 +39,10 @@
   #include "arkbot/arkanoid.hpp"
 #endif
 
+#ifdef __JAFFAR_ENABLE_GBA
+  #include "gba/tollrunner.hpp"
+#endif
+
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -98,6 +102,10 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 
 #ifdef __JAFFAR_USE_ARKBOT
   DETECT_GAME(arkbot::Arkanoid);
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERMGBA
+  DETECT_GAME(gba::TollRunner);
 #endif
 
   // Check if game was recognized

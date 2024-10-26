@@ -287,3 +287,25 @@ jobs:
       run: ninja -C build
     - name: Running tests
       run: ninja test -C build
+
+  # Build and run tests (QuickerMGBA)
+  build-QuickerMGBA:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Checkout QuickerMGBA
+      run: | 
+            git submodule init extern/quickerMGBA
+            git submodule update --recursive extern/quickerMGBA
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerMGBA
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
