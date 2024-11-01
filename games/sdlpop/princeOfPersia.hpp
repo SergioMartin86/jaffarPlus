@@ -90,7 +90,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
     registerGameProperty("Guard Sword", &_gameState->Guard.sword, Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Guard Is Alive", &_gameState->Guard.alive, Property::datatype_t::dt_int8, Property::endianness_t::little);
     registerGameProperty("Guard Current Sequence", &_gameState->Guard.curr_seq, Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Guard Current Hp", &_gameState->guardhp_curr, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Guard Current HP", &_gameState->guardhp_curr, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Guard Max HP", &_gameState->guardhp_max, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Demo Index", &_gameState->demo_index, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Demo Time", &_gameState->demo_time, Property::datatype_t::dt_int16, Property::endianness_t::little);

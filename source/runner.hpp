@@ -137,16 +137,16 @@ class Runner final
     return inputIdx;
   }
 
-  std::unordered_set<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>> &inputSets) const
+  std::vector<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>> &inputSets) const
   {
     // Storage for the possible input set
-    std::unordered_set<InputSet::inputIndex_t> possibleInputs;
+    std::vector<InputSet::inputIndex_t> possibleInputs;
 
     // For all registered input sets, see which ones satisfy their conditions and add them
     for (const auto &inputSet : inputSets)
       if (inputSet->evaluate() == true)
         {
-          possibleInputs.insert(inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
+          possibleInputs.insert(possibleInputs.end(), inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
 
           // Getting stop evaluating flag
           bool stopEvaluating = inputSet->getStopInputEvaluationFlag();
