@@ -552,7 +552,7 @@ class Engine final
         // Finding unique candidate inputs
         std::vector<InputSet::inputIndex_t> uniqueCandidateInputs;
         for (const auto &input : candidateInputs)
-          if (allowedInputs.contains(input) == false) uniqueCandidateInputs.push_back(input);
+          if (std::find(allowedInputs.begin(), allowedInputs.end(), input) == allowedInputs.end()) uniqueCandidateInputs.push_back(input);
 
         // Run each candidate input
         for (const auto input : uniqueCandidateInputs)
