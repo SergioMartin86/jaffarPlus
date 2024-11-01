@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
   auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
 
   // Disabling frameskip, if enabled
-  runnerConfig["Frameskip"]["Rate"] = 0;
+  runnerConfig["Frameskip Rate"] = 0;
 
   // Creating runner from the configuration
   auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
