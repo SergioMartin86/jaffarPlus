@@ -288,14 +288,14 @@ class Game
   {
     // First, checking if the rules have been satisfied
     for (auto &rule : _rules)
-    {
-      // Getting rule index
-      const auto ruleIdx = rule->getIndex();
+      {
+        // Getting rule index
+        const auto ruleIdx = rule->getIndex();
 
-      // Run ations only if rule is satisfied
-      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
-        for (const auto &action : rule->getActions()) action();
-    }
+        // Run ations only if rule is satisfied
+        if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
+          for (const auto &action : rule->getActions()) action();
+      }
   }
 
   __INLINE__ void updateGameStateType()
@@ -338,20 +338,20 @@ class Game
 
     // Second, we get the reward from every satisfied rule
     for (auto &rule : _rules)
-    {
-      // Getting rule index
-      const auto ruleIdx = rule->getIndex();
+      {
+        // Getting rule index
+        const auto ruleIdx = rule->getIndex();
 
-      // Run actions
-      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
-        {
-          // Getting reward from satisfied rule
-          const auto ruleReward = rule->getReward();
+        // Run actions
+        if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
+          {
+            // Getting reward from satisfied rule
+            const auto ruleReward = rule->getReward();
 
-          // Adding it to the state reward
-          _reward += ruleReward;
+            // Adding it to the state reward
+            _reward += ruleReward;
+        }
       }
-    }
 
     // Adding any game-specific rewards
     _reward += calculateGameSpecificReward();
@@ -524,16 +524,16 @@ class Game
     // Checking all cross references are correct
     for (const auto &rule : _rules)
       for (const auto &label : rule->getSatisfyRuleLabels())
-      {
-        bool subRuleFound = false;
-        for (const auto &subRule : _rules) if (subRule->getLabel() == label)
         {
-          rule->addSatisfyRule(subRule.get());
-          subRuleFound = true;
-        } 
-        if (subRuleFound == false) JAFFAR_THROW_LOGIC("Rule label %u referenced by rule %u in the 'Satisfies' array does not exist.\n", label, rule->getIndex());
-      }
-        
+          bool subRuleFound = false;
+          for (const auto &subRule : _rules)
+            if (subRule->getLabel() == label)
+              {
+                rule->addSatisfyRule(subRule.get());
+                subRuleFound = true;
+            }
+          if (subRuleFound == false) JAFFAR_THROW_LOGIC("Rule label %u referenced by rule %u in the 'Satisfies' array does not exist.\n", label, rule->getIndex());
+        }
 
     // Create rule status vector
     _rulesStatus.resize(jaffarCommon::bitwise::getByteStorageForBitCount(_rules.size()));

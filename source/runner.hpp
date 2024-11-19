@@ -29,9 +29,9 @@ class Runner final
   {
     _hashStepTolerance = jaffarCommon::json::getNumber<uint32_t>(config, "Hash Step Tolerance");
 
-    const auto inputHistoryJs  = jaffarCommon::json::getObject(config, "Store Input History");
-    _inputHistoryEnabled       = jaffarCommon::json::getBoolean(inputHistoryJs, "Enabled");
-    _inputHistoryMaxSize       = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size");
+    const auto inputHistoryJs = jaffarCommon::json::getObject(config, "Store Input History");
+    _inputHistoryEnabled      = jaffarCommon::json::getBoolean(inputHistoryJs, "Enabled");
+    _inputHistoryMaxSize      = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size");
 
     // Storing game inputs for delayed parsing
     _allowedInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Allowed Input Sets");
