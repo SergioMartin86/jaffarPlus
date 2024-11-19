@@ -261,22 +261,19 @@ class Game
     ruleUpdatePreHook();
 
     // Second, check which unsatisfied rules have been satisfied now
-    for (auto &entry : _rules)
+    for (auto &rule : _rules)
       {
-        // Getting rule
-        auto &rule = *entry.second;
-
         // Getting rule index
-        const auto ruleIdx = rule.getIndex();
+        const auto ruleIdx = rule->getIndex();
 
         // Evaluate rule only if it's not yet satisfied
         if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == false)
           {
             // Checking if conditions are met
-            bool isSatisfied = rule.evaluate();
+            bool isSatisfied = rule->evaluate();
 
             // If it's achieved, update its status and run its actions
-            if (isSatisfied) satisfyRule(rule);
+            if (isSatisfied) satisfyRule(*rule);
         }
       }
 
@@ -290,18 +287,15 @@ class Game
   __INLINE__ void runGameSpecificRuleActions()
   {
     // First, checking if the rules have been satisfied
-    for (auto &entry : _rules)
-      {
-        // Getting rule
-        auto &rule = *entry.second;
+    for (auto &rule : _rules)
+    {
+      // Getting rule index
+      const auto ruleIdx = rule->getIndex();
 
-        // Getting rule index
-        const auto ruleIdx = rule.getIndex();
-
-        // Run ations only if rule is satisfied
-        if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
-          for (const auto &action : rule.getActions()) action();
-      }
+      // Run ations only if rule is satisfied
+      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
+        for (const auto &action : rule->getActions()) action();
+    }
   }
 
   __INLINE__ void updateGameStateType()
@@ -313,13 +307,10 @@ class Game
     _checkpointLevel = 0;
 
     // Second, we run the specified actions for the satisfied rules in label order
-    for (auto &entry : _rules)
+    for (auto &rule : _rules)
       {
-        // Getting rule
-        auto &rule = *entry.second;
-
         // Getting rule index
-        const auto ruleIdx = rule.getIndex();
+        const auto ruleIdx = rule->getIndex();
 
         // Run actions
         if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
@@ -327,15 +318,15 @@ class Game
             // Modify game state, depending on rule type
 
             // Evaluate checkpoint rule and store tolerance if specified
-            if (rule.isCheckpointRule())
+            if (rule->isCheckpointRule())
               {
                 _checkpointLevel++;
-                _checkpointTolerance = rule.getCheckpointTolerance();
+                _checkpointTolerance = rule->getCheckpointTolerance();
             }
 
             // Winning in the same rule superseeds checkpoint, and failing superseed everything
-            if (rule.isWinRule()) _stateType = stateType_t::win;
-            if (rule.isFailRule()) _stateType = stateType_t::fail;
+            if (rule->isWinRule()) _stateType = stateType_t::win;
+            if (rule->isFailRule()) _stateType = stateType_t::fail;
         }
       }
   }
@@ -346,24 +337,21 @@ class Game
     _reward = 0.0;
 
     // Second, we get the reward from every satisfied rule
-    for (auto &entry : _rules)
-      {
-        // Getting rule
-        auto &rule = *entry.second;
+    for (auto &rule : _rules)
+    {
+      // Getting rule index
+      const auto ruleIdx = rule->getIndex();
 
-        // Getting rule index
-        const auto ruleIdx = rule.getIndex();
+      // Run actions
+      if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
+        {
+          // Getting reward from satisfied rule
+          const auto ruleReward = rule->getReward();
 
-        // Run actions
-        if (jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), ruleIdx) == true)
-          {
-            // Getting reward from satisfied rule
-            const auto ruleReward = rule.getReward();
-
-            // Adding it to the state reward
-            _reward += ruleReward;
-        }
+          // Adding it to the state reward
+          _reward += ruleReward;
       }
+    }
 
     // Adding any game-specific rewards
     _reward += calculateGameSpecificReward();
@@ -530,13 +518,22 @@ class Game
         parseRule(*rule, ruleJs);
 
         // Adding new rule to the collection
-        _rules[rule->getLabel()] = std::move(rule);
+        _rules.push_back(std::move(rule));
       }
 
     // Checking all cross references are correct
     for (const auto &rule : _rules)
-      for (const auto &label : rule.second->getSatisfyRuleLabels())
-        if (_rules.contains(label) == false) JAFFAR_THROW_LOGIC("Rule label %u referenced by rule %u in the 'Satisfies' array does not exist.\n", label, rule.first);
+      for (const auto &label : rule->getSatisfyRuleLabels())
+      {
+        bool subRuleFound = false;
+        for (const auto &subRule : _rules) if (subRule->getLabel() == label)
+        {
+          rule->addSatisfyRule(subRule.get());
+          subRuleFound = true;
+        } 
+        if (subRuleFound == false) JAFFAR_THROW_LOGIC("Rule label %u referenced by rule %u in the 'Satisfies' array does not exist.\n", label, rule->getIndex());
+      }
+        
 
     // Create rule status vector
     _rulesStatus.resize(jaffarCommon::bitwise::getByteStorageForBitCount(_rules.size()));
@@ -621,13 +618,8 @@ class Game
   __INLINE__ void satisfyRule(Rule &rule)
   {
     // Recursively run actions for the yet unsatisfied rules that are satisfied by this one and mark them as satisfied
-    for (const auto &satisfyRuleLabel : rule.getSatisfyRuleLabels())
+    for (const auto subRule : rule.getSatisfyRules())
       {
-        // Making sure referenced label exists
-        auto it = _rules.find(satisfyRuleLabel);
-        if (it == _rules.end()) JAFFAR_THROW_LOGIC("[ERROR] Unrecognized rule label %lu in satisfy array\n", satisfyRuleLabel);
-        auto &subRule = it->second;
-
         // Getting index from the subrule
         auto subRuleIdx = subRule->getIndex();
 
@@ -674,7 +666,7 @@ class Game
   const std::unique_ptr<Emulator> _emulator;
 
   // Game script rules. Using vector to preserve their ordering
-  std::map<Rule::label_t, std::unique_ptr<Rule>> _rules;
+  std::vector<std::unique_ptr<Rule>> _rules;
 
   // Storage for status vector indicating whether the rules have been satisfied
   std::vector<uint8_t> _rulesStatus;

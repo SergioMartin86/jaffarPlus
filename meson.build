@@ -28,7 +28,7 @@ if meson.is_subproject() == false
   # Jaffar 
   jaffar = executable('jaffar',
     'source/jaffar.cpp',
-    cpp_args: [ ],
+    cpp_args: [ '-march=native' ],
     dependencies : [ jaffarDependency, dependency('numa') ],
   )
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <unordered_set>
+#include <set>
 #include <jaffarCommon/json.hpp>
 #include "condition.hpp"
 #include "property.hpp"
@@ -36,6 +36,7 @@ class Rule final
   void addAction(const std::function<void()> &function) { _actions.push_back(function); }
   void addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
   void addSatisfyRuleLabel(const label_t satisfyRuleLabel) { _satisfyRuleLabels.insert(satisfyRuleLabel); }
+  void addSatisfyRule(Rule* const subRule) { _satisfyRules.push_back(subRule); }
 
   label_t                                   getLabel() const { return _label; }
   float                                     getReward() const { return _reward; }
@@ -43,7 +44,8 @@ class Rule final
   bool                                      isFailRule() const { return _isFailRule; }
   bool                                      isCheckpointRule() const { return _isCheckpointRule; }
   size_t                                    getCheckpointTolerance() const { return _checkPointTolerance; }
-  std::unordered_set<label_t>               getSatisfyRuleLabels() const { return _satisfyRuleLabels; }
+  const std::unordered_set<label_t>&        getSatisfyRuleLabels() const { return _satisfyRuleLabels; }
+  const std::vector<Rule*>&                 getSatisfyRules() const { return _satisfyRules; }
   size_t                                    getIndex() const { return _index; }
   const std::vector<std::function<void()>> &getActions() const { return _actions; }
 
@@ -71,6 +73,9 @@ class Rule final
 
   // Stores rules that also satisfied if this one is
   std::unordered_set<label_t> _satisfyRuleLabels;
+
+  // Stores rules that also satisfied if this one is
+  std::vector<Rule*> _satisfyRules;
 
   // Storage for game-specific actions
   std::vector<std::function<void()>> _actions;
