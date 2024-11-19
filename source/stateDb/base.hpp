@@ -27,7 +27,7 @@ class Base
     ///////// Parsing configuration
 
     // Parsing state compression configuration
-    const auto &stateCompressionJs  = jaffarCommon::json::getObject(config, "Compression");
+    const auto stateCompressionJs   = jaffarCommon::json::getObject(config, "Compression");
     _useDifferentialCompression     = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Differential Compression");
     _maximumDifferentialSizeAllowed = jaffarCommon::json::getNumber<size_t>(stateCompressionJs, "Max Difference (bytes)");
     _useZlibCompression             = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Zlib Compression");

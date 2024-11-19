@@ -36,7 +36,7 @@ class Driver final
     _jobId           = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch()).count();
 
     // Getting driver configuration
-    const auto &driverConfig = jaffarCommon::json::getObject(config, "Driver Configuration");
+    const auto driverConfig = jaffarCommon::json::getObject(config, "Driver Configuration");
 
     // Getting end win delay config
     _endOnFirstWinState = jaffarCommon::json::getBoolean(driverConfig, "End On First Win State");
@@ -48,7 +48,7 @@ class Driver final
     if (auto *value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
 
     // Getting intermediate result configuration
-    const auto &saveIntermediateResultsJs = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
+    const auto saveIntermediateResultsJs  = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
     _saveIntermediateResultsEnabled       = jaffarCommon::json::getBoolean(saveIntermediateResultsJs, "Enabled");
     _saveIntermediateFrequency            = jaffarCommon::json::getNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
     _saveIntermediateBestSolutionPath     = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path");
