@@ -55,9 +55,9 @@ class Engine final
     auto &r = *_runners[0];
 
     // Creating State database
-    const auto  stateDatabaseJs             = jaffarCommon::json::getObject(engineConfig, "State Database");
-    const auto  stateDatabaseType           = jaffarCommon::json::getString(stateDatabaseJs, "Type");
-    bool        stateDatabaseTypeRecognized = false;
+    const auto stateDatabaseJs             = jaffarCommon::json::getObject(engineConfig, "State Database");
+    const auto stateDatabaseType           = jaffarCommon::json::getString(stateDatabaseJs, "Type");
+    bool       stateDatabaseTypeRecognized = false;
 
     if (stateDatabaseType == "Plain")
       {

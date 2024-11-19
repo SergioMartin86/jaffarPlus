@@ -48,13 +48,13 @@ class Driver final
     if (auto *value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
 
     // Getting intermediate result configuration
-    const auto saveIntermediateResultsJs  = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
-    _saveIntermediateResultsEnabled       = jaffarCommon::json::getBoolean(saveIntermediateResultsJs, "Enabled");
-    _saveIntermediateFrequency            = jaffarCommon::json::getNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
-    _saveIntermediateBestSolutionPath     = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path");
-    _saveIntermediateWorstSolutionPath    = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst Solution Path");
-    _saveIntermediateBestStatePath        = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best State Path");
-    _saveIntermediateWorstStatePath       = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst State Path");
+    const auto saveIntermediateResultsJs = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
+    _saveIntermediateResultsEnabled      = jaffarCommon::json::getBoolean(saveIntermediateResultsJs, "Enabled");
+    _saveIntermediateFrequency           = jaffarCommon::json::getNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
+    _saveIntermediateBestSolutionPath    = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path");
+    _saveIntermediateWorstSolutionPath   = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst Solution Path");
+    _saveIntermediateBestStatePath       = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best State Path");
+    _saveIntermediateWorstStatePath      = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst State Path");
 
     // Getting component configurations
     auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
