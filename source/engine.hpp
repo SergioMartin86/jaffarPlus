@@ -478,8 +478,8 @@ class Engine final
     jaffarCommon::logger::log("[J+] Hash Database Information:\n");
     _hashDb->printInfo();
 
-    // Printing candidate moves
-    jaffarCommon::logger::log("[J+] Candidate Moves:\n");
+    // Printing candidate inpts
+    jaffarCommon::logger::log("[J+] Candidate Inputs:\n");
     for (const auto &entry : _candidateInputsDetected)
       {
         jaffarCommon::logger::log("[J+]  + Hash: %s\n", jaffarCommon::hash::hashToString(entry.first).c_str());
