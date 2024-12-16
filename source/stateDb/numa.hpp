@@ -40,10 +40,6 @@ class Numa : public stateDb::Base
     _maxSizePerNumaMb = jaffarCommon::json::getArray<size_t>(config, "Max Size per NUMA Domain (Mb)");
     if (_maxSizePerNumaMb.size() < (size_t)_numaCount)
       JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, _maxSizePerNumaMb.size());
-
-    // Getting scavenge depth for stae databases
-    _scavengerQueuesSize = jaffarCommon::json::getNumber<size_t>(config, "Scavenger Queues Size");
-    _scavengingDepth     = jaffarCommon::json::getNumber<size_t>(config, "Scavenging Depth");
   }
 
   ~Numa() = default;
@@ -60,9 +56,6 @@ class Numa : public stateDb::Base
     _numaLocalFreeStateCount    = 0;
     _numaFreeStateNotFoundCount = 0;
     _numaStealingFreeStateCount = 0;
-
-    // Creating scavenger queues
-    for (int i = 0; i < _numaCount; i++) _scavengerQueues.push_back(std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void *>>(_scavengerQueuesSize));
 
     // Getting maximum state db size in Mb and bytes
     for (int i = 0; i < _numaCount; i++)
@@ -98,6 +91,7 @@ class Numa : public stateDb::Base
       {
         _maxSize += _maxSizePerNuma[i];
         _maxStates += _maxStatesPerNuma[i];
+        _numaStateQueues.push_back(new jaffarCommon::concurrent::Deque<void *>());
       }
 
     // Getting number of bytes to reserve for each NUMA domain
@@ -199,8 +193,8 @@ class Numa : public stateDb::Base
           }
       }
 
-    // If failed, then try to get it from the back of the current state database
-    success = _currentStateDb.pop_back_get(stateSpace);
+    // If failed, then try to get it from the back of my numa-specific queues. Looking for the worst state possible
+    success = _numaStateQueues[preferredNumaDomain]->pop_back_get(stateSpace);
 
     // If successful, return the pointer immediately
     if (success == true)
@@ -240,61 +234,52 @@ class Numa : public stateDb::Base
     if (success == false) JAFFAR_THROW_RUNTIME("Failed on pushing free state back. This must be a bug in Jaffar\n");
   }
 
+  __INLINE__ void advanceStep() override
+  {
+    // Swapping the reference data pointers
+    std::swap(_currentReferenceData, _previousReferenceData);
+
+    // The new refernce data will be the best current state
+    if (_nextStateDb.size() > 0) memcpy(_currentReferenceData, _nextStateDb.begin()->second, _stateSizeRaw);
+
+    // Getting best state pointer
+    if (_nextStateDb.size() > 0) _bestState = _nextStateDb.begin()->second;
+
+    // Copying state pointers into the numa-specific queues
+    while (_nextStateDb.begin() != _nextStateDb.end())
+      {
+        // Getting next state
+        auto nextState = _nextStateDb.unsafe_extract(_nextStateDb.begin()).mapped();
+
+        // Getting the corresponding numa domain for this state
+        int targetNumaIdx = getStateNumaDomain(nextState);
+
+        // Pushing state in the correct numa domain queue
+        _numaStateQueues[targetNumaIdx]->push_back_no_lock(nextState);
+
+        // If this is the last state, then it's the worst
+        if (_nextStateDb.begin() == _nextStateDb.end()) _worstState = nextState;
+      }
+  }
+
   __INLINE__ void *popState() override
   {
     // Pointer to return
     void *statePtr;
 
-    // Check the numa's scavenger queue first
-    bool success = _scavengerQueues[preferredNumaDomain]->try_pop(statePtr);
+    // Check the numa's state queue first
+    bool success = _numaStateQueues[preferredNumaDomain]->pop_front_get(statePtr);
     if (success == true)
       {
         _numaLocalFreeStateCount++;
         return statePtr;
     }
 
-    // Starting scavenging process
-    for (size_t i = 0; i < _scavengingDepth; i++)
-      {
-        // Trying to pop the next state from the current state database
-        success = _currentStateDb.pop_front_get(statePtr);
-
-        // If no success, break cycle
-        if (success == false) break;
-
-        // Otherwise, check whether state is in the preferred numa domain
-        const auto isPreferredNuma = isStateInNumaDomain(statePtr, preferredNumaDomain);
-
-        // If its my preferred numa, return it immediately
-        if (isPreferredNuma == true)
-          {
-            _numaLocalDatabaseStateCount++;
-            return statePtr;
-        }
-
-        // Otherwise, place it in the corresponding scavenge queue
-        if (isPreferredNuma == false)
-          {
-            // Get numa domain of state
-            const auto numaIdx = getStateNumaDomain(statePtr);
-
-            // Push state into the appropriate scavenget queue
-            auto success = _scavengerQueues[numaIdx]->try_push(statePtr);
-
-            // If the queue was full, then go ahead and run the state
-            if (success == false)
-              {
-                _numaNonLocalDatabaseStateCount++;
-                return statePtr;
-            }
-        }
-      }
-
-    // If still no success, check the other scavenger queues
+    // If still no success, check the other numa queues
     for (int i = 0; i < _numaCount; i++)
       if (i != preferredNumaDomain)
         {
-          bool success = _scavengerQueues[i]->try_pop(statePtr);
+          bool success = _numaStateQueues[i]->pop_front_get(statePtr);
           if (success == true)
             {
               _numaNonLocalDatabaseStateCount++;
@@ -310,7 +295,22 @@ class Numa : public stateDb::Base
   /**
    * Gets the current number of states in the current state database
    */
-  __INLINE__ size_t getStateCount() const override { return _currentStateDb.wasSize(); }
+  __INLINE__ size_t getStateCount() const override
+  {
+    size_t stateCount = 0;
+    for (int i = 0; i < _numaCount; i++) stateCount += _numaStateQueues[i]->wasSize();
+    return stateCount;
+  }
+
+  /**
+   * This function returns a pointer to the best state found in the current state database
+   */
+  virtual void *getBestState() const override { return _bestState; }
+
+  /**
+   * This function returns a pointer to the worst state found in the current state database
+   */
+  virtual void *getWorstState() const override { return _worstState; }
 
   private:
 
@@ -318,6 +318,9 @@ class Numa : public stateDb::Base
    * Number of numa domains
    */
   int _numaCount;
+
+  void *_bestState  = nullptr;
+  void *_worstState = nullptr;
 
   /**
    * Count of local database states retrieved
@@ -370,19 +373,9 @@ class Numa : public stateDb::Base
   std::vector<size_t> _maxStatesPerNuma;
 
   /**
-   * Scavenger queues allow the thread to search for a state that belongs to it through the current state database
+   * Numa state queues allow the thread to search for a state that belongs to it through the current state database
    */
-  std::vector<std::unique_ptr<jaffarCommon::concurrent::atomicQueue_t<void *>>> _scavengerQueues;
-
-  /**
-   * Size of the scavenger queues
-   */
-  size_t _scavengerQueuesSize;
-
-  /**
-   * How far should each thread scavenge for a state belonging to its numa domain
-   */
-  size_t _scavengingDepth;
+  std::vector<jaffarCommon::concurrent::Deque<void *> *> _numaStateQueues;
 
   /**
    * This queue will hold pointers to all the free state storage

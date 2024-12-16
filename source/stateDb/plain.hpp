@@ -114,7 +114,37 @@ class Plain : public stateDb::Base
    */
   __INLINE__ size_t getStateCount() const override { return _currentStateDb.wasSize(); }
 
+  /**
+   * This function returns a pointer to the best state found in the current state database
+   */
+  __INLINE__ void *getBestState() const override { return _currentStateDb.front(); }
+
+  /**
+   * This function returns a pointer to the worst state found in the current state database
+   */
+  __INLINE__ void *getWorstState() const override { return _currentStateDb.back(); }
+
+  /**
+   * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
+   */
+  __INLINE__ void advanceStep() override
+  {
+    // Copying state pointers
+    while (_nextStateDb.begin() != _nextStateDb.end()) _currentStateDb.push_back_no_lock(_nextStateDb.unsafe_extract(_nextStateDb.begin()).mapped());
+
+    // Swapping the reference data pointers
+    std::swap(_currentReferenceData, _previousReferenceData);
+
+    // The new refernce data will be the best current state
+    if (_currentStateDb.wasSize() > 0) memcpy(_currentReferenceData, _currentStateDb.front(), _stateSizeRaw);
+  }
+
   private:
+
+  /**
+   * The current state database used as read-only source of base states
+   */
+  jaffarCommon::concurrent::Deque<void *> _currentStateDb;
 
   /**
    * This queue will hold pointers to all the free state storage
