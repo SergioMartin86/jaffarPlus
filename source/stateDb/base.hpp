@@ -131,19 +131,9 @@ class Base
   /**
    * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
    */
-  __INLINE__ void advanceStep()
-  {
-    // Copying state pointers
-    while (_nextStateDb.begin() != _nextStateDb.end()) _currentStateDb.push_back_no_lock(_nextStateDb.unsafe_extract(_nextStateDb.begin()).mapped());
+  virtual void advanceStep() = 0;
 
-    // Swapping the reference data pointers
-    std::swap(_currentReferenceData, _previousReferenceData);
-
-    // The new refernce data will be the best current state
-    if (_currentStateDb.wasSize() > 0) memcpy(_currentReferenceData, _currentStateDb.front(), _stateSizeRaw);
-  }
-
-  __INLINE__ bool pushState(const float reward, Runner &r, void *statePtr)
+  __INLINE__ virtual bool pushState(const float reward, Runner &r, void *statePtr)
   {
     // Check that we got a free state (we did not overflow state memory)
     if (statePtr == nullptr) JAFFAR_THROW_RUNTIME("Ran out of free states\n");
@@ -220,12 +210,12 @@ class Base
   /**
    * This function returns a pointer to the best state found in the current state database
    */
-  __INLINE__ void *getBestState() const { return _currentStateDb.front(); }
+  virtual void *getBestState() const = 0;
 
   /**
    * This function returns a pointer to the worst state found in the current state database
    */
-  __INLINE__ void *getWorstState() const { return _currentStateDb.back(); }
+  virtual void *getWorstState() const = 0;
 
   protected:
 
@@ -237,11 +227,6 @@ class Base
    * The next state database, where new states are stored as they are created
    */
   jaffarCommon::concurrent::concurrentMultimap_t<float, void *> _nextStateDb;
-
-  /**
-   * The current state database used as read-only source of base states
-   */
-  jaffarCommon::concurrent::Deque<void *> _currentStateDb;
 
   /**
    * Stores the size occupied by each state (with padding)
