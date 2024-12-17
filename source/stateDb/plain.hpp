@@ -139,7 +139,21 @@ class Plain : public stateDb::Base
     if (_currentStateDb.wasSize() > 0) memcpy(_currentReferenceData, _currentStateDb.front(), _stateSizeRaw);
   }
 
+  __INLINE__ bool pushStateImpl(const float reward, void *statePtr) override
+  {
+    // Inserting new state into the next state database
+    _nextStateDb.insert({reward, statePtr});
+
+    // If succeeded, return true
+    return true;
+  }
+
   private:
+
+  /**
+   * The next state database, where new states are stored as they are created
+   */
+  jaffarCommon::concurrent::concurrentMultimap_t<float, void *> _nextStateDb;
 
   /**
    * The current state database used as read-only source of base states
