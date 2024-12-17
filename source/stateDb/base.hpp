@@ -133,33 +133,6 @@ class Base
    */
   virtual void advanceStep() = 0;
 
-  __INLINE__ virtual bool pushState(const float reward, Runner &r, void *statePtr)
-  {
-    // Check that we got a free state (we did not overflow state memory)
-    if (statePtr == nullptr) JAFFAR_THROW_RUNTIME("Ran out of free states\n");
-
-    // Encoding internal runner state into the state pointer
-    size_t stateSize = 0;
-    try
-      {
-        stateSize = saveStateFromRunner(r, statePtr);
-      }
-    catch (const std::runtime_error &x)
-      {
-        // If failed return false
-        return false;
-      }
-
-    // If using differential compression, it is important to keep track of the current compression size
-    _maximumStateSizeFound = std::max(_maximumStateSizeFound, stateSize);
-
-    // Inserting new state into the next state database
-    _nextStateDb.insert({reward, statePtr});
-
-    // If succeeded, return true
-    return true;
-  }
-
   /**
    * Saves the runner state into the provided state data pointer
    */
@@ -185,6 +158,33 @@ class Base
     }
 
     return serializedSize;
+  }
+
+  /**
+   * Serializes the runner state and pushes it into the state database
+   */
+  __INLINE__ bool pushState(const float reward, Runner &r, void *statePtr)
+  {
+    // Check that we got a free state (we did not overflow state memory)
+    if (statePtr == nullptr) JAFFAR_THROW_RUNTIME("Provided a null state -- probably ran out of free states\n");
+
+    // Encoding internal runner state into the state pointer
+    size_t stateSize = 0;
+    try
+      {
+        stateSize = saveStateFromRunner(r, statePtr);
+      }
+    catch (const std::runtime_error &x)
+      {
+        // If failed return false
+        return false;
+      }
+
+    // If using differential compression, it is important to keep track of the current compression size
+    _maximumStateSizeFound = std::max(_maximumStateSizeFound, stateSize);
+
+    // Inserting new state into the next state database
+    return pushStateImpl(reward, statePtr);
   }
 
   /**
@@ -219,14 +219,14 @@ class Base
 
   protected:
 
+  /**
+   * Inserts a new state into the state database
+   */
+  virtual bool pushStateImpl(const float reward, void *statePtr) = 0;
+
   virtual void printInfoImpl() const = 0;
 
   Runner *const _runner;
-
-  /**
-   * The next state database, where new states are stored as they are created
-   */
-  jaffarCommon::concurrent::concurrentMultimap_t<float, void *> _nextStateDb;
 
   /**
    * Stores the size occupied by each state (with padding)
