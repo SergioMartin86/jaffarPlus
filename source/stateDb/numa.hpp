@@ -67,7 +67,7 @@ class Numa : public stateDb::Base
       {
         double sizeMb = _maxSizePerNumaMb[i];
         // For testing purposes, the maximum size can be overriden via environment variables
-        if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = (double)std::stoul(value) / (double)_numaCount;
+        if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = std::stoul(value);
         _maxSizePerNuma.push_back(std::ceil((double)sizeMb * 1024.0 * 1024.0));
       }
 
