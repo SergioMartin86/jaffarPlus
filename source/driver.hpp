@@ -285,12 +285,12 @@ class Driver final
 
     // If we haven't found any winning state, simply use the currently best state
     if (_winStatesFound == 0)
-      {
+    {
         // Getting best state so far
         auto bestState = _engine->getStateDb()->getBestState();
 
         // Saving best state into the storage
-        memcpy(_bestStateStorage.data(), bestState, _stateSize);
+        if (bestState != nullptr) memcpy(_bestStateStorage.data(), bestState, _stateSize);
     }
 
     // If we have found a winning state in this step that improves on the current best, save it now
