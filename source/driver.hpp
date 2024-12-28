@@ -285,7 +285,7 @@ class Driver final
 
     // If we haven't found any winning state, simply use the currently best state
     if (_winStatesFound == 0)
-    {
+      {
         // Getting best state so far
         auto bestState = _engine->getStateDb()->getBestState();
 
