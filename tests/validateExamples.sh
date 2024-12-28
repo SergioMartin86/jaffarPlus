@@ -24,6 +24,8 @@ export JAFFAR_QUICKERGPGX_OVERRIDE_INITIAL_STATE_FILE_PATH=""
 # Getting emulator to test
 emulatorName=${1}
 
+echo ${scriptFiles}
+
 for f in ${scriptFiles}
 do
  dirName=`dirname ${f}`
