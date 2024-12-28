@@ -679,10 +679,10 @@ class Engine final
         // Check if the new win state is the best and store it in that case
         _stepBestWinStateLock.lock();
         if (reward > _stepBestWinState.reward)
-         {
+          {
             _stateDb->saveStateFromRunner(r, _stepBestWinState.stateData);
             _stepBestWinState.reward = reward;
-         }
+        }
         _stepBestWinStateLock.unlock();
 
         // Freeing up the state data

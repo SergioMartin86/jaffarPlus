@@ -121,12 +121,12 @@ class QuickerGambatte final : public Emulator
     auto memoryAreas = _quickerGambatte->getMemoryAreas();
     auto memorySizes = _quickerGambatte->getMemorySizes();
 
-    if (propertyName == "VRAM")    return property_t((uint8_t *)memoryAreas.vram, memorySizes.vram);
-    if (propertyName == "ROM")     return property_t((uint8_t *)memoryAreas.rom, memorySizes.rom);
-    if (propertyName == "WRAM")    return property_t((uint8_t *)memoryAreas.wram, memorySizes.wram);
+    if (propertyName == "VRAM") return property_t((uint8_t *)memoryAreas.vram, memorySizes.vram);
+    if (propertyName == "ROM") return property_t((uint8_t *)memoryAreas.rom, memorySizes.rom);
+    if (propertyName == "WRAM") return property_t((uint8_t *)memoryAreas.wram, memorySizes.wram);
     if (propertyName == "CARTRAM") return property_t((uint8_t *)memoryAreas.cartram, memorySizes.cartram);
-    if (propertyName == "OAM")     return property_t((uint8_t *)memoryAreas.oam, memorySizes.oam);
-    if (propertyName == "HRAM")    return property_t((uint8_t *)memoryAreas.hram, memorySizes.hram);
+    if (propertyName == "OAM") return property_t((uint8_t *)memoryAreas.oam, memorySizes.oam);
+    if (propertyName == "HRAM") return property_t((uint8_t *)memoryAreas.hram, memorySizes.hram);
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
