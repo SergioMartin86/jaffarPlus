@@ -12,7 +12,8 @@ option('emulator',
     'QuickerNEORAW',
     'QuickerRAWGL',
     'QuickerArkBot',
-    'QuickerMGBA'
+    'QuickerMGBA',
+    'QuickerGambatte'
    ],
   description : 'Selects the emulation core to compile Jaffar with'
 )

@@ -24,13 +24,6 @@ class Base
   Base(Runner &r, const nlohmann::json &config)
     : _runner(&r)
   {
-    ///////// Parsing configuration
-
-    // Parsing state compression configuration
-    const auto stateCompressionJs   = jaffarCommon::json::getObject(config, "Compression");
-    _useDifferentialCompression     = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Differential Compression");
-    _maximumDifferentialSizeAllowed = jaffarCommon::json::getNumber<size_t>(stateCompressionJs, "Max Difference (bytes)");
-    _useZlibCompression             = jaffarCommon::json::getBoolean(stateCompressionJs, "Use Zlib Compression");
   }
 
   virtual ~Base() = default;
@@ -45,28 +38,13 @@ class Base
     // Getting game state size
     _stateSizeRaw = _runner->getStateSize();
 
-    // Creating storage for current reference data
-    _currentReferenceData = malloc(_stateSizeRaw);
-
-    // Creating storage for  previous reference data
-    _previousReferenceData = malloc(_stateSizeRaw);
-
-    // Getting differential state size
-    if (_useDifferentialCompression) _differentialStateSize = _runner->getDifferentialStateSize(_maximumDifferentialSizeAllowed);
-
-    // The effective state size is how many bytes does the runner really need to store a state
-    _stateSizeEffective = _useDifferentialCompression ? _differentialStateSize : _stateSizeRaw;
-
     // We want to align each state to 512 bits (64 bytes) to favor vectorized access
     // Now calculating the necessary padding to reach the next multiple of 64 bytes
-    _stateSize = _stateSizeEffective;
-    if (_stateSize % _JAFFAR_STATE_PADDING_BYTES != 0) _stateSize = ((_stateSizeEffective / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
+    _stateSize = _stateSizeRaw;
+    if (_stateSize % _JAFFAR_STATE_PADDING_BYTES != 0) _stateSize = ((_stateSizeRaw / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
 
     // Padding is the difference between the aligned state size and the raw one
-    _stateSizePadding = _stateSize - _stateSizeEffective;
-
-    // Setting initial value for the maximum differences found so far
-    _maximumStateSizeFound = 0;
+    _stateSizePadding = _stateSize - _stateSizeRaw;
 
     // Calling specific initialization routine for the state db type
     initializeImpl();
@@ -90,24 +68,7 @@ class Base
                               (double)_maxSize / (1024.0 * 1024.0),
                               (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
     jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
-    if (_useDifferentialCompression)
-      {
-        jaffarCommon::logger::log("[J+]  + State Size Effective:          %lu bytes (Diffential: %lu + Contiguous: %lu)\n",
-                                  _stateSizeEffective,
-                                  _maximumDifferentialSizeAllowed,
-                                  _stateSizeEffective - _maximumDifferentialSizeAllowed);
-    } else
-      {
-        jaffarCommon::logger::log("[J+]  + State Size Effective:          %lu bytes\n", _stateSizeEffective);
-      }
-
     jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
-    jaffarCommon::logger::log("[J+]  + Use Differential Compression:  %s\n", _useDifferentialCompression ? "true" : "false");
-    if (_useDifferentialCompression)
-      {
-        jaffarCommon::logger::log("[J+]  + Use Zlib Compression:          %s\n", _useZlibCompression ? "true" : "false");
-        jaffarCommon::logger::log("[J+]  + Maximum State Size Found       %lu bytes / Max Allowed: %lu bytes\n", _maximumStateSizeFound, _differentialStateSize);
-    }
     printInfoImpl();
   }
 
@@ -116,17 +77,6 @@ class Base
   virtual void   returnFreeState(void *const statePtr) = 0;
   virtual void  *popState()                            = 0;
   virtual size_t getStateCount() const                 = 0;
-
-  /**
-   * This function sets the initial reference data required for differential compression
-   *
-   * It must be of the same size as _stateSizeRaw
-   */
-  __INLINE__ void setReferenceData(const void *referenceData)
-  {
-    memcpy(_currentReferenceData, referenceData, _stateSizeRaw);
-    memcpy(_previousReferenceData, referenceData, _stateSizeRaw);
-  }
 
   /**
    * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
@@ -141,21 +91,10 @@ class Base
     // Storage for the state size after deserialization
     size_t serializedSize = 0;
 
-    // Serializing the runner state into the memory received (if using differential compression)
-    if (_useDifferentialCompression == true)
-      {
-        jaffarCommon::serializer::Differential s(statePtr, _differentialStateSize, _currentReferenceData, _stateSizeRaw, _useZlibCompression);
-        r.serializeState(s);
-        serializedSize = s.getOutputSize();
-    }
-
-    // Serializing the runner state into the memory received (if no compression is used)
-    if (_useDifferentialCompression == false)
-      {
-        jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
-        r.serializeState(s);
-        serializedSize = s.getOutputSize();
-    }
+    // Serializing the runner state into the memory received
+    jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
+    r.serializeState(s);
+    serializedSize = s.getOutputSize();
 
     return serializedSize;
   }
@@ -169,10 +108,9 @@ class Base
     if (statePtr == nullptr) JAFFAR_THROW_RUNTIME("Provided a null state -- probably ran out of free states\n");
 
     // Encoding internal runner state into the state pointer
-    size_t stateSize = 0;
     try
       {
-        stateSize = saveStateFromRunner(r, statePtr);
+        saveStateFromRunner(r, statePtr);
       }
     catch (const std::runtime_error &x)
       {
@@ -180,31 +118,18 @@ class Base
         return false;
       }
 
-    // If using differential compression, it is important to keep track of the current compression size
-    _maximumStateSizeFound = std::max(_maximumStateSizeFound, stateSize);
-
     // Inserting new state into the next state database
     return pushStateImpl(reward, statePtr);
   }
 
   /**
-   * Loads the state into the runner, performing the appropriate decompression (or not) procedure
+   * Loads the state into the runner
    */
   __INLINE__ void loadStateIntoRunner(Runner &r, const void *statePtr)
   {
-    // Deserializing the runner state from the memory received (if using differential compression)
-    if (_useDifferentialCompression == true)
-      {
-        jaffarCommon::deserializer::Differential d(statePtr, _differentialStateSize, _previousReferenceData, _stateSizeRaw, _useZlibCompression);
-        r.deserializeState(d);
-    }
-
-    // Deserializing the runner state from the memory received (if no compression is used)
-    if (_useDifferentialCompression == false)
-      {
-        jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
-        r.deserializeState(d);
-    }
+    // Deserializing the runner state from the memory received
+    jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
+    r.deserializeState(d);
   }
 
   /**
@@ -234,14 +159,9 @@ class Base
   size_t _stateSize;
 
   /**
-   * Stores the size occupied by each state without compression
+   * Stores the size occupied by each state
    */
   size_t _stateSizeRaw;
-
-  /**
-   * Depending on whether we use compression, how many bytes does every runner state actually need
-   */
-  size_t _stateSizeEffective;
 
   /**
    * Stores the size actually occupied by each state, after adding padding
@@ -257,29 +177,6 @@ class Base
    * Number of maximum states in execution
    */
   size_t _maxStates;
-
-  //////////// Configuration
-
-  // Stores whether to use differential compression
-  bool _useDifferentialCompression;
-
-  // If using differential compression, the maximum number of differences allowed
-  size_t _maximumDifferentialSizeAllowed;
-
-  // if using differential compression, whether to use Zlib post-compression
-  bool _useZlibCompression;
-
-  // If using differential compression, store differential state size
-  size_t _differentialStateSize = 0;
-
-  // If using differential compression, the maximum differences found
-  size_t _maximumStateSizeFound;
-
-  // Storage for the current reference data required for differential compression serialization
-  void *_currentReferenceData;
-
-  // Storage for the previously used reference data required for differential compression deserialization
-  void *_previousReferenceData;
 };
 
 } // namespace stateDb

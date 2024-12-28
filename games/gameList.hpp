@@ -43,6 +43,10 @@
   #include "gba/tollrunner.hpp"
 #endif
 
+#ifdef __JAFFAR_ENABLE_GBC
+  #include "gbc/aSlimeTravel.hpp"
+#endif
+
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -104,9 +108,14 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
   DETECT_GAME(arkbot::Arkanoid);
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERMGBA
+#ifdef __JAFFAR_ENABLE_GBA
   DETECT_GAME(gba::TollRunner);
 #endif
+
+#ifdef __JAFFAR_ENABLE_GBC
+  DETECT_GAME(gbc::ASlimeTravel);
+#endif
+
 
   // Check if game was recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized\n", gameName.c_str());

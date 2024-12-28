@@ -34,3 +34,6 @@
 [submodule "extern/quickerMGBA"]
 	path = extern/quickerMGBA
 	url = https://github.com/SergioMartin86/quickerMGBA.git
+[submodule "extern/quickerGambatte"]
+	path = extern/quickerGambatte
+	url = https://github.com/SergioMartin86/quickerGambatte.git

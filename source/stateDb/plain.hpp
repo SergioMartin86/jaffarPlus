@@ -131,12 +131,6 @@ class Plain : public stateDb::Base
   {
     // Copying state pointers
     while (_nextStateDb.begin() != _nextStateDb.end()) _currentStateDb.push_back_no_lock(_nextStateDb.unsafe_extract(_nextStateDb.begin()).mapped());
-
-    // Swapping the reference data pointers
-    std::swap(_currentReferenceData, _previousReferenceData);
-
-    // The new refernce data will be the best current state
-    if (_currentStateDb.wasSize() > 0) memcpy(_currentReferenceData, _currentStateDb.front(), _stateSizeRaw);
   }
 
   __INLINE__ bool pushStateImpl(const float reward, void *statePtr) override

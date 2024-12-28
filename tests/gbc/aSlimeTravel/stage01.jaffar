@@ -36,20 +36,21 @@
 
 "Emulator Configuration":
 {
-  "Emulator Name": "QuickerMGBA",
-  "Rom File Path": "../../../extern/quickerMGBA/tests/roms/tollrunner_jam.gba",
-  "Rom File SHA1": "6F8A4C68FA3280E70C45AAC2EC8EC27631613937",
+  "Emulator Name": "QuickerGambatte",
+  "Rom File Path": "../../../extern/quickerGambatte/tests/roms/aslimetravel.gbc",
+  "Rom File SHA1": "A3C645C327F7EF04B23697F26D25E06ADDEF7925",
+  "System Type": "Gameboy Color",
   "Initial State File Path": "",
   "Initial Sequence File Path": "stage01.initial.sol",
   "Bios File Path": "",
-  "Controller Type": "Gameboy Advance",
+  "Controller Type": "Gameboy",
   "Disabled State Properties": [   ]
 },
  
 "Runner Configuration":
 {
   "Frameskip Rate": 0,
-  "Hash Step Tolerance": 0,
+  "Hash Step Tolerance": 2,
   "Show Empty Input Slots": true,
   "Show Allowed Inputs": true,
 
@@ -68,9 +69,10 @@
 
       "Inputs":
       [
-        "|    0,    0,    0,    0,...........|",
-        "|    0,    0,    0,    0,..L........|",
-        "|    0,    0,    0,    0,...R.......|"
+        "|.........|",
+        "|..L......|",
+        "|...R.....|",
+        "|.......A.|"
       ],
 
       "Stop Input Evaluation": false
@@ -84,22 +86,20 @@
 
 "Game Configuration":
 {
-  "Game Name": "GBA / Toll Runner",
+  "Game Name": "GBC / A Slime Travel",
   "Frame Rate": 60.10,
   "Last Input Step Reward": 0.0,
 
   "Print Properties":
   [
-    "Mouse Pos X",
-    "Mouse Pos Y",
-    "Score"
+    "Game State",
+    "Slime Pos X"
   ],
 
   "Hash Properties":
   [
-    "Mouse Pos X",
-    "Mouse Pos Y",
-    "Score"
+    "Game State",
+    "Slime Pos X"
   ],
 
   "Rules":
@@ -108,7 +108,7 @@
       "Label": 1998,
       "Conditions":
       [
-        { "Property": "Mouse Pos Y", "Op": "<", "Value": 1880 }
+        { "Property": "Slime Pos X", "Op": ">", "Value": 24 }
       ],
       
       "Satisfies": [ ],
