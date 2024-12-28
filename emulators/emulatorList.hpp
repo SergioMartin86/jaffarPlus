@@ -50,7 +50,6 @@
   #include "quickerGambatte/quickerGambatte.hpp"
 #endif
 
-
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \

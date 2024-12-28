@@ -32,7 +32,7 @@ class ASlimeTravel final : public jaffarPlus::Game
     _workRAM = _emulator->getProperty("WRAM").pointer;
 
     // Registering native game properties
-    registerGameProperty("Game State",  &_workRAM[0x00C7], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Game State", &_workRAM[0x00C7], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Slime Pos X", &_workRAM[0x0001], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later

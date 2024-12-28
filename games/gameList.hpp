@@ -116,7 +116,6 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
   DETECT_GAME(gbc::ASlimeTravel);
 #endif
 
-
   // Check if game was recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized\n", gameName.c_str());
 

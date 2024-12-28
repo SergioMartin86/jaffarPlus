@@ -23,8 +23,7 @@ class Base
 
   Base(Runner &r, const nlohmann::json &config)
     : _runner(&r)
-  {
-  }
+  {}
 
   virtual ~Base() = default;
 
