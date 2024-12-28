@@ -19,12 +19,8 @@
  {
   "State Database":
   {
-    "Type": "Numa Aware",
-    "Max Size per NUMA Domain (Mb)":
-    [ 
-      10000,
-      10000
-    ]
+    "Type": "Plain",
+    "Max Size (Mb)": 1000
   },
 
   "Hash Database":
