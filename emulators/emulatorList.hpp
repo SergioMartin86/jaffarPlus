@@ -46,6 +46,11 @@
   #include "quickerMGBA/quickerMGBA.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_QUICKERGAMBATTE
+  #include "quickerGambatte/quickerGambatte.hpp"
+#endif
+
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
@@ -109,6 +114,10 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
 
 #ifdef __JAFFAR_USE_QUICKERMGBA
   DETECT_EMULATOR(emulator::QuickerMGBA);
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERGAMBATTE
+  DETECT_EMULATOR(emulator::QuickerGambatte);
 #endif
 
   // Check if recognized

@@ -74,3 +74,10 @@ jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERMGBA'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_GBA'
 subdir('quickerMGBA')
 endif
+
+if emulator == 'QuickerGambatte'
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERGAMBATTE'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_GB'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_GBC'
+subdir('quickerGambatte')
+endif

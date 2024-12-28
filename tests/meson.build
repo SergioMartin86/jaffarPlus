@@ -18,9 +18,9 @@ test(emulator,
 
 # Setting env variables
 
-if emulator == 'QuickerNES'
-
 ## NES / Sprilo
+
+if emulator == 'QuickerNES'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
 
@@ -57,9 +57,9 @@ test('race04_short_reproduce',
 
 endif
 
-if emulator == 'QuickerSDLPoP'
-
 ## SDLPoP / Prince Of Persia
+
+if emulator == 'QuickerSDLPoP'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
 
@@ -96,9 +96,9 @@ test('stage01',
 
 endif
 
-if emulator == 'QuickerGPGX'
-
 ## Genesis / Dino Runner
+
+if emulator == 'QuickerGPGX'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
 
@@ -112,9 +112,9 @@ test('stage01',
 
 endif
 
-if emulator == 'QuickerStella'
-
 ## A2600 / Hellway
+
+if emulator == 'QuickerStella'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
 
@@ -128,9 +128,9 @@ test('stage01',
       
 endif
 
-if emulator == 'Atari2600Hawk'
-
 ## A2600 / Hellway
+
+if emulator == 'Atari2600Hawk'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
 
@@ -144,9 +144,9 @@ test('stage01',
       
 endif
 
-if emulator == 'QuickerSMBC'
-
 ## NES / Super Mario Bros
+
+if emulator == 'QuickerSMBC'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
 
@@ -159,10 +159,9 @@ test('stage01',
       suite : [ 'runs', 'QuickerSMBC', 'superMarioBros' ])
 endif
 
+## ArkBot / Arkanoid
 
 if emulator == 'QuickerArkBot'
-
-## ArkBot / Arkanoid
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
 
@@ -175,9 +174,10 @@ test('stage01',
       suite : [ 'runs', 'QuickerArkBot', 'arkanoid' ])
 endif
 
-if emulator == 'QuickerMGBA'
 
 ## QuickerMGBA / Toll Runner
+
+if emulator == 'QuickerMGBA'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
 
@@ -188,4 +188,20 @@ test('stage01',
       args : 'stage01.jaffar',
       env : testEnvVars,
       suite : [ 'runs', 'QuickerMGBA', 'tollRunner' ])
+endif
+
+
+## QuickerGambatte / A Slime Travel
+
+if emulator == 'QuickerGambatte'
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/gbc/aSlimeTravel',
+      timeout: testTimeout,
+      args : 'stage01.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'QuickerGambatte', 'aSlimeTravel' ])
 endif

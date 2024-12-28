@@ -317,12 +317,6 @@ class Numa : public stateDb::Base
           }
       }
     }
-
-    // Swapping the reference data pointers
-    std::swap(_currentReferenceData, _previousReferenceData);
-
-    // The new refernce data will be the best current state
-    memcpy(_currentReferenceData, _bestState, _stateSizeRaw);
   }
 
   __INLINE__ bool pushStateImpl(const float reward, void *statePtr) override

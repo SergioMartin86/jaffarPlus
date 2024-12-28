@@ -17,16 +17,18 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 
 ## Consoles
 
-| Console            | Core(s)                                                                      | Target        |  Notes        |
-| --------           | -------                                                                      | ------        | ------        |
-| Atari 2600         | [QuickerStella](https://github.com/SergioMartin86/quickerStella)             | Bizhawk (dev) | Faster than Atari2600Hawk  |
-| Atari 2600         | [Atari2600Hawk](https://github.com/CasualPokePlayer/libAtari2600Hawk)        | Bizhawk 2.9.2 |               |
-| NES                | [QuickerNES](https://github.com/SergioMartin86/quickerNES)                   | Bizhawk 2.9.2 |               |
-| SNES               | [QuickerSnes9x](https://github.com/SergioMartin86/quickerSnes9x)             | Bizhawk 2.9.2 |               |
-| Sega Genesis       | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 | Bizhawk 2.9.2 |               |
-| Sega CD            | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 | Bizhawk 2.9.2 |               |
-| Sega SG-1000       | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 | Bizhawk 2.9.2 |               |
-| Sega Master System | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 | Bizhawk 2.9.2 |               |
+| Console                  | Core(s)                                                                      |
+| --------                 | -------                                                                      |
+| Atari 2600               | [QuickerStella](https://github.com/SergioMartin86/quickerStella)             |
+| Atari 2600               | [Atari2600Hawk](https://github.com/CasualPokePlayer/libAtari2600Hawk)        |
+| NES                      | [QuickerNES](https://github.com/SergioMartin86/quickerNES)                   |
+| SNES                     | [QuickerSnes9x](https://github.com/SergioMartin86/quickerSnes9x)             |
+| Sega Genesis             | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 |
+| Sega CD                  | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 |
+| Sega SG-1000             | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 |
+| Sega Master System       | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 |
+| Gameboy Advance          | [QuickerMGBA](https://github.com/SergioMartin86/quickerMGBA)                 |
+| Gameboy / Gameboy Color  | [QuickerGambatte](https://github.com/SergioMartin86/quickerGambatte)         |
 
 ## Game-Specific
 
@@ -60,6 +62,8 @@ Author
   + Shay Green, Christopher Snowhill and all QuickNES developers
   + sbroger (a.k.a Chef Stef), developer of Arkbot
   + Mitchell Sternke, developer of SMB-C
+  + sinamas, et al. for Gambatte-Speedrun
+  + Vicki Pfau, et al. for MGBA
   + Alexander Lyashuk (mooskagh, crem) for kickstarting the idea of creating a TASing bot.
   + The authors of the third party libraries used.
 

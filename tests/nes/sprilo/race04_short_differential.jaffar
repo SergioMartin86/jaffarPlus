@@ -24,17 +24,7 @@
     [ 
       1,
       1
-    ],
-  
-    "Scavenger Queues Size": 32,
-    "Scavenging Depth": 32,
-
-    "Compression":
-    {
-      "Use Differential Compression": true, 
-      "Max Difference (bytes)": 500,
-      "Use Zlib Compression": true
-    }
+    ]
   },
 
   "Hash Database":

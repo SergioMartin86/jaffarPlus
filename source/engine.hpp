@@ -112,16 +112,6 @@ class Engine final
     // Allocating memory for the best win state
     _stepBestWinState.stateData = malloc(stateSize);
 
-    // Allocating memory for reference data
-    uint8_t referenceData[stateSize];
-
-    // Serializing the initial state without compression to use as reference
-    jaffarCommon::serializer::Contiguous s(referenceData, stateSize);
-    r.serializeState(s);
-
-    // Setting initial reference data, necessary for differential compression (if enabled)
-    _stateDb->setReferenceData(referenceData);
-
     // Evaluate game rules on the initial state
     r.getGame()->evaluateRules();
 
@@ -689,10 +679,10 @@ class Engine final
         // Check if the new win state is the best and store it in that case
         _stepBestWinStateLock.lock();
         if (reward > _stepBestWinState.reward)
-          {
+         {
             _stateDb->saveStateFromRunner(r, _stepBestWinState.stateData);
             _stepBestWinState.reward = reward;
-        }
+         }
         _stepBestWinStateLock.unlock();
 
         // Freeing up the state data
