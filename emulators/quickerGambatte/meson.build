@@ -1,5 +1,5 @@
 quickerGambatteSubproject = subproject('quickerGambatte')
 
-# Getting QuickerMGBA dependency
+# Getting QuickerGambatte dependency
 quickerGambatteDependency = quickerGambatteSubproject.get_variable('newDependency')
 emulatorDependencies += quickerGambatteDependency

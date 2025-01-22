@@ -37,3 +37,6 @@
 [submodule "extern/quickerGambatte"]
 	path = extern/quickerGambatte
 	url = https://github.com/SergioMartin86/quickerGambatte.git
+[submodule "extern/quickerDSDA"]
+	path = extern/quickerDSDA
+	url = https://github.com/SergioMartin86/quickerDSDA.git

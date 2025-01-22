@@ -47,6 +47,10 @@
   #include "gbc/aSlimeTravel.hpp"
 #endif
 
+#ifdef __JAFFAR_ENABLE_DOOM
+  #include "doom/doom.hpp"
+#endif
+
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -114,6 +118,10 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 
 #ifdef __JAFFAR_ENABLE_GBC
   DETECT_GAME(gbc::ASlimeTravel);
+#endif
+
+#ifdef __JAFFAR_ENABLE_DOOM
+  DETECT_GAME(doom::Doom);
 #endif
 
   // Check if game was recognized

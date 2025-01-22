@@ -50,6 +50,10 @@
   #include "quickerGambatte/quickerGambatte.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_QUICKERDSDA
+  #include "quickerDSDA/quickerDSDA.hpp"
+#endif
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
@@ -110,13 +114,17 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
 #ifdef __JAFFAR_USE_ARKBOT
   DETECT_EMULATOR(emulator::QuickerArkBot);
 #endif
-
+ 
 #ifdef __JAFFAR_USE_QUICKERMGBA
   DETECT_EMULATOR(emulator::QuickerMGBA);
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERGAMBATTE
   DETECT_EMULATOR(emulator::QuickerGambatte);
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERDSDA
+  DETECT_EMULATOR(emulator::QuickerDSDA);
 #endif
 
   // Check if recognized
