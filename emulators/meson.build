@@ -81,3 +81,9 @@ jaffarCPPFlags += '-D__JAFFAR_ENABLE_GB'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_GBC'
 subdir('quickerGambatte')
 endif
+
+if emulator == 'QuickerDSDA'
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERDSDA'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_DOOM'
+subdir('quickerDSDA')
+endif
