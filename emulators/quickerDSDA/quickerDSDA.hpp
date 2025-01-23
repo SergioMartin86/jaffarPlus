@@ -69,7 +69,9 @@ class QuickerDSDA final : public Emulator
      _quickerDSDA->deserializeState(deserializer);
    };
 
-  __INLINE__ void printInfo() const override {}
+  __INLINE__ void printInfo() const override
+  {
+  }
 
   property_t getProperty(const std::string &propertyName) const override
   {
