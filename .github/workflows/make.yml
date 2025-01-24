@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install clang-format doxygen graphviz
     - name: Checking proper code styling
@@ -37,6 +39,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja gcovr
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -73,6 +77,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja gcovr
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -95,6 +101,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -117,6 +125,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -139,6 +149,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -161,6 +173,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -189,6 +203,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -211,6 +227,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -233,6 +251,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -256,6 +276,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev 
     - name: Run meson configuration
@@ -279,6 +301,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -301,6 +325,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -323,6 +349,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
@@ -346,6 +374,8 @@ jobs:
       run: mkdir build
     - name: Installing meson and ninja
       run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
