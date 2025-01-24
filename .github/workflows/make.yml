@@ -22,6 +22,7 @@ jobs:
             git submodule init extern/jaffarCommon
             git submodule update extern/jaffarCommon
             cp extern/jaffarCommon/.clang-format .
+            clang-format --version
             extern/jaffarCommon/.build-tools/check-style.sh check source
             extern/jaffarCommon/.build-tools/check-style.sh check games
             extern/jaffarCommon/.build-tools/check-style.sh check emulators
