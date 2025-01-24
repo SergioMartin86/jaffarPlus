@@ -114,7 +114,7 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
 #ifdef __JAFFAR_USE_ARKBOT
   DETECT_EMULATOR(emulator::QuickerArkBot);
 #endif
- 
+
 #ifdef __JAFFAR_USE_QUICKERMGBA
   DETECT_EMULATOR(emulator::QuickerMGBA);
 #endif

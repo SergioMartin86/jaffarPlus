@@ -1,0 +1,148 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 0,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      500,
+      500
+    ]
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerDSDA",
+  "State Size": 8192,
+  "Initial Sequence File Path": "",
+  "IWAD File Path": "../../extern/quickerDSDA/tests/wads/freedoom1.wad",
+  "Expected IWAD SHA1": "9E38DCC0D1E9FBD20382BA19A6BDF11F7A2B0502",
+  "PWADS":
+  [ 
+    {
+      "File Path": "../../extern/quickerDSDA/tests/wads/freedoom011.reduced.e1m1.wad",
+      "Expected SHA1": "A759485C58FD2450EC2468E6BB4DC6624CD44E50"
+    }
+  ],
+  "Skill Level": 1,
+  "Episode": 1, 
+  "Map": 1,
+  "Compatibility Level": 3,
+  "Fast Monsters": false,
+  "Monsters Respawn": false,
+  "No Monsters": false,
+  "Player 1 Present": true,
+  "Player 2 Present": false,
+  "Player 3 Present": false,
+  "Player 4 Present": false,
+  "Prevent Level Exit": true,
+  "Prevent Game End": false
+},
+ 
+"Runner Configuration":
+{
+  "Frameskip Rate": 0,
+  "Hash Step Tolerance": 2,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 1000
+  },
+
+  "Allowed Input Sets":
+  [
+    {
+      "Conditions":
+      [
+      ],
+
+      "Inputs":
+      [
+        "|  50,  50,   0,..0.|",
+        "|  50,  50, -20,..0.|",
+        "|  50, -50,  20,..0.|"
+      ],
+
+      "Stop Input Evaluation": false
+    }
+
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "Doom",
+  "Frame Rate": 60.10,
+
+  "Print Properties":
+  [
+  ],
+
+  "Hash Properties":
+  [
+  ],
+
+  "Rules":
+  [
+    {
+      "Label": 1000,
+      "Conditions":
+      [
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 500, "Y": 500, "Z": 0 }
+      ]
+     },
+
+     {
+      "Label": 1999,
+      "Conditions":
+      [
+        { "Property": "Player Pos X", "Op": ">", "Value": 0 },
+        { "Property": "Player Pos Y", "Op": ">", "Value": 330 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     }
+  ]
+ }
+}

@@ -189,3 +189,18 @@ test('stage01',
       env : testEnvVars,
       suite : [ 'runs', 'QuickerGambatte', 'aSlimeTravel' ])
 endif
+
+## QuickerDSDA / Doom
+
+if emulator == 'QuickerDSDA'
+
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=100' ]
+
+test('stage01',
+      jaffar,
+      workdir : meson.current_source_dir() + '/doom',
+      timeout: testTimeout,
+      args : 'freedoom011.reduced.e1m1.jaffar',
+      env : testEnvVars,
+      suite : [ 'runs', 'QuickerDSDA', 'Doom' ])
+endif

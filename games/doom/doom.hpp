@@ -6,14 +6,14 @@
 #include <game.hpp>
 
 // Players information
-extern "C" __STORAGE_MODIFIER int enableOutput;
+extern "C" __STORAGE_MODIFIER int      enableOutput;
 extern "C" __STORAGE_MODIFIER player_t players[MAX_MAXPLAYERS];
-extern "C" __STORAGE_MODIFIER int preventLevelExit;
-extern "C" __STORAGE_MODIFIER int preventGameEnd;
-extern "C" __STORAGE_MODIFIER int reachedLevelExit;
-extern "C" __STORAGE_MODIFIER int reachedGameEnd;
-extern "C" __STORAGE_MODIFIER int gamemap;
-extern "C" __STORAGE_MODIFIER int gametic;
+extern "C" __STORAGE_MODIFIER int      preventLevelExit;
+extern "C" __STORAGE_MODIFIER int      preventGameEnd;
+extern "C" __STORAGE_MODIFIER int      reachedLevelExit;
+extern "C" __STORAGE_MODIFIER int      reachedGameEnd;
+extern "C" __STORAGE_MODIFIER int      gamemap;
+extern "C" __STORAGE_MODIFIER int      gametic;
 
 namespace jaffarPlus
 {
@@ -34,20 +34,20 @@ class Doom final : public jaffarPlus::Game
     : jaffarPlus::Game(std::move(emulator), config)
   {
     _pointMagnet.intensity = 0;
-    _pointMagnet.x = 0;
-    _pointMagnet.y = 0;
-    _pointMagnet.z = 0;
+    _pointMagnet.x         = 0;
+    _pointMagnet.y         = 0;
+    _pointMagnet.z         = 0;
 
-    _playerPosX = 0;
-    _playerPosY = 0;
-    _playerPosZ = 0;
-    _playerMomentumX = 0;
-    _playerMomentumY = 0;
-    _playerMomentumZ = 0;
+    _playerPosX              = 0;
+    _playerPosY              = 0;
+    _playerPosZ              = 0;
+    _playerMomentumX         = 0;
+    _playerMomentumY         = 0;
+    _playerMomentumZ         = 0;
     _player1DistanceToPointX = 0;
     _player1DistanceToPointY = 0;
     _player1DistanceToPointZ = 0;
-    _player1DistanceToPoint = 0;
+    _player1DistanceToPoint  = 0;
   }
 
   private:
@@ -67,24 +67,24 @@ class Doom final : public jaffarPlus::Game
   }
 
   __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
-   {
+  {
     // hash.Update(reachedLevelExit);
     // hash.Update(reachedGameEnd);
     // hashEngine.Update(gamemap);
     // hashEngine.Update(gametic);
-    
+
     if (players[0].mo != nullptr)
-    {
-      hashEngine.Update(players[0].mo->x >> FRACBITS);
-      hashEngine.Update(players[0].mo->y >> FRACBITS);
-      // hashEngine.Update(players[0].mo->z);
-      hashEngine.Update(players[0].mo->angle >> FRACBITS);
-      hashEngine.Update(players[0].mo->momx >> FRACBITS);
-      hashEngine.Update(players[0].mo->momy >> FRACBITS);
-      // hashEngine.Update(players[0].mo->momz);
-      // hashEngine.Update(players[0].mo->health);
+      {
+        hashEngine.Update(players[0].mo->x >> FRACBITS);
+        hashEngine.Update(players[0].mo->y >> FRACBITS);
+        // hashEngine.Update(players[0].mo->z);
+        hashEngine.Update(players[0].mo->angle >> FRACBITS);
+        hashEngine.Update(players[0].mo->momx >> FRACBITS);
+        hashEngine.Update(players[0].mo->momy >> FRACBITS);
+        // hashEngine.Update(players[0].mo->momz);
+        // hashEngine.Update(players[0].mo->health);
     }
-   }
+  }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
@@ -96,7 +96,6 @@ class Doom final : public jaffarPlus::Game
     _playerMomentumX = jaffar::EmuInstance::getFloatFrom1616Fixed(players[0].mo->momx);
     _playerMomentumY = jaffar::EmuInstance::getFloatFrom1616Fixed(players[0].mo->momy);
     _playerMomentumZ = jaffar::EmuInstance::getFloatFrom1616Fixed(players[0].mo->momz);
-
   }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -114,7 +113,8 @@ class Doom final : public jaffarPlus::Game
     _player1DistanceToPointX = std::abs(_pointMagnet.x - _playerPosX);
     _player1DistanceToPointY = std::abs(_pointMagnet.y - _playerPosY);
     _player1DistanceToPointZ = std::abs(_pointMagnet.z - _playerPosZ);
-    _player1DistanceToPoint  = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY + _player1DistanceToPointZ * _player1DistanceToPointZ);
+    _player1DistanceToPoint =
+      sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY + _player1DistanceToPointZ * _player1DistanceToPointZ);
   }
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
@@ -140,19 +140,23 @@ class Doom final : public jaffarPlus::Game
     jaffarCommon::logger::log("[] Map:        %s\n", mapName);
     jaffarCommon::logger::log("[] Game Tic:   %d\n", gametic);
     jaffarCommon::logger::log("[] Level Exit: %s\n", reachedLevelExit == 1 ? "Yes" : "No");
-    jaffarCommon::logger::log("[] Game End:   %s\n", reachedGameEnd   == 1 ? "Yes" : "No");
- 
+    jaffarCommon::logger::log("[] Game End:   %s\n", reachedGameEnd == 1 ? "Yes" : "No");
+
     if (players[0].mo != nullptr)
-    {
-      jaffarCommon::logger::log("[] Player 1 Coordinates:    (%f, %f, %f)\n", _playerPosX, _playerPosY, _playerPosZ);
-      jaffarCommon::logger::log("[] Player 1 Angle:           %lu\n", players[0].mo->angle);
-      jaffarCommon::logger::log("[] Player 1 Momenta:        (%f, %f, %f)\n", _playerMomentumX, _playerMomentumY, _playerMomentumZ);
-      jaffarCommon::logger::log("[] Player 1 Health:          %d\n", players[0].mo->health);
+      {
+        jaffarCommon::logger::log("[] Player 1 Coordinates:    (%f, %f, %f)\n", _playerPosX, _playerPosY, _playerPosZ);
+        jaffarCommon::logger::log("[] Player 1 Angle:           %lu\n", players[0].mo->angle);
+        jaffarCommon::logger::log("[] Player 1 Momenta:        (%f, %f, %f)\n", _playerMomentumX, _playerMomentumY, _playerMomentumZ);
+        jaffarCommon::logger::log("[] Player 1 Health:          %d\n", players[0].mo->health);
     }
 
     if (std::abs(_pointMagnet.intensity) > 0.0f)
-    {
-        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Z: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y, _pointMagnet.z);
+      {
+        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Z: %3.3f\n",
+                                  _pointMagnet.intensity,
+                                  _pointMagnet.x,
+                                  _pointMagnet.y,
+                                  _pointMagnet.z);
         jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
         jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
         jaffarCommon::logger::log("[J+]    + Distance Z                             %3.3f\n", _player1DistanceToPointZ);
