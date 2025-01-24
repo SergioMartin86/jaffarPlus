@@ -75,12 +75,12 @@ class Doom final : public jaffarPlus::Game
     
     if (players[0].mo != nullptr)
     {
-      hashEngine.Update(players[0].mo->x);
-      hashEngine.Update(players[0].mo->y);
+      hashEngine.Update(players[0].mo->x >> FRACBITS);
+      hashEngine.Update(players[0].mo->y >> FRACBITS);
       // hashEngine.Update(players[0].mo->z);
-      hashEngine.Update(players[0].mo->angle);
-      hashEngine.Update(players[0].mo->momx);
-      hashEngine.Update(players[0].mo->momy);
+      hashEngine.Update(players[0].mo->angle >> FRACBITS);
+      hashEngine.Update(players[0].mo->momx >> FRACBITS);
+      hashEngine.Update(players[0].mo->momy >> FRACBITS);
       // hashEngine.Update(players[0].mo->momz);
       // hashEngine.Update(players[0].mo->health);
     }
