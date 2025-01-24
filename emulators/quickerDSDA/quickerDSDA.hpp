@@ -59,19 +59,11 @@ class QuickerDSDA final : public Emulator
   // State advancing function
   void advanceStateImpl(const jaffar::input_t &input) override { _quickerDSDA->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override
-   { 
-    _quickerDSDA->serializeState(serializer);
-   };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerDSDA->serializeState(serializer); };
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override
-   {
-     _quickerDSDA->deserializeState(deserializer);
-   };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerDSDA->deserializeState(deserializer); };
 
-  __INLINE__ void printInfo() const override
-  {
-  }
+  __INLINE__ void printInfo() const override {}
 
   property_t getProperty(const std::string &propertyName) const override
   {
@@ -81,10 +73,7 @@ class QuickerDSDA final : public Emulator
   }
 
   // This function opens the video output (e.g., window)
-  void initializeVideoOutput() override
-  {
-    _quickerDSDA->initializeVideoOutput();
-  }
+  void initializeVideoOutput() override { _quickerDSDA->initializeVideoOutput(); }
 
   // This function closes the video output (e.g., window)
   void finalizeVideoOutput() override { _quickerDSDA->finalizeVideoOutput(); }
@@ -120,7 +109,7 @@ class QuickerDSDA final : public Emulator
   private:
 
   std::unique_ptr<jaffar::EmuInstance> _quickerDSDA;
-  std::string _initialSequenceFilePath;
+  std::string                          _initialSequenceFilePath;
 };
 
 } // namespace emulator
