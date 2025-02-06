@@ -477,6 +477,9 @@ class Game
   // Player-specific commands
   virtual void playerPrintCommands() const {};          // If the game has any specific player commands, print them now
   virtual void playerParseCommand(const int command){}; // If the game has any specific player commands, print them now
+ 
+  // Function to get direct state hash without passing an hashing engine
+  virtual jaffarCommon::hash::hash_t getDirectStateHash() const { return jaffarCommon::hash::hash_t(); };
 
   protected:
 

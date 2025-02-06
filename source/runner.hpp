@@ -50,6 +50,9 @@ class Runner final
 
     // Getting frame skip rate
     _frameskipRate = jaffarCommon::json::getNumber<size_t>(config, "Frameskip Rate");
+
+    // Option to bypass hash calculation via MetroHash and get it straight from the game
+    _bypassHashCalculation = jaffarCommon::json::getBoolean(config, "Bypass Hash Calculation");
   }
 
   void initialize()
@@ -288,6 +291,9 @@ class Runner final
   // This function computes the hash for the current runner state
   __INLINE__ jaffarCommon::hash::hash_t computeHash() const
   {
+    // If normal hash calculation is to be bypassed, get it straight from the game
+    if (_bypassHashCalculation == true) return _game->getDirectStateHash();
+
     // Storage for hash calculation
     MetroHash128 hashEngine;
 
@@ -429,6 +435,9 @@ class Runner final
 
   // Storage for the input history
   std::vector<uint8_t> _inputHistory;
+
+  // Option to bypass hash calculation
+  bool _bypassHashCalculation;
 
   ///////////////////////////////
   // Input processing variables
