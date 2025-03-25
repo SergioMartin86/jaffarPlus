@@ -40,3 +40,6 @@
 [submodule "extern/quickerDSDA"]
 	path = extern/quickerDSDA
 	url = https://github.com/SergioMartin86/quickerDSDA.git
+[submodule "extern/quickerBan"]
+	path = extern/quickerBan
+	url = https://github.com/SergioMartin86/quickerBan.git

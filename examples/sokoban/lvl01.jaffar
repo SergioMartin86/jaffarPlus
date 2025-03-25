@@ -1,0 +1,152 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 0,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      1000,
+      1000
+    ]
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerBan",
+  "Input Room File": "lvl01.sok"
+},
+ 
+"Runner Configuration":
+{
+  "Bypass Hash Calculation": false,
+  "Frameskip Rate": 0,
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": false,
+  "Show Allowed Inputs": false,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 1000
+  },
+
+  "Allowed Input Sets":
+  [
+   {
+     "Conditions":
+     [
+      { "Property": "Can Move Up", "Op": "==", "Value": true }
+     ],
+ 
+     "Inputs":
+     [
+       "U"
+     ],
+
+     "Stop Input Evaluation": false
+   },
+
+   {
+    "Conditions":
+    [
+     { "Property": "Can Move Down", "Op": "==", "Value": true }
+    ],
+
+    "Inputs":
+    [
+      "D"
+    ],
+
+    "Stop Input Evaluation": false
+   },
+
+   {
+    "Conditions":
+    [
+     { "Property": "Can Move Left", "Op": "==", "Value": true }
+    ],
+
+    "Inputs":
+    [
+      "L"
+    ],
+
+    "Stop Input Evaluation": false
+   },
+
+   {
+    "Conditions":
+    [
+     { "Property": "Can Move Right", "Op": "==", "Value": true }
+    ],
+
+    "Inputs":
+    [
+      "R"
+    ],
+
+    "Stop Input Evaluation": false
+   }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "Sokoban",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+  ],
+
+  "Hash Properties":
+  [
+  ],
+
+  "Rules":
+  [
+    {
+      "Label": 1000,
+      "Conditions":
+      [
+        { "Property": "Remaining Boxes", "Op": "==", "Value": 0 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+    }
+  ]
+ }
+}

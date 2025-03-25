@@ -54,6 +54,10 @@
   #include "quickerDSDA/quickerDSDA.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_QUICKERBAN
+  #include "quickerBan/quickerBan.hpp"
+#endif
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
@@ -125,6 +129,10 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
 
 #ifdef __JAFFAR_USE_QUICKERDSDA
   DETECT_EMULATOR(emulator::QuickerDSDA);
+#endif
+
+#ifdef __JAFFAR_USE_QUICKERBAN
+  DETECT_EMULATOR(emulator::QuickerBan);
 #endif
 
   // Check if recognized
