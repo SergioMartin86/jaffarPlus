@@ -159,6 +159,7 @@ class QuickerNES final : public Emulator
     if (propertyName == "NTAB") return property_t(_quickerNES->getNametableMem(), _quickerNES->getNametableMemSize());
     if (propertyName == "CHRR") return property_t(_quickerNES->getCHRMem(), _quickerNES->getCHRMemSize());
     if (propertyName == "SPRT") return property_t(_quickerNES->getSpriteMem(), _quickerNES->getSpriteMemSize());
+    if (propertyName == "PALR") return property_t(_quickerNES->getPALMem(), _quickerNES->getPALMemSize());
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
