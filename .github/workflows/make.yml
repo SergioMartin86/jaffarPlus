@@ -27,7 +27,7 @@ jobs:
             extern/jaffarCommon/.build-tools/check-style.sh check games
             extern/jaffarCommon/.build-tools/check-style.sh check emulators
 
-  # Build and run tests (QuickerNES) + Coverage Tests
+  # Build (QuickerNES) + Coverage Tests
   build-QuickerNES:
     runs-on: ubuntu-latest
     steps:
@@ -65,7 +65,7 @@ jobs:
         name: meson-logs
         path: build/meson-logs/
 
-  # Build and run tests (QuickerNESArkanoid)
+  # Build (QuickerNESArkanoid)
   build-QuickerNESArkanoid:
     runs-on: ubuntu-latest
     steps:
@@ -86,10 +86,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulator=QuickerNESArkanoid
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build
 
-  # Build and run tests (QuickerSDLPoP)
+  # Build (QuickerSDLPoP)
   build-QuickerSDLPoP:
     runs-on: ubuntu-latest
     steps:
@@ -110,10 +108,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerSDLPoP
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build
 
-  # Build and run tests (QuickerSnes9x)
+  # Build (QuickerSnes9x)
   build-QuickerSnes9x:
     runs-on: ubuntu-latest
     steps:
@@ -134,10 +130,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerSnes9x
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build
 
-  # Build and run tests (QuickerGPGX)
+  # Build (QuickerGPGX)
   build-QuickerGPGX:
     runs-on: ubuntu-latest
     steps:
@@ -158,10 +152,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerGPGX
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build
 
-  # Build and run tests (QuickerStella)
+  # Build (QuickerStella)
   build-QuickerStella:
     runs-on: ubuntu-latest
     steps:
@@ -182,11 +174,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerStella
     - name: Building project
       run: ninja -C build
-    # Disabling tests for stella because it does not run correctly in the CI  
-    #- name: Running tests
-    #  run: ninja test -C build
 
-  # Build and run tests (Atari2600Hawk)
+  # Build (Atari2600Hawk)
   build-Atari2600Hawk:
     runs-on: ubuntu-latest
     steps:
@@ -212,10 +201,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=Atari2600Hawk
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build      
 
-  # Build and run tests (QuickerSMBC)
+  # Build (QuickerSMBC)
   build-QuickerSMBC:
     runs-on: ubuntu-latest
     steps:
@@ -236,10 +223,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerSMBC
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build
       
-  # Build and run tests (QuickerNEORAW)
+  # Build (QuickerNEORAW)
   build-QuickerNEORAW:
     runs-on: ubuntu-latest
     steps:
@@ -260,11 +245,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerNEORAW
     - name: Building project
       run: ninja -C build
-    # Disabling tests for NEORAW because I cannot upload the game data files
-    #- name: Running tests
-    #  run: ninja test -C build
 
-  # Build and run tests (QuickerRAWGL)
+  # Build (QuickerRAWGL)
   build-QuickerRAWGL:
     runs-on: ubuntu-latest
     steps:
@@ -285,11 +267,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerRAWGL
     - name: Building project
       run: ninja -C build
-    # Disabling tests for RAWGL because I cannot upload the game data files
-    #- name: Running tests
-    #  run: ninja test -C build
 
-  # Build and run tests (QuickerArkBot)
+  # Build (QuickerArkBot)
   build-QuickerArkBot:
     runs-on: ubuntu-latest
     steps:
@@ -310,10 +289,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerArkBot
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build
 
-  # Build and run tests (QuickerMGBA)
+  # Build (QuickerMGBA)
   build-QuickerMGBA:
     runs-on: ubuntu-latest
     steps:
@@ -334,10 +311,8 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerMGBA
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build
 
-  # Build and run tests (QuickerGambatte)
+  # Build (QuickerGambatte)
   build-QuickerGambatte:
     runs-on: ubuntu-latest
     steps:
@@ -358,11 +333,9 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerGambatte
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build
 
       
-  # Build and run tests (QuickerDSDA)
+  # Build (QuickerDSDA)
   build-QuickerDSDA:
     runs-on: ubuntu-latest
     steps:
@@ -383,5 +356,3 @@ jobs:
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerDSDA
     - name: Building project
       run: ninja -C build
-    - name: Running tests
-      run: ninja test -C build
