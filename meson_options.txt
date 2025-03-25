@@ -14,9 +14,10 @@ option('emulator',
     'QuickerArkBot',
     'QuickerMGBA',
     'QuickerGambatte',
-    'QuickerDSDA'
+    'QuickerDSDA',
+    'QuickerBan'
    ],
-  description : 'Selects the emulation core to compile Jaffar with'
+  description : 'Selects the emulation core to compile JaffarPlus with'
 )
 
 option('gamesFolder',

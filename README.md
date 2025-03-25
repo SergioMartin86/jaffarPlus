@@ -39,7 +39,8 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 | Another World                       | [QuickerRAWGL](https://github.com/SergioMartin86/QuickerRAWGL)    | Multiple      |  This AW interpreter works with most AW ports |
 | Super Mario Bros (NES)              | [QuickerSMBC](https://github.com/SergioMartin86/quickerSMBC)      | Bizhawk 2.9.2 |  Inaccurate in transitions, but good for solving levels |
 | Arkanoid (NES)                      | [QuickerArkbot](https://github.com/SergioMartin86/quickerArkBot)  | Bizhawk 2.9.2 (NesHawk Core) |          |
-| Doom                 | [QuickerDSDA](https://github.com/SergioMartin86/quickerDSDA)  | DSDA   |  Doom / Doom II |
+| Doom                 | [QuickerDSDA](https://github.com/SergioMartin86/quickerDSDA)  |  Doom / Doom II |
+| Sokoban              | [QuickerBan](https://github.com/SergioMartin86/quickerBan)  | Sokoban (all) |
 
 Author
 =============
