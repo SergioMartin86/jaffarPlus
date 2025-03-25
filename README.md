@@ -39,6 +39,7 @@ This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solv
 | Another World                       | [QuickerRAWGL](https://github.com/SergioMartin86/QuickerRAWGL)    | Multiple      |  This AW interpreter works with most AW ports |
 | Super Mario Bros (NES)              | [QuickerSMBC](https://github.com/SergioMartin86/quickerSMBC)      | Bizhawk 2.9.2 |  Inaccurate in transitions, but good for solving levels |
 | Arkanoid (NES)                      | [QuickerArkbot](https://github.com/SergioMartin86/quickerArkBot)  | Bizhawk 2.9.2 (NesHawk Core) |          |
+| Doom                 | [QuickerDSDA](https://github.com/SergioMartin86/quickerDSDA)  | DSDA   |  Doom / Doom II |
 
 Author
 =============
@@ -65,6 +66,7 @@ Author
   + sinamas, et al. for Gambatte-Speedrun
   + Vicki Pfau, et al. for MGBA
   + Alexander Lyashuk (mooskagh, crem) for kickstarting the idea of creating a TASing bot.
+  + The authors of DSDA
   + The authors of the third party libraries used.
 
 - JaffarPlus is distributed freely under the GPL3 license for any purpose and use, as long as:
