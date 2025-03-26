@@ -22,8 +22,8 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      1000,
-      1000
+      10000,
+      10000
     ]
   },
 
@@ -46,7 +46,7 @@
   "Frameskip Rate": 0,
   "Hash Step Tolerance": 0,
   "Show Empty Input Slots": false,
-  "Show Allowed Inputs": false,
+  "Show Allowed Inputs": true,
 
   "Store Input History": 
   {

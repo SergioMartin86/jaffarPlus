@@ -52,6 +52,10 @@ class Sokoban final : public jaffarPlus::Game
   __INLINE__ void stateUpdatePostHook() override
   {
     _remainingBoxes = _quickerBan->getGoalCount() - _quickerBan->getBoxesOnGoal();
+    _canMoveUp = _quickerBan->canMoveUp();
+    _canMoveDown = _quickerBan->canMoveDown();
+    _canMoveLeft = _quickerBan->canMoveLeft();
+    _canMoveRight = _quickerBan->canMoveRight();
   }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -60,10 +64,6 @@ class Sokoban final : public jaffarPlus::Game
 
   __INLINE__ void ruleUpdatePostHook() override
   {
-    _canMoveUp = _quickerBan->canMoveUp();
-    _canMoveDown = _quickerBan->canMoveDown();
-    _canMoveLeft = _quickerBan->canMoveLeft();
-    _canMoveRight = _quickerBan->canMoveRight();
   }
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
