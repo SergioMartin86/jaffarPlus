@@ -22,15 +22,15 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      10000,
-      10000
+      30000,
+      30000
     ]
   },
 
   "Hash Database":
   {
-    "Max Store Count": 2,
-    "Max Store Size (Mb)": 10000
+    "Max Store Count": 4,
+    "Max Store Size (Mb)": 30000
   }
 },
 
@@ -51,7 +51,7 @@
   "Store Input History": 
   {
     "Enabled": true,
-    "Max Size": 1000
+    "Max Size": 500
   },
 
   "Allowed Input Sets":
@@ -125,6 +125,11 @@
 
   "Print Properties":
   [
+    "Pusher Pos X",
+    "Pusher Pos Y",
+    "Pusher Prev Pos X",
+    "Pusher Prev Pos Y",
+    "Remaining Boxes"
   ],
 
   "Hash Properties":
@@ -145,6 +150,21 @@
       "Actions":
       [
         { "Type": "Trigger Win" }
+      ]
+    },
+
+    {
+      "Label": 1999,
+      "Conditions":
+      [
+        { "Property": "Is Deadlock", "Op": "==", "Value": true }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail" }
       ]
     }
   ]
