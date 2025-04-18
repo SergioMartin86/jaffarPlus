@@ -475,8 +475,8 @@ class Game
   virtual __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t> &allowedInputSet) {}
 
   // Player-specific commands
-  virtual void playerPrintCommands() const {};          // If the game has any specific player commands, print them now
-  virtual void playerParseCommand(const int command){}; // If the game has any specific player commands, print them now
+  virtual void playerPrintCommands() const {};           // If the game has any specific player commands, print them now
+  virtual void playerParseCommand(const int command) {}; // If the game has any specific player commands, print them now
 
   // Function to get direct state hash without passing an hashing engine
   virtual jaffarCommon::hash::hash_t getDirectStateHash() const { return jaffarCommon::hash::hash_t(); };
@@ -637,7 +637,7 @@ class Game
     jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
-  virtual void  initializeImpl(){};
+  virtual void  initializeImpl() {};
   virtual void  registerGameProperties()                                                                       = 0;
   virtual void  serializeStateImpl(jaffarCommon::serializer::Base &serializer) const                           = 0;
   virtual void  deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)                           = 0;
@@ -648,10 +648,10 @@ class Game
   virtual bool  parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) = 0;
 
   // Optional hooks
-  virtual __INLINE__ void stateUpdatePreHook(){};
-  virtual __INLINE__ void stateUpdatePostHook(){};
-  virtual __INLINE__ void ruleUpdatePreHook(){};
-  virtual __INLINE__ void ruleUpdatePostHook(){};
+  virtual __INLINE__ void stateUpdatePreHook() {};
+  virtual __INLINE__ void stateUpdatePostHook() {};
+  virtual __INLINE__ void ruleUpdatePreHook() {};
+  virtual __INLINE__ void ruleUpdatePostHook() {};
 
   // Current game state type
   stateType_t _stateType;
