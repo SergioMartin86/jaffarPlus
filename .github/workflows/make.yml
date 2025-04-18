@@ -16,7 +16,7 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install 'clang-format==18' doxygen graphviz
+      run: sudo apt install clang-format=18 doxygen graphviz
     - name: Checking proper code styling
       run:  |
             git submodule init extern/jaffarCommon
