@@ -54,6 +54,7 @@
   "Hash Step Tolerance": 0,
   "Show Empty Input Slots": false,
   "Show Allowed Inputs": false,
+  "Bypass Hash Calculation": false,
 
   "Store Input History": 
   {
