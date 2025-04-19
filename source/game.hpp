@@ -112,7 +112,7 @@ class Game
     stateUpdatePostHook();
   }
 
-  // Differential serialization routine
+  // Serialization routine
   __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const
   {
     // Serializing internal emulator state
@@ -122,19 +122,19 @@ class Game
     serializeStateImpl(serializer);
 
     // Serializing reward
-    serializer.pushContiguous(&_reward, sizeof(_reward));
+    serializer.push(&_reward, sizeof(_reward));
 
     // Serializing checkpoint level
-    serializer.pushContiguous(&_checkpointLevel, sizeof(_checkpointLevel));
+    serializer.push(&_checkpointLevel, sizeof(_checkpointLevel));
 
     // Serializing state type
-    serializer.pushContiguous(&_stateType, sizeof(_stateType));
+    serializer.push(&_stateType, sizeof(_stateType));
 
     // Serializing rule states
-    serializer.pushContiguous(_rulesStatus.data(), _rulesStatus.size());
+    serializer.push(_rulesStatus.data(), _rulesStatus.size());
   }
 
-  // Differential deserialization routine
+  // Deserialization routine
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer)
   {
     // Calling the pre-update hook
@@ -150,41 +150,25 @@ class Game
     stateUpdatePostHook();
 
     // Deserializing reward
-    deserializer.popContiguous(&_reward, sizeof(_reward));
+    deserializer.pop(&_reward, sizeof(_reward));
 
     // Deserializing checkpoint level
-    deserializer.popContiguous(&_checkpointLevel, sizeof(_checkpointLevel));
+    deserializer.pop(&_checkpointLevel, sizeof(_checkpointLevel));
 
     // Deserializing state type
-    deserializer.popContiguous(&_stateType, sizeof(_stateType));
+    deserializer.pop(&_stateType, sizeof(_stateType));
 
     // Calling the pre-rule update hook
     ruleUpdatePreHook();
 
     // Deserializing rules status
-    deserializer.popContiguous(_rulesStatus.data(), _rulesStatus.size());
+    deserializer.pop(_rulesStatus.data(), _rulesStatus.size());
 
     // Running game specific rule actions
     runGameSpecificRuleActions();
 
     // Calling the post-rule update hook
     ruleUpdatePostHook();
-  }
-
-  __INLINE__ size_t getDifferentialStateSize(const size_t maxDifferences) const
-  {
-    size_t stateSize = 0;
-
-    // Adding maximum differences (in place of emulator storage)
-    stateSize += maxDifferences;
-
-    // Adding the size of current reward
-    stateSize += sizeof(_reward);
-
-    // Adding the size of rules status
-    stateSize += _rulesStatus.size();
-
-    return stateSize;
   }
 
   // This function computes the hash for the current state
