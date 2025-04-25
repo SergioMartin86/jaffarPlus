@@ -2,7 +2,7 @@
  "Driver Configuration":
  {
   "End On First Win State": true,
-  "Max Steps": 1800,
+  "Max Steps": 0,
 
   "Save Intermediate Results":
   {
@@ -24,7 +24,17 @@
     [ 
       2000,
       2000
-    ]
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
   },
 
   "Hash Database":
@@ -37,13 +47,13 @@
 "Emulator Configuration":
 {
   "Emulator Name": "QuickerSDLPoP",
-  "Initial State File": "lvl01a.state",
-  "Disabled State Properties": [],
-  "SDLPoP Root Path": "../../../extern/quickerSDLPoP/SDLPoPData/",
+  "Initial State File": "state",
+  "SDLPoP Root Path": "../../../extern/jaffarPlus/extern/quickerSDLPoP/SDLPoPData/",
+  "Disabled State Properties": [ ],
   "Levels File Path": "",
   "Game Version": "1.4",
   "Override RNG Enabled": true,
-  "Override RNG Value": 0,
+  "Override RNG Value": 3414162703,
   "Override Loose Tile Sound Enabled": false,
   "Override Loose Tile Sound Value": 0,
   "Initialize Copy Protection": false
@@ -52,16 +62,16 @@
 "Runner Configuration":
 {
   "Frameskip Rate": 0,
-  "Hash Step Tolerance": 1,
-  "Show Empty Input Slots": false,
-  "Show Allowed Inputs": false,
+  "Hash Step Tolerance": 4,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
 
   "Store Input History": 
   {
     "Enabled": true,
-    "Max Size": 1800
+    "Max Size": 300
   },
-  
+
   "Allowed Input Sets":
   [
     {

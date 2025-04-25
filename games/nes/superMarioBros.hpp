@@ -112,11 +112,11 @@ class SuperMarioBros final : public jaffarPlus::Game
     jaffarCommon::logger::log("[J+]  + Mario Position Y                           %.5f\n", _marioPosY);
 
     if (std::abs(_pointMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
-        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _marioDistanceToPointX);
-        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _marioDistanceToPointY);
-        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _marioDistanceToPoint);
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _marioDistanceToPointX);
+      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _marioDistanceToPointY);
+      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _marioDistanceToPoint);
     }
   }
 
@@ -125,12 +125,12 @@ class SuperMarioBros final : public jaffarPlus::Game
     bool recognizedActionType = false;
 
     if (actionType == "Set Point Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
-        auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-        rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
+      recognizedActionType = true;
     }
 
     return recognizedActionType;

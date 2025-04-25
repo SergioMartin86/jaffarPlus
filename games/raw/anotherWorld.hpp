@@ -46,6 +46,7 @@ class AnotherWorld final : public jaffarPlus::Game
     registerGameProperty("Lester Action", &_ram[0xFA], Property::datatype_t::dt_int16, Property::endianness_t::little);
     registerGameProperty("Lester State", &_ram[0x63], Property::datatype_t::dt_int16, Property::endianness_t::little);
     registerGameProperty("Game Script State", &_ram[0x2A], Property::datatype_t::dt_int16, Property::endianness_t::little);
+    registerGameProperty("Game Script State 2", &_ram[0x2B], Property::datatype_t::dt_int16, Property::endianness_t::little);
     registerGameProperty("Game Animation State", &_ram[0x0F], Property::datatype_t::dt_int16, Property::endianness_t::little);
     registerGameProperty("Lester Dead State", &_ram[0x03], Property::datatype_t::dt_int16, Property::endianness_t::little);
     registerGameProperty("Lester Momentum1", &_ram[0x15], Property::datatype_t::dt_int16, Property::endianness_t::little);
@@ -86,8 +87,14 @@ class AnotherWorld final : public jaffarPlus::Game
     _elevatorPosY    = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Elevator Pos Y")]->getPointer();
     _fumesState      = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Fumes State")]->getPointer();
 
+    for (size_t i = 0; i < VM_NUM_VARIABLES; i++)
+    {
+      auto propertyName = std::string("VM Value [") + std::to_string(i) + std::string("]");
+      registerGameProperty(propertyName, &_ram[i], Property::datatype_t::dt_int16, Property::endianness_t::little);
+    }
+
     // Getting index for a non input
-    _nullInputIdx = _emulator->registerInput(".....");
+    _nullInputIdx = _emulator->registerInput("......");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -118,27 +125,47 @@ class AnotherWorld final : public jaffarPlus::Game
   }
 
   // Updating derivative values after updating the internal state
-  __INLINE__ void stateUpdatePostHook() override {}
+  __INLINE__ void stateUpdatePostHook() override 
+  {
+    _lesterFullMomentum = std::max(*_lesterMomentum1, *_lesterMomentum2) + std::abs(*_lesterMomentum3);
+  }
 
   __INLINE__ void ruleUpdatePreHook() override
   {
     // Resetting magnets ahead of rule re-evaluation
-    _pointMagnet.intensity = 0.0;
-    _pointMagnet.x         = 0.0;
-    _pointMagnet.y         = 0.0;
+    _lesterHorizontalMagnet.room      = 0;
+    _lesterHorizontalMagnet.intensity = 0.0;
+    _lesterHorizontalMagnet.center    = 0.0;
+
+    _lesterVerticalMagnet.room        = 0;
+    _lesterVerticalMagnet.intensity   = 0.0;
+    _lesterVerticalMagnet.center      = 0.0;
+
+    _alienHorizontalMagnet.room      = 0;
+    _alienHorizontalMagnet.intensity = 0.0;
+    _alienHorizontalMagnet.center    = 0.0;
+
+    _elevatorVerticalMagnet.room      = 0;
+    _elevatorVerticalMagnet.intensity = 0.0;
+    _elevatorVerticalMagnet.center    = 0.0;
+
+    _lesterGunLoadMagnet = 0;
+    _lesterAngularMomentumMagnet = 0;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
   {
-    // Updating distance to user-defined point
-    _lesterDistanceToPointX = std::abs(_pointMagnet.x - (float)*_lesterPosX);
-    _lesterDistanceToPointY = std::abs(_pointMagnet.y - (float)*_lesterPosY);
-    _lesterDistanceToPoint  = sqrtf(_lesterDistanceToPointX * _lesterDistanceToPointX + _lesterDistanceToPointY * _lesterDistanceToPointY);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  {
+    serializer.push(&_lesterFullMomentum, sizeof(_lesterFullMomentum));
+  }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  {
+    deserializer.pop(&_lesterFullMomentum, sizeof(_lesterFullMomentum));
+  }
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -146,7 +173,14 @@ class AnotherWorld final : public jaffarPlus::Game
     float reward = 0.0;
 
     // Distance to point magnet
-    reward += -1.0 * _pointMagnet.intensity * _lesterDistanceToPoint;
+    if (_lesterHorizontalMagnet.room  == *_lesterRoom) reward += _lesterHorizontalMagnet.intensity * (512.0f - 1.0f * std::abs((float)_lesterHorizontalMagnet.center - (float)*_lesterPosX));
+    if (_lesterVerticalMagnet.room    == *_lesterRoom) reward += _lesterVerticalMagnet.intensity   * (512.0f - 1.0f * std::abs((float)_lesterVerticalMagnet.center   - (float)*_lesterPosY));
+    if (_alienHorizontalMagnet.room   == *_alienRoom)  reward += _alienHorizontalMagnet.intensity  * (512.0f - 1.0f * std::abs((float)_alienHorizontalMagnet.center  - (float)*_alienPosX));
+    if (_elevatorVerticalMagnet.room  == *_lesterRoom) reward += _elevatorVerticalMagnet.intensity * (512.0f - 1.0f * std::abs((float)_elevatorVerticalMagnet.center - (float)*_elevatorPosY));
+
+    // Rewarding angular momentum (for lvl02)
+    reward += _lesterAngularMomentumMagnet * _lesterFullMomentum;
+    reward += _lesterGunLoadMagnet * (float) *_lesterGunLoad;
 
     // Returning reward
     return reward;
@@ -154,25 +188,85 @@ class AnotherWorld final : public jaffarPlus::Game
 
   void printInfoImpl() const override
   {
-    if (std::abs(_pointMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
-        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _lesterDistanceToPointX);
-        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _lesterDistanceToPointY);
-        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _lesterDistanceToPoint);
-    }
+
+    jaffarCommon::logger::log("[J+] + RAM Contents\n");
+    for (size_t i = 0; i < 16; i++)
+    {
+     jaffarCommon::logger::log("[J+]    ");
+     for (size_t j = 0; j < 16; j++) jaffarCommon::logger::log(" %04X", (uint16_t)_ram[i*16 + j]);
+     jaffarCommon::logger::log("\n");
+    }  
+
+    if (_lesterHorizontalMagnet.room == *_lesterRoom) if (std::abs(_lesterHorizontalMagnet.intensity) > 0.0f)
+        jaffarCommon::logger::log("[J+]  + Lester Horizontal Magnet                 Room: %u, Intensity: %.5f, Center: %3.3f\n", _lesterHorizontalMagnet.room, _lesterHorizontalMagnet.intensity, _lesterHorizontalMagnet.center);
+
+    if (_lesterVerticalMagnet.room == *_lesterRoom) if (std::abs(_lesterVerticalMagnet.intensity) > 0.0f)
+        jaffarCommon::logger::log("[J+]  + Lester Vertical Magnet                   Room: %u, Intensity: %.5f, Center: %3.3f\n", _lesterVerticalMagnet.room, _lesterVerticalMagnet.intensity, _lesterVerticalMagnet.center);
+
+    if (_alienHorizontalMagnet.room == *_alienRoom) if (std::abs(_alienHorizontalMagnet.intensity) > 0.0f)
+        jaffarCommon::logger::log("[J+]  + Alien Horizontal Magnet                  Room: %u, Intensity: %.5f, Center: %3.3f\n", _alienHorizontalMagnet.room, _alienHorizontalMagnet.intensity, _alienHorizontalMagnet.center);
+
+    if (_elevatorVerticalMagnet.room == *_lesterRoom) if (std::abs(_elevatorVerticalMagnet.intensity) > 0.0f)
+        jaffarCommon::logger::log("[J+]  + Elevator Vertical Magnet                 Room: %u, Intensity: %.5f, Center: %3.3f\n", _elevatorVerticalMagnet.room, _elevatorVerticalMagnet.intensity, _elevatorVerticalMagnet.center);
+
+     if (std::abs(_lesterGunLoadMagnet) > 0.0f)
+        jaffarCommon::logger::log("[J+]  + Lester Gun Load Magnet                   Intensity: %.5f\n", _lesterGunLoadMagnet);
+
+     if (std::abs(_lesterAngularMomentumMagnet) > 0.0f)
+        jaffarCommon::logger::log("[J+]  + Angular Momentum Magnet                  Intensity: %.5f\n", _lesterAngularMomentumMagnet);
   }
 
   bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
   {
     bool recognizedActionType = false;
 
-    if (actionType == "Set Point Magnet")
-      {
+    if (actionType == "Set Lester Horizontal Magnet")
+    {
+        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
         auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
-        auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-        rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
+        auto center    = jaffarCommon::json::getNumber<float>(actionJs, "Center");
+        rule.addAction([=, this]() { this->_lesterHorizontalMagnet = pointMagnet_t{.room = room, .intensity = intensity, .center = center }; });
+        recognizedActionType = true;
+    }
+
+    if (actionType == "Set Lester Vertical Magnet")
+    {
+        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto center    = jaffarCommon::json::getNumber<float>(actionJs, "Center");
+        rule.addAction([=, this]() { this->_lesterVerticalMagnet = pointMagnet_t{.room = room, .intensity = intensity, .center = center }; });
+        recognizedActionType = true;
+    }
+
+    if (actionType == "Set Alien Horizontal Magnet")
+    {
+        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto center    = jaffarCommon::json::getNumber<float>(actionJs, "Center");
+        rule.addAction([=, this]() { this->_alienHorizontalMagnet = pointMagnet_t{.room = room, .intensity = intensity, .center = center }; });
+        recognizedActionType = true;
+    }
+
+    if (actionType == "Set Elevator Vertical Magnet")
+    {
+        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto center    = jaffarCommon::json::getNumber<float>(actionJs, "Center");
+        rule.addAction([=, this]() { this->_elevatorVerticalMagnet = pointMagnet_t{.room = room, .intensity = intensity, .center = center }; });
+        recognizedActionType = true;
+    }
+
+    if (actionType == "Set Lester Gun Load Magnet")
+    {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        rule.addAction([=, this]() { this->_lesterGunLoadMagnet = intensity; });
+        recognizedActionType = true;
+    }
+
+    if (actionType == "Set Angular Momentum Magnet")
+    {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        rule.addAction([=, this]() { this->_lesterAngularMomentumMagnet = intensity; });
         recognizedActionType = true;
     }
 
@@ -188,22 +282,23 @@ class AnotherWorld final : public jaffarPlus::Game
   // Datatype to describe a point magnet
   struct pointMagnet_t
   {
+    uint8_t room = 0;
     float intensity = 0.0; // How strong the magnet is
-    float x         = 0.0; // What is the x point of attraction
-    float y         = 0.0; // What is the y point of attraction
+    float center    = 0.0; // What is the point of attraction
   };
 
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
-  pointMagnet_t _pointMagnet;
+  pointMagnet_t _lesterHorizontalMagnet;
+  pointMagnet_t _lesterVerticalMagnet;
+  pointMagnet_t _alienHorizontalMagnet;
+  pointMagnet_t _elevatorVerticalMagnet;
+
+  float _lesterAngularMomentumMagnet;
+  float _lesterGunLoadMagnet;
 
   // Temporary storage for the emulator state for calculating hash
   uint8_t *_tempStorage;
   size_t   _tempStorageSize;
-
-  // Game-Specific values
-  float _lesterDistanceToPointX;
-  float _lesterDistanceToPointY;
-  float _lesterDistanceToPoint;
 
   // Pointer to emulator's low memory storage
   int16_t *_ram;
@@ -234,6 +329,8 @@ class AnotherWorld final : public jaffarPlus::Game
   int16_t *_gameTimer;
   int16_t *_elevatorPosY;
   int16_t *_fumesState;
+
+  float _lesterFullMomentum;
 
   // Null input index to remember the last valid input
   InputSet::inputIndex_t _nullInputIdx;

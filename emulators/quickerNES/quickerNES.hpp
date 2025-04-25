@@ -24,7 +24,11 @@ class QuickerNES final : public Emulator
 {
   public:
 
+  #ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
+  static std::string getName() { return "QuickerNESArkanoid"; }
+  #else
   static std::string getName() { return "QuickerNES"; }
+  #endif
 
   // Constructor must only do configuration parsing
   QuickerNES(const nlohmann::json &config)
@@ -44,6 +48,9 @@ class QuickerNES final : public Emulator
 
     // Getting initial sequence file path
     _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+
+    // For testing purposes, the sequence file path can be overriden by environment variables
+    if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_INITIAL_SEQUENCE_FILE_PATH")) _initialSequenceFilePath = std::string(value);
 
     // Parsing rom file SHA1
     _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");

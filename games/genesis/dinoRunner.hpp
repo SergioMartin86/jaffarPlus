@@ -90,9 +90,9 @@ class DinoRunner final : public jaffarPlus::Game
   void printInfoImpl() const override
   {
     if (std::abs(_pointMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.y);
-        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPoint);
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPoint);
     }
   }
 
@@ -101,11 +101,11 @@ class DinoRunner final : public jaffarPlus::Game
     bool recognizedActionType = false;
 
     if (actionType == "Set Point Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-        rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .y = y}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .y = y}; });
+      recognizedActionType = true;
     }
 
     return recognizedActionType;

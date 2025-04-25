@@ -1,0 +1,175 @@
+{
+  "Driver Configuration":
+  {
+   "End On First Win State": true,
+   "Max Steps": 0,
+ 
+   "Save Intermediate Results":
+   {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+   }
+  },
+ 
+  "Engine Configuration":
+  {
+   "State Database":
+   {
+     "Type": "Numa Aware",
+     "Max Size per NUMA Domain (Mb)":
+     [ 
+       500,
+       500
+     ],
+   
+     "Scavenger Queues Size": 32,
+     "Scavenging Depth": 32,
+ 
+     "Compression":
+     {
+       "Use Differential Compression": false, 
+       "Max Difference (bytes)": 6000,
+       "Use Zlib Compression": false
+     }
+   },
+ 
+   "Hash Database":
+   {
+     "Max Store Count": 2,
+     "Max Store Size (Mb)": 10000
+   }
+ },
+ 
+ "Emulator Configuration":
+ {
+   "Emulator Name": "QuickerRAWGL",
+   "Game Data Path": "amiga",
+   "Initial Sequence File Path": "stage03a.initial.sol",
+   "Initial RAM Data File Path": ""
+ },
+  
+ "Runner Configuration":
+ {
+  "Frameskip Rate": 0,
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 500
+  },
+ 
+   "Allowed Input Sets":
+   [
+     {
+       "Conditions":
+       [
+       ],
+ 
+       "Inputs":
+       [
+        "...L..",
+        "....R."
+       ],
+ 
+       "Stop Input Evaluation": false
+     }
+   ],
+ 
+   "Test Candidate Inputs": false,
+   "Candidate Input Sets": [ ]
+ },
+ 
+ "Game Configuration":
+ {
+   "Game Name": "RAW / AnotherWorld",
+   "Frame Rate": 60.10,
+   "Last Input Step Reward": 0.0,
+ 
+   "Print Properties":
+   [
+     "Lester Swim State",   
+     "Lester Pos X",        
+     "Lester Pos Y",        
+     "Lester Room",         
+     "Lester Action",       
+     "Lester State",        
+     "Game Script State",   
+     "Game Script State 2",
+     "Game Animation State",
+     "Lester Dead State",   
+     "Lester Momentum1",    
+     "Lester Momentum2",    
+     "Lester Momentum3",    
+     "Lester Has Gun",      
+     "Lester Gun Ammo",     
+     "Lester Gun Load",     
+     "Lester Direction",    
+     "Alien State",         
+     "Alien Room",          
+     "Alien Pos X",         
+     "Game Timer",          
+     "Elevator Pos Y",      
+     "Fumes State"         
+   ],
+ 
+   "Hash Properties":
+   [
+   ],
+ 
+   "Rules":
+   [
+    {
+      "Label": 1001,
+      "Conditions":
+      [
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Set Lester Vertical Magnet", "Room": 37, "Intensity": 1.0, "Center": 200 },
+       { "Type": "Set Lester Horizontal Magnet", "Room": 37, "Intensity": -0.001, "Center": 155 }
+      ]
+     },
+     
+     {
+      "Label": 1002,
+      "Conditions":
+      [
+        { "Property": "Lester Pos Y", "Op": ">", "Value":  194 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     },
+     
+     {
+      "Label": 1999,
+      "Conditions":
+      [
+       { "Property": "VM Value [4]", "Op": ">", "Value": 16384 }
+      ],
+      
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Fail" }
+      ]
+     }
+   ]
+  }
+ }
+ 

@@ -19,8 +19,22 @@
  {
   "State Database":
   {
-    "Type": "Plain",
-    "Max Size (Mb)": 1000
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      50000,
+      50000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
   },
 
   "Hash Database":
@@ -33,10 +47,10 @@
 "Emulator Configuration":
 {
   "Emulator Name": "QuickerNES",
-  "Rom File Path": "../../../extern/quickerSMBC/tests/roms/Super Mario Bros. (JU) (PRG0) [!].nes",
+  "Rom File Path": "../../../extern/jaffarPlus/extern/quickerNES/tests/roms/Super Mario Bros. (JU) (PRG0) [!].nes",
   "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
-  "Initial State File Path": "",
   "Initial Sequence File Path": "world101a.quickerNES.initial.sol",
+  "Initial State File Path": "",
   "Initial RAM Data File Path": "",
   "Controller 1 Type": "Joypad",
   "Controller 2 Type": "None",
@@ -46,18 +60,16 @@
  
 "Runner Configuration":
 {
-  "Frameskip Rate": 0,
+  "Frameskip Rate": 0, 
   "Hash Step Tolerance": 4,
-  "Show Empty Input Slots": false,
-  "Show Allowed Inputs": false,
-  "Bypass Hash Calculation": false,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
 
   "Store Input History": 
   {
     "Enabled": true,
     "Max Size": 1000
   },
-
 
   "Allowed Input Sets":
   [
@@ -127,7 +139,7 @@
       "Label": 1999,
       "Conditions":
       [
-        { "Property": "Mario Pos X", "Op": ">", "Value": 100 }
+        { "Property": "Mario Pos X", "Op": ">", "Value": 1000 }
       ],
       
       "Satisfies": [ ],

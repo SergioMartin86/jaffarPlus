@@ -26,6 +26,9 @@ class Engine final
   // Base constructor
   Engine(const nlohmann::json &emulatorConfig, const nlohmann::json &gameConfig, const nlohmann::json &runnerConfig, const nlohmann::json &engineConfig)
   {
+    // Overriding thread count, if requested
+    if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_THREAD_COUNT")) jaffarCommon::parallel::setThreadCount(std::stoul(value));
+    
     // Getting number of threads
     _threadCount = jaffarCommon::parallel::getMaxThreadCount();
 

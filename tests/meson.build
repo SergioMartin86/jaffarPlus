@@ -7,7 +7,7 @@ testTimeout = 120
 bash = find_program('bash')
 validateExamplesScript = 'validateExamples.sh'
 
-test(emulator,
+test('ValidateExamples',
       bash,
       workdir : meson.current_source_dir(),
       timeout: testTimeout,

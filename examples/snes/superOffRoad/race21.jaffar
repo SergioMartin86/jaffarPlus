@@ -1,0 +1,406 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 0,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      10000,
+      10000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerSnes9x",
+  "Rom File Path": "../../../extern/jaffarPlus/extern/quickerSnes9x/tests/roms/Super Off Road (U) [!].smc",
+  "Rom File SHA1": "1784C53C1B60047337109A5A9BF6A638D77B4219",
+  "Initial State File Path": "",
+  "Initial Sequence File Path": "race21.initial.sol",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "None",
+  "Disabled State Properties": [ "SRA", "VRA", "CTL" ],
+  "Work RAM Serialization Size": 2048
+},
+ 
+"Runner Configuration":
+{
+  "Frameskip Rate": 1,
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 3000
+  },
+
+  "Allowed Input Sets":
+  [
+   {
+     "Conditions":
+     [
+     ],
+ 
+     "Inputs":
+     [
+      "|..|..L....B....|",
+      "|..|...R...B....|",
+      "|..|......YB....|"
+     ],
+
+     "Stop Input Evaluation": false
+   }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "SNES / Super Off Road",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Money100",     
+    "Money10",      
+    "Money1",       
+    "Player Input", 
+    "Player Speed", 
+    "Player Pos X1",
+    "Player Pos X2",
+    "Player Pos Y1",
+    "Player Pos Y2",
+    "Player Angle", 
+    "Player Lap",
+    "Player Checkpoint",
+    "Turbos"   
+  ],
+
+  "Hash Properties":
+  [
+    "Money100",     
+    "Money10",      
+    "Money1",       
+    "Player Input", 
+    "Player Speed", 
+    "Player Pos X1",
+    "Player Pos X2",
+    "Player Pos Y1",
+    "Player Pos Y2",
+    "Player Angle", 
+    "Player Lap",
+    "Player Checkpoint",
+    "Turbos"   
+  ],
+
+  "Checkpoint Magnets":
+  [
+  [ 1  ,13 , 2],
+  [ 2  ,3  , 10],
+  [ 3  ,10 , 9],
+  [ 13 ,27 , 30],
+  [ 14 ,34 , 6],
+  [ 0  ,25 , 1]
+ ],
+
+  "Rules":
+  [
+   {
+     "Label": 1,
+     "Conditions":
+     [
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Set Lap Magnet", "Intensity": 10000.0 },
+      { "Type": "Set Checkpoint Magnet", "Intensity": 100.0 },
+      { "Type": "Set Money Magnet", "Intensity": 1000.0 },
+      { "Type": "Set Turbo Magnet", "Intensity": 1000.0 },
+      { "Type": "Set Point Magnet", "Intensity": 1.0 },
+      { "Type": "Set Speed Magnet", "Intensity": 0.01 }
+     ]
+    },
+
+    {
+      "Label": 2,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 1 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 13 },
+        { "Property": "Player Pos Y1", "Op": ">=", "Value": 16 }
+      ],
+      
+      "Satisfies": [ 1 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 0.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 1.0, "X": 14, "Y": 40 }
+      ]
+     },
+
+     {
+      "Label": 3,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 1 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 13 },
+        { "Property": "Player Pos Y1", "Op": ">=", "Value": 32 }
+      ],
+      
+      "Satisfies": [ 2 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 0.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 1.0, "X": 35, "Y": 30 }
+      ]
+     },
+
+     {
+      "Label": 4,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 1 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 14 }
+      ],
+      
+      "Satisfies": [ 3 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 1.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 0.0, "X": 0, "Y": 0 }
+      ]
+     },
+
+     {
+      "Label": 5,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 2 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 13 },
+        { "Property": "Player Pos Y1", "Op": ">=", "Value": 16 }
+      ],
+      
+      "Satisfies": [ 4 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 0.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 1.0, "X": 14, "Y": 40 }
+      ]
+     },
+
+     {
+      "Label": 6,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 2 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 13 },
+        { "Property": "Player Pos Y1", "Op": ">=", "Value": 32 }
+      ],
+      
+      "Satisfies": [ 5 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 0.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 1.0, "X": 35, "Y": 30 }
+      ]
+     },
+
+     {
+      "Label": 7,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 2 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 14 }
+      ],
+      
+      "Satisfies": [ 6 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 1.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 0.0, "X": 0, "Y": 0 }
+      ]
+     },
+
+     {
+      "Label": 8,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 3 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 13 },
+        { "Property": "Player Pos Y1", "Op": ">=", "Value": 16 }
+      ],
+      
+      "Satisfies": [ 7 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 0.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 1.0, "X": 14, "Y": 40 }
+      ]
+     },
+
+     {
+      "Label": 9,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 3 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 13 },
+        { "Property": "Player Pos Y1", "Op": ">=", "Value": 32 }
+      ],
+      
+      "Satisfies": [ 8 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },        
+       { "Type": "Set Point Magnet", "Intensity": 0.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 1.0, "X": 35, "Y": 30 }
+      ]
+     },
+
+     {
+      "Label": 10,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 3 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 14 }
+      ],
+      
+      "Satisfies": [ 9 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 1.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 0.0, "X": 0, "Y": 0 }
+      ]
+     },
+
+     {
+      "Label": 11,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 4 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 13 },
+        { "Property": "Player Pos Y1", "Op": ">=", "Value": 16 }
+      ],
+      
+      "Satisfies": [ 10 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 0.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 1.0, "X": 14, "Y": 40 }
+      ]
+     },
+
+     {
+      "Label": 12,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 4 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 13 },
+        { "Property": "Player Pos Y1", "Op": ">=", "Value": 32 }
+      ],
+      
+      "Satisfies": [ 11 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 0.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 1.0, "X": 35, "Y": 30 }
+      ]
+     },
+
+     {
+      "Label": 13,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 4 },
+        { "Property": "Player Checkpoint", "Op": "==", "Value": 14 }
+      ],
+      
+      "Satisfies": [ 12 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point Magnet", "Intensity": 1.0 },
+       { "Type": "Set Override Point Magnet", "Intensity": 0.0, "X": 0, "Y": 0 }
+      ]
+     },
+
+     {
+      "Label": 18,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 5 }
+      ],
+      
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     }
+  ]
+ }
+}

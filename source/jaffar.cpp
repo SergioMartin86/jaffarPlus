@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
   argparse::ArgumentParser program("jaffar", "1.0");
 
   program.add_argument("configFile").help("path to the Jaffar configuration script (.jaffar) file to run.").required();
+  program.add_argument("--dryRun").help("Only check for configuration without initializing or running the engine").default_value(false).implicit_value(true);
 
   // Try to parse arguments
   try
@@ -23,6 +24,9 @@ int main(int argc, char *argv[])
 
   // Getting config file name
   const std::string configFile = program.get<std::string>("configFile");
+
+  // Getting dry run option
+  const bool isDryRun = program.get<bool>("--dryRun");
 
   // Reporting script file
   jaffarCommon::logger::log("[J+] Loading script file: '%s'\n", configFile.c_str());
@@ -46,6 +50,13 @@ int main(int argc, char *argv[])
   // Creating driver to run the Jaffar engine
   auto d = jaffarPlus::Driver::getDriver(configFile, config);
 
+  // Returning now if dry running
+  if (isDryRun) 
+  {
+    jaffarCommon::logger::log("[J+] Finished dry run successfully.\n");
+    return 0;
+  }
+  
   // Initializing driver
   d->initialize();
 
@@ -63,9 +74,6 @@ int main(int argc, char *argv[])
 
   // Printing exit message
   jaffarCommon::logger::log("[J+] Step %lu - Exit Reason: %s\n", finalStep, exitReasonString.c_str());
-
-  // For testing purposes, return zero if executed properly (regardless of exit reason)
-  if (std::getenv("JAFFAR_OVERRIDE_RETURN_CODE")) return 0;
 
   // Return exit reason
   return exitReason;

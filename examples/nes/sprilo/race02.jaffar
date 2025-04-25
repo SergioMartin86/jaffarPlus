@@ -24,7 +24,17 @@
     [ 
       2000,
       2000
-    ]
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
   },
 
   "Hash Database":
@@ -45,17 +55,17 @@
   "Controller 1 Type": "Joypad",
   "Controller 2 Type": "None",
   "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ],
-  "Nametable Block Size": 2048
+  "Nametable Block Size": 0
 },
  
 "Runner Configuration":
 {
-  "Frameskip Rate": 0,
+  "Frameskip Rate": 0, 
   "Hash Step Tolerance": 0,
-  "Show Empty Input Slots": false,
-  "Show Allowed Inputs": false,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
   "Bypass Hash Calculation": false,
-
+  
   "Store Input History": 
   {
     "Enabled": true,

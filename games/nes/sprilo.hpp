@@ -50,7 +50,7 @@ class Sprilo final : public jaffarPlus::Game
     _playerPosY  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
     _lapProgress = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Lap Progress")]->getPointer();
 
-    // Getting index for a non input
+    // Getting index for a non input 
     _nullInputIdx = _emulator->registerInput("|..|........|");
   }
 
@@ -128,11 +128,11 @@ class Sprilo final : public jaffarPlus::Game
   void printInfoImpl() const override
   {
     if (std::abs(_pointMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
-        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
-        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
-        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
     }
   }
 
@@ -141,30 +141,30 @@ class Sprilo final : public jaffarPlus::Game
     bool recognizedActionType = false;
 
     if (actionType == "Set Point Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
-        auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-        rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Advance Lap Progress")
-      {
-        rule.addAction([this]() { *_lapProgress = *_lapProgress + 1; });
-        recognizedActionType = true;
+    {
+      rule.addAction([this]() { *_lapProgress = *_lapProgress + 1; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Clear Lap Progress")
-      {
-        rule.addAction([this]() { *_lapProgress = 0; });
-        recognizedActionType = true;
+    {
+      rule.addAction([this]() { *_lapProgress = 0; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Stop Processing Reward")
-      {
-        rule.addAction([this]() { _stopProcessingReward = true; });
-        recognizedActionType = true;
+    {
+      rule.addAction([this]() { _stopProcessingReward = true; });
+      recognizedActionType = true;
     }
 
     return recognizedActionType;
