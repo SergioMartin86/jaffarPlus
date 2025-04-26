@@ -32,6 +32,9 @@ public:
   {
     _maxStoreCount  = jaffarCommon::json::getNumber<size_t>(config, "Max Store Count");
     _maxStoreSizeMb = jaffarCommon::json::getNumber<double>(config, "Max Store Size (Mb)");
+
+    // For testing purposes, the maximum size can be overriden by environment variables
+    if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB")) _maxStoreSizeMb = std::stoul(value);
   }
 
   __INLINE__ void initialize()
