@@ -66,7 +66,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerNES
         path: build/meson-logs/
 
   # Build (QuickerNESArkanoid)
@@ -95,7 +95,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerNESArkanoid
         path: build/meson-logs/
 
   # Build (QuickerSDLPoP)
@@ -124,7 +124,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerSDLPoP
         path: build/meson-logs/
 
   # Build (QuickerSnes9x)
@@ -153,7 +153,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerSnes9x
         path: build/meson-logs/
 
   # Build (QuickerGPGX)
@@ -182,7 +182,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerGPGX
         path: build/meson-logs/
 
   # Build (QuickerStella)
@@ -211,7 +211,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerStella
         path: build/meson-logs/      
 
   # Build (Atari2600Hawk)
@@ -245,7 +245,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-Atari2600Hawk
         path: build/meson-logs/
 
   # Build (QuickerSMBC)
@@ -303,7 +303,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerNEORAW
         path: build/meson-logs/
 
   # Build (QuickerRAWGL)
@@ -332,7 +332,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerRAWGL
         path: build/meson-logs/
 
   # Build (QuickerArkBot)
@@ -361,7 +361,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerArkBot
         path: build/meson-logs/
 
   # Build (QuickerMGBA)
@@ -390,7 +390,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerMGBA
         path: build/meson-logs/
 
   # Build (QuickerGambatte)
@@ -419,7 +419,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerGambatte
         path: build/meson-logs/
       
   # Build (QuickerDSDA)
@@ -448,5 +448,5 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: meson-logs
+        name: meson-logs-QuickerDSDA
         path: build/meson-logs/
