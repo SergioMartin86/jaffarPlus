@@ -14,32 +14,30 @@ export JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10
 export JAFFAR_ENGINE_OVERRIDE_MAX_THREAD_COUNT=1
 
 # Getting emulator to test
+emulatorLine='"Emulator Name":'
 emulatorName=${1}
 
-echo ${scriptFiles}
-
-for f in ${scriptFiles}
+for scriptFile in ${scriptFiles}
 do
- dirName=`dirname ${f}`
- fileName=`basename ${f}`
- echo ${dirName}
- echo ${fileName}
-
- pushd ${dirName}
- echo "Folder: ${dirName}"
-
+ dirName=`dirname ${scriptFile}`
+ fileName=`basename ${scriptFile}`
+ 
  # Checking if the selected emulator is being tested
  set +e
- cat ${fileName} | grep \"${emulatorName}\"
- emulatorFound=$?
+ cat ${scriptFile} | grep "${emulatorLine}" > /dev/null
+ emulatorLineFound=$?
+ cat ${scriptFile} | grep \"${emulatorName}\" > /dev/null
+ emulatorNameFound=$?
  set -e
 
- if [ ${emulatorFound} -ne 0 ]; then
-   echo "Emulator not found, ignoring example"
- else
-   echo "Running Command: ${jaffarPath} ${fileName}"
-   ${jaffarPath} --dryRun ${fileName}
+ if [ ${emulatorLineFound} -ne 0 ]; then
+   echo "File: ${scriptFile} has no ${emulatorLine} entry"
+   exit -1
  fi
- 
- popd
+
+ if [ ${emulatorNameFound} -eq 0 ]; then
+   command="${jaffarPath} --dryRun ${scriptFile}"
+   echo ${command}
+   ${command}
+ fi
 done
