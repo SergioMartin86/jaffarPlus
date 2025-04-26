@@ -6,6 +6,7 @@
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
 #include <map>
 #include <memory>
