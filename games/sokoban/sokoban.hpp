@@ -1,8 +1,8 @@
 #pragma once
 
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
 
 namespace jaffarPlus
 {
@@ -15,19 +15,15 @@ namespace sokoban
 
 class Sokoban final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "Sokoban"; }
 
-  Sokoban(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  Sokoban(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
-    _quickerBan = ((jaffarPlus::emulator::QuickerBan *)_emulator.get())->getEmulator();
+    _quickerBan = ((jaffarPlus::emulator::QuickerBan*)_emulator.get())->getEmulator();
 
     registerGameProperty("Can Move Up", &_canMoveUp, Property::datatype_t::dt_bool, Property::endianness_t::little);
     registerGameProperty("Can Move Down", &_canMoveDown, Property::datatype_t::dt_bool, Property::endianness_t::little);
@@ -64,7 +60,7 @@ class Sokoban final : public jaffarPlus::Game
     _isDeadlock = _quickerBan->getIsDeadlock();
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override { hashEngine.Update(_quickerBan->getState(), _quickerBan->getStateSize()); }
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override { hashEngine.Update(_quickerBan->getState(), _quickerBan->getStateSize()); }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
@@ -99,7 +95,7 @@ class Sokoban final : public jaffarPlus::Game
 
   __INLINE__ void ruleUpdatePostHook() override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.push(&_hasMovedBox, sizeof(_hasMovedBox));
     serializer.push(&_pusherPrevPosX, sizeof(_pusherPrevPosX));
@@ -107,7 +103,7 @@ class Sokoban final : public jaffarPlus::Game
     serializer.push(&_isDeadlock, sizeof(_isDeadlock));
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     deserializer.pop(&_hasMovedBox, sizeof(_hasMovedBox));
     deserializer.pop(&_pusherPrevPosX, sizeof(_pusherPrevPosX));
@@ -136,7 +132,7 @@ class Sokoban final : public jaffarPlus::Game
     _quickerBan->printInfo();
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
@@ -149,8 +145,8 @@ class Sokoban final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  uint8_t *_pusherPosX;
-  uint8_t *_pusherPosY;
+  uint8_t* _pusherPosX;
+  uint8_t* _pusherPosY;
 
   bool    _isDeadlock;
   uint8_t _pusherPrevPosX;
@@ -162,7 +158,7 @@ class Sokoban final : public jaffarPlus::Game
   bool    _canMoveRight;
 
   uint16_t             _remainingBoxes;
-  jaffar::EmuInstance *_quickerBan;
+  jaffar::EmuInstance* _quickerBan;
 };
 
 } // namespace sokoban

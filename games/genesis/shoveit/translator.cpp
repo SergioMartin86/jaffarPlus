@@ -1,25 +1,25 @@
-#include <chrono>
-#include <cstdlib>
-#include <argparse/argparse.hpp>
-#include <jaffarCommon/json.hpp>
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/exceptions.hpp>
-#include <jaffarCommon/string.hpp>
-#include <jaffarCommon/concurrent.hpp>
-#include <jaffarCommon/timing.hpp>
-#include <jaffarCommon/deserializers/contiguous.hpp>
-#include <jaffarCommon/serializers/contiguous.hpp>
-#include <jaffarCommon/parallel.hpp>
-#include <gameList.hpp>
-#include <emulatorList.hpp>
 #include "emulator.hpp"
 #include "game.hpp"
 #include "runner.hpp"
-#include <random>
+#include <argparse/argparse.hpp>
+#include <chrono>
+#include <cstdlib>
+#include <emulatorList.hpp>
+#include <gameList.hpp>
+#include <jaffarCommon/concurrent.hpp>
+#include <jaffarCommon/deserializers/contiguous.hpp>
+#include <jaffarCommon/exceptions.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <jaffarCommon/parallel.hpp>
+#include <jaffarCommon/serializers/contiguous.hpp>
+#include <jaffarCommon/string.hpp>
+#include <jaffarCommon/timing.hpp>
 #include <math.h>
+#include <random>
 #include <thread>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   // Parsing command line arguments
   argparse::ArgumentParser program("jaffar-tester", "1.0");
@@ -29,13 +29,13 @@ int main(int argc, char *argv[])
 
   // Try to parse arguments
   try
-    {
-      program.parse_args(argc, argv);
-    }
-  catch (const std::runtime_error &err)
-    {
-      JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str());
-    }
+  {
+    program.parse_args(argc, argv);
+  }
+  catch (const std::runtime_error& err)
+  {
+    JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str());
+  }
 
   // Parsing config file
   const std::string configFile = program.get<std::string>("configFile");
@@ -48,13 +48,13 @@ int main(int argc, char *argv[])
   // Parsing configuration file
   nlohmann::json config;
   try
-    {
-      config = nlohmann::json::parse(configFileString);
-    }
-  catch (const std::exception &err)
-    {
-      JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
-    }
+  {
+    config = nlohmann::json::parse(configFileString);
+  }
+  catch (const std::exception& err)
+  {
+    JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
+  }
 
   // Getting input file
   const std::string inputFile = program.get<std::string>("InputFile");
@@ -94,56 +94,56 @@ int main(int argc, char *argv[])
 
   // Executing commands
   for (size_t i = 0; i < inputFileString.size(); i++)
-    {
-      // // Advance while the player is still moving
-      // while (g->getMoveTimer() != 0)
-      // {
-      //   printf("|..|........|\n");
-      //   g->advanceState(g->_nullInputIdx);
-      // }
+  {
+    // // Advance while the player is still moving
+    // while (g->getMoveTimer() != 0)
+    // {
+    //   printf("|..|........|\n");
+    //   g->advanceState(g->_nullInputIdx);
+    // }
 
-      // // Run the required input
-      // if (inputFileString[i] == 'l' || inputFileString[i] == 'L')
-      // {
-      //   printf("|..|..L.....|\n");
-      //   g->advanceState(g->_leftInputIdx);
-      // }
-      // if (inputFileString[i] == 'r' || inputFileString[i] == 'R')
-      // {
-      //   printf("|..|...R....|\n");
-      //   g->advanceState(g->_rightInputIdx);
-      // }
-      // if (inputFileString[i] == 'u' || inputFileString[i] == 'U')
-      // {
-      //   printf("|..|U.......|\n");
-      //   g->advanceState(g->_upInputIdx);
-      // }
-      // if (inputFileString[i] == 'd' || inputFileString[i] == 'D')
-      // {
-      //   printf("|..|.D......|\n");
-      //   g->advanceState(g->_downInputIdx);
-      // }
+    // // Run the required input
+    // if (inputFileString[i] == 'l' || inputFileString[i] == 'L')
+    // {
+    //   printf("|..|..L.....|\n");
+    //   g->advanceState(g->_leftInputIdx);
+    // }
+    // if (inputFileString[i] == 'r' || inputFileString[i] == 'R')
+    // {
+    //   printf("|..|...R....|\n");
+    //   g->advanceState(g->_rightInputIdx);
+    // }
+    // if (inputFileString[i] == 'u' || inputFileString[i] == 'U')
+    // {
+    //   printf("|..|U.......|\n");
+    //   g->advanceState(g->_upInputIdx);
+    // }
+    // if (inputFileString[i] == 'd' || inputFileString[i] == 'D')
+    // {
+    //   printf("|..|.D......|\n");
+    //   g->advanceState(g->_downInputIdx);
+    // }
 
-      // // Wait until the player starts moving
-      // while (g->getMoveTimer() == 0)
-      // {
-      //   printf("|..|........|\n");
-      //   g->advanceState(g->_nullInputIdx);
-      // }
+    // // Wait until the player starts moving
+    // while (g->getMoveTimer() == 0)
+    // {
+    //   printf("|..|........|\n");
+    //   g->advanceState(g->_nullInputIdx);
+    // }
 
-      // Run the required input
-      if (inputFileString[i] == 'l' || inputFileString[i] == 'L') printf("|..|..L.....|\n");
-      if (inputFileString[i] == 'r' || inputFileString[i] == 'R') printf("|..|...R....|\n");
-      if (inputFileString[i] == 'u' || inputFileString[i] == 'U') printf("|..|U.......|\n");
-      if (inputFileString[i] == 'd' || inputFileString[i] == 'D') printf("|..|.D......|\n");
-      if (i == 0) printf("|..|........|\n");
-      if (i == 0) printf("|..|........|\n");
-      if (i == 0) printf("|..|........|\n");
-      if (i == 0) printf("|..|........|\n");
-      for (size_t j = 0; j < 15; j++) printf("|..|........|\n");
+    // Run the required input
+    if (inputFileString[i] == 'l' || inputFileString[i] == 'L') printf("|..|..L.....|\n");
+    if (inputFileString[i] == 'r' || inputFileString[i] == 'R') printf("|..|...R....|\n");
+    if (inputFileString[i] == 'u' || inputFileString[i] == 'U') printf("|..|U.......|\n");
+    if (inputFileString[i] == 'd' || inputFileString[i] == 'D') printf("|..|.D......|\n");
+    if (i == 0) printf("|..|........|\n");
+    if (i == 0) printf("|..|........|\n");
+    if (i == 0) printf("|..|........|\n");
+    if (i == 0) printf("|..|........|\n");
+    for (size_t j = 0; j < 15; j++) printf("|..|........|\n");
 
-      // printf("%c\n", inputFileString[i]);
-    }
+    // printf("%c\n", inputFileString[i]);
+  }
 
   // _nullInputIdx   = _emulator->registerInput("|..|........|");
   // _leftInputIdx   = _emulator->registerInput("|..|..L.....|");

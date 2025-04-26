@@ -1,9 +1,9 @@
 #pragma once
 
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 
 namespace jaffarPlus
 {
@@ -16,16 +16,12 @@ namespace genesis
 
 class Sonic final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "Genesis / Sonic"; }
 
-  Sonic(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  Sonic(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -45,8 +41,8 @@ class Sonic final : public jaffarPlus::Game
     registerGameProperty("Checkpoint", &_workRAM[0x00FE30], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _sonicPosX = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Sonic Pos X")]->getPointer();
-    _sonicPosY = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Sonic Pos Y")]->getPointer();
+    _sonicPosX = (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Sonic Pos X")]->getPointer();
+    _sonicPosY = (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Sonic Pos Y")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -55,11 +51,11 @@ class Sonic final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     hashEngine.Update(&_workRAM[0xC800], 0xD300 - 0xC800); // Sonic properties
     hashEngine.Update(&_workRAM[0xF100], 0xF100 - 0xF002);
-    //hashEngine.Update(&_workRAM[0xF600], 0xF900 - 0xF600);
+    // hashEngine.Update(&_workRAM[0xF600], 0xF900 - 0xF600);
   }
 
   // Updating derivative values after updating the internal state
@@ -89,9 +85,9 @@ class Sonic final : public jaffarPlus::Game
     _sonic1DistanceToPoint2D = std::sqrt(distX * distX + distY * distY);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override {}
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) {}
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -110,52 +106,52 @@ class Sonic final : public jaffarPlus::Game
   void printInfoImpl() const override
   {
     if (std::abs(_pointXMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point X Magnet                           Intensity: %.5f, Pos: %3.3f\n", _pointXMagnet.intensity, _pointXMagnet.pos);
-        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _sonic1DistanceToPointX);
+    {
+      jaffarCommon::logger::log("[J+]  + Point X Magnet                           Intensity: %.5f, Pos: %3.3f\n", _pointXMagnet.intensity, _pointXMagnet.pos);
+      jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _sonic1DistanceToPointX);
     }
 
     if (std::abs(_pointYMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point Y Magnet                           Intensity: %.5f, Pos: %3.3f\n", _pointYMagnet.intensity, _pointYMagnet.pos);
-        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _sonic1DistanceToPointY);
+    {
+      jaffarCommon::logger::log("[J+]  + Point Y Magnet                           Intensity: %.5f, Pos: %3.3f\n", _pointYMagnet.intensity, _pointYMagnet.pos);
+      jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _sonic1DistanceToPointY);
     }
 
     if (std::abs(_point2DMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log(
-          "[J+]  + Point 2D Magnet                          Intensity: %.5f, Pos: %3.3f, %3.3f\n", _point2DMagnet.intensity, _point2DMagnet.posX, _point2DMagnet.posY);
-        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _sonic1DistanceToPoint2D);
+    {
+      jaffarCommon::logger::log("[J+]  + Point 2D Magnet                          Intensity: %.5f, Pos: %3.3f, %3.3f\n", _point2DMagnet.intensity, _point2DMagnet.posX,
+                                _point2DMagnet.posY);
+      jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _sonic1DistanceToPoint2D);
     }
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
     if (actionType == "Set Point X Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
-        rule.addAction([=, this]() { this->_pointXMagnet = point1DMagnet_t{.intensity = intensity, .pos = pos}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
+      rule.addAction([=, this]() { this->_pointXMagnet = point1DMagnet_t{.intensity = intensity, .pos = pos}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Point Y Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
-        rule.addAction([=, this]() { this->_pointYMagnet = point1DMagnet_t{.intensity = intensity, .pos = pos}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
+      rule.addAction([=, this]() { this->_pointYMagnet = point1DMagnet_t{.intensity = intensity, .pos = pos}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Point 2D Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto posX      = jaffarCommon::json::getNumber<float>(actionJs, "Pos X");
-        auto posY      = jaffarCommon::json::getNumber<float>(actionJs, "Pos Y");
-        rule.addAction([=, this]() { this->_point2DMagnet = point2DMagnet_t{.intensity = intensity, .posX = posX, .posY = posY}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto posX      = jaffarCommon::json::getNumber<float>(actionJs, "Pos X");
+      auto posY      = jaffarCommon::json::getNumber<float>(actionJs, "Pos Y");
+      rule.addAction([=, this]() { this->_point2DMagnet = point2DMagnet_t{.intensity = intensity, .posX = posX, .posY = posY}; });
+      recognizedActionType = true;
     }
 
     return recognizedActionType;
@@ -187,8 +183,8 @@ class Sonic final : public jaffarPlus::Game
   point1DMagnet_t _pointYMagnet;
   point2DMagnet_t _point2DMagnet;
 
-  uint16_t *_sonicPosX;
-  uint16_t *_sonicPosY;
+  uint16_t* _sonicPosX;
+  uint16_t* _sonicPosY;
 
   // Game-Specific values
   float _sonic1DistanceToPointX;
@@ -196,7 +192,7 @@ class Sonic final : public jaffarPlus::Game
   float _sonic1DistanceToPoint2D;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_workRAM;
+  uint8_t* _workRAM;
 };
 
 } // namespace genesis

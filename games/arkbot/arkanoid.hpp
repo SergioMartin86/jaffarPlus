@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
-#include <quickerArkBot/quickerArkBot.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
+#include <memory>
+#include <quickerArkBot/quickerArkBot.hpp>
 
 namespace jaffarPlus
 {
@@ -18,14 +18,12 @@ namespace arkbot
 
 class Arkanoid final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "ArkBot / Arkanoid"; }
 
-  Arkanoid(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
+  Arkanoid(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
-    _quickerArkBot = dynamic_cast<jaffarPlus::emulator::QuickerArkBot *>(_emulator.get());
+    _quickerArkBot = dynamic_cast<jaffarPlus::emulator::QuickerArkBot*>(_emulator.get());
     _arkState      = _quickerArkBot->getGameState();
 
     // Registering input index LUT
@@ -199,14 +197,13 @@ class Arkanoid final : public jaffarPlus::Game
     registerGameProperty("Ball Hits Remaining", &_ballHitsRemaining, Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     for (size_t i = 0; i <= GameConsts::BlockTableSize - 33; i++)
-      {
-        auto propertyName = std::string("Block Value [") + std::to_string(i) + std::string("]");
-        registerGameProperty(propertyName, &_arkState->blocks[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-      }
+    {
+      auto propertyName = std::string("Block Value [") + std::to_string(i) + std::string("]");
+      registerGameProperty(propertyName, &_arkState->blocks[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    }
   }
 
-  private:
-
+private:
   void initializeImpl() override { _quickerArkBot->doSoftReset(); }
 
   __INLINE__ void registerGameProperties() override { registerGameProperty("Score", &_arkState->score, Property::datatype_t::dt_uint32, Property::endianness_t::little); }
@@ -217,7 +214,7 @@ class Arkanoid final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     hashEngine.Update(*_arkState);
 
@@ -264,30 +261,30 @@ class Arkanoid final : public jaffarPlus::Game
 
     _ballHitsRemaining = 0;
     for (size_t i = 0; i < GameConsts::BlockTableSize - 33; i++)
+    {
+      switch (_arkState->blocks[i])
       {
-        switch (_arkState->blocks[i])
-          {
-          case 0xE6: _ballHitsRemaining += 6; break;
-          case 0xE5: _ballHitsRemaining += 5; break;
-          case 0xE4: _ballHitsRemaining += 4; break;
-          case 0xE3: _ballHitsRemaining += 3; break;
-          case 0xE2: _ballHitsRemaining += 2; break;
-          case 0xF0: break; // Gold Brick
-          case 0x00: break;
-          default: _ballHitsRemaining++;
-          }
+        case 0xE6: _ballHitsRemaining += 6; break;
+        case 0xE5: _ballHitsRemaining += 5; break;
+        case 0xE4: _ballHitsRemaining += 4; break;
+        case 0xE3: _ballHitsRemaining += 3; break;
+        case 0xE2: _ballHitsRemaining += 2; break;
+        case 0xF0: break; // Gold Brick
+        case 0x00: break;
+        default: _ballHitsRemaining++;
       }
+    }
   }
 
   __INLINE__ void ruleUpdatePreHook() override {}
 
   __INLINE__ void ruleUpdatePostHook() override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override {}
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) {}
 
-  __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t> &allowedInputSet)
+  __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet)
   {
     ///// First of all, we add possible inputs for things that matter in the present.
     // For example, place the paddle to hit a ball in the next frame or kill an emeny with the paddle
@@ -305,13 +302,13 @@ class Arkanoid final : public jaffarPlus::Game
 
     // { DecisionPoint::CollectPowerup, "Collect Powerup" },
     if (powerUpInRange())
-      {
-        auto powerUpPaddlePos = (uint8_t)std::max(std::min(158, (int)_arkState->powerupPos.x - 2), 16);
-        allowedInputSet.push_back(paddlePositionIndexLUT[powerUpPaddlePos]);
+    {
+      auto powerUpPaddlePos = (uint8_t)std::max(std::min(158, (int)_arkState->powerupPos.x - 2), 16);
+      allowedInputSet.push_back(paddlePositionIndexLUT[powerUpPaddlePos]);
 
-        // Adding options to not take the power up now
-        if (powerUpPaddlePos <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
-        if (powerUpPaddlePos > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
+      // Adding options to not take the power up now
+      if (powerUpPaddlePos <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
+      if (powerUpPaddlePos > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
     }
 
     // { DecisionPoint::HitEnemy1WithPaddle, "Hit Enemy 1 With Paddle" },
@@ -319,33 +316,33 @@ class Arkanoid final : public jaffarPlus::Game
     // { DecisionPoint::HitEnemy3WithPaddle, "Hit Enemy 3 With Paddle" },
 
     if (enemyInRange(_arkState->enemies[0]))
-      {
-        auto enemyPosX = (uint8_t)std::max(std::min(158, (int)_arkState->enemies[0].pos.x), 16);
-        allowedInputSet.push_back(paddlePositionIndexLUT[enemyPosX]);
+    {
+      auto enemyPosX = (uint8_t)std::max(std::min(158, (int)_arkState->enemies[0].pos.x), 16);
+      allowedInputSet.push_back(paddlePositionIndexLUT[enemyPosX]);
 
-        // Adding options to not hit the enemy now
-        if (enemyPosX <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
-        if (enemyPosX > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
+      // Adding options to not hit the enemy now
+      if (enemyPosX <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
+      if (enemyPosX > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
     }
 
     if (enemyInRange(_arkState->enemies[1]))
-      {
-        auto enemyPosX = (uint8_t)std::max(std::min(158, (int)_arkState->enemies[1].pos.x), 16);
-        allowedInputSet.push_back(paddlePositionIndexLUT[enemyPosX]);
+    {
+      auto enemyPosX = (uint8_t)std::max(std::min(158, (int)_arkState->enemies[1].pos.x), 16);
+      allowedInputSet.push_back(paddlePositionIndexLUT[enemyPosX]);
 
-        // Adding options to not hit the enemy now
-        if (enemyPosX <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
-        if (enemyPosX > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
+      // Adding options to not hit the enemy now
+      if (enemyPosX <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
+      if (enemyPosX > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
     }
 
     if (enemyInRange(_arkState->enemies[2]))
-      {
-        auto enemyPosX = (uint8_t)std::max(std::min(158, (int)_arkState->enemies[2].pos.x), 16);
-        allowedInputSet.push_back(paddlePositionIndexLUT[enemyPosX]);
+    {
+      auto enemyPosX = (uint8_t)std::max(std::min(158, (int)_arkState->enemies[2].pos.x), 16);
+      allowedInputSet.push_back(paddlePositionIndexLUT[enemyPosX]);
 
-        // Adding options to not hit the enemy now
-        if (enemyPosX <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
-        if (enemyPosX > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
+      // Adding options to not hit the enemy now
+      if (enemyPosX <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
+      if (enemyPosX > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
     }
 
     // { DecisionPoint::None_LevelEnded, "Level End" },
@@ -367,9 +364,9 @@ class Arkanoid final : public jaffarPlus::Game
     _detectRNGManipulationInputs = false;
 
     if (_arkState->_enemyGateActive)
-      {
-        allowedInputSet.push_back(paddlePositionIndexLUT[16]);
-        allowedInputSet.push_back(paddlePositionIndexLUT[158]);
+    {
+      allowedInputSet.push_back(paddlePositionIndexLUT[16]);
+      allowedInputSet.push_back(paddlePositionIndexLUT[158]);
     }
     memcpy(_arkState, &tempState, sizeof(GameState));
 
@@ -377,29 +374,29 @@ class Arkanoid final : public jaffarPlus::Game
     if (allowedInputSet.empty()) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
   };
 
-  __INLINE__ void addBallInputs(const Ball &ball, std::vector<InputSet::inputIndex_t> &allowedInputSet) const
+  __INLINE__ void addBallInputs(const Ball& ball, std::vector<InputSet::inputIndex_t>& allowedInputSet) const
   {
     if (ballInRange(ball))
-      {
-        const auto ballPosX = ball.pos.x;
+    {
+      const auto ballPosX = ball.pos.x;
 
-        auto input0 = (uint8_t)std::max(std::min(158, (int)ballPosX - 31 - 2), 16);
-        auto input1 = (uint8_t)std::max(std::min(158, (int)ballPosX - 26 - 2), 16);
-        auto input2 = (uint8_t)std::max(std::min(158, (int)ballPosX - 17 - 2), 16);
-        auto input3 = (uint8_t)std::max(std::min(158, (int)ballPosX - 10 - 2), 16);
-        auto input4 = (uint8_t)std::max(std::min(158, (int)ballPosX - 2 - 2), 16);
-        auto input5 = (uint8_t)std::max(std::min(158, (int)ballPosX + 0 - 2), 16);
+      auto input0 = (uint8_t)std::max(std::min(158, (int)ballPosX - 31 - 2), 16);
+      auto input1 = (uint8_t)std::max(std::min(158, (int)ballPosX - 26 - 2), 16);
+      auto input2 = (uint8_t)std::max(std::min(158, (int)ballPosX - 17 - 2), 16);
+      auto input3 = (uint8_t)std::max(std::min(158, (int)ballPosX - 10 - 2), 16);
+      auto input4 = (uint8_t)std::max(std::min(158, (int)ballPosX - 2 - 2), 16);
+      auto input5 = (uint8_t)std::max(std::min(158, (int)ballPosX + 0 - 2), 16);
 
-        allowedInputSet.push_back(paddlePositionIndexLUT[input0]);
-        allowedInputSet.push_back(paddlePositionIndexLUT[input1]);
-        allowedInputSet.push_back(paddlePositionIndexLUT[input2]);
-        allowedInputSet.push_back(paddlePositionIndexLUT[input3]);
-        allowedInputSet.push_back(paddlePositionIndexLUT[input4]);
-        allowedInputSet.push_back(paddlePositionIndexLUT[input5]);
+      allowedInputSet.push_back(paddlePositionIndexLUT[input0]);
+      allowedInputSet.push_back(paddlePositionIndexLUT[input1]);
+      allowedInputSet.push_back(paddlePositionIndexLUT[input2]);
+      allowedInputSet.push_back(paddlePositionIndexLUT[input3]);
+      allowedInputSet.push_back(paddlePositionIndexLUT[input4]);
+      allowedInputSet.push_back(paddlePositionIndexLUT[input5]);
 
-        // Adding options to not hit the ball now
-        if (ballPosX <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
-        if (ballPosX > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
+      // Adding options to not hit the ball now
+      if (ballPosX <= 80) allowedInputSet.push_back(paddlePositionIndexLUT[158]);
+      if (ballPosX > 80) allowedInputSet.push_back(paddlePositionIndexLUT[16]);
     }
   };
 
@@ -445,7 +442,7 @@ class Arkanoid final : public jaffarPlus::Game
     jaffarCommon::logger::log("[J+]    + Ball 2 VSign Y                             %03d\n", _arkState->ball[2].vSign.vy);
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
@@ -459,20 +456,20 @@ class Arkanoid final : public jaffarPlus::Game
   }
 
   // QuickerArkBot pointer
-  jaffarPlus::emulator::QuickerArkBot *_quickerArkBot;
+  jaffarPlus::emulator::QuickerArkBot* _quickerArkBot;
 
   // Game state
-  GameState *_arkState;
+  GameState* _arkState;
 
   // Are any of the balls in range=
   bool _ballInRange0;
   bool _ballInRange1;
   bool _ballInRange2;
 
-  __INLINE__ bool enemyInRange(const Enemy &enemy) const { return enemy.active && GameConsts::PaddleTop + 4 >= enemy.pos.y && enemy.pos.y + 0xe >= GameConsts::PaddleTop; }
+  __INLINE__ bool enemyInRange(const Enemy& enemy) const { return enemy.active && GameConsts::PaddleTop + 4 >= enemy.pos.y && enemy.pos.y + 0xe >= GameConsts::PaddleTop; }
 
   // State evaluation operations
-  __INLINE__ bool ballInRange(const Ball &ball) const
+  __INLINE__ bool ballInRange(const Ball& ball) const
   {
     return (ball.pos.y + 7 >= GameConsts::PaddleTop && GameConsts::PaddleTop + 3 >= ball.pos.y && ball.vSign.vy == 1 && !ball._paddleCollis);
   };
@@ -482,8 +479,7 @@ class Arkanoid final : public jaffarPlus::Game
     return _arkState->spawnedPowerup == Powerup::Multiball && _arkState->powerupPos.y + 8 >= GameConsts::PaddleTop && GameConsts::PaddleTop + 4 >= _arkState->powerupPos.y;
   }
 
-  public:
-
+public:
   // Hits remaining counter
   uint16_t _ballHitsRemaining = 0;
 
@@ -491,22 +487,24 @@ class Arkanoid final : public jaffarPlus::Game
   InputSet::inputIndex_t paddlePositionIndexLUT[161];
 
   // Lookup table for target position and its corresponding input
-  const char *paddlePositionStringLUT[161] = {
-    "|..|    0,.|", "|..|    1,.|", "|..|    2,.|", "|..|    3,.|", "|..|    4,.|", "|..|    5,.|", "|..|    6,.|", "|..|    7,.|", "|..|    8,.|", "|..|    9,.|", "|..|   10,.|",
-    "|..|   11,.|", "|..|   12,.|", "|..|   13,.|", "|..|   14,.|", "|..|   15,.|", "|..|   16,.|", "|..|   17,.|", "|..|   18,.|", "|..|   19,.|", "|..|   20,.|", "|..|   21,.|",
-    "|..|   22,.|", "|..|   23,.|", "|..|   24,.|", "|..|   25,.|", "|..|   26,.|", "|..|   27,.|", "|..|   28,.|", "|..|   29,.|", "|..|   30,.|", "|..|   31,.|", "|..|   32,.|",
-    "|..|   33,.|", "|..|   34,.|", "|..|   35,.|", "|..|   36,.|", "|..|   37,.|", "|..|   38,.|", "|..|   39,.|", "|..|   40,.|", "|..|   41,.|", "|..|   42,.|", "|..|   43,.|",
-    "|..|   44,.|", "|..|   45,.|", "|..|   46,.|", "|..|   47,.|", "|..|   48,.|", "|..|   49,.|", "|..|   50,.|", "|..|   51,.|", "|..|   52,.|", "|..|   53,.|", "|..|   54,.|",
-    "|..|   55,.|", "|..|   56,.|", "|..|   57,.|", "|..|   58,.|", "|..|   59,.|", "|..|   60,.|", "|..|   61,.|", "|..|   62,.|", "|..|   63,.|", "|..|   64,.|", "|..|   65,.|",
-    "|..|   66,.|", "|..|   67,.|", "|..|   68,.|", "|..|   69,.|", "|..|   70,.|", "|..|   71,.|", "|..|   72,.|", "|..|   73,.|", "|..|   74,.|", "|..|   75,.|", "|..|   76,.|",
-    "|..|   77,.|", "|..|   78,.|", "|..|   79,.|", "|..|   80,.|", "|..|   81,.|", "|..|   82,.|", "|..|   83,.|", "|..|   84,.|", "|..|   85,.|", "|..|   86,.|", "|..|   87,.|",
-    "|..|   88,.|", "|..|   89,.|", "|..|   90,.|", "|..|   91,.|", "|..|   92,.|", "|..|   93,.|", "|..|   94,.|", "|..|   95,.|", "|..|   96,.|", "|..|   97,.|", "|..|   98,.|",
-    "|..|   99,.|", "|..|  100,.|", "|..|  101,.|", "|..|  102,.|", "|..|  103,.|", "|..|  104,.|", "|..|  105,.|", "|..|  106,.|", "|..|  107,.|", "|..|  108,.|", "|..|  109,.|",
-    "|..|  110,.|", "|..|  111,.|", "|..|  112,.|", "|..|  113,.|", "|..|  114,.|", "|..|  115,.|", "|..|  116,.|", "|..|  117,.|", "|..|  118,.|", "|..|  119,.|", "|..|  120,.|",
-    "|..|  121,.|", "|..|  122,.|", "|..|  123,.|", "|..|  124,.|", "|..|  125,.|", "|..|  126,.|", "|..|  127,.|", "|..|  128,.|", "|..|  129,.|", "|..|  130,.|", "|..|  131,.|",
-    "|..|  132,.|", "|..|  133,.|", "|..|  134,.|", "|..|  135,.|", "|..|  136,.|", "|..|  137,.|", "|..|  138,.|", "|..|  139,.|", "|..|  140,.|", "|..|  141,.|", "|..|  142,.|",
-    "|..|  143,.|", "|..|  144,.|", "|..|  145,.|", "|..|  146,.|", "|..|  147,.|", "|..|  148,.|", "|..|  149,.|", "|..|  150,.|", "|..|  151,.|", "|..|  152,.|", "|..|  153,.|",
-    "|..|  154,.|", "|..|  155,.|", "|..|  156,.|", "|..|  157,.|", "|..|  158,.|", "|..|  159,.|", "|..|  160,.|"};
+  const char* paddlePositionStringLUT[161] = {
+      "|..|    0,.|", "|..|    1,.|", "|..|    2,.|", "|..|    3,.|", "|..|    4,.|", "|..|    5,.|", "|..|    6,.|", "|..|    7,.|", "|..|    8,.|", "|..|    9,.|",
+      "|..|   10,.|", "|..|   11,.|", "|..|   12,.|", "|..|   13,.|", "|..|   14,.|", "|..|   15,.|", "|..|   16,.|", "|..|   17,.|", "|..|   18,.|", "|..|   19,.|",
+      "|..|   20,.|", "|..|   21,.|", "|..|   22,.|", "|..|   23,.|", "|..|   24,.|", "|..|   25,.|", "|..|   26,.|", "|..|   27,.|", "|..|   28,.|", "|..|   29,.|",
+      "|..|   30,.|", "|..|   31,.|", "|..|   32,.|", "|..|   33,.|", "|..|   34,.|", "|..|   35,.|", "|..|   36,.|", "|..|   37,.|", "|..|   38,.|", "|..|   39,.|",
+      "|..|   40,.|", "|..|   41,.|", "|..|   42,.|", "|..|   43,.|", "|..|   44,.|", "|..|   45,.|", "|..|   46,.|", "|..|   47,.|", "|..|   48,.|", "|..|   49,.|",
+      "|..|   50,.|", "|..|   51,.|", "|..|   52,.|", "|..|   53,.|", "|..|   54,.|", "|..|   55,.|", "|..|   56,.|", "|..|   57,.|", "|..|   58,.|", "|..|   59,.|",
+      "|..|   60,.|", "|..|   61,.|", "|..|   62,.|", "|..|   63,.|", "|..|   64,.|", "|..|   65,.|", "|..|   66,.|", "|..|   67,.|", "|..|   68,.|", "|..|   69,.|",
+      "|..|   70,.|", "|..|   71,.|", "|..|   72,.|", "|..|   73,.|", "|..|   74,.|", "|..|   75,.|", "|..|   76,.|", "|..|   77,.|", "|..|   78,.|", "|..|   79,.|",
+      "|..|   80,.|", "|..|   81,.|", "|..|   82,.|", "|..|   83,.|", "|..|   84,.|", "|..|   85,.|", "|..|   86,.|", "|..|   87,.|", "|..|   88,.|", "|..|   89,.|",
+      "|..|   90,.|", "|..|   91,.|", "|..|   92,.|", "|..|   93,.|", "|..|   94,.|", "|..|   95,.|", "|..|   96,.|", "|..|   97,.|", "|..|   98,.|", "|..|   99,.|",
+      "|..|  100,.|", "|..|  101,.|", "|..|  102,.|", "|..|  103,.|", "|..|  104,.|", "|..|  105,.|", "|..|  106,.|", "|..|  107,.|", "|..|  108,.|", "|..|  109,.|",
+      "|..|  110,.|", "|..|  111,.|", "|..|  112,.|", "|..|  113,.|", "|..|  114,.|", "|..|  115,.|", "|..|  116,.|", "|..|  117,.|", "|..|  118,.|", "|..|  119,.|",
+      "|..|  120,.|", "|..|  121,.|", "|..|  122,.|", "|..|  123,.|", "|..|  124,.|", "|..|  125,.|", "|..|  126,.|", "|..|  127,.|", "|..|  128,.|", "|..|  129,.|",
+      "|..|  130,.|", "|..|  131,.|", "|..|  132,.|", "|..|  133,.|", "|..|  134,.|", "|..|  135,.|", "|..|  136,.|", "|..|  137,.|", "|..|  138,.|", "|..|  139,.|",
+      "|..|  140,.|", "|..|  141,.|", "|..|  142,.|", "|..|  143,.|", "|..|  144,.|", "|..|  145,.|", "|..|  146,.|", "|..|  147,.|", "|..|  148,.|", "|..|  149,.|",
+      "|..|  150,.|", "|..|  151,.|", "|..|  152,.|", "|..|  153,.|", "|..|  154,.|", "|..|  155,.|", "|..|  156,.|", "|..|  157,.|", "|..|  158,.|", "|..|  159,.|",
+      "|..|  160,.|"};
 };
 
 } // namespace arkbot

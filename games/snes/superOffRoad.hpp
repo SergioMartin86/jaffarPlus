@@ -1,9 +1,9 @@
 #pragma once
 
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 #include <map>
 
 namespace jaffarPlus
@@ -17,25 +17,22 @@ namespace snes
 
 class SuperOffRoad final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "SNES / Super Off Road"; }
 
-  SuperOffRoad(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
+  SuperOffRoad(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // Getting checkpoint magnets
     for (auto checkpointMagnetJs : config["Checkpoint Magnets"])
-      {
-        const auto checkpointId               = checkpointMagnetJs[0].get<uint8_t>();
-        const auto checkpointPosX             = checkpointMagnetJs[1].get<uint8_t>();
-        const auto checkpointPosY             = checkpointMagnetJs[2].get<uint8_t>();
-        _checkpointPointMagnets[checkpointId] = std::make_pair(checkpointPosX, checkpointPosY);
-      }
+    {
+      const auto checkpointId               = checkpointMagnetJs[0].get<uint8_t>();
+      const auto checkpointPosX             = checkpointMagnetJs[1].get<uint8_t>();
+      const auto checkpointPosY             = checkpointMagnetJs[2].get<uint8_t>();
+      _checkpointPointMagnets[checkpointId] = std::make_pair(checkpointPosX, checkpointPosY);
+    }
   }
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -57,20 +54,20 @@ class SuperOffRoad final : public jaffarPlus::Game
     registerGameProperty("Money Grabbed", &_lowMem[0x000633], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _money100         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Money100")]->getPointer();
-    _money10          = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Money10")]->getPointer();
-    _money1           = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Money1")]->getPointer();
-    _playerInput      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input")]->getPointer();
-    _playerSpeed      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Speed")]->getPointer();
-    _playerPosX1      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X1")]->getPointer();
-    _playerPosX2      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X2")]->getPointer();
-    _playerPosY1      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y1")]->getPointer();
-    _playerPosY2      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y2")]->getPointer();
-    _playerAngle      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Angle")]->getPointer();
-    _turbos           = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Turbos")]->getPointer();
-    _playerCheckpoint = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Checkpoint")]->getPointer();
-    _playerLap        = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Lap")]->getPointer();
-    _moneyGrabbed     = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Money Grabbed")]->getPointer();
+    _money100         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Money100")]->getPointer();
+    _money10          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Money10")]->getPointer();
+    _money1           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Money1")]->getPointer();
+    _playerInput      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Input")]->getPointer();
+    _playerSpeed      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Speed")]->getPointer();
+    _playerPosX1      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X1")]->getPointer();
+    _playerPosX2      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X2")]->getPointer();
+    _playerPosY1      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y1")]->getPointer();
+    _playerPosY2      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y2")]->getPointer();
+    _playerAngle      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Angle")]->getPointer();
+    _turbos           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Turbos")]->getPointer();
+    _playerCheckpoint = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Checkpoint")]->getPointer();
+    _playerLap        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Lap")]->getPointer();
+    _moneyGrabbed     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Money Grabbed")]->getPointer();
 
     _prevCheckpoint   = *_playerCheckpoint;
     _actualCheckpoint = *_playerCheckpoint;
@@ -94,7 +91,7 @@ class SuperOffRoad final : public jaffarPlus::Game
     _currentStep++;
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override {}
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override {}
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
@@ -135,19 +132,20 @@ class SuperOffRoad final : public jaffarPlus::Game
   {
     // Updating distance to user-defined point
     if (_overridePointMagnet.intensity > 0.0)
-      {
-        _player1DistanceToPointX = std::abs((float)_overridePointMagnet.x - (float)*_playerPosX1);
-        _player1DistanceToPointY = std::abs((float)_overridePointMagnet.y - (float)*_playerPosY1);
-        _player1DistanceToPoint  = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY);
-    } else
-      {
-        _player1DistanceToPointX = std::abs((float)_pointMagnet.x - (float)*_playerPosX1);
-        _player1DistanceToPointY = std::abs((float)_pointMagnet.y - (float)*_playerPosY1);
-        _player1DistanceToPoint  = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY);
-      }
+    {
+      _player1DistanceToPointX = std::abs((float)_overridePointMagnet.x - (float)*_playerPosX1);
+      _player1DistanceToPointY = std::abs((float)_overridePointMagnet.y - (float)*_playerPosY1);
+      _player1DistanceToPoint  = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY);
+    }
+    else
+    {
+      _player1DistanceToPointX = std::abs((float)_pointMagnet.x - (float)*_playerPosX1);
+      _player1DistanceToPointY = std::abs((float)_pointMagnet.y - (float)*_playerPosY1);
+      _player1DistanceToPoint  = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY);
+    }
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.push(&_prevTurbos, sizeof(_prevTurbos));
     serializer.push(&_turboGrabs, sizeof(_turboGrabs));
@@ -157,7 +155,7 @@ class SuperOffRoad final : public jaffarPlus::Game
     serializer.push(&_currentStep, sizeof(_currentStep));
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) override
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) override
   {
     deserializer.pop(&_prevTurbos, sizeof(_prevTurbos));
     deserializer.pop(&_turboGrabs, sizeof(_turboGrabs));
@@ -207,20 +205,20 @@ class SuperOffRoad final : public jaffarPlus::Game
     jaffarCommon::logger::log("[J+]  + Grabbed Turbos                             %u\n", _turboGrabs);
 
     if (std::abs(_pointMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
-        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
-        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
-        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
     }
 
     if (std::abs(_overridePointMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log(
-          "[J+]  + Override Point Magnet                    Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _overridePointMagnet.intensity, _overridePointMagnet.x, _overridePointMagnet.y);
-        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
-        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
-        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+    {
+      jaffarCommon::logger::log("[J+]  + Override Point Magnet                    Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _overridePointMagnet.intensity, _overridePointMagnet.x,
+                                _overridePointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
     }
 
     if (std::abs(_speedMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Lap Magnet                               Intensity: %.5f\n", _lapMagnet);
@@ -231,69 +229,69 @@ class SuperOffRoad final : public jaffarPlus::Game
     if (std::abs(_turboMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Turbo Magnet                             Intensity: %.5f (Grabbed: %u)\n", _turboMagnet, _turboGrabs);
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
     if (actionType == "Set Point Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        // auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
-        // auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-        // rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
-        rule.addAction([=, this]() { this->_pointMagnet.intensity = intensity; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      // auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      // auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      // rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
+      rule.addAction([=, this]() { this->_pointMagnet.intensity = intensity; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Override Point Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
-        auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-        rule.addAction([=, this]() { this->_overridePointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      rule.addAction([=, this]() { this->_overridePointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Speed Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        rule.addAction([=, this]() { this->_speedMagnet = intensity; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_speedMagnet = intensity; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Money Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        rule.addAction([=, this]() { this->_moneyMagnet = intensity; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_moneyMagnet = intensity; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Turbo Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        rule.addAction([=, this]() { this->_turboMagnet = intensity; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_turboMagnet = intensity; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Lap Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        rule.addAction([=, this]() { this->_lapMagnet = intensity; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_lapMagnet = intensity; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Checkpoint Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        rule.addAction([=, this]() { this->_checkpointMagnet = intensity; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_checkpointMagnet = intensity; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Last Input Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        rule.addAction([=, this]() { this->_lastInputMagnet = intensity; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_lastInputMagnet = intensity; });
+      recognizedActionType = true;
     }
 
     return recognizedActionType;
@@ -323,20 +321,20 @@ class SuperOffRoad final : public jaffarPlus::Game
   float         _lapMagnet;
   float         _lastInputMagnet;
 
-  uint8_t *_money100;
-  uint8_t *_money10;
-  uint8_t *_money1;
-  uint8_t *_playerInput;
-  uint8_t *_playerSpeed;
-  uint8_t *_playerPosX1;
-  uint8_t *_playerPosX2;
-  uint8_t *_playerPosY1;
-  uint8_t *_playerPosY2;
-  uint8_t *_playerAngle;
-  uint8_t *_playerCheckpoint;
-  uint8_t *_playerLap;
-  uint8_t *_turbos;
-  uint8_t *_moneyGrabbed;
+  uint8_t* _money100;
+  uint8_t* _money10;
+  uint8_t* _money1;
+  uint8_t* _playerInput;
+  uint8_t* _playerSpeed;
+  uint8_t* _playerPosX1;
+  uint8_t* _playerPosX2;
+  uint8_t* _playerPosY1;
+  uint8_t* _playerPosY2;
+  uint8_t* _playerAngle;
+  uint8_t* _playerCheckpoint;
+  uint8_t* _playerLap;
+  uint8_t* _turbos;
+  uint8_t* _moneyGrabbed;
 
   uint8_t _prevCheckpoint;
   uint8_t _actualCheckpoint;
@@ -355,7 +353,7 @@ class SuperOffRoad final : public jaffarPlus::Game
   float _player1DistanceToPoint;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_lowMem;
+  uint8_t* _lowMem;
 
   // Checkpoint point magnets
   std::map<uint8_t, std::pair<uint8_t, uint8_t>> _checkpointPointMagnets;

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <set>
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <set>
 
 namespace jaffarPlus
 {
@@ -18,12 +18,10 @@ const uint8_t roomCount = 24;
 
 class PrinceOfPersia final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "SDLPoP / Prince of Persia"; }
 
-  PrinceOfPersia(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
+  PrinceOfPersia(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // // Getting watch mobs indexes
     // auto watchMobsIndexesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Watch Moving Object Indexes");
@@ -36,11 +34,10 @@ class PrinceOfPersia final : public jaffarPlus::Game
     // }
   }
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
-    _gameState = (quicker::sdlPopState_t *)_emulator->getProperty("Game State").pointer;
+    _gameState = (quicker::sdlPopState_t*)_emulator->getProperty("Game State").pointer;
 
     registerGameProperty("Checkpoint Reached", &_gameState->checkpoint, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Is Upside Down", &_gameState->upside_down, Property::datatype_t::dt_uint16, Property::endianness_t::little);
@@ -128,75 +125,75 @@ class PrinceOfPersia final : public jaffarPlus::Game
 
     for (size_t i = 1; i <= 24; i++)
       for (size_t j = 1; j <= 30; j++)
-        {
-          propertyName = std::string("Foreground Element[") + std::to_string(i) + std::string("][") + std::to_string(j) + std::string("]");
-          registerGameProperty(propertyName, &_gameState->level.fg[i - 1][j - 1], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      {
+        propertyName = std::string("Foreground Element[") + std::to_string(i) + std::string("][") + std::to_string(j) + std::string("]");
+        registerGameProperty(propertyName, &_gameState->level.fg[i - 1][j - 1], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-          propertyName = std::string("Background Element[") + std::to_string(i) + std::string("][") + std::to_string(j) + std::string("]");
-          registerGameProperty(propertyName, &_gameState->level.bg[i - 1][j - 1], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-        }
+        propertyName = std::string("Background Element[") + std::to_string(i) + std::string("][") + std::to_string(j) + std::string("]");
+        registerGameProperty(propertyName, &_gameState->level.bg[i - 1][j - 1], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      }
 
     // Registering room properties
     for (size_t i = 0; i < 24; i++)
-      {
-        propertyName = std::string("Room Guard Tile[") + std::to_string(i) + std::string("]");
-        registerGameProperty(propertyName, &_gameState->level.guards_tile[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    {
+      propertyName = std::string("Room Guard Tile[") + std::to_string(i) + std::string("]");
+      registerGameProperty(propertyName, &_gameState->level.guards_tile[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Room Guard Direction[") + std::to_string(i) + std::string("]");
-        registerGameProperty(propertyName, &_gameState->level.guards_dir[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      propertyName = std::string("Room Guard Direction[") + std::to_string(i) + std::string("]");
+      registerGameProperty(propertyName, &_gameState->level.guards_dir[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Room Guard Pos X[") + std::to_string(i) + std::string("]");
-        registerGameProperty(propertyName, &_gameState->level.guards_x[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      propertyName = std::string("Room Guard Pos X[") + std::to_string(i) + std::string("]");
+      registerGameProperty(propertyName, &_gameState->level.guards_x[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Room Guard Sequence Low[") + std::to_string(i) + std::string("]");
-        registerGameProperty(propertyName, &_gameState->level.guards_skill[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      propertyName = std::string("Room Guard Sequence Low[") + std::to_string(i) + std::string("]");
+      registerGameProperty(propertyName, &_gameState->level.guards_skill[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Room Guard Skill[") + std::to_string(i) + std::string("]");
-        registerGameProperty(propertyName, &_gameState->level.guards_seq_hi[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      propertyName = std::string("Room Guard Skill[") + std::to_string(i) + std::string("]");
+      registerGameProperty(propertyName, &_gameState->level.guards_seq_hi[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Room Guard Sequence High[") + std::to_string(i) + std::string("]");
-        registerGameProperty(propertyName, &_gameState->level.guards_seq_hi[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-      }
+      propertyName = std::string("Room Guard Sequence High[") + std::to_string(i) + std::string("]");
+      registerGameProperty(propertyName, &_gameState->level.guards_seq_hi[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    }
 
     // Registering Moving Objects
     for (size_t i = 0; i < 24; i++)
-      {
-        propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Pos X");
-        registerGameProperty(propertyName, &_gameState->mobs[i].xh, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    {
+      propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Pos X");
+      registerGameProperty(propertyName, &_gameState->mobs[i].xh, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Pos Y");
-        registerGameProperty(propertyName, &_gameState->mobs[i].y, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Pos Y");
+      registerGameProperty(propertyName, &_gameState->mobs[i].y, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Room");
-        registerGameProperty(propertyName, &_gameState->mobs[i].room, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Room");
+      registerGameProperty(propertyName, &_gameState->mobs[i].room, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Speed");
-        registerGameProperty(propertyName, &_gameState->mobs[i].speed, Property::datatype_t::dt_int8, Property::endianness_t::little);
+      propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Speed");
+      registerGameProperty(propertyName, &_gameState->mobs[i].speed, Property::datatype_t::dt_int8, Property::endianness_t::little);
 
-        propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Type");
-        registerGameProperty(propertyName, &_gameState->mobs[i].type, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Type");
+      registerGameProperty(propertyName, &_gameState->mobs[i].type, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Row");
-        registerGameProperty(propertyName, &_gameState->mobs[i].row, Property::datatype_t::dt_uint8, Property::endianness_t::little);
-      }
+      propertyName = std::string("Moving Object[") + std::to_string(i) + std::string("] Row");
+      registerGameProperty(propertyName, &_gameState->mobs[i].row, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    }
 
     // Registering Transformable Objects
     for (size_t i = 0; i < 30; i++)
-      {
-        propertyName = std::string("Transformable Object[") + std::to_string(i) + std::string("] Tile");
-        registerGameProperty(propertyName, &_gameState->trobs[i].tilepos, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    {
+      propertyName = std::string("Transformable Object[") + std::to_string(i) + std::string("] Tile");
+      registerGameProperty(propertyName, &_gameState->trobs[i].tilepos, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Transformable Object[") + std::to_string(i) + std::string("] Room");
-        registerGameProperty(propertyName, &_gameState->trobs[i].room, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+      propertyName = std::string("Transformable Object[") + std::to_string(i) + std::string("] Room");
+      registerGameProperty(propertyName, &_gameState->trobs[i].room, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-        propertyName = std::string("Transformable Object[") + std::to_string(i) + std::string("] Type");
-        registerGameProperty(propertyName, &_gameState->trobs[i].type, Property::datatype_t::dt_int8, Property::endianness_t::little);
-      }
+      propertyName = std::string("Transformable Object[") + std::to_string(i) + std::string("] Type");
+      registerGameProperty(propertyName, &_gameState->trobs[i].type, Property::datatype_t::dt_int8, Property::endianness_t::little);
+    }
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override { _emulator->advanceState(input); }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     hashEngine.Update(_gameState->checkpoint);
     hashEngine.Update(_gameState->upside_down);
@@ -283,12 +280,12 @@ class PrinceOfPersia final : public jaffarPlus::Game
 
   __INLINE__ void ruleUpdatePostHook() override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     // Nothing additional to serialize
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     // Nothing additional to serialize
   }
@@ -322,7 +319,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
 
     // Rewarding climb stairs
     if (_gameState->Kid.frame >= 217 && _gameState->Kid.frame <= 228) reward += (_gameState->Kid.frame - 217 + 1) * 1.f;
-    //if (_gameState->Kid.frame == 0 && _gameState->hitp_curr > 0) reward += 12000.0f;
+    // if (_gameState->Kid.frame == 0 && _gameState->hitp_curr > 0) reward += 12000.0f;
 
     // Rewarding level door open
     reward += (float)_gameState->leveldoor_open * _levelDoorOpenMagnet;
@@ -348,26 +345,11 @@ class PrinceOfPersia final : public jaffarPlus::Game
     jaffarCommon::logger::log("[J+]  + Current/Next Level:   %2d / %2d\n", _gameState->current_level, _gameState->next_level);
     jaffarCommon::logger::log("[J+]  + Timer:                %2lu:%02lu.%03lu\n", curMins, curSecs, curMilliSecs);
     jaffarCommon::logger::log("[J+]  + [Kid]                 Room: %d, Pos.x: %3d, Pos.y: %f (%3d), Frame: %3d, Action: %2d, Dir: %d, HP: %d/%d, Alive: %d\n",
-                              int(_gameState->Kid.room),
-                              int(_gameState->Kid.x),
-                              _kidPosY,
-                              int(_gameState->Kid.y),
-                              int(_gameState->Kid.frame),
-                              int(_gameState->Kid.action),
-                              int(_gameState->Kid.direction),
-                              int(_gameState->hitp_curr),
-                              int(_gameState->hitp_max),
-                              int(_gameState->Kid.alive));
+                              int(_gameState->Kid.room), int(_gameState->Kid.x), _kidPosY, int(_gameState->Kid.y), int(_gameState->Kid.frame), int(_gameState->Kid.action),
+                              int(_gameState->Kid.direction), int(_gameState->hitp_curr), int(_gameState->hitp_max), int(_gameState->Kid.alive));
     jaffarCommon::logger::log("[J+]  + [Guard]               Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Color: %3u, Dir: %d, HP: %d/%d, Alive: %d\n",
-                              int(_gameState->Guard.room),
-                              int(_gameState->Guard.x),
-                              int(_gameState->Guard.y),
-                              int(_gameState->Guard.frame),
-                              int(_gameState->Guard.action),
-                              int(_gameState->curr_guard_color),
-                              int(_gameState->Guard.direction),
-                              int(_gameState->guardhp_curr),
-                              int(_gameState->guardhp_max),
+                              int(_gameState->Guard.room), int(_gameState->Guard.x), int(_gameState->Guard.y), int(_gameState->Guard.frame), int(_gameState->Guard.action),
+                              int(_gameState->curr_guard_color), int(_gameState->Guard.direction), int(_gameState->guardhp_curr), int(_gameState->guardhp_max),
                               int(_gameState->Guard.alive));
     jaffarCommon::logger::log("[J+]  + Exit Room Timer:      %d\n", _gameState->exit_room_timer);
     jaffarCommon::logger::log("[J+]  + Kid Has Sword:        %d\n", _gameState->have_sword);
@@ -392,40 +374,26 @@ class PrinceOfPersia final : public jaffarPlus::Game
     auto postRNG4 = SDLPoPInstance::advanceRNGState(postRNG3);
     auto postRNG5 = SDLPoPInstance::advanceRNGState(postRNG4);
 
-    jaffarCommon::logger::log("[J+]  + RNG: [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ] 0x%08X [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ]\n",
-                              prevRNG5,
-                              prevRNG4,
-                              prevRNG3,
-                              prevRNG2,
-                              prevRNG1,
-                              _gameState->random_seed,
-                              postRNG1,
-                              postRNG2,
-                              postRNG3,
-                              postRNG4,
-                              postRNG5);
+    jaffarCommon::logger::log("[J+]  + RNG: [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ] 0x%08X [ 0x%08X 0x%08X 0x%08X 0x%08X 0x%08X ]\n", prevRNG5, prevRNG4, prevRNG3, prevRNG2,
+                              prevRNG1, _gameState->random_seed, postRNG1, postRNG2, postRNG3, postRNG4, postRNG5);
 
     jaffarCommon::logger::log("[J+]  + Moving Objects:\n");
     for (int i = 0; i < _gameState->mobs_count; ++i)
-      {
-        const auto &mob = (_gameState->mobs)[i];
-        jaffarCommon::logger::log("[J+]    + Room: %d, X: %d, Y: %d, Speed: %d, Type: %d, Row: %d\n", mob.room, mob.xh, mob.y, mob.speed, mob.type, mob.row);
-      }
+    {
+      const auto& mob = (_gameState->mobs)[i];
+      jaffarCommon::logger::log("[J+]    + Room: %d, X: %d, Y: %d, Speed: %d, Type: %d, Row: %d\n", mob.room, mob.xh, mob.y, mob.speed, mob.type, mob.row);
+    }
 
     jaffarCommon::logger::log("[J+]  + Transformable Objects:\n");
     for (int i = 0; i < _gameState->trobs_count; i++)
-      {
-        const auto &trob    = _gameState->trobs[i];
-        const auto  roomIdx = trob.room - 1;
-        const auto  tileIdx = trob.tilepos - 1;
+    {
+      const auto& trob    = _gameState->trobs[i];
+      const auto  roomIdx = trob.room - 1;
+      const auto  tileIdx = trob.tilepos - 1;
 
-        jaffarCommon::logger::log("[J+]    + Type: %u, Room: %u, Pos: %u, FG: %u, BG: %u\n",
-                                  trob.type,
-                                  trob.room,
-                                  trob.tilepos,
-                                  _gameState->level.fg[roomIdx][tileIdx],
-                                  _gameState->level.bg[roomIdx][tileIdx]);
-      }
+      jaffarCommon::logger::log("[J+]    + Type: %u, Room: %u, Pos: %u, FG: %u, BG: %u\n", trob.type, trob.room, trob.tilepos, _gameState->level.fg[roomIdx][tileIdx],
+                                _gameState->level.bg[roomIdx][tileIdx]);
+    }
 
     if (std::abs(_kidPosXMagnet.intensity) > 0.0f)
       jaffarCommon::logger::log("[J+]  + Kid Pos X Magnet          - Intensity: %.1f, Center: %u\n", _kidPosXMagnet.intensity, _kidPosXMagnet.position);
@@ -443,80 +411,80 @@ class PrinceOfPersia final : public jaffarPlus::Game
     if (std::abs(_guardHPMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Guard HP Magnet           - Intensity: %.1f\n", _guardHPMagnet);
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
     if (actionType == "Set Kid Pos X Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        auto action    = [=, this]() { _kidPosXMagnet = pointMagnet_t{.intensity = _gameState->Kid.room == room ? intensity : 0.0f, .position = position}; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      auto action    = [=, this]() { _kidPosXMagnet = pointMagnet_t{.intensity = _gameState->Kid.room == room ? intensity : 0.0f, .position = position}; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Kid Pos Y Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        auto action    = [=, this]() { _kidPosYMagnet = pointMagnet_t{.intensity = _gameState->Kid.room == room ? intensity : 0.0f, .position = position}; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      auto action    = [=, this]() { _kidPosYMagnet = pointMagnet_t{.intensity = _gameState->Kid.room == room ? intensity : 0.0f, .position = position}; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Guard Pos X Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        auto action    = [=, this]() { _guardPosXMagnet = pointMagnet_t{.intensity = _gameState->Guard.room == room ? intensity : 0.0f, .position = position}; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      auto action    = [=, this]() { _guardPosXMagnet = pointMagnet_t{.intensity = _gameState->Guard.room == room ? intensity : 0.0f, .position = position}; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Guard Pos Y Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        auto action    = [=, this]() { _guardPosYMagnet = pointMagnet_t{.intensity = _gameState->Guard.room == room ? intensity : 0.0f, .position = position}; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto position  = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Position");
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      auto action    = [=, this]() { _guardPosYMagnet = pointMagnet_t{.intensity = _gameState->Guard.room == room ? intensity : 0.0f, .position = position}; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Kid Direction Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto action    = [=, this]() { _kidDirectionMagnet = intensity; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto action    = [=, this]() { _kidDirectionMagnet = intensity; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Level Door Open Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto action    = [=, this]() { _levelDoorOpenMagnet = intensity; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto action    = [=, this]() { _levelDoorOpenMagnet = intensity; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     if (actionType == "Set United With Shadow Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto action    = [=, this]() { _unitedWithShadowMagnet = intensity; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto action    = [=, this]() { _unitedWithShadowMagnet = intensity; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Guard HP Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto action    = [=, this]() { _guardHPMagnet = intensity; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto action    = [=, this]() { _guardHPMagnet = intensity; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     return recognizedActionType;
@@ -524,9 +492,8 @@ class PrinceOfPersia final : public jaffarPlus::Game
 
   __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override { return jaffarCommon::hash::calculateMetroHash(&_gameState->Kid.frame, sizeof(uint8_t)); }
 
-  private:
-
-  quicker::sdlPopState_t *_gameState;
+private:
+  quicker::sdlPopState_t* _gameState;
 
   // Values artificially added to the state
   uint8_t _kidPreviousFrame;

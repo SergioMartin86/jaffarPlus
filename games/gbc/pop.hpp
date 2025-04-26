@@ -1,9 +1,9 @@
 #pragma once
 
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 
 #define KID_DIRECTION_LEFT 1
 #define KID_DIRECTION_RIGHT 0
@@ -19,16 +19,12 @@ namespace gbc
 
 class PrinceOfPersia final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "GBC / Prince Of Persia"; }
 
-  PrinceOfPersia(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  PrinceOfPersia(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -64,17 +60,17 @@ class PrinceOfPersia final : public jaffarPlus::Game
     registerGameProperty("Level 11 Tile 3 State", &_workRAM[0x04EF], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _frameType = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Frame Type")]->getPointer();
-    _kidFrame  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Kid Frame")]->getPointer();
-    _kidPosX   = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Kid Pos X")]->getPointer();
-    _kidPosY   = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Kid Pos Y")]->getPointer();
+    _frameType = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Frame Type")]->getPointer();
+    _kidFrame  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Kid Frame")]->getPointer();
+    _kidPosX   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Kid Pos X")]->getPointer();
+    _kidPosY   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Kid Pos Y")]->getPointer();
 
-    _kidRoom      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Kid Room")]->getPointer();
-    _kidHP        = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Kid HP")]->getPointer();
-    _kidDirection = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Kid Direction")]->getPointer();
-    _kidAction    = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Kid Action")]->getPointer();
-    _guardColumn  = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Guard Column")]->getPointer();
-    _guardHP      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Guard HP")]->getPointer();
+    _kidRoom      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Kid Room")]->getPointer();
+    _kidHP        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Kid HP")]->getPointer();
+    _kidDirection = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Kid Direction")]->getPointer();
+    _kidAction    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Kid Action")]->getPointer();
+    _guardColumn  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Guard Column")]->getPointer();
+    _guardHP      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Guard HP")]->getPointer();
 
     // Initializing values
     updateCharActualPos();
@@ -127,7 +123,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
     _currentStep++;
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     uint8_t                              stateData[65536];
     jaffarCommon::serializer::Contiguous s(stateData);
@@ -197,7 +193,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
     _guardDistanceToPointX = std::abs((float)_guardPointXMagnet.pos - _guardActualPosX);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.push(&_currentStep, sizeof(_currentStep));
     serializer.push(&_previousKidRoom, sizeof(_previousKidRoom));
@@ -209,7 +205,7 @@ class PrinceOfPersia final : public jaffarPlus::Game
     serializer.push(&_lastInputIdx, sizeof(_lastInputIdx));
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     deserializer.pop(&_currentStep, sizeof(_currentStep));
     deserializer.pop(&_previousKidRoom, sizeof(_previousKidRoom));
@@ -254,31 +250,30 @@ class PrinceOfPersia final : public jaffarPlus::Game
 
     if (*_kidRoom == _kidPointXMagnet.room)
       if (std::abs(_kidPointXMagnet.intensity) > 0.0f)
-        {
-          jaffarCommon::logger::log("[J+]  + Kid Point X Magnet                       Intensity: %.5f, Pos: %3.3f\n", _kidPointXMagnet.intensity, _kidPointXMagnet.pos);
-          jaffarCommon::logger::log("[J+]    + Distance                               %3.3f (Actual Pos X: %.0f)\n", _kidDistanceToPointX, _kidActualPosX);
+      {
+        jaffarCommon::logger::log("[J+]  + Kid Point X Magnet                       Intensity: %.5f, Pos: %3.3f\n", _kidPointXMagnet.intensity, _kidPointXMagnet.pos);
+        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f (Actual Pos X: %.0f)\n", _kidDistanceToPointX, _kidActualPosX);
       }
 
     if (*_kidRoom == _kidPointYMagnet.room)
       if (std::abs(_kidPointYMagnet.intensity) > 0.0f)
-        {
-          jaffarCommon::logger::log("[J+]  + Kid Point Y Magnet                       Intensity: %.5f, Pos: %3.3f\n", _kidPointYMagnet.intensity, _kidPointYMagnet.pos);
-          jaffarCommon::logger::log("[J+]    + Distance                               %3.3f (Actual Pos Y: %.0f)\n", _kidDistanceToPointY, _kidActualPosY);
+      {
+        jaffarCommon::logger::log("[J+]  + Kid Point Y Magnet                       Intensity: %.5f, Pos: %3.3f\n", _kidPointYMagnet.intensity, _kidPointYMagnet.pos);
+        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f (Actual Pos Y: %.0f)\n", _kidDistanceToPointY, _kidActualPosY);
       }
 
     if (*_kidRoom == _kidDirectionMagnet.room)
       if (std::abs(_kidDirectionMagnet.intensity) > 0.0f)
-        {
-          jaffarCommon::logger::log("[J+]  + Kid Direction Magnet                     Intensity: %.5f, Direction: %s\n",
-                                    _kidDirectionMagnet.intensity,
-                                    _kidDirectionMagnet.direction == KID_DIRECTION_LEFT ? "Left" : "Right");
+      {
+        jaffarCommon::logger::log("[J+]  + Kid Direction Magnet                     Intensity: %.5f, Direction: %s\n", _kidDirectionMagnet.intensity,
+                                  _kidDirectionMagnet.direction == KID_DIRECTION_LEFT ? "Left" : "Right");
       }
 
     if (*_kidRoom == _guardPointXMagnet.room)
       if (std::abs(_guardPointXMagnet.intensity) > 0.0f)
-        {
-          jaffarCommon::logger::log("[J+]  + Guard Point X Magnet                     Intensity: %.5f, Pos: %3.3f\n", _guardPointXMagnet.intensity, _guardPointXMagnet.pos);
-          jaffarCommon::logger::log("[J+]    + Distance                               %3.3f (Actual Pos X: %.0f)\n", _guardDistanceToPointX, _guardActualPosX);
+      {
+        jaffarCommon::logger::log("[J+]  + Guard Point X Magnet                     Intensity: %.5f, Pos: %3.3f\n", _guardPointXMagnet.intensity, _guardPointXMagnet.pos);
+        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f (Actual Pos X: %.0f)\n", _guardDistanceToPointX, _guardActualPosX);
       }
 
     if (_kidHPMagnet.room == *_kidRoom)
@@ -290,69 +285,69 @@ class PrinceOfPersia final : public jaffarPlus::Game
     if (std::abs(_lastInputMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Last Input Magnet                      Intensity: %.5f\n", _lastInputMagnet);
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
     if (actionType == "Set Kid Point X Magnet")
-      {
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
-        rule.addAction([=, this]() { this->_kidPointXMagnet = point1DMagnet_t{.room = room, .intensity = intensity, .pos = pos}; });
-        recognizedActionType = true;
+    {
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
+      rule.addAction([=, this]() { this->_kidPointXMagnet = point1DMagnet_t{.room = room, .intensity = intensity, .pos = pos}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Kid Point Y Magnet")
-      {
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
-        rule.addAction([=, this]() { this->_kidPointYMagnet = point1DMagnet_t{.room = room, .intensity = intensity, .pos = pos}; });
-        recognizedActionType = true;
+    {
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
+      rule.addAction([=, this]() { this->_kidPointYMagnet = point1DMagnet_t{.room = room, .intensity = intensity, .pos = pos}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Kid Direction Magnet")
-      {
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto direction = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Direction");
-        rule.addAction([=, this]() { this->_kidDirectionMagnet = directionMagnet_t{.room = room, .intensity = intensity, .direction = direction}; });
-        recognizedActionType = true;
+    {
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto direction = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Direction");
+      rule.addAction([=, this]() { this->_kidDirectionMagnet = directionMagnet_t{.room = room, .intensity = intensity, .direction = direction}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Guard Point X Magnet")
-      {
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
-        if (pos != KID_DIRECTION_LEFT && pos != KID_DIRECTION_RIGHT) JAFFAR_THROW_LOGIC("Wrong value for kid direction magnet: %u", pos);
-        rule.addAction([=, this]() { this->_guardPointXMagnet = point1DMagnet_t{.room = room, .intensity = intensity, .pos = pos}; });
-        recognizedActionType = true;
+    {
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
+      if (pos != KID_DIRECTION_LEFT && pos != KID_DIRECTION_RIGHT) JAFFAR_THROW_LOGIC("Wrong value for kid direction magnet: %u", pos);
+      rule.addAction([=, this]() { this->_guardPointXMagnet = point1DMagnet_t{.room = room, .intensity = intensity, .pos = pos}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Kid HP Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        rule.addAction([=, this]() { this->_kidHPMagnet = {.room = room, .intensity = intensity}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      rule.addAction([=, this]() { this->_kidHPMagnet = {.room = room, .intensity = intensity}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Guard HP Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
-        rule.addAction([=, this]() { this->_guardHPMagnet = {.room = room, .intensity = intensity}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto room      = jaffarCommon::json::getNumber<uint8_t>(actionJs, "Room");
+      rule.addAction([=, this]() { this->_guardHPMagnet = {.room = room, .intensity = intensity}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Last Input Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto action    = [=, this]() { this->_lastInputMagnet = intensity; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto action    = [=, this]() { this->_lastInputMagnet = intensity; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     return recognizedActionType;
@@ -390,18 +385,18 @@ class PrinceOfPersia final : public jaffarPlus::Game
   hpMagnet_t        _guardHPMagnet;
   float             _lastInputMagnet = 0.0;
 
-  uint8_t *_frameType;
+  uint8_t* _frameType;
 
-  uint8_t *_kidFrame;
-  uint8_t *_kidRoom;
-  uint8_t *_kidPosX;
-  uint8_t *_kidPosY;
-  uint8_t *_kidHP;
-  uint8_t *_kidAction;
-  uint8_t *_kidDirection;
+  uint8_t* _kidFrame;
+  uint8_t* _kidRoom;
+  uint8_t* _kidPosX;
+  uint8_t* _kidPosY;
+  uint8_t* _kidHP;
+  uint8_t* _kidAction;
+  uint8_t* _kidDirection;
 
-  uint8_t *_guardColumn;
-  uint8_t *_guardHP;
+  uint8_t* _guardColumn;
+  uint8_t* _guardHP;
   uint8_t  _previousKidRoom;
   uint8_t  _actualKidRoom;
 
@@ -414,8 +409,8 @@ class PrinceOfPersia final : public jaffarPlus::Game
   float _guardActualPosX;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_workRAM;
-  uint8_t *_objectAttributeRAM;
+  uint8_t* _workRAM;
+  uint8_t* _objectAttributeRAM;
 
   // Remember frame in which the last input was made
   uint16_t _lastInputStep;

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
 #include <numeric>
 
 namespace jaffarPlus
@@ -16,16 +16,12 @@ namespace nes
 
 class IceClimber final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "NES / Ice Climber"; }
 
-  IceClimber(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  IceClimber(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -64,26 +60,26 @@ class IceClimber final : public jaffarPlus::Game
     registerGameProperty("Player Best Pos Y", &_playerBestPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Player Real/Best Pos Y Diff", &_playerRealBestPosYDiff, Property::datatype_t::dt_float32, Property::endianness_t::little);
 
-    _currentLevel        = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Current Level")]->getPointer();
-    _playerPosX          = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _playerPosY          = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
-    _screenScrollY       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Screen Scroll Y")]->getPointer();
-    _screenScrollY1      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Screen Scroll Y1")]->getPointer();
-    _screenScrollY2      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Screen Scroll Y2")]->getPointer();
-    _screenScrollY3      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Screen Scroll Y3")]->getPointer();
-    _playerFloor         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Floor")]->getPointer();
-    _playerJumping       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Jumping")]->getPointer();
-    _blocksHit           = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Blocks Hit")]->getPointer();
-    _vegetablesCollected = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Vegetables Collected")]->getPointer();
-    _nitpickersHit       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Nitpickers Hit")]->getPointer();
-    _bricksBroken        = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Bricks Broken")]->getPointer();
-    _playerInputs1       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Inputs 1")]->getPointer();
-    _playerInputs2       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Inputs 2")]->getPointer();
-    _globalTimer         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
-    _subTimer            = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("SubTimer")]->getPointer();
-    _birdState           = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Bird State")]->getPointer();
-    _birdPosX            = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Bird Pos X")]->getPointer();
-    _birdDirection       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Bird Direction")]->getPointer();
+    _currentLevel        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Current Level")]->getPointer();
+    _playerPosX          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _screenScrollY       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Scroll Y")]->getPointer();
+    _screenScrollY1      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Scroll Y1")]->getPointer();
+    _screenScrollY2      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Scroll Y2")]->getPointer();
+    _screenScrollY3      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Scroll Y3")]->getPointer();
+    _playerFloor         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Floor")]->getPointer();
+    _playerJumping       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Jumping")]->getPointer();
+    _blocksHit           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Blocks Hit")]->getPointer();
+    _vegetablesCollected = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Vegetables Collected")]->getPointer();
+    _nitpickersHit       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Nitpickers Hit")]->getPointer();
+    _bricksBroken        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Bricks Broken")]->getPointer();
+    _playerInputs1       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Inputs 1")]->getPointer();
+    _playerInputs2       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Inputs 2")]->getPointer();
+    _globalTimer         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
+    _subTimer            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("SubTimer")]->getPointer();
+    _birdState           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Bird State")]->getPointer();
+    _birdPosX            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Bird Pos X")]->getPointer();
+    _birdDirection       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Bird Direction")]->getPointer();
 
     _pastBricksBroken  = 0;
     _isBirdDetected    = 0;
@@ -110,9 +106,9 @@ class IceClimber final : public jaffarPlus::Game
     // If player is standing and real player pos Y is less than before update
     if (*_playerJumping == 0)
       if (_playerRealPosY < _playerBestPosY)
-        {
-          _playerBestPosY   = _playerRealPosY;
-          _pastBricksBroken = *_bricksBroken;
+      {
+        _playerBestPosY   = _playerRealPosY;
+        _pastBricksBroken = *_bricksBroken;
       }
   }
 
@@ -134,7 +130,7 @@ class IceClimber final : public jaffarPlus::Game
     if (newScroll > curScroll) _fullScreenScrolls++;
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     hashEngine.Update(&_lowMem[0x0000], 0x000A - 0x0000); //
     hashEngine.Update(_lowMem[0x000F]);                   // No idea but seems important
@@ -157,27 +153,27 @@ class IceClimber final : public jaffarPlus::Game
 
     // Modular math: calculate distance regarding the distance regarding wrap around position
     if (*_birdDirection == 1)
-      {
-        float distanceToBirdX = std::abs((float)*_playerPosX - ((float)*_birdPosX - 256.0f));
-        float distanceToBird  = sqrt(distanceToBirdX * distanceToBirdX + _distanceToBirdY * _distanceToBirdY);
+    {
+      float distanceToBirdX = std::abs((float)*_playerPosX - ((float)*_birdPosX - 256.0f));
+      float distanceToBird  = sqrt(distanceToBirdX * distanceToBirdX + _distanceToBirdY * _distanceToBirdY);
 
-        if (distanceToBird < _distanceToBird)
-          {
-            _distanceToBirdX = distanceToBirdX;
-            _distanceToBird  = distanceToBird;
-        }
+      if (distanceToBird < _distanceToBird)
+      {
+        _distanceToBirdX = distanceToBirdX;
+        _distanceToBird  = distanceToBird;
+      }
     }
 
     if (*_birdDirection == 0)
-      {
-        float distanceToBirdX = std::abs((float)*_playerPosX - ((float)*_birdPosX + 256.0f));
-        float distanceToBird  = sqrt(distanceToBirdX * distanceToBirdX + _distanceToBirdY * _distanceToBirdY);
+    {
+      float distanceToBirdX = std::abs((float)*_playerPosX - ((float)*_birdPosX + 256.0f));
+      float distanceToBird  = sqrt(distanceToBirdX * distanceToBirdX + _distanceToBirdY * _distanceToBirdY);
 
-        if (distanceToBird < _distanceToBird)
-          {
-            _distanceToBirdX = distanceToBirdX;
-            _distanceToBird  = distanceToBird;
-        }
+      if (distanceToBird < _distanceToBird)
+      {
+        _distanceToBirdX = distanceToBirdX;
+        _distanceToBird  = distanceToBird;
+      }
     }
   }
 
@@ -185,7 +181,7 @@ class IceClimber final : public jaffarPlus::Game
 
   __INLINE__ void ruleUpdatePostHook() override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
     serializer.pushContiguous(&_lastInputStep, sizeof(_lastInputStep));
@@ -197,7 +193,7 @@ class IceClimber final : public jaffarPlus::Game
     serializer.pushContiguous(&_playerRealBestPosYDiff, sizeof(_playerRealBestPosYDiff));
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
     deserializer.popContiguous(&_lastInputStep, sizeof(_lastInputStep));
@@ -240,7 +236,7 @@ class IceClimber final : public jaffarPlus::Game
     if (_isBirdDetected == 1) jaffarCommon::logger::log("[J+]  + Distance To Bird:                  %.2f (%.2f, %.2f)\n", _distanceToBird, _distanceToBirdX, _distanceToBirdY);
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
@@ -253,28 +249,28 @@ class IceClimber final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  uint8_t *_currentLevel;
-  uint8_t *_playerPosX;
-  uint8_t *_playerPosY;
-  uint8_t *_screenScrollY;
-  uint8_t *_screenScrollY1;
-  uint8_t *_screenScrollY2;
-  uint8_t *_screenScrollY3;
-  uint8_t *_playerFloor;
-  uint8_t *_blocksHit;
-  uint8_t *_vegetablesCollected;
-  uint8_t *_nitpickersHit;
-  uint8_t *_bricksBroken;
-  uint8_t *_playerInputs1;
-  uint8_t *_playerInputs2;
-  uint8_t *_globalTimer;
-  uint8_t *_subTimer;
-  uint8_t *_birdState;
-  uint8_t *_birdPosX;
-  uint8_t *_lowMem;
+  uint8_t* _currentLevel;
+  uint8_t* _playerPosX;
+  uint8_t* _playerPosY;
+  uint8_t* _screenScrollY;
+  uint8_t* _screenScrollY1;
+  uint8_t* _screenScrollY2;
+  uint8_t* _screenScrollY3;
+  uint8_t* _playerFloor;
+  uint8_t* _blocksHit;
+  uint8_t* _vegetablesCollected;
+  uint8_t* _nitpickersHit;
+  uint8_t* _bricksBroken;
+  uint8_t* _playerInputs1;
+  uint8_t* _playerInputs2;
+  uint8_t* _globalTimer;
+  uint8_t* _subTimer;
+  uint8_t* _birdState;
+  uint8_t* _birdPosX;
+  uint8_t* _lowMem;
   uint8_t  _isBirdDetected;
-  uint8_t *_playerJumping;
-  uint8_t *_birdDirection;
+  uint8_t* _playerJumping;
+  uint8_t* _birdDirection;
 
   float _distanceToBirdX;
   float _distanceToBirdY;

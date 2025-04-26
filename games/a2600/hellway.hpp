@@ -1,9 +1,9 @@
 #pragma once
 
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 
 namespace jaffarPlus
 {
@@ -16,16 +16,12 @@ namespace a2600
 
 class Hellway final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "A2600 / Hellway"; }
 
-  Hellway(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  Hellway(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -37,17 +33,17 @@ class Hellway final : public jaffarPlus::Game
     registerGameProperty("Car State", &_lowMem[0x4B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _score       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
-    _subDistance = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("SubDistance")]->getPointer();
+    _score       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
+    _subDistance = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("SubDistance")]->getPointer();
   }
 
-  __INLINE__ void advanceStateImpl(const std::string &input) override
+  __INLINE__ void advanceStateImpl(const std::string& input) override
   {
     // Running emulator
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override { hashEngine.Update(_lowMem, 0x80); }
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override { hashEngine.Update(_lowMem, 0x80); }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
@@ -56,9 +52,9 @@ class Hellway final : public jaffarPlus::Game
 
   __INLINE__ void ruleUpdatePostHook() override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override {}
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) {}
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -74,7 +70,7 @@ class Hellway final : public jaffarPlus::Game
 
   void printInfoImpl() const override {}
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
@@ -87,11 +83,11 @@ class Hellway final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  uint8_t *_score;
-  uint8_t *_subDistance;
+  uint8_t* _score;
+  uint8_t* _subDistance;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_lowMem;
+  uint8_t* _lowMem;
 };
 
 } // namespace a2600

@@ -1,10 +1,10 @@
+#include "driver.hpp"
 #include <argparse/argparse.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/string.hpp>
-#include "driver.hpp"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   // Parsing command line arguments
   argparse::ArgumentParser program("jaffar", "1.0");
@@ -14,13 +14,13 @@ int main(int argc, char *argv[])
 
   // Try to parse arguments
   try
-    {
-      program.parse_args(argc, argv);
-    }
-  catch (const std::runtime_error &err)
-    {
-      JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str());
-    }
+  {
+    program.parse_args(argc, argv);
+  }
+  catch (const std::runtime_error& err)
+  {
+    JAFFAR_THROW_LOGIC("%s\n%s", err.what(), program.help().str().c_str());
+  }
 
   // Getting config file name
   const std::string configFile = program.get<std::string>("configFile");
@@ -39,22 +39,22 @@ int main(int argc, char *argv[])
   // Parsing JSON from script file
   nlohmann::json config;
   try
-    {
-      config = nlohmann::json::parse(configFileString);
-    }
-  catch (const std::exception &err)
-    {
-      JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
-    }
+  {
+    config = nlohmann::json::parse(configFileString);
+  }
+  catch (const std::exception& err)
+  {
+    JAFFAR_THROW_LOGIC("[ERROR] Parsing configuration file %s. Details:\n%s\n", configFile.c_str(), err.what());
+  }
 
   // Creating driver to run the Jaffar engine
   auto d = jaffarPlus::Driver::getDriver(configFile, config);
 
   // Returning now if dry running
   if (isDryRun)
-    {
-      jaffarCommon::logger::log("[J+] Finished dry run successfully.\n");
-      return 0;
+  {
+    jaffarCommon::logger::log("[J+] Finished dry run successfully.\n");
+    return 0;
   }
 
   // Initializing driver

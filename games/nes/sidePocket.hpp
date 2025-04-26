@@ -1,8 +1,8 @@
 #pragma once
 
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
 
 namespace jaffarPlus
 {
@@ -15,16 +15,12 @@ namespace nes
 
 class SidePocket final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "NES / Side Pocket"; }
 
-  SidePocket(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  SidePocket(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -80,52 +76,52 @@ class SidePocket final : public jaffarPlus::Game
 
     // Getting some properties' pointers now for quick access later
 
-    _cueAngle            = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Cue Angle")]->getPointer();
-    _cueEffectVertical   = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Cue Effect Vertical")]->getPointer();
-    _cueEffectHorizontal = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Cue Effect Horizontal")]->getPointer();
-    _cuePower            = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Cue Power")]->getPointer();
-    _gameStatus1         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Game Status 1")]->getPointer();
-    _gameStatus2         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Game Status 2")]->getPointer();
+    _cueAngle            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Cue Angle")]->getPointer();
+    _cueEffectVertical   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Cue Effect Vertical")]->getPointer();
+    _cueEffectHorizontal = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Cue Effect Horizontal")]->getPointer();
+    _cuePower            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Cue Power")]->getPointer();
+    _gameStatus1         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Status 1")]->getPointer();
+    _gameStatus2         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Status 2")]->getPointer();
 
-    _ball1State = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 1 State")]->getPointer();
-    _ball2State = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 2 State")]->getPointer();
-    _ball3State = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 3 State")]->getPointer();
-    _ball4State = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 4 State")]->getPointer();
-    _ball5State = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 5 State")]->getPointer();
-    _ball6State = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 6 State")]->getPointer();
-    _ball7State = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 7 State")]->getPointer();
+    _ball1State = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 1 State")]->getPointer();
+    _ball2State = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 2 State")]->getPointer();
+    _ball3State = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 3 State")]->getPointer();
+    _ball4State = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 4 State")]->getPointer();
+    _ball5State = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 5 State")]->getPointer();
+    _ball6State = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 6 State")]->getPointer();
+    _ball7State = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 7 State")]->getPointer();
 
-    _ball1Speed1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 1 Speed1")]->getPointer();
-    _ball2Speed1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 2 Speed1")]->getPointer();
-    _ball3Speed1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 3 Speed1")]->getPointer();
-    _ball4Speed1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 4 Speed1")]->getPointer();
-    _ball5Speed1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 5 Speed1")]->getPointer();
-    _ball6Speed1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 6 Speed1")]->getPointer();
-    _ball7Speed1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 7 Speed1")]->getPointer();
+    _ball1Speed1 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 1 Speed1")]->getPointer();
+    _ball2Speed1 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 2 Speed1")]->getPointer();
+    _ball3Speed1 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 3 Speed1")]->getPointer();
+    _ball4Speed1 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 4 Speed1")]->getPointer();
+    _ball5Speed1 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 5 Speed1")]->getPointer();
+    _ball6Speed1 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 6 Speed1")]->getPointer();
+    _ball7Speed1 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 7 Speed1")]->getPointer();
 
-    _ball1Speed2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 1 Speed2")]->getPointer();
-    _ball2Speed2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 2 Speed2")]->getPointer();
-    _ball3Speed2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 3 Speed2")]->getPointer();
-    _ball4Speed2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 4 Speed2")]->getPointer();
-    _ball5Speed2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 5 Speed2")]->getPointer();
-    _ball6Speed2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 6 Speed2")]->getPointer();
-    _ball7Speed2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 7 Speed2")]->getPointer();
+    _ball1Speed2 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 1 Speed2")]->getPointer();
+    _ball2Speed2 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 2 Speed2")]->getPointer();
+    _ball3Speed2 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 3 Speed2")]->getPointer();
+    _ball4Speed2 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 4 Speed2")]->getPointer();
+    _ball5Speed2 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 5 Speed2")]->getPointer();
+    _ball6Speed2 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 6 Speed2")]->getPointer();
+    _ball7Speed2 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 7 Speed2")]->getPointer();
 
-    _ball1PosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 1 Pos X")]->getPointer();
-    _ball2PosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 2 Pos X")]->getPointer();
-    _ball3PosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 3 Pos X")]->getPointer();
-    _ball4PosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 4 Pos X")]->getPointer();
-    _ball5PosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 5 Pos X")]->getPointer();
-    _ball6PosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 6 Pos X")]->getPointer();
-    _ball7PosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 7 Pos X")]->getPointer();
+    _ball1PosX = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 1 Pos X")]->getPointer();
+    _ball2PosX = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 2 Pos X")]->getPointer();
+    _ball3PosX = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 3 Pos X")]->getPointer();
+    _ball4PosX = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 4 Pos X")]->getPointer();
+    _ball5PosX = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 5 Pos X")]->getPointer();
+    _ball6PosX = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 6 Pos X")]->getPointer();
+    _ball7PosX = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 7 Pos X")]->getPointer();
 
-    _ball1PosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 1 Pos Y")]->getPointer();
-    _ball2PosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 2 Pos Y")]->getPointer();
-    _ball3PosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 3 Pos Y")]->getPointer();
-    _ball4PosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 4 Pos Y")]->getPointer();
-    _ball5PosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 5 Pos Y")]->getPointer();
-    _ball6PosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 6 Pos Y")]->getPointer();
-    _ball7PosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Ball 7 Pos Y")]->getPointer();
+    _ball1PosY = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 1 Pos Y")]->getPointer();
+    _ball2PosY = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 2 Pos Y")]->getPointer();
+    _ball3PosY = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 3 Pos Y")]->getPointer();
+    _ball4PosY = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 4 Pos Y")]->getPointer();
+    _ball5PosY = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 5 Pos Y")]->getPointer();
+    _ball6PosY = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 6 Pos Y")]->getPointer();
+    _ball7PosY = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ball 7 Pos Y")]->getPointer();
 
     _nullInputIdx  = _emulator->registerInput("|..|........|");
     _leftInputIdx  = _emulator->registerInput("|..|..L.....|");
@@ -144,7 +140,7 @@ class SidePocket final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     // hashEngine.Update(_lowMem[0x0000]);
     // hashEngine.Update(_lowMem[0x0007]);
@@ -154,7 +150,7 @@ class SidePocket final : public jaffarPlus::Game
     hashEngine.Update(&_lowMem[0x0200], 0x0280);
   }
 
-  __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t> &allowedInputSet) override {};
+  __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override {};
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
@@ -181,13 +177,13 @@ class SidePocket final : public jaffarPlus::Game
 
   __INLINE__ void ruleUpdatePostHook() override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.pushContiguous(&_movingBalls, sizeof(_movingBalls));
     serializer.pushContiguous(&_pendingBalls, sizeof(_pendingBalls));
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     deserializer.popContiguous(&_movingBalls, sizeof(_movingBalls));
     deserializer.popContiguous(&_pendingBalls, sizeof(_pendingBalls));
@@ -229,7 +225,7 @@ class SidePocket final : public jaffarPlus::Game
     jaffarCommon::logger::log("[J+]  + Ball 7 Pos:   (%u, %u)\n", *_ball7PosX, *_ball7PosY);
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
@@ -242,58 +238,57 @@ class SidePocket final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  public:
-
-  uint8_t *_lowMem;
+public:
+  uint8_t* _lowMem;
 
   uint8_t _pendingBalls;
 
-  uint8_t *_cueAngle;
-  uint8_t *_cueEffectVertical;
-  uint8_t *_cueEffectHorizontal;
-  uint8_t *_cuePower;
-  uint8_t *_gameStatus1;
-  uint8_t *_gameStatus2;
+  uint8_t* _cueAngle;
+  uint8_t* _cueEffectVertical;
+  uint8_t* _cueEffectHorizontal;
+  uint8_t* _cuePower;
+  uint8_t* _gameStatus1;
+  uint8_t* _gameStatus2;
 
-  uint8_t *_ball1State;
-  uint8_t *_ball2State;
-  uint8_t *_ball3State;
-  uint8_t *_ball4State;
-  uint8_t *_ball5State;
-  uint8_t *_ball6State;
-  uint8_t *_ball7State;
+  uint8_t* _ball1State;
+  uint8_t* _ball2State;
+  uint8_t* _ball3State;
+  uint8_t* _ball4State;
+  uint8_t* _ball5State;
+  uint8_t* _ball6State;
+  uint8_t* _ball7State;
 
-  uint8_t *_ball1Speed1;
-  uint8_t *_ball2Speed1;
-  uint8_t *_ball3Speed1;
-  uint8_t *_ball4Speed1;
-  uint8_t *_ball5Speed1;
-  uint8_t *_ball6Speed1;
-  uint8_t *_ball7Speed1;
+  uint8_t* _ball1Speed1;
+  uint8_t* _ball2Speed1;
+  uint8_t* _ball3Speed1;
+  uint8_t* _ball4Speed1;
+  uint8_t* _ball5Speed1;
+  uint8_t* _ball6Speed1;
+  uint8_t* _ball7Speed1;
 
-  uint8_t *_ball1Speed2;
-  uint8_t *_ball2Speed2;
-  uint8_t *_ball3Speed2;
-  uint8_t *_ball4Speed2;
-  uint8_t *_ball5Speed2;
-  uint8_t *_ball6Speed2;
-  uint8_t *_ball7Speed2;
+  uint8_t* _ball1Speed2;
+  uint8_t* _ball2Speed2;
+  uint8_t* _ball3Speed2;
+  uint8_t* _ball4Speed2;
+  uint8_t* _ball5Speed2;
+  uint8_t* _ball6Speed2;
+  uint8_t* _ball7Speed2;
 
-  uint8_t *_ball1PosX;
-  uint8_t *_ball2PosX;
-  uint8_t *_ball3PosX;
-  uint8_t *_ball4PosX;
-  uint8_t *_ball5PosX;
-  uint8_t *_ball6PosX;
-  uint8_t *_ball7PosX;
+  uint8_t* _ball1PosX;
+  uint8_t* _ball2PosX;
+  uint8_t* _ball3PosX;
+  uint8_t* _ball4PosX;
+  uint8_t* _ball5PosX;
+  uint8_t* _ball6PosX;
+  uint8_t* _ball7PosX;
 
-  uint8_t *_ball1PosY;
-  uint8_t *_ball2PosY;
-  uint8_t *_ball3PosY;
-  uint8_t *_ball4PosY;
-  uint8_t *_ball5PosY;
-  uint8_t *_ball6PosY;
-  uint8_t *_ball7PosY;
+  uint8_t* _ball1PosY;
+  uint8_t* _ball2PosY;
+  uint8_t* _ball3PosY;
+  uint8_t* _ball4PosY;
+  uint8_t* _ball5PosY;
+  uint8_t* _ball6PosY;
+  uint8_t* _ball7PosY;
 
   uint8_t _movingBalls;
 

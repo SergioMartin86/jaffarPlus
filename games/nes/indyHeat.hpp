@@ -1,8 +1,8 @@
 #pragma once
 
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
 
 namespace jaffarPlus
 {
@@ -15,19 +15,16 @@ namespace nes
 
 class IndyHeat final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "NES / Indy Heat"; }
 
-  IndyHeat(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
+  IndyHeat(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // Parsing configuration
     _lastInputStepReward = jaffarCommon::json::getNumber<float>(config, "Last Input Step Reward");
   }
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -49,13 +46,13 @@ class IndyHeat final : public jaffarPlus::Game
     registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _preRaceTimer      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Pre-Race Timer")]->getPointer();
-    _player1Angle      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player1 Angle")]->getPointer();
-    _player1PosX       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player1 PosX")]->getPointer();
-    _player1PosY       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player1 PosY")]->getPointer();
-    _player1Speed      = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player1 Speed")]->getPointer();
-    _player1CurrentLap = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player1 Current Lap")]->getPointer();
-    _player1Checkpoint = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player1 Checkpoint")]->getPointer();
+    _preRaceTimer      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Pre-Race Timer")]->getPointer();
+    _player1Angle      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player1 Angle")]->getPointer();
+    _player1PosX       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player1 PosX")]->getPointer();
+    _player1PosY       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player1 PosY")]->getPointer();
+    _player1Speed      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player1 Speed")]->getPointer();
+    _player1CurrentLap = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player1 Current Lap")]->getPointer();
+    _player1Checkpoint = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player1 Checkpoint")]->getPointer();
 
     // Derivative Values
     _player1PreviousLap = *_player1CurrentLap;
@@ -78,7 +75,7 @@ class IndyHeat final : public jaffarPlus::Game
     _currentStep++;
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     // { size_t start = 0x0400; size_t end = 0x0440; hashEngine.Update(&_lowMem[start], end - start); }
     // { size_t start = 0x0450; size_t end = 0x0460; hashEngine.Update(&_lowMem[start], end - start); }
@@ -92,14 +89,14 @@ class IndyHeat final : public jaffarPlus::Game
 
   __INLINE__ void ruleUpdatePostHook() override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.pushContiguous(&_lastInputStep, sizeof(_lastInputStep));
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
     serializer.pushContiguous(&_player1PreviousLap, sizeof(_player1PreviousLap));
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     deserializer.popContiguous(&_lastInputStep, sizeof(_lastInputStep));
     deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
@@ -132,7 +129,7 @@ class IndyHeat final : public jaffarPlus::Game
 
   void printInfoImpl() const override {}
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
@@ -145,13 +142,13 @@ class IndyHeat final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  uint8_t *_player1CurrentLap;
-  uint8_t *_player1Angle;
-  uint8_t *_preRaceTimer;
-  uint8_t *_player1PosX;
-  uint8_t *_player1PosY;
-  uint8_t *_player1Speed;
-  uint8_t *_player1Checkpoint;
+  uint8_t* _player1CurrentLap;
+  uint8_t* _player1Angle;
+  uint8_t* _preRaceTimer;
+  uint8_t* _player1PosX;
+  uint8_t* _player1PosY;
+  uint8_t* _player1Speed;
+  uint8_t* _player1Checkpoint;
 
   uint8_t _player1PreviousLap;
 
@@ -165,7 +162,7 @@ class IndyHeat final : public jaffarPlus::Game
   float _player1DistanceToPoint;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_lowMem;
+  uint8_t* _lowMem;
 
   // Reward for the last time an input was made (for early termination)
   float _lastInputStepReward;

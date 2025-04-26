@@ -1,19 +1,18 @@
 #pragma once
 
-#include <string>
-#include <vector>
 #include "jaffarCommon/deserializers/contiguous.hpp"
 #include "jaffarCommon/hash.hpp"
 #include "jaffarCommon/serializers/contiguous.hpp"
 #include "runner.hpp"
+#include <string>
+#include <vector>
 
 namespace jaffarPlus
 {
 
 class Playback final
 {
-  public:
-
+public:
   struct step_t
   {
     // Storage for the step's input string
@@ -26,10 +25,10 @@ class Playback final
     bool isInputAllowed;
 
     // Storage for the step's game state data
-    void *gameStateData;
+    void* gameStateData;
 
     // Storage for the step's renderer state data
-    void *rendererStateData;
+    void* rendererStateData;
 
     // Storage for the step's hash
     jaffarCommon::hash::hash_t stateHash;
@@ -38,8 +37,7 @@ class Playback final
     std::vector<size_t> _repeatedHashSteps;
   };
 
-  Playback(Runner &runner)
-    : _runner(&runner)
+  Playback(Runner& runner) : _runner(&runner)
   {
     // Getting game state size
     _gameStateSize = _runner->getStateSize();
@@ -48,92 +46,92 @@ class Playback final
     _rendererStateSize = _runner->getGame()->getEmulator()->getRendererStateSize();
   };
 
-  void initialize(const std::vector<std::string> &inputSequence)
+  void initialize(const std::vector<std::string>& inputSequence)
   {
     // For each input in the sequence, store the game's state
     for (size_t i = 0; i <= inputSequence.size(); i++)
-      {
-        // Creating new step
-        step_t step;
+    {
+      // Creating new step
+      step_t step;
 
-        // Checking if this is the end of the sequence
-        bool isEndOfSequence = i == inputSequence.size();
+      // Checking if this is the end of the sequence
+      bool isEndOfSequence = i == inputSequence.size();
 
-        // Setting step input string
-        step.inputString = isEndOfSequence == false ? inputSequence[i] : "<End Of Sequence>";
+      // Setting step input string
+      step.inputString = isEndOfSequence == false ? inputSequence[i] : "<End Of Sequence>";
 
-        // Checking if the input is allowed
-        step.isInputAllowed = _runner->isInputAllowed(step.inputString);
+      // Checking if the input is allowed
+      step.isInputAllowed = _runner->isInputAllowed(step.inputString);
 
-        // Getting input index
-        if (isEndOfSequence == true) step.inputIndex = 0;
-        if (isEndOfSequence == false && step.isInputAllowed == true) step.inputIndex = _runner->getInputIndex(step.inputString);
-        if (isEndOfSequence == false && step.isInputAllowed == false) step.inputIndex = _runner->registerInput(step.inputString);
+      // Getting input index
+      if (isEndOfSequence == true) step.inputIndex = 0;
+      if (isEndOfSequence == false && step.isInputAllowed == true) step.inputIndex = _runner->getInputIndex(step.inputString);
+      if (isEndOfSequence == false && step.isInputAllowed == false) step.inputIndex = _runner->registerInput(step.inputString);
 
-        // Getting state hash
-        step.stateHash = _runner->computeHash();
+      // Getting state hash
+      step.stateHash = _runner->computeHash();
 
-        // Checking for repeats
-        for (size_t stepIdx = 0; stepIdx < i; stepIdx++)
-          if (_hashMap[stepIdx] == step.stateHash) step._repeatedHashSteps.push_back(stepIdx);
+      // Checking for repeats
+      for (size_t stepIdx = 0; stepIdx < i; stepIdx++)
+        if (_hashMap[stepIdx] == step.stateHash) step._repeatedHashSteps.push_back(stepIdx);
 
-        // Entering state hash into the map to check for repeated inputs
-        _hashMap[i] = step.stateHash;
+      // Entering state hash into the map to check for repeated inputs
+      _hashMap[i] = step.stateHash;
 
-        // Allocating space for the game state data
-        step.gameStateData = malloc(_gameStateSize);
+      // Allocating space for the game state data
+      step.gameStateData = malloc(_gameStateSize);
 
-        // Serializing game state
-        jaffarCommon::serializer::Contiguous sg(step.gameStateData, _gameStateSize);
-        _runner->serializeState(sg);
+      // Serializing game state
+      jaffarCommon::serializer::Contiguous sg(step.gameStateData, _gameStateSize);
+      _runner->serializeState(sg);
 
-        // Allocating space for the renderer state data
-        step.rendererStateData = malloc(_rendererStateSize);
+      // Allocating space for the renderer state data
+      step.rendererStateData = malloc(_rendererStateSize);
 
-        // Updating renderer state
-        _runner->getGame()->getEmulator()->updateRendererState(i, step.inputString);
+      // Updating renderer state
+      _runner->getGame()->getEmulator()->updateRendererState(i, step.inputString);
 
-        // Serializing renderer state
-        jaffarCommon::serializer::Contiguous sr(step.rendererStateData, _rendererStateSize);
-        _runner->getGame()->getEmulator()->serializeRendererState(sr);
+      // Serializing renderer state
+      jaffarCommon::serializer::Contiguous sr(step.rendererStateData, _rendererStateSize);
+      _runner->getGame()->getEmulator()->serializeRendererState(sr);
 
-        // Advancing state
-        if (i < inputSequence.size()) _runner->advanceState(step.inputIndex);
-        if (i == inputSequence.size()) _runner->advanceState(_sequence.rbegin()->inputIndex);
+      // Advancing state
+      if (i < inputSequence.size()) _runner->advanceState(step.inputIndex);
+      if (i == inputSequence.size()) _runner->advanceState(_sequence.rbegin()->inputIndex);
 
-        // Evaluate game rules
-        _runner->getGame()->evaluateRules();
+      // Evaluate game rules
+      _runner->getGame()->evaluateRules();
 
-        // Determining new game state type
-        _runner->getGame()->updateGameStateType();
+      // Determining new game state type
+      _runner->getGame()->updateGameStateType();
 
-        // Updating game reward
-        _runner->getGame()->updateReward();
+      // Updating game reward
+      _runner->getGame()->updateReward();
 
-        // Adding step to the internal storage
-        _sequence.push_back(step);
-      }
+      // Adding step to the internal storage
+      _sequence.push_back(step);
+    }
   }
 
   ~Playback()
   {
     // Freeing up memory reserved during initialization
-    for (const auto &step : _sequence)
-      {
-        free(step.gameStateData);
-        free(step.rendererStateData);
-      }
+    for (const auto& step : _sequence)
+    {
+      free(step.gameStateData);
+      free(step.rendererStateData);
+    }
   }
 
   __INLINE__ std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
   __INLINE__ jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }
-  __INLINE__ void                              *getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
+  __INLINE__ void*                              getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
   __INLINE__ const std::vector<size_t> getStateRepeatedHashSteps(const size_t currentStep) const { return getStep(currentStep)._repeatedHashSteps; }
   __INLINE__ jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
 
   __INLINE__ void renderFrame(const size_t currentStep)
   {
-    const auto                            &step = getStep(currentStep);
+    const auto&                            step = getStep(currentStep);
     jaffarCommon::deserializer::Contiguous d(step.rendererStateData, _rendererStateSize);
     _runner->getGame()->getEmulator()->deserializeRendererState(d);
     _runner->getGame()->getEmulator()->showRender();
@@ -157,8 +155,7 @@ class Playback final
     _runner->getGame()->getEmulator()->printInfo();
   }
 
-  private:
-
+private:
   // Step getter
   step_t getStep(const size_t stepId) const
   {
@@ -167,7 +164,7 @@ class Playback final
   }
 
   // Pointer to runner
-  Runner *_runner;
+  Runner* _runner;
 
   // Storage for game state size
   size_t _gameStateSize;

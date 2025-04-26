@@ -1,9 +1,9 @@
 #pragma once
 
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 
 namespace jaffarPlus
 {
@@ -16,8 +16,7 @@ namespace sms
 
 class SnailMaze final : public jaffarPlus::Game
 {
-  public:
-
+public:
   enum transitionState_t
   {
     normal,
@@ -27,12 +26,9 @@ class SnailMaze final : public jaffarPlus::Game
 
   static __INLINE__ std::string getName() { return "SMS / Snail Maze"; }
 
-  SnailMaze(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  SnailMaze(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -48,8 +44,8 @@ class SnailMaze final : public jaffarPlus::Game
     registerGameProperty("Game State", &_workRAM[0x0200], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _playerPosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _playerPosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _playerPosX = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
 
     // Initializing values
     _currentStep   = 0;
@@ -67,7 +63,7 @@ class SnailMaze final : public jaffarPlus::Game
     _currentStep++;
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override {}
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override {}
 
   __INLINE__ void updateCharActualPos() {}
 
@@ -89,13 +85,13 @@ class SnailMaze final : public jaffarPlus::Game
     _playerDistanceToPoint  = std::sqrt(_playerDistanceToPointX * _playerDistanceToPointX + _playerDistanceToPointY * _playerDistanceToPointY);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.push(&_currentStep, sizeof(_currentStep));
     serializer.push(&_lastInputStep, sizeof(_lastInputStep));
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     deserializer.pop(&_currentStep, sizeof(_currentStep));
     deserializer.pop(&_lastInputStep, sizeof(_lastInputStep));
@@ -120,24 +116,24 @@ class SnailMaze final : public jaffarPlus::Game
     if (std::abs(_lastInputMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Last Input Magnet                      Intensity: %.5f\n", _lastInputMagnet);
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
     if (actionType == "Set Player Point Magnet")
-      {
-        auto posX = jaffarCommon::json::getNumber<float>(actionJs, "Pos X");
-        auto posY = jaffarCommon::json::getNumber<float>(actionJs, "Pos Y");
-        rule.addAction([=, this]() { this->_playerPointMagnet = pointMagnet_t{.posX = posX, .posY = posY}; });
-        recognizedActionType = true;
+    {
+      auto posX = jaffarCommon::json::getNumber<float>(actionJs, "Pos X");
+      auto posY = jaffarCommon::json::getNumber<float>(actionJs, "Pos Y");
+      rule.addAction([=, this]() { this->_playerPointMagnet = pointMagnet_t{.posX = posX, .posY = posY}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Last Input Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto action    = [=, this]() { this->_lastInputMagnet = intensity; };
-        rule.addAction(action);
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto action    = [=, this]() { this->_lastInputMagnet = intensity; };
+      rule.addAction(action);
+      recognizedActionType = true;
     }
 
     return recognizedActionType;
@@ -158,8 +154,8 @@ class SnailMaze final : public jaffarPlus::Game
 
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
   pointMagnet_t _playerPointMagnet;
-  uint8_t      *_playerPosX;
-  uint8_t      *_playerPosY;
+  uint8_t*      _playerPosX;
+  uint8_t*      _playerPosY;
 
   float _playerDistanceToPointX;
   float _playerDistanceToPointY;
@@ -171,7 +167,7 @@ class SnailMaze final : public jaffarPlus::Game
   uint16_t _currentStep;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_workRAM;
+  uint8_t* _workRAM;
 
   // Null input index to remember the last valid input
   InputSet::inputIndex_t _nullInputIdx;

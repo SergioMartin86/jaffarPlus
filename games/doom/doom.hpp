@@ -1,14 +1,14 @@
 #pragma once
 
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
-#include <jaffarCommon/hash.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/hash.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 #include <r_defs.h>
 
 // Players information
-extern "C" void                        P_SetThingPosition(mobj_t *thing, int refind);
+extern "C" void                        P_SetThingPosition(mobj_t* thing, int refind);
 extern "C" __STORAGE_MODIFIER int      enableOutput;
 extern "C" __STORAGE_MODIFIER player_t players[MAX_MAXPLAYERS];
 extern "C" __STORAGE_MODIFIER int      preventLevelExit;
@@ -18,7 +18,7 @@ extern "C" __STORAGE_MODIFIER int      reachedGameEnd;
 extern "C" __STORAGE_MODIFIER int      gamemap;
 extern "C" __STORAGE_MODIFIER int      gametic;
 extern "C" __STORAGE_MODIFIER int      numlines;
-extern "C" __STORAGE_MODIFIER line_t  *lines;
+extern "C" __STORAGE_MODIFIER line_t*  lines;
 
 namespace jaffarPlus
 {
@@ -31,12 +31,10 @@ namespace doom
 
 class Doom final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "Doom"; }
 
-  Doom(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
+  Doom(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     _pointMagnet.intensity = 0;
     _pointMagnet.x         = 0;
@@ -56,8 +54,7 @@ class Doom final : public jaffarPlus::Game
     _momentumMagnet          = 0;
   }
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Registering native game properties
@@ -66,10 +63,10 @@ class Doom final : public jaffarPlus::Game
     registerGameProperty("Player Pos Z", &_playerPosZ, Property::datatype_t::dt_float32, Property::endianness_t::little);
 
     for (int i = 0; i < numlines; i++)
-      {
-        std::string propertyName = std::string("Line[") + std::to_string(lines[i].iLineID) + std::string("] Activations");
-        registerGameProperty(propertyName, &lines[i].player_activations, Property::datatype_t::dt_int32, Property::endianness_t::little);
-      }
+    {
+      std::string propertyName = std::string("Line[") + std::to_string(lines[i].iLineID) + std::string("] Activations");
+      registerGameProperty(propertyName, &lines[i].player_activations, Property::datatype_t::dt_int32, Property::endianness_t::little);
+    }
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -82,17 +79,17 @@ class Doom final : public jaffarPlus::Game
   {
     jaffarCommon::hash::hash_t value = {0, 0};
     if (players[0].mo != nullptr)
-      {
-        value.first |= ((uint64_t)((uint16_t)(players[0].mo->x >> FRACBITS))) << 0;
-        value.first |= ((uint64_t)((uint16_t)(players[0].mo->y >> FRACBITS))) << 16;
-        value.first |= ((uint64_t)((uint16_t)(players[0].mo->momx >> FRACBITS))) << 32;
-        value.first |= ((uint64_t)((uint16_t)(players[0].mo->momy >> FRACBITS))) << 48;
-        value.second |= ((uint64_t)((uint16_t)(players[0].mo->angle >> FRACBITS))) << 0;
+    {
+      value.first |= ((uint64_t)((uint16_t)(players[0].mo->x >> FRACBITS))) << 0;
+      value.first |= ((uint64_t)((uint16_t)(players[0].mo->y >> FRACBITS))) << 16;
+      value.first |= ((uint64_t)((uint16_t)(players[0].mo->momx >> FRACBITS))) << 32;
+      value.first |= ((uint64_t)((uint16_t)(players[0].mo->momy >> FRACBITS))) << 48;
+      value.second |= ((uint64_t)((uint16_t)(players[0].mo->angle >> FRACBITS))) << 0;
     }
     return value;
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     // hash.Update(reachedLevelExit);
     // hash.Update(reachedGameEnd);
@@ -100,14 +97,14 @@ class Doom final : public jaffarPlus::Game
     // hashEngine.Update(gametic);
 
     if (players[0].mo != nullptr)
-      {
-        hashEngine.Update(players[0].mo->x >> FRACBITS);
-        hashEngine.Update(players[0].mo->y >> FRACBITS);
-        // hashEngine.Update(players[0].mo->z);
-        hashEngine.Update(players[0].mo->angle >> FRACBITS);
-        hashEngine.Update(players[0].mo->momx >> FRACBITS);
-        hashEngine.Update(players[0].mo->momy >> FRACBITS);
-        // hashEngine.Update(players[0].mo->momz);
+    {
+      hashEngine.Update(players[0].mo->x >> FRACBITS);
+      hashEngine.Update(players[0].mo->y >> FRACBITS);
+      // hashEngine.Update(players[0].mo->z);
+      hashEngine.Update(players[0].mo->angle >> FRACBITS);
+      hashEngine.Update(players[0].mo->momx >> FRACBITS);
+      hashEngine.Update(players[0].mo->momy >> FRACBITS);
+      // hashEngine.Update(players[0].mo->momz);
     }
   }
 
@@ -143,10 +140,10 @@ class Doom final : public jaffarPlus::Game
     _player1DistanceToPointY = std::abs(_pointMagnet.y - _playerPosY);
     _player1DistanceToPointZ = std::abs(_pointMagnet.z - _playerPosZ);
     _player1DistanceToPoint =
-      sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY + _player1DistanceToPointZ * _player1DistanceToPointZ);
+        sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY + _player1DistanceToPointZ * _player1DistanceToPointZ);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.push(&gametic, sizeof(gametic));
     serializer.push(&players[0].mo->x, sizeof(players[0].mo->x));
@@ -187,7 +184,7 @@ class Doom final : public jaffarPlus::Game
     serializer.push(&players[0].mo->gravity, sizeof(players[0].mo->gravity));
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     deserializer.pop(&gametic, sizeof(gametic));
     deserializer.pop(&players[0].mo->x, sizeof(players[0].mo->x));
@@ -253,11 +250,11 @@ class Doom final : public jaffarPlus::Game
     jaffarCommon::logger::log("[J+] Game End:   %s\n", reachedGameEnd == 1 ? "Yes" : "No");
 
     if (players[0].mo != nullptr)
-      {
-        jaffarCommon::logger::log("[J+] Player 1 Coordinates:    (%f, %f, %f)\n", _playerPosX, _playerPosY, _playerPosZ);
-        jaffarCommon::logger::log("[J+] Player 1 Angle:           %lu\n", players[0].mo->angle);
-        jaffarCommon::logger::log("[J+] Player 1 Momentum:        %f (%f, %f, %f)\n", _totalMomentum, _playerMomentumX, _playerMomentumY, _playerMomentumZ);
-        jaffarCommon::logger::log("[J+] Player 1 Health:          %d\n", players[0].mo->health);
+    {
+      jaffarCommon::logger::log("[J+] Player 1 Coordinates:    (%f, %f, %f)\n", _playerPosX, _playerPosY, _playerPosZ);
+      jaffarCommon::logger::log("[J+] Player 1 Angle:           %lu\n", players[0].mo->angle);
+      jaffarCommon::logger::log("[J+] Player 1 Momentum:        %f (%f, %f, %f)\n", _totalMomentum, _playerMomentumX, _playerMomentumY, _playerMomentumZ);
+      jaffarCommon::logger::log("[J+] Player 1 Health:          %d\n", players[0].mo->health);
     }
 
     // jaffarCommon::logger::log("[] Line Information: \n");
@@ -269,38 +266,35 @@ class Doom final : public jaffarPlus::Game
     if (std::abs(_momentumMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Momentum Magnet                          Intensity: %.5f\n", _momentumMagnet);
 
     if (std::abs(_pointMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Z: %3.3f\n",
-                                  _pointMagnet.intensity,
-                                  _pointMagnet.x,
-                                  _pointMagnet.y,
-                                  _pointMagnet.z);
-        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
-        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
-        jaffarCommon::logger::log("[J+]    + Distance Z                             %3.3f\n", _player1DistanceToPointZ);
-        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Z: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x,
+                                _pointMagnet.y, _pointMagnet.z);
+      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+      jaffarCommon::logger::log("[J+]    + Distance Z                             %3.3f\n", _player1DistanceToPointZ);
+      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
     }
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
     if (actionType == "Set Point Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
-        auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-        auto z         = jaffarCommon::json::getNumber<float>(actionJs, "Z");
-        rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y, .z = z}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      auto z         = jaffarCommon::json::getNumber<float>(actionJs, "Z");
+      rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y, .z = z}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Momentum Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        rule.addAction([=, this]() { this->_momentumMagnet = intensity; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_momentumMagnet = intensity; });
+      recognizedActionType = true;
     }
 
     return recognizedActionType;

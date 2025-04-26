@@ -1,9 +1,9 @@
 #pragma once
 
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 
 namespace jaffarPlus
 {
@@ -16,13 +16,10 @@ namespace genesis
 
 class ShoveIt final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "Genesis / Shove It!"; }
 
-  ShoveIt(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  ShoveIt(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
   uint8_t getMoveTimer() const { return *_moveTimer; }
 
@@ -33,8 +30,7 @@ class ShoveIt final : public jaffarPlus::Game
   InputSet::inputIndex_t _downInputIdx;
   InputSet::inputIndex_t _buttonInputIdx;
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -44,7 +40,7 @@ class ShoveIt final : public jaffarPlus::Game
     registerGameProperty("Move Timer", &_workRAM[0xF71B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _moveTimer = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Move Timer")]->getPointer();
+    _moveTimer = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Move Timer")]->getPointer();
 
     _nullInputIdx  = _emulator->registerInput("|..|........|");
     _leftInputIdx  = _emulator->registerInput("|..|..L.....|");
@@ -59,7 +55,7 @@ class ShoveIt final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override { hashEngine.Update(_workRAM, 0x2000); }
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override { hashEngine.Update(_workRAM, 0x2000); }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
@@ -68,9 +64,9 @@ class ShoveIt final : public jaffarPlus::Game
 
   __INLINE__ void ruleUpdatePostHook() override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override {}
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) {}
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -83,7 +79,7 @@ class ShoveIt final : public jaffarPlus::Game
 
   void printInfoImpl() const override {}
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
@@ -96,10 +92,10 @@ class ShoveIt final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  uint8_t *_moveTimer;
+  uint8_t* _moveTimer;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_workRAM;
+  uint8_t* _workRAM;
 };
 
 } // namespace genesis

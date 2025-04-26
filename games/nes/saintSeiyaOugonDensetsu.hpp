@@ -1,8 +1,8 @@
 #pragma once
 
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
 
 #define _SAINT_SEIYA_FIGHT_COUNT 34
 
@@ -17,19 +17,16 @@ namespace nes
 
 class SaintSeiyaOugonDensetsu final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "NES / Saint Seiya Ougon Densetsu"; }
 
-  SaintSeiyaOugonDensetsu(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
+  SaintSeiyaOugonDensetsu(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // Parsing configuration
     _lastInputStepReward = jaffarCommon::json::getNumber<float>(config, "Last Input Step Reward");
   }
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -50,11 +47,11 @@ class SaintSeiyaOugonDensetsu final : public jaffarPlus::Game
       registerGameProperty(std::string("Fight[") + std::to_string(i) + std::string("]"), &_fightVector[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _menuType       = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Menu Type")]->getPointer();
-    _menuOption     = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Menu Option")]->getPointer();
-    _playerPosX     = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _playerPosY     = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
-    _menuInputFrame = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Menu Input Frame")]->getPointer();
+    _menuType       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Menu Type")]->getPointer();
+    _menuOption     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Menu Option")]->getPointer();
+    _playerPosX     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _menuInputFrame = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Menu Input Frame")]->getPointer();
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
@@ -72,7 +69,7 @@ class SaintSeiyaOugonDensetsu final : public jaffarPlus::Game
     _currentStep++;
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     uint8_t ramData[0x800];
 
@@ -117,14 +114,14 @@ class SaintSeiyaOugonDensetsu final : public jaffarPlus::Game
     _player1DistanceToPoint  = sqrtf(_player1DistanceToPointX * _player1DistanceToPointX + _player1DistanceToPointY * _player1DistanceToPointY);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.pushContiguous(&_fightsCompleted, sizeof(_fightsCompleted));
     serializer.pushContiguous(&_lastInputStep, sizeof(_lastInputStep));
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
   }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     deserializer.popContiguous(&_fightsCompleted, sizeof(_fightsCompleted));
     deserializer.popContiguous(&_lastInputStep, sizeof(_lastInputStep));
@@ -168,34 +165,34 @@ class SaintSeiyaOugonDensetsu final : public jaffarPlus::Game
     jaffarCommon::logger::log(" ]\n");
 
     if (std::abs(_pointMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
-        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
-        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
-        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
     }
 
     if (std::abs(_fightsCompletedMagnet) > 0.0f) { jaffarCommon::logger::log("[J+]  + Fights Completed Magnet                   Intensity: %.5f\n", _fightsCompletedMagnet); }
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
     if (actionType == "Set Point Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
-        auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-        rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
+      recognizedActionType = true;
     }
 
     if (actionType == "Set Fights Completed Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        rule.addAction([=, this]() { this->_fightsCompletedMagnet = intensity; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_fightsCompletedMagnet = intensity; });
+      recognizedActionType = true;
     }
 
     return recognizedActionType;
@@ -217,18 +214,18 @@ class SaintSeiyaOugonDensetsu final : public jaffarPlus::Game
 
   // Counter for fights completed
   uint8_t  _fightsCompleted;
-  uint8_t *_fightVector;
+  uint8_t* _fightVector;
 
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
   pointMagnet_t _pointMagnet;
   double        _fightsCompletedMagnet;
 
-  uint8_t *_menuType;
-  uint8_t *_menuOption;
-  uint8_t *_menuInputFrame;
+  uint8_t* _menuType;
+  uint8_t* _menuOption;
+  uint8_t* _menuInputFrame;
 
-  uint8_t *_playerPosX;
-  uint8_t *_playerPosY;
+  uint8_t* _playerPosX;
+  uint8_t* _playerPosY;
 
   // Additions to make the last input as soon as possible
   uint16_t _lastInputStep = 0;
@@ -240,7 +237,7 @@ class SaintSeiyaOugonDensetsu final : public jaffarPlus::Game
   float _player1DistanceToPoint;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_lowMem;
+  uint8_t* _lowMem;
 
   // Reward for the last time an input was made (for early termination)
   float _lastInputStepReward;
