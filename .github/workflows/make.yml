@@ -91,7 +91,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples
+      run: meson test ValidateExamples -C build
 
   # Build (QuickerSDLPoP)
   build-QuickerSDLPoP:
@@ -115,7 +115,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples
+      run: meson test ValidateExamples -C build
 
   # Build (QuickerSnes9x)
   build-QuickerSnes9x:
@@ -139,7 +139,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
 
   # Build (QuickerGPGX)
   build-QuickerGPGX:
@@ -163,7 +163,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
 
   # Build (QuickerStella)
   build-QuickerStella:
@@ -187,7 +187,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
 
   # Build (Atari2600Hawk)
   build-Atari2600Hawk:
@@ -216,7 +216,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
 
   # Build (QuickerSMBC)
   build-QuickerSMBC:
@@ -240,7 +240,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
       
   # Build (QuickerNEORAW)
   build-QuickerNEORAW:
@@ -264,7 +264,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
 
   # Build (QuickerRAWGL)
   build-QuickerRAWGL:
@@ -288,7 +288,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
 
   # Build (QuickerArkBot)
   build-QuickerArkBot:
@@ -312,7 +312,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
 
   # Build (QuickerMGBA)
   build-QuickerMGBA:
@@ -336,7 +336,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
 
   # Build (QuickerGambatte)
   build-QuickerGambatte:
@@ -360,7 +360,7 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
       
   # Build (QuickerDSDA)
   build-QuickerDSDA:
@@ -384,4 +384,4 @@ jobs:
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples      
+      run: meson test ValidateExamples -C build      
