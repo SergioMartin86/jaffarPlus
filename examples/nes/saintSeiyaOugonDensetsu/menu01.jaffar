@@ -2,7 +2,7 @@
  "Driver Configuration":
  {
   "End On First Win State": true,
-  "Max Steps": 4096,
+  "Max Steps": 0,
 
   "Save Intermediate Results":
   {
@@ -50,15 +50,27 @@
   "Rom File Path": "../../../extern/jaffarPlus/extern/quickerNES/tests/roms/Saint Seiya - Ougon Densetsu (J) [!].nes",
   "Rom File SHA1": "3F3B499CF50386084E053BCA096AE8E52330CFAE",
   "Initial State File Path": "",
+  "Initial Sequence File Path": "menu01.initial.sol",
+  "Initial RAM Data File Path": "",
   "Controller 1 Type": "Joypad",
   "Controller 2 Type": "None",
-  "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ]
+  "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ],
+  "Nametable Block Size": 2048
 },
  
 "Runner Configuration":
 {
+  "Bypass Hash Calculation": false,
+  "Frameskip Rate": 0, 
   "Hash Step Tolerance": 2,
-  "Initial Sequence File Path": "menu01.initial.sol",
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 4096
+  },
 
   "Allowed Input Sets":
   [
