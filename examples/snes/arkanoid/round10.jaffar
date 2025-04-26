@@ -59,6 +59,8 @@
  
 "Runner Configuration":
 {
+  "Bypass Hash Calculation": false,
+  "Frameskip Rate": 0,
   "Hash Step Tolerance": 1,
   "Show Empty Input Slots": true,
   "Show Allowed Inputs": true,
@@ -112,14 +114,15 @@
 {
   "Game Name": "SNES / Arkanoid",
   "Frame Rate": 120.10,
+  "Paddle Movement Frameskip": 16,
   "Ball Count Reward": 0.5,
   "Remaining Hits Reward": 1.0,
   "Remaining Blocks Reward": 0.0,
   "Falling Laser Powerup Reward": 0.1,
   "Falling Eight Ball Powerup Reward": 1.0,
-  "Hold Laser Powerup Reward": 2.0,
+  "Hold Laser Powerup Reward": 1.0,
   "Hold M Powerup Reward": 1.0,
-  
+
   "Print Properties":
   [
   ],
