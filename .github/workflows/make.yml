@@ -92,6 +92,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
 
   # Build (QuickerSDLPoP)
   build-QuickerSDLPoP:
@@ -116,6 +121,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
 
   # Build (QuickerSnes9x)
   build-QuickerSnes9x:
@@ -140,6 +150,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
 
   # Build (QuickerGPGX)
   build-QuickerGPGX:
@@ -164,6 +179,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
 
   # Build (QuickerStella)
   build-QuickerStella:
@@ -188,6 +208,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/      
 
   # Build (Atari2600Hawk)
   build-Atari2600Hawk:
@@ -217,6 +242,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
 
   # Build (QuickerSMBC)
   build-QuickerSMBC:
@@ -241,6 +271,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
       
   # Build (QuickerNEORAW)
   build-QuickerNEORAW:
@@ -265,6 +300,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
 
   # Build (QuickerRAWGL)
   build-QuickerRAWGL:
@@ -289,6 +329,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
 
   # Build (QuickerArkBot)
   build-QuickerArkBot:
@@ -313,6 +358,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
 
   # Build (QuickerMGBA)
   build-QuickerMGBA:
@@ -337,6 +387,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
 
   # Build (QuickerGambatte)
   build-QuickerGambatte:
@@ -361,6 +416,11 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
       
   # Build (QuickerDSDA)
   build-QuickerDSDA:
@@ -385,3 +445,8 @@ jobs:
       run: ninja -C build
     - name: Validating examples
       run: meson test ValidateExamples -C build      
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: meson-logs
+        path: build/meson-logs/
