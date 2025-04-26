@@ -63,6 +63,8 @@
   
  "Runner Configuration":
  {
+   "Bypass Hash Calculation": false,
+   "Frameskip Rate": 0,
    "Hash Step Tolerance": 1,
    "Show Empty Input Slots": true,
    "Show Allowed Inputs": true,
@@ -738,7 +740,7 @@
       [
        { "Type": "Trigger Win" }
       ]
-     }
+     },
 
      {
       "Label": 191,

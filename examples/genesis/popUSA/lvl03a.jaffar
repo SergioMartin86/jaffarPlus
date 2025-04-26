@@ -63,6 +63,7 @@
   
  "Runner Configuration":
  {
+   "Bypass Hash Calculation": false,
    "Frameskip Rate": 3,
    "Hash Step Tolerance": 0,
    "Show Empty Input Slots": true,
@@ -348,6 +349,8 @@
    "Game Name": "Genesis / Prince Of Persia",
    "Frame Rate": 60.10,
    "Last Input Step Reward": 0.0,
+   "Hash Level Properties": false,
+   "Hash Guard Properties": true,
  
    "Print Properties":
    [

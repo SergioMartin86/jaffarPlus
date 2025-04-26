@@ -51,6 +51,9 @@
    "Rom File SHA1": "BF0CDB664129B5548083DC0DDE5449AB5F1BCC3A",
    "Initial State File Path": "",
    "Initial Sequence File Path": "lvl01.initial.sol",
+   "Initial RAM Data File Path": "",
+   "Initial Video RAM Data File Path": "",
+   "Bios File Path": "",
    "System Type": "Sega Game Gear",
    "Controller 1 Type": "GameGear2B",
    "Controller 2 Type": "None",
@@ -60,6 +63,8 @@
   
  "Runner Configuration":
  {
+   "Bypass Hash Calculation": false,
+   "Frameskip Rate": 0,
    "Hash Step Tolerance": 1,
    "Show Empty Input Slots": true,
    "Show Allowed Inputs": true,

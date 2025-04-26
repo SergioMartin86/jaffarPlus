@@ -23,7 +23,7 @@
      "Max Size per NUMA Domain (Mb)":
      [ 
        10000,
-       00
+       0
      ],
    
      "Scavenger Queues Size": 32,
@@ -63,6 +63,8 @@
   
  "Runner Configuration":
  {
+   "Bypass Hash Calculation": false,
+   "Frameskip Rate": 0,
    "Hash Step Tolerance": 1,
    "Show Empty Input Slots": true,
    "Show Allowed Inputs": true,

@@ -53,6 +53,7 @@
    "Initial State File Path": "",
    "Initial Sequence File Path": "lvl02a.initial.sol",
    "Initial RAM Data File Path": "lvl02.bin",
+   "Initial Video RAM Data File Path": "",
    "System Type": "Sega Game Gear",
    "Controller 1 Type": "GameGear2B",
    "Controller 2 Type": "None",
@@ -62,6 +63,8 @@
   
  "Runner Configuration":
  {
+   "Bypass Hash Calculation": false,
+   "Frameskip Rate": 0,
    "Hash Step Tolerance": 0,
    "Show Empty Input Slots": true,
    "Show Allowed Inputs": true,
