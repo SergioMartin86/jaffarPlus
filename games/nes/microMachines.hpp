@@ -21,9 +21,7 @@ class MicroMachines final : public jaffarPlus::Game
 
   MicroMachines(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
     : jaffarPlus::Game(std::move(emulator), config)
-  {
-
-  }
+  {}
 
   private:
 
@@ -72,7 +70,6 @@ class MicroMachines final : public jaffarPlus::Game
     registerGameProperty("Active Frame 3", &lowMem[0x00B4], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Active Frame 4", &lowMem[0x00B6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-
     registerGameProperty("Player 2 Pos X1", &lowMem[0x03DF], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player 2 Pos X2", &lowMem[0x03DB], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player 2 Pos Y1", &lowMem[0x03EB], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -89,7 +86,6 @@ class MicroMachines final : public jaffarPlus::Game
     registerGameProperty("Player 2 Resume Timer", &lowMem[0x00DB], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player 2 Can Control Car", &lowMem[0x01C0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player 2 Tank Fire Timer", &lowMem[0x041F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-
 
     registerGameProperty("Player 3 Pos X1", &lowMem[0x03E0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player 3 Pos X2", &lowMem[0x03DC], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -145,7 +141,7 @@ class MicroMachines final : public jaffarPlus::Game
     registerGameProperty("Player 4 Pos Y", &_player4PosY, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Player 4 Pos X", &_player4PosX, Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
-    registerGameProperty("Current Step",   &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Last Input Step", &_lastInputStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
@@ -156,25 +152,25 @@ class MicroMachines final : public jaffarPlus::Game
     _cameraPosY1          = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Camera Pos Y1")]->getPointer();
     _cameraPosY2          = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Camera Pos Y2")]->getPointer();
 
-    _player1PosX1         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Pos X1")]->getPointer();
-    _player1PosX2         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Pos X2")]->getPointer();
-    _player1PosY1         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Pos Y1")]->getPointer();
-    _player1PosY2         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Pos Y2")]->getPointer();
+    _player1PosX1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Pos X1")]->getPointer();
+    _player1PosX2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Pos X2")]->getPointer();
+    _player1PosY1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Pos Y1")]->getPointer();
+    _player1PosY2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Pos Y2")]->getPointer();
 
-    _player2PosX1         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 2 Pos X1")]->getPointer();
-    _player2PosX2         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 2 Pos X2")]->getPointer();
-    _player2PosY1         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 2 Pos Y1")]->getPointer();
-    _player2PosY2         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 2 Pos Y2")]->getPointer();
+    _player2PosX1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 2 Pos X1")]->getPointer();
+    _player2PosX2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 2 Pos X2")]->getPointer();
+    _player2PosY1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 2 Pos Y1")]->getPointer();
+    _player2PosY2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 2 Pos Y2")]->getPointer();
 
-    _player3PosX1         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 3 Pos X1")]->getPointer();
-    _player3PosX2         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 3 Pos X2")]->getPointer();
-    _player3PosY1         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 3 Pos Y1")]->getPointer();
-    _player3PosY2         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 3 Pos Y2")]->getPointer();
+    _player3PosX1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 3 Pos X1")]->getPointer();
+    _player3PosX2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 3 Pos X2")]->getPointer();
+    _player3PosY1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 3 Pos Y1")]->getPointer();
+    _player3PosY2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 3 Pos Y2")]->getPointer();
 
-    _player4PosX1         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 4 Pos X1")]->getPointer();
-    _player4PosX2         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 4 Pos X2")]->getPointer();
-    _player4PosY1         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 4 Pos Y1")]->getPointer();
-    _player4PosY2         = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 4 Pos Y2")]->getPointer();
+    _player4PosX1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 4 Pos X1")]->getPointer();
+    _player4PosX2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 4 Pos X2")]->getPointer();
+    _player4PosY1 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 4 Pos Y1")]->getPointer();
+    _player4PosY2 = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 4 Pos Y2")]->getPointer();
 
     _player1Accel         = (int8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Accel")]->getPointer();
     _player1AccelTimer2   = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Accel Timer 2")]->getPointer();
@@ -184,17 +180,17 @@ class MicroMachines final : public jaffarPlus::Game
     _player1RecoveryTimer = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player 1 Recovery Timer")]->getPointer();
 
     // Initializing values
-    _currentStep = 0;
+    _currentStep   = 0;
     _lastInputStep = 0;
 
-    // Getting index for a non input 
+    // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     _player1LapsRemainingPrev = *_player1LapsRemaining;
-    _player1CheckpointPrev = *_player1Checkpoint;
+    _player1CheckpointPrev    = *_player1Checkpoint;
 
     _emulator->advanceState(input);
 
@@ -202,7 +198,6 @@ class MicroMachines final : public jaffarPlus::Game
     if (input != _nullInputIdx) _lastInputStep = _currentStep;
 
     _currentStep++;
-    
   }
 
   __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override { hashEngine.Update(*_player1TankFireTimer > 0); }
@@ -258,7 +253,7 @@ class MicroMachines final : public jaffarPlus::Game
 
     float cameraDistanceToPlayer1X = std::abs((float)_cameraPosX - (float)_player1PosX);
     float cameraDistanceToPlayer1Y = std::abs((float)_cameraPosY - (float)_player1PosY);
-    _cameraPlayer1Distance  = sqrtf(cameraDistanceToPlayer1X * cameraDistanceToPlayer1X + cameraDistanceToPlayer1Y * cameraDistanceToPlayer1Y);
+    _cameraPlayer1Distance         = sqrtf(cameraDistanceToPlayer1X * cameraDistanceToPlayer1X + cameraDistanceToPlayer1Y * cameraDistanceToPlayer1Y);
 
     _player1DistanceToMagnetAngle = std::abs(_player1AngleMagnet.angle - (float)*_player1Angle1);
   }
@@ -317,11 +312,11 @@ class MicroMachines final : public jaffarPlus::Game
   void printInfoImpl() const override
   {
     if (std::abs(_pointMagnet.intensity) > 0.0f)
-    {
-      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
-      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
-      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
-      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
+      {
+        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
+        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
+        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _player1DistanceToPoint);
     }
 
     if (std::abs(_cameraDistanceMagnet) > 0.0f)
@@ -343,70 +338,70 @@ class MicroMachines final : public jaffarPlus::Game
     bool recognizedActionType = false;
 
     if (actionType == "Set Point Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
-      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-      auto action    = [=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; };
-      rule.addAction(action);
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+        auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+        auto action    = [=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; };
+        rule.addAction(action);
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Player Current Lap Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto action    = [=, this]() { this->_playerCurrentLapMagnet = intensity; };
-      rule.addAction(action);
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto action    = [=, this]() { this->_playerCurrentLapMagnet = intensity; };
+        rule.addAction(action);
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Player Lap Progress Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto action    = [=, this]() { this->_playerLapProgressMagnet = intensity; };
-      rule.addAction(action);
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto action    = [=, this]() { this->_playerLapProgressMagnet = intensity; };
+        rule.addAction(action);
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Player Accel Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto action    = [=, this]() { this->_playerAccelMagnet = intensity; };
-      rule.addAction(action);
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto action    = [=, this]() { this->_playerAccelMagnet = intensity; };
+        rule.addAction(action);
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Camera Distance Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto action    = [=, this]() { this->_cameraDistanceMagnet = intensity; };
-      rule.addAction(action);
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto action    = [=, this]() { this->_cameraDistanceMagnet = intensity; };
+        rule.addAction(action);
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Recovery Timer Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto action    = [=, this]() { this->_recoveryTimerMagnet = intensity; };
-      rule.addAction(action);
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto action    = [=, this]() { this->_recoveryTimerMagnet = intensity; };
+        rule.addAction(action);
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Last Input Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto action    = [=, this]() { this->_lastInputMagnet = intensity; };
-      rule.addAction(action);
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto action    = [=, this]() { this->_lastInputMagnet = intensity; };
+        rule.addAction(action);
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Player 1 Angle Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto angle     = jaffarCommon::json::getNumber<float>(actionJs, "Angle");
-      auto action    = [=, this]() { this->_player1AngleMagnet = angleMagnet_t{.intensity = intensity, .angle = angle}; };
-      rule.addAction(action);
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto angle     = jaffarCommon::json::getNumber<float>(actionJs, "Angle");
+        auto action    = [=, this]() { this->_player1AngleMagnet = angleMagnet_t{.intensity = intensity, .angle = angle}; };
+        rule.addAction(action);
+        recognizedActionType = true;
     }
 
     return recognizedActionType;
@@ -477,7 +472,7 @@ class MicroMachines final : public jaffarPlus::Game
   uint8_t *_player1LapsRemaining;
   uint8_t  _player1LapsRemainingPrev = 255;
   uint8_t *_player1Checkpoint;
-  uint8_t _player1CheckpointPrev = 0;
+  uint8_t  _player1CheckpointPrev = 0;
 
   uint8_t *_player1RecoveryTimer;
   uint8_t *_player1TankFireTimer;
@@ -490,7 +485,7 @@ class MicroMachines final : public jaffarPlus::Game
 
   uint16_t _player2PosX;
   uint16_t _player2PosY;
-  
+
   uint16_t _player3PosX;
   uint16_t _player3PosY;
 

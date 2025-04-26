@@ -28,7 +28,7 @@ class Engine final
   {
     // Overriding thread count, if requested
     if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_THREAD_COUNT")) jaffarCommon::parallel::setThreadCount(std::stoul(value));
-    
+
     // Getting number of threads
     _threadCount = jaffarCommon::parallel::getMaxThreadCount();
 

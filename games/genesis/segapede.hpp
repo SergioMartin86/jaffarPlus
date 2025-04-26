@@ -32,8 +32,8 @@ class Segapede final : public jaffarPlus::Game
     _workRAM = _emulator->getProperty("RAM").pointer;
 
     // Registering native game properties
-    registerGameProperty("Player Pos X",  &_workRAM[0x0086DE], Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Player Pos Y",  &_workRAM[0x0086E2], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Pos X", &_workRAM[0x0086DE], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y", &_workRAM[0x0086E2], Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     registerGameProperty("Player Vel X1", &_workRAM[0x0086EE], Property::datatype_t::dt_int16, Property::endianness_t::little);
     registerGameProperty("Player Vel X2", &_workRAM[0x0086F0], Property::datatype_t::dt_uint16, Property::endianness_t::little);
@@ -41,11 +41,11 @@ class Segapede final : public jaffarPlus::Game
     registerGameProperty("Player Vel Y1", &_workRAM[0x0086F2], Property::datatype_t::dt_int16, Property::endianness_t::little);
     registerGameProperty("Player Vel Y2", &_workRAM[0x0086F4], Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
-    registerGameProperty("Game End",      &_workRAM[0x007FF2], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Game End", &_workRAM[0x007FF2], Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _playerPosX  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _playerPosY  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _playerPosX = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -54,20 +54,20 @@ class Segapede final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override 
+  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override
   {
-     hashEngine.Update(&_workRAM[0x8E60], 0x8D8E - 0x8E60);
-     hashEngine.Update(&_workRAM[0x7F9D], 0x7FD0 - 0x7F9D);
+    hashEngine.Update(&_workRAM[0x8E60], 0x8D8E - 0x8E60);
+    hashEngine.Update(&_workRAM[0x7F9D], 0x7FD0 - 0x7F9D);
 
-     hashEngine.Update(_workRAM[0x00822E]);
-     hashEngine.Update(_workRAM[0x008230]);
-     hashEngine.Update(_workRAM[0x008232]);
-     hashEngine.Update(_workRAM[0x008234]);
-     hashEngine.Update(_workRAM[0x008266]);
-     hashEngine.Update(_workRAM[0x00826A]);
-     hashEngine.Update(_workRAM[0x00826C]);
-     hashEngine.Update(_workRAM[0x00826E]);
-     hashEngine.Update(_workRAM[0x008270]);
+    hashEngine.Update(_workRAM[0x00822E]);
+    hashEngine.Update(_workRAM[0x008230]);
+    hashEngine.Update(_workRAM[0x008232]);
+    hashEngine.Update(_workRAM[0x008234]);
+    hashEngine.Update(_workRAM[0x008266]);
+    hashEngine.Update(_workRAM[0x00826A]);
+    hashEngine.Update(_workRAM[0x00826C]);
+    hashEngine.Update(_workRAM[0x00826E]);
+    hashEngine.Update(_workRAM[0x008270]);
   }
 
   // Updating derivative values after updating the internal state
@@ -76,10 +76,10 @@ class Segapede final : public jaffarPlus::Game
   __INLINE__ void ruleUpdatePreHook() override
   {
     // Resetting magnets ahead of rule re-evaluation
-    _pointXMagnet.intensity = 0.0;
-    _pointXMagnet.pos       = 0.0;
-    _pointYMagnet.intensity = 0.0;
-    _pointYMagnet.pos       = 0.0;
+    _pointXMagnet.intensity  = 0.0;
+    _pointXMagnet.pos        = 0.0;
+    _pointYMagnet.intensity  = 0.0;
+    _pointYMagnet.pos        = 0.0;
     _point2DMagnet.intensity = 0.0;
     _point2DMagnet.posX      = 0.0;
     _point2DMagnet.posY      = 0.0;
@@ -92,9 +92,9 @@ class Segapede final : public jaffarPlus::Game
     _player1DistanceToPointY = std::abs((float)_pointYMagnet.pos - (float)*_playerPosY);
 
     // Calculating 2D distance
-    float distX = std::abs((float)_point2DMagnet.posX - (float)*_playerPosX);
-    float distY = std::abs((float)_point2DMagnet.posY - (float)*_playerPosY);
-    _player1DistanceToPoint2D = std::sqrt(distX*distX + distY*distY);
+    float distX               = std::abs((float)_point2DMagnet.posX - (float)*_playerPosX);
+    float distY               = std::abs((float)_point2DMagnet.posY - (float)*_playerPosY);
+    _player1DistanceToPoint2D = std::sqrt(distX * distX + distY * distY);
   }
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
@@ -118,21 +118,22 @@ class Segapede final : public jaffarPlus::Game
   void printInfoImpl() const override
   {
     if (std::abs(_pointXMagnet.intensity) > 0.0f)
-    {
-      jaffarCommon::logger::log("[J+]  + Point X Magnet                           Intensity: %.5f, Pos: %3.3f\n", _pointXMagnet.intensity, _pointXMagnet.pos);
-      jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPointX);
+      {
+        jaffarCommon::logger::log("[J+]  + Point X Magnet                           Intensity: %.5f, Pos: %3.3f\n", _pointXMagnet.intensity, _pointXMagnet.pos);
+        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPointX);
     }
 
     if (std::abs(_pointYMagnet.intensity) > 0.0f)
-    {
-      jaffarCommon::logger::log("[J+]  + Point Y Magnet                           Intensity: %.5f, Pos: %3.3f\n", _pointYMagnet.intensity, _pointYMagnet.pos);
-      jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPointY);
+      {
+        jaffarCommon::logger::log("[J+]  + Point Y Magnet                           Intensity: %.5f, Pos: %3.3f\n", _pointYMagnet.intensity, _pointYMagnet.pos);
+        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPointY);
     }
 
     if (std::abs(_point2DMagnet.intensity) > 0.0f)
-    {
-      jaffarCommon::logger::log("[J+]  + Point 2D Magnet                          Intensity: %.5f, Pos: %3.3f, %3.3f\n", _point2DMagnet.intensity, _point2DMagnet.posX, _point2DMagnet.posY);
-      jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPoint2D);
+      {
+        jaffarCommon::logger::log(
+          "[J+]  + Point 2D Magnet                          Intensity: %.5f, Pos: %3.3f, %3.3f\n", _point2DMagnet.intensity, _point2DMagnet.posX, _point2DMagnet.posY);
+        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPoint2D);
     }
   }
 
@@ -141,28 +142,28 @@ class Segapede final : public jaffarPlus::Game
     bool recognizedActionType = false;
 
     if (actionType == "Set Point X Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
-      rule.addAction([=, this]() { this->_pointXMagnet = point1DMagnet_t{.intensity = intensity, .pos = pos }; });
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
+        rule.addAction([=, this]() { this->_pointXMagnet = point1DMagnet_t{.intensity = intensity, .pos = pos}; });
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Point Y Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
-      rule.addAction([=, this]() { this->_pointYMagnet = point1DMagnet_t{.intensity = intensity, .pos = pos }; });
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
+        rule.addAction([=, this]() { this->_pointYMagnet = point1DMagnet_t{.intensity = intensity, .pos = pos}; });
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Point 2D Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto posX      = jaffarCommon::json::getNumber<float>(actionJs, "Pos X");
-      auto posY      = jaffarCommon::json::getNumber<float>(actionJs, "Pos Y");
-      rule.addAction([=, this]() { this->_point2DMagnet = point2DMagnet_t{ .intensity = intensity, .posX = posX, .posY = posY }; });
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto posX      = jaffarCommon::json::getNumber<float>(actionJs, "Pos X");
+        auto posY      = jaffarCommon::json::getNumber<float>(actionJs, "Pos Y");
+        rule.addAction([=, this]() { this->_point2DMagnet = point2DMagnet_t{.intensity = intensity, .posX = posX, .posY = posY}; });
+        recognizedActionType = true;
     }
 
     return recognizedActionType;

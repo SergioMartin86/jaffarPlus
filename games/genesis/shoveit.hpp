@@ -44,13 +44,13 @@ class ShoveIt final : public jaffarPlus::Game
     registerGameProperty("Move Timer", &_workRAM[0xF71B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _moveTimer    = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Move Timer")]->getPointer();
+    _moveTimer = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Move Timer")]->getPointer();
 
-    _nullInputIdx   = _emulator->registerInput("|..|........|");
-    _leftInputIdx   = _emulator->registerInput("|..|..L.....|");
-    _rightInputIdx  = _emulator->registerInput("|..|...R....|");
-    _upInputIdx     = _emulator->registerInput("|..|U.......|");
-    _downInputIdx   = _emulator->registerInput("|..|.D......|");
+    _nullInputIdx  = _emulator->registerInput("|..|........|");
+    _leftInputIdx  = _emulator->registerInput("|..|..L.....|");
+    _rightInputIdx = _emulator->registerInput("|..|...R....|");
+    _upInputIdx    = _emulator->registerInput("|..|U.......|");
+    _downInputIdx  = _emulator->registerInput("|..|.D......|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -64,13 +64,9 @@ class ShoveIt final : public jaffarPlus::Game
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
 
-  __INLINE__ void ruleUpdatePreHook() override
-  {
-  }
+  __INLINE__ void ruleUpdatePreHook() override {}
 
-  __INLINE__ void ruleUpdatePostHook() override
-  {
-  }
+  __INLINE__ void ruleUpdatePostHook() override {}
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
 
@@ -85,9 +81,7 @@ class ShoveIt final : public jaffarPlus::Game
     return reward;
   }
 
-  void printInfoImpl() const override
-  {
-  }
+  void printInfoImpl() const override {}
 
   bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
   {
@@ -102,7 +96,7 @@ class ShoveIt final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  uint8_t  *_moveTimer;
+  uint8_t *_moveTimer;
 
   // Pointer to emulator's low memory storage
   uint8_t *_workRAM;

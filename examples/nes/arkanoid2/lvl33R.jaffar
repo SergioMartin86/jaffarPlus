@@ -50,6 +50,8 @@
  
 "Runner Configuration":
 {
+  "Frameskip Rate": 0,
+  "Bypass Hash Calculation": false,
   "Hash Step Tolerance": 0,
   "Show Empty Input Slots": false,
   "Show Allowed Inputs": true,

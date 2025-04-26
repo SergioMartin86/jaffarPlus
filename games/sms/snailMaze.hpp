@@ -18,13 +18,18 @@ class SnailMaze final : public jaffarPlus::Game
 {
   public:
 
-  enum transitionState_t { normal, exiting, entering };
+  enum transitionState_t
+  {
+    normal,
+    exiting,
+    entering
+  };
 
   static __INLINE__ std::string getName() { return "SMS / Snail Maze"; }
 
   SnailMaze(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
     : jaffarPlus::Game(std::move(emulator), config)
-  {  }
+  {}
 
   private:
 
@@ -33,21 +38,21 @@ class SnailMaze final : public jaffarPlus::Game
     // Getting emulator's low memory pointer
     _workRAM = _emulator->getProperty("RAM").pointer;
 
-    // Getting index for a non input 
+    // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|...|......|");
 
     // Registering native game properties
-    registerGameProperty("Player Pos X",       &_workRAM[0x0300], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Pos Y",       &_workRAM[0x0380], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Frame Type",         &_workRAM[0x041F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Game State",         &_workRAM[0x0200], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos X", &_workRAM[0x0300], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y", &_workRAM[0x0380], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Frame Type", &_workRAM[0x041F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Game State", &_workRAM[0x0200], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _playerPosX    = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _playerPosY    = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _playerPosX = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
 
     // Initializing values
-    _currentStep = 0;
+    _currentStep   = 0;
     _lastInputStep = 0;
   }
 
@@ -62,18 +67,12 @@ class SnailMaze final : public jaffarPlus::Game
     _currentStep++;
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override 
-  {
-  }
+  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override {}
 
-  __INLINE__ void updateCharActualPos()
-  {
-  }
+  __INLINE__ void updateCharActualPos() {}
 
   // Updating derivative values after updating the internal state
-  __INLINE__ void stateUpdatePostHook() override
-  {
-  }
+  __INLINE__ void stateUpdatePostHook() override {}
 
   __INLINE__ void ruleUpdatePreHook() override
   {
@@ -87,20 +86,20 @@ class SnailMaze final : public jaffarPlus::Game
     // Updating distance to user-defined point
     _playerDistanceToPointX = std::abs((float)*_playerPosX - _playerPointMagnet.posX);
     _playerDistanceToPointY = std::abs((float)*_playerPosY - _playerPointMagnet.posY);
-    _playerDistanceToPoint = std::sqrt(_playerDistanceToPointX*_playerDistanceToPointX + _playerDistanceToPointY*_playerDistanceToPointY);
+    _playerDistanceToPoint  = std::sqrt(_playerDistanceToPointX * _playerDistanceToPointX + _playerDistanceToPointY * _playerDistanceToPointY);
   }
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override
-   {
+  {
     serializer.push(&_currentStep, sizeof(_currentStep));
     serializer.push(&_lastInputStep, sizeof(_lastInputStep));
-   }
+  }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer)
-   {
+  {
     deserializer.pop(&_currentStep, sizeof(_currentStep));
     deserializer.pop(&_lastInputStep, sizeof(_lastInputStep));
-   }
+  }
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -126,19 +125,19 @@ class SnailMaze final : public jaffarPlus::Game
     bool recognizedActionType = false;
 
     if (actionType == "Set Player Point Magnet")
-    {
-      auto posX       = jaffarCommon::json::getNumber<float>(actionJs, "Pos X");
-      auto posY       = jaffarCommon::json::getNumber<float>(actionJs, "Pos Y");
-      rule.addAction([=, this]() { this->_playerPointMagnet = pointMagnet_t{.posX = posX, .posY = posY }; });
-      recognizedActionType = true;
+      {
+        auto posX = jaffarCommon::json::getNumber<float>(actionJs, "Pos X");
+        auto posY = jaffarCommon::json::getNumber<float>(actionJs, "Pos Y");
+        rule.addAction([=, this]() { this->_playerPointMagnet = pointMagnet_t{.posX = posX, .posY = posY}; });
+        recognizedActionType = true;
     }
 
     if (actionType == "Set Last Input Magnet")
-    {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto action    = [=, this]() { this->_lastInputMagnet = intensity; };
-      rule.addAction(action);
-      recognizedActionType = true;
+      {
+        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+        auto action    = [=, this]() { this->_lastInputMagnet = intensity; };
+        rule.addAction(action);
+        recognizedActionType = true;
     }
 
     return recognizedActionType;
@@ -153,14 +152,14 @@ class SnailMaze final : public jaffarPlus::Game
   // Datatype to describe a 1D point magnet
   struct pointMagnet_t
   {
-    float posX       = 0.0; // What is the point of attraction
-    float posY       = 0.0; // What is the point of attraction
+    float posX = 0.0; // What is the point of attraction
+    float posY = 0.0; // What is the point of attraction
   };
 
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
   pointMagnet_t _playerPointMagnet;
-  uint8_t *_playerPosX;
-  uint8_t *_playerPosY;
+  uint8_t      *_playerPosX;
+  uint8_t      *_playerPosY;
 
   float _playerDistanceToPointX;
   float _playerDistanceToPointY;

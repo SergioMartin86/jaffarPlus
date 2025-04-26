@@ -24,11 +24,11 @@ class QuickerNES final : public Emulator
 {
   public:
 
-  #ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
+#ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
   static std::string getName() { return "QuickerNESArkanoid"; }
-  #else
+#else
   static std::string getName() { return "QuickerNES"; }
-  #endif
+#endif
 
   // Constructor must only do configuration parsing
   QuickerNES(const nlohmann::json &config)

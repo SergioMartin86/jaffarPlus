@@ -51,12 +51,12 @@ int main(int argc, char *argv[])
   auto d = jaffarPlus::Driver::getDriver(configFile, config);
 
   // Returning now if dry running
-  if (isDryRun) 
-  {
-    jaffarCommon::logger::log("[J+] Finished dry run successfully.\n");
-    return 0;
+  if (isDryRun)
+    {
+      jaffarCommon::logger::log("[J+] Finished dry run successfully.\n");
+      return 0;
   }
-  
+
   // Initializing driver
   d->initialize();
 
