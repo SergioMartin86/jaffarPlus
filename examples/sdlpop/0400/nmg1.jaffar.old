@@ -1,6 +1,7 @@
 {
   "Emulator Configuration": 
   {
+    "Emulator Name": "QuickerSDLPoP",
     "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
     "Levels File": "../LEVELS.DAT",
     "State File": "state",
