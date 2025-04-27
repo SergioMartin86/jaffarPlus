@@ -1,286 +1,316 @@
 {
- "Driver Configuration":
- {
-  "End On First Win State": true,
-  "Max Steps": 0,
-
-  "Save Intermediate Results":
-  {
-    "Enabled": true,
-    "Frequency (s)": 1.0,
-    "Best Solution Path": "/tmp/jaffar.best.sol",
-    "Worst Solution Path": "/tmp/jaffar.worst.sol",
-    "Best State Path": "/tmp/jaffar.best.state",
-    "Worst State Path": "/tmp/jaffar.worst.state"
-  }
- },
-
- "Engine Configuration":
- {
-  "State Database":
-  {
-    "Type": "Numa Aware",
-    "Max Size per NUMA Domain (Mb)":
-    [ 
-      300,
-      300
-    ]
-  },
-
-  "Hash Database":
-  {
-    "Max Store Count": 2,
-    "Max Store Size (Mb)": 10000
-  }
-},
-
-"Emulator Configuration":
-{
-  "Emulator Name": "QuickerGambatte",
-  "Rom File Path": "Prince of Persia (USA, Europe).gbc",
-  "Rom File SHA1": "EF2F6402E8EF367273200E3B07F310EBD80CCDC2",
-  "System Type": "Gameboy Color",
-  "Initial State File Path": "",
-  "Initial Sequence File Path": "stage12.initial.sol",
-  "Bios File Path": "gbc_bios.bin",
-  "Controller Type": "Gameboy",
-  "Disabled State Properties": [   ]
-},
- 
-"Runner Configuration":
-{
-  "Bypass Hash Calculation": false,
-  "Frameskip Rate": 0,
-  "Hash Step Tolerance": 2,
-  "Show Empty Input Slots": true,
-  "Show Allowed Inputs": true,
-
-  "Store Input History": 
-  {
-    "Enabled": true,
-    "Max Size": 3000
-  },
-
-  "Allowed Input Sets":
-  [
-    {
-      "Description": "Ignoring frames not equal to zero",
-      "Conditions":
-      [
-      ],
-
-      "Inputs":
-      [
-        "|.........|"
-      ],
-
-      "Stop Input Evaluation": false
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
     },
-
-    {
-      "Description": "Ignoring frames not equal to zero",
-      "Conditions":
-      [
-        
-      ],
-
-      "Inputs":
-      [
-        "|U........|",
-        "|.D.......|",
-        "|..L......|",
-        "|...R.....|",
-        "|......B..|",
-        "|.......A.|"
-      ],
-
-      "Stop Input Evaluation": true
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerGambatte",
+        "Rom File Path": "Prince of Persia (USA, Europe).gbc",
+        "Rom File SHA1": "EF2F6402E8EF367273200E3B07F310EBD80CCDC2",
+        "System Type": "Gameboy Color",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "stage12.initial.sol",
+        "Bios File Path": "gbc_bios.bin",
+        "Controller Type": "Gameboy",
+        "Disabled State Properties": []
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 2,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 3000
+        },
+        "Allowed Input Sets": [
+            {
+                "Description": "Ignoring frames not equal to zero",
+                "Conditions": [],
+                "Inputs": [
+                    "|.........|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Description": "Ignoring frames not equal to zero",
+                "Conditions": [],
+                "Inputs": [
+                    "|U........|",
+                    "|.D.......|",
+                    "|..L......|",
+                    "|...R.....|",
+                    "|......B..|",
+                    "|.......A.|"
+                ],
+                "Stop Input Evaluation": true
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+            {
+                "Description": "Standing",
+                "Conditions": [
+                    {
+                        "Property": "Frame Type",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|U........|",
+                    "|.D.......|",
+                    "|..L......|",
+                    "|...R.....|",
+                    "|......B..|",
+                    "|.......A.|"
+                ],
+                "Stop Input Evaluation": true
+            }
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "GBC / Prince Of Persia",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Kid Frame",
+            "Kid Action",
+            "Kid Room",
+            "Previous Kid Room",
+            "Actual Kid Room",
+            "Kid Pos X",
+            "Kid Pos Y",
+            "Frame Type"
+        ],
+        "Hash Properties": [
+            "Frame Type",
+            "Previous Kid Room"
+        ],
+        "Rules": [
+            {
+                "Label": 989,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 2,
+                        "Intensity": 1.0,
+                        "Pos": 0.0
+                    }
+                ]
+            },
+            {
+                "Label": 1003,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 255
+                    }
+                ],
+                "Satisfies": [
+                    989
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 255,
+                        "Intensity": 0.0,
+                        "Pos": 0.0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 255,
+                        "Intensity": 10.0,
+                        "Pos": 84
+                    }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions": [
+                    {
+                        "Property": "Actual Kid Room",
+                        "Op": "==",
+                        "Value": 255
+                    },
+                    {
+                        "Property": "Kid Pos Y",
+                        "Op": "==",
+                        "Value": 84
+                    },
+                    {
+                        "Property": "Kid HP",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    1003
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 255,
+                        "Intensity": 85.0,
+                        "Pos": -1.0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 0,
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1005,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": ">=",
+                        "Value": 29
+                    },
+                    {
+                        "Property": "Kid Room",
+                        "Op": "<",
+                        "Value": 255
+                    }
+                ],
+                "Satisfies": [
+                    1004
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 50000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 0,
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 0,
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1006,
+                "Conditions": [
+                    {
+                        "Property": "Actual Kid Room",
+                        "Op": ">=",
+                        "Value": 29
+                    },
+                    {
+                        "Property": "Actual Kid Room",
+                        "Op": "<",
+                        "Value": 255
+                    }
+                ],
+                "Satisfies": [
+                    1005
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 50000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 29,
+                        "Intensity": -1.0,
+                        "Pos": 100
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 0,
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1991,
+                "Conditions": [
+                    {
+                        "Property": "Current Level",
+                        "Op": "==",
+                        "Value": 13
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1992,
+                "Conditions": [
+                    {
+                        "Property": "Level Transition",
+                        "Op": "!=",
+                        "Value": "Current Level"
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Kid HP",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
     }
-  ],
-
-  "Test Candidate Inputs": false,
-  "Candidate Input Sets": [
-
-    {
-      "Description": "Standing",
-      "Conditions":
-      [
-        { "Property": "Frame Type",    "Op": "==", "Value": 0 }
-      ],
-
-      "Inputs":
-      [
-        "|U........|",
-        "|.D.......|",
-        "|..L......|",
-        "|...R.....|",
-        "|......B..|",
-        "|.......A.|"
-      ],
-
-      "Stop Input Evaluation": true
-    }
-
-   ]
-},
-
-"Game Configuration":
-{
-  "Game Name": "GBC / Prince Of Persia",
-  "Frame Rate": 60.10,
-  "Last Input Step Reward": 0.0,
-
-  "Print Properties":
-  [
-    "Kid Frame",
-    "Kid Action",
-    "Kid Room",
-    "Previous Kid Room",
-    "Actual Kid Room",
-    "Kid Pos X",
-    "Kid Pos Y",
-    "Frame Type"
-  ],
-
-  "Hash Properties":
-  [
-    "Frame Type",
-    "Previous Kid Room"
-  ],
-
-  "Rules":
-  [
-    {
-      "Label": 989,
-      "Conditions":
-      [
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Set Kid Point X Magnet", "Room": 2, "Intensity": 1.0, "Pos": 0.0 }
-      ]
-    },
-
-    {
-      "Label": 1003,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 255 }
-      ],
-      
-      "Satisfies": [ 989 ],
-      
-      "Actions":
-      [
-        { "Type": "Add Reward", "Value": 10000.0 },
-        { "Type": "Set Kid Point X Magnet", "Room": 255, "Intensity": 0.0, "Pos": 0.0 },
-        { "Type": "Set Kid Point Y Magnet", "Room": 255, "Intensity": 10.0, "Pos": 84 }
-      ]
-    },
-
-    {
-      "Label": 1004,
-      "Conditions":
-      [
-        { "Property": "Actual Kid Room", "Op": "==", "Value": 255 },
-        { "Property": "Kid Pos Y", "Op": "==", "Value": 84 },
-        { "Property": "Kid HP", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 1003 ],
-      
-      "Actions":
-      [
-        { "Type": "Add Reward", "Value": 10000.0 },
-        { "Type": "Set Kid Point X Magnet", "Room": 255, "Intensity": 85.0, "Pos": -1.0 },
-        { "Type": "Set Kid Point Y Magnet", "Room": 0, "Intensity": 0.0, "Pos": 0 }
-      ]
-    },
-
-    {
-      "Label": 1005,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": ">=", "Value": 29 },
-        { "Property": "Kid Room", "Op": "<", "Value": 255 }
-      ],
-      
-      "Satisfies": [ 1004 ],
-      
-      "Actions":
-      [
-        { "Type": "Add Reward", "Value": 50000.0 },
-        { "Type": "Set Kid Point X Magnet", "Room": 0, "Intensity": 0.0, "Pos": 0 },
-        { "Type": "Set Kid Point Y Magnet", "Room": 0, "Intensity": 0.0, "Pos": 0 }
-      ]
-    },
-
-    {
-      "Label": 1006,
-      "Conditions":
-      [
-        { "Property": "Actual Kid Room", "Op": ">=", "Value": 29 },
-        { "Property": "Actual Kid Room", "Op": "<", "Value": 255 }
-      ],
-      
-      "Satisfies": [ 1005 ],
-      
-      "Actions":
-      [
-        { "Type": "Add Reward", "Value": 50000.0 },
-        { "Type": "Set Kid Point X Magnet", "Room": 29, "Intensity": -1.0, "Pos": 100 },
-        { "Type": "Set Kid Point Y Magnet", "Room": 0, "Intensity": 0.0, "Pos": 0 }
-      ]
-    },
-
-    {
-      "Label": 1991,
-      "Conditions":
-      [
-        { "Property": "Current Level", "Op": "==", "Value": 13 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Win" }
-      ]
-    },
-
-    {
-      "Label": 1992,
-      "Conditions":
-      [
-        { "Property": "Level Transition", "Op": "!=", "Value": "Current Level" }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Win" }
-      ]
-    },
-
-    {
-      "Label": 1999,
-      "Conditions":
-      [
-        { "Property": "Kid HP", "Op": "==", "Value": 0 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Fail" }
-      ]
-    }
-
-  ]
- }
 }
