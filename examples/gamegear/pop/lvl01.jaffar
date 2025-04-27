@@ -1,918 +1,1336 @@
 {
-  "Driver Configuration":
-  {
-   "End On First Win State": true,
-   "Max Steps": 0,
- 
-   "Save Intermediate Results":
-   {
-     "Enabled": true,
-     "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol",
-     "Best State Path": "/tmp/jaffar.best.state",
-     "Worst State Path": "/tmp/jaffar.worst.state"
-   }
-  },
- 
-  "Engine Configuration":
-  {
-   "State Database":
-   {
-     "Type": "Numa Aware",
-     "Max Size per NUMA Domain (Mb)":
-     [ 
-       20000,
-       20000
-     ],
-   
-     "Scavenger Queues Size": 32,
-     "Scavenging Depth": 32,
- 
-     "Compression":
-     {
-       "Use Differential Compression": false, 
-       "Max Difference (bytes)": 6000,
-       "Use Zlib Compression": false
-     }
-   },
- 
-   "Hash Database":
-   {
-     "Max Store Count": 2,
-     "Max Store Size (Mb)": 10000
-   }
- },
- 
- "Emulator Configuration":
- {
-   "Emulator Name": "QuickerGPGX",
-   "Rom File Path": "../../../extern/jaffarPlus/extern/quickerGPGX/tests/roms/Prince_of_Persia_(UE)_[!].sms",
-   "Rom File SHA1": "BF0CDB664129B5548083DC0DDE5449AB5F1BCC3A",
-   "Initial State File Path": "",
-   "Initial Sequence File Path": "lvl01.initial.sol",
-   "Initial RAM Data File Path": "",
-   "Initial Video RAM Data File Path": "",
-   "Bios File Path": "",
-   "System Type": "Sega Game Gear",
-   "Controller 1 Type": "GameGear2B",
-   "Controller 2 Type": "None",
-   "Disabled State Properties": [ "SATM"  ],
-   "Work RAM Serialization Size": 8192
- },
-  
- "Runner Configuration":
- {
-   "Bypass Hash Calculation": false,
-   "Frameskip Rate": 0,
-   "Hash Step Tolerance": 1,
-   "Show Empty Input Slots": true,
-   "Show Allowed Inputs": true,
- 
-   "Store Input History": 
-   {
-     "Enabled": true,
-     "Max Size": 5700
-   },
- 
-   "Allowed Input Sets":
-   [
-     {
-        "Conditions":
-        [
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerGPGX",
+        "Rom File Path": "../../../extern/jaffarPlus/extern/quickerGPGX/tests/roms/Prince_of_Persia_(UE)_[!].sms",
+        "Rom File SHA1": "BF0CDB664129B5548083DC0DDE5449AB5F1BCC3A",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "lvl01.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Initial Video RAM Data File Path": "",
+        "Bios File Path": "",
+        "System Type": "Sega Game Gear",
+        "Controller 1 Type": "GameGear2B",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "SATM"
         ],
-
-        "Inputs":
-        [
-          "|..|.......|"
+        "Work RAM Serialization Size": 8192
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 1,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 5700
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|.......|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Guard HP",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 52
+                    }
+                ],
+                "Inputs": [
+                    "|..|....1..|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 52
+                    },
+                    {
+                        "Property": "Kid Direction",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|",
+                    "|..|.D.....|",
+                    "|..|U......|",
+                    "|..|..L.1..|",
+                    "|..|..L..2.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 52
+                    },
+                    {
+                        "Property": "Kid Direction",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|",
+                    "|..|.D.....|",
+                    "|..|U......|",
+                    "|..|...R1..|",
+                    "|..|...R.2.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 72
+                    },
+                    {
+                        "Property": "Kid Direction",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Inputs": [
+                    "|..|..L....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 72
+                    },
+                    {
+                        "Property": "Kid Direction",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 29
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 31
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 35
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 40
+                    },
+                    {
+                        "Property": "Kid Direction",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|",
+                    "|..|..L..2.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 40
+                    },
+                    {
+                        "Property": "Kid Direction",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|",
+                    "|..|...R.2.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 134
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 106
+                    }
+                ],
+                "Inputs": [
+                    "|..|.D.....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 138
+                    }
+                ],
+                "Inputs": [
+                    "|..|.D.....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 56
+                    }
+                ],
+                "Inputs": [
+                    "|..|U......|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 189
+                    }
+                ],
+                "Inputs": [
+                    "|..|....1..|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 231
+                    }
+                ],
+                "Inputs": [
+                    "|..|U......|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 237
+                    }
+                ],
+                "Inputs": [
+                    "|..|U......|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 69
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|",
+                    "|..|.D.....|",
+                    "|..|....1..|",
+                    "|..|.....2.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Frame",
+                        "Op": "==",
+                        "Value": 235
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R...|",
+                    "|..|..L....|"
+                ],
+                "Stop Input Evaluation": true
+            }
         ],
-
-        "Stop Input Evaluation": false
-     },
-
-     {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Guard HP", "Op": ">", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 52 }
-      ],
-
-      "Inputs":
-      [
-       "|..|....1..|"
-      ],
-
-      "Stop Input Evaluation": false
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+            {
+                "Conditions": [
+                    {
+                        "Property": "Animation Frame",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|UD.....|",
+                    "|..|U.L....|",
+                    "|..|U..R...|",
+                    "|..|U...1..|",
+                    "|..|U....2.|",
+                    "|..|.DL....|",
+                    "|..|.D.R...|",
+                    "|..|.D..1..|",
+                    "|..|.D...2.|",
+                    "|..|..LR...|",
+                    "|..|..L.1..|",
+                    "|..|..L..2.|",
+                    "|..|...R1..|",
+                    "|..|...R.2.|",
+                    "|..|....12.|",
+                    "|..|....12.|",
+                    "|..|U.LR...|",
+                    "|..|U.L.1..|",
+                    "|..|U.L..2.|",
+                    "|..|U..R1..|",
+                    "|..|U..R.2.|",
+                    "|..|U...12.|",
+                    "|..|.DLR...|",
+                    "|..|.DL.1..|",
+                    "|..|.DL..2.|",
+                    "|..|.D.R1..|",
+                    "|..|.D.R.2.|",
+                    "|..|.D..12.|",
+                    "|..|..LR1..|",
+                    "|..|..LR.2.|",
+                    "|..|...R12.|",
+                    "|..|UDLR...|",
+                    "|..|UDL.12.|",
+                    "|..|UDL..2.|",
+                    "|..|UD.R12.|",
+                    "|..|......S|",
+                    "|..|UDLR12S|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ]
     },
-
-
-     {
-       "Conditions":
-       [
-        { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-        { "Property": "Kid Frame", "Op": "==", "Value": 52 },
-        { "Property": "Kid Direction", "Op": "==", "Value": 1 }
-       ],
- 
-       "Inputs":
-       [
-        "|..|...R...|",
-        "|..|..L....|",
-        "|..|.D.....|",
-        "|..|U......|",
-        "|..|..L.1..|",
-        "|..|..L..2.|"
-       ],
-
-       "Stop Input Evaluation": true
-     },
-
-     {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 52 },
-       { "Property": "Kid Direction", "Op": "==", "Value": 2 }
-      ],
-
-      "Inputs":
-      [
-       "|..|...R...|",
-       "|..|..L....|",
-       "|..|.D.....|",
-       "|..|U......|",
-       "|..|...R1..|",
-       "|..|...R.2.|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 72 },
-       { "Property": "Kid Direction", "Op": "==", "Value": 1 }
-      ],
-
-      "Inputs":
-      [
-       "|..|..L....|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-     "Conditions":
-     [
-      { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-      { "Property": "Kid Frame", "Op": "==", "Value": 72 },
-      { "Property": "Kid Direction", "Op": "==", "Value": 2 }
-     ],
-
-     "Inputs":
-     [
-      "|..|...R...|"
-     ],
-
-     "Stop Input Evaluation": true
-   },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 29 }
-      ],
-
-      "Inputs":
-      [
-       "|..|...R...|",
-       "|..|..L....|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 31 }
-      ],
-
-      "Inputs":
-      [
-       "|..|...R...|",
-       "|..|..L....|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 35 }
-      ],
-
-      "Inputs":
-      [
-       "|..|...R...|",
-       "|..|..L....|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 40 },
-       { "Property": "Kid Direction", "Op": "==", "Value": 1 }
-      ],
-
-      "Inputs":
-      [
-       "|..|...R...|",
-       "|..|..L....|",
-       "|..|..L..2.|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 40 },
-       { "Property": "Kid Direction", "Op": "==", "Value": 2 }
-      ],
-
-      "Inputs":
-      [
-       "|..|...R...|",
-       "|..|..L....|",
-       "|..|...R.2.|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 134 }
-      ],
-
-      "Inputs":
-      [
-       "|..|...R...|",
-       "|..|..L....|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 106 }
-      ],
-
-      "Inputs":
-      [
-       "|..|.D.....|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 138 }
-      ],
-
-      "Inputs":
-      [
-       "|..|.D.....|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 56 }
-      ],
-
-      "Inputs":
-      [
-       "|..|U......|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },
-       { "Property": "Kid Frame", "Op": "==", "Value": 189 }
-      ],
-
-      "Inputs":
-      [
-       "|..|....1..|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },        
-       { "Property": "Kid Frame", "Op": "==", "Value": 231 }
-      ],
-
-      "Inputs":
-      [
-       "|..|U......|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },        
-       { "Property": "Kid Frame", "Op": "==", "Value": 237 }
-      ],
-
-      "Inputs":
-      [
-       "|..|U......|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },        
-       { "Property": "Kid Frame", "Op": "==", "Value": 69 }
-      ],
-
-      "Inputs":
-      [
-        "|..|...R...|",
-        "|..|..L....|",
-        "|..|.D.....|",
-        "|..|....1..|",
-        "|..|.....2.|"
-      ],
-
-      "Stop Input Evaluation": true
-    },
-
-    {
-      "Conditions":
-      [
-       { "Property": "Animation Frame", "Op": "==", "Value": 0 },        
-       { "Property": "Kid Frame", "Op": "==", "Value": 235 }
-      ],
-
-      "Inputs":
-      [
-        "|..|...R...|",
-        "|..|..L....|"
-      ],
-
-      "Stop Input Evaluation": true
+    "Game Configuration": {
+        "Game Name": "Game Gear / Prince Of Persia",
+        "Frame Rate": 120.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Global Timer",
+            "Kid HP",
+            "Kid Pos X",
+            "Kid Pos Y",
+            "Kid Direction",
+            "Kid Frame",
+            "Kid Room",
+            "Guard Pos X",
+            "Guard Pos Y",
+            "Local Door State",
+            "Exit Door Open"
+        ],
+        "Hash Properties": [
+            "Exit Door Open"
+        ],
+        "Rules": [
+            {
+                "Label": 10,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Kid HP Magnet",
+                        "Intensity": 10.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 6,
+                        "Intensity": 1.0,
+                        "Pos": 157
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 6,
+                        "Intensity": 1.0,
+                        "Pos": 216
+                    }
+                ]
+            },
+            {
+                "Label": 20,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 14
+                    }
+                ],
+                "Satisfies": [
+                    10
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 14,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 14,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 30,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 13
+                    }
+                ],
+                "Satisfies": [
+                    20
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 13,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 13,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 40,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 12
+                    }
+                ],
+                "Satisfies": [
+                    30
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 12,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 12,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 50,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 11
+                    }
+                ],
+                "Satisfies": [
+                    40
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 11,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 11,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 60,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 10
+                    }
+                ],
+                "Satisfies": [
+                    50
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 10,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 10,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 70,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 9
+                    }
+                ],
+                "Satisfies": [
+                    60
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 9,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 9,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 80,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 8
+                    }
+                ],
+                "Satisfies": [
+                    70
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 8,
+                        "Intensity": 1.0,
+                        "Pos": 83
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 8,
+                        "Intensity": 0.1,
+                        "Pos": 128
+                    }
+                ]
+            },
+            {
+                "Label": 90,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 8
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    80
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 8,
+                        "Intensity": 1.0,
+                        "Pos": 138
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 8,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 91,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 8
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Pos Y",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    90
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 8,
+                        "Intensity": 1.0,
+                        "Pos": 230
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 8,
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 100,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 9
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    91
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 9,
+                        "Intensity": 1.0,
+                        "Pos": 230
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 9,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 110,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 10
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    100
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 10,
+                        "Intensity": 1.0,
+                        "Pos": 230
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 10,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 120,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 11
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    110
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 11,
+                        "Intensity": 0.1,
+                        "Pos": 10
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 11,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 121,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 11
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Kid Pos Y",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    120
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 11,
+                        "Intensity": 1.0,
+                        "Pos": 230
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 11,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 130,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 12
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    121
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 12,
+                        "Intensity": 1.0,
+                        "Pos": 230
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 12,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 140,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 13
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    130
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 13,
+                        "Intensity": 1.0,
+                        "Pos": 230
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 13,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 150,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 14
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    140
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 14,
+                        "Intensity": 1.0,
+                        "Pos": 230
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 14,
+                        "Intensity": 0.1,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 160,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 15
+                    },
+                    {
+                        "Property": "Kid Has Sword",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    150
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 15,
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 15,
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Direction Magnet",
+                        "Room": 15,
+                        "Intensity": 10.0,
+                        "Direction": 1
+                    }
+                ]
+            },
+            {
+                "Label": 161,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 15
+                    },
+                    {
+                        "Property": "Kid Animation",
+                        "Op": "==",
+                        "Value": 188
+                    },
+                    {
+                        "Property": "Kid Direction",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    160
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 15,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 15,
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 170,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 7
+                    }
+                ],
+                "Satisfies": [
+                    161
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 7,
+                        "Intensity": 5.0,
+                        "Pos": 51
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Direction Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Direction": 1
+                    }
+                ]
+            },
+            {
+                "Label": 171,
+                "Conditions": [
+                    {
+                        "Property": "Kid Room",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Kid Pos Y",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    170
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 180,
+                "Conditions": [
+                    {
+                        "Property": "Exit Door Open",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    171
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Kid Point X Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Pos": 132
+                    },
+                    {
+                        "Type": "Set Kid Point Y Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Pos": 64
+                    },
+                    {
+                        "Type": "Set Kid Direction Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Direction": 1
+                    }
+                ]
+            },
+            {
+                "Label": 190,
+                "Conditions": [
+                    {
+                        "Property": "Kid Animation",
+                        "Op": "==",
+                        "Value": 183
+                    }
+                ],
+                "Satisfies": [
+                    180
+                ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1000,
+                "Conditions": [
+                    {
+                        "Property": "Kid HP",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
     }
-
-   ],
- 
-   "Test Candidate Inputs": false,
-   "Candidate Input Sets":
-   [
-    {
-      "Conditions":
-      [
-        { "Property": "Animation Frame", "Op": "==", "Value": 0 }
-      ],
-
-      "Inputs":
-      [
-        "|..|UD.....|",
-        "|..|U.L....|",
-        "|..|U..R...|",
-        "|..|U...1..|",
-        "|..|U....2.|",
-        "|..|.DL....|",
-        "|..|.D.R...|",
-        "|..|.D..1..|",
-        "|..|.D...2.|",
-        "|..|..LR...|",
-        "|..|..L.1..|",
-        "|..|..L..2.|",
-        "|..|...R1..|",
-        "|..|...R.2.|",
-        "|..|....12.|",
-        "|..|....12.|",
-        "|..|U.LR...|",
-        "|..|U.L.1..|",
-        "|..|U.L..2.|",
-        "|..|U..R1..|",
-        "|..|U..R.2.|",
-        "|..|U...12.|",
-        "|..|.DLR...|",
-        "|..|.DL.1..|",
-        "|..|.DL..2.|",
-        "|..|.D.R1..|",
-        "|..|.D.R.2.|",
-        "|..|.D..12.|",
-        "|..|..LR1..|",
-        "|..|..LR.2.|",
-        "|..|...R12.|",
-        "|..|UDLR...|",
-        "|..|UDL.12.|",
-        "|..|UDL..2.|",
-        "|..|UD.R12.|",
-        "|..|......S|",
-        "|..|UDLR12S|"
-      ],
-
-      "Stop Input Evaluation": false
-    }
-   ]
- },
- 
- "Game Configuration":
- {
-   "Game Name": "Game Gear / Prince Of Persia",
-   "Frame Rate": 120.10,
-   "Last Input Step Reward": 0.0,
- 
-   "Print Properties":
-   [
-    "Global Timer",     
-    "Kid HP",        
-    "Kid Pos X",        
-    "Kid Pos Y",        
-    "Kid Direction",        
-    "Kid Frame",        
-    "Kid Room",
-    "Guard Pos X",        
-    "Guard Pos Y",
-    "Local Door State",
-    "Exit Door Open"
-   ],
- 
-   "Hash Properties":
-   [
-    "Exit Door Open"
-   ],
- 
-   "Rules":
-   [
-    {
-      "Label": 10,
-      "Conditions":
-      [
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-       { "Type": "Set Kid HP Magnet", "Intensity": 10.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 6, "Intensity": 1.0, "Pos": 157 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 6, "Intensity": 1.0, "Pos": 216 }
-      ]
-     },
-
-     {
-      "Label": 20,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 14 }
-      ],
-      
-      "Satisfies": [ 10 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 14, "Intensity": 1.0, "Pos": 0 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 14, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 30,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 13 }
-      ],
-      
-      "Satisfies": [ 20 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 13, "Intensity": 1.0, "Pos": 0 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 13, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 40,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 12 }
-      ],
-      
-      "Satisfies": [ 30 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 12, "Intensity": 1.0, "Pos": 0 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 12, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 50,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 11 }
-      ],
-      
-      "Satisfies": [ 40 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 11, "Intensity": 1.0, "Pos": 0 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 11, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 60,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 10 }
-      ],
-      
-      "Satisfies": [ 50 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 10, "Intensity": 1.0, "Pos": 0 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 10, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 70,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 9 }
-      ],
-      
-      "Satisfies": [ 60 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 9, "Intensity": 1.0, "Pos": 0 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 9, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 80,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 8 }
-      ],
-      
-      "Satisfies": [ 70 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 8, "Intensity": 1.0, "Pos": 83 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 8, "Intensity": 0.1, "Pos": 128 }
-      ]
-     },
-
-     {
-      "Label": 90,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 8 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 80 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 8, "Intensity": 1.0, "Pos": 138 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 8, "Intensity": 1.0, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 91,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 8 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 },
-        { "Property": "Kid Pos Y", "Op": "==", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 90 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 8, "Intensity": 1.0, "Pos": 230 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 8, "Intensity": 0.0, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 100,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 9 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 91 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 9, "Intensity": 1.0, "Pos": 230 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 9, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 110,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 10 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 100 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 10, "Intensity": 1.0, "Pos": 230 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 10, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 120,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 11 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 110 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 11, "Intensity": 0.1, "Pos": 10 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 11, "Intensity": 1.0, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 121,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 11 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 },
-        { "Property": "Kid Pos Y", "Op": "==", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 120 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 11, "Intensity": 1.0, "Pos": 230 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 11, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 130,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 12 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 121 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 12, "Intensity": 1.0, "Pos": 230 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 12, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 140,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 13 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 130 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 13, "Intensity": 1.0, "Pos": 230 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 13, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 150,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 14 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 140 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 14, "Intensity": 1.0, "Pos": 230 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 14, "Intensity": 0.1, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 160,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 15 },
-        { "Property": "Kid Has Sword", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 150 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 15, "Intensity": 0.0, "Pos": 0 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 15, "Intensity": 0.0, "Pos": 0 },
-       { "Type": "Set Kid Direction Magnet", "Room": 15, "Intensity": 10.0, "Direction": 1 }
-      ]
-     },
-
-     {
-      "Label": 161,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 15 },
-        { "Property": "Kid Animation", "Op": "==", "Value": 188 },
-        { "Property": "Kid Direction", "Op": "==", "Value": 1 }
-      ],
-      
-      "Satisfies": [ 160 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 15, "Intensity": 1.0, "Pos": 0 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 15, "Intensity": 0.0, "Pos": 0 }
-      ]
-     },
-     
-     {
-      "Label": 170,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 7 }
-      ],
-      
-      "Satisfies": [ 161 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 7, "Intensity": 5.0, "Pos": 51 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 7, "Intensity": 1.0, "Pos": 0 },
-       { "Type": "Set Kid Direction Magnet", "Room": 7, "Intensity": 1.0, "Direction": 1 }
-      ]
-     },
-
-     {
-      "Label": 171,
-      "Conditions":
-      [
-        { "Property": "Kid Room", "Op": "==", "Value": 7 },
-        { "Property": "Kid Pos Y", "Op": "==", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 170 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 7, "Intensity": 1.0, "Pos": 0 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 7, "Intensity": 1.0, "Pos": 0 }
-      ]
-     },
-
-     {
-      "Label": 180,
-      "Conditions":
-      [
-        { "Property": "Exit Door Open", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ 171 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 },
-       { "Type": "Set Kid Point X Magnet", "Room": 7, "Intensity": 1.0, "Pos": 132 },
-       { "Type": "Set Kid Point Y Magnet", "Room": 7, "Intensity": 1.0, "Pos": 64 },
-       { "Type": "Set Kid Direction Magnet", "Room": 7, "Intensity": 1.0, "Direction": 1 }
-      ]
-     },
-
-     {
-      "Label": 190,
-      "Conditions":
-      [
-        { "Property": "Kid Animation", "Op": "==", "Value": 183 }
-      ],
-      
-      "Satisfies": [ 180 ],
-      
-      "Actions":
-      [
-       { "Type": "Trigger Win" }
-      ]
-     },
-
-     {
-      "Label": 1000,
-      "Conditions":
-      [
-        { "Property": "Kid HP", "Op": "==", "Value": 0 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-       { "Type": "Trigger Fail" }
-      ]
-     }
-   ]
-  }
- }
- 
+}

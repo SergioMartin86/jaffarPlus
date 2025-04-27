@@ -75,7 +75,7 @@ StateDb(Runner& r, const nlohmann::json& config) : _runner(&r)
     _numaStealingFreeStateCount = 0;
 
     // Splitting state database equally among numa domains
-    size_t stateDbSizePerNUMA = std::ceil(_maxSizeMb / _numaCount);
+    size_t stateDbSizePerNUMA = std::ceil((_maxSizeMb * 1024 * 1024) / _numaCount);
     for (int i = 0; i < _numaCount; i++) _maxSizePerNuma.push_back(stateDbSizePerNUMA);
 
     // Getting maximum allocatable memory in each NUMA domain

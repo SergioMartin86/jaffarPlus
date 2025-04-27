@@ -1,142 +1,112 @@
 {
- "Driver Configuration":
- {
-  "End On First Win State": true,
-  "Max Steps": 0,
-
-  "Save Intermediate Results":
-  {
-    "Enabled": true,
-    "Frequency (s)": 1.0,
-    "Best Solution Path": "/tmp/jaffar.best.sol",
-    "Worst Solution Path": "/tmp/jaffar.worst.sol",
-    "Best State Path": "/tmp/jaffar.best.state",
-    "Worst State Path": "/tmp/jaffar.worst.state"
-  }
- },
-
- "Engine Configuration":
- {
-  "State Database":
-  {
-    "Type": "Numa Aware",
-    "Max Size per NUMA Domain (Mb)":
-    [ 
-      500,
-      500
-    ]
-  },
-
-  "Hash Database":
-  {
-    "Max Store Count": 2,
-    "Max Store Size (Mb)": 10000
-  }
-},
-
-"Emulator Configuration":
-{
-  "Emulator Name": "QuickerGPGX",
-  "Rom File Path": "../../../extern/quickerGPGX/tests/roms/avuado-1st-version.bin",
-  "Rom File SHA1": "2EAA8193AEE0296498B1C41326856DFDD5B5223A",
-  "Initial State File Path": "",
-  "Initial RAM Data File Path": "",
-  "Initial Sequence File Path": "stage01.initial.sol",
-  "Initial Video RAM Data File Path": "",
-  "Bios File Path": "",
-  "System Type": "Sega Genesis",
-  "Controller 1 Type": "Gamepad3B",
-  "Controller 2 Type": "None",
-  "Disabled State Properties": [ "VRAM", "SATM"  ],
-  "Work RAM Serialization Size": 65536
-},
- 
-"Runner Configuration":
-{
-  "Bypass Hash Calculation": false,
-  "Frameskip Rate": 0,
-  "Hash Step Tolerance": 0,
-  "Show Empty Input Slots": true,
-  "Show Allowed Inputs": true,
-
-  "Store Input History": 
-  {
-    "Enabled": true,
-    "Max Size": 1000
-  },
-
-  "Allowed Input Sets":
-  [
-    {
-      "Conditions":
-      [
-      ],
-
-      "Inputs":
-      [
-        "|..|........|",
-        "|..|..L.....|",
-        "|..|...R....|",
-        "|..|.....B..|"
-      ],
-
-      "Stop Input Evaluation": false
-    }
-
-  ],
-
-  "Test Candidate Inputs": false,
-  "Candidate Input Sets": [ ]
-},
-
-"Game Configuration":
-{
-  "Game Name": "Genesis / Avuado",
-  "Frame Rate": 60.10,
-  "Last Input Step Reward": 0.0,
-
-  "Print Properties":
-  [
-    "Score",
-    "Player Pos X",
-    "Shot Pos Y"
-  ],
-
-  "Hash Properties":
-  [
-  ],
-
-  "Rules":
-  [
-    {
-      "Label": 1000,
-      "Conditions":
-      [
-        { "Property": "Shot Pos Y", "Op": "!=", "Value": 0 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Add Reward", "Value": 1000.0 }
-      ]
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
     },
-
-    {
-      "Label": 1998,
-      "Conditions":
-      [
-        { "Property": "Score", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Win" }
-      ]
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerGPGX",
+        "Rom File Path": "../../../extern/quickerGPGX/tests/roms/avuado-1st-version.bin",
+        "Rom File SHA1": "2EAA8193AEE0296498B1C41326856DFDD5B5223A",
+        "Initial State File Path": "",
+        "Initial RAM Data File Path": "",
+        "Initial Sequence File Path": "stage01.initial.sol",
+        "Initial Video RAM Data File Path": "",
+        "Bios File Path": "",
+        "System Type": "Sega Genesis",
+        "Controller 1 Type": "Gamepad3B",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "VRAM",
+            "SATM"
+        ],
+        "Work RAM Serialization Size": 65536
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 1000
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|.....B..|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "Genesis / Avuado",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Score",
+            "Player Pos X",
+            "Shot Pos Y"
+        ],
+        "Hash Properties": [],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [
+                    {
+                        "Property": "Shot Pos Y",
+                        "Op": "!=",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    }
+                ]
+            },
+            {
+                "Label": 1998,
+                "Conditions": [
+                    {
+                        "Property": "Score",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ]
     }
-  ]
- }
 }

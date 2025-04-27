@@ -1,223 +1,203 @@
 {
- "Driver Configuration":
- {
-  "End On First Win State": false,
-  "Max Steps": 0,
-
-  "Save Intermediate Results":
-  {
-    "Enabled": true,
-    "Frequency (s)": 1.0,
-    "Best Solution Path": "/tmp/jaffar.best.sol",
-    "Worst Solution Path": "/tmp/jaffar.worst.sol",
-    "Best State Path": "/tmp/jaffar.best.state",
-   "Worst State Path": "/tmp/jaffar.worst.state"
-  }
- },
-  
- "Engine Configuration":
- {
-  "State Database":
-  {
-    "Type": "Numa Aware",
-    "Max Size (Mb)": 400,
-    "Max Size per NUMA Domain (Mb)":
-    [ 
-      1000,
-      1000
-    ],
-  
-    "Scavenger Queues Size": 32,
-    "Scavenging Depth": 32,
-
-    "Compression":
-    {
-      "Use Differential Compression": false, 
-      "Max Difference (bytes)": 6000,
-      "Use Zlib Compression": false
-    }
-  },
-
-  "Hash Database":
-  {
-    "Max Store Count": 2,
-    "Max Store Size (Mb)": 10000
-  }
-},
-
-"Emulator Configuration":
-{
-  "Emulator Name": "QuickerNES",
-  "Rom File Path": "../../../extern/jaffarPlus/extern/quickerNES/tests/roms/Micro Machines (U).nes",
-  "Rom File SHA1": "EC7BB4D11AFA5A955010BB9A548C1460EAC08FE0",
-  "Initial State File Path": "",
-  "Initial Sequence File Path": "race25d.initial.sol",
-  "Initial RAM Data File Path": "",
-  "Controller 1 Type": "Joypad",
-  "Controller 2 Type": "None",
-  "Disabled State Properties": [ "SRAM", "CHRR", "SPRT", "CTRL" ],
-  "Nametable Block Size": 2048
-},
- 
-"Runner Configuration":
-{
-  "Bypass Hash Calculation": false,
-  "Frameskip Rate": 0, 
-  "Hash Step Tolerance": 0,
-  "Show Empty Input Slots": true,
-  "Show Allowed Inputs": true,
-
-  "Store Input History": 
-  {
-    "Enabled": true,
-    "Max Size": 320
-  },
-
-  "Allowed Input Sets":
-  [
-    {
-      "Conditions":
-      [
-        { "Property": "Frame Type", "Op": "==", "Value": 1 },
-        { "Property": "Player 1 Recovery Mode", "Op": "==", "Value": 0 }
-      ],
-  
-      "Inputs":
-      [
-        "|..|.......A|",
-        "|..|...R....|",
-        "|..|..L.....|",
-        "|..|...R...A|",
-        "|..|..L....A|"
-      ],
-
-      "Stop Input Evaluation": true
+    "Driver Configuration": {
+        "End On First Win State": false,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
     },
-
-    {
-      "Conditions":
-      [
-      ],
-
-      "Inputs":
-      [
-        "|..|.......A|"
-      ],
-
-      "Stop Input Evaluation": false
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "../../../extern/jaffarPlus/extern/quickerNES/tests/roms/Micro Machines (U).nes",
+        "Rom File SHA1": "EC7BB4D11AFA5A955010BB9A548C1460EAC08FE0",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "race25d.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "SPRT",
+            "CTRL"
+        ],
+        "Nametable Block Size": 2048
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 320
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                    {
+                        "Property": "Frame Type",
+                        "Op": "==",
+                        "Value": 1
+                    },
+                    {
+                        "Property": "Player 1 Recovery Mode",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|.......A|",
+                    "|..|...R....|",
+                    "|..|..L.....|",
+                    "|..|...R...A|",
+                    "|..|..L....A|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|.......A|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Micro Machines",
+        "Frame Rate": 120,
+        "Print Properties": [
+            "Current Race",
+            "Frame Type",
+            "Lag Frame",
+            "Last Input Step",
+            "Camera Pos X1",
+            "Camera Pos X2",
+            "Camera Pos Y1",
+            "Camera Pos Y2",
+            "Player 1 Pos X",
+            "Player 1 Pos X1",
+            "Player 1 Pos X2",
+            "Player 1 Pos Y",
+            "Player 1 Pos Y1",
+            "Player 1 Pos Y2",
+            "Player 1 Pos Y3",
+            "Player 1 Accel",
+            "Player 1 Accel Timer 2",
+            "Player 1 Angle 2",
+            "Player 1 Current Laps Remaining",
+            "Player 1 Previous Laps Remaining",
+            "Player 1 Previous Checkpoint",
+            "Player 1 Checkpoint",
+            "Player 1 Recovery Mode",
+            "Player 1 Recovery Timer",
+            "Player 1 Resume Timer",
+            "Player 1 Can Control Car",
+            "Player 1 Tank Fire Timer",
+            "Pre-Race Timer"
+        ],
+        "Hash Properties": [
+            "Current Race",
+            "Frame Type",
+            "Lag Frame",
+            "Last Input Step",
+            "Camera Pos X1",
+            "Camera Pos X2",
+            "Camera Pos Y1",
+            "Camera Pos Y2",
+            "Player 1 Pos X1",
+            "Player 1 Pos X2",
+            "Player 1 Pos Y1",
+            "Player 1 Pos Y2",
+            "Player 1 Accel",
+            "Player 1 Accel Timer 1",
+            "Player 1 Accel Timer 2",
+            "Player 1 Accel Timer 3",
+            "Player 1 Inertia 1",
+            "Player 1 Inertia 2",
+            "Player 1 Inertia 3",
+            "Player 1 Inertia 4",
+            "Player 1 Angle 2",
+            "Player 1 Current Laps Remaining",
+            "Player 1 Previous Checkpoint",
+            "Player 1 Checkpoint",
+            "Player 1 Recovery Mode",
+            "Player 1 Recovery Timer",
+            "Player 1 Resume Timer",
+            "Player 1 Can Control Car",
+            "Pre-Race Timer",
+            "Player 1 Previous Laps Remaining"
+        ],
+        "Rules": [
+            {
+                "Label": 10,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Player Accel Magnet",
+                        "Intensity": 0.001
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity": 1.0,
+                        "X": 2868,
+                        "Y": 0
+                    },
+                    {
+                        "Type": "Set Last Input Magnet",
+                        "Intensity": -1.0
+                    }
+                ]
+            },
+            {
+                "Label": 8999,
+                "Conditions": [
+                    {
+                        "Property": "Player 1 Current Laps Remaining",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    },
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity": 0.0,
+                        "X": 0,
+                        "Y": 0
+                    },
+                    {
+                        "Type": "Set Last Input Magnet",
+                        "Intensity": -1.0
+                    }
+                ]
+            }
+        ]
     }
-  ],
-
-  "Test Candidate Inputs": false,
-  "Candidate Input Sets": [ ]
-},
-
-"Game Configuration":
-{
-  "Game Name": "NES / Micro Machines",
-  "Frame Rate": 120,
-
-  "Print Properties":
-  [
-    "Current Race",                   
-    "Frame Type",                     
-    "Lag Frame",   
-    "Last Input Step",                         
-    "Camera Pos X1",                  
-    "Camera Pos X2",                  
-    "Camera Pos Y1",                  
-    "Camera Pos Y2",                  
-    "Player 1 Pos X",
-    "Player 1 Pos X1",                
-    "Player 1 Pos X2",                
-    "Player 1 Pos Y",
-    "Player 1 Pos Y1",                
-    "Player 1 Pos Y2",                
-    "Player 1 Pos Y3",                
-    "Player 1 Accel",            
-    "Player 1 Accel Timer 2",               
-    "Player 1 Angle 2",                
-    "Player 1 Current Laps Remaining",
-    "Player 1 Previous Laps Remaining",
-    "Player 1 Previous Checkpoint",
-    "Player 1 Checkpoint",             
-    "Player 1 Recovery Mode",         
-    "Player 1 Recovery Timer",        
-    "Player 1 Resume Timer",          
-    "Player 1 Can Control Car",       
-    "Player 1 Tank Fire Timer",       
-    "Pre-Race Timer"
-  ],
-
-  "Hash Properties":
-  [
-    "Current Race",                    
-    "Frame Type",                      
-    "Lag Frame",   
-    "Last Input Step",                          
-    "Camera Pos X1",                   
-    "Camera Pos X2",                   
-    "Camera Pos Y1",                   
-    "Camera Pos Y2",                   
-    "Player 1 Pos X1",                 
-    "Player 1 Pos X2",                 
-    "Player 1 Pos Y1",                 
-    "Player 1 Pos Y2",                 
-    "Player 1 Accel",                  
-    "Player 1 Accel Timer 1",          
-    "Player 1 Accel Timer 2",          
-    "Player 1 Accel Timer 3",          
-    "Player 1 Inertia 1",              
-    "Player 1 Inertia 2",              
-    "Player 1 Inertia 3",              
-    "Player 1 Inertia 4",              
-    "Player 1 Angle 2",                
-    "Player 1 Current Laps Remaining", 
-    "Player 1 Previous Checkpoint",
-    "Player 1 Checkpoint",             
-    "Player 1 Recovery Mode",          
-    "Player 1 Recovery Timer",         
-    "Player 1 Resume Timer",           
-    "Player 1 Can Control Car",        
-    "Pre-Race Timer",                  
-    "Player 1 Previous Laps Remaining"
-  ],
-
-  "Rules":
-  [
-    {
-      "Label": 10,
-      "Conditions":
-      [
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-       { "Type": "Set Player Accel Magnet", "Intensity": 0.001 },
-       { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 2868, "Y": 0 },
-       { "Type": "Set Last Input Magnet", "Intensity": -1.0 }
-      ]
-     },
-  
-     {
-      "Label": 8999,
-      "Conditions":
-      [
-        { "Property": "Player 1 Current Laps Remaining", "Op": "==", "Value": 0 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Win"},
-        { "Type": "Add Reward", "Value": 10000 },
-        { "Type": "Set Point Magnet", "Intensity": 0.0, "X": 0, "Y": 0 },
-        { "Type": "Set Last Input Magnet", "Intensity": -1.0 }
-      ]
-     }
-  ]
- }
 }

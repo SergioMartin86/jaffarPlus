@@ -1,216 +1,181 @@
 {
- "Driver Configuration":
- {
-  "End On First Win State": true,
-  "Max Steps": 0,
-
-  "Save Intermediate Results":
-  {
-    "Enabled": true,
-    "Frequency (s)": 1.0,
-    "Best Solution Path": "/tmp/jaffar.best.sol",
-    "Worst Solution Path": "/tmp/jaffar.worst.sol",
-    "Best State Path": "/tmp/jaffar.best.state",
-   "Worst State Path": "/tmp/jaffar.worst.state"
-  }
- },
-  
- "Engine Configuration":
- {
-  "State Database":
-  {
-    "Type": "Numa Aware",
-    "Max Size (Mb)": 400,
-    "Max Size per NUMA Domain (Mb)":
-    [ 
-      90000,
-      90000
-    ],
-  
-    "Scavenger Queues Size": 32,
-    "Scavenging Depth": 32,
-
-    "Compression":
-    {
-      "Use Differential Compression": false, 
-      "Max Difference (bytes)": 30000,
-      "Use Zlib Compression": false
-    }
-  },
-
-  "Hash Database":
-  {
-    "Max Store Count": 2,
-    "Max Store Size (Mb)": 5000
-  }
-},
-
-"Emulator Configuration":
-{
-  "Emulator Name": "QuickerGPGX",
-  "Rom File Path": "../../../extern/jaffarPlus/extern/quickerGPGX/tests/roms/Micro Machines (USA).md",
-  "Rom File SHA1": "39B25DBFA7A80AEBDEFC19AC2DF4BC75B934BBDA",
-  "Initial State File Path": "race00a.state",
-  "Initial Sequence File Path": "",
-  "Initial RAM Data File Path": "",
-  "Initial Video RAM Data File Path": "",
-  "Bios File Path": "",
-  "System Type": "Sega Genesis",
-  "Controller 1 Type": "Gamepad3B",
-  "Controller 2 Type": "None",
-  "Disabled State Properties": [ "VRAM", "SATM"  ],
-  "Work RAM Serialization Size": 50000
-},
- 
-"Runner Configuration":
-{
-  "Bypass Hash Calculation": false,
-  "Frameskip Rate": 0,
-  "Hash Step Tolerance": 0,
-  "Show Empty Input Slots": true,
-  "Show Allowed Inputs": true,
-
-  "Store Input History": 
-  {
-    "Enabled": true,
-    "Max Size": 800
-  },
-
-  "Allowed Input Sets":
-  [
-    {
-      "Conditions":
-      [
-        
-      ],
-  
-      "Inputs":
-      [
-        "|..|........|",
-        "|..|.....B..|",
-        "|..|...R....|",
-        "|..|..L.....|",
-        "|..|...R.B..|",
-        "|..|..L..B..|"
-      ],
-
-      "Stop Input Evaluation": false
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
     },
-
-    {
-      "Conditions":
-      [
-        { "Property": "Player 1 Recovery Mode", "Op": ">", "Value": 0 }
-      ],
-  
-      "Inputs":
-      [
-        "|..|.......A|"
-      ],
-
-      "Stop Input Evaluation": false
-    }
-  ],
-
-  "Test Candidate Inputs": false,
-  "Candidate Input Sets": [ ]
-},
-
-"Game Configuration":
-{
-  "Game Name": "Genesis / Micro Machines",
-  "Frame Rate": 120,
-
-  "Print Properties":
-  [
-    "Current Race",                   
-    "Current Step",  
-    "Last Input Step",  
-    "Pre-Race Timer",                   
-    "Camera Pos X",                     
-    "Camera Pos Y",                      
-    "Player 1 Pos X",
-    "Player 1 Pos Y",
-    "Player 1 Vel X",            
-    "Player 1 Vel Y",            
-    "Player 1 Current Laps Remaining",
-    "Player 1 Previous Laps Remaining",
-    "Player 1 Checkpoint 1",             
-    "Player 1 Checkpoint 2",             
-    "Player 1 Offroad Checkpoint",  
-    "Player 1 Previous Checkpoint",                   
-    "Player 1 Recovery Mode",         
-    "Player 1 Recovery Timer"        
-  ],
-
-  "Hash Properties":
-  [
-    "Current Race",                   
-    "Camera Pos X",                     
-    "Camera Pos Y",                      
-    "Player 1 Pos X",
-    "Player 1 Pos Y",
-    "Player 1 Vel X",            
-    "Player 1 Vel Y",            
-    "Player 1 Current Laps Remaining",
-    "Player 1 Previous Laps Remaining",
-    "Player 1 Checkpoint 1",             
-    "Player 1 Checkpoint 2",             
-    "Player 1 Offroad Checkpoint",  
-    "Player 1 Previous Checkpoint",                   
-    "Player 1 Recovery Mode",         
-    "Player 1 Recovery Timer",        
-    "Pre-Race Timer"     
-  ],
-
-  "Rules":
-  [
-    {
-      "Label": 10,
-      "Conditions":
-      [
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-       { "Type": "Set Player Current Lap Magnet", "Intensity": -1000.0 },
-       { "Type": "Set Player Lap Progress Magnet", "Intensity": 1.0 },
-       { "Type": "Set Player Vel Magnet", "Intensity": 0.00001 }
-      ]
-     },
-     
-     {
-      "Label": 80,
-      "Conditions":
-      [
-        { "Property": "Player 1 Current Laps Remaining", "Op": "==", "Value": 2 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Win" }
-      ]
-     },
-  
-     {
-        "Label": 9999,
-        "Conditions":
-        [
-          { "Property": "Player 1 Current Laps Remaining", "Op": ">", "Value": "Player 1 Previous Laps Remaining" },
-          { "Property": "Player 1 Previous Laps Remaining", "Op": "!=", "Value": 0 } 
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 5000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerGPGX",
+        "Rom File Path": "../../../extern/jaffarPlus/extern/quickerGPGX/tests/roms/Micro Machines (USA).md",
+        "Rom File SHA1": "39B25DBFA7A80AEBDEFC19AC2DF4BC75B934BBDA",
+        "Initial State File Path": "race00a.state",
+        "Initial Sequence File Path": "",
+        "Initial RAM Data File Path": "",
+        "Initial Video RAM Data File Path": "",
+        "Bios File Path": "",
+        "System Type": "Sega Genesis",
+        "Controller 1 Type": "Gamepad3B",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "VRAM",
+            "SATM"
         ],
-        
-        "Satisfies": [ ],
-        
-        "Actions":
-        [
-          { "Type": "Trigger Fail"}
+        "Work RAM Serialization Size": 50000
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 800
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|.....B..|",
+                    "|..|...R....|",
+                    "|..|..L.....|",
+                    "|..|...R.B..|",
+                    "|..|..L..B..|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player 1 Recovery Mode",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|.......A|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "Genesis / Micro Machines",
+        "Frame Rate": 120,
+        "Print Properties": [
+            "Current Race",
+            "Current Step",
+            "Last Input Step",
+            "Pre-Race Timer",
+            "Camera Pos X",
+            "Camera Pos Y",
+            "Player 1 Pos X",
+            "Player 1 Pos Y",
+            "Player 1 Vel X",
+            "Player 1 Vel Y",
+            "Player 1 Current Laps Remaining",
+            "Player 1 Previous Laps Remaining",
+            "Player 1 Checkpoint 1",
+            "Player 1 Checkpoint 2",
+            "Player 1 Offroad Checkpoint",
+            "Player 1 Previous Checkpoint",
+            "Player 1 Recovery Mode",
+            "Player 1 Recovery Timer"
+        ],
+        "Hash Properties": [
+            "Current Race",
+            "Camera Pos X",
+            "Camera Pos Y",
+            "Player 1 Pos X",
+            "Player 1 Pos Y",
+            "Player 1 Vel X",
+            "Player 1 Vel Y",
+            "Player 1 Current Laps Remaining",
+            "Player 1 Previous Laps Remaining",
+            "Player 1 Checkpoint 1",
+            "Player 1 Checkpoint 2",
+            "Player 1 Offroad Checkpoint",
+            "Player 1 Previous Checkpoint",
+            "Player 1 Recovery Mode",
+            "Player 1 Recovery Timer",
+            "Pre-Race Timer"
+        ],
+        "Rules": [
+            {
+                "Label": 10,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Player Current Lap Magnet",
+                        "Intensity": -1000.0
+                    },
+                    {
+                        "Type": "Set Player Lap Progress Magnet",
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Set Player Vel Magnet",
+                        "Intensity": 1e-05
+                    }
+                ]
+            },
+            {
+                "Label": 80,
+                "Conditions": [
+                    {
+                        "Property": "Player 1 Current Laps Remaining",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 9999,
+                "Conditions": [
+                    {
+                        "Property": "Player 1 Current Laps Remaining",
+                        "Op": ">",
+                        "Value": "Player 1 Previous Laps Remaining"
+                    },
+                    {
+                        "Property": "Player 1 Previous Laps Remaining",
+                        "Op": "!=",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
         ]
-      }
-  ]
- }
+    }
 }
