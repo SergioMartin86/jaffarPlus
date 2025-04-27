@@ -11,8 +11,6 @@ JaffarPlus is a high-performance general-purpose breadth-first search optimizer.
 * Multi-Platform: Supports games from multiple consoles/game emulators
 * Extensible: Any new emulators or games that support load/save and advance step functions can be added to JaffarPlus via a common API
 
-This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solver for the original Prince of Persia (DOS).
-
 # Built-in Emulator Support
 
 ## Consoles
@@ -56,6 +54,7 @@ Author
 - Contributions via pull requests are highly appreciated.
 
 - Thanks to:
+  + This work is based on [Jaffar](https://github.com/SergioMartin86/jaffar), a solver for the original Prince of Persia (DOS).
   + TASVideos' staff (judges, encoders, admins, etc)
   + The Bizhawk development team (YoshiRulz, feos, Morilli, CasualPokePlayer, NattTheBear, Alyosha, feos, zeromus, and many others)
   + Dávid Nagy and all SDLPoP developers
@@ -70,6 +69,6 @@ Author
   + The authors of DSDA
   + The authors of the third party libraries used.
 
-- JaffarPlus is distributed freely under the GPL3 license for any purpose and use, as long as:
+- JaffarPlus is distributed freely under the Apache License 2.0 for any purpose and use, as long as:
   + The license and proper credits to its author are preserved
   + If you publish a TAS or any public work using this software, I'd appreciate you mention it and linking this repository in your description
