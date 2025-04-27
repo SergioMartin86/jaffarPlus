@@ -58,10 +58,15 @@
 
 #ifdef __JAFFAR_ENABLE_GBC
 #include "gbc/pop.hpp"
+#include "gbc/aSlimeTravel.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_DOOM
 #include "doom/doom.hpp"
+#endif
+
+#ifdef __JAFFAR_ENABLE_GBA
+  #include "gba/tollrunner.hpp"
 #endif
 
 #include <emulator.hpp>
@@ -145,8 +150,13 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   DETECT_GAME(arkbot::Arkanoid);
 #endif
 
+#ifdef __JAFFAR_ENABLE_GBA
+  DETECT_GAME(gba::TollRunner);
+#endif
+
 #ifdef __JAFFAR_ENABLE_GBC
   DETECT_GAME(gbc::PrinceOfPersia);
+  DETECT_GAME(gbc::ASlimeTravel);
 #endif
 
 #ifdef __JAFFAR_ENABLE_DOOM
