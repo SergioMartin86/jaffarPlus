@@ -1,226 +1,196 @@
 {
-  "Driver Configuration":
-  {
-   "End On First Win State": true,
-   "Max Steps": 0,
- 
-   "Save Intermediate Results":
-   {
-     "Enabled": true,
-     "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol",
-     "Best State Path": "/tmp/jaffar.best.state",
-    "Worst State Path": "/tmp/jaffar.worst.state"
-   }
-  },
- 
-  "Engine Configuration":
-  {
-   "State Database":
-   {
-     "Type": "Numa Aware",
-     "Max Size per NUMA Domain (Mb)":
-     [ 
-       80000,
-       80000
-     ],
-   
-     "Scavenger Queues Size": 32,
-     "Scavenging Depth": 32,
- 
-     "Compression":
-     {
-       "Use Differential Compression": false, 
-       "Max Difference (bytes)": 6000,
-       "Use Zlib Compression": false
-     }
-   },
- 
-   "Hash Database":
-   {
-     "Max Store Count": 2,
-     "Max Store Size (Mb)": 10000
-   }
- },
- 
- "Emulator Configuration":
- {
-   "Emulator Name": "QuickerNES",
-   "Rom File Path": "Ice Climber (U) [!].nes",
-   "Rom File SHA1": "09D97003BF9D676F24A75CF3E1DCED28CDA3BE59",
-   "Initial State File Path": "",
-   "Initial Sequence File Path": "stage01a.initial.sol",
-   "Initial RAM Data File Path": "",
-   "Controller 1 Type": "Joypad",
-   "Controller 2 Type": "None",
-   "Nametable Block Size": 1024,
-   "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ]
- },
-  
- "Runner Configuration":
- {
-   "Frameskip Rate": 0,
-   "Hash Step Tolerance": 0,
-   "Show Empty Input Slots": true,
-   "Show Allowed Inputs": true,
-   "Bypass Hash Calculation": false,
- 
-   "Store Input History": 
-   {
-     "Enabled": true,
-     "Max Size": 1300
-   },
- 
- 
-   "Allowed Input Sets":
-   [
-    {
-      "Conditions":
-      [
-      ],
-  
-      "Inputs":
-      [
-        "|..|........|"
-      ],
- 
-      "Stop Input Evaluation": false
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
     },
-    
-    {
-      "Conditions":
-      [
-        { "Property": "Player Jumping", "Op": "==", "Value": 0 }
-      ],
-  
-      "Inputs":
-      [
-        "|..|...R....|",
-        "|..|..L.....|",
-        "|..|.......A|",
-        "|..|...R...A|",
-        "|..|..L....A|"
-      ],
- 
-      "Stop Input Evaluation": false
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
     },
-
-    {
-      "Conditions":
-      [
-        { "Property": "Player Jumping", "Op": "==", "Value": 1 }
-      ],
-  
-      "Inputs":
-      [
-        "|..|...R....|",
-        "|..|..L.....|"
-      ],
- 
-      "Stop Input Evaluation": false
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Ice Climber (U) [!].nes",
+        "Rom File SHA1": "09D97003BF9D676F24A75CF3E1DCED28CDA3BE59",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "stage01a.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 1024,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT",
+            "CTRL"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 1300
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Jumping",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R....|",
+                    "|..|..L.....|",
+                    "|..|.......A|",
+                    "|..|...R...A|",
+                    "|..|..L....A|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Jumping",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R....|",
+                    "|..|..L.....|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Ice Climber",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Current Level",
+            "Player Pos X",
+            "Player Pos Y",
+            "Screen Scroll Y",
+            "Screen Scroll Y1",
+            "Screen Scroll Y2",
+            "Screen Scroll Y3",
+            "Player Floor",
+            "Blocks Hit",
+            "Vegetables Collected",
+            "Nitpickers Hit",
+            "Bricks Broken",
+            "Bonus Stage Start",
+            "Bird State",
+            "Bird Pos X",
+            "Is Bird Detected",
+            "Grabbed Bird"
+        ],
+        "Hash Properties": [
+            "Current Level",
+            "Player Pos X",
+            "Player Pos Y",
+            "Screen Scroll Y",
+            "Screen Scroll Y1",
+            "Screen Scroll Y2",
+            "Screen Scroll Y3",
+            "Player Floor",
+            "Blocks Hit",
+            "Vegetables Collected",
+            "Nitpickers Hit",
+            "Bricks Broken",
+            "Bonus Stage Start",
+            "Grabbed Bird",
+            "Bird State",
+            "Bird Pos X",
+            "Is Bird Detected"
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [
+                    {
+                        "Property": "Bonus Stage Start",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Is Bird Detected",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    1000
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Grabbed Bird",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Bird Pos X",
+                        "Op": "!=",
+                        "Value": 112
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ]
     }
-   ],
- 
-   "Test Candidate Inputs": false,
-   "Candidate Input Sets": [ ]
- },
- 
- "Game Configuration":
- {
-   "Game Name": "NES / Ice Climber",
-   "Frame Rate": 60.10,
-   "Last Input Step Reward": 0.0,
- 
-   "Print Properties":
-   [
-    "Current Level",        
-    "Player Pos X",         
-    "Player Pos Y",    
-    "Screen Scroll Y",     
-    "Screen Scroll Y1",
-    "Screen Scroll Y2",     
-    "Screen Scroll Y3",     
-    "Player Floor",         
-    "Blocks Hit",           
-    "Vegetables Collected",
-    "Nitpickers Hit",       
-    "Bricks Broken",
-    "Bonus Stage Start",
-    "Bird State",           
-    "Bird Pos X",           
-    "Is Bird Detected",     
-    "Grabbed Bird"                    
-   ],
- 
-   "Hash Properties":
-   [
-    "Current Level",        
-    "Player Pos X",         
-    "Player Pos Y",   
-    "Screen Scroll Y",      
-    "Screen Scroll Y1",
-    "Screen Scroll Y2",     
-    "Screen Scroll Y3",     
-    "Player Floor",         
-    "Blocks Hit",           
-    "Vegetables Collected",
-    "Nitpickers Hit",       
-    "Bricks Broken",
-    "Bonus Stage Start",
-    "Grabbed Bird",
-    "Bird State",           
-    "Bird Pos X",           
-    "Is Bird Detected"            
-   ],
- 
-   "Rules":
-   [
-    {
-      "Label": 1000,
-      "Conditions":
-      [
-        { "Property": "Bonus Stage Start", "Op": ">", "Value": 0}
-      ],
-      
-      "Satisfies": [  ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 }
-      ]
-     },
-
-     {
-      "Label": 1001,
-      "Conditions":
-      [
-        { "Property": "Is Bird Detected", "Op": ">", "Value": 0}
-      ],
-      
-      "Satisfies": [ 1000 ],
-      
-      "Actions":
-      [
-       { "Type": "Add Reward", "Value": 10000.0 }
-      ]
-     },
-
-     {
-      "Label": 1999,
-      "Conditions":
-      [
-        { "Property": "Grabbed Bird", "Op": ">", "Value": 0 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-       { "Type": "Trigger Win" }
-      ]
-     }
-   ]
-  }
- }
- 
+}

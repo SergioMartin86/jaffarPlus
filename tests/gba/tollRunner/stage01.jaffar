@@ -1,124 +1,90 @@
 {
- "Driver Configuration":
- {
-  "End On First Win State": true,
-  "Max Steps": 0,
-
-  "Save Intermediate Results":
-  {
-    "Enabled": true,
-    "Frequency (s)": 1.0,
-    "Best Solution Path": "/tmp/jaffar.best.sol",
-    "Worst Solution Path": "/tmp/jaffar.worst.sol",
-    "Best State Path": "/tmp/jaffar.best.state",
-    "Worst State Path": "/tmp/jaffar.worst.state"
-  }
- },
-
- "Engine Configuration":
- {
-  "State Database":
-  {
-    "Type": "Numa Aware",
-    "Max Size per NUMA Domain (Mb)":
-    [ 
-      500,
-      500
-    ]
-  },
-
-  "Hash Database":
-  {
-    "Max Store Count": 2,
-    "Max Store Size (Mb)": 10000
-  }
-},
-
-"Emulator Configuration":
-{
-  "Emulator Name": "QuickerMGBA",
-  "Rom File Path": "../../../extern/quickerMGBA/tests/roms/tollrunner_jam.gba",
-  "Rom File SHA1": "6F8A4C68FA3280E70C45AAC2EC8EC27631613937",
-  "Initial State File Path": "",
-  "Initial Sequence File Path": "stage01.initial.sol",
-  "Bios File Path": "",
-  "Controller Type": "Gameboy Advance",
-  "Disabled State Properties": [   ]
-},
- 
-"Runner Configuration":
-{
-  "Bypass Hash Calculation": false,
-  "Frameskip Rate": 0,
-  "Hash Step Tolerance": 0,
-  "Show Empty Input Slots": true,
-  "Show Allowed Inputs": true,
-
-  "Store Input History": 
-  {
-    "Enabled": true,
-    "Max Size": 1000
-  },
-
-  "Allowed Input Sets":
-  [
-    {
-      "Conditions":
-      [
-      ],
-
-      "Inputs":
-      [
-        "|    0,    0,    0,    0,...........|",
-        "|    0,    0,    0,    0,..L........|",
-        "|    0,    0,    0,    0,...R.......|"
-      ],
-
-      "Stop Input Evaluation": false
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerMGBA",
+        "Rom File Path": "../../../extern/quickerMGBA/tests/roms/tollrunner_jam.gba",
+        "Rom File SHA1": "6F8A4C68FA3280E70C45AAC2EC8EC27631613937",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "stage01.initial.sol",
+        "Bios File Path": "",
+        "Controller Type": "Gameboy Advance",
+        "Disabled State Properties": []
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 1000
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|    0,    0,    0,    0,...........|",
+                    "|    0,    0,    0,    0,..L........|",
+                    "|    0,    0,    0,    0,...R.......|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "GBA / Toll Runner",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Mouse Pos X",
+            "Mouse Pos Y",
+            "Score"
+        ],
+        "Hash Properties": [
+            "Mouse Pos X",
+            "Mouse Pos Y",
+            "Score"
+        ],
+        "Rules": [
+            {
+                "Label": 1998,
+                "Conditions": [
+                    {
+                        "Property": "Mouse Pos Y",
+                        "Op": "<",
+                        "Value": 1880
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ]
     }
-
-  ],
-
-  "Test Candidate Inputs": false,
-  "Candidate Input Sets": [ ]
-},
-
-"Game Configuration":
-{
-  "Game Name": "GBA / Toll Runner",
-  "Frame Rate": 60.10,
-  "Last Input Step Reward": 0.0,
-
-  "Print Properties":
-  [
-    "Mouse Pos X",
-    "Mouse Pos Y",
-    "Score"
-  ],
-
-  "Hash Properties":
-  [
-    "Mouse Pos X",
-    "Mouse Pos Y",
-    "Score"
-  ],
-
-  "Rules":
-  [
-    {
-      "Label": 1998,
-      "Conditions":
-      [
-        { "Property": "Mouse Pos Y", "Op": "<", "Value": 1880 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Win" }
-      ]
-    }
-  ]
- }
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "base.hpp"
 #include <cstdlib>
 #include <jaffarCommon/concurrent.hpp>
 #include <jaffarCommon/json.hpp>
@@ -10,10 +9,9 @@
 #include <numa.h>
 #include <utmpx.h>
 
-namespace jaffarPlus
-{
+#define _JAFFAR_STATE_PADDING_BYTES 64
 
-namespace stateDb
+namespace jaffarPlus
 {
 
 /**
@@ -26,28 +24,45 @@ thread_local static int _preferredNumaDomain;
  */
 thread_local static int _myThreadId;
 
-class Numa : public stateDb::Base
+class StateDb
 {
 public:
-  Numa(Runner& r, const nlohmann::json& config) : stateDb::Base(r, config)
+  StateDb(Runner& r, const nlohmann::json& config) : _runner(&r)
   {
+    // Initialization message
+    jaffarCommon::logger::log("[J+] Initializing State Database...\n");
+
+    ///////// Getting original state sizes from the runner
+
+    // Checking maximum db sizes per each numa
+    _maxSizeMb = jaffarCommon::json::getNumber<size_t>(config, "Max Size (Mb)");
+
+    // Overriding if provided
+    if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
+  }
+
+  ~StateDb() = default;
+
+  __INLINE__ void initialize()
+  {
+    // Getting game state size
+    _stateSizeRaw = _runner->getStateSize();
+
+    // We want to align each state to 512 bits (64 bytes) to favor vectorized access
+    // Now calculating the necessary padding to reach the next multiple of 64 bytes
+    _stateSize = _stateSizeRaw;
+    if (_stateSize % _JAFFAR_STATE_PADDING_BYTES != 0) _stateSize = ((_stateSizeRaw / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
+
+    // Padding is the difference between the aligned state size and the raw one
+    _stateSizePadding = _stateSize - _stateSizeRaw;
+
     // Checking whether the numa library calls are available
     const auto numaAvailable = numa_available();
-    if (numaAvailable != 0) JAFFAR_THROW_RUNTIME("NUMA State Db selected, but the system does not provide NUMA support.");
+    if (numaAvailable != 0) JAFFAR_THROW_RUNTIME("The system does not provide NUMA detection support.");
 
     // Getting number of noma domains
     _numaCount = numa_max_node() + 1;
 
-    // Checking maximum db sizes per each numa
-    _maxSizePerNumaMb = jaffarCommon::json::getArray<size_t>(config, "Max Size per NUMA Domain (Mb)");
-    if (_maxSizePerNumaMb.size() < (size_t)_numaCount)
-      JAFFAR_THROW_LOGIC("System has %d NUMA domains but only sizes for %lu of them provided.", _numaCount, _maxSizePerNumaMb.size());
-  }
-
-  ~Numa() = default;
-
-  void initializeImpl() override
-  {
     // Setting counters for database state popping
     _numaNonLocalDatabaseStateCount = 0;
     _numaLocalDatabaseStateCount    = 0;
@@ -59,14 +74,9 @@ public:
     _numaFreeStateNotFoundCount = 0;
     _numaStealingFreeStateCount = 0;
 
-    // Getting maximum state db size in Mb and bytes
-    for (int i = 0; i < _numaCount; i++)
-    {
-      double sizeMb = _maxSizePerNumaMb[i];
-      // For testing purposes, the maximum size can be overriden via environment variables
-      if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = std::stoul(value);
-      _maxSizePerNuma.push_back(std::ceil((double)sizeMb * 1024.0 * 1024.0));
-    }
+    // Splitting state database equally among numa domains
+    size_t stateDbSizePerNUMA = std::ceil((_maxSizeMb * 1024 * 1024) / _numaCount);
+    for (int i = 0; i < _numaCount; i++) _maxSizePerNuma.push_back(stateDbSizePerNUMA);
 
     // Getting maximum allocatable memory in each NUMA domain
     std::vector<size_t> maxFreeMemoryPerNuma(_numaCount);
@@ -145,9 +155,75 @@ public:
     }
   }
 
-  // Function to print relevant information
-  void printInfoImpl() const override
+  /**
+   * Saves the runner state into the provided state data pointer
+   */
+  __INLINE__ size_t saveStateFromRunner(Runner& r, void* statePtr) const
   {
+    // Storage for the state size after deserialization
+    size_t serializedSize = 0;
+
+    // Serializing the runner state into the memory received
+    jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
+    r.serializeState(s);
+    serializedSize = s.getOutputSize();
+
+    return serializedSize;
+  }
+
+  /**
+   * Serializes the runner state and pushes it into the state database
+   */
+  __INLINE__ bool pushState(const float reward, Runner& r, void* statePtr)
+  {
+    // Check that we got a free state (we did not overflow state memory)
+    if (statePtr == nullptr) JAFFAR_THROW_RUNTIME("Provided a null state -- probably ran out of free states\n");
+
+    // Encoding internal runner state into the state pointer
+    try
+    {
+      saveStateFromRunner(r, statePtr);
+    }
+    catch (const std::runtime_error& x)
+    {
+      // If failed return false
+      return false;
+    }
+
+    // Inserting new state into the next state database
+    // Getting the corresponding numa domain for this state
+    int targetNumaIdx = getStateNumaDomain(statePtr);
+
+    // Inserting new state into the next state database
+    _numaNextStateQueues[targetNumaIdx]->insert({reward, statePtr});
+
+    // If succeeded, return true
+    return true;
+  }
+
+  /**
+   * Loads the state into the runner
+   */
+  __INLINE__ void loadStateIntoRunner(Runner& r, const void* statePtr)
+  {
+    // Deserializing the runner state from the memory received
+    jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
+    r.deserializeState(d);
+  }
+
+  // Function to print relevant information
+  __INLINE__ void printInfo() const
+  {
+    const size_t currentStateCount = getStateCount();
+    const size_t currentStateBytes = currentStateCount * _stateSize;
+
+    jaffarCommon::logger::log("[J+]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n", currentStateCount,
+                              (double)currentStateCount * 1.0e-6, _maxStates, (double)_maxStates * 1.0e-6, 100.0 * (double)currentStateCount / (double)_maxStates);
+    jaffarCommon::logger::log("[J+]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n", (double)currentStateBytes / (1024.0 * 1024.0),
+                              (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
+    jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
+    jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
+
     for (int i = 0; i < _numaCount; i++)
       jaffarCommon::logger::log("[J+]  + NUMA Domain %d                  States: %lu (Max: %lu), Size: %.3f Mb (%.6f Gb)\n", i, _currentStatesPerNuma[i], _maxStatesPerNuma[i],
                                 (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
@@ -173,7 +249,7 @@ public:
                               100.0 * (double)_numaFreeStateNotFoundCount.load() / (double)totalFreeStatesRequested);
   }
 
-  __INLINE__ void* getFreeState() override
+  __INLINE__ void* getFreeState()
   {
     // Storage for the new free state space
     void* stateSpace;
@@ -236,7 +312,7 @@ public:
     return statePtr >= _internalBuffersStart[numaDomainId] && statePtr <= _internalBuffersEnd[numaDomainId];
   }
 
-  __INLINE__ void returnFreeState(void* const statePtr) override
+  __INLINE__ void returnFreeState(void* const statePtr)
   {
     // Finding out to which database this state pointer belongs to
     const auto numaIdx = getStateNumaDomain(statePtr);
@@ -248,7 +324,10 @@ public:
     if (success == false) JAFFAR_THROW_RUNTIME("Failed on pushing free state back. This must be a bug in Jaffar\n");
   }
 
-  __INLINE__ void advanceStep() override
+  /**
+   * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
+   */
+  __INLINE__ void advanceStep()
   {
     // Calculation of best and worst states
     float bestStateReward  = std::numeric_limits<float>::lowest();
@@ -312,19 +391,7 @@ public:
     }
   }
 
-  __INLINE__ bool pushStateImpl(const float reward, void* statePtr) override
-  {
-    // Getting the corresponding numa domain for this state
-    int targetNumaIdx = getStateNumaDomain(statePtr);
-
-    // Inserting new state into the next state database
-    _numaNextStateQueues[targetNumaIdx]->insert({reward, statePtr});
-
-    // If succeeded, return true
-    return true;
-  }
-
-  __INLINE__ void* popState() override
+  __INLINE__ void* popState()
   {
     // Pointer to return
     void* statePtr;
@@ -357,7 +424,7 @@ public:
   /**
    * Gets the current number of states in the current state database
    */
-  __INLINE__ size_t getStateCount() const override
+  __INLINE__ size_t getStateCount() const
   {
     size_t stateCount = 0;
     for (int i = 0; i < _numaCount; i++) stateCount += _numaCurrentStateQueues[i]->wasSize();
@@ -367,12 +434,12 @@ public:
   /**
    * This function returns a pointer to the best state found in the current state database
    */
-  virtual void* getBestState() const override { return _bestState; }
+  void* getBestState() const { return _bestState; }
 
   /**
    * This function returns a pointer to the worst state found in the current state database
    */
-  virtual void* getWorstState() const override { return _worstState; }
+  void* getWorstState() const { return _worstState; }
 
 private:
   /**
@@ -382,6 +449,33 @@ private:
 
   void* _bestState  = nullptr;
   void* _worstState = nullptr;
+
+  Runner* const _runner;
+
+  /**
+   * Stores the size occupied by each state (with padding)
+   */
+  size_t _stateSize;
+
+  /**
+   * Stores the size occupied by each state
+   */
+  size_t _stateSizeRaw;
+
+  /**
+   * Stores the size actually occupied by each state, after adding padding
+   */
+  size_t _stateSizePadding;
+
+  /**
+   * Maximum size (bytes) for the state database to grow
+   */
+  size_t _maxSize;
+
+  /**
+   * Number of maximum states in execution
+   */
+  size_t _maxStates;
 
   /**
    * Count of local database states retrieved
@@ -419,12 +513,12 @@ private:
   std::atomic<size_t> _numaFreeStateNotFoundCount;
 
   /**
-   * User-provided maximum megabytes to use for the state database per numa domain
+   * User-provided maximum megabytes to use for the state database
    */
-  std::vector<size_t> _maxSizePerNumaMb;
+  size_t _maxSizeMb;
 
   /**
-   * User-provided maximum bytes to use for the state database per numa domain
+   * State database per numa domain
    */
   std::vector<size_t> _maxSizePerNuma;
 
@@ -478,7 +572,5 @@ private:
    */
   std::vector<size_t> _allocableBytesPerNuma;
 };
-
-} // namespace stateDb
 
 } // namespace jaffarPlus

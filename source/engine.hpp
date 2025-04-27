@@ -3,8 +3,7 @@
 #include "game.hpp"
 #include "hashDb.hpp"
 #include "runner.hpp"
-#include "stateDb/numa.hpp"
-#include "stateDb/plain.hpp"
+#include "stateDb.hpp"
 #include <algorithm>
 #include <emulatorList.hpp>
 #include <gameList.hpp>
@@ -57,22 +56,8 @@ public:
     auto& r = *_runners[0];
 
     // Creating State database
-    const auto stateDatabaseJs             = jaffarCommon::json::getObject(engineConfig, "State Database");
-    const auto stateDatabaseType           = jaffarCommon::json::getString(stateDatabaseJs, "Type");
-    bool       stateDatabaseTypeRecognized = false;
-
-    if (stateDatabaseType == "Plain")
-    {
-      _stateDb                    = std::make_unique<jaffarPlus::stateDb::Plain>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
-      stateDatabaseTypeRecognized = true;
-    }
-
-    if (stateDatabaseType == "Numa Aware")
-    {
-      _stateDb                    = std::make_unique<jaffarPlus::stateDb::Numa>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
-      stateDatabaseTypeRecognized = true;
-    }
-    if (stateDatabaseTypeRecognized == false) JAFFAR_THROW_LOGIC("State database type '%s' not recognized", stateDatabaseType.c_str());
+    const auto stateDatabaseJs = jaffarCommon::json::getObject(engineConfig, "State Database");
+    _stateDb                   = std::make_unique<jaffarPlus::StateDb>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
 
     // Creating hash database
     _hashDb = std::make_unique<jaffarPlus::HashDb>(jaffarCommon::json::getObject(engineConfig, "Hash Database"));
@@ -693,7 +678,7 @@ private:
   std::vector<std::unique_ptr<Runner>> _runners;
 
   // The thread-safe state database that contains current and next step's states.
-  std::unique_ptr<jaffarPlus::stateDb::Base> _stateDb;
+  std::unique_ptr<jaffarPlus::StateDb> _stateDb;
 
   // The thread-safe hash database to check for repeated states
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;

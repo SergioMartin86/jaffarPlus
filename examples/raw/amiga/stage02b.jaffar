@@ -1,426 +1,641 @@
 {
-  "Driver Configuration":
-  {
-   "End On First Win State": true,
-   "Max Steps": 0,
- 
-   "Save Intermediate Results":
-   {
-     "Enabled": true,
-     "Frequency (s)": 1.0,
-     "Best Solution Path": "/tmp/jaffar.best.sol",
-     "Worst Solution Path": "/tmp/jaffar.worst.sol",
-     "Best State Path": "/tmp/jaffar.best.state",
-     "Worst State Path": "/tmp/jaffar.worst.state"
-   }
-  },
- 
-  "Engine Configuration":
-  {
-   "State Database":
-   {
-     "Type": "Numa Aware",
-     "Max Size per NUMA Domain (Mb)":
-     [ 
-       50,
-       50
-     ],
-   
-     "Scavenger Queues Size": 32,
-     "Scavenging Depth": 32,
- 
-     "Compression":
-     {
-       "Use Differential Compression": false, 
-       "Max Difference (bytes)": 6000,
-       "Use Zlib Compression": false
-     }
-   },
- 
-   "Hash Database":
-   {
-     "Max Store Count": 2,
-     "Max Store Size (Mb)": 10000
-   }
- },
- 
- "Emulator Configuration":
- {
-   "Emulator Name": "QuickerRAWGL",
-   "Game Data Path": "amiga",
-   "Initial Sequence File Path": "stage02b.initial.sol",
-   "Initial RAM Data File Path": ""
- },
-  
- "Runner Configuration":
- {
-  "Bypass Hash Calculation": false,
-  "Frameskip Rate": 0,
-  "Hash Step Tolerance": 0,
-  "Show Empty Input Slots": true,
-  "Show Allowed Inputs": true,
-
-  "Store Input History": 
-  {
-    "Enabled": true,
-    "Max Size": 500
-  },
- 
-   "Allowed Input Sets":
-   [
-     {
-       "Conditions":
-       [
-       ],
- 
-       "Inputs":
-       [
-        "......",
-        "..D...",
-        ".....F",
-        ".U...F",
-        ".U.L.F",
-        ".U..RF",
-        "...L.F",
-        "....RF",
-        ".U.L..",
-        ".U..R.",
-        "...L..",
-        "....R."
-       ],
- 
-       "Stop Input Evaluation": false
-     }
-   ],
- 
-   "Test Candidate Inputs": false,
-   "Candidate Input Sets": [ ]
- },
- 
- "Game Configuration":
- {
-   "Game Name": "RAW / AnotherWorld",
-   "Frame Rate": 60.10,
-   "Last Input Step Reward": 0.0,
- 
-   "Print Properties":
-   [
-     "Lester Swim State",   
-     "Lester Pos X",        
-     "Lester Pos Y",        
-     "Lester Room",         
-     "Lester Action",       
-     "Lester State",        
-     "Game Script State",   
-     "Game Script State 2",
-     "Game Animation State",
-     "Lester Dead State",   
-     "Lester Momentum1",    
-     "Lester Momentum2",    
-     "Lester Momentum3",    
-     "Lester Has Gun",      
-     "Lester Gun Ammo",     
-     "Lester Gun Load",     
-     "Lester Direction",    
-     "Alien State",         
-     "Alien Room",          
-     "Alien Pos X",         
-     "Game Timer",          
-     "Elevator Pos Y",      
-     "Fumes State"         
-   ],
- 
-   "Hash Properties":
-   [
-   ],
- 
-   "Rules":
-   [
-  {
-    "Label": 1000,
-    "Conditions":
-    [ 
-     { "Property": "Lester Room", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [  ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 264 }
-    ]
-   },
-   
-   {
-    "Label": 1001,
-    "Conditions":
-    [ 
-     { "Property": "Lester Has Gun", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [ 1000 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 336 }
-    ]
-   },
-   
-   {
-    "Label": 1002,
-    "Conditions":
-    [ 
-     { "Property": "Lester Room", "Op": "==", "Value":  2 },
-     { "Property": "Lester Has Gun", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [ 1001 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 336 }
-    ]
-   },
-   
-   {
-    "Label": 1003,
-    "Conditions":
-    [ 
-     { "Property": "Lester Room", "Op": "==", "Value":  3 },
-     { "Property": "Alien Room", "Op": "==", "Value":  3 },
-     { "Property": "Lester Has Gun", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [ 1002 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 336 },
-     { "Type": "Set Alien Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 336 }
-    ]
-   },
-   
-   {
-    "Label": 1004,
-    "Conditions":
-    [ 
-     { "Property": "Lester Room", "Op": "==", "Value":  4 },
-     { "Property": "Lester Has Gun", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [ 1003 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 336 },
-     { "Type": "Set Alien Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 336 }
-    ]
-   },
-   
-    {
-    "Label": 1005,
-    "Conditions":
-    [ 
-     { "Property": "Lester Room", "Op": "==", "Value":  4 },
-     { "Property": "Alien Room", "Op": "==", "Value":  4 },
-     { "Property": "Lester Has Gun", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [ 1004 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 336 },
-     { "Type": "Set Alien Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 336 }
-    ]
-   },
-   
-   {
-    "Label": 1006,
-    "Conditions":
-    [
-     { "Property": "Lester Room", "Op": "==", "Value":  5 },
-     { "Property": "Alien Room", "Op": "==", "Value":  5 },
-     { "Property": "Lester Has Gun", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [ 1005 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 10000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 146 },
-     { "Type": "Set Alien Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 146 },
-     { "Type": "Set Elevator Vertical Magnet", "Room": 5, "Intensity": 0.001, "Center": 9200 }
-    ]
-   },
-   
-   {
-    "Label": 1007,
-    "Conditions":
-    [
-     { "Property": "Lester Room", "Op": "==", "Value":  37 },
-     { "Property": "Alien Room", "Op": "==", "Value":  37 },
-     { "Property": "Lester Has Gun", "Op": "==", "Value":  1 }
-    ],
-    
-    "Satisfies": [ 1006 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 30000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 37, "Intensity": 1.0, "Center": 0 },
-     { "Type": "Set Alien Horizontal Magnet", "Room": 37, "Intensity": 1.0, "Center": 0 },
-     { "Type": "Set Lester Gun Load Magnet", "Room": 37, "Intensity": 100.0 }
-    ]
-   },
-   
-   {
-    "Label": 1008,
-    "Conditions":
-    [
-     { "Property": "Lester Room", "Op": "==", "Value":  36 }
-    ],
-    
-    "Satisfies": [ 1007 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 30000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 36, "Intensity": 1.0, "Center": 0 },
-     { "Type": "Set Alien Horizontal Magnet", "Room": 36, "Intensity": 1.0, "Center": 0 },
-     { "Type": "Set Lester Gun Load Magnet", "Room": 36, "Intensity": 100.0 }
-    ]
-   },
-   
-   {
-    "Label": 1009,
-    "Conditions":
-    [
-     { "Property": "Lester Room", "Op": "==", "Value":  36 },
-     { "Property": "VM Value [43]", "Op": ">", "Value": 100 }
-    ],
-    
-    "Satisfies": [ 1008 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 30000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 36, "Intensity": 1.0, "Center": 0 },
-     { "Type": "Set Lester Vertical Magnet", "Room": 36, "Intensity": 1.0, "Center": 181 },
-     { "Type": "Set Alien Horizontal Magnet", "Room": 36, "Intensity": 1.0, "Center": 0 }
-    ]
-   },
-
-   {
-    "Label": 1010,
-    "Conditions":
-    [
-     { "Property": "Lester Room", "Op": "==", "Value":  35 }
-    ],
-    
-    "Satisfies": [ 1009 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 30000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 35, "Intensity": 1.0, "Center": 180 },
-     { "Type": "Set Lester Vertical Magnet", "Room": 35, "Intensity": 1.0, "Center": 90 },
-     { "Type": "Set Alien Horizontal Magnet", "Room": 36, "Intensity": 1.0, "Center": 0 }
-    ]
-   },
-    
-   {
-    "Label": 1011,
-    "Conditions":
-    [
-     { "Property": "Lester Room", "Op": "==", "Value":  35 },
-     { "Property": "Alien Room", "Op": "==", "Value":  35 }
-    ],
-    
-    "Satisfies": [ 1010 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 30000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 35, "Intensity": 1.0, "Center": 150 },
-     { "Type": "Set Lester Vertical Magnet", "Room": 35, "Intensity": 1.0, "Center": 90 },
-     { "Type": "Set Alien Horizontal Magnet", "Room": 35, "Intensity": 1.0, "Center": 180 }
-    ]
-   }, 
-   
-   {
-    "Label": 1012,
-    "Conditions":
-    [
-     { "Property": "Lester Room", "Op": "==", "Value":  35 },
-     { "Property": "Lester Pos X", "Op": "<", "Value":  200 },
-     { "Property": "VM Value [35]", "Op": "==", "Value": 0 }
-    ],
-    
-    "Satisfies": [ 1011 ],
-    
-    "Actions":
-    [
-     { "Type": "Add Reward", "Value": 30000.0 },
-     { "Type": "Set Lester Horizontal Magnet", "Room": 35, "Intensity": 1.0, "Center": 0 }
-    ]
-   }, 
-   
-   {
-    "Label": 1013,
-    "Conditions":
-    [
-     { "Property": "Lester Room", "Op": "==", "Value":  35 },
-     { "Property": "VM Value [35]", "Op": "==", "Value": 0 },
-     { "Property": "Lester Pos X", "Op": "<", "Value":  200 },
-     { "Property": "Lester Pos Y", "Op": ">", "Value": 210 }
-    ],
-    
-    "Satisfies": [ 1012 ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Win" }
-    ]
-   }, 
-   
-   {
-    "Label": 1999,
-    "Conditions":
-    [
-     { "Property": "Alien State", "Op": "==", "Value":  14336 }
-    ],
-    
-    "Satisfies": [  ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   },
-   
-   {
-    "Label": 1998,
-    "Conditions":
-    [ 
-     { "Property": "Lester Dead State", "Op": ">", "Value":  5000 }
-    ],
-    
-    "Satisfies": [  ],
-    
-    "Actions":
-    [
-     { "Type": "Trigger Fail" }
-    ]
-   }
-   ]
-  }
- }
- 
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerRAWGL",
+        "Game Data Path": "amiga",
+        "Initial Sequence File Path": "stage02b.initial.sol",
+        "Initial RAM Data File Path": ""
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 500
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "......",
+                    "..D...",
+                    ".....F",
+                    ".U...F",
+                    ".U.L.F",
+                    ".U..RF",
+                    "...L.F",
+                    "....RF",
+                    ".U.L..",
+                    ".U..R.",
+                    "...L..",
+                    "....R."
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "RAW / AnotherWorld",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Lester Swim State",
+            "Lester Pos X",
+            "Lester Pos Y",
+            "Lester Room",
+            "Lester Action",
+            "Lester State",
+            "Game Script State",
+            "Game Script State 2",
+            "Game Animation State",
+            "Lester Dead State",
+            "Lester Momentum1",
+            "Lester Momentum2",
+            "Lester Momentum3",
+            "Lester Has Gun",
+            "Lester Gun Ammo",
+            "Lester Gun Load",
+            "Lester Direction",
+            "Alien State",
+            "Alien Room",
+            "Alien Pos X",
+            "Game Timer",
+            "Elevator Pos Y",
+            "Fumes State"
+        ],
+        "Hash Properties": [],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 1,
+                        "Intensity": 1.0,
+                        "Center": 264
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Lester Has Gun",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    1000
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 1,
+                        "Intensity": 1.0,
+                        "Center": 336
+                    }
+                ]
+            },
+            {
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 2
+                    },
+                    {
+                        "Property": "Lester Has Gun",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    1001
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 2,
+                        "Intensity": 1.0,
+                        "Center": 336
+                    }
+                ]
+            },
+            {
+                "Label": 1003,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Alien Room",
+                        "Op": "==",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Lester Has Gun",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    1002
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 3,
+                        "Intensity": 1.0,
+                        "Center": 336
+                    },
+                    {
+                        "Type": "Set Alien Horizontal Magnet",
+                        "Room": 3,
+                        "Intensity": 1.0,
+                        "Center": 336
+                    }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Lester Has Gun",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    1003
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 4,
+                        "Intensity": 1.0,
+                        "Center": 336
+                    },
+                    {
+                        "Type": "Set Alien Horizontal Magnet",
+                        "Room": 3,
+                        "Intensity": 1.0,
+                        "Center": 336
+                    }
+                ]
+            },
+            {
+                "Label": 1005,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Alien Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Lester Has Gun",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    1004
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 4,
+                        "Intensity": 1.0,
+                        "Center": 336
+                    },
+                    {
+                        "Type": "Set Alien Horizontal Magnet",
+                        "Room": 4,
+                        "Intensity": 1.0,
+                        "Center": 336
+                    }
+                ]
+            },
+            {
+                "Label": 1006,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 5
+                    },
+                    {
+                        "Property": "Alien Room",
+                        "Op": "==",
+                        "Value": 5
+                    },
+                    {
+                        "Property": "Lester Has Gun",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    1005
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 5,
+                        "Intensity": 1.0,
+                        "Center": 146
+                    },
+                    {
+                        "Type": "Set Alien Horizontal Magnet",
+                        "Room": 5,
+                        "Intensity": 1.0,
+                        "Center": 146
+                    },
+                    {
+                        "Type": "Set Elevator Vertical Magnet",
+                        "Room": 5,
+                        "Intensity": 0.001,
+                        "Center": 9200
+                    }
+                ]
+            },
+            {
+                "Label": 1007,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 37
+                    },
+                    {
+                        "Property": "Alien Room",
+                        "Op": "==",
+                        "Value": 37
+                    },
+                    {
+                        "Property": "Lester Has Gun",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    1006
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 30000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 37,
+                        "Intensity": 1.0,
+                        "Center": 0
+                    },
+                    {
+                        "Type": "Set Alien Horizontal Magnet",
+                        "Room": 37,
+                        "Intensity": 1.0,
+                        "Center": 0
+                    },
+                    {
+                        "Type": "Set Lester Gun Load Magnet",
+                        "Room": 37,
+                        "Intensity": 100.0
+                    }
+                ]
+            },
+            {
+                "Label": 1008,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 36
+                    }
+                ],
+                "Satisfies": [
+                    1007
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 30000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 36,
+                        "Intensity": 1.0,
+                        "Center": 0
+                    },
+                    {
+                        "Type": "Set Alien Horizontal Magnet",
+                        "Room": 36,
+                        "Intensity": 1.0,
+                        "Center": 0
+                    },
+                    {
+                        "Type": "Set Lester Gun Load Magnet",
+                        "Room": 36,
+                        "Intensity": 100.0
+                    }
+                ]
+            },
+            {
+                "Label": 1009,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 36
+                    },
+                    {
+                        "Property": "VM Value [43]",
+                        "Op": ">",
+                        "Value": 100
+                    }
+                ],
+                "Satisfies": [
+                    1008
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 30000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 36,
+                        "Intensity": 1.0,
+                        "Center": 0
+                    },
+                    {
+                        "Type": "Set Lester Vertical Magnet",
+                        "Room": 36,
+                        "Intensity": 1.0,
+                        "Center": 181
+                    },
+                    {
+                        "Type": "Set Alien Horizontal Magnet",
+                        "Room": 36,
+                        "Intensity": 1.0,
+                        "Center": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1010,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 35
+                    }
+                ],
+                "Satisfies": [
+                    1009
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 30000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 35,
+                        "Intensity": 1.0,
+                        "Center": 180
+                    },
+                    {
+                        "Type": "Set Lester Vertical Magnet",
+                        "Room": 35,
+                        "Intensity": 1.0,
+                        "Center": 90
+                    },
+                    {
+                        "Type": "Set Alien Horizontal Magnet",
+                        "Room": 36,
+                        "Intensity": 1.0,
+                        "Center": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1011,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 35
+                    },
+                    {
+                        "Property": "Alien Room",
+                        "Op": "==",
+                        "Value": 35
+                    }
+                ],
+                "Satisfies": [
+                    1010
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 30000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 35,
+                        "Intensity": 1.0,
+                        "Center": 150
+                    },
+                    {
+                        "Type": "Set Lester Vertical Magnet",
+                        "Room": 35,
+                        "Intensity": 1.0,
+                        "Center": 90
+                    },
+                    {
+                        "Type": "Set Alien Horizontal Magnet",
+                        "Room": 35,
+                        "Intensity": 1.0,
+                        "Center": 180
+                    }
+                ]
+            },
+            {
+                "Label": 1012,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 35
+                    },
+                    {
+                        "Property": "Lester Pos X",
+                        "Op": "<",
+                        "Value": 200
+                    },
+                    {
+                        "Property": "VM Value [35]",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    1011
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 30000.0
+                    },
+                    {
+                        "Type": "Set Lester Horizontal Magnet",
+                        "Room": 35,
+                        "Intensity": 1.0,
+                        "Center": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1013,
+                "Conditions": [
+                    {
+                        "Property": "Lester Room",
+                        "Op": "==",
+                        "Value": 35
+                    },
+                    {
+                        "Property": "VM Value [35]",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Lester Pos X",
+                        "Op": "<",
+                        "Value": 200
+                    },
+                    {
+                        "Property": "Lester Pos Y",
+                        "Op": ">",
+                        "Value": 210
+                    }
+                ],
+                "Satisfies": [
+                    1012
+                ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Alien State",
+                        "Op": "==",
+                        "Value": 14336
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1998,
+                "Conditions": [
+                    {
+                        "Property": "Lester Dead State",
+                        "Op": ">",
+                        "Value": 5000
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

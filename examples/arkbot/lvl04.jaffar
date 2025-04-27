@@ -1,343 +1,323 @@
 {
- "Driver Configuration":
- {
-  "End On First Win State": true,
-  "Max Steps": 0,
-
-  "Save Intermediate Results":
-  {
-    "Enabled": true,
-    "Frequency (s)": 1.0,
-    "Best Solution Path": "/tmp/jaffar.best.sol",
-    "Worst Solution Path": "/tmp/jaffar.worst.sol",
-    "Best State Path": "/tmp/jaffar.best.state",
-    "Worst State Path": "/tmp/jaffar.worst.state"
-  }
- },
-
- "Engine Configuration":
- {
-  "State Database":
-  {
-    "Type": "Numa Aware",
-    "Max Size per NUMA Domain (Mb)":
-    [ 
-      150000,
-      100000
-    ],
-  
-    "Scavenger Queues Size": 32,
-    "Scavenging Depth": 8,
-
-    "Compression":
-    {
-      "Use Differential Compression": false, 
-      "Max Difference (bytes)": 6000,
-      "Use Zlib Compression": false
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerArkBot",
+        "Initial Level": 4,
+        "Initial Score": 20710
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 720
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                    {
+                        "Property": "Operation State",
+                        "Op": "==",
+                        "Value": 8
+                    }
+                ],
+                "Inputs": [
+                    "|..|   16,F|",
+                    "|..|   16,.|",
+                    "|..|   17,.|",
+                    "|..|   18,.|",
+                    "|..|   19,.|",
+                    "|..|   20,.|",
+                    "|..|   21,.|",
+                    "|..|   22,.|",
+                    "|..|   23,.|",
+                    "|..|   24,.|",
+                    "|..|   25,.|",
+                    "|..|   26,.|",
+                    "|..|   27,.|",
+                    "|..|   28,.|",
+                    "|..|   29,.|",
+                    "|..|   30,.|",
+                    "|..|   31,.|",
+                    "|..|   32,.|",
+                    "|..|   33,.|",
+                    "|..|   34,.|",
+                    "|..|   35,.|",
+                    "|..|   36,.|",
+                    "|..|   37,.|",
+                    "|..|   38,.|",
+                    "|..|   39,.|",
+                    "|..|   40,.|",
+                    "|..|   41,.|",
+                    "|..|   42,.|",
+                    "|..|   43,.|",
+                    "|..|   44,.|",
+                    "|..|   45,.|",
+                    "|..|   46,.|",
+                    "|..|   47,.|",
+                    "|..|   48,.|",
+                    "|..|   49,.|",
+                    "|..|   50,.|",
+                    "|..|   51,.|",
+                    "|..|   52,.|",
+                    "|..|   53,.|",
+                    "|..|   54,.|",
+                    "|..|   55,.|",
+                    "|..|   56,.|",
+                    "|..|   57,.|",
+                    "|..|   58,.|",
+                    "|..|   59,.|",
+                    "|..|   60,.|",
+                    "|..|   61,.|",
+                    "|..|   62,.|",
+                    "|..|   63,.|",
+                    "|..|   64,.|",
+                    "|..|   65,.|",
+                    "|..|   66,.|",
+                    "|..|   67,.|",
+                    "|..|   68,.|",
+                    "|..|   69,.|",
+                    "|..|   70,.|",
+                    "|..|   71,.|",
+                    "|..|   72,.|",
+                    "|..|   73,.|",
+                    "|..|   74,.|",
+                    "|..|   75,.|",
+                    "|..|   76,.|",
+                    "|..|   77,.|",
+                    "|..|   78,.|",
+                    "|..|   79,.|",
+                    "|..|   80,.|",
+                    "|..|   81,.|",
+                    "|..|   82,.|",
+                    "|..|   83,.|",
+                    "|..|   84,.|",
+                    "|..|   85,.|",
+                    "|..|   86,.|",
+                    "|..|   87,.|",
+                    "|..|   88,.|",
+                    "|..|   89,.|",
+                    "|..|   90,.|",
+                    "|..|   91,.|",
+                    "|..|   92,.|",
+                    "|..|   93,.|",
+                    "|..|   94,.|",
+                    "|..|   95,.|",
+                    "|..|   96,.|",
+                    "|..|   97,.|",
+                    "|..|   98,.|",
+                    "|..|   99,.|",
+                    "|..|  100,.|",
+                    "|..|  101,.|",
+                    "|..|  102,.|",
+                    "|..|  103,.|",
+                    "|..|  104,.|",
+                    "|..|  105,.|",
+                    "|..|  106,.|",
+                    "|..|  107,.|",
+                    "|..|  108,.|",
+                    "|..|  109,.|",
+                    "|..|  110,.|",
+                    "|..|  111,.|",
+                    "|..|  112,.|",
+                    "|..|  113,.|",
+                    "|..|  114,.|",
+                    "|..|  115,.|",
+                    "|..|  116,.|",
+                    "|..|  117,.|",
+                    "|..|  118,.|",
+                    "|..|  119,.|",
+                    "|..|  120,.|",
+                    "|..|  121,.|",
+                    "|..|  122,.|",
+                    "|..|  123,.|",
+                    "|..|  124,.|",
+                    "|..|  125,.|",
+                    "|..|  126,.|",
+                    "|..|  127,.|",
+                    "|..|  128,.|",
+                    "|..|  129,.|",
+                    "|..|  130,.|",
+                    "|..|  131,.|",
+                    "|..|  132,.|",
+                    "|..|  133,.|",
+                    "|..|  134,.|",
+                    "|..|  135,.|",
+                    "|..|  136,.|",
+                    "|..|  137,.|",
+                    "|..|  138,.|",
+                    "|..|  139,.|",
+                    "|..|  140,.|",
+                    "|..|  141,.|",
+                    "|..|  142,.|",
+                    "|..|  143,.|",
+                    "|..|  144,.|",
+                    "|..|  145,.|",
+                    "|..|  146,.|",
+                    "|..|  147,.|",
+                    "|..|  148,.|",
+                    "|..|  149,.|",
+                    "|..|  150,.|",
+                    "|..|  151,.|",
+                    "|..|  152,.|",
+                    "|..|  153,.|",
+                    "|..|  154,.|",
+                    "|..|  155,.|",
+                    "|..|  156,.|",
+                    "|..|  157,.|",
+                    "|..|  158,.|"
+                ],
+                "Stop Input Evaluation": true
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "ArkBot / Arkanoid",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Score",
+            "Pending Score",
+            "Current Blocks",
+            "Total Blocks",
+            "Ball Hits Remaining",
+            "Spawned PowerUp",
+            "Owned PowerUp",
+            "Enemy Gate State",
+            "Just Moved Enemy",
+            "Enemy Gate Active",
+            "RNG Was Used 1",
+            "RNG Was Used 2",
+            "RNG Was Used 3",
+            "RNG Was Used 4"
+        ],
+        "Hash Properties": [],
+        "Rules": [
+            {
+                "Label": 1,
+                "Conditions": [
+                    {
+                        "Property": "Spawned PowerUp",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Spawned PowerUp",
+                        "Op": "!=",
+                        "Value": 4
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 95,
+                "Conditions": [
+                    {
+                        "Property": "Ball 0 Pos Y",
+                        "Op": ">",
+                        "Value": 215
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 96,
+                "Conditions": [
+                    {
+                        "Property": "Ball 1 Exists",
+                        "Op": "==",
+                        "Value": true
+                    },
+                    {
+                        "Property": "Ball 1 Pos Y",
+                        "Op": ">",
+                        "Value": 215
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 97,
+                "Conditions": [
+                    {
+                        "Property": "Ball 2 Exists",
+                        "Op": "==",
+                        "Value": true
+                    },
+                    {
+                        "Property": "Ball 2 Pos Y",
+                        "Op": ">",
+                        "Value": 215
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Current Blocks",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Pending Score",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ]
     }
-  },
-
-  "Hash Database":
-  {
-    "Max Store Count": 2,
-    "Max Store Size (Mb)": 10000
-  }
-},
-
-"Emulator Configuration":
-{
-  "Emulator Name": "QuickerArkBot",
-  "Initial Level": 4,
-  "Initial Score": 20710
-},
- 
-"Runner Configuration":
-{
-  "Bypass Hash Calculation": false,
-  "Frameskip Rate": 0,
-  "Hash Step Tolerance": 0,
-  "Show Empty Input Slots": false,
-  "Show Allowed Inputs": true,
-
-  "Store Input History": 
-  {
-    "Enabled": true,
-    "Max Size": 720
-  },
-
-  "Allowed Input Sets":
-  [
-    {
-      "Conditions":
-      [
-        { "Property": "Operation State", "Op": "==", "Value": 8 }
-      ],
-
-      "Inputs":
-      [
-        "|..|   16,F|",
-        "|..|   16,.|", 
-        "|..|   17,.|", 
-        "|..|   18,.|", 
-        "|..|   19,.|", 
-        "|..|   20,.|", 
-        "|..|   21,.|", 
-        "|..|   22,.|", 
-        "|..|   23,.|", 
-        "|..|   24,.|", 
-        "|..|   25,.|", 
-        "|..|   26,.|", 
-        "|..|   27,.|", 
-        "|..|   28,.|", 
-        "|..|   29,.|", 
-        "|..|   30,.|", 
-        "|..|   31,.|", 
-        "|..|   32,.|", 
-        "|..|   33,.|", 
-        "|..|   34,.|", 
-        "|..|   35,.|", 
-        "|..|   36,.|", 
-        "|..|   37,.|", 
-        "|..|   38,.|", 
-        "|..|   39,.|", 
-        "|..|   40,.|", 
-        "|..|   41,.|", 
-        "|..|   42,.|", 
-        "|..|   43,.|", 
-        "|..|   44,.|", 
-        "|..|   45,.|", 
-        "|..|   46,.|", 
-        "|..|   47,.|", 
-        "|..|   48,.|", 
-        "|..|   49,.|", 
-        "|..|   50,.|", 
-        "|..|   51,.|", 
-        "|..|   52,.|", 
-        "|..|   53,.|", 
-        "|..|   54,.|", 
-        "|..|   55,.|", 
-        "|..|   56,.|", 
-        "|..|   57,.|", 
-        "|..|   58,.|", 
-        "|..|   59,.|", 
-        "|..|   60,.|", 
-        "|..|   61,.|", 
-        "|..|   62,.|", 
-        "|..|   63,.|", 
-        "|..|   64,.|", 
-        "|..|   65,.|", 
-        "|..|   66,.|", 
-        "|..|   67,.|", 
-        "|..|   68,.|", 
-        "|..|   69,.|", 
-        "|..|   70,.|", 
-        "|..|   71,.|", 
-        "|..|   72,.|", 
-        "|..|   73,.|", 
-        "|..|   74,.|", 
-        "|..|   75,.|", 
-        "|..|   76,.|", 
-        "|..|   77,.|", 
-        "|..|   78,.|", 
-        "|..|   79,.|", 
-        "|..|   80,.|", 
-        "|..|   81,.|", 
-        "|..|   82,.|", 
-        "|..|   83,.|", 
-        "|..|   84,.|", 
-        "|..|   85,.|", 
-        "|..|   86,.|", 
-        "|..|   87,.|", 
-        "|..|   88,.|", 
-        "|..|   89,.|", 
-        "|..|   90,.|", 
-        "|..|   91,.|", 
-        "|..|   92,.|", 
-        "|..|   93,.|", 
-        "|..|   94,.|", 
-        "|..|   95,.|", 
-        "|..|   96,.|", 
-        "|..|   97,.|", 
-        "|..|   98,.|", 
-        "|..|   99,.|", 
-        "|..|  100,.|", 
-        "|..|  101,.|", 
-        "|..|  102,.|", 
-        "|..|  103,.|", 
-        "|..|  104,.|", 
-        "|..|  105,.|", 
-        "|..|  106,.|", 
-        "|..|  107,.|", 
-        "|..|  108,.|", 
-        "|..|  109,.|", 
-        "|..|  110,.|", 
-        "|..|  111,.|", 
-        "|..|  112,.|", 
-        "|..|  113,.|", 
-        "|..|  114,.|", 
-        "|..|  115,.|", 
-        "|..|  116,.|", 
-        "|..|  117,.|", 
-        "|..|  118,.|", 
-        "|..|  119,.|", 
-        "|..|  120,.|", 
-        "|..|  121,.|", 
-        "|..|  122,.|", 
-        "|..|  123,.|", 
-        "|..|  124,.|", 
-        "|..|  125,.|", 
-        "|..|  126,.|", 
-        "|..|  127,.|", 
-        "|..|  128,.|", 
-        "|..|  129,.|", 
-        "|..|  130,.|", 
-        "|..|  131,.|", 
-        "|..|  132,.|", 
-        "|..|  133,.|", 
-        "|..|  134,.|", 
-        "|..|  135,.|", 
-        "|..|  136,.|", 
-        "|..|  137,.|", 
-        "|..|  138,.|", 
-        "|..|  139,.|", 
-        "|..|  140,.|", 
-        "|..|  141,.|", 
-        "|..|  142,.|", 
-        "|..|  143,.|", 
-        "|..|  144,.|", 
-        "|..|  145,.|", 
-        "|..|  146,.|", 
-        "|..|  147,.|", 
-        "|..|  148,.|", 
-        "|..|  149,.|", 
-        "|..|  150,.|", 
-        "|..|  151,.|", 
-        "|..|  152,.|", 
-        "|..|  153,.|", 
-        "|..|  154,.|", 
-        "|..|  155,.|", 
-        "|..|  156,.|", 
-        "|..|  157,.|", 
-        "|..|  158,.|"
-      ],
-
-      "Stop Input Evaluation": true
-    }
-  ],
-
-  "Test Candidate Inputs": false,
-  "Candidate Input Sets": [ ]
-},
-
-"Game Configuration":
-{
-  "Game Name": "ArkBot / Arkanoid",
-  "Frame Rate": 60.10,
-  "Last Input Step Reward": 0.0,
-
-  "Print Properties":
-  [
-    "Score",
-    "Pending Score",
-    "Current Blocks",
-    "Total Blocks",
-    "Ball Hits Remaining",
-    "Spawned PowerUp",
-    "Owned PowerUp",
-    "Enemy Gate State",
-    "Just Moved Enemy",
-    "Enemy Gate Active",
-    "RNG Was Used 1",
-    "RNG Was Used 2",
-    "RNG Was Used 3",
-    "RNG Was Used 4"
-  ],
-
-
-  "Hash Properties":
-  [
-  ],
-
-  "Rules":
-  [
-    {
-      "Label": 1,
-      "Conditions":
-      [
-        { "Property": "Spawned PowerUp", "Op": ">", "Value": 0 },
-        { "Property": "Spawned PowerUp", "Op": "!=", "Value": 4 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Fail" }
-      ]
-    },
-
-    {
-      "Label": 95,
-      "Conditions":
-      [
-        { "Property": "Ball 0 Pos Y", "Op": ">", "Value": 215 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Fail" }
-      ]
-    },
-
-    {
-      "Label": 96,
-      "Conditions":
-      [
-        { "Property": "Ball 1 Exists", "Op": "==", "Value": true },
-        { "Property": "Ball 1 Pos Y", "Op": ">", "Value": 215 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Fail" }
-      ]
-    },
-
-    {
-      "Label": 97,
-      "Conditions":
-      [
-        { "Property": "Ball 2 Exists", "Op": "==", "Value": true },
-        { "Property": "Ball 2 Pos Y", "Op": ">", "Value": 215 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Fail" }
-      ]
-    },
-
-    {
-      "Label": 1999,
-      "Conditions":
-      [
-        { "Property": "Current Blocks", "Op": "==", "Value": 0 },
-        { "Property": "Pending Score", "Op": "==", "Value": 0 }
-      ],
-      
-      "Satisfies": [ ],
-      
-      "Actions":
-      [
-        { "Type": "Trigger Win" }
-      ]
-    }
-  ]
- }
 }
