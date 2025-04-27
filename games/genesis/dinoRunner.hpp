@@ -1,9 +1,9 @@
 #pragma once
 
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 
 namespace jaffarPlus
 {
@@ -16,16 +16,12 @@ namespace genesis
 
 class DinoRunner final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "Genesis / Dino Runner"; }
 
-  DinoRunner(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  DinoRunner(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -39,11 +35,11 @@ class DinoRunner final : public jaffarPlus::Game
     registerGameProperty("Player Vel Y", &_workRAM[0x001A], Property::datatype_t::dt_int16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _gameMode    = (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Game Mode")]->getPointer();
-    _globalTimer = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
-    _score       = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
-    _playerPosY  = (uint16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
-    _playerVelY  = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Player Vel Y")]->getPointer();
+    _gameMode    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Mode")]->getPointer();
+    _globalTimer = (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
+    _score       = (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
+    _playerPosY  = (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _playerVelY  = (int16_t*)_propertyMap[jaffarCommon::hash::hashString("Player Vel Y")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -52,7 +48,7 @@ class DinoRunner final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override { hashEngine.Update(_workRAM, 0x2000); }
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override { hashEngine.Update(_workRAM, 0x2000); }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
@@ -70,9 +66,9 @@ class DinoRunner final : public jaffarPlus::Game
     _player1DistanceToPoint = std::abs((float)_pointMagnet.y - (float)*_playerPosY);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override {}
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) {}
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -90,22 +86,22 @@ class DinoRunner final : public jaffarPlus::Game
   void printInfoImpl() const override
   {
     if (std::abs(_pointMagnet.intensity) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.y);
-        jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPoint);
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _player1DistanceToPoint);
     }
   }
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
     if (actionType == "Set Point Magnet")
-      {
-        auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-        auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
-        rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .y = y}; });
-        recognizedActionType = true;
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .y = y}; });
+      recognizedActionType = true;
     }
 
     return recognizedActionType;
@@ -127,17 +123,17 @@ class DinoRunner final : public jaffarPlus::Game
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
   pointMagnet_t _pointMagnet;
 
-  uint16_t *_globalTimer;
-  uint16_t *_playerPosY;
-  uint16_t *_score;
-  int16_t  *_playerVelY;
-  uint8_t  *_gameMode;
+  uint16_t* _globalTimer;
+  uint16_t* _playerPosY;
+  uint16_t* _score;
+  int16_t*  _playerVelY;
+  uint8_t*  _gameMode;
 
   // Game-Specific values
   float _player1DistanceToPoint;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_workRAM;
+  uint8_t* _workRAM;
 };
 
 } // namespace genesis

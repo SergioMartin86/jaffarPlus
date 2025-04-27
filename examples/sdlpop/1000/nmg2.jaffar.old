@@ -1,0 +1,345 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "nmg2.state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": false,
+    "RNG Value": 1626641464,
+    "Loose Tile Sound Id": 21 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 8,
+   "Property Hash Types": [  ],
+   "Static Tile Hash Types": 
+   [
+    { "Level": 10, "Room": 11, "Tile": 21, "Comment": "Loose Tile on Top" },
+    { "Level": 10, "Room": 5, "Tile": 1, "Comment": "Debris" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+     { "Level": 10, "Room": 11, "Column": 0, "Type": "Full", "Description": "Falling Tile" }
+   ],
+   
+   "Active Objects Hash Types":
+   [
+     { "Level": 10, "Room": 11, "Tile": 21, "Type": "Full", "Comment": "Loose Tile on Top" },
+     { "Level": 10, "Room": 8, "Tile": 10, "Type": "Full", "Comment": "Gate" },
+     { "Level": 10, "Room": 8, "Tile": 24, "Type": "Full", "Comment": "Exit Level Door" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    "Show Move List": true,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 300,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 30000,
+     "Max Size Upper Bound (Mb)": 120000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Output Images":
+    {
+     "Enabled": true, 
+     "Path": "images/new"
+    }
+  },
+ 
+  "Rules":
+  [
+  {
+    "Label": 10007,
+    "Description": "Continue going through guard screen.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 1 }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Set Kid Pos X Magnet", "Room": 1, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 10008,
+    "Description": "Continue going through guard screen.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 5 }
+    ],
+    
+    "Satisfies": [ 10007 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 5, "Intensity": 1.0, "Position": 0 },
+     { "Type": "Set Guard HP Magnet", "Room": 5, "Intensity": 10.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 11008,
+    "Description": "Continue going through guard screen.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 5 },
+     { "Property": "Background Element[", "Room": 11, "Tile": 21, "Op": "==", "Value": 1, "Comment": "Tile" }
+    ],
+    
+    "Satisfies": [ 10008 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 5, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+
+
+   {
+    "Label": 11009,
+    "Description": "Continue going through guard screen.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 5 },
+     { "Property": "Background Element[", "Room": 8, "Tile": 10, "Op": ">", "Value": 0, "Comment": "Tile" }
+    ],
+    
+    "Satisfies": [ 11008 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 5, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 10009,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 8 },
+     { "Property": "Background Element[", "Room": 8, "Tile": 10, "Op": ">", "Value": 0, "Comment": "Tile" }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 11009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 8, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 10010,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 8 },
+     { "Property": "Background Element[", "Room": 8, "Tile": 10, "Op": ">", "Value": 0, "Comment": "Tile" },
+     { "Property": "Background Element[", "Room": 8, "Tile": 24, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+    
+    "Dependencies": [ ],
+    "Satisfies": [ 10009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 8, "Intensity": 10.0, "Position": 255 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 8, "Intensity": 1.0, "Position": 128 },
+     { "Type": "Set Guard Horizontal Magnet", "Room": 8, "Intensity": 1.0, "Position": 130 },
+     { "Type": "Set Guard HP Magnet", "Room": 8, "Intensity": 1000.0 }
+    ]
+   },
+        
+   {
+    "Label": 10011,
+    "Conditions":
+    [ 
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 },
+     { "Property": "Guard Jingle Timer", "Op": ">", "Value":  0 }
+    ],
+    
+    "Satisfies": [ 10010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+   
+   {
+    "Label": 10012,
+    "Conditions":
+    [
+     { "Property": "Next Level", "Op": "==", "Value":  11 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 10013,
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value": 0 }
+    ],
+    
+    "Satisfies": [  ],
+
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+    {
+    "Label": 1997,
+    "Conditions":
+    [ 
+     { "Property": "Guard Frame", "Op": "==", "Value":  160 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  50 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1996,
+    "Conditions":
+    [ 
+     { "Property": "Guard Frame", "Op": "==", "Value":  154 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  50 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1995,
+    "Conditions":
+    [ 
+     { "Property": "Guard Frame", "Op": "==", "Value":  164 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  50 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1994,
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value":  8 },
+     { "Property": "Kid Pos X", "Op": "==", "Value":  70 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value":  58 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  102 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 2998,
+    "Conditions":
+    [
+     { "Property": "Guard Jingle Timer", "Op": ">", "Value":  46 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+  {
+    "Label": 2997,
+    "Conditions":
+    [
+     { "Property": "Guard Room", "Op": "==", "Value":  8 },
+     { "Property": "Guard Position Y", "Op": ">", "Value":  190 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

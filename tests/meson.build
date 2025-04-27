@@ -7,7 +7,7 @@ testTimeout = 120
 bash = find_program('bash')
 validateExamplesScript = 'validateExamples.sh'
 
-test(emulator,
+test('ValidateExamples',
       bash,
       workdir : meson.current_source_dir(),
       timeout: testTimeout,
@@ -23,6 +23,7 @@ test(emulator,
 if emulator == 'QuickerNES'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('race04_short',
       jaffar,
@@ -46,6 +47,7 @@ endif
 if emulator == 'QuickerSDLPoP'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('lvl01',
       jaffar,
@@ -69,6 +71,7 @@ if emulator == 'QuickerSnes9x'
 ## SNES / Christmas Craze
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('stage01',
       jaffar,
@@ -85,6 +88,7 @@ endif
 if emulator == 'QuickerGPGX'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('stage01',
       jaffar,
@@ -101,6 +105,7 @@ endif
 if emulator == 'QuickerStella'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('stage01',
       jaffar,
@@ -117,6 +122,7 @@ endif
 if emulator == 'Atari2600Hawk'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('stage01',
       jaffar,
@@ -133,6 +139,7 @@ endif
 if emulator == 'QuickerSMBC'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('stage01',
       jaffar,
@@ -148,6 +155,7 @@ endif
 if emulator == 'QuickerArkBot'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('stage01',
       jaffar,
@@ -164,6 +172,7 @@ endif
 if emulator == 'QuickerMGBA'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('stage01',
       jaffar,
@@ -180,6 +189,7 @@ endif
 if emulator == 'QuickerGambatte'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('stage01',
       jaffar,
@@ -195,6 +205,7 @@ endif
 if emulator == 'QuickerDSDA'
 
 testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=100' ]
+testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('stage01',
       jaffar,

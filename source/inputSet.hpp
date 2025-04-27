@@ -1,18 +1,17 @@
 #pragma once
 
-#include <unordered_set>
-#include <vector>
-#include <jaffarCommon/json.hpp>
 #include "condition.hpp"
 #include "property.hpp"
+#include <jaffarCommon/json.hpp>
+#include <unordered_set>
+#include <vector>
 
 namespace jaffarPlus
 {
 
 class InputSet final
 {
-  public:
-
+public:
   // Type for input indexing
   typedef size_t inputIndex_t;
 
@@ -22,19 +21,18 @@ class InputSet final
   // The input set is activated only if all conditions are met
   __INLINE__ bool evaluate() const
   {
-    for (const auto &c : _conditions)
+    for (const auto& c : _conditions)
       if (c->evaluate() == false) return false;
     return true;
   }
 
   void                                    addInput(const inputIndex_t inputIdx) { _inputIndexes.insert(inputIdx); }
   void                                    addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
-  const std::unordered_set<inputIndex_t> &getInputIndexes() const { return _inputIndexes; }
+  const std::unordered_set<inputIndex_t>& getInputIndexes() const { return _inputIndexes; }
   bool                                    getStopInputEvaluationFlag() const { return _stopInputEvaluation; }
   void                                    setStopInputEvaluationFlag(const bool stopInputEvaluation) { _stopInputEvaluation = stopInputEvaluation; }
 
-  private:
-
+private:
   // Conditions are evaluated frequently, so this optimized for performance
   // Operands are pre-parsed as pointers/immediates and the evaluation function
   // is a template that is created at compilation time.

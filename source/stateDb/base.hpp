@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../runner.hpp"
 #include <jaffarCommon/concurrent.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/deserializers/differential.hpp>
@@ -7,7 +8,6 @@
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/serializers/differential.hpp>
-#include "../runner.hpp"
 
 #define _JAFFAR_STATE_PADDING_BYTES 64
 
@@ -19,11 +19,8 @@ namespace stateDb
 
 class Base
 {
-  public:
-
-  Base(Runner &r, const nlohmann::json &config)
-    : _runner(&r)
-  {}
+public:
+  Base(Runner& r, const nlohmann::json& config) : _runner(&r) {}
 
   virtual ~Base() = default;
 
@@ -55,26 +52,19 @@ class Base
     const size_t currentStateCount = getStateCount();
     const size_t currentStateBytes = currentStateCount * _stateSize;
 
-    jaffarCommon::logger::log("[J+]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n",
-                              currentStateCount,
-                              (double)currentStateCount * 1.0e-6,
-                              _maxStates,
-                              (double)_maxStates * 1.0e-6,
-                              100.0 * (double)currentStateCount / (double)_maxStates);
-    jaffarCommon::logger::log("[J+]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n",
-                              (double)currentStateBytes / (1024.0 * 1024.0),
-                              (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0),
-                              (double)_maxSize / (1024.0 * 1024.0),
-                              (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
+    jaffarCommon::logger::log("[J+]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n", currentStateCount,
+                              (double)currentStateCount * 1.0e-6, _maxStates, (double)_maxStates * 1.0e-6, 100.0 * (double)currentStateCount / (double)_maxStates);
+    jaffarCommon::logger::log("[J+]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n", (double)currentStateBytes / (1024.0 * 1024.0),
+                              (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
     jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
     jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
     printInfoImpl();
   }
 
   virtual void   initializeImpl()                      = 0;
-  virtual void  *getFreeState()                        = 0;
-  virtual void   returnFreeState(void *const statePtr) = 0;
-  virtual void  *popState()                            = 0;
+  virtual void*  getFreeState()                        = 0;
+  virtual void   returnFreeState(void* const statePtr) = 0;
+  virtual void*  popState()                            = 0;
   virtual size_t getStateCount() const                 = 0;
 
   /**
@@ -85,7 +75,7 @@ class Base
   /**
    * Saves the runner state into the provided state data pointer
    */
-  __INLINE__ size_t saveStateFromRunner(Runner &r, void *statePtr) const
+  __INLINE__ size_t saveStateFromRunner(Runner& r, void* statePtr) const
   {
     // Storage for the state size after deserialization
     size_t serializedSize = 0;
@@ -101,21 +91,21 @@ class Base
   /**
    * Serializes the runner state and pushes it into the state database
    */
-  __INLINE__ bool pushState(const float reward, Runner &r, void *statePtr)
+  __INLINE__ bool pushState(const float reward, Runner& r, void* statePtr)
   {
     // Check that we got a free state (we did not overflow state memory)
     if (statePtr == nullptr) JAFFAR_THROW_RUNTIME("Provided a null state -- probably ran out of free states\n");
 
     // Encoding internal runner state into the state pointer
     try
-      {
-        saveStateFromRunner(r, statePtr);
-      }
-    catch (const std::runtime_error &x)
-      {
-        // If failed return false
-        return false;
-      }
+    {
+      saveStateFromRunner(r, statePtr);
+    }
+    catch (const std::runtime_error& x)
+    {
+      // If failed return false
+      return false;
+    }
 
     // Inserting new state into the next state database
     return pushStateImpl(reward, statePtr);
@@ -124,7 +114,7 @@ class Base
   /**
    * Loads the state into the runner
    */
-  __INLINE__ void loadStateIntoRunner(Runner &r, const void *statePtr)
+  __INLINE__ void loadStateIntoRunner(Runner& r, const void* statePtr)
   {
     // Deserializing the runner state from the memory received
     jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
@@ -134,23 +124,22 @@ class Base
   /**
    * This function returns a pointer to the best state found in the current state database
    */
-  virtual void *getBestState() const = 0;
+  virtual void* getBestState() const = 0;
 
   /**
    * This function returns a pointer to the worst state found in the current state database
    */
-  virtual void *getWorstState() const = 0;
+  virtual void* getWorstState() const = 0;
 
-  protected:
-
+protected:
   /**
    * Inserts a new state into the state database
    */
-  virtual bool pushStateImpl(const float reward, void *statePtr) = 0;
+  virtual bool pushStateImpl(const float reward, void* statePtr) = 0;
 
   virtual void printInfoImpl() const = 0;
 
-  Runner *const _runner;
+  Runner* const _runner;
 
   /**
    * Stores the size occupied by each state (with padding)

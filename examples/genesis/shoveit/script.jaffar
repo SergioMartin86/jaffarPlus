@@ -1,0 +1,116 @@
+{
+  "Driver Configuration":
+  {
+   "End On First Win State": true,
+   "Max Steps": 0,
+ 
+   "Save Intermediate Results":
+   {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+   }
+  },
+ 
+  "Engine Configuration":
+  {
+   "State Database":
+   {
+     "Type": "Numa Aware",
+     "Max Size per NUMA Domain (Mb)":
+     [ 
+       10000,
+       10000
+     ]
+   },
+ 
+   "Hash Database":
+   {
+     "Max Store Count": 2,
+     "Max Store Size (Mb)": 10000
+   }
+ },
+ 
+ "Emulator Configuration":
+ {
+   "Emulator Name": "QuickerGPGX",
+   "Rom File Path": "Shove It! - The Warehouse Game (U) [!].bin",
+   "Rom File SHA1": "E4094C5A575F8D7325E7EC7425ECF022A6BF434E",
+   "Initial State File Path": "quicksave.state",
+   "Initial Sequence File Path": "initial.sol",
+   "Initial RAM Data File Path": "",
+   "Initial Video RAM Data File Path": "",
+   "Bios File Path": "",
+   "System Type": "Sega Genesis",
+   "Controller 1 Type": "Gamepad3B",
+   "Controller 2 Type": "None",
+   "Disabled State Properties": [ "VRAM", "SATM"  ],
+   "Work RAM Serialization Size": 65536
+ },
+  
+ "Runner Configuration":
+ {
+   "Frameskip Rate": 0,
+   "Hash Step Tolerance": 2,
+   "Show Empty Input Slots": true,
+   "Show Allowed Inputs": true,
+   "Bypass Hash Calculation": false,
+
+   "Store Input History": 
+   {
+     "Enabled": true,
+     "Max Size": 2000
+   },
+ 
+   "Allowed Input Sets":
+   [
+    {
+      "Description": "Possible movements",
+      "Conditions":
+      [
+      ],
+
+      "Inputs":
+      [
+        "|..|..L.....|",
+        "|..|...R....|",
+        "|..|.D......|",
+        "|..|U.......|"
+      ],
+
+      "Stop Input Evaluation": true
+    }
+   ],
+ 
+   "Test Candidate Inputs": false,
+   "Candidate Input Sets":
+   [ 
+   ]
+ },
+ 
+ "Game Configuration":
+ {
+   "Game Name": "Genesis / Shove It!",
+   "Frame Rate": 60.10,
+   "Last Input Step Reward": 0.0,
+   "Hash Level Properties": true,
+   "Hash Guard Properties": true,
+ 
+   "Print Properties":
+   [
+    "Move Timer"
+   ],
+ 
+   "Hash Properties":
+   [
+   ],
+ 
+   "Rules":
+   [
+   ]
+  }
+ }
+ 

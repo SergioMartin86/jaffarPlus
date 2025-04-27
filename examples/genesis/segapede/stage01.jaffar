@@ -1,0 +1,282 @@
+{
+  "Driver Configuration":
+  {
+   "End On First Win State": true,
+   "Max Steps": 0,
+ 
+   "Save Intermediate Results":
+   {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+   }
+  },
+ 
+  "Engine Configuration":
+  {
+   "State Database":
+   {
+     "Type": "Numa Aware",
+     "Max Size per NUMA Domain (Mb)":
+     [ 
+       80000,
+       80000
+     ],
+   
+     "Scavenger Queues Size": 32,
+     "Scavenging Depth": 32,
+ 
+     "Compression":
+     {
+       "Use Differential Compression": false, 
+       "Max Difference (bytes)": 6000,
+       "Use Zlib Compression": false
+     }
+   },
+ 
+   "Hash Database":
+   {
+     "Max Store Count": 2,
+     "Max Store Size (Mb)": 10000
+   }
+ },
+ 
+ "Emulator Configuration":
+ {
+   "Emulator Name": "QuickerGPGX",
+   "Rom File Path": "../../../extern/jaffarPlus/extern/quickerGPGX/tests/roms/Segapede (Prototype).md",
+   "Rom File SHA1": "3452959175FA7631AF01E8821CB8B8410F5FBB79",
+   "Initial State File Path": "",
+   "Initial Sequence File Path": "stage01.initial.sol",
+   "Initial RAM Data File Path": "",
+   "Initial Video RAM Data File Path": "",
+   "Bios File Path": "",
+   "System Type": "Sega Genesis",
+   "Controller 1 Type": "Gamepad3B",
+   "Controller 2 Type": "None",
+   "Disabled State Properties": [ "VRAM", "SATM"  ],
+   "Work RAM Serialization Size": 37280
+ },
+  
+ "Runner Configuration":
+ {
+   "Bypass Hash Calculation": false,
+   "Frameskip Rate": 0,
+   "Hash Step Tolerance": 1,
+   "Show Empty Input Slots": true,
+   "Show Allowed Inputs": true,
+ 
+   "Store Input History": 
+   {
+     "Enabled": true,
+     "Max Size": 1000
+   },
+ 
+   "Allowed Input Sets":
+   [
+     {
+       "Conditions":
+       [
+       ],
+ 
+       "Inputs":
+       [
+        "|..|..L.....|",
+        "|..|...R....|",
+        "|..|......C.|",
+        "|..|...R..C.|",
+        "|..|..L...C.|",
+        "|..|..LR....|",
+        "|..|..LR..C.|"
+       ],
+ 
+       "Stop Input Evaluation": false
+     }
+   ],
+ 
+   "Test Candidate Inputs": false,
+   "Candidate Input Sets": [ ]
+ },
+ 
+ "Game Configuration":
+ {
+   "Game Name": "Genesis / Segapede",
+   "Frame Rate": 60.10,
+   "Last Input Step Reward": 0.0,
+ 
+   "Print Properties":
+   [
+     "Player Pos X",
+     "Player Vel X1",
+     "Player Vel X2",
+     "Player Pos Y",
+     "Player Vel Y1",
+     "Player Vel Y2",
+     "Game End"
+   ],
+ 
+   "Hash Properties":
+   [
+    "Player Pos X",
+    "Player Vel X1",
+    "Player Vel X2",
+    "Player Pos Y",
+    "Player Vel Y1",
+    "Player Vel Y2",
+    "Game End"
+   ],
+ 
+   "Rules":
+   [
+    {
+      "Label": 1000,
+      "Conditions":
+      [
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Set Point 2D Magnet", "Intensity": 1.0, "Pos X": 605, "Pos Y": 288 }
+      ]
+     },
+ 
+     {
+      "Label": 1100,
+      "Conditions":
+      [
+        { "Property": "Player Pos X", "Op": ">=", "Value": 605 }
+      ],
+      
+      "Satisfies": [ 1000 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point 2D Magnet", "Intensity": 1.0, "Pos X": 1017, "Pos Y": 305 }
+      ]
+     },
+
+     {
+      "Label": 1200,
+      "Conditions":
+      [
+        { "Property": "Player Pos X", "Op": ">=", "Value": 1017 }
+      ],
+      
+      "Satisfies": [ 1100 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point 2D Magnet", "Intensity": 1.0, "Pos X": 1296, "Pos Y": 422 }
+      ]
+     },
+
+     {
+      "Label": 1300,
+      "Conditions":
+      [
+        { "Property": "Player Pos X", "Op": ">=", "Value": 1296 }
+      ],
+      
+      "Satisfies": [ 1200 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point 2D Magnet", "Intensity": 1.0, "Pos X": 1596, "Pos Y": 632 }
+      ]
+     },
+
+     {
+      "Label": 1400,
+      "Conditions":
+      [
+        { "Property": "Player Pos X", "Op": ">=", "Value": 1596 }
+      ],
+      
+      "Satisfies": [ 1300 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point 2D Magnet", "Intensity": 0.0, "Pos X": 0, "Pos Y": 0 },
+       { "Type": "Set Point X Magnet", "Intensity": 1.0, "Pos": 2524 },
+       { "Type": "Set Point Y Magnet", "Intensity": 7.0, "Pos": 872 }
+      ]
+     },
+
+     {
+      "Label": 1500,
+      "Conditions":
+      [
+        { "Property": "Player Pos X", "Op": ">=", "Value": 2524 }
+      ],
+      
+      "Satisfies": [ 1400 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point X Magnet", "Intensity": 1.0, "Pos": 3002 },
+       { "Type": "Set Point Y Magnet", "Intensity": 5.0, "Pos": 799 }
+      ]
+     },
+
+     {
+      "Label": 1600,
+      "Conditions":
+      [
+        { "Property": "Player Pos X", "Op": ">=", "Value": 3002 }
+      ],
+      
+      "Satisfies": [ 1500 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point 2D Magnet", "Intensity": 1.0, "Pos X": 3210, "Pos Y": 767 },
+       { "Type": "Set Point X Magnet", "Intensity": 0.0, "Pos": 0 },
+       { "Type": "Set Point Y Magnet", "Intensity": 0.0, "Pos": 0 }
+      ]
+     },
+
+     {
+      "Label": 1700,
+      "Conditions":
+      [
+        { "Property": "Player Pos X", "Op": ">=", "Value": 6000 }
+      ],
+      
+      "Satisfies": [ 1600 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Point 2D Magnet", "Intensity": 1.0, "Pos X": 7234, "Pos Y": 1460 }
+      ]
+     },
+
+     {
+       "Label": 1998,
+       "Conditions":
+       [
+         { "Property": "Game End", "Op": "==", "Value": 50800 }
+       ],
+       
+       "Satisfies": [ ],
+       
+       "Actions":
+       [
+         { "Type": "Trigger Win" }
+       ]
+     }
+   ]
+  }
+ }
+ 

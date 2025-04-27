@@ -1,0 +1,354 @@
+{
+  "Emulator Configuration": 
+  {
+    "Game Files": "../game",
+    "State File": "jaffar.state"
+  },
+  
+  "Game Configuration": 
+  {
+   "Level Code": "LDKD",
+   "Timer Tolerance": 2,
+   "Hash Includes": [  ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": false,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 3500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false, 
+      "XDelta3 Max Differences": 700,
+      "XDelta3 Use Zlib Compression": true
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 2000,
+     "Max Size Upper Bound (Mb)": 5000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 10000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+     "Disable Display": false,
+     "Overlay Path": "../../../../platforms/aw/overlay"
+  },
+  
+  "Rules":
+  [
+    {
+    "Label": 1001,
+    "Conditions":
+    [
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Set Lester Vertical Magnet", "Room": 0, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1002,
+    "Conditions":
+    [ 
+     { "Property": "Lester Room", "Op": "==", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 1001 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1003,
+    "Conditions":
+    [ 
+     { "Property": "Lester Room", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ 1002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1004,
+    "Conditions":
+    [ 
+     { "Property": "Lester Room", "Op": "==", "Value":  4 }
+    ],
+    
+    "Satisfies": [ 1003 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1005,
+    "Conditions":
+    [ 
+     { "Property": "Lester Room", "Op": "==", "Value":  5 }
+    ],
+    
+    "Satisfies": [ 1004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1006,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  4 }
+    ],
+    
+    "Satisfies": [ 1005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1007,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  4 },
+     { "Property": "Lester Room", "Op": "==", "Value":  4 }
+    ],
+    
+    "Satisfies": [ 1006 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1008,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  4 },
+     { "Property": "Lester Room", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ 1007 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1009,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  4 },
+     { "Property": "Lester Room", "Op": "==", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 1008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1010,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  4 },
+     { "Property": "Lester Room", "Op": "==", "Value":  1 }
+    ],
+    
+    "Satisfies": [ 1009 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 0 }
+    ]
+   },
+   
+   {
+    "Label": 1011,
+    "Conditions":
+    [ 
+     { "Property": "Game Anim State", "Op": ">", "Value":  182 },
+     { "Property": "Lester Room", "Op": "==", "Value":  1 }
+    ],
+    
+    "Satisfies": [ 1010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 1, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1012,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  5 },
+     { "Property": "Lester Room", "Op": "==", "Value":  2 }
+    ],
+    
+    "Satisfies": [ 1011 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 0 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 2, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1013,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  5 },
+     { "Property": "Lester Room", "Op": "==", "Value":  3 }
+    ],
+    
+    "Satisfies": [ 1012 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 3, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1014,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  5 },
+     { "Property": "Lester Room", "Op": "==", "Value":  4 }
+    ],
+    
+    "Satisfies": [ 1013 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 4, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1015,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  5 },
+     { "Property": "Lester Room", "Op": "==", "Value":  5 }
+    ],
+    
+    "Satisfies": [ 1014 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 1000.0 },
+     { "Type": "Trigger Checkpoint", "Tolerance": 3 },
+     { "Type": "Set Lester Horizontal Magnet", "Room": 5, "Intensity": 1.0, "Center": 336 }
+    ]
+   },
+   
+   {
+    "Label": 1016,
+    "Conditions":
+    [ 
+     { "Property": "Game Script State", "Op": "==", "Value":  6 },
+     { "Property": "Lester Room", "Op": "==", "Value":  5 }
+    ],
+    
+    "Satisfies": [ 1015 ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1999,
+    "Conditions":
+    [ 
+     { "Property": "Lester Dead State", "Op": "==", "Value":  1 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

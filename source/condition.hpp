@@ -1,15 +1,14 @@
 #pragma once
 
-#include <jaffarCommon/bitwise.hpp>
 #include "property.hpp"
+#include <jaffarCommon/bitwise.hpp>
 
 namespace jaffarPlus
 {
 
 class Condition
 {
-  public:
-
+public:
   enum operator_t
   {
     op_equal,
@@ -22,14 +21,12 @@ class Condition
     op_bit_false
   };
 
-  Condition(const operator_t opType)
-    : _opType(opType)
-  {}
+  Condition(const operator_t opType) : _opType(opType) {}
 
   virtual __INLINE__ bool evaluate() const = 0;
   virtual ~Condition()                     = default;
 
-  static __INLINE__ operator_t getOperatorType(const std::string &operation)
+  static __INLINE__ operator_t getOperatorType(const std::string& operation)
   {
     if (operation == "==") return op_equal;
     if (operation == "!=") return op_not_equal;
@@ -45,25 +42,19 @@ class Condition
     return op_equal;
   }
 
-  protected:
-
+protected:
   const operator_t _opType;
 };
 
 template <typename T>
 class _vCondition : public Condition
 {
-  public:
-
-  _vCondition(const operator_t opType, Property *property1, Property *property2, T immediate1, T immediate2)
-    : Condition(opType)
-    , _property1(property1)
-    , _property2(property2)
-    , _immediate1(immediate1)
-    , _immediate2(immediate2)
+public:
+  _vCondition(const operator_t opType, Property* property1, Property* property2, T immediate1, T immediate2)
+      : Condition(opType), _property1(property1), _property2(property2), _immediate1(immediate1), _immediate2(immediate2)
   {
     switch (_opType)
-      {
+    {
       case op_equal: _opFcPtr = _opEqual; break;
       case op_not_equal: _opFcPtr = _opNotEqual; break;
       case op_greater: _opFcPtr = _opGreater; break;
@@ -73,7 +64,7 @@ class _vCondition : public Condition
       case op_bit_true: _opFcPtr = _opBitTrue; break;
       case op_bit_false: _opFcPtr = _opBitFalse; break;
       default: break;
-      }
+    }
   }
 
   __INLINE__ bool evaluate() const
@@ -85,8 +76,7 @@ class _vCondition : public Condition
     return _opFcPtr(immediate1, immediate2);
   }
 
-  private:
-
+private:
   static __INLINE__ bool _opEqual(const T a, const T b) { return a == b; }
   static __INLINE__ bool _opNotEqual(const T a, const T b) { return a != b; }
   static __INLINE__ bool _opGreater(const T a, const T b) { return a > b; }
@@ -98,8 +88,8 @@ class _vCondition : public Condition
 
   bool (*_opFcPtr)(const T, const T);
 
-  Property *const _property1;
-  Property *const _property2;
+  Property* const _property1;
+  Property* const _property2;
   const T         _immediate1;
   const T         _immediate2;
 };

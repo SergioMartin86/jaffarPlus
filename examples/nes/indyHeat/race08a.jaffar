@@ -1,0 +1,169 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 0,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+   "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      1000,
+      1000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerNES",
+  "Rom File Path": "../../../extern/jaffarPlus/extern/quickerNES/tests/roms/Danny Sullivan's Indy Heat (U) [!].nes",
+  "Rom File SHA1": "45404AEAC39E5855034C43554CA252DE17131BBE",
+  "Initial State File Path": "",
+  "Initial Sequence File Path": "race08a.initial.sol",
+  "Initial RAM Data File Path": "",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "None",
+  "Nametable Block Size": 1024,
+  "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ]
+},
+ 
+"Runner Configuration":
+{
+  "Bypass Hash Calculation": false,
+  "Frameskip Rate": 0, 
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 3000
+  },
+
+
+  "Allowed Input Sets":
+  [
+   {
+     "Conditions":
+     [
+     ],
+ 
+     "Inputs":
+     [
+       "|..|...R....|",
+       "|..|..L.....|",
+       "|..|.......A|",
+       "|..|......BA|", 
+       "|..|...R...A|",
+       "|..|..L....A|"
+     ],
+
+     "Stop Input Evaluation": false
+   }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "NES / Indy Heat",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Pre-Race Timer",      
+    "Player1 Angle",       
+    "Player1 PosX",        
+    "Player1 PosY",        
+    "Player1 Speed" ,      
+    "Player1 Pit Stop" ,      
+    "Player1 Current Lap", 
+    "Player1 Checkpoint",  
+    "Player1 Previous Lap",
+    "Last Input Step",
+    "Current Step",
+    "Player1 Fuel"
+  ],
+
+  "Hash Properties":
+  [
+    "Player1 Angle",       
+    "Player1 PosX",        
+    "Player1 PosY",        
+    "Player1 Speed" ,      
+    "Player1 Pit Stop" ,      
+    "Player1 Current Lap", 
+    "Player1 Checkpoint",  
+    "Player1 Previous Lap",
+    "Player1 Fuel"
+  ],
+
+  "Rules":
+  [
+    {
+      "Label": 1999,
+      "Conditions":
+      [
+        { "Property": "Player1 Current Lap", "Op": "==", "Value": 5 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+    },
+
+    {
+      "Label": 2001,
+      "Conditions":
+      [
+        { "Property": "Player1 Previous Lap", "Op": ">", "Value": "Player1 Current Lap" }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail" }
+      ]
+    }
+  ]
+ }
+}

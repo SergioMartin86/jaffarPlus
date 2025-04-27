@@ -1,9 +1,9 @@
 #pragma once
 
-#include <jaffarCommon/logger.hpp>
-#include <jaffarCommon/json.hpp>
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <jaffarCommon/logger.hpp>
 
 namespace jaffarPlus
 {
@@ -16,16 +16,12 @@ namespace gba
 
 class TollRunner final : public jaffarPlus::Game
 {
-  public:
-
+public:
   static __INLINE__ std::string getName() { return "GBA / Toll Runner"; }
 
-  TollRunner(std::unique_ptr<Emulator> emulator, const nlohmann::json &config)
-    : jaffarPlus::Game(std::move(emulator), config)
-  {}
+  TollRunner(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
 
-  private:
-
+private:
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -37,9 +33,9 @@ class TollRunner final : public jaffarPlus::Game
     registerGameProperty("Mouse Pos Y", &_workRAM[0x001EC], Property::datatype_t::dt_int16, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _score     = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
-    _mousePosX = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Mouse Pos X")]->getPointer();
-    _mousePosY = (int16_t *)_propertyMap[jaffarCommon::hash::hashString("Mouse Pos Y")]->getPointer();
+    _score     = (int16_t*)_propertyMap[jaffarCommon::hash::hashString("Score")]->getPointer();
+    _mousePosX = (int16_t*)_propertyMap[jaffarCommon::hash::hashString("Mouse Pos X")]->getPointer();
+    _mousePosY = (int16_t*)_propertyMap[jaffarCommon::hash::hashString("Mouse Pos Y")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -48,7 +44,7 @@ class TollRunner final : public jaffarPlus::Game
     _emulator->advanceState(input);
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128 &hashEngine) const override { hashEngine.Update(_workRAM, 0x8000); }
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override { hashEngine.Update(_workRAM, 0x8000); }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override {}
@@ -57,9 +53,9 @@ class TollRunner final : public jaffarPlus::Game
 
   __INLINE__ void ruleUpdatePostHook() override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base &serializer) const override {}
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override {}
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base &deserializer) {}
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) {}
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -81,7 +77,7 @@ class TollRunner final : public jaffarPlus::Game
 
   void printInfoImpl() const override {}
 
-  bool parseRuleActionImpl(Rule &rule, const std::string &actionType, const nlohmann::json &actionJs) override
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
@@ -94,12 +90,12 @@ class TollRunner final : public jaffarPlus::Game
     return jaffarCommon::hash::hash_t();
   }
 
-  int16_t *_score;
-  int16_t *_mousePosX;
-  int16_t *_mousePosY;
+  int16_t* _score;
+  int16_t* _mousePosX;
+  int16_t* _mousePosY;
 
   // Pointer to emulator's low memory storage
-  uint8_t *_workRAM;
+  uint8_t* _workRAM;
 };
 
 } // namespace gba

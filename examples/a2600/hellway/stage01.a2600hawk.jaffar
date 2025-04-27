@@ -24,7 +24,17 @@
     [ 
       50,
       50
-    ]
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
   },
 
   "Hash Database":
@@ -37,7 +47,7 @@
 "Emulator Configuration":
 {
   "Emulator Name": "Atari2600Hawk",
-  "Rom File Path": "../../../extern/atari2600Hawk/tests/roms/hellway.a26",
+  "Rom File Path": "../../../extern/jaffarPlus/extern/atari2600Hawk/tests/roms/hellway.a26",
   "Rom File SHA1": "8C209A10CCF24194CB888D5E750CF303AD050EF7",
   "Initial Sequence File Path": "stage01.a2600hawk.initial.sol",
   "Controller 1 Type": "Gamepad",
@@ -47,6 +57,7 @@
  
 "Runner Configuration":
 {
+  "Bypass Hash Calculation": false,
   "Frameskip Rate": 0,
   "Hash Step Tolerance": 4,
   "Show Empty Input Slots": true,

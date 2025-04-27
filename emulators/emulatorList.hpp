@@ -3,71 +3,71 @@
 #include <emulator.hpp>
 
 #ifdef __JAFFAR_USE_QUICKERNES
-  #include "quickerNES/quickerNES.hpp"
+#include "quickerNES/quickerNES.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERSDLPOP
-  #include "quickerSDLPoP/quickerSDLPoP.hpp"
+#include "quickerSDLPoP/quickerSDLPoP.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERSNES9X
-  #include "quickerSnes9x/quickerSnes9x.hpp"
+#include "quickerSnes9x/quickerSnes9x.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERGPGX
-  #include "quickerGPGX/quickerGPGX.hpp"
+#include "quickerGPGX/quickerGPGX.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERSTELLA
-  #include "quickerStella/quickerStella.hpp"
+#include "quickerStella/quickerStella.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_ATARI2600HAWK
-  #include "atari2600Hawk/atari2600Hawk.hpp"
+#include "atari2600Hawk/atari2600Hawk.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERSMBC
-  #include "quickerSMBC/quickerSMBC.hpp"
+#include "quickerSMBC/quickerSMBC.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERNEORAW
-  #include "quickerNEORAW/quickerNEORAW.hpp"
+#include "quickerNEORAW/quickerNEORAW.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERRAWGL
-  #include "quickerRAWGL/quickerRAWGL.hpp"
+#include "quickerRAWGL/quickerRAWGL.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_ARKBOT
-  #include "quickerArkBot/quickerArkBot.hpp"
+#include "quickerArkBot/quickerArkBot.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERMGBA
-  #include "quickerMGBA/quickerMGBA.hpp"
+#include "quickerMGBA/quickerMGBA.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERGAMBATTE
-  #include "quickerGambatte/quickerGambatte.hpp"
+#include "quickerGambatte/quickerGambatte.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERDSDA
-  #include "quickerDSDA/quickerDSDA.hpp"
+#include "quickerDSDA/quickerDSDA.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_QUICKERBAN
-  #include "quickerBan/quickerBan.hpp"
+#include "quickerBan/quickerBan.hpp"
 #endif
 
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
   if (emulatorName == EMULATOR::getName())                                                                                                                                         \
-    {                                                                                                                                                                              \
-      e            = std::make_unique<EMULATOR>(emulatorConfig);                                                                                                                   \
-      isRecognized = true;                                                                                                                                                         \
+  {                                                                                                                                                                                \
+    e            = std::make_unique<EMULATOR>(emulatorConfig);                                                                                                                     \
+    isRecognized = true;                                                                                                                                                           \
   }
 
-std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorConfig)
+std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json& emulatorConfig)
 {
   // Base pointer for the emulator
   std::unique_ptr<Emulator> e;
@@ -76,7 +76,7 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json &emulatorCo
   bool isRecognized = false;
 
   // Getting emulator name
-  const auto &emulatorName = jaffarCommon::json::getString(emulatorConfig, "Emulator Name");
+  const auto& emulatorName = jaffarCommon::json::getString(emulatorConfig, "Emulator Name");
 
 // Detecting emulator
 #ifdef __JAFFAR_USE_QUICKERNES

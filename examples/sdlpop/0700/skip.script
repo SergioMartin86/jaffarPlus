@@ -1,0 +1,171 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../lvl7alt.dat",
+    "State File": "skip.sav",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 692485743,
+    "Loose Tile Sound Id": 20 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 8,
+   "Property Hash Types": [ "Guard Position X", "Guard HP"  ],
+   "Static Tile Hash Types": 
+   [
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Move List": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 600,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 300,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 130000,
+     "Max Size Upper Bound (Mb)": 200000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 20000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": false,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Output Images":
+    {
+     "Enabled": true, 
+     "Path": "images/new"
+    }
+  },
+ 
+  "Rules":
+  [
+   
+   {
+    "Label": 7000,
+    "Description": "Setting magnet to make kid go to the right on the first screen",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 }
+    ],
+   
+    "Satisfies": [ ],
+   
+    "Actions":
+    [
+     { "Type": "Set Kid Pos X Magnet", "Room": 1, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 7001,
+    "Description": "Setting magnet to make kid go advancing to the right screen while luring guard.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  2 }
+    ],
+   
+    "Satisfies": [ 7000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 2, "Intensity": 1.0, "Position": 0 },
+     { "Type": "Set Guard Horizontal Magnet", "Room": 2, "Intensity": 10.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 7002,   
+    "Description": "Clearing magnets and rewarding when they get closed to the tile.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value":  240 },
+     { "Property": "Kid Pos Y", "Op": ">", "Value":  56 }
+    ],
+   
+    "Satisfies": [ 7001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+   
+   {
+    "Label": 7003,   
+    "Description": "Clearing magnets and rewarding when they get closed to the tile.",
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Pos Y", "Op": ">", "Value":  56 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  15 }
+    ],
+   
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 7997,
+    "Description": "If Kid exits to the next level, then win.",
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

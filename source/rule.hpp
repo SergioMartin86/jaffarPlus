@@ -1,29 +1,26 @@
 #pragma once
 
-#include <vector>
-#include <set>
-#include <jaffarCommon/json.hpp>
 #include "condition.hpp"
 #include "property.hpp"
+#include <jaffarCommon/json.hpp>
+#include <set>
+#include <vector>
 
 namespace jaffarPlus
 {
 
 class Rule final
 {
-  public:
-
+public:
   typedef size_t label_t;
 
-  Rule(const size_t index, const label_t label)
-    : _index(index)
-    , _label(label){};
+  Rule(const size_t index, const label_t label) : _index(index), _label(label){};
   ~Rule() = default;
 
   // The rule is achieved only if all conditions are met
   __INLINE__ bool evaluate() const
   {
-    for (const auto &c : _conditions)
+    for (const auto& c : _conditions)
       if (c->evaluate() == false) return false;
     return true;
   }
@@ -33,10 +30,10 @@ class Rule final
   void setFailRule(const bool isFailRule) { _isFailRule = isFailRule; }
   void setCheckpointRule(const bool isCheckpointRule) { _isCheckpointRule = isCheckpointRule; }
   void setCheckpointTolerance(const size_t checkPointTolerance) { _checkPointTolerance = checkPointTolerance; }
-  void addAction(const std::function<void()> &function) { _actions.push_back(function); }
+  void addAction(const std::function<void()>& function) { _actions.push_back(function); }
   void addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
   void addSatisfyRuleLabel(const label_t satisfyRuleLabel) { _satisfyRuleLabels.insert(satisfyRuleLabel); }
-  void addSatisfyRule(Rule *const subRule) { _satisfyRules.push_back(subRule); }
+  void addSatisfyRule(Rule* const subRule) { _satisfyRules.push_back(subRule); }
 
   label_t                                   getLabel() const { return _label; }
   float                                     getReward() const { return _reward; }
@@ -44,13 +41,12 @@ class Rule final
   bool                                      isFailRule() const { return _isFailRule; }
   bool                                      isCheckpointRule() const { return _isCheckpointRule; }
   size_t                                    getCheckpointTolerance() const { return _checkPointTolerance; }
-  const std::unordered_set<label_t>        &getSatisfyRuleLabels() const { return _satisfyRuleLabels; }
-  const std::vector<Rule *>                &getSatisfyRules() const { return _satisfyRules; }
+  const std::unordered_set<label_t>&        getSatisfyRuleLabels() const { return _satisfyRuleLabels; }
+  const std::vector<Rule*>&                 getSatisfyRules() const { return _satisfyRules; }
   size_t                                    getIndex() const { return _index; }
-  const std::vector<std::function<void()>> &getActions() const { return _actions; }
+  const std::vector<std::function<void()>>& getActions() const { return _actions; }
 
-  private:
-
+private:
   // Conditions are evaluated frequently, so this optimized for performance
   // Operands are pre-parsed as pointers/immediates and the evaluation function
   // is a template that is created at compilation time.
@@ -75,7 +71,7 @@ class Rule final
   std::unordered_set<label_t> _satisfyRuleLabels;
 
   // Stores rules that also satisfied if this one is
-  std::vector<Rule *> _satisfyRules;
+  std::vector<Rule*> _satisfyRules;
 
   // Storage for game-specific actions
   std::vector<std::function<void()>> _actions;

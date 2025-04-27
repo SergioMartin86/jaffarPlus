@@ -1,0 +1,815 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 0,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+   "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+  
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      10000,
+      10000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerSDLPoP",
+  "Initial State File": "state",
+  "SDLPoP Root Path": "../../../extern/jaffarPlus/extern/quickerSDLPoP/SDLPoPData/",
+  "Disabled State Properties": [ ],
+  "Levels File Path": "",
+  "Game Version": "1.0",
+  "Override RNG Enabled": true,
+  "Override RNG Value": 2830372361,
+  "Override Loose Tile Sound Enabled": true,
+  "Override Loose Tile Sound Value": 22,
+  "Initialize Copy Protection": false
+},
+ 
+"Runner Configuration":
+{
+  "Frameskip Rate": 0,
+  "Hash Step Tolerance": 4,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 2000
+  },
+
+  "Allowed Input Sets":
+  [
+    {
+      "Description": "Not doing anything is always an option",
+      "Conditions":
+      [
+         
+      ],
+  
+      "Inputs":
+      [
+        "|.|.....|"
+      ],
+ 
+      "Stop Input Evaluation": false
+    },
+ 
+    {
+      "Description": "If cutscene, then only allow pressing shift",
+      "Conditions":
+      [
+         { "Property": "Current Level", "Op": "!=", "Value": "Next Level" }
+      ],
+  
+      "Inputs":
+      [
+        "|.|....S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "For level 1, if kid touches ground and music plays, try restarting level",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "==", "Value": 109 },
+         { "Property": "Need Level 1 Music", "Op": "==", "Value": 33 }
+      ],
+  
+      "Inputs":
+      [
+       "|r|.....|"
+      ],
+      
+      "Stop Input Evaluation": false
+    },
+ 
+    {
+      "Description": "For level 3, when checkpoint activates, try restarting level",
+      "Conditions":
+      [
+         { "Property": "Current Level", "Op": "==", "Value": 3 },
+         { "Property": "Kid Room", "Op": "==", "Value": 2 }
+      ],
+  
+      "Inputs":
+      [
+       "|r|.....|"
+      ],
+ 
+      "Stop Input Evaluation": false
+    },
+ 
+    {
+      "Description": "If bumped, there's nothing to do really",
+      "Conditions":
+      [
+         { "Property": "Kid Action", "Op": "==", "Value": 5 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|....S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If in mid air, try to grab onto something",
+      "Conditions":
+      [
+         { "Property": "Kid Action", "Op": "==", "Value": 3 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|....S|",
+       "|.|..U..|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If in free fall, hope to grab onto something",
+      "Conditions":
+      [
+         { "Property": "Kid Action", "Op": "==", "Value": 4 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|....S|",
+       "|.|..U..|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If on guarde, only try attacking commands",
+      "Conditions":
+      [
+         { "Property": "Kid Sword", "Op": "==", "Value": 2 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|....S|",
+       "|.|..U.S|",
+       "|.|...DS|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If standing, try all possible movements",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "==", "Value": 15 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If finishing turning, try all possible movements",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": ">=", "Value": 50 },
+         { "Property": "Kid Frame", "Op": "<", "Value": 53 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|....S|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|L..D.|",
+       "|.|.R.D.|",
+       "|.|L...S|",
+       "|.|.R..S|",
+       "|.|.RU.S|",
+       "|.|L.U.S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If turning frame, try most possible movements",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "==", "Value": 48 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|....S|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|L..D.|",
+       "|.|.R.D.|",
+       "|.|L...S|",
+       "|.|.R..S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "If turning frame, try most possible movements",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "<", "Value": 4 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|L..D.|",
+       "|.|.R.D.|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "Starting jump up, check directions, jump and grab",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": ">=", "Value": 67 },
+         { "Property": "Kid Frame", "Op": "<", "Value": 70 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|....S|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|..U.S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "Running, all movement without shift",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "<", "Value": 15 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|..U..|",
+       "|.|...D.|",
+       "|.|L.U..|",
+       "|.|.RU..|",
+       "|.|L..D.|",
+       "|.|.R.D.|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "Hanging, up and shift are the only options",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": ">=", "Value": 87 },
+         { "Property": "Kid Frame", "Op": "<", "Value": 100 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|..U..|",
+       "|.|....S|",
+       "|.|..U.S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+ 
+    {
+      "Description": "Crouched, can only stand, drink, or bunny hop",
+      "Conditions":
+      [
+         { "Property": "Kid Frame", "Op": "==", "Value": 109 }
+      ],
+  
+      "Inputs":
+      [
+       "|.|....S|",
+       "|.|L....|",
+       "|.|.R...|",
+       "|.|...D.|",
+       "|.|L..D.|",
+       "|.|.R.D.|",
+       "|.|...DS|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets":
+  [
+    {
+      "Conditions":
+      [
+      ],
+  
+      "Inputs":
+      [
+        "|.|.....|",
+        "|.|....S|",
+        "|.|...D.|",
+        "|.|...DS|",
+        "|.|..U..|",
+        "|.|..U.S|",
+        "|.|.R...|",
+        "|.|.R..S|",
+        "|.|.R.D.|",
+        "|.|.R.DS|",
+        "|.|.RU..|",
+        "|.|.RU.S|",
+        "|.|L....|",
+        "|.|L...S|",
+        "|.|L..D.|",
+        "|.|L..DS|",
+        "|.|L.U..|",
+        "|.|L.U.S|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    }
+  ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "SDLPoP / Prince of Persia",
+  "Frame Rate": 24.0,
+
+  "Print Properties":
+  [
+    "Foreground Element[4][18]", "Background Element[4][18]",
+    "Foreground Element[4][19]", "Background Element[4][19]",
+    "Foreground Element[18][16]", "Background Element[18][16]",
+    "Kid Current HP",
+    "Guard Current HP"
+  ],
+
+  "Hash Properties":
+  [
+    "Foreground Element[4][18]", "Background Element[4][18]",
+    "Foreground Element[4][19]", "Background Element[4][19]",
+    "Foreground Element[18][16]", "Background Element[18][16]",
+    "Kid Current HP",
+    "Guard Current HP"
+  ],
+
+  "Rules":
+  [
+{
+    "Label": 2000,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 2000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 5, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2001,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  4 }
+    ],
+    
+    "Satisfies": [ 2000 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 4, "Intensity": 1.0, "Position": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2002,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 }
+    ],
+    
+    "Satisfies": [ 2001 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 6, "Intensity": 1.0, "Position": 0 }
+    ]
+   }, 
+   
+   {
+    "Label": 2003,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Kid Pos X", "Op": "<", "Value":  98 }
+    ],
+    
+    "Satisfies": [ 2002 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 6, "Intensity": 2.0, "Position": 0 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 6, "Intensity": 1.0, "Position": 98 }
+    ]
+   },
+   
+   {
+    "Label": 2004,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  6 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value":  55 }
+    ],
+    
+    "Satisfies": [ 2003  ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 6, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+      
+   {
+    "Label": 2005,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value":  60 }
+    ],
+    
+    "Satisfies": [ 2004 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 1, "Intensity": 1.0, "Position": 86 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 1, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2006,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  22 }
+    ],
+    
+    "Satisfies": [ 2005 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 22, "Intensity": 0.0, "Position": 0 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 22, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2007,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  22 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value": 118 }
+    ],
+    
+    "Satisfies": [ 2006  ],
+    
+    "Actions":
+    [
+      { "Type": "Add Reward", "Value": 10000 },
+      { "Type": "Set Kid Pos X Magnet", "Room": 22, "Intensity": 1.0, "Position": 0 },
+      { "Type": "Set Kid Pos Y Magnet", "Room": 22, "Intensity": 0.0, "Position": 0 }
+    ]
+   },
+   
+      {
+    "Label": 2008,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 }
+    ],
+    
+    "Satisfies": [ 2007 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 11, "Intensity": 1.0, "Position": 0 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 11, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+    {
+    "Label": 2009,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 },
+     { "Property": "Background Element[18][10]", "Op": ">", "Value": 0, "Comment": "Gate Open" }
+    ],
+    
+    "Satisfies": [ 2008 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 11, "Intensity": 1.0, "Position": 0 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 11, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2010,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  11 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value":  60 }
+    ],
+    
+    "Satisfies": [  2009 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 11, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2011,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 }
+    ],
+    
+    "Satisfies": [ 2010 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 18, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2012,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  18 },
+     { "Property": "Background Element[7][10]", "Op": ">", "Value": 0, "Comment": "Gate Open" }
+    ],
+    
+    "Satisfies": [ 2011 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 18, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2013,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 }
+    ],
+    
+    "Satisfies": [ 2012 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 7, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2014,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 }
+    ],
+    
+    "Satisfies": [ 2013 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 13, "Intensity": 1.0, "Position": 0 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 13, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 2015,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  13 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value":  55 }
+    ],
+    
+    "Satisfies": [ 2014  ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 13, "Intensity": 1.0, "Position": 0 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 13, "Intensity": 0.0, "Position": 0 }
+    ]
+   },
+   
+    {
+    "Label": 2016,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  15 }
+    ],
+    
+    "Satisfies": [ 2015 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 15, "Intensity": 1.0, "Position": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2017,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  16 }
+    ],
+    
+    "Satisfies": [ 2016 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 16, "Intensity": 1.0, "Position": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2018,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  19 }
+    ],
+    
+    "Satisfies": [ 2017 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 19, "Intensity": 1.0, "Position": 55 }
+    ]
+   },
+   
+   {
+    "Label": 2019,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  21 }
+    ],
+    
+    "Satisfies": [ 2018 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 21, "Intensity": 1.0, "Position": 86 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 21, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+    {
+    "Label": 2020,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 21 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value": 55 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+
+  {
+    "Label": 2021,
+    "Conditions":
+    [
+     { "Property": "Kid Current HP", "Op": "<", "Value": 2 }
+    ],
+    
+    "Satisfies": [ ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]
+ }
+}

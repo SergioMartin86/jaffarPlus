@@ -2,7 +2,7 @@
  "Driver Configuration":
  {
   "End On First Win State": true,
-  "Max Steps": 1000,
+  "Max Steps": 0,
 
   "Save Intermediate Results":
   {
@@ -22,9 +22,19 @@
     "Type": "Numa Aware",
     "Max Size per NUMA Domain (Mb)":
     [ 
-      230000,
-      110000
-    ]
+      1000,
+      1000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
   },
 
   "Hash Database":
@@ -37,20 +47,21 @@
 "Emulator Configuration":
 {
   "Emulator Name": "QuickerSnes9x",
-  "Rom File Path": "../../../extern/quickerSnes9x/tests/roms/Christmas_Craze.smc",
+  "Rom File Path": "../../../extern/jaffarPlus/extern/quickerSnes9x/tests/roms/Christmas_Craze.smc",
   "Rom File SHA1": "7752CAA676D15D4D0C42F25548C3E86128A416DB",
   "Initial State File Path": "stage01.state",
   "Initial Sequence File Path": "",
   "Controller 1 Type": "Joypad",
   "Controller 2 Type": "None",
   "Disabled State Properties": [ "SRA", "VRA", "CTL", "PPU" ],
-  "Work RAM Serialization Size": 131072
+  "Work RAM Serialization Size": 16384
 },
  
 "Runner Configuration":
 {
+  "Bypass Hash Calculation": false,
   "Frameskip Rate": 0,
-  "Hash Step Tolerance": 4,
+  "Hash Step Tolerance": 1,
   "Show Empty Input Slots": true,
   "Show Allowed Inputs": true,
 

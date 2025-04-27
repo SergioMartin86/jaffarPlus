@@ -1,0 +1,832 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 5,
+    "Loose Tile Sound Id": 20 
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 0,
+   "Property Hash Types": [   ],
+   "Static Tile Hash Types": 
+   [
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Level": 8, "Room": 3, "Tile": 22, "Type": "Full" },
+    { "Level": 8, "Room": 1, "Tile": 5, "Type": "Full" },
+    { "Level": 8, "Room": 4, "Tile": 1, "Type": "Full" },
+    { "Level": 8, "Room": 4, "Tile": 2, "Type": "Full" },
+    { "Level": 8, "Room": 7, "Tile": 10, "Type": "Full" },
+    { "Level": 8, "Room": 8, "Tile": 17, "Type": "Full" },
+    { "Level": 8, "Room": 23, "Tile": 10, "Type": "Full" },
+    { "Level": 8, "Room": 23, "Tile": 8, "Type": "Full" },
+    { "Level": 8, "Room": 23, "Tile": 5, "Type": "Full" },
+    { "Level": 8, "Room": 23, "Tile": 10, "Type": "Full" },
+    { "Level": 8, "Room": 13, "Tile": 10, "Type": "Full" },
+    { "Level": 8, "Room": 12, "Tile": 8, "Type": "Full" },
+    { "Level": 8, "Room": 16, "Tile": 10, "Type": "Full" },
+    { "Level": 8, "Room": 16, "Tile": 4, "Type": "Full" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    "Show Move List": true,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 2500,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 300,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+     "Max Size Lower Bound (Mb)": 20000,
+     "Max Size Upper Bound (Mb)": 80000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 4,
+     "Max Size (Mb)": 10000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": false,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Output Images":
+    {
+     "Enabled": true, 
+     "Path": "images/new"
+    }
+  },
+ 
+  "Rules":
+  [
+   {
+    "Label": 8000,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+      { "Type": "Set Kid Pos X Magnet", "Room": 1, "Intensity": 1.0, "Position": 0 },
+      { "Type": "Set Kid Pos Y Magnet", "Room": 1, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+
+   {
+   "Label": 8999,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  3 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value":  50 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+      { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+   "Label": 8998,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  8 },
+     { "Property": "Kid Current HP", "Op": "<", "Value":  3 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  108 }
+    ],
+   
+    "Satisfies": [ ],
+
+    "Actions":
+    [
+      { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   
+   {
+    "Label": 8001,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  1 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value":  55 }
+    ],
+   
+    "Satisfies": [ 8000 ],
+
+    "Actions":
+    [
+      { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+      
+   {
+    "Label": 8002,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  5 }
+    ],
+   
+    "Satisfies": [ 8001 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 5, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8003,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value":  7 }
+    ],
+   
+    "Satisfies": [ 8002 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 7, "Intensity": 1.0, "Position": 0 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 7, "Intensity": 5.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8004,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 8 }
+    ],
+   
+    "Satisfies": [ 8003 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 8, "Intensity": 1.0, "Position": 255 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 8, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8005,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 6 }
+    ],
+   
+    "Satisfies": [ 8004 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 6, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8006,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 },
+     { "Property": "Kid Pos Y", "Op": ">", "Value": 60 }
+    ],
+   
+    "Satisfies": [ 8005 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 3, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8007,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 4 }
+    ],
+   
+    "Satisfies": [ 8006 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 4, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8008,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 16 }
+    ],
+   
+    "Satisfies": [ 8007 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 16, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8009,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 12 }
+    ],
+   
+    "Satisfies": [ 8008 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 12, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8010,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 13 }
+    ],
+   
+    "Satisfies": [ 8009 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 13, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+ 
+   {
+    "Label": 8011,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 22 }
+    ],
+   
+    "Satisfies": [ 8010 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 22, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8012,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 23 }
+    ],
+   
+    "Satisfies": [ 8011 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 23, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8013,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 24 }
+    ],
+   
+    "Satisfies": [ 8012 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 24, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8014,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 18 }
+    ],
+   
+    "Satisfies": [ 8013 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 18, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8015,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 9 },
+     { "Property": "Kid Pos X", "Op": ">", "Value": 150 }
+    ],
+   
+    "Satisfies": [ 8014 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 9, "Intensity": -1.0, "Position": 0 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 9, "Intensity": -1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8016,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 18 },
+     { "Property": "Kid Pos X", "Op": ">", "Value": 150 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value": 181 }
+    ],
+   
+    "Satisfies": [ 8015 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 18, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8017,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 18 },
+     { "Property": "Kid Pos Y", "Op": "==", "Value": 55 }
+    ],
+   
+    "Satisfies": [ 8016 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 18, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+  {
+    "Label": 8018,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 24 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value": 60 }
+    ],
+   
+    "Satisfies": [ 8017 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 24, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8019,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 23 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value": 60 }
+    ],
+   
+    "Satisfies": [ 8018 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 23, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8020,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 22 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value": 60 }
+    ],
+   
+    "Satisfies": [ 8019 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 22, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8021,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 13 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value": 60 }
+    ],
+   
+    "Satisfies": [ 8020 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 13, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8022,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 12 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value": 60 }
+    ],
+   
+    "Satisfies": [ 8021 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 12, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8023,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 16 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value": 60 }
+    ],
+   
+    "Satisfies": [ 8022 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 16, "Intensity": 1.0, "Position": 0 },
+     { "Type": "Set Kid Pos Y Magnet", "Room": 16, "Intensity": 20.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8024,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 4 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value": 60 }
+    ],
+   
+    "Satisfies": [ 8023 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 4, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8025,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 },
+     { "Property": "Kid Pos Y", "Op": "<", "Value": 60 },
+     { "Property": "Kid Pos X", "Op": ">", "Value": 160 }
+    ],
+   
+    "Satisfies": [ 8024 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 3, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8026,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 },
+     { "Property": "Background Element[", "Room": 3, "Tile": 22, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+   
+    "Satisfies": [ 8025 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 3, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8027,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 4 },
+     { "Property": "Background Element[", "Room": 3, "Tile": 22, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+   
+    "Satisfies": [ 8026 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 4, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8028,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 16 },
+     { "Property": "Background Element[", "Room": 3, "Tile": 22, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+   
+    "Satisfies": [ 8027 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 16, "Intensity": 1.0, "Position": 255 }
+    ]
+   },
+   
+   {
+    "Label": 8029,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 16 },
+     { "Property": "Kid Pos Y", "Op": ">", "Value": 130 },
+     { "Property": "Background Element[", "Room": 3, "Tile": 22, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+   
+    "Satisfies": [ 8028 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 16, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8030,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 4 },
+     { "Property": "Kid Pos Y", "Op": ">", "Value": 130 },
+     { "Property": "Background Element[", "Room": 3, "Tile": 22, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+   
+    "Satisfies": [ 8029 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 4, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8031,
+    "Conditions":
+    [
+     { "Property": "Kid Room", "Op": "==", "Value": 3 },
+     { "Property": "Kid Pos Y", "Op": ">", "Value": 130 },
+     { "Property": "Background Element[", "Room": 3, "Tile": 22, "Op": ">", "Value": 0, "Comment": "Exit Door" }
+    ],
+   
+    "Satisfies": [ 8030 ],
+
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 },
+     { "Type": "Set Kid Pos X Magnet", "Room": 3, "Intensity": 1.0, "Position": 0 }
+    ]
+   },
+   
+   {
+    "Label": 8032,
+    "Conditions": 
+    [ 
+     { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+    ],
+    
+    "Satisfies": [ 8031 ],
+    
+    "Actions":
+    [
+     { "Type": "Add Reward", "Value": 10000 }
+    ]
+   },
+   
+   {
+    "Label": 8033,
+    "Conditions":
+    [
+     { "Property": "Next Level", "Op": "==", "Value":  9 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Win" }
+    ]
+   },
+   
+   {
+    "Label": 1997,
+    "Conditions":
+    [ 
+     { "Property": "Guard Frame", "Op": "==", "Value":  160 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  50 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1996,
+    "Conditions":
+    [ 
+     { "Property": "Guard Frame", "Op": "==", "Value":  154 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  50 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1995,
+    "Conditions":
+    [ 
+     { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1991,
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value":  9 },
+     { "Property": "Kid Pos Y", "Op": ">", "Value":  100 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1990,
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value":  16 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  136 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1989,
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value":  24 },
+     { "Property": "Kid Frame", "Op": ">=", "Value":  34 },
+     { "Property": "Kid Frame", "Op": "<=", "Value":  44 },
+     { "Property": "Guard Frame", "Op": "==", "Value":  160 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1988,
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value":  24 },
+     { "Property": "Kid Frame", "Op": ">", "Value":  6 },
+     { "Property": "Kid Frame", "Op": "<", "Value":  15 },
+     { "Property": "Guard Frame", "Op": "==", "Value":  160 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   },
+   
+   {
+    "Label": 1987,
+    "Conditions":
+    [ 
+     { "Property": "Kid Room", "Op": "==", "Value":  24 },
+     { "Property": "Kid Frame", "Op": "==", "Value":  108 }
+    ],
+    
+    "Satisfies": [  ],
+    
+    "Actions":
+    [
+     { "Type": "Trigger Fail" }
+    ]
+   }
+  ]  
+}

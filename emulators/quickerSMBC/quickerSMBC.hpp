@@ -1,13 +1,13 @@
 #pragma once
 
+#include <SMBCInstance.hpp>
+#include <emulator.hpp>
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
 #include <mutex>
-#include <emulator.hpp>
-#include <SMBCInstance.hpp>
 
 namespace jaffarPlus
 {
@@ -17,13 +17,11 @@ namespace emulator
 
 class QuickerSMBC final : public Emulator
 {
-  public:
-
+public:
   static std::string getName() { return "QuickerSMBC"; }
 
   // Constructor must only do configuration parsing
-  QuickerSMBC(const nlohmann::json &config)
-    : Emulator(config)
+  QuickerSMBC(const nlohmann::json& config) : Emulator(config)
   {
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
@@ -35,13 +33,13 @@ class QuickerSMBC final : public Emulator
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
     // For testing purposes, the rom file path can be overriden by environment variables
-    if (auto *value = std::getenv("JAFFAR_QUICKERSMBC_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
+    if (auto* value = std::getenv("JAFFAR_QUICKERSMBC_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
 
     // Parsing rom file SHA1
     _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
-    if (auto *value = std::getenv("JAFFAR_QUICKERSMBC_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
+    if (auto* value = std::getenv("JAFFAR_QUICKERSMBC_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
 #endif
 
@@ -76,28 +74,28 @@ class QuickerSMBC final : public Emulator
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
-      {
-        // Reading from initial state file
-        std::string initialState;
-        bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
-        if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
+    {
+      // Reading from initial state file
+      std::string initialState;
+      bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
+      if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
-        // Deserializing initial state into the emulator
-        jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
-        deserializeState(d);
+      // Deserializing initial state into the emulator
+      jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
+      deserializeState(d);
     }
   }
 
   // State advancing function
-  void advanceStateImpl(const jaffar::input_t &input) override { _quickerSMBC->advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t& input) override { _quickerSMBC->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerSMBC->serializeState(serializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override { _quickerSMBC->serializeState(serializer); };
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerSMBC->deserializeState(deserializer); };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override { _quickerSMBC->deserializeState(deserializer); };
 
   __INLINE__ void printInfo() const override {}
 
-  property_t getProperty(const std::string &propertyName) const override
+  property_t getProperty(const std::string& propertyName) const override
   {
     if (propertyName == "LRAM") return property_t(_quickerSMBC->getRamPointer(), 0x800);
 
@@ -116,13 +114,13 @@ class QuickerSMBC final : public Emulator
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override {}
 
-  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.push(_quickerSMBC->getVideoBufferPointer(), _quickerSMBC->getVideoBufferSize());
     serializeState(serializer);
   }
 
-  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
+  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) override
   {
     deserializer.pop(_quickerSMBC->getVideoBufferPointer(), _quickerSMBC->getVideoBufferSize());
     deserializeState(deserializer);
@@ -138,10 +136,9 @@ class QuickerSMBC final : public Emulator
   __INLINE__ void showRender() override { _quickerSMBC->updateRenderer(); }
 
   // Function to get a reference to the input parser from the base emulator
-  jaffar::InputParser *getInputParser() const override { return _quickerSMBC->getInputParser(); }
+  jaffar::InputParser* getInputParser() const override { return _quickerSMBC->getInputParser(); }
 
-  private:
-
+private:
   std::unique_ptr<smbc::EmuInstance> _quickerSMBC;
 
   std::string _romFilePath = "";

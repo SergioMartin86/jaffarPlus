@@ -1,0 +1,356 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl11d_alt.state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": false,
+    "RNG Value": 648920673,
+    "Loose Tile Sound Id": 20
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 3,
+   "Property Hash Types": [ "Guard Current HP"  ],
+   "Static Tile Hash Types":
+   [
+    { "Level": 11, "Room": 13, "Tile": 5, "Type": "Full" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Level": 11, "Room": 13, "Tile": 5, "Type": "Full" },
+    { "Level": 11, "Room": 24, "Tile": 17, "Type": "Full" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    "Show Move List": true,
+    "Detect Possible Moves": false,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 512,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 512,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+      "Max Size Lower Bound (Mb)": 1000,
+      "Max Size Upper Bound (Mb)": 10000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 2000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": false,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Base Timer Length": 5,
+    "Output Images":
+    {
+     "Enabled": false,
+     "Path": "images/new"
+    }
+  },
+ 
+  "Rules":
+  [
+    {
+      "Label": 11028,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  24 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  2 }
+      ],
+     
+      "Satisfies": [  ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 24, "Intensity": 1.0, "Position": 255 }
+      ]
+     },
+
+     {
+      "Label": 11029,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  16 },
+       { "Property": "Kid Pos Y", "Op": "==", "Value":  55 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  2 }
+      ],
+     
+      "Satisfies": [ 11028 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 16, "Intensity": 2.0, "Position": 255 },
+       { "Type": "Set Guard Horizontal Magnet", "Room": 16, "Intensity": 1.0, "Position": 130 },
+       { "Type": "Set Guard Vertical Magnet", "Room": 16, "Intensity": 1.0, "Position": 118 }
+      ]
+     },
+
+     {
+      "Label": 11032,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  13 },
+       { "Property": "Guard Position Y", "Op": "!=", "Value":  55 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  2 }
+      ],
+     
+      "Satisfies": [ 11029 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 13, "Intensity": 1.0, "Position": 160 },
+       { "Type": "Set Kid Pos Y Magnet", "Room": 13, "Intensity": 1.0, "Position": 118 }
+      ]
+     },
+
+     {
+      "Label": 11033,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  13 },
+       { "Property": "Guard Position Y", "Op": "!=", "Value":  55 },
+       { "Property": "Kid Pos Y", "Op": "==", "Value":  118 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  2 }
+      ],
+     
+      "Satisfies": [ 11032 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 13, "Intensity": 1.0, "Position": 150 }
+      ]
+     },
+
+     {
+      "Label": 11034,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  13 },
+       { "Property": "Guard Position Y", "Op": "!=", "Value":  55 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Background Element[", "Room": 24, "Tile": 17, "Op": ">", "Value": 0, "Comment": "Exit Door" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  2 }
+      ],
+     
+      "Satisfies": [ 11033 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 13, "Intensity": 1.0, "Position": 180 },
+       { "Type": "Set Kid Pos Y Magnet", "Room": 13, "Intensity": 3.0, "Position": 55 },
+       { "Type": "Set Kid Direction Magnet", "Room": 13, "Intensity": -1.0 }
+      ]
+     },
+
+     {
+      "Label": 11035,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  13 },
+       { "Property": "Kid Pos Y", "Op": "==", "Value":  55 },
+       { "Property": "Guard Position Y", "Op": "!=", "Value":  55 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Background Element[", "Room": 24, "Tile": 17, "Op": ">", "Value": 0, "Comment": "Exit Door" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  2 }
+      ],
+     
+      "Satisfies": [ 11034 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 13, "Intensity": 1.0, "Position": 0 }
+      ]
+     },
+
+     {
+      "Label": 11036,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  16 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Background Element[", "Room": 24, "Tile": 17, "Op": ">", "Value": 0, "Comment": "Exit Door" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  2 }
+      ],
+     
+      "Satisfies": [ 11035 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 16, "Intensity": 1.0, "Position": 140 },
+       { "Type": "Set Kid Pos Y Magnet", "Room": 16, "Intensity": 1.0, "Position": 118 },
+       { "Type": "Set Guard Horizontal Magnet", "Room": 16, "Intensity": 2.0, "Position": 140 },
+       { "Type": "Set Guard Vertical Magnet", "Room": 16, "Intensity": 10.0, "Position": 255 }
+      ]
+     },
+
+     {
+      "Label": 11137,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  16 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Background Element[", "Room": 24, "Tile": 17, "Op": ">", "Value": 0, "Comment": "Exit Door" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  3 }
+      ],
+     
+      "Satisfies": [ 11036 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 16, "Intensity": 1.0, "Position": 0 }
+      ]
+     },
+
+     {
+      "Label": 11138,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  24 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Background Element[", "Room": 24, "Tile": 17, "Op": ">", "Value": 0, "Comment": "Exit Door" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  3 }
+      ],
+     
+      "Satisfies": [ 11137 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 24, "Intensity": 1.0, "Position": 160 }
+      ]
+     },
+
+     {
+      "Label": 11039,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  24 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  3 },
+       { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+      ],
+     
+      "Satisfies": [ 11138 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Trigger Checkpoint", "Tolerance": 0 }
+      ]
+     },
+
+     {
+      "Label": 11040,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  24 },
+       { "Property": "Tile FG State", "Room": 1, "Tile": 28, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 14, "Tile": 24, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 6, "Tile": 1, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Tile FG State", "Room": 20, "Tile": 23, "Op": "==", "Value": 1, "Comment": "Potion" },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  3 },
+       { "Property": "Next Level", "Op": "==", "Value":  12 }
+      ],
+     
+      "Satisfies": [ 11039 ],
+  
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+     },
+
+     {
+      "Label": 19998,
+      "Conditions":
+      [
+       { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+      ],
+       
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Fail" }
+      ]
+     }
+  ]  
+}

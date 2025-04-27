@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
-#include <unordered_set>
-#include <vector>
+#include "game.hpp"
+#include "inputSet.hpp"
 #include <cstdint>
+#include <gameList.hpp>
 #include <jaffarCommon/bitwise.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/deserializers/differential.hpp>
@@ -12,20 +12,18 @@
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <jaffarCommon/serializers/differential.hpp>
-#include <gameList.hpp>
-#include "game.hpp"
-#include "inputSet.hpp"
+#include <memory>
+#include <unordered_set>
+#include <vector>
 
 namespace jaffarPlus
 {
 
 class Runner final
 {
-  public:
-
+public:
   // Base constructor
-  Runner(std::unique_ptr<Game> &game, const nlohmann::json &config)
-    : _game(std::move(game))
+  Runner(std::unique_ptr<Game>& game, const nlohmann::json& config) : _game(std::move(game))
   {
     _hashStepTolerance = jaffarCommon::json::getNumber<uint32_t>(config, "Hash Step Tolerance");
 
@@ -63,51 +61,51 @@ class Runner final
     if (_game->isInitialized() == false) _game->initialize();
 
     // Parsing possible game inputs
-    for (const auto &inputSetJs : _allowedInputSetsJs) _allowedInputSets.push_back(parseInputSet(inputSetJs));
+    for (const auto& inputSetJs : _allowedInputSetsJs) _allowedInputSets.push_back(parseInputSet(inputSetJs));
 
     // If testing candidate inputs, parse them now
     if (_testCandidateInputs == true)
-      for (const auto &inputSetJs : _candidateInputSetsJs) _candidateInputSets.push_back(parseInputSet(inputSetJs));
+      for (const auto& inputSetJs : _candidateInputSetsJs) _candidateInputSets.push_back(parseInputSet(inputSetJs));
 
     // If storing input history, allocate input history storage
     if (_inputHistoryEnabled == true)
-      {
-        // Calculating bit storage for the possible inputs index
-        _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex);
+    {
+      // Calculating bit storage for the possible inputs index
+      _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex);
 
-        // Total size in bits for the input history
-        size_t inputHistorySizeBits = _inputHistoryMaxSize * _inputIndexSizeBits;
+      // Total size in bits for the input history
+      size_t inputHistorySizeBits = _inputHistoryMaxSize * _inputIndexSizeBits;
 
-        // Total size in bytes
-        size_t inputHistorySizeBytes = inputHistorySizeBits / 8;
+      // Total size in bytes
+      size_t inputHistorySizeBytes = inputHistorySizeBits / 8;
 
-        // Add one byte if not perfectly divisible by 8
-        if (inputHistorySizeBits % 8 > 0) inputHistorySizeBytes++;
+      // Add one byte if not perfectly divisible by 8
+      if (inputHistorySizeBits % 8 > 0) inputHistorySizeBytes++;
 
-        // Allocating storage now
-        _inputHistory.resize(inputHistorySizeBytes);
+      // Allocating storage now
+      _inputHistory.resize(inputHistorySizeBytes);
 
-        // Clearing storage (set to zero)
-        memset(_inputHistory.data(), 0, _inputHistory.size());
+      // Clearing storage (set to zero)
+      memset(_inputHistory.data(), 0, _inputHistory.size());
     }
   }
 
-  std::unique_ptr<InputSet> parseInputSet(const nlohmann::json &inputSetJs)
+  std::unique_ptr<InputSet> parseInputSet(const nlohmann::json& inputSetJs)
   {
     // Creating new input set to add
     auto inputSet = std::make_unique<InputSet>();
 
     // Getting input set condition array
-    const auto &conditions = jaffarCommon::json::getArray<nlohmann::json>(inputSetJs, "Conditions");
+    const auto& conditions = jaffarCommon::json::getArray<nlohmann::json>(inputSetJs, "Conditions");
 
     // Getting input string array
-    const auto &inputsJs = jaffarCommon::json::getArray<std::string>(inputSetJs, "Inputs");
+    const auto& inputsJs = jaffarCommon::json::getArray<std::string>(inputSetJs, "Inputs");
 
     // Parsing input set conditions
-    for (const auto &condition : conditions) inputSet->addCondition(_game->parseCondition(condition));
+    for (const auto& condition : conditions) inputSet->addCondition(_game->parseCondition(condition));
 
     // Parsing input set inputs
-    for (const auto &input : inputsJs) inputSet->addInput(registerInput(input));
+    for (const auto& input : inputsJs) inputSet->addInput(registerInput(input));
 
     // Keep track of maximum size (for better output)
     _largestInputSetSize = std::max(_largestInputSetSize, inputSet->getInputIndexes().size());
@@ -119,7 +117,7 @@ class Runner final
     return inputSet;
   }
 
-  InputSet::inputIndex_t registerInput(const std::string &input)
+  InputSet::inputIndex_t registerInput(const std::string& input)
   {
     // Getting input hash
     const auto inputHash = jaffarCommon::hash::hashString(input);
@@ -140,22 +138,22 @@ class Runner final
     return inputIdx;
   }
 
-  std::vector<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>> &inputSets) const
+  std::vector<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>>& inputSets) const
   {
     // Storage for the possible input set
     std::vector<InputSet::inputIndex_t> possibleInputs;
 
     // For all registered input sets, see which ones satisfy their conditions and add them
-    for (const auto &inputSet : inputSets)
+    for (const auto& inputSet : inputSets)
       if (inputSet->evaluate() == true)
-        {
-          possibleInputs.insert(possibleInputs.end(), inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
+      {
+        possibleInputs.insert(possibleInputs.end(), inputSet->getInputIndexes().begin(), inputSet->getInputIndexes().end());
 
-          // Getting stop evaluating flag
-          bool stopEvaluating = inputSet->getStopInputEvaluationFlag();
+        // Getting stop evaluating flag
+        bool stopEvaluating = inputSet->getStopInputEvaluationFlag();
 
-          // If stop evaluation is set, then return now
-          if (stopEvaluating) break;
+        // If stop evaluation is set, then return now
+        if (stopEvaluating) break;
       }
 
     // Return possible inputs
@@ -176,7 +174,7 @@ class Runner final
   __INLINE__ const auto getCandidateInputs() const { return getInputsFromInputSets(_candidateInputSets); }
 
   // Function to get the input index of a given input
-  __INLINE__ jaffarPlus::InputSet::inputIndex_t getInputIndex(const std::string &input) const
+  __INLINE__ jaffarPlus::InputSet::inputIndex_t getInputIndex(const std::string& input) const
   {
     // Getting input hash
     const auto inputHash = jaffarCommon::hash::hashString(input);
@@ -189,7 +187,7 @@ class Runner final
     return inputIndex;
   }
 
-  bool isInputAllowed(const std::string &inputString)
+  bool isInputAllowed(const std::string& inputString)
   {
     // Getting input hash
     const auto inputHash = jaffarCommon::hash::hashString(inputString);
@@ -212,10 +210,10 @@ class Runner final
 
     // If frameskip was set, execute it now
     for (size_t i = 0; i < _frameskipRate; i++)
-      {
-        _game->advanceState(inputIdx);
-        pushInput(inputIdx);
-      }
+    {
+      _game->advanceState(inputIdx);
+      pushInput(inputIdx);
+    }
   }
 
   __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx)
@@ -246,7 +244,7 @@ class Runner final
   }
 
   // Serialization routine
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const
   {
     // Performing differential serialization of the internal game instance
     _game->serializeState(serializer);
@@ -259,7 +257,7 @@ class Runner final
   }
 
   // Deeserialization routine
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer)
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer)
   {
     // Performing differential serialization of the internal game instance
     _game->deserializeState(deserializer);
@@ -307,7 +305,7 @@ class Runner final
     _game->computeHash(hashEngine);
 
     jaffarCommon::hash::hash_t result;
-    hashEngine.Finalize(reinterpret_cast<uint8_t *>(&result));
+    hashEngine.Finalize(reinterpret_cast<uint8_t*>(&result));
     return result;
   }
 
@@ -322,20 +320,20 @@ class Runner final
 
     // For each entry, add the input string up to the current step or the maximum size
     for (size_t i = 0; i < _currentInputCount && i < _inputHistoryMaxSize; i++)
-      {
-        // Getting input index
-        const auto inputIdx = getInput(i);
+    {
+      // Getting input index
+      const auto inputIdx = getInput(i);
 
-        // Safety check
-        if (_inputStringMap.contains(inputIdx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", inputIdx);
+      // Safety check
+      if (_inputStringMap.contains(inputIdx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", inputIdx);
 
-        // Getting input string
-        const std::string &inputString = _inputStringMap.at(inputIdx);
+      // Getting input string
+      const std::string& inputString = _inputStringMap.at(inputIdx);
 
-        // Adding it to the story
-        inputHistoryString += inputString;
-        inputHistoryString += "\n";
-      }
+      // Adding it to the story
+      inputHistoryString += inputString;
+      inputHistoryString += "\n";
+    }
 
     return inputHistoryString;
   }
@@ -354,10 +352,10 @@ class Runner final
     // Memory usage
     jaffarCommon::logger::log("[J+]  + Input History Enabled: %s\n", _inputHistoryEnabled ? "true" : "false");
     if (_inputHistoryEnabled == true)
-      {
-        jaffarCommon::logger::log("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _maxInputIndex, _inputIndexSizeBits);
-        jaffarCommon::logger::log(
-          "[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _inputHistoryMaxSize, _inputHistory.size(), _inputIndexSizeBits * _inputHistoryMaxSize);
+    {
+      jaffarCommon::logger::log("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _maxInputIndex, _inputIndexSizeBits);
+      jaffarCommon::logger::log("[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _inputHistoryMaxSize, _inputHistory.size(),
+                                _inputIndexSizeBits * _inputHistoryMaxSize);
     }
 
     // Printing runner state
@@ -370,33 +368,33 @@ class Runner final
 
     // Check whether we want to print inputs
     if (_showAllowedInputs == true)
+    {
+      // Getting allowed inputs
+      const auto& possibleInputs = getAllowedInputs();
+
+      // Printing them
+      jaffarCommon::logger::log("[J+]  + Allowed Inputs:\n");
+
+      size_t currentInputIdx = 0;
+      for (const auto inputIdx : possibleInputs)
       {
-        // Getting allowed inputs
-        const auto &possibleInputs = getAllowedInputs();
+        jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
+        currentInputIdx++;
+      }
 
-        // Printing them
-        jaffarCommon::logger::log("[J+]  + Allowed Inputs:\n");
-
-        size_t currentInputIdx = 0;
-        for (const auto inputIdx : possibleInputs)
-          {
-            jaffarCommon::logger::log("[J+]    + '%s'\n", _inputStringMap.at(inputIdx).c_str());
-            currentInputIdx++;
-          }
-
-        if (_showEmptyInputSlots)
-          for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
+      if (_showEmptyInputSlots)
+        for (; currentInputIdx < _largestInputSetSize; currentInputIdx++) jaffarCommon::logger::log("[J+]    + ----- \n");
     }
   }
 
   __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentInputCount % (_hashStepTolerance + 1); }
-  __INLINE__ Game    *getGame() const { return _game.get(); }
+  __INLINE__ Game*    getGame() const { return _game.get(); }
 
   __INLINE__ bool   getInputHistoryEnabled() const { return _inputHistoryEnabled; }
   __INLINE__ size_t getInputHistoryMaximumStep() const { return _inputHistoryMaxSize; }
 
   // Function to obtain runner based on game and emulator choice
-  static std::unique_ptr<Runner> getRunner(const nlohmann::json &emulatorConfig, const nlohmann::json &gameConfig, const nlohmann::json &runnerConfig)
+  static std::unique_ptr<Runner> getRunner(const nlohmann::json& emulatorConfig, const nlohmann::json& gameConfig, const nlohmann::json& runnerConfig)
   {
     // Getting Game
     auto game = Game::getGame(emulatorConfig, gameConfig);
@@ -410,8 +408,7 @@ class Runner final
 
   __INLINE__ bool isInitialized() const { return _isInitialized; }
 
-  private:
-
+private:
   // Stores whether the game has been initialized
   bool _isInitialized = false;
 

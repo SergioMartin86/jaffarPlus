@@ -1,0 +1,187 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 0,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+   "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      10000,
+      10000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerNES",
+  "Rom File Path": "../../../extern/jaffarPlus/extern/quickerNES/tests/roms/Saint Seiya - Ougon Densetsu (J) [!].nes",
+  "Rom File SHA1": "3F3B499CF50386084E053BCA096AE8E52330CFAE",
+  "Initial State File Path": "",
+  "Initial Sequence File Path": "menu01.initial.sol",
+  "Initial RAM Data File Path": "",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "None",
+  "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT", "CTRL" ],
+  "Nametable Block Size": 2048
+},
+ 
+"Runner Configuration":
+{
+  "Bypass Hash Calculation": false,
+  "Frameskip Rate": 0, 
+  "Hash Step Tolerance": 2,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 4096
+  },
+
+  "Allowed Input Sets":
+  [
+    {
+     "Conditions":
+     [
+     ],
+ 
+     "Inputs":
+     [
+      "|..|........|"
+     ],
+
+     "Stop Input Evaluation": false
+   },
+
+   {
+     "Conditions":
+     [
+     ],
+ 
+     "Inputs":
+     [
+      "|..|U..R....|",
+      "|..|U.L.....|",
+      "|..|.D.R....|",
+      "|..|.DL.....|",
+      "|..|U.......|",
+      "|..|.D......|",
+      "|..|..L.....|",
+      "|..|.......A|",
+      "|..|......B.|",
+      "|..|......BA|",
+      "|..|..LR....|",
+      "|..|..L.....|",
+      "|..|...R....|"
+     ],
+
+     "Stop Input Evaluation": false
+   }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "NES / Saint Seiya Ougon Densetsu",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Menu Type",
+    "Menu Option",
+    "Fights Completed",
+    "Previous Input",
+    "Menu Input Frame"
+  ],
+
+  "Hash Properties":
+  [
+    "Menu Input Frame"
+  ],
+
+  "Rules":
+  [
+    {
+      "Label": 1,
+      "Conditions":
+      [
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Set Fights Completed Magnet", "Intensity": 1.0 }
+      ]
+     },
+     
+     {
+      "Label": 2,
+      "Conditions":
+      [
+        { "Property": "Fights Completed", "Op": "==", "Value": 4 } 
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     },
+
+     {
+      "Label": 20,
+      "Conditions":
+      [
+        { "Property": "Menu Type", "Op": "==", "Value": 154 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail"}
+      ]
+     }
+  ]
+ }
+}

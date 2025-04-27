@@ -1,0 +1,240 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": false,
+  "Max Steps": 700,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      300,
+      300
+    ]
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerGambatte",
+  "Rom File Path": "Prince of Persia (USA, Europe).gbc",
+  "Rom File SHA1": "EF2F6402E8EF367273200E3B07F310EBD80CCDC2",
+  "System Type": "Gameboy Color",
+  "Initial State File Path": "",
+  "Initial Sequence File Path": "stage14.initial.sol",
+  "Bios File Path": "gbc_bios.bin",
+  "Controller Type": "Gameboy",
+  "Disabled State Properties": [   ]
+},
+ 
+"Runner Configuration":
+{
+  "Bypass Hash Calculation": false,
+  "Frameskip Rate": 0,
+  "Hash Step Tolerance": 2,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 3000
+  },
+
+  "Allowed Input Sets":
+  [
+    {
+      "Description": "Ignoring frames not equal to zero",
+      "Conditions":
+      [
+      ],
+
+      "Inputs":
+      [
+        "|.........|"
+      ],
+
+      "Stop Input Evaluation": false
+    },
+
+    {
+      "Description": "Ignoring frames not equal to zero",
+      "Conditions":
+      [
+        
+      ],
+
+      "Inputs":
+      [
+        "|U........|",
+        "|.D.......|",
+        "|..L......|",
+        "|...R.....|",
+        "|......B..|",
+        "|.......A.|"
+      ],
+
+      "Stop Input Evaluation": true
+    }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [
+
+    {
+      "Description": "Standing",
+      "Conditions":
+      [
+        { "Property": "Frame Type",    "Op": "==", "Value": 0 }
+      ],
+
+      "Inputs":
+      [
+        "|U........|",
+        "|.D.......|",
+        "|..L......|",
+        "|...R.....|",
+        "|......B..|",
+        "|.......A.|"
+      ],
+
+      "Stop Input Evaluation": true
+    }
+
+   ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "GBC / Prince Of Persia",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Kid Frame",
+    "Kid Action",
+    "Kid Room",
+    "Previous Kid Room",
+    "Actual Kid Room",
+    "Kid Pos X",
+    "Kid Pos Y",
+    "Frame Type",
+    "Last Input Step"
+  ],
+
+  "Hash Properties":
+  [
+    "Frame Type",
+    "Previous Kid Room",
+    "Last Input Step"
+  ],
+
+  "Rules":
+  [
+    {
+      "Label": 989,
+      "Conditions":
+      [
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Set Kid Point X Magnet", "Room": 3, "Intensity": 1.0, "Pos": 0.0 },
+        { "Type": "Set Last Input Magnet", "Intensity": -0.1 }
+      ]
+    },
+
+    {
+      "Label": 990,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 2 }
+      ],
+      
+      "Satisfies": [  989],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 10000.0 },
+        { "Type": "Set Kid Point X Magnet", "Room": 2, "Intensity": 1.0, "Pos": 0.0 },
+        { "Type": "Set Last Input Magnet", "Intensity": -0.1 }
+      ]
+    },
+
+    {
+      "Label": 991,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 1 }
+      ],
+      
+      "Satisfies": [ 990 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 10000.0 },
+        { "Type": "Set Kid Point X Magnet", "Room": 1, "Intensity": 1.0, "Pos": 0.0 },
+        { "Type": "Set Last Input Magnet", "Intensity": -0.1 }
+      ]
+    },
+
+    {
+      "Label": 992,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 0 }
+      ],
+      
+      "Satisfies": [ 991 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 10000.0 },
+        { "Type": "Set Kid Point X Magnet", "Room": 0, "Intensity": 1.0, "Pos": 0.0 },
+        { "Type": "Set Last Input Magnet", "Intensity": -0.1 }
+      ]
+    },
+
+    {
+      "Label": 993,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 4 }
+      ],
+      
+      "Satisfies": [ 992 ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" },
+        { "Type": "Add Reward", "Value": 10000.0 },
+        { "Type": "Set Last Input Magnet", "Intensity": -1.0 }
+      ]
+    }
+
+  ]
+ }
+}

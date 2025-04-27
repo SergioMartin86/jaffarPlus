@@ -1,0 +1,170 @@
+{
+  "Driver Configuration":
+  {
+   "End On First Win State": true,
+   "Max Steps": 0,
+ 
+   "Save Intermediate Results":
+   {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+   }
+  },
+ 
+  "Engine Configuration":
+  {
+   "State Database":
+   {
+     "Type": "Numa Aware",
+     "Max Size per NUMA Domain (Mb)":
+     [ 
+       1000,
+       1000
+     ],
+   
+     "Scavenger Queues Size": 32,
+     "Scavenging Depth": 32,
+ 
+     "Compression":
+     {
+       "Use Differential Compression": false, 
+       "Max Difference (bytes)": 6000,
+       "Use Zlib Compression": false
+     }
+   },
+ 
+   "Hash Database":
+   {
+     "Max Store Count": 2,
+     "Max Store Size (Mb)": 10000
+   }
+ },
+ 
+ "Emulator Configuration":
+ {
+   "Emulator Name": "QuickerGPGX",
+   "Rom File Path": "SMS_us_1.3.sms",
+   "Rom File SHA1": "C315672807D8DDB8D91443729405C766DD95CAE7",
+   "Initial State File Path": "",
+   "Initial RAM Data File Path": "",
+   "Initial Video RAM Data File Path": "",
+   "Bios File Path": "",
+   "Initial Sequence File Path": "round02.initial.sol", 
+   "System Type": "Sega Master System",
+   "Controller 1 Type": "Gamepad2B",
+   "Controller 2 Type": "None",
+   "Disabled State Properties": [ "SATM"  ],
+   "Work RAM Serialization Size": 8192
+ },
+  
+ "Runner Configuration":
+ {
+   "Frameskip Rate": 0,
+   "Hash Step Tolerance": 0,
+   "Show Empty Input Slots": true,
+   "Show Allowed Inputs": true,
+   "Bypass Hash Calculation": false,
+ 
+   "Store Input History": 
+   {
+     "Enabled": true,
+     "Max Size": 1300
+   },
+ 
+ 
+   "Allowed Input Sets":
+   [
+    {
+      "Conditions":
+      [
+        { "Property": "Frame Type", "Op": ">", "Value": 1 }
+      ],
+  
+      "Inputs":
+      [
+        "|...|......|"
+      ],
+ 
+      "Stop Input Evaluation": false
+    },
+    
+    {
+      "Conditions":
+      [
+        { "Property": "Frame Type", "Op": "<=", "Value": 1 }
+      ],
+  
+      "Inputs":
+      [
+        "|...|U.....|",
+        "|...|.D....|",
+        "|...|..L...|",
+        "|...|...R..|"
+      ],
+ 
+      "Stop Input Evaluation": false
+    }
+   ],
+ 
+   "Test Candidate Inputs": false,
+   "Candidate Input Sets": [ ]
+ },
+ 
+ "Game Configuration":
+ {
+   "Game Name": "SMS / Snail Maze",
+   "Frame Rate": 60.10,
+   "Last Input Step Reward": 0.0,
+ 
+   "Print Properties":
+   [
+    "Player Pos X",         
+    "Player Pos Y",    
+    "Frame Type"
+   ],
+ 
+   "Hash Properties":
+   [
+    "Player Pos X",         
+    "Player Pos Y",    
+    "Frame Type"
+   ],
+ 
+   "Rules":
+   [
+    {
+      "Label": 1000,
+      "Conditions":
+      [
+      ],
+      
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Set Player Point Magnet", "Pos X": 240.0, "Pos Y": 96.0 }
+      ]
+     },
+
+     {
+      "Label": 1999,
+      "Conditions":
+      [
+        { "Property": "Game State", "Op": "==", "Value": 1 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     }
+   ]
+  }
+ }
+ 

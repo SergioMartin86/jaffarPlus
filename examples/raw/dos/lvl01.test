@@ -1,0 +1,11 @@
+{
+  "Initial State File": "lvl01.state",
+  "Disable State Blocks": [ "NVS" ],
+  "Game Data Path": "gameData",
+  "Differential Compression":
+  {
+    "Enabled": false,
+    "Max Differences": 2200,
+    "Use Zlib": true
+  }
+}
