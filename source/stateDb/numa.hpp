@@ -1,15 +1,14 @@
 #pragma once
 
-#include <cstdlib>
-#include <memory>
-#include <numa.h>
-#include <utmpx.h>
+#include "base.hpp"
 #include <cstdlib>
 #include <jaffarCommon/concurrent.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/parallel.hpp>
-#include "base.hpp"
+#include <memory>
+#include <numa.h>
+#include <utmpx.h>
 
 namespace jaffarPlus
 {
@@ -29,10 +28,8 @@ thread_local static int _myThreadId;
 
 class Numa : public stateDb::Base
 {
-  public:
-
-  Numa(Runner &r, const nlohmann::json &config)
-    : stateDb::Base(r, config)
+public:
+  Numa(Runner& r, const nlohmann::json& config) : stateDb::Base(r, config)
   {
     // Checking whether the numa library calls are available
     const auto numaAvailable = numa_available();
@@ -64,21 +61,21 @@ class Numa : public stateDb::Base
 
     // Getting maximum state db size in Mb and bytes
     for (int i = 0; i < _numaCount; i++)
-      {
-        double sizeMb = _maxSizePerNumaMb[i];
-        // For testing purposes, the maximum size can be overriden via environment variables
-        if (auto *value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = std::stoul(value);
-        _maxSizePerNuma.push_back(std::ceil((double)sizeMb * 1024.0 * 1024.0));
-      }
+    {
+      double sizeMb = _maxSizePerNumaMb[i];
+      // For testing purposes, the maximum size can be overriden via environment variables
+      if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) sizeMb = std::stoul(value);
+      _maxSizePerNuma.push_back(std::ceil((double)sizeMb * 1024.0 * 1024.0));
+    }
 
     // Getting maximum allocatable memory in each NUMA domain
     std::vector<size_t> maxFreeMemoryPerNuma(_numaCount);
     for (int i = 0; i < _numaCount; i++)
-      {
-        size_t freeMemory = 0;
-        numa_node_size64(i, (long long *)&freeMemory);
-        maxFreeMemoryPerNuma[i] = freeMemory;
-      }
+    {
+      size_t freeMemory = 0;
+      numa_node_size64(i, (long long*)&freeMemory);
+      maxFreeMemoryPerNuma[i] = freeMemory;
+    }
 
     // Checking if this is enough memory to satisfy requirement
     for (int i = 0; i < _numaCount; i++)
@@ -94,12 +91,12 @@ class Numa : public stateDb::Base
     _maxSize   = 0;
     _maxStates = 0;
     for (int i = 0; i < _numaCount; i++)
-      {
-        _maxSize += _maxSizePerNuma[i];
-        _maxStates += _maxStatesPerNuma[i];
-        _numaCurrentStateQueues.push_back(new jaffarCommon::concurrent::Deque<void *>());
-        _numaNextStateQueues.push_back(new jaffarCommon::concurrent::concurrentMultimap_t<float, void *>());
-      }
+    {
+      _maxSize += _maxSizePerNuma[i];
+      _maxStates += _maxStatesPerNuma[i];
+      _numaCurrentStateQueues.push_back(new jaffarCommon::concurrent::Deque<void*>());
+      _numaNextStateQueues.push_back(new jaffarCommon::concurrent::concurrentMultimap_t<float, void*>());
+    }
 
     // Getting number of bytes to reserve for each NUMA domain
     _allocableBytesPerNuma.resize(_numaCount);
@@ -109,11 +106,11 @@ class Numa : public stateDb::Base
     _internalBuffersStart.resize(_numaCount);
     _internalBuffersEnd.resize(_numaCount);
     for (int i = 0; i < _numaCount; i++)
-      {
-        _internalBuffersStart[i] = (uint8_t *)numa_alloc_onnode(_allocableBytesPerNuma[i], i);
-        if (_internalBuffersStart[i] == NULL) JAFFAR_THROW_RUNTIME("Error trying to allocate memory for numa domain %d\n", i);
-        _internalBuffersEnd[i] = &_internalBuffersStart[i][_allocableBytesPerNuma[i]];
-      }
+    {
+      _internalBuffersStart[i] = (uint8_t*)numa_alloc_onnode(_allocableBytesPerNuma[i], i);
+      if (_internalBuffersStart[i] == NULL) JAFFAR_THROW_RUNTIME("Error trying to allocate memory for numa domain %d\n", i);
+      _internalBuffersEnd[i] = &_internalBuffersStart[i][_allocableBytesPerNuma[i]];
+    }
 
     // Initializing numa delegate thread storage
     _numaDelegateThreadId.resize(_numaCount);
@@ -142,22 +139,18 @@ class Numa : public stateDb::Base
     // Adding the state pointers to the free state queues
     _freeStateQueues.resize(_numaCount);
     for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++)
-      {
-        _freeStateQueues[numaNodeIdx] = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void *>>(_maxStatesPerNuma[numaNodeIdx]);
-        for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx]; i++) _freeStateQueues[numaNodeIdx]->try_push((void *)&_internalBuffersStart[numaNodeIdx][i * _stateSize]);
-      }
+    {
+      _freeStateQueues[numaNodeIdx] = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void*>>(_maxStatesPerNuma[numaNodeIdx]);
+      for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx]; i++) _freeStateQueues[numaNodeIdx]->try_push((void*)&_internalBuffersStart[numaNodeIdx][i * _stateSize]);
+    }
   }
 
   // Function to print relevant information
   void printInfoImpl() const override
   {
     for (int i = 0; i < _numaCount; i++)
-      jaffarCommon::logger::log("[J+]  + NUMA Domain %d                  States: %lu (Max: %lu), Size: %.3f Mb (%.6f Gb)\n",
-                                i,
-                                _currentStatesPerNuma[i],
-                                _maxStatesPerNuma[i],
-                                (double)_maxSizePerNuma[i] / (1024.0 * 1024.0),
-                                (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
+      jaffarCommon::logger::log("[J+]  + NUMA Domain %d                  States: %lu (Max: %lu), Size: %.3f Mb (%.6f Gb)\n", i, _currentStatesPerNuma[i], _maxStatesPerNuma[i],
+                                (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
 
     size_t totalDatabaseStatesRequested = _numaNonLocalDatabaseStateCount + _numaLocalDatabaseStateCount + _numaDatabaseStateNotFoundCount;
     jaffarCommon::logger::log("[J+] + Database Popping State Rates:\n");
@@ -180,34 +173,34 @@ class Numa : public stateDb::Base
                               100.0 * (double)_numaFreeStateNotFoundCount.load() / (double)totalFreeStatesRequested);
   }
 
-  __INLINE__ void *getFreeState() override
+  __INLINE__ void* getFreeState() override
   {
     // Storage for the new free state space
-    void *stateSpace;
+    void* stateSpace;
 
     // Trying to get free space for a new state
     bool success = _freeStateQueues[_preferredNumaDomain]->try_pop(stateSpace);
 
     // If successful, return the pointer immediately
     if (success == true)
-      {
-        _numaLocalFreeStateCount++;
-        return stateSpace;
+    {
+      _numaLocalFreeStateCount++;
+      return stateSpace;
     }
 
     // Trying all other free state queues now
     for (int i = 0; (size_t)i < _freeStateQueues.size(); i++)
       if (i != _preferredNumaDomain)
-        {
-          // Trying to get free space for a new state
-          bool success = _freeStateQueues[i]->try_pop(stateSpace);
+      {
+        // Trying to get free space for a new state
+        bool success = _freeStateQueues[i]->try_pop(stateSpace);
 
-          // If successful, return the pointer immediately
-          if (success == true)
-            {
-              _numaNonLocalFreeStateCount++;
-              return stateSpace;
-          }
+        // If successful, return the pointer immediately
+        if (success == true)
+        {
+          _numaNonLocalFreeStateCount++;
+          return stateSpace;
+        }
       }
 
     // If failed, then try to get it from the back of my numa-specific queues. Looking for the worst state possible
@@ -219,9 +212,9 @@ class Numa : public stateDb::Base
 
     // If successful, return the pointer immediately
     if (success == true)
-      {
-        _numaStealingFreeStateCount++;
-        return stateSpace;
+    {
+      _numaStealingFreeStateCount++;
+      return stateSpace;
     }
 
     // Otherwise, return a null pointer. The state will be discarded
@@ -229,7 +222,7 @@ class Numa : public stateDb::Base
     return nullptr;
   }
 
-  __INLINE__ int getStateNumaDomain(void *const statePtr)
+  __INLINE__ int getStateNumaDomain(void* const statePtr)
   {
     for (int i = 0; i < _numaCount; i++)
       if (isStateInNumaDomain(statePtr, i)) return i;
@@ -238,12 +231,12 @@ class Numa : public stateDb::Base
     JAFFAR_THROW_RUNTIME("Did not find the corresponding numa domain for the provided state pointer. This must be a bug in Jaffar\n");
   }
 
-  __INLINE__ bool isStateInNumaDomain(void *const statePtr, const int numaDomainId)
+  __INLINE__ bool isStateInNumaDomain(void* const statePtr, const int numaDomainId)
   {
     return statePtr >= _internalBuffersStart[numaDomainId] && statePtr <= _internalBuffersEnd[numaDomainId];
   }
 
-  __INLINE__ void returnFreeState(void *const statePtr) override
+  __INLINE__ void returnFreeState(void* const statePtr) override
   {
     // Finding out to which database this state pointer belongs to
     const auto numaIdx = getStateNumaDomain(statePtr);
@@ -266,60 +259,60 @@ class Numa : public stateDb::Base
     {
       // Only process if I am the delegate
       if (_myThreadId == _numaDelegateThreadId[_preferredNumaDomain])
+      {
+        // Updating state count per numa
+        _currentStatesPerNuma[_preferredNumaDomain] = _numaNextStateQueues[_preferredNumaDomain]->size();
+
+        // Logic for best/worst state
+        float stateReward = 0.0f;
+        void* statePtr    = nullptr;
+
+        // Establishing best state (the first of this numa queue is a candidate)
+        if (_numaNextStateQueues[_preferredNumaDomain]->begin() != _numaNextStateQueues[_preferredNumaDomain]->end())
         {
-          // Updating state count per numa
-          _currentStatesPerNuma[_preferredNumaDomain] = _numaNextStateQueues[_preferredNumaDomain]->size();
+          const auto& stateItr = _numaNextStateQueues[_preferredNumaDomain]->begin();
+          stateReward          = stateItr->first;
+          statePtr             = stateItr->second;
 
-          // Logic for best/worst state
-          float stateReward = 0.0f;
-          void *statePtr    = nullptr;
-
-          // Establishing best state (the first of this numa queue is a candidate)
-          if (_numaNextStateQueues[_preferredNumaDomain]->begin() != _numaNextStateQueues[_preferredNumaDomain]->end())
-            {
-              const auto &stateItr = _numaNextStateQueues[_preferredNumaDomain]->begin();
-              stateReward          = stateItr->first;
-              statePtr             = stateItr->second;
-
-              _workMutex.lock();
-              if (stateReward > bestStateReward)
-                {
-                  bestStateReward = stateReward;
-                  _bestState      = statePtr;
-              }
-              _workMutex.unlock();
+          _workMutex.lock();
+          if (stateReward > bestStateReward)
+          {
+            bestStateReward = stateReward;
+            _bestState      = statePtr;
           }
+          _workMutex.unlock();
+        }
 
-          // Now dumping states from next state queue to the current one
-          while (_numaNextStateQueues[_preferredNumaDomain]->begin() != _numaNextStateQueues[_preferredNumaDomain]->end())
-            {
-              const auto &stateItr = _numaNextStateQueues[_preferredNumaDomain]->begin();
-              stateReward          = stateItr->first;
-              statePtr             = stateItr->second;
+        // Now dumping states from next state queue to the current one
+        while (_numaNextStateQueues[_preferredNumaDomain]->begin() != _numaNextStateQueues[_preferredNumaDomain]->end())
+        {
+          const auto& stateItr = _numaNextStateQueues[_preferredNumaDomain]->begin();
+          stateReward          = stateItr->first;
+          statePtr             = stateItr->second;
 
-              // Extracting next state
-              _numaNextStateQueues[_preferredNumaDomain]->unsafe_extract(stateItr);
+          // Extracting next state
+          _numaNextStateQueues[_preferredNumaDomain]->unsafe_extract(stateItr);
 
-              // Pushing state in the correct numa domain queue
-              _numaCurrentStateQueues[_preferredNumaDomain]->push_back_no_lock(statePtr);
-            }
+          // Pushing state in the correct numa domain queue
+          _numaCurrentStateQueues[_preferredNumaDomain]->push_back_no_lock(statePtr);
+        }
 
-          // Now establishing worst state (the last of this numa queue is a candidate)
-          if (statePtr != nullptr)
-            {
-              _workMutex.lock();
-              if (stateReward < worstStateReward)
-                {
-                  worstStateReward = stateReward;
-                  _worstState      = statePtr;
-              }
-              _workMutex.unlock();
+        // Now establishing worst state (the last of this numa queue is a candidate)
+        if (statePtr != nullptr)
+        {
+          _workMutex.lock();
+          if (stateReward < worstStateReward)
+          {
+            worstStateReward = stateReward;
+            _worstState      = statePtr;
           }
+          _workMutex.unlock();
+        }
       }
     }
   }
 
-  __INLINE__ bool pushStateImpl(const float reward, void *statePtr) override
+  __INLINE__ bool pushStateImpl(const float reward, void* statePtr) override
   {
     // Getting the corresponding numa domain for this state
     int targetNumaIdx = getStateNumaDomain(statePtr);
@@ -331,29 +324,29 @@ class Numa : public stateDb::Base
     return true;
   }
 
-  __INLINE__ void *popState() override
+  __INLINE__ void* popState() override
   {
     // Pointer to return
-    void *statePtr;
+    void* statePtr;
 
     // Check the numa's state queue first
     bool success = _numaCurrentStateQueues[_preferredNumaDomain]->pop_front_get(statePtr);
     if (success == true)
-      {
-        _numaLocalFreeStateCount++;
-        return statePtr;
+    {
+      _numaLocalFreeStateCount++;
+      return statePtr;
     }
 
     // If still no success, check the other numa queues
     for (int i = 0; i < _numaCount; i++)
       if (i != _preferredNumaDomain)
+      {
+        bool success = _numaCurrentStateQueues[i]->pop_front_get(statePtr);
+        if (success == true)
         {
-          bool success = _numaCurrentStateQueues[i]->pop_front_get(statePtr);
-          if (success == true)
-            {
-              _numaNonLocalDatabaseStateCount++;
-              return statePtr;
-          }
+          _numaNonLocalDatabaseStateCount++;
+          return statePtr;
+        }
       }
 
     // If no success at all, just return a nullptr
@@ -374,56 +367,55 @@ class Numa : public stateDb::Base
   /**
    * This function returns a pointer to the best state found in the current state database
    */
-  virtual void *getBestState() const override { return _bestState; }
+  virtual void* getBestState() const override { return _bestState; }
 
   /**
    * This function returns a pointer to the worst state found in the current state database
    */
-  virtual void *getWorstState() const override { return _worstState; }
+  virtual void* getWorstState() const override { return _worstState; }
 
-  private:
-
+private:
   /**
    * Number of numa domains
    */
   int _numaCount;
 
-  void *_bestState  = nullptr;
-  void *_worstState = nullptr;
+  void* _bestState  = nullptr;
+  void* _worstState = nullptr;
 
   /**
    * Count of local database states retrieved
-  */
+   */
   std::atomic<size_t> _numaLocalDatabaseStateCount;
 
   /**
    * Count of non-local database states retrieved
-  */
+   */
   std::atomic<size_t> _numaNonLocalDatabaseStateCount;
 
   /**
    * Count of non-local database states retrieved
-  */
+   */
   std::atomic<size_t> _numaDatabaseStateNotFoundCount;
 
   /**
    * Count of local free states retrieved
-  */
+   */
   std::atomic<size_t> _numaLocalFreeStateCount;
 
   /**
    * Count of non-local free states retrieved
-  */
+   */
   std::atomic<size_t> _numaNonLocalFreeStateCount;
 
   /**
    * Count of free states stolen from the back of the state databse
-  */
+   */
   std::atomic<size_t> _numaStealingFreeStateCount;
 
   /**
    * Count of free states failed to be retrieved
-  */
+   */
   std::atomic<size_t> _numaFreeStateNotFoundCount;
 
   /**
@@ -459,27 +451,27 @@ class Numa : public stateDb::Base
   /**
    * Numa state queues allow the thread to search for a current state that belongs to it through the current state database
    */
-  std::vector<jaffarCommon::concurrent::Deque<void *> *> _numaCurrentStateQueues;
+  std::vector<jaffarCommon::concurrent::Deque<void*>*> _numaCurrentStateQueues;
 
   /**
    * Numa state queues for the next step's states
    */
-  std::vector<jaffarCommon::concurrent::concurrentMultimap_t<float, void *> *> _numaNextStateQueues;
+  std::vector<jaffarCommon::concurrent::concurrentMultimap_t<float, void*>*> _numaNextStateQueues;
 
   /**
    * This queue will hold pointers to all the free state storage
    */
-  std::vector<std::unique_ptr<jaffarCommon::concurrent::atomicQueue_t<void *>>> _freeStateQueues;
+  std::vector<std::unique_ptr<jaffarCommon::concurrent::atomicQueue_t<void*>>> _freeStateQueues;
 
   /**
    * Start pointer for the internal buffers for the state database
    */
-  std::vector<uint8_t *> _internalBuffersStart;
+  std::vector<uint8_t*> _internalBuffersStart;
 
   /**
    * End pointer for each of the internal buffers
    */
-  std::vector<uint8_t *> _internalBuffersEnd;
+  std::vector<uint8_t*> _internalBuffersEnd;
 
   /**
    * Number of bytes to allocate per NUMA domain

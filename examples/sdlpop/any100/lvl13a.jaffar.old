@@ -1,0 +1,215 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "jaffar.state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 368676433,
+    "Loose Tile Sound Id": 21
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 3,
+   "Property Hash Types": [ "Guard Current HP"  ],
+   "Static Tile Hash Types":
+   [
+    { "Level": 13, "Room": 1, "Tile": 3, "Type": "Full" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Level": 13, "Room": 1, "Tile": 3, "Type": "Full" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    "Show Move List": true,
+    "Detect Possible Moves": false,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 1792,
+      "Store Move History": true,
+      "XDelta3 Enabled": false,
+      "XDelta3 Max Differences": 640,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+      "Max Size Lower Bound (Mb)": 2000,
+      "Max Size Upper Bound (Mb)": 8000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 2000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": false,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Base Timer Length": 5,
+    "Output Images":
+    {
+     "Enabled": false,
+     "Path": "images/new"
+    }
+  },
+ 
+  "Rules":
+  [
+
+    {
+      "Label": 13000,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  3 }
+      ],
+     
+      "Satisfies": [  ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 3, "Intensity": 1.0, "Position": 255 }
+      ]
+     },
+
+    {
+      "Label": 13001,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  1 }
+      ],
+     
+      "Satisfies": [ 13000 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 1, "Intensity": 1.0, "Position": 190 },
+       { "Type": "Set Guard HP Magnet", "Room": 1, "Intensity": 1000.0, "Position": 0 }
+      ]
+     },
+
+     {
+      "Label": 13002,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  1 },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 }
+      ],
+     
+      "Satisfies": [ 13001 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 1, "Intensity": 1.0, "Position": 0 }
+      ]
+     },
+
+     {
+      "Label": 13003,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  3 },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 }
+      ],
+     
+      "Satisfies": [ 13002 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 3, "Intensity": 1.0, "Position": 120 }
+      ]
+     },
+
+     {
+      "Label": 13004,
+      "Conditions":
+      [
+        { "Property": "Kid Frame", "Op": "==", "Value": 217 }
+      ],
+     
+      "Satisfies": [ 13003 ],
+  
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 }
+      ]
+     },
+
+     {
+      "Label": 13005,
+      "Conditions":
+      [
+        { "Property": "Next Level", "Op": "==", "Value":  14 }
+      ],
+     
+      "Satisfies": [ 13004 ],
+  
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+     },
+
+     {
+      "Label": 19998,
+      "Conditions":
+      [
+       { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+      ],
+       
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Fail" }
+      ]
+    },
+      {
+        "Label": 19997,
+        "Conditions":
+        [
+         { "Property": "Guard Current HP", "Op": "==", "Value":  5 }
+        ],
+         
+        "Satisfies": [  ],
+        
+        "Actions":
+        [
+         { "Type": "Trigger Fail" }
+        ]
+       }
+  ]  
+}

@@ -2,7 +2,7 @@
  "Driver Configuration":
  {
   "End On First Win State": true,
-  "Max Steps": 1000,
+  "Max Steps": 0,
 
   "Save Intermediate Results":
   {
@@ -19,8 +19,22 @@
  {
   "State Database":
   {
-    "Type": "Plain",
-    "Max Size (Mb)": 1000
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      10000,
+      10000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
   },
 
   "Hash Database":
@@ -42,11 +56,11 @@
  
 "Runner Configuration":
 {
-  "Frameskip Rate": 0,
-  "Hash Step Tolerance": 0,
+  "Bypass Hash Calculation": false,
+  "Frameskip Rate": 0, 
+  "Hash Step Tolerance": 4,
   "Show Empty Input Slots": true,
   "Show Allowed Inputs": true,
-  "Bypass Hash Calculation": false,
 
   "Store Input History": 
   {

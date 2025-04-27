@@ -1,0 +1,175 @@
+{
+  "Driver Configuration":
+  {
+   "End On First Win State": true,
+   "Max Steps": 0,
+ 
+   "Save Intermediate Results":
+   {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+   }
+  },
+ 
+  "Engine Configuration":
+  {
+   "State Database":
+   {
+     "Type": "Numa Aware",
+     "Max Size per NUMA Domain (Mb)":
+     [ 
+       50000,
+       50000
+     ],
+   
+     "Scavenger Queues Size": 32,
+     "Scavenging Depth": 32,
+ 
+     "Compression":
+     {
+       "Use Differential Compression": false, 
+       "Max Difference (bytes)": 6000,
+       "Use Zlib Compression": false
+     }
+   },
+ 
+   "Hash Database":
+   {
+     "Max Store Count": 2,
+     "Max Store Size (Mb)": 10000
+   }
+ },
+ 
+ "Emulator Configuration":
+ {
+   "Emulator Name": "QuickerGPGX",
+   "Rom File Path": "../../../extern/jaffarPlus/extern/quickerGPGX/tests/roms/Sonic The Hedgehog (W) (REV01) [!].bin",
+   "Rom File SHA1": "69E102855D4389C3FD1A8F3DC7D193F8EEE5FE5B",
+   "Initial State File Path": "",
+   "Initial Sequence File Path": "stage01.initial.sol",
+   "Initial RAM Data File Path": "",
+   "Initial Video RAM Data File Path": "",
+   "Bios File Path": "",
+   "System Type": "Sega Genesis",
+   "Controller 1 Type": "Gamepad3B",
+   "Controller 2 Type": "None",
+   "Disabled State Properties": [ "VRAM", "SATM"  ],
+   "Work RAM Serialization Size": 65536
+ },
+  
+ "Runner Configuration":
+ {
+   "Bypass Hash Calculation": false,
+   "Frameskip Rate": 0,
+   "Hash Step Tolerance": 0,
+   "Show Empty Input Slots": true,
+   "Show Allowed Inputs": true,
+ 
+   "Store Input History": 
+   {
+     "Enabled": true,
+     "Max Size": 1000
+   },
+ 
+   "Allowed Input Sets":
+   [
+     {
+       "Conditions":
+       [
+       ],
+ 
+       "Inputs":
+       [
+        "|..|.D......|",
+        "|..|..L.....|",
+        "|..|...R....|",
+        "|..|.DL.....|",
+        "|..|.D.R....|",
+        "|..|..LR....|",
+        "|..|.D....C.|",
+        "|..|..L...C.|",
+        "|..|...R..C.|",
+        "|..|.DL...C.|",
+        "|..|.D.R..C.|",
+        "|..|..LR..C.|"
+       ],
+ 
+       "Stop Input Evaluation": false
+     }
+   ],
+ 
+   "Test Candidate Inputs": false,
+   "Candidate Input Sets": [ ]
+ },
+ 
+ "Game Configuration":
+ {
+   "Game Name": "Genesis / Sonic",
+   "Frame Rate": 60.10,
+   "Last Input Step Reward": 0.0,
+ 
+   "Print Properties":
+   [
+    "Sonic Pos X",
+    "Sonic Pos Y",
+    "Ring Count", 
+    "Score 1",    
+    "Score 2",    
+    "Score 3",    
+    "Score 4",    
+    "Sonic Accel",
+    "Checkpoint"
+   ],
+ 
+   "Hash Properties":
+   [
+    "Sonic Pos X",
+    "Sonic Pos Y",
+    "Ring Count", 
+    "Score 1",    
+    "Score 2",    
+    "Score 3",    
+    "Score 4",    
+    "Sonic Accel",
+    "Checkpoint"
+   ],
+ 
+   "Rules":
+   [
+    {
+      "Label": 1000,
+      "Conditions":
+      [
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Set Point X Magnet", "Intensity": 1.0, "Pos": 4582 },
+       { "Type": "Set Point Y Magnet", "Intensity": 0.001, "Pos": 556 }
+      ]
+     },
+ 
+     {
+      "Label": 1100,
+      "Conditions":
+      [
+        { "Property": "Checkpoint", "Op": ">", "Value": 0 }
+      ],
+      
+      "Satisfies": [ 1000 ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+     }
+   ]
+  }
+ }
+ 

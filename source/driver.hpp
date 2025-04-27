@@ -1,11 +1,11 @@
 #pragma once
 
-#include <limits>
-#include <chrono>
-#include <cstdlib>
 #include "engine.hpp"
 #include "game.hpp"
 #include "runner.hpp"
+#include <chrono>
+#include <cstdlib>
+#include <limits>
 
 namespace jaffarPlus
 {
@@ -13,8 +13,7 @@ namespace jaffarPlus
 class Driver final
 
 {
-  public:
-
+public:
   enum exitReason_t
   {
     /// Found a win state
@@ -28,8 +27,7 @@ class Driver final
   };
 
   // Base constructor
-  Driver(const std::string &configFilePath, const nlohmann::json &config)
-    : _configFilePath(configFilePath)
+  Driver(const std::string& configFilePath, const nlohmann::json& config) : _configFilePath(configFilePath)
   {
     // Getting job identifier from the system timer
     auto currentTime = std::chrono::system_clock::now();
@@ -45,7 +43,7 @@ class Driver final
     _maxSteps = jaffarCommon::json::getNumber<uint32_t>(driverConfig, "Max Steps");
 
     // For testing purposes, the maximum number of steps can be overriden via environment variables
-    if (auto *value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
+    if (auto* value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
 
     // Getting intermediate result configuration
     const auto saveIntermediateResultsJs = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
@@ -120,45 +118,45 @@ class Driver final
 
     // Running engine until a termination point
     while (true)
+    {
+      // If found winning state, report it now
+      if (_endOnFirstWinState && _engine->getWinStatesFound() > 0)
       {
-        // If found winning state, report it now
-        if (_endOnFirstWinState && _engine->getWinStatesFound() > 0)
-          {
-            exitReason = exitReason_t::winStateFound;
-            break;
-        }
-
-        // If ran out of states, finish now
-        if (_engine->getStateCount() == 0)
-          {
-            exitReason = exitReason_t::outOfStates;
-            break;
-        }
-
-        // If maximum step established and reached, finish now
-        if (_maxSteps > 0 && _currentStep >= _maxSteps)
-          {
-            if (_winStatesFound > 0) exitReason = exitReason_t::winStateFound;
-            if (_winStatesFound == 0) exitReason = exitReason_t::maximumStepReached;
-            break;
-        }
-
-        // Updating best and worst states
-        updateBestState();
-        updateWorstState();
-
-        // Printing information
-        printInfo();
-
-        // Running engine step
-        _engine->runStep();
-
-        // Summing amount of win states found
-        _winStatesFound = _engine->getWinStatesFound();
-
-        // Increasing step counter
-        _currentStep++;
+        exitReason = exitReason_t::winStateFound;
+        break;
       }
+
+      // If ran out of states, finish now
+      if (_engine->getStateCount() == 0)
+      {
+        exitReason = exitReason_t::outOfStates;
+        break;
+      }
+
+      // If maximum step established and reached, finish now
+      if (_maxSteps > 0 && _currentStep >= _maxSteps)
+      {
+        if (_winStatesFound > 0) exitReason = exitReason_t::winStateFound;
+        if (_winStatesFound == 0) exitReason = exitReason_t::maximumStepReached;
+        break;
+      }
+
+      // Updating best and worst states
+      updateBestState();
+      updateWorstState();
+
+      // Printing information
+      printInfo();
+
+      // Running engine step
+      _engine->runStep();
+
+      // Summing amount of win states found
+      _winStatesFound = _engine->getWinStatesFound();
+
+      // Increasing step counter
+      _currentStep++;
+    }
 
     // Setting finalized flag
     _hasFinished = true;
@@ -227,25 +225,25 @@ class Driver final
 
     // Run loop while the driver is still running
     while (_hasFinished == false)
+    {
+      // Sleeping for 100ms intervals to prevent excessive overheads
+      usleep(100000);
+
+      // Getting time elapsed since last save
+      auto currentTime              = jaffarCommon::timing::now();
+      auto timeElapsedSinceLastSave = jaffarCommon::timing::timeDeltaSeconds(currentTime, lastSaveTime);
+
+      // Checking if we need to save best state
+      if (timeElapsedSinceLastSave > _saveIntermediateFrequency && _currentStep > 1)
       {
-        // Sleeping for 100ms intervals to prevent excessive overheads
-        usleep(100000);
+        // Saving worst and best state information
+        saveBestStateInformation();
+        saveWorstStateInformation();
 
-        // Getting time elapsed since last save
-        auto currentTime              = jaffarCommon::timing::now();
-        auto timeElapsedSinceLastSave = jaffarCommon::timing::timeDeltaSeconds(currentTime, lastSaveTime);
-
-        // Checking if we need to save best state
-        if (timeElapsedSinceLastSave > _saveIntermediateFrequency && _currentStep > 1)
-          {
-            // Saving worst and best state information
-            saveBestStateInformation();
-            saveWorstStateInformation();
-
-            // Resetting timer
-            lastSaveTime = jaffarCommon::timing::now();
-        }
+        // Resetting timer
+        lastSaveTime = jaffarCommon::timing::now();
       }
+    }
   }
 
   void updateWorstState()
@@ -285,29 +283,29 @@ class Driver final
 
     // If we haven't found any winning state, simply use the currently best state
     if (_winStatesFound == 0)
-      {
-        // Getting best state so far
-        auto bestState = _engine->getStateDb()->getBestState();
+    {
+      // Getting best state so far
+      auto bestState = _engine->getStateDb()->getBestState();
 
-        // Saving best state into the storage
-        if (bestState != nullptr) memcpy(_bestStateStorage.data(), bestState, _stateSize);
+      // Saving best state into the storage
+      if (bestState != nullptr) memcpy(_bestStateStorage.data(), bestState, _stateSize);
     }
 
     // If we have found a winning state in this step that improves on the current best, save it now
     if (_engine->getWinStatesFound() > 0)
+    {
+      // Getting best win state (best reward) for the current step
+      auto winStateEntry = _engine->getStepBestWinState();
+
+      // If the reward if better than the current best, then make it the new best state
+      if (winStateEntry.reward > _bestWinStateReward)
       {
-        // Getting best win state (best reward) for the current step
-        auto winStateEntry = _engine->getStepBestWinState();
+        // Saving new best
+        _bestWinStateReward = winStateEntry.reward;
 
-        // If the reward if better than the current best, then make it the new best state
-        if (winStateEntry.reward > _bestWinStateReward)
-          {
-            // Saving new best
-            _bestWinStateReward = winStateEntry.reward;
-
-            // Saving win state into the storage
-            memcpy(_bestStateStorage.data(), winStateEntry.stateData, _stateSize);
-        }
+        // Saving win state into the storage
+        memcpy(_bestStateStorage.data(), winStateEntry.stateData, _stateSize);
+      }
     }
 
     // Loading best state state into runner
@@ -339,8 +337,8 @@ class Driver final
     jaffarCommon::logger::log("\n");
 
     if (_winStatesFound == 0)
-      jaffarCommon::logger::log(
-        "[J+] Current Reward (Best / Worst):               %.6f / %.6f (Diff: %.6f)\n", _bestStateReward, _worstStateReward, _bestStateReward - _worstStateReward);
+      jaffarCommon::logger::log("[J+] Current Reward (Best / Worst):               %.6f / %.6f (Diff: %.6f)\n", _bestStateReward, _worstStateReward,
+                                _bestStateReward - _worstStateReward);
 
     if (_winStatesFound > 0) jaffarCommon::logger::log("[J+] Best Win State Reward:                       %.3f\n", _bestStateReward);
 
@@ -367,7 +365,7 @@ class Driver final
   }
 
   // Function to obtain driver based on configuration
-  static std::unique_ptr<Driver> getDriver(const std::string &configFilePath, const nlohmann::json &config)
+  static std::unique_ptr<Driver> getDriver(const std::string& configFilePath, const nlohmann::json& config)
   {
     // Creating new engine
     auto d = std::make_unique<Driver>(configFilePath, config);
@@ -379,8 +377,7 @@ class Driver final
   // Function to get the last step
   size_t getCurrentStep() { return _currentStep; }
 
-  private:
-
+private:
   // Remember path to config file for reference
   const std::string _configFilePath;
 

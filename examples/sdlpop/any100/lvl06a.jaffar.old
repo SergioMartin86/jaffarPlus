@@ -1,0 +1,293 @@
+{
+  "Emulator Configuration": 
+  {
+    "SDLPop Root Path": "../../../platforms/sdlpop/SDLPoP/",
+    "Levels File": "../LEVELS.DAT",
+    "State File": "lvl06a.state",
+    "Initialize Copyprot": false,
+    "Override RNG Value": true,
+    "RNG Value": 803726655,
+    "Loose Tile Sound Id": 20
+  },
+  
+  "Game Configuration": 
+  {
+   "Timer Tolerance": 4,
+   "Property Hash Types": [ "Guard Current HP"  ],
+   "Static Tile Hash Types":
+   [ 
+    { "Level": 6, "Room": 6, "Tile": 18, "Type": "Full" }
+   ],
+   
+   "Falling Tiles Hash Types": 
+   [
+   ],
+   
+   "Active Objects Hash Types":
+   [
+    { "Level": 6, "Room": 2, "Tile": 20, "Type": "Index Only" },
+    { "Level": 6, "Room": 18, "Tile": 20, "Type": "Index Only" },
+    { "Level": 6, "Room": 6, "Tile": 18, "Type": "Index Only" }
+   ]
+  },
+  
+  "Jaffar Configuration": 
+  {
+    "Show Timing Information": true,
+    "Show Hash Information": true,
+    "Show Winning State Information": true,
+    "Win State Step Tolerance": 0,
+    "Show Move List": true,
+    "Detect Possible Moves": false,
+    
+    "State Configuration": 
+    {
+      "Max Move Count": 300,
+      "Store Move History": true,
+      "XDelta3 Enabled": true,
+      "XDelta3 Max Differences": 600,
+      "XDelta3 Use Zlib Compression": false
+    },
+     
+    "State Database": 
+    {
+      "Max Size Lower Bound (Mb)": 10000,
+      "Max Size Upper Bound (Mb)": 18000
+    },
+    
+    "Hash Database":
+    { 
+     "Database Count": 2,
+     "Max Size (Mb)": 2000 
+    },
+    
+    "Save Intermediate Results":
+    {
+     "Enabled": true,
+     "Save Numbered States": false,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+     }
+  },
+  
+  "Playback Configuration": 
+  {
+    "SDLPop Library File": "../../../build/platforms/sdlpop/libsdlPopLib.so",
+    "Overlay Path": "../../../platforms/sdlpop/overlay",
+    "Base Timer Length": 5,
+    "Output Images":
+    {
+     "Enabled": false,
+     "Path": "images/new"
+    }
+  },
+ 
+  "Rules":
+  [
+    {
+      "Label": 4000,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  24 }
+      ],
+     
+      "Satisfies": [ ],
+  
+      "Actions":
+      [
+       { "Type": "Set Kid Pos X Magnet", "Room": 24, "Intensity": 1.0, "Position": 255 }
+      ]
+     },
+     
+     {
+      "Label": 4100,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  24 },
+       { "Property": "Background Element[", "Room": 2, "Tile": 20, "Op": ">", "Value": 0, "Comment": "Gate" }
+      ],
+      
+      "Satisfies": [ 4000 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 24, "Intensity": 1.0, "Position": 0 }
+      ]
+     },
+     
+     {
+      "Label": 4001,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  2 }
+      ],
+      
+      "Satisfies": [ 4100 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 2, "Intensity": 1.0, "Position": 0 }
+      ]
+     },
+     
+     {
+      "Label": 4002,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  15 }
+      ],
+      
+      "Satisfies": [ 4001 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 15, "Intensity": 1.0, "Position": 0 }
+      ]
+     },
+     
+     {
+      "Label": 4003,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  6 }
+      ],
+      
+      "Satisfies": [ 4002 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 6, "Intensity": 1.0, "Position": 0 },
+       { "Type": "Set Guard HP Magnet", "Room": 6, "Intensity": 1000.0, "Position": 0 }
+      ]
+     },
+     
+     {
+      "Label": 4103,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  6 },
+       { "Property": "Background Element[", "Room": 18, "Tile": 20, "Op": ">", "Value": 0, "Comment": "Gate" }
+      ],
+      
+      "Satisfies": [ 4003 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 6, "Intensity": 1.0, "Position": 0 },
+       { "Type": "Set Guard HP Magnet", "Room": 6, "Intensity": 1000.0, "Position": 0 }
+      ]
+     },
+
+     {
+      "Label": 4104,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  6 },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 }
+      ],
+      
+      "Satisfies": [ 4003 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 6, "Intensity": 1.0, "Position": 0 }
+      ]
+     },
+     
+     {
+      "Label": 4004,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  18 }
+      ],
+      
+      "Satisfies": [ 4103 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 18, "Intensity": 1.0, "Position": 0 },
+       { "Type": "Set Guard HP Magnet", "Room": 18, "Intensity": 1000.0, "Position": 0 }
+      ]
+     },
+
+     {
+      "Label": 4204,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  18 },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 }
+      ],
+      
+      "Satisfies": [ 4004, 4104 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 18, "Intensity": 1.0, "Position": 0 }
+      ]
+     },
+     
+     {
+      "Label": 4005,
+      "Conditions":
+      [
+       { "Property": "Kid Room", "Op": "==", "Value":  1 },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 }
+      ],
+      
+      "Satisfies": [ 4204 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000 },
+       { "Type": "Set Kid Pos X Magnet", "Room": 18, "Intensity": 1.0, "Position": 130 },
+       { "Type": "Set Kid Pos Y Magnet", "Room": 18, "Intensity": 10.0, "Position": 255 }
+      ]
+     },
+     
+     {
+      "Label": 4999,
+      "Description": "If Kid exits the level, then win.",
+      "Conditions":
+      [
+       { "Property": "Kid Pos Y", "Op": "==", "Value":  255 },
+       { "Property": "Kid Pos X", "Op": "<", "Value":  160 },
+       { "Property": "Dead Guard Count", "Op": ">=", "Value":  1 },
+       { "Property": "Kid Room", "Op": "==", "Value":  1 }
+      ],
+       
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     },
+     
+     {
+      "Label": 4998,
+      "Description": "If Kid exits the level, then win.",
+      "Conditions":
+      [
+       { "Property": "Kid Current HP", "Op": "==", "Value":  0 }
+      ],
+       
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Fail" }
+      ]
+     }
+  ]  
+}

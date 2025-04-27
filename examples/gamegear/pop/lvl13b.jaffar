@@ -1,0 +1,626 @@
+{
+  "Driver Configuration":
+  {
+   "End On First Win State": true,
+   "Max Steps": 0,
+ 
+   "Save Intermediate Results":
+   {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+     "Worst State Path": "/tmp/jaffar.worst.state"
+   }
+  },
+ 
+  "Engine Configuration":
+  {
+   "State Database":
+   {
+     "Type": "Numa Aware",
+     "Max Size per NUMA Domain (Mb)":
+     [ 
+       70000,
+       70000
+     ],
+   
+     "Scavenger Queues Size": 32,
+     "Scavenging Depth": 32,
+ 
+     "Compression":
+     {
+       "Use Differential Compression": false, 
+       "Max Difference (bytes)": 8000,
+       "Use Zlib Compression": false
+     }
+   },
+ 
+   "Hash Database":
+   {
+     "Max Store Count": 2,
+     "Max Store Size (Mb)": 10000
+   }
+ },
+ 
+ "Emulator Configuration":
+ {
+   "Emulator Name": "QuickerGPGX",
+   "Rom File Path": "../../../extern/jaffarPlus/extern/quickerGPGX/tests/roms/Prince_of_Persia_(UE)_[!].sms",
+   "Rom File SHA1": "BF0CDB664129B5548083DC0DDE5449AB5F1BCC3A",
+   "Bios File Path": "",
+   "Initial State File Path": "",
+   "Initial Sequence File Path": "lvl01.initial.sol",
+   "Initial RAM Data File Path": "lvl13b.bin",
+   "Initial Video RAM Data File Path": "lvl13b.vram.bin",
+   "System Type": "Sega Game Gear",
+   "Controller 1 Type": "GameGear2B",
+   "Controller 2 Type": "None",
+   "Disabled State Properties": [ "SATM"  ],
+   "Work RAM Serialization Size": 8192
+ },
+  
+ "Runner Configuration":
+ {
+   "Bypass Hash Calculation": false,
+   "Frameskip Rate": 0,
+   "Hash Step Tolerance": 1,
+   "Show Empty Input Slots": true,
+   "Show Allowed Inputs": true,
+ 
+   "Store Input History": 
+   {
+     "Enabled": true,
+     "Max Size": 3500
+   },
+ 
+   "Allowed Input Sets":
+   [
+     {
+        "Conditions":
+        [
+        ],
+
+        "Inputs":
+        [
+          "|..|.......|"
+        ],
+
+        "Stop Input Evaluation": false
+     },
+
+     {
+      "Conditions":
+      [
+
+       { "Property": "Guard HP", "Op": ">", "Value": 0 },
+       { "Property": "Kid Frame", "Op": "==", "Value": 52 }
+      ],
+
+      "Inputs":
+      [
+       "|..|....1..|",
+       "|..|.....2.|"
+      ],
+
+      "Stop Input Evaluation": false
+    },
+
+     {
+       "Conditions":
+       [
+ 
+        { "Property": "Kid Frame", "Op": "==", "Value": 52 },
+        { "Property": "Kid Direction", "Op": "==", "Value": 1 }
+       ],
+ 
+       "Inputs":
+       [
+        "|..|...R...|",
+        "|..|..L....|",
+        "|..|.D.....|",
+        "|..|U......|",
+        "|..|..L.1..|",
+        "|..|..L..2.|"
+       ],
+
+       "Stop Input Evaluation": true
+     },
+
+     {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 52 },
+       { "Property": "Kid Direction", "Op": "==", "Value": 2 }
+      ],
+
+      "Inputs":
+      [
+       "|..|...R...|",
+       "|..|..L....|",
+       "|..|.D.....|",
+       "|..|U......|",
+       "|..|...R1..|",
+       "|..|...R.2.|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 72 },
+       { "Property": "Kid Direction", "Op": "==", "Value": 1 }
+      ],
+
+      "Inputs":
+      [
+       "|..|..L....|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+     "Conditions":
+     [
+      { "Property": "Animation Frame", "Op": "==", "Value": 0 },
+      { "Property": "Kid Frame", "Op": "==", "Value": 72 },
+      { "Property": "Kid Direction", "Op": "==", "Value": 2 }
+     ],
+
+     "Inputs":
+     [
+      "|..|...R...|"
+     ],
+
+     "Stop Input Evaluation": true
+   },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 29 }
+      ],
+
+      "Inputs":
+      [
+       "|..|...R...|",
+       "|..|..L....|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 31 }
+      ],
+
+      "Inputs":
+      [
+       "|..|...R...|",
+       "|..|..L....|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 35 }
+      ],
+
+      "Inputs":
+      [
+       "|..|...R...|",
+       "|..|..L....|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 40 },
+       { "Property": "Kid Direction", "Op": "==", "Value": 1 }
+      ],
+
+      "Inputs":
+      [
+       "|..|...R...|",
+       "|..|..L....|",
+       "|..|..L..2.|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 40 },
+       { "Property": "Kid Direction", "Op": "==", "Value": 2 }
+      ],
+
+      "Inputs":
+      [
+       "|..|...R...|",
+       "|..|..L....|",
+       "|..|...R.2.|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 134 }
+      ],
+
+      "Inputs":
+      [
+       "|..|...R...|",
+       "|..|..L....|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 106 }
+      ],
+
+      "Inputs":
+      [
+       "|..|.D.....|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 138 }
+      ],
+
+      "Inputs":
+      [
+       "|..|.D.....|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 56 }
+      ],
+
+      "Inputs":
+      [
+       "|..|U......|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+
+       { "Property": "Kid Frame", "Op": "==", "Value": 189 }
+      ],
+
+      "Inputs":
+      [
+       "|..|....1..|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+        
+       { "Property": "Kid Frame", "Op": "==", "Value": 231 }
+      ],
+
+      "Inputs":
+      [
+       "|..|U......|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+
+    {
+      "Conditions":
+      [
+        
+       { "Property": "Kid Frame", "Op": "==", "Value": 237 }
+      ],
+
+      "Inputs":
+      [
+       "|..|U......|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+        
+       { "Property": "Kid Frame", "Op": "==", "Value": 69 }
+      ],
+
+      "Inputs":
+      [
+        "|..|...R...|",
+        "|..|..L....|",
+        "|..|.D.....|",
+        "|..|....1..|",
+        "|..|.....2.|"
+      ],
+
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+        
+       { "Property": "Kid Frame", "Op": "==", "Value": 235 }
+      ],
+
+      "Inputs":
+      [
+        "|..|...R...|",
+        "|..|..L....|"
+      ],
+
+      "Stop Input Evaluation": true
+    }
+
+   ],
+ 
+   "Test Candidate Inputs": false,
+   "Candidate Input Sets":
+   [
+    {
+      "Conditions":
+      [
+        { "Property": "Animation Frame", "Op": "==", "Value": 0 }
+      ],
+
+      "Inputs":
+      [
+        "|..|UD.....|",
+        "|..|U.L....|",
+        "|..|U..R...|",
+        "|..|U...1..|",
+        "|..|U....2.|",
+        "|..|.DL....|",
+        "|..|.D.R...|",
+        "|..|.D..1..|",
+        "|..|.D...2.|",
+        "|..|..LR...|",
+        "|..|..L.1..|",
+        "|..|..L..2.|",
+        "|..|...R1..|",
+        "|..|...R.2.|",
+        "|..|....12.|",
+        "|..|....12.|",
+        "|..|U.LR...|",
+        "|..|U.L.1..|",
+        "|..|U.L..2.|",
+        "|..|U..R1..|",
+        "|..|U..R.2.|",
+        "|..|U...12.|",
+        "|..|.DLR...|",
+        "|..|.DL.1..|",
+        "|..|.DL..2.|",
+        "|..|.D.R1..|",
+        "|..|.D.R.2.|",
+        "|..|.D..12.|",
+        "|..|..LR1..|",
+        "|..|..LR.2.|",
+        "|..|...R12.|",
+        "|..|UDLR...|",
+        "|..|UDL.12.|",
+        "|..|UDL..2.|",
+        "|..|UD.R12.|",
+        "|..|......S|",
+        "|..|UDLR12S|"
+      ],
+
+      "Stop Input Evaluation": false
+    }
+   ]
+ },
+ 
+ "Game Configuration":
+ {
+   "Game Name": "Game Gear / Prince Of Persia",
+   "Frame Rate": 240.0,
+   "Last Input Step Reward": 0.0,
+ 
+   "Print Properties":
+   [
+    "Global Timer",     
+    "Kid HP",        
+    "Kid Pos X",        
+    "Kid Pos Y",        
+    "Kid Direction",        
+    "Kid Frame",        
+    "Kid Room",
+    "Guard Pos X",        
+    "Guard Pos Y",
+    "Local Door State",
+    "Exit Door Open"
+   ],
+ 
+   "Hash Properties":
+   [
+    "Exit Door Open"
+   ],
+ 
+   "Rules":
+   [
+
+
+     {
+      "Label": 10,
+      "Conditions":
+      [
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+       { "Type": "Set Kid Point X Magnet", "Room": 0, "Intensity": 1.0, "Pos": 255 }
+      ]
+     },
+
+     {
+      "Label": 20,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 1 }
+      ],
+      
+      "Satisfies": [ 10 ],
+      
+      "Actions":
+      [
+       { "Type": "Add Reward", "Value": 10000.0 },
+       { "Type": "Set Kid Point X Magnet", "Room": 1, "Intensity": 1.0, "Pos": 255 }
+      ]
+     },
+
+     {
+      "Label": 30,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 2 }
+      ],
+      
+      "Satisfies": [ 20 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 10000.0 },
+        { "Type": "Set Kid Point Y Magnet", "Room": 2, "Intensity": 1.0, "Pos": 30 }
+      ]
+     },
+
+     {
+      "Label": 40,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 2 },
+        { "Property": "Exit Door Open", "Op": ">", "Value": 0 }
+      ],
+      
+      "Satisfies": [ 30 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 10000.0 },
+        { "Type": "Set Kid Point X Magnet", "Room": 2, "Intensity": 1.0, "Pos": 0 }
+      ]
+     },
+
+     {
+      "Label": 50,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 1 },
+        { "Property": "Exit Door Open", "Op": ">", "Value": 0 }
+      ],
+      
+      "Satisfies": [ 40 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 10000.0 },
+        { "Type": "Set Kid Point X Magnet", "Room": 1, "Intensity": 1.0, "Pos": 0 }
+      ]
+     },
+
+     {
+      "Label": 60,
+      "Conditions":
+      [
+        { "Property": "Kid Room", "Op": "==", "Value": 0 },
+        { "Property": "Exit Door Open", "Op": ">", "Value": 0 }
+      ],
+      
+      "Satisfies": [ 50 ],
+      
+      "Actions":
+      [
+        { "Type": "Add Reward", "Value": 10000.0 },
+        { "Type": "Set Kid Point X Magnet", "Room": 0, "Intensity": 1.0, "Pos": 64 }
+      ]
+     },
+
+     {
+      "Label": 300,
+      "Conditions":
+      [
+        { "Property": "Kid Animation", "Op": "==", "Value": 183 }
+      ],
+      
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     },
+
+     {
+      "Label": 191,
+      "Conditions":
+      [
+        { "Property": "Kid HP", "Op": "==", "Value": 0 }
+      ],
+      
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Fail" }
+      ]
+     }
+   ]
+  }
+ }
+ 

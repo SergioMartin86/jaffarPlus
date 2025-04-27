@@ -1,12 +1,12 @@
 #pragma once
 
-#include <memory>
+#include <emulator.hpp>
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
-#include <emulator.hpp>
+#include <memory>
 #include <nesInstance.hpp>
 
 // Relevant defines for rendering
@@ -22,34 +22,39 @@ namespace emulator
 
 class QuickerNES final : public Emulator
 {
-  public:
-
+public:
+#ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
+  static std::string getName() { return "QuickerNESArkanoid"; }
+#else
   static std::string getName() { return "QuickerNES"; }
+#endif
 
   // Constructor must only do configuration parsing
-  QuickerNES(const nlohmann::json &config)
-    : Emulator(config)
+  QuickerNES(const nlohmann::json& config) : Emulator(config)
   {
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
     // For testing purposes, the initial state file can be overriden by environment variables
-    if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
+    if (auto* value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
     // Parsing rom file path
     _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
 
     // For testing purposes, the rom file path can be overriden by environment variables
-    if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
+    if (auto* value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
 
     // Getting initial sequence file path
     _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+
+    // For testing purposes, the sequence file path can be overriden by environment variables
+    if (auto* value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_INITIAL_SEQUENCE_FILE_PATH")) _initialSequenceFilePath = std::string(value);
 
     // Parsing rom file SHA1
     _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
-    if (auto *value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
+    if (auto* value = std::getenv("JAFFAR_QUICKERNES_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
     // Parsing initial RAM Data file
     _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
@@ -59,19 +64,19 @@ class QuickerNES final : public Emulator
 
     // Getting disabled state properties
     const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
-    for (const auto &property : disabledStateProperties) _disabledStateProperties.push_back(property);
+    for (const auto& property : disabledStateProperties) _disabledStateProperties.push_back(property);
 
     // Creating internal emulator instance
     _quickerNES = std::make_unique<NESInstance>(config);
   };
 
   // Function to get a reference to the input parser from the base emulator
-  jaffar::InputParser *getInputParser() const override { return _quickerNES->getInputParser(); }
+  jaffar::InputParser* getInputParser() const override { return _quickerNES->getInputParser(); }
 
   void initializeImpl() override
   {
     // Setting game's internal video buffer
-    ((emulator_t *)_quickerNES->getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
+    ((emulator_t*)_quickerNES->getInternalEmulatorPointer())->set_pixels(_videoBuffer, DEFAULT_WIDTH + 8);
 
     // Reading from ROM file
     std::string romFileData;
@@ -84,20 +89,20 @@ class QuickerNES final : public Emulator
       JAFFAR_THROW_LOGIC("ROM file: '%s' expected SHA1 ('%s') does not concide with the one read ('%s')\n", _romFilePath.c_str(), _romFileSHA1.c_str(), actualRomSHA1.c_str());
 
     // Loading rom into emulator
-    _quickerNES->loadROM((uint8_t *)romFileData.data(), romFileData.size());
+    _quickerNES->loadROM((uint8_t*)romFileData.data(), romFileData.size());
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
-      {
-        // Reading from initial state file
-        std::string initialState;
-        bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
-        if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
+    {
+      // Reading from initial state file
+      std::string initialState;
+      bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
+      if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
-        // Deserializing initial state into the emulator
-        enableStateProperties();
-        jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
-        deserializeState(d);
+      // Deserializing initial state into the emulator
+      enableStateProperties();
+      jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
+      deserializeState(d);
     }
 
     // Now disabling state properties, as requested
@@ -111,37 +116,37 @@ class QuickerNES final : public Emulator
 
     // Advancing the state using the initial sequence, if provided
     if (_initialSequenceFilePath != "")
-      {
-        // Load initial sequence
-        std::string initialSequenceFileString;
-        if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
-          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+    {
+      // Load initial sequence
+      std::string initialSequenceFileString;
+      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
 
-        // Getting input sequence
-        const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+      // Getting input sequence
+      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
 
-        // Running inputs in the initial sequence
-        for (const auto &inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+      // Running inputs in the initial sequence
+      for (const auto& inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
     }
 
     // Pushing initial RAM data
     if (_initialRAMDataFilePath != "")
-      {
-        // Load initial RAM Data
-        std::string initialRAMDataString;
-        if (jaffarCommon::file::loadStringFromFile(initialRAMDataString, _initialRAMDataFilePath) == false)
-          JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from RAM Data file: %s\n", _initialRAMDataFilePath.c_str());
+    {
+      // Load initial RAM Data
+      std::string initialRAMDataString;
+      if (jaffarCommon::file::loadStringFromFile(initialRAMDataString, _initialRAMDataFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from RAM Data file: %s\n", _initialRAMDataFilePath.c_str());
 
-        // Pushing data into RAM
-        memcpy(_quickerNES->getLowMem(), initialRAMDataString.data(), 0x800);
+      // Pushing data into RAM
+      memcpy(_quickerNES->getLowMem(), initialRAMDataString.data(), 0x800);
     }
   }
 
   // State advancing function
-  void advanceStateImpl(const jaffar::input_t &input) override { _quickerNES->advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t& input) override { _quickerNES->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _quickerNES->serializeState(serializer); };
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _quickerNES->deserializeState(deserializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override { _quickerNES->serializeState(serializer); };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override { _quickerNES->deserializeState(deserializer); };
 
   __INLINE__ void printInfo() const override
   {
@@ -152,7 +157,7 @@ class QuickerNES final : public Emulator
     printMemoryBlockHash("SPRT");
   }
 
-  property_t getProperty(const std::string &propertyName) const override
+  property_t getProperty(const std::string& propertyName) const override
   {
     if (propertyName == "LRAM") return property_t(_quickerNES->getLowMem(), _quickerNES->getLowMemSize());
     if (propertyName == "SRAM") return property_t(_quickerNES->getWorkMem(), _quickerNES->getWorkMemSize());
@@ -164,46 +169,46 @@ class QuickerNES final : public Emulator
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
-  __INLINE__ void enableStateProperty(const std::string &property) { _quickerNES->enableStateBlock(property); }
+  __INLINE__ void enableStateProperty(const std::string& property) { _quickerNES->enableStateBlock(property); }
 
-  __INLINE__ void disableStateProperty(const std::string &property) { _quickerNES->disableStateBlock(property); }
+  __INLINE__ void disableStateProperty(const std::string& property) { _quickerNES->disableStateBlock(property); }
 
   ////////// Rendering functions (some of these taken from https://github.com/Bindernews/HeadlessQuickNes / MIT License)
 
   // Function to initalize the video palette
-  int32_t *_initF_VideoPalette()
+  int32_t* _initF_VideoPalette()
   {
     static int32_t           VideoPalette[512];
-    const emulator_t::rgb_t *palette = emulator_t::nes_colors;
+    const emulator_t::rgb_t* palette = emulator_t::nes_colors;
     for (int i = 0; i < 512; i++) { VideoPalette[i] = palette[i].red << 16 | palette[i].green << 8 | palette[i].blue | 0xff000000; }
     return VideoPalette;
   }
 
   // Initialize the video palette
-  const int32_t *NES_VIDEO_PALETTE = _initF_VideoPalette();
+  const int32_t* NES_VIDEO_PALETTE = _initF_VideoPalette();
 
   // Storage for nes renderer state
   int32_t _curBlit[BLIT_SIZE];
   uint8_t _videoBuffer[BLIT_SIZE];
 
   // Copied from bizinterface.cpp in BizHawk/quicknes
-  __INLINE__ void saveBlit(const void *ePtr, int32_t *dest, const int32_t *colors, int cropleft, int croptop, int cropright, int cropbottom)
+  __INLINE__ void saveBlit(const void* ePtr, int32_t* dest, const int32_t* colors, int cropleft, int croptop, int cropright, int cropbottom)
   {
-    const emulator_t    *e         = (emulator_t *)ePtr;
-    const unsigned char *in_pixels = e->frame().pixels;
+    const emulator_t*    e         = (emulator_t*)ePtr;
+    const unsigned char* in_pixels = e->frame().pixels;
     if (in_pixels == NULL) return;
-    int32_t *out_pixels = dest;
+    int32_t* out_pixels = dest;
 
     for (unsigned h = 0; h < emulator_t::image_height; h++, in_pixels += e->frame().pitch, out_pixels += emulator_t::image_width)
       for (unsigned w = 0; w < emulator_t::image_width; w++)
-        {
-          unsigned                 col = e->frame().palette[in_pixels[w]];
-          const emulator_t::rgb_t &rgb = e->nes_colors[col];
-          unsigned                 r   = rgb.red;
-          unsigned                 g   = rgb.green;
-          unsigned                 b   = rgb.blue;
-          out_pixels[w]                = (r << 16) | (g << 8) | (b << 0);
-        }
+      {
+        unsigned                 col = e->frame().palette[in_pixels[w]];
+        const emulator_t::rgb_t& rgb = e->nes_colors[col];
+        unsigned                 r   = rgb.red;
+        unsigned                 g   = rgb.green;
+        unsigned                 b   = rgb.blue;
+        out_pixels[w]                = (r << 16) | (g << 8) | (b << 0);
+      }
   }
 
   // This function opens the video output (e.g., window)
@@ -243,8 +248,8 @@ class QuickerNES final : public Emulator
   {
     saveBlit(_quickerNES->getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0);
   }
-  __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base &serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
-  __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
+  __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base& serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
+  __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
   __INLINE__ size_t getRendererStateSize() const override
   {
     jaffarCommon::serializer::Contiguous s;
@@ -253,13 +258,13 @@ class QuickerNES final : public Emulator
   }
 
   // Window pointer
-  SDL_Window *m_window;
+  SDL_Window* m_window;
 
   // Renderer
-  SDL_Renderer *m_renderer;
+  SDL_Renderer* m_renderer;
 
   // SDL Textures
-  SDL_Texture *m_tex;
+  SDL_Texture* m_tex;
 
   // Destination rect for the texture
   SDL_Rect m_nesDest;
@@ -282,7 +287,7 @@ class QuickerNES final : public Emulator
 
   __INLINE__ void showRender() override
   {
-    void *nesPixels = nullptr;
+    void* nesPixels = nullptr;
     int   pitch     = 0;
 
     if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0) JAFFAR_THROW_RUNTIME("Coult not lock texture in NES emulator");
@@ -297,18 +302,17 @@ class QuickerNES final : public Emulator
     SDL_RenderPresent(m_renderer);
   }
 
-  private:
-
+private:
   __INLINE__ void disableStateProperties()
   {
-    for (const auto &property : _disabledStateProperties) disableStateProperty(property);
+    for (const auto& property : _disabledStateProperties) disableStateProperty(property);
   }
   __INLINE__ void enableStateProperties()
   {
-    for (const auto &property : _disabledStateProperties) enableStateProperty(property);
+    for (const auto& property : _disabledStateProperties) enableStateProperty(property);
   }
 
-  void printMemoryBlockHash(const std::string &blockName) const
+  void printMemoryBlockHash(const std::string& blockName) const
   {
     auto p    = getProperty(blockName);
     auto hash = jaffarCommon::hash::hashToString(jaffarCommon::hash::calculateMetroHash(p.pointer, p.size));

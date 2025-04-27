@@ -1,0 +1,194 @@
+{
+  "Driver Configuration":
+  {
+   "End On First Win State": true,
+   "Max Steps": 0,
+ 
+   "Save Intermediate Results":
+   {
+     "Enabled": true,
+     "Frequency (s)": 1.0,
+     "Best Solution Path": "/tmp/jaffar.best.sol",
+     "Worst Solution Path": "/tmp/jaffar.worst.sol",
+     "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+   }
+  },
+ 
+  "Engine Configuration":
+  {
+   "State Database":
+   {
+     "Type": "Numa Aware",
+     "Max Size per NUMA Domain (Mb)":
+     [ 
+       2000,
+       2000
+     ],
+   
+     "Scavenger Queues Size": 32,
+     "Scavenging Depth": 32,
+ 
+     "Compression":
+     {
+       "Use Differential Compression": false, 
+       "Max Difference (bytes)": 6000,
+       "Use Zlib Compression": false
+     }
+   },
+ 
+   "Hash Database":
+   {
+     "Max Store Count": 2,
+     "Max Store Size (Mb)": 10000
+   }
+ },
+ 
+ "Emulator Configuration":
+ {
+   "Emulator Name": "QuickerNES",
+   "Rom File Path": "Lunar Ball (J) [!].nes",
+   "Rom File SHA1": "AA5C574A4743991A3523DFD78A39D782BEDE262A",
+   "Initial State File Path": "",
+   "Initial Sequence File Path": "initial.sol",
+   "Initial RAM Data File Path": "",
+   "Controller 1 Type": "Joypad",
+   "Controller 2 Type": "None",
+   "Nametable Block Size": 1024,
+   "Disabled State Properties": [ "SRAM", "CHRR", "NTAB", "SPRT" ]
+ },
+  
+ "Runner Configuration":
+ {
+   "Hash Step Tolerance": 0,
+   "Show Empty Input Slots": true,
+   "Show Allowed Inputs": true,
+   "Frameskip Rate": 0,
+   "Bypass Hash Calculation": false,
+
+   "Store Input History": 
+   {
+     "Enabled": true,
+     "Max Size": 3000
+   },
+ 
+ 
+   "Allowed Input Sets":
+   [
+    {
+      "Conditions":
+      [
+      ],
+  
+      "Inputs":
+      [
+        "|..|........|"
+      ],
+ 
+      "Stop Input Evaluation": true
+    },
+
+    {
+      "Conditions":
+      [
+      ],
+  
+      "Inputs":
+      [
+        "|..|..L.....|",
+        "|..|...R....|",
+        "|..|......B.|"
+      ],
+ 
+      "Stop Input Evaluation": false
+    }
+
+   ],
+ 
+   "Test Candidate Inputs": false,
+   "Candidate Input Sets": [ ]
+ },
+ 
+ "Game Configuration":
+ {
+   "Game Name": "NES / Lunar Ball",
+   "Frame Rate": 60.10,
+   "Last Input Step Reward": 0.0,
+ 
+   "Print Properties":
+   [
+   ],
+ 
+   "Hash Properties":
+   [
+   ],
+ 
+   "Rules":
+   [
+    {
+      "Label": 9000,
+      "Conditions":
+      [
+        { "Property": "Ball 0 State", "Op": "==", "Value": 3 } 
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail"}
+      ]
+     },
+
+    {
+      "Label": 9001,
+      "Conditions":
+      [
+        { "Property": "Ball 0 State", "Op": "==", "Value": 131 } 
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail"}
+      ]
+     },
+
+     {
+      "Label": 9002,
+      "Conditions":
+      [
+        { "Property": "Ball 0 State", "Op": "==", "Value": 162 },
+        { "Property": "Moving Balls", "Op": "==", "Value": 0 },
+        { "Property": "Pending Balls", "Op": ">", "Value": 0 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail"}
+      ]
+     },
+     
+    {
+      "Label": 9999,
+      "Conditions":
+      [
+        { "Property": "Pending Balls", "Op": "==", "Value": 0 } 
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win"}
+      ]
+     }
+
+
+   ]
+  }
+ }
+ 

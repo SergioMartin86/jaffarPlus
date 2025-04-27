@@ -1,58 +1,72 @@
 #pragma once
 
-#include "../emulators/emulatorList.hpp"
+#include <emulatorList.hpp>
 
 #ifdef __JAFFAR_ENABLE_NES
-  #include "nes/sprilo.hpp"
+#include "nes/arkanoid2.hpp"
+#include "nes/iceClimber.hpp"
+#include "nes/indyHeat.hpp"
+#include "nes/lunarBall.hpp"
+#include "nes/microMachines.hpp"
+#include "nes/saintSeiyaOugonDensetsu.hpp"
+#include "nes/sidePocket.hpp"
+#include "nes/sprilo.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_SDLPOP
-  #include "sdlpop/princeOfPersia.hpp"
+#include "sdlpop/princeOfPersia.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_SNES
-  #include "snes/christmasCraze.hpp"
+#include "snes/arkanoid.hpp"
+#include "snes/christmasCraze.hpp"
+#include "snes/superOffRoad.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_GENESIS
-  #include "genesis/dinoRunner.hpp"
-  #include "genesis/avuado.hpp"
+#include "gamegear/pop.hpp"
+#include "genesis/avuado.hpp"
+#include "genesis/dinoRunner.hpp"
+#include "genesis/microMachines.hpp"
+#include "genesis/pop.hpp"
+#include "genesis/popUSA.hpp"
+#include "genesis/segapede.hpp"
+#include "genesis/shoveit.hpp"
+#include "genesis/sonic.hpp"
+#include "sms/snailMaze.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_A2600
-  #include "a2600/hellway.hpp"
+#include "a2600/hellway.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_A2600
-  #include "a2600/hellway.hpp"
+#include "a2600/hellway.hpp"
 #endif
 
 #if defined(__JAFFAR_ENABLE_SMBC) || defined(__JAFFAR_ENABLE_NES)
-  #include "nes/superMarioBros.hpp"
+#include "nes/superMarioBros.hpp"
 #endif
 
 #if defined(__JAFFAR_ENABLE_NEORAW) || defined(__JAFFAR_ENABLE_RAWGL)
-  #include "raw/anotherWorld.hpp"
+#include "raw/anotherWorld.hpp"
 #endif
 
 #ifdef __JAFFAR_USE_ARKBOT
-  #include "arkbot/arkanoid.hpp"
-#endif
-
-#ifdef __JAFFAR_ENABLE_GBA
-  #include "gba/tollrunner.hpp"
+#include "arkbot/arkanoid.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_GBC
-  #include "gbc/aSlimeTravel.hpp"
+#include "gbc/aSlimeTravel.hpp"
+#include "gbc/pop.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_DOOM
-  #include "doom/doom.hpp"
+#include "doom/doom.hpp"
 #endif
 
-#ifdef __JAFFAR_ENABLE_SOKOBAN
-  #include "sokoban/sokoban.hpp"
+#ifdef __JAFFAR_ENABLE_GBA
+#include "gba/tollrunner.hpp"
 #endif
 
 #include <emulator.hpp>
@@ -63,12 +77,12 @@ namespace jaffarPlus
 {
 #define DETECT_GAME(GAME)                                                                                                                                                          \
   if (gameName == games::GAME::getName())                                                                                                                                          \
-    {                                                                                                                                                                              \
-      g            = std::make_unique<games::GAME>(std::move(e), gameConfig);                                                                                                      \
-      isRecognized = true;                                                                                                                                                         \
+  {                                                                                                                                                                                \
+    g            = std::make_unique<games::GAME>(std::move(e), gameConfig);                                                                                                        \
+    isRecognized = true;                                                                                                                                                           \
   }
 
-std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const nlohmann::json &gameConfig)
+std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const nlohmann::json& gameConfig)
 {
   // Base pointer for the game
   std::unique_ptr<Game> g;
@@ -80,11 +94,21 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
   auto e = jaffarPlus::Emulator::getEmulator(emulatorConfig);
 
   // Getting game name
-  const auto &gameName = jaffarCommon::json::getString(gameConfig, "Game Name");
+  const auto& gameName = jaffarCommon::json::getString(gameConfig, "Game Name");
 
 // Trying to detect game by name
 #ifdef __JAFFAR_ENABLE_NES
+  DETECT_GAME(nes::MicroMachines);
+  DETECT_GAME(nes::SaintSeiyaOugonDensetsu);
   DETECT_GAME(nes::Sprilo);
+  DETECT_GAME(nes::IndyHeat);
+  DETECT_GAME(nes::LunarBall);
+  DETECT_GAME(nes::SidePocket);
+  DETECT_GAME(nes::IceClimber);
+
+#ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
+  DETECT_GAME(nes::Arkanoid2);
+#endif
 #endif
 
 #ifdef __JAFFAR_ENABLE_SDLPOP
@@ -93,11 +117,21 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 
 #ifdef __JAFFAR_ENABLE_SNES
   DETECT_GAME(snes::ChristmasCraze);
+  DETECT_GAME(snes::Arkanoid);
+  DETECT_GAME(snes::SuperOffRoad);
 #endif
 
 #ifdef __JAFFAR_ENABLE_GENESIS
-  DETECT_GAME(genesis::DinoRunner);
   DETECT_GAME(genesis::Avuado);
+  DETECT_GAME(genesis::DinoRunner);
+  DETECT_GAME(genesis::MicroMachines);
+  DETECT_GAME(genesis::Segapede);
+  DETECT_GAME(genesis::Sonic);
+  DETECT_GAME(genesis::PrinceOfPersia);
+  DETECT_GAME(genesis::PrinceOfPersiaUSA);
+  DETECT_GAME(genesis::ShoveIt);
+  DETECT_GAME(gamegear::PrinceOfPersia);
+  DETECT_GAME(sms::SnailMaze);
 #endif
 
 #ifdef __JAFFAR_ENABLE_A2600
@@ -121,15 +155,12 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json &emulatorConfig, const 
 #endif
 
 #ifdef __JAFFAR_ENABLE_GBC
+  DETECT_GAME(gbc::PrinceOfPersia);
   DETECT_GAME(gbc::ASlimeTravel);
 #endif
 
 #ifdef __JAFFAR_ENABLE_DOOM
   DETECT_GAME(doom::Doom);
-#endif
-
-#ifdef __JAFFAR_ENABLE_SOKOBAN
-  DETECT_GAME(sokoban::Sokoban);
 #endif
 
   // Check if game was recognized

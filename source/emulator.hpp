@@ -1,13 +1,13 @@
 #pragma once
 
-#include <string>
+#include <SDL2/SDL.h>
 #include <inputParser.hpp>
 #include <inputSet.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/file.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
-#include <SDL2/SDL.h>
+#include <string>
 
 namespace jaffarPlus
 {
@@ -15,14 +15,13 @@ namespace jaffarPlus
 // A property is a contiguous segment of memory with size, identifiable by name
 struct property_t
 {
-  uint8_t *pointer;
+  uint8_t* pointer;
   size_t   size;
 };
 
 class Emulator
 {
-  public:
-
+public:
   // Struct that holds the string of an input together with its emulator-specific input data
   struct inputEntry_t
   {
@@ -34,7 +33,7 @@ class Emulator
   };
 
   // Constructor must only do configuration parsing to perform dry runs
-  Emulator(const nlohmann::json &config)
+  Emulator(const nlohmann::json& config)
   {
     // Getting emulator name (for runtime use)
     _emulatorName = jaffarCommon::json::getString(config, "Emulator Name");
@@ -73,7 +72,7 @@ class Emulator
   }
 
   // Function to return the information about a previously registered input
-  __INLINE__ const inputEntry_t &getRegisteredInput(const InputSet::inputIndex_t inputIdx) const { return _inputMap[(size_t)inputIdx]; }
+  __INLINE__ const inputEntry_t& getRegisteredInput(const InputSet::inputIndex_t inputIdx) const { return _inputMap[(size_t)inputIdx]; }
 
   // State advancing function
   void advanceState(const InputSet::inputIndex_t input) { advanceStateImpl(_inputMap[input].inputData); };
@@ -92,20 +91,20 @@ class Emulator
 
   virtual void initializeImpl() = 0;
 
-  virtual void serializeState(jaffarCommon::serializer::Base &serializer) const = 0;
-  virtual void deserializeState(jaffarCommon::deserializer::Base &deserializer) = 0;
+  virtual void serializeState(jaffarCommon::serializer::Base& serializer) const = 0;
+  virtual void deserializeState(jaffarCommon::deserializer::Base& deserializer) = 0;
 
   // Function to get a reference to the input parser from the base emulator
-  virtual jaffar::InputParser *getInputParser() const = 0;
+  virtual jaffar::InputParser* getInputParser() const = 0;
 
   // Function to print debug information, whatever it might be
   virtual void printInfo() const = 0;
 
   // Get a property by name
-  virtual property_t getProperty(const std::string &propertyName) const = 0;
+  virtual property_t getProperty(const std::string& propertyName) const = 0;
 
   // Function to obtain emulator based on name
-  static std::unique_ptr<Emulator> getEmulator(const nlohmann::json &emulatorConfig);
+  static std::unique_ptr<Emulator> getEmulator(const nlohmann::json& emulatorConfig);
 
   /////// Render-related functions
 
@@ -125,10 +124,10 @@ class Emulator
   virtual void updateRendererState(const size_t stepIdx, const std::string input) = 0;
 
   // This function gathers the necessary data for output rendering of a given state/frame
-  virtual void serializeRendererState(jaffarCommon::serializer::Base &serializer) const = 0;
+  virtual void serializeRendererState(jaffarCommon::serializer::Base& serializer) const = 0;
 
   // This function pushes the necessary data for output rendering of a given state/frame
-  virtual void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) = 0;
+  virtual void deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) = 0;
 
   // This function returns the size of the renderer state
   virtual size_t getRendererStateSize() const = 0;
@@ -136,10 +135,9 @@ class Emulator
   // Shows the contents of the emulator's renderer into the window
   virtual void showRender() = 0;
 
-  protected:
-
+protected:
   // Function to advance state
-  virtual void advanceStateImpl(const jaffar::input_t &input) = 0;
+  virtual void advanceStateImpl(const jaffar::input_t& input) = 0;
 
   // Emulator name (for runtime use)
   std::string _emulatorName;
@@ -147,8 +145,7 @@ class Emulator
   // Stores whether the emulator has been initialized
   bool _isInitialized = false;
 
-  private:
-
+private:
   // Storage that maps an input id to its input data
   std::vector<inputEntry_t> _inputMap;
 };

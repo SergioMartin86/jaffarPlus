@@ -1,12 +1,12 @@
 #pragma once
 
-#include <memory>
+#include <emulator.hpp>
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
-#include <emulator.hpp>
+#include <memory>
 #include <sdlpopInstance.hpp>
 
 namespace jaffarPlus
@@ -17,13 +17,11 @@ namespace emulator
 
 class QuickerSDLPoP final : public Emulator
 {
-  public:
-
+public:
   static std::string getName() { return "QuickerSDLPoP"; }
 
   // Constructor must only do configuration parsing
-  QuickerSDLPoP(const nlohmann::json &config)
-    : Emulator(config)
+  QuickerSDLPoP(const nlohmann::json& config) : Emulator(config)
   {
     _QuickerSDLPoP = std::make_unique<SDLPoPInstance>(config);
 
@@ -44,12 +42,12 @@ class QuickerSDLPoP final : public Emulator
 
     // If an initial state is provided, load it now
     if (_stateFilePath != "")
-      {
-        std::string stateFileData;
-        if (jaffarCommon::file::loadStringFromFile(stateFileData, _stateFilePath) == false) JAFFAR_THROW_LOGIC("Could not initial state file: %s\n", _stateFilePath.c_str());
+    {
+      std::string stateFileData;
+      if (jaffarCommon::file::loadStringFromFile(stateFileData, _stateFilePath) == false) JAFFAR_THROW_LOGIC("Could not initial state file: %s\n", _stateFilePath.c_str());
 
-        jaffarCommon::deserializer::Contiguous deserializer(stateFileData.data());
-        _QuickerSDLPoP->deserializeState(deserializer);
+      jaffarCommon::deserializer::Contiguous deserializer(stateFileData.data());
+      _QuickerSDLPoP->deserializeState(deserializer);
     }
 
     // Check if RNG elements need overriding
@@ -64,20 +62,20 @@ class QuickerSDLPoP final : public Emulator
   }
 
   // Function to get a reference to the input parser from the base emulator
-  jaffar::InputParser *getInputParser() const override { return _QuickerSDLPoP->getInputParser(); }
+  jaffar::InputParser* getInputParser() const override { return _QuickerSDLPoP->getInputParser(); }
 
   // State advancing function
-  void advanceStateImpl(const jaffar::input_t &input) override { _QuickerSDLPoP->advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t& input) override { _QuickerSDLPoP->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base &serializer) const override { _QuickerSDLPoP->serializeState(serializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override { _QuickerSDLPoP->serializeState(serializer); };
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base &deserializer) override { _QuickerSDLPoP->deserializeState(deserializer); };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override { _QuickerSDLPoP->deserializeState(deserializer); };
 
   __INLINE__ void printInfo() const override {}
 
-  __INLINE__ property_t getProperty(const std::string &propertyName) const override
+  __INLINE__ property_t getProperty(const std::string& propertyName) const override
   {
-    if (propertyName == "Game State") return property_t((uint8_t *)_QuickerSDLPoP->getGameState(), _QuickerSDLPoP->getFullStateSize());
+    if (propertyName == "Game State") return property_t((uint8_t*)_QuickerSDLPoP->getGameState(), _QuickerSDLPoP->getFullStateSize());
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
 
@@ -108,14 +106,14 @@ class QuickerSDLPoP final : public Emulator
     _renderInput   = input != "<End Of Sequence>" ? getInputParser()->parseInputString(input) : jaffar::input_t();
   }
 
-  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base &serializer) const override
+  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base& serializer) const override
   {
     serializeState(serializer);
     serializer.push(&_renderStepIdx, sizeof(_renderStepIdx));
     serializer.push(&_renderInput, sizeof(_renderInput));
   }
 
-  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base &deserializer) override
+  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) override
   {
     deserializeState(deserializer);
     deserializer.pop(&_renderStepIdx, sizeof(_renderStepIdx));
@@ -126,8 +124,7 @@ class QuickerSDLPoP final : public Emulator
 
   __INLINE__ void showRender() override { _QuickerSDLPoP->updateRenderer(_renderStepIdx, _renderInput); }
 
-  private:
-
+private:
   std::unique_ptr<SDLPoPInstance> _QuickerSDLPoP;
 
   // initial state file path
@@ -143,7 +140,7 @@ class QuickerSDLPoP final : public Emulator
   // Internal render state variables
   size_t          _renderStepIdx;
   jaffar::input_t _renderInput;
-  SDL_Window     *_window;
+  SDL_Window*     _window;
 };
 
 } // namespace emulator

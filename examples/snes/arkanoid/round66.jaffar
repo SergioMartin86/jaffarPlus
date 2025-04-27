@@ -1,0 +1,199 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 0,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+   "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      80000,
+      80000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerSnes9x",
+  "Rom File Path": "../../../extern/jaffarPlus/extern/quickerSnes9x/tests/roms/Arkanoid - Doh It Again (J) [!].smc",
+  "Rom File SHA1": "03F839819A253EED9A928D8D7CC80FCC245AB23D",
+  "Initial State File Path": "",
+  "Initial Sequence File Path": "round66.initial.sol",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "Joypad",
+  "Disabled State Properties": [ "SRA"  ],
+  "Work RAM Serialization Size": 131072
+},
+ 
+"Runner Configuration":
+{
+  "Bypass Hash Calculation": false,
+  "Frameskip Rate": 0,
+  "Hash Step Tolerance": 1,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 4000
+  },
+
+  "Allowed Input Sets":
+  [
+    {
+      "Conditions":
+      [
+       { "Property": "Launch Counter", "Op": "==", "Value": 255 }
+      ],
+  
+      "Inputs":
+      [
+       "|..|............|............|"
+      ],
+ 
+      "Stop Input Evaluation": false
+    },
+
+    {
+     "Conditions":
+     [
+      { "Property": "Launch Counter", "Op": ">", "Value": 0 }
+     ],
+ 
+     "Inputs":
+     [
+      "|..|.........A..|............|",
+      "|..|..L......A..|............|",
+      "|..|...R.....A..|............|",
+      "|..|..L.........|............|",
+      "|..|...R........|............|"
+     ],
+
+     "Stop Input Evaluation": false
+   }
+ ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "SNES / Arkanoid",
+  "Frame Rate": 120.10,
+  "Paddle Movement Frameskip": 24,
+  "Ball Count Reward": 0.5,
+  "Remaining Hits Reward": 1.0,
+  "Remaining Blocks Reward": 0.0,
+  "Falling Laser Powerup Reward": 0.1,
+  "Falling Eight Ball Powerup Reward": 1.0,
+  "Hold Laser Powerup Reward": 2.0,
+  "Hold M Powerup Reward": 1.0,
+  
+  "Print Properties":
+  [
+    "Boss 3 Arm 1 HP",
+    "Boss 3 Arm 2 HP",
+    "Boss 3 Torso HP"
+  ],
+
+  "Hash Properties":
+  [
+  ],
+
+  "Rules":
+  [
+    {
+      "Label": 1,
+      "Conditions":
+      [
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Set Boss Health Magnet", "Intensity": -1.0 }
+      ]
+    },
+
+    {
+      "Label": 2,
+      "Conditions":
+      [
+        { "Property": "Boss 3 Torso HP", "Op": "==", "Value": 0 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Win" }
+      ]
+    },
+
+    {
+      "Label": 3,
+      "Conditions":
+      [
+        { "Property": "Active Balls", "Op": "==", "Value": 0 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail" }
+      ]
+    },
+
+    {
+      "Label": 4,
+      "Conditions":
+      [
+        { "Property": "Paddle PowerUp", "Op": "==", "Value": 255 }
+      ],
+      
+      "Satisfies": [ ],
+      
+      "Actions":
+      [
+        { "Type": "Trigger Fail" }
+      ]
+    }
+  ]
+ }
+}

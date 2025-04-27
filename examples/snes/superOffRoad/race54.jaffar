@@ -1,0 +1,191 @@
+{
+ "Driver Configuration":
+ {
+  "End On First Win State": true,
+  "Max Steps": 0,
+
+  "Save Intermediate Results":
+  {
+    "Enabled": true,
+    "Frequency (s)": 1.0,
+    "Best Solution Path": "/tmp/jaffar.best.sol",
+    "Worst Solution Path": "/tmp/jaffar.worst.sol",
+    "Best State Path": "/tmp/jaffar.best.state",
+    "Worst State Path": "/tmp/jaffar.worst.state"
+  }
+ },
+
+ "Engine Configuration":
+ {
+  "State Database":
+  {
+    "Type": "Numa Aware",
+    "Max Size per NUMA Domain (Mb)":
+    [ 
+      10000,
+      10000
+    ],
+  
+    "Scavenger Queues Size": 32,
+    "Scavenging Depth": 32,
+
+    "Compression":
+    {
+      "Use Differential Compression": false, 
+      "Max Difference (bytes)": 6000,
+      "Use Zlib Compression": false
+    }
+  },
+
+  "Hash Database":
+  {
+    "Max Store Count": 2,
+    "Max Store Size (Mb)": 10000
+  }
+},
+
+"Emulator Configuration":
+{
+  "Emulator Name": "QuickerSnes9x",
+  "Rom File Path": "../../../extern/jaffarPlus/extern/quickerSnes9x/tests/roms/Super Off Road (U) [!].smc",
+  "Rom File SHA1": "1784C53C1B60047337109A5A9BF6A638D77B4219",
+  "Initial State File Path": "",
+  "Initial Sequence File Path": "race54.initial.sol",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "None",
+  "Disabled State Properties": [ "SRA", "VRA", "CTL" ],
+  "Work RAM Serialization Size": 2048
+},
+ 
+"Runner Configuration":
+{
+  "Bypass Hash Calculation": false,
+  "Frameskip Rate": 1,
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+
+  "Store Input History": 
+  {
+    "Enabled": true,
+    "Max Size": 3000
+  },
+
+  "Allowed Input Sets":
+  [
+   {
+     "Conditions":
+     [
+     ],
+ 
+     "Inputs":
+     [
+      "|..|..L....B....|",
+      "|..|...R...B....|",
+      "|..|......YB....|"
+     ],
+
+     "Stop Input Evaluation": false
+   }
+  ],
+
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [ ]
+},
+
+"Game Configuration":
+{
+  "Game Name": "SNES / Super Off Road",
+  "Frame Rate": 60.10,
+  "Last Input Step Reward": 0.0,
+
+  "Print Properties":
+  [
+    "Money100",     
+    "Money10",      
+    "Money1",       
+    "Player Input", 
+    "Player Speed", 
+    "Player Pos X1",
+    "Player Pos X2",
+    "Player Pos Y1",
+    "Player Pos Y2",
+    "Player Angle", 
+    "Player Lap",
+    "Player Checkpoint",
+    "Turbos"   
+  ],
+
+  "Hash Properties":
+  [
+    "Money100",     
+    "Money10",      
+    "Money1",       
+    "Player Input", 
+    "Player Speed", 
+    "Player Pos X1",
+    "Player Pos X2",
+    "Player Pos Y1",
+    "Player Pos Y2",
+    "Player Angle", 
+    "Player Lap",
+    "Player Checkpoint",
+    "Turbos"   
+  ],
+
+  "Checkpoint Magnets":
+  [
+  [ 1  ,41 , 8],
+  [ 2  ,34 , 17],
+  [ 3  ,26 , 18],
+  [ 4  ,11 , 18],
+  [ 5  ,3  , 23],
+  [ 6  ,3  , 29],
+  [ 7  ,9  , 33],
+  [ 8  ,26 , 36],
+  [ 9  ,34 , 31],
+  [ 10 ,27 , 25],
+  [ 11 ,26 , 26],
+  [ 12 ,21 , 9],
+  [ 0  ,29 , 3]
+    
+ ],
+
+  "Rules":
+  [
+   {
+     "Label": 10,
+     "Conditions":
+     [
+     ],
+     
+     "Satisfies": [ ],
+     
+     "Actions":
+     [
+      { "Type": "Set Lap Magnet", "Intensity": 10000.0 },
+      { "Type": "Set Checkpoint Magnet", "Intensity": 100.0 },
+      { "Type": "Set Money Magnet", "Intensity": 1000.0 },
+      { "Type": "Set Turbo Magnet", "Intensity": 1000.0 },
+      { "Type": "Set Point Magnet", "Intensity": 1.0 },
+      { "Type": "Set Speed Magnet", "Intensity": 0.01 }
+     ]
+    },
+
+     {
+      "Label": 18,
+      "Conditions":
+      [
+        { "Property": "Player Lap", "Op": "==", "Value": 5 }
+      ],
+      
+      "Satisfies": [  ],
+      
+      "Actions":
+      [
+       { "Type": "Trigger Win" }
+      ]
+     }
+  ]
+ }
+}
