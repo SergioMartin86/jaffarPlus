@@ -40,11 +40,13 @@
   "Game Data Path": "../../extern/quickerRAW/tests/gameData",
   "Initial State File Path": "stage01.state",
   "Initial RAM Data File Path": "stage01.state",
+  "Initial RAM Data Endiannes": "Little Endian",
   "Disabled State Properties": [ "NVS" ]
 },
  
 "Runner Configuration":
 {
+  "Bypass Hash Calculation": false,
   "Frameskip Rate": 0,
   "Hash Step Tolerance": 0,
   "Show Empty Input Slots": false,

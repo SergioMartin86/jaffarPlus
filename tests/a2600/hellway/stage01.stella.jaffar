@@ -2,7 +2,7 @@
  "Driver Configuration":
  {
   "End On First Win State": true,
-  "Max Steps": 1000,
+  "Max Steps": 0,
 
   "Save Intermediate Results":
   {
@@ -47,6 +47,7 @@
  
 "Runner Configuration":
 {
+  "Bypass Hash Calculation": false,
   "Frameskip Rate": 0,
   "Hash Step Tolerance": 4,
   "Show Empty Input Slots": true,
@@ -57,7 +58,6 @@
     "Enabled": true,
     "Max Size": 1000
   },
-
 
   "Allowed Input Sets":
   [
