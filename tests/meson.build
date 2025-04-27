@@ -22,7 +22,7 @@ test('ValidateExamples',
 
 if emulator == 'QuickerNES'
 
-testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
 testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('race04_short',
@@ -46,7 +46,7 @@ endif
 
 if emulator == 'QuickerSDLPoP'
 
-testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=1' ]
+testEnvVars = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
 testEnvVars += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
 
 test('lvl01',
