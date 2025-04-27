@@ -27,7 +27,7 @@ thread_local static int _myThreadId;
 class StateDb
 {
 public:
-StateDb(Runner& r, const nlohmann::json& config) : _runner(&r)
+  StateDb(Runner& r, const nlohmann::json& config) : _runner(&r)
   {
     // Initialization message
     jaffarCommon::logger::log("[J+] Initializing State Database...\n");
@@ -173,7 +173,7 @@ StateDb(Runner& r, const nlohmann::json& config) : _runner(&r)
 
   /**
    * Serializes the runner state and pushes it into the state database
-  */
+   */
   __INLINE__ bool pushState(const float reward, Runner& r, void* statePtr)
   {
     // Check that we got a free state (we did not overflow state memory)
@@ -324,7 +324,7 @@ StateDb(Runner& r, const nlohmann::json& config) : _runner(&r)
     if (success == false) JAFFAR_THROW_RUNTIME("Failed on pushing free state back. This must be a bug in Jaffar\n");
   }
 
-   /**
+  /**
    * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
    */
   __INLINE__ void advanceStep()

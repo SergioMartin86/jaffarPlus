@@ -56,8 +56,8 @@ public:
     auto& r = *_runners[0];
 
     // Creating State database
-    const auto stateDatabaseJs             = jaffarCommon::json::getObject(engineConfig, "State Database");
-    _stateDb                    = std::make_unique<jaffarPlus::StateDb>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
+    const auto stateDatabaseJs = jaffarCommon::json::getObject(engineConfig, "State Database");
+    _stateDb                   = std::make_unique<jaffarPlus::StateDb>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
 
     // Creating hash database
     _hashDb = std::make_unique<jaffarPlus::HashDb>(jaffarCommon::json::getObject(engineConfig, "Hash Database"));
