@@ -69,6 +69,6 @@ Author
   + The authors of DSDA
   + The authors of the third party libraries used.
 
-- JaffarPlus is distributed freely under the Apache License 2.0 for any purpose and use, as long as:
+- JaffarPlus is distributed freely under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) for any purpose and use, as long as:
   + The license and proper credits to its author are preserved
   + If you publish a TAS or any public work using this software, I'd appreciate you mention it and linking this repository in your description
