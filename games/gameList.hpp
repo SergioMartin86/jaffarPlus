@@ -57,8 +57,8 @@
 #endif
 
 #ifdef __JAFFAR_ENABLE_GBC
-#include "gbc/pop.hpp"
 #include "gbc/aSlimeTravel.hpp"
+#include "gbc/pop.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_DOOM
@@ -66,7 +66,7 @@
 #endif
 
 #ifdef __JAFFAR_ENABLE_GBA
-  #include "gba/tollrunner.hpp"
+#include "gba/tollrunner.hpp"
 #endif
 
 #include <emulator.hpp>
