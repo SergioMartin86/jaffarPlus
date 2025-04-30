@@ -458,11 +458,11 @@ public:
   virtual __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) {}
 
   // Player-specific commands
-  virtual void playerPrintCommands() const {};           // If the game has any specific player commands, print them now
-  virtual void playerParseCommand(const int command) {}; // If the game has any specific player commands, print them now
+  virtual void playerPrintCommands() const {}           // If the game has any specific player commands, print them now
+  virtual bool playerParseCommand(const int command) { return false; } // If the game has any specific player commands, print them now
 
   // Function to get direct state hash without passing an hashing engine
-  virtual jaffarCommon::hash::hash_t getDirectStateHash() const { return jaffarCommon::hash::hash_t(); };
+  virtual jaffarCommon::hash::hash_t getDirectStateHash() const { return jaffarCommon::hash::hash_t(); }
 
 protected:
   void registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)

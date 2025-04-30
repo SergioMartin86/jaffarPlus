@@ -11,6 +11,7 @@
 #include "nes/saintSeiyaOugonDensetsu.hpp"
 #include "nes/sidePocket.hpp"
 #include "nes/sprilo.hpp"
+#include "nes/marbleMadness.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_SDLPOP
@@ -99,6 +100,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
 // Trying to detect game by name
 #ifdef __JAFFAR_ENABLE_NES
   DETECT_GAME(nes::MicroMachines);
+  DETECT_GAME(nes::MarbleMadness);
   DETECT_GAME(nes::SaintSeiyaOugonDensetsu);
   DETECT_GAME(nes::Sprilo);
   DETECT_GAME(nes::IndyHeat);
