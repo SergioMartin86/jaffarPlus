@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 40000
         },
         "State Database": {
-            "Max Size (Mb)": 300000
+            "Max Size (Mb)": 10000
         }
     },
     "Emulator Configuration": {
@@ -42,7 +42,7 @@
         "Frameskip Rate": 0,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
-        "Show Allowed Inputs": false,
+        "Show Allowed Inputs": true,
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
@@ -50,7 +50,9 @@
         },
         "Allowed Input Sets": [
             {
-                "Conditions": [],
+                "Conditions": [
+                    { "Property": "Try New Inputs", "Op": "==", "Value": true }
+                ],
                 "Inputs": [
                     "|..|U......A|",
                     "|..|.D.....A|",
@@ -72,7 +74,7 @@
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
         "Trace File Path": "jaffar.trace",
-        "Keep Last Input Length": 2,
+        "Repeat Prev Input Times": 4,
         "Print Properties": [
             "Marble Pos X",
             "Marble Pos Y",

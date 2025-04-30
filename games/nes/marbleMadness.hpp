@@ -25,6 +25,9 @@ public:
     // Parsing configuration
     _lastInputStepReward = jaffarCommon::json::getNumber<float>(config, "Last Input Step Reward");
 
+    // Getting setting for the repetition of the previous input
+    _repeatPrevInputCount = jaffarCommon::json::getNumber<uint16_t>(config, "Repeat Prev Input Times");
+
     // Getting emulator name (for runtime use)
     _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
 
@@ -83,6 +86,7 @@ private:
     registerGameProperty("Marble Pos X",        &_marblePosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Marble Pos Y",        &_marblePosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Marble Pos Z",        &_marblePosZ, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Try New Inputs",      &_tryNewInputs, Property::datatype_t::dt_bool, Property::endianness_t::little);
 
     _gameTimer             = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Timer"           )]->getPointer();
     _gameCycle             = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Cycle"           )]->getPointer();
@@ -104,12 +108,28 @@ private:
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
+
+    // Initializing prev input values
+    _prevInputIdx = _nullInputIdx;
+    _prevInputRepeatedTimes = 0;
+    _tryNewInputs = true;
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     // Increasing counter if input is null
     if (input != _nullInputIdx) _lastInputStep = _currentStep;
+
+    // Checking input repetition
+    if (_prevInputIdx == input) _prevInputRepeatedTimes++;
+    else _prevInputRepeatedTimes = 0;
+
+    // Checking if next time we need to try new inputs
+    if (_prevInputRepeatedTimes >= _repeatPrevInputCount) _tryNewInputs = true;
+    else _tryNewInputs = false;
+
+    // Remembering input
+    _prevInputIdx = input;
 
     // Running emulator
     _emulator->advanceState(input);
@@ -175,14 +195,20 @@ private:
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
-    serializer.pushContiguous(&_lastInputStep, sizeof(_lastInputStep));
-    serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
+    serializer.push(&_lastInputStep, sizeof(_lastInputStep));
+    serializer.push(&_currentStep, sizeof(_currentStep));
+    serializer.push(&_prevInputIdx, sizeof(_prevInputIdx));
+    serializer.push(&_prevInputRepeatedTimes, sizeof(_prevInputRepeatedTimes));
+    serializer.push(&_tryNewInputs, sizeof(_tryNewInputs));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
-    deserializer.popContiguous(&_lastInputStep, sizeof(_lastInputStep));
-    deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
+    deserializer.pop(&_lastInputStep, sizeof(_lastInputStep));
+    deserializer.pop(&_currentStep, sizeof(_currentStep));
+    deserializer.pop(&_prevInputIdx, sizeof(_prevInputIdx));
+    deserializer.pop(&_prevInputRepeatedTimes, sizeof(_prevInputRepeatedTimes));
+    deserializer.pop(&_tryNewInputs, sizeof(_tryNewInputs));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -220,6 +246,9 @@ private:
     jaffarCommon::logger::log("[Jaffar]  + Marble Airtime:         %02u\n", *_marbleAirtime);
     jaffarCommon::logger::log("[Jaffar]  + Marble Surface Angle:   %02u\n", *_marbleSurfaceAngle);
     
+    jaffarCommon::logger::log("[Jaffar]  + Prev Input:             %02u\n", _prevInputIdx);
+    jaffarCommon::logger::log("[Jaffar]  + Prev Input Repetitions: %02u / %02u (Try new: %s)\n", _prevInputRepeatedTimes, _repeatPrevInputCount, _tryNewInputs ? "Yes" : "No" );
+
     if (std::abs(_pointMagnet.intensity) > 0.0f)
     {
       jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
@@ -298,6 +327,11 @@ private:
   bool _isDumpingTrace = false;
   std::string _traceDumpString;
 
+  __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
+  {
+    if (_tryNewInputs == false) allowedInputSet.push_back(_prevInputIdx);
+  }
+  
   __INLINE__ void playerPrintCommands() const override
   {
     jaffarCommon::logger::log("[J+] t: start/stop trace dumping (%s)\n", _isDumpingTrace ? "On" : "Off");
@@ -307,7 +341,7 @@ private:
   {
     // If storing a trace, do it here
     if (_isDumpingTrace == true) _traceDumpString += std::to_string(_marblePosX) + std::string(" ") + std::to_string(_marblePosY) + std::string("\n");
-    
+
      if (command == 't')
      {
       if (_isDumpingTrace == false)
@@ -393,6 +427,19 @@ private:
   float _traceDistanceX;
   float _traceDistanceY;
   float _traceDistance;
+
+  // What was the prev input
+  InputSet::inputIndex_t _prevInputIdx;
+  
+  // How many times the prev input is repeated
+  uint16_t _prevInputRepeatedTimes;
+
+  // How many times to repeat the prev input for
+  uint16_t _repeatPrevInputCount;
+
+  // Flag that indicates whether the engine should try all possible inputs
+  bool _tryNewInputs;
+
 };
 
 } // namespace nes
