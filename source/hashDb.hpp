@@ -24,6 +24,12 @@ public:
     // The store age
     const size_t age;
 
+    // How many queries were made
+    size_t queryCount;
+
+    // How many collisions were detected
+    size_t collisionCount;
+
     // The internal set for the hash store
     jaffarCommon::concurrent::HashSet_t<jaffarCommon::hash::hash_t> hashSet = {};
   };
@@ -43,14 +49,7 @@ public:
     _maxStoreEntries = std::floor((_maxStoreSizeMb / _bytesPerEntry) * 1024.0 * 1024.0);
 
     // Creating first hash db store
-    _hashStores.push_back(hashStore_t({.id = _currentHashStoreId++, .age = _currentAge}));
-
-    // Resizing counter vectors
-    for (size_t i = 0; i < _maxStoreCount; i++)
-    {
-      _queryCounters.emplace_back(std::make_unique<std::atomic<size_t>>(0));
-      _collisionCounters.emplace_back(std::make_unique<std::atomic<size_t>>(0));
-    }
+    _hashStores.push_back(hashStore_t({.id = _currentHashStoreId++, .age = _currentAge, .queryCount = 0, .collisionCount = 0}));
   }
 
   ~HashDb() = default;
@@ -71,10 +70,13 @@ public:
     size_t curHashStoreIdx = 0;
     while (itr != _hashStores.rend())
     {
+      const size_t queryCount = itr == _hashStores.rbegin() ? _currentQueryCount.load() : itr->queryCount;
+      const size_t collisionCount = itr == _hashStores.rbegin() ? _currentCollisionCount.load() : itr->collisionCount;
+
       jaffarCommon::logger::log("[J+]    + [%02lu] - Age: %lu, Entries: %.3f M, Size: %.3f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n", itr->id, itr->age,
                                 (double)itr->hashSet.size() / (1024.0 * 1024.0), (_bytesPerEntry * (double)itr->hashSet.size()) / (1024.0 * 1024.0),
-                                _queryCounters[curHashStoreIdx]->load(), _collisionCounters[curHashStoreIdx]->load(),
-                                100.0 * (double)_collisionCounters[curHashStoreIdx]->load() / (double)_queryCounters[curHashStoreIdx]->load());
+                                queryCount, collisionCount,
+                                queryCount == 0 ? 0.0 : 100.0 * (double)collisionCount / (double)queryCount);
       itr++;
       curHashStoreIdx++;
     }
@@ -93,7 +95,7 @@ public:
     while (itr != _hashStores.rend())
     {
       // Increasing query count for this hash store position
-      _queryCounters[curHashStoreIdx]->operator++();
+      _currentQueryCount++;
 
       // Flag to indicate whether a collision has been found
       bool collisionFound = false;
@@ -108,7 +110,7 @@ public:
       if (collisionFound == true)
       {
         // Increasing counter for collisions
-        _collisionCounters[curHashStoreIdx]->operator++();
+        _currentCollisionCount++;
 
         // True means a collision was found
         return true;
@@ -144,8 +146,7 @@ public:
   __INLINE__ void advanceStep()
   {
     // The current hash store is the latest to be entered
-    auto  itr              = _hashStores.rbegin();
-    auto& currentHashStore = *itr;
+    auto& currentHashStore = *_hashStores.rbegin();
 
     // If the current hash store exceeds the entry limit, push put a new one in
     if (currentHashStore.hashSet.size() > _maxStoreEntries)
@@ -153,8 +154,16 @@ public:
       // First, if we already reached the maximum hash stores, then discard the oldest one first
       if (_hashStores.size() == _maxStoreCount) _hashStores.pop_front();
 
+      // Updating counters for the current hash db
+      currentHashStore.queryCount = _currentQueryCount;            
+      currentHashStore.collisionCount = _currentCollisionCount;
+
+      // Resetting counters
+      _currentQueryCount = 0;
+      _currentCollisionCount = 0;
+
       // Now create the new one, by pushing it from the back
-      _hashStores.push_back(hashStore_t({.id = _currentHashStoreId++, .age = _currentAge}));
+      _hashStores.push_back(hashStore_t({.id = _currentHashStoreId++, .age = _currentAge, .queryCount = 0, .collisionCount = 0 }));
     }
 
     // Increasing age
@@ -205,13 +214,14 @@ private:
   std::deque<hashStore_t> _hashStores;
 
   /**
-   * Counter to store how many checks and collisions happened so far
-   * This is done at an index level (and not at an individual store level) because
-   * we are interested in knowing how frequently queries reach (and hit) the latest
-   * hash stores (and not any one in particular)
-   */
-  std::vector<std::unique_ptr<std::atomic<size_t>>> _queryCounters;
-  std::vector<std::unique_ptr<std::atomic<size_t>>> _collisionCounters;
+  * Query count for the current hash db
+  */
+  std::atomic<size_t> _currentQueryCount = 0;
+
+  /**
+  * Collision count for the current hash db
+  */
+  std::atomic<size_t> _currentCollisionCount = 0;
 };
 
 } // namespace jaffarPlus

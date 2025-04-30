@@ -72,6 +72,14 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
     if (repeatedHashSteps.size() > 0) repeatedHashStates.push_back(i);
   }
 
+  // Checking for not-allowed inputs
+  std::vector<ssize_t> notAllowedInputStates;
+  for (ssize_t i = 0; i < sequenceLength; i++)
+  {
+    const auto isInputAllowed = p.isInputAllowed(i);
+    if (isInputAllowed == false) notAllowedInputStates.push_back(i);
+  }
+
   // Interactive section
   while (isFinalize == false)
   {
@@ -94,6 +102,9 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
     // Getting repeated step hashes (if any)
     const auto repeatedHashSteps = p.getStateRepeatedHashSteps(currentStep);
 
+    // Checking if the current input is within the allowed inputs for this state
+    const auto isInputAllowed = p.isInputAllowed(currentStep);
+
     // Printing data and commands
     if (showFrameInfo)
     {
@@ -115,12 +126,23 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       }
       jaffarCommon::logger::log(" ] \n");
 
+      jaffarCommon::logger::log("[J+] Not Allowed Input Steps:     [ ");
+      if (notAllowedInputStates.size() < 5)
+        for (const auto step : notAllowedInputStates) jaffarCommon::logger::log(" %ld ", step);
+      else
+      {
+        for (size_t i = 0; i < 5; i++) jaffarCommon::logger::log(" %ld ", notAllowedInputStates[i]);
+        jaffarCommon::logger::log(" ... ");
+      }
+      jaffarCommon::logger::log(" ] \n");
+
       jaffarCommon::logger::log("[J+] Game Name:                  '%s'\n", r.getGame()->getName().c_str());
       jaffarCommon::logger::log("[J+] Emulator Name:              '%s'\n", r.getGame()->getEmulator()->getName().c_str());
       jaffarCommon::logger::log("[J+] State Hash:                  0x%lX%lX\n", hash.first, hash.second);
       jaffarCommon::logger::log("[J+] State Repeated Hash Steps:   [ ");
       for (const auto step : repeatedHashSteps) jaffarCommon::logger::log(" %lu ", step);
       jaffarCommon::logger::log(" ] \n");
+      jaffarCommon::logger::log("[J+] Is Input Allowed:            %s\n", isInputAllowed ? "True" : "False" );
       jaffarCommon::logger::log("[J+] State Size:                  %lu\n", stateSize);
       jaffarCommon::logger::log("[J+] Solution File:              '%s'\n", solutionFile.c_str());
       jaffarCommon::logger::log("[J+] Sequence Length:             %lu\n", sequenceLength);
@@ -158,15 +180,50 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
     // If it's not reproducing, grab command with a wait
     if (isReproduce == false && isUnattended == false) command = jaffarCommon::logger::waitForKeyPress();
 
-    // Advance/Rewind commands
-    if (command == 'n') currentStep = currentStep - 1;
-    if (command == 'm') currentStep = currentStep + 1;
-    if (command == 'h') currentStep = currentStep - 10;
-    if (command == 'j') currentStep = currentStep + 10;
-    if (command == 'y') currentStep = currentStep - 100;
-    if (command == 'u') currentStep = currentStep + 100;
-    if (command == 'k') currentStep = currentStep - 1000;
-    if (command == 'i') currentStep = currentStep + 1000;
+    // Handle commands
+    switch (command)
+    {
+      // Advance/Rewind commands
+      case 'n': currentStep = currentStep - 1; break;
+      case 'm': currentStep = currentStep + 1; break;
+      case 'h': currentStep = currentStep - 10; break;
+      case 'j': currentStep = currentStep + 10; break;
+      case 'y': currentStep = currentStep - 100; break;
+      case 'u': currentStep = currentStep + 100; break;
+      case 'k': currentStep = currentStep - 1000; break;
+      case 'i': currentStep = currentStep + 1000; break;
+
+      case 's':
+      {
+        // Storing state file
+        std::string saveFileName = "quicksave.state";
+
+        std::string saveData;
+        size_t      stateSize = r.getGame()->getEmulator()->getStateSize();
+        saveData.resize(stateSize);
+        jaffarCommon::serializer::Contiguous s(saveData.data(), stateSize);
+        r.getGame()->getEmulator()->serializeState(s);
+        if (jaffarCommon::file::saveStringToFile(saveData, saveFileName.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
+        jaffarCommon::logger::log("[J+] Saved state to %s\n", saveFileName.c_str());
+
+        // Do no show frame info again after this action
+        showFrameInfo = false;
+
+        break;
+      }
+
+      // Toggles playback from current point
+      case 'p': isReproduce = !isReproduce;  break;
+
+      // Toggles Auto Reload
+      case 'r': isReload = !isReload;  break;
+
+      // Triggers the exit
+      case 'q': isFinalize = true;  break;
+
+      // Handle any game-specific commands. If such command is executed, do not clear output
+      default: showFrameInfo = r.getGame()->playerParseCommand(command)  == false;
+    }
 
     // Correct current step if requested more than possible
     if (currentStep < 0) currentStep = 0;
@@ -183,36 +240,7 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       currentStep = sequenceLength;
       isReproduce = false;
     }
-
-    // Quicksave creation command
-    if (command == 's')
-    {
-      // Storing state file
-      std::string saveFileName = "quicksave.state";
-
-      std::string saveData;
-      size_t      stateSize = r.getGame()->getEmulator()->getStateSize();
-      saveData.resize(stateSize);
-      jaffarCommon::serializer::Contiguous s(saveData.data(), stateSize);
-      r.getGame()->getEmulator()->serializeState(s);
-      if (jaffarCommon::file::saveStringToFile(saveData, saveFileName.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not save state file: %s\n", saveFileName.c_str());
-      jaffarCommon::logger::log("[J+] Saved state to %s\n", saveFileName.c_str());
-
-      // Do no show frame info again after this action
-      showFrameInfo = false;
-    }
-
-    // Toggles playback from current point
-    if (command == 'p') isReproduce = !isReproduce;
-
-    // Toggles Auto Reload
-    if (command == 'r') isReload = !isReload;
-
-    // Triggers the exit
-    if (command == 'q') isFinalize = true;
-
-    // Handle any game-specific commands
-    if (command == 't') r.getGame()->playerParseCommand(command);
+    
   }
 
   // returning false on exit to trigger the finalization
