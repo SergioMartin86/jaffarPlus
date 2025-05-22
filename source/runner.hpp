@@ -187,7 +187,7 @@ public:
     return inputIndex;
   }
 
-  bool isInputAllowed(const std::string& inputString)
+  bool isInputRegistered(const std::string& inputString)
   {
     // Getting input hash
     const auto inputHash = jaffarCommon::hash::hashString(inputString);

@@ -1,0 +1,371 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 100000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Beetlejuice (U) [!].nes",
+        "Rom File SHA1": "CD3C92B7C27940C53DA8ED11B905048AF439942A",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "beetles.initial.sol",
+        "Initial RAM Data File Path": "beetles_421f.bin",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 1024,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 500
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                    {
+                     "Property": "Money",
+                     "Op": ">=",
+                     "Value": 400
+                    },
+                    {
+                        "Property": "Game State",
+                        "Op": "==",
+                        "Value": 137
+                    }
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Pos X",
+                        "Op": "<",
+                        "Value": 550
+                    }
+                ],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|...R...A|",
+                    "|..|...R....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Money",
+                        "Op": ">=",
+                        "Value": 400
+                    }
+                ],
+                "Inputs": [
+                    "|..|...R....|",
+                    "|..|U.......|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Money",
+                        "Op": ">=",
+                        "Value": 325
+                    }
+                ],
+                "Inputs": [
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|...R..B.|",
+                    "|..|..L...B.|",
+                    "|..|U..R..B.|",
+                    "|..|U.L...B.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|...R..B.|",
+                    "|..|..L...B.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "!=",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|..L.....|",
+                    "|..|...R....|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Beetlejuice",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Player Frame",
+            "Bug Worth",
+            "Player Pos X1",
+            "Player Pos X2",
+            "Player Pos X3",
+            "Player Vel X1",
+            "Player Vel X2",
+            "Player Pos Y1",
+            "Player Pos Y2",
+            "Screen Pos X1",
+            "Screen Pos X2",
+            "Global Timer", 
+            "RNG1",         
+            "RNG2",         
+            "RNG3",         
+            "RNG4",         
+            "Beetle1 Type",
+            "Beetle2 Type",
+            "Beetle3 Type",
+            "Money 1",
+            "Money 2",
+            "Game State",
+            "Game Transition Timer"
+        ],
+        "Hash Properties": [
+            "Player Frame",
+            "Bug Worth",
+            "Player Pos X1",
+            "Player Pos X2",
+            "Player Pos X3",
+            "Player Vel X1",
+            "Player Vel X2",
+            "Player Pos Y1",
+            "Player Pos Y2",
+            "RNG1",         
+            "RNG2",         
+            "RNG3",         
+            "RNG4",         
+            "Beetle1 Type",
+            "Beetle2 Type",
+            "Beetle3 Type",
+            "Money 1",
+            "Money 2",
+            "Game State",
+            "Game Transition Timer"
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 0.1,
+                        "Pos": 617
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 0.001,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Bug Worth Magnet",
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Set Player Frame Magnet",
+                        "Intensity": 2.0
+                    },
+                    {
+                        "Type": "Set Money Magnet",
+                        "Intensity": 100.0
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Money",
+                        "Op": ">=",
+                        "Value": 400
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Bug Worth Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Player Frame Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Money Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Add Reward",
+                        "Value": 500000.0
+                    },
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 0.1,
+                        "Pos": 687,
+                        "Y": 56
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Money",
+                        "Op": ">=",
+                        "Value": 400
+                    },
+                    {
+                        "Property": "Game State",
+                        "Op": "==",
+                        "Value": 137
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 0.0,
+                        "Pos": 687,
+                        "Y": 56
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Bug Worth Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Player Frame Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Money Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Add Reward",
+                        "Value": 500000.0
+                    },
+                    {
+                        "Type": "Set Game Transition Timer Magnet",
+                        "Intensity": 1000.0
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Money",
+                        "Op": ">=",
+                        "Value": 400
+                    },
+                    {
+                        "Property": "Game State",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Game Transition Timer",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+
+            {
+                "Label": 2000,
+                "Conditions": [
+                    {
+                        "Property": "Player Pos X",
+                        "Op": ">",
+                        "Value": 712
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

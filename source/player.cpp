@@ -111,7 +111,7 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       jaffarCommon::logger::clearTerminal();
 
       jaffarCommon::logger::log("[J+] ----------------------------------------------------------------\n");
-      jaffarCommon::logger::log("[J+] Current Step #:              %lu / %lu\n", currentStep + 1, sequenceLength);
+      jaffarCommon::logger::log("[J+] Current Step #:              %lu / %lu\n", currentStep, sequenceLength);
       jaffarCommon::logger::log("[J+] Playback:                    %s\n", isReproduce ? "Playing" : "Stopped");
       jaffarCommon::logger::log("[J+] Input:                       %s (0x%X)\n", inputString.c_str(), inputIndex);
       jaffarCommon::logger::log("[J+] On Finish:                   %s\n", isReload ? "Auto Reload" : "Stop");

@@ -1,0 +1,268 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": false,
+        "Max Steps": 1200,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 3000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Marble Madness (U) [!].nes",
+        "Rom File SHA1": "DB009866ECF20CFDCE93DCA861F5BE1F9DFAAF2B",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "stage06b.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "SPRT"
+        ],
+        "Nametable Block Size": 4096
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 1,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 1200
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                    { "Property": "Pause State", "Op": "==", "Value": 0 }
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": false
+            },
+
+            {
+                "Conditions": [
+                    { "Property": "Current Step", "Op": ">=", "Value": 1010 },
+                    { "Property": "Current Step", "Op": "<=", "Value": 1015 }
+                ],
+                "Inputs": [
+                    "|..|....S...|"
+                ],
+                "Stop Input Evaluation": true
+            },
+
+            {
+                "Conditions": [
+                    { "Property": "Pause State", "Op": "==", "Value": 0 },
+                    { "Property": "Current Step", "Op": ">=", "Value": 1050 }
+                ],
+                "Inputs": [
+                    "|..|....S...|"
+                ],
+                "Stop Input Evaluation": true
+            },
+
+            {
+                "Conditions": [
+                    { "Property": "Current Step", "Op": ">=", "Value": 1115 }
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": false
+            },
+
+            {
+                "Conditions": [
+                    { "Property": "Pause State", "Op": "==", "Value": 1 },
+                    { "Property": "Try New Inputs", "Op": "==", "Value": true },
+                    { "Property": "Current Step", "Op": "<=", "Value": 1119 }
+                ],
+                "Inputs": [
+                    "|..|.......A|",
+                    "|..|U.......|",
+                    "|..|.D......|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|U.L.....|",
+                    "|..|.DL.....|",
+                    "|..|U..R....|",
+                    "|..|.D.R....|",
+                    "|..|U......A|",
+                    "|..|.D.....A|",
+                    "|..|..L....A|",
+                    "|..|...R...A|",
+                    "|..|U.L....A|",
+                    "|..|.DL....A|",
+                    "|..|U..R...A|",
+                    "|..|.D.R...A|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Marble Madness",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Trace File Path": "stage06b.trace",
+        "Repeat Prev Input Times": 0,
+        "Print Properties": [
+            "Current Step",
+            "Pause State",
+            "Prev Pause State",
+            "Marble Pos X",
+            "Marble Pos Y",
+            "Marble Pos Z",
+            "Marble Motion 1",
+            "Last Input Step"
+        ],
+        "Hash Properties": [
+            "Pause State",
+            "Prev Pause State",
+            "Game Cycle",          
+            "Win Flag",            
+            "Marble State",        
+            "Marble Flags",        
+            "Marble Pos X1",       
+            "Marble Pos X2",       
+            "Marble Pos Y1",       
+            "Marble Pos Y2",       
+            "Marble Pos Z1",
+            "Marble Motion 1",       
+            "Marble Airtime",      
+            "Marble Dead Flag",
+            "Marble Pos X3",  
+            "Marble Pos Y3",
+            "Marble Surface Angle",
+            "Marble Vel X",        
+            "Marble Vel Y",
+            "Last Input Step" 
+        ],
+        "Excluded Hash Properties":
+        [   
+
+        ],
+        "Rules":
+        [
+          {
+           "Label": 1000,
+           "Description": "Follow trace from existing TAS, trying to get ahead of it (offset)",
+           "Conditions":
+           [
+           ],
+       
+           "Satisfies": [ ],
+       
+           "Actions":
+           [
+             { "Type": "Set Trace Magnet", "Intensity": 1.0, "Offset": 1 }
+           ]
+          },
+      
+          {
+            "Label": 1999,
+            "Description": "Fail on breaking",
+            "Conditions":
+            [
+              { "Property": "Marble Flags", "Op": ">", "Value":  1 }
+            ],
+        
+            "Satisfies": [ ],
+        
+            "Actions":
+            [
+             { "Type": "Trigger Fail" }
+            ]
+           },
+
+           {
+            "Label": 2000,
+            "Description": "Fail on falling",
+            "Conditions":
+            [
+              { "Property": "Marble Pos Z", "Op": ">", "Value":  60 }
+            ],
+        
+            "Satisfies": [ ],
+        
+            "Actions":
+            [
+             { "Type": "Trigger Fail" }
+            ]
+           },
+           
+           {
+            "Label": 2001,
+            "Description": "Fail on exceeding last input step",
+            "Conditions":
+            [
+              { "Property": "Last Input Step", "Op": ">", "Value":  1119 }
+            ],
+        
+            "Satisfies": [ ],
+        
+            "Actions":
+            [
+             { "Type": "Trigger Fail" }
+            ]
+           },
+
+           {
+            "Label": 1900,
+            "Description": "Win on reaching goal",
+            "Conditions":
+            [
+              { "Property": "Win Flag", "Op": "==", "Value":  0 }
+            ],
+        
+            "Satisfies": [ ],
+        
+            "Actions":
+            [
+             {
+               "Type": "Trigger Win"
+             },
+             {
+              "Type": "Add Reward",
+              "Value": 10000
+              },
+              {
+                  "Type": "Set Point Magnet",
+                  "Intensity": 0.0,
+                  "X": 0,
+                  "Y": 0
+              },
+              {
+                  "Type": "Set Last Input Magnet",
+                  "Intensity": -1.0
+              },
+              {
+                   "Type": "Set Trace Magnet",
+                   "Intensity": 0.0,
+                   "Offset": 0
+              }
+            ]
+           }
+        ]
+    }
+}

@@ -1,0 +1,180 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "tmp/jaffar.best.sol",
+            "Worst Solution Path": "tmp/jaffar.worst.sol",
+            "Best State Path": "tmp/jaffar.best.state",
+            "Worst State Path": "tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 10000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerGPGX",
+        "Rom File Path": "Best of the Best - Championship Karate (U) [c][!].bin",
+        "Rom File SHA1": "1FAFC2D289215D0F835FA6C74A8BF68F8D36BCC8",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "fight01.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Initial Video RAM Data File Path": "",
+        "Bios File Path": "",
+        "System Type": "Sega Genesis",
+        "Controller 1 Type": "Gamepad3B",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "VRAM",
+            "SATM"
+        ],
+        "Work RAM Serialization Size": 65536
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 1,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 5000
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": false
+            },
+
+            {
+                "Conditions": [
+                    {
+                        "Property": "Frame Type",
+                        "Op": "==",
+                        "Value": 5
+                    },
+                    {
+                        "Property": "Player 1 Action 2",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Fight Active",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|U.......|",
+                    "|..|U...A...|",
+                    "|..|U....B..|",
+                    "|..|U.L.....|",
+                    "|..|U.L.A...|",
+                    "|..|U.L..B..|",
+                    "|..|U..R....|",
+                    "|..|U..RA...|",
+                    "|..|U..R.B..|",
+                    "|..|.DL.....|",
+                    "|..|.D.R....|",
+                    "|..|.D..A...|",
+                    "|..|.D...B..|",
+                    "|..|.DL.A...|",
+                    "|..|.D.RA...|",
+                    "|..|..L.....|",
+                    "|..|..L.A...|",
+                    "|..|...R....|",
+                    "|..|...RA...|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "Genesis / Best Of The Best",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Global Timer",  
+            "Fight Active",        
+            "Player 1 HP",           
+            "Player 2 HP",           
+            "Player Input",
+            "Frame Type",            
+            "Player 1 Action 1",     
+            "Player 1 Action 2",     
+            "Player 1 Action Frame",
+            "Player 1 Pos X"        
+        ],
+        "Hash Properties": [
+            "Fight Active",
+            "Player 1 HP",           
+            "Player 2 HP",           
+            "Frame Type",            
+            "Player 1 Action 1",     
+            "Player 1 Action 2",     
+            "Player 1 Action Frame",
+            "Player 1 Pos X"     
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Player 2 HP Magnet",
+                        "Intensity": -1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions": [
+                    {
+                        "Property": "Player 2 HP",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    
+                ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Player 1 HP",
+                        "Op": "<",
+                        "Value": 255
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

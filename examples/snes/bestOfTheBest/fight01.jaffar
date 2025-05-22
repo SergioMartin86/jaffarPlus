@@ -1,0 +1,182 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "tmp/jaffar.best.sol",
+            "Worst Solution Path": "tmp/jaffar.worst.sol",
+            "Best State Path": "tmp/jaffar.best.state",
+            "Worst State Path": "tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 5000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerSnes9x",
+        "Rom File Path": "Best of the Best - Championship Karate (U).smc",
+        "Rom File SHA1": "01A1CB3E4EA1714C145FF06A0826D6DF0ED36A06",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "fight01.initial.sol",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "SRA",
+            "VRA",
+            "CTL"
+        ],
+        "Work RAM Serialization Size": 8192
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 1,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 1000
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|............|"
+                ],
+                "Stop Input Evaluation": false
+            },
+
+            {
+                "Conditions": [
+                    {
+                        "Property": "Key Frame",
+                        "Op": "==",
+                        "Value": 1
+                    },
+                    {
+                        "Property": "Player 1 Action 2",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Fight Active",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|U...........|",
+                    "|..|U.L.........|",
+                    "|..|U..R........|",
+                    "|..|U......B....|",
+                    "|..|U.L....B....|",
+                    "|..|U..R...B....|",
+                    "|..|.D..........|",
+                    "|..|.DL.........|",
+                    "|..|.DL....B....|",
+                    "|..|.D.R........|",
+                    "|..|.D.R...B....|",
+                    "|..|..L.........|",
+                    "|..|..L....B....|",
+                    "|..|...R........|",
+                    "|..|...R...B....|",
+                    "|..|........X...|",
+                    "|..|.........A..|",
+                    "|..|..........l.|",
+                    "|..|...........r|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "SNES / Best Of The Best",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Global Timer",  
+            "Fight Active",        
+            "Player 1 HP",           
+            "Player 2 HP",           
+            "Player Input (Buttons)",
+            "Player Inputs (Pad)",   
+            "Frame Type",            
+            "Key Frame",             
+            "Player 1 Action 1",     
+            "Player 1 Action 2",     
+            "Player 1 Action Frame",
+            "Player 1 Pos X"        
+        ],
+        "Hash Properties": [
+            "Fight Active",
+            "Player 1 HP",           
+            "Player 2 HP",           
+            "Player Input (Buttons)",
+            "Player Inputs (Pad)",   
+            "Frame Type",            
+            "Key Frame",             
+            "Player 1 Action 1",     
+            "Player 1 Action 2",     
+            "Player 1 Action Frame",
+            "Player 1 Pos X"     
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Player 2 HP Magnet",
+                        "Intensity": -1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions": [
+                    {
+                        "Property": "Player 2 HP",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    
+                ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Player 1 HP",
+                        "Op": "<",
+                        "Value": 255
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,172 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Best of the Best - Championship Karate (U) [!].nes",
+        "Rom File SHA1": "8F9FF1E1A22BC921287E90EF618DE7BA3CB2FB7C",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "fight01.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 1024,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT",
+            "CTRL"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 5000
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": false
+            },
+
+            {
+                "Conditions": [
+                    {
+                        "Property": "Next Key Frame",
+                        "Op": "==",
+                        "Value": 1
+                    },
+                    {
+                        "Property": "Player 1 Action 2",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|U.......|",
+                    "|..|U.L.....|",
+                    "|..|U..R....|",
+                    "|..|U.....B.|",
+                    "|..|U.L...B.|",
+                    "|..|U..R..B.|",
+                    "|..|.DL.....|",
+                    "|..|.D.R....|",
+                    "|..|.D....B.|",
+                    "|..|.DL...B.|",
+                    "|..|.D.R..B.|",
+                    "|..|..L.....|",
+                    "|..|..L...B.|",
+                    "|..|...R....|",
+                    "|..|...R..B.|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Best Of The Best",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Global Timer",  
+            "Player 1 HP",           
+            "Player 2 HP",           
+            "Player Input (Buttons)",
+            "Player Inputs (Pad)",   
+            "Key Frame",             
+            "Next Key Frame",
+            "Player 1 Action 1",     
+            "Player 1 Action 2",     
+            "Player 1 Action Frame",
+            "Player 1 Pos X"        
+        ],
+        "Hash Properties": [
+            "Player 1 HP",           
+            "Player 2 HP",           
+            "Key Frame",             
+            "Next Key Frame",
+            "Player 1 Action 1",     
+            "Player 1 Action 2",     
+            "Player 1 Action Frame",
+            "Player 1 Pos X"     
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Player 2 HP Magnet",
+                        "Intensity": -1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions": [
+                    {
+                        "Property": "Player 2 HP",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    
+                ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Player 1 HP",
+                        "Op": "<",
+                        "Value": 255
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

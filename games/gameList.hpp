@@ -5,6 +5,7 @@
 #ifdef __JAFFAR_ENABLE_NES
 #include "nes/arkanoid2.hpp"
 #include "nes/iceClimber.hpp"
+#include "nes/beetlejuice.hpp"
 #include "nes/indyHeat.hpp"
 #include "nes/lunarBall.hpp"
 #include "nes/microMachines.hpp"
@@ -12,6 +13,8 @@
 #include "nes/sidePocket.hpp"
 #include "nes/sprilo.hpp"
 #include "nes/marbleMadness.hpp"
+#include "nes/bestOfTheBest.hpp"
+#include "nes/doubleDragon.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_SDLPOP
@@ -22,6 +25,7 @@
 #include "snes/arkanoid.hpp"
 #include "snes/christmasCraze.hpp"
 #include "snes/superOffRoad.hpp"
+#include "snes/bestOfTheBest.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_GENESIS
@@ -34,6 +38,7 @@
 #include "genesis/segapede.hpp"
 #include "genesis/shoveit.hpp"
 #include "genesis/sonic.hpp"
+#include "genesis/bestOfTheBest.hpp"
 #include "sms/snailMaze.hpp"
 #endif
 
@@ -106,8 +111,10 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   DETECT_GAME(nes::IndyHeat);
   DETECT_GAME(nes::LunarBall);
   DETECT_GAME(nes::SidePocket);
+  DETECT_GAME(nes::Beetlejuice);
   DETECT_GAME(nes::IceClimber);
-
+  DETECT_GAME(nes::BestOfTheBest);
+  DETECT_GAME(nes::DoubleDragon);
 #ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
   DETECT_GAME(nes::Arkanoid2);
 #endif
@@ -121,6 +128,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   DETECT_GAME(snes::ChristmasCraze);
   DETECT_GAME(snes::Arkanoid);
   DETECT_GAME(snes::SuperOffRoad);
+  DETECT_GAME(snes::BestOfTheBest);
 #endif
 
 #ifdef __JAFFAR_ENABLE_GENESIS
@@ -132,6 +140,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   DETECT_GAME(genesis::PrinceOfPersia);
   DETECT_GAME(genesis::PrinceOfPersiaUSA);
   DETECT_GAME(genesis::ShoveIt);
+  DETECT_GAME(genesis::BestOfTheBest);
   DETECT_GAME(gamegear::PrinceOfPersia);
   DETECT_GAME(sms::SnailMaze);
 #endif

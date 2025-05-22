@@ -129,7 +129,7 @@ public:
       // If ran out of states, finish now
       if (_engine->getStateCount() == 0)
       {
-        exitReason = exitReason_t::outOfStates;
+        exitReason = _engine->getWinStatesFound() > 0 ? exitReason_t::winStateFound : exitReason_t::outOfStates;
         break;
       }
 

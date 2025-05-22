@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 370,
+        "Max Steps": 1200,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -25,7 +25,7 @@
         "Rom File Path": "Marble Madness (U) [!].nes",
         "Rom File SHA1": "DB009866ECF20CFDCE93DCA861F5BE1F9DFAAF2B",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "stage01.initial.sol",
+        "Initial Sequence File Path": "stage02.initial.sol",
         "Initial RAM Data File Path": "",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
@@ -39,14 +39,14 @@
         "Nametable Block Size": 0
     },
     "Runner Configuration": {
-        "Frameskip Rate": 4,
+        "Frameskip Rate": 6,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 500
+            "Max Size": 1200
         },
         "Allowed Input Sets": [
             {
@@ -54,6 +54,7 @@
                     { "Property": "Try New Inputs", "Op": "==", "Value": true }
                 ],
                 "Inputs": [
+                    "|..|.......A|",
                     "|..|U......A|",
                     "|..|.D.....A|",
                     "|..|..L....A|",
@@ -73,7 +74,7 @@
         "Game Name": "NES / Marble Madness",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Trace File Path": "stage01.trace",
+        "Trace File Path": "stage02.trace",
         "Repeat Prev Input Times": 4,
         "Print Properties": [
             "Marble Pos X",
@@ -119,22 +120,41 @@
          },
       
          {
-            "Label": 1000,
-            "Description": "Going right",
+            "Label": 1001,
+            "Description": "Win on entering tunnel",
             "Conditions":
             [
+              { "Property": "Marble Flags", "Op": "==", "Value":  28 }
             ],
         
             "Satisfies": [ ],
         
             "Actions":
             [
-                { "Type": "Set Point Magnet", "Intensity": 0.0, "X": 494.613281, "Y": 534.406250 }
+             { "Type": "Trigger Win" }
             ]
-         },
+          },
 
          {
-          "Label": 1001,
+            "Label": 1999,
+            "Description": "Fail on breaking",
+            "Conditions":
+            [
+              { "Property": "Marble Flags", "Op": ">", "Value":  1 },
+              { "Property": "Marble Flags", "Op": "!=", "Value":  27 },
+              { "Property": "Marble Flags", "Op": "!=", "Value":  28 }
+            ],
+        
+            "Satisfies": [ ],
+        
+            "Actions":
+            [
+             { "Type": "Trigger Fail" }
+            ]
+           },
+           
+         {
+          "Label": 1900,
           "Description": "Win on reaching goal",
           "Conditions":
           [
@@ -147,23 +167,25 @@
           [
            { "Type": "Trigger Win" }
           ]
-         },
+         }
+        ],
 
+        "Unused Rules":
+        [
          {
-            "Label": 1999,
-            "Description": "Fail on breaking",
+            "Label": 1000,
+            "Description": "Going right",
             "Conditions":
             [
-              { "Property": "Marble Flags", "Op": ">", "Value":  1 }
             ],
         
             "Satisfies": [ ],
         
             "Actions":
             [
-             { "Type": "Trigger Fail" }
+                { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 494.613281, "Y": 534.406250 }
             ]
-           }
+         }
         ]
     }
 }

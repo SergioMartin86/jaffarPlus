@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
-        "End On First Win State": true,
-        "Max Steps": 370,
+        "End On First Win State": false,
+        "Max Steps": 260,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 100000
+            "Max Size (Mb)": 5000
         }
     },
     "Emulator Configuration": {
@@ -25,7 +25,7 @@
         "Rom File Path": "Marble Madness (U) [!].nes",
         "Rom File SHA1": "DB009866ECF20CFDCE93DCA861F5BE1F9DFAAF2B",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "stage01.initial.sol",
+        "Initial Sequence File Path": "stage06c.initial.sol",
         "Initial RAM Data File Path": "",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
@@ -39,21 +39,66 @@
         "Nametable Block Size": 0
     },
     "Runner Configuration": {
-        "Frameskip Rate": 4,
+        "Frameskip Rate": 0,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 500
+            "Max Size": 260
         },
         "Allowed Input Sets": [
             {
                 "Conditions": [
+                    { "Property": "Current Step", "Op": "==", "Value": 118 }
+                ],
+                "Inputs": [
+                    "|..|....S...|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    { "Property": "Current Step", "Op": "==", "Value": 75 }
+                ],
+                "Inputs": [
+                    "|..|....S...|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    { "Property": "Pause State", "Op": "==", "Value": 0 }
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    { "Property": "Current Step", "Op": "<", "Value": 181 },
                     { "Property": "Try New Inputs", "Op": "==", "Value": true }
                 ],
                 "Inputs": [
+                    "|..|.......A|",
+                    "|..|U.......|",
+                    "|..|.D......|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|U.L.....|",
+                    "|..|.DL.....|",
+                    "|..|U..R....|",
+                    "|..|.D.R....|",
                     "|..|U......A|",
                     "|..|.D.....A|",
                     "|..|..L....A|",
@@ -73,12 +118,13 @@
         "Game Name": "NES / Marble Madness",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Trace File Path": "stage01.trace",
-        "Repeat Prev Input Times": 4,
+        "Trace File Path": "stage06c.trace",
+        "Repeat Prev Input Times": 0,
         "Print Properties": [
             "Marble Pos X",
             "Marble Pos Y",
-            "Marble Pos Z"
+            "Marble Pos Z",
+            "Last Input Step"
         ],
         "Hash Properties": [
             "Game Cycle",          
@@ -94,12 +140,12 @@
             "Marble Dead Flag",
             "Marble Pos X3",  
             "Marble Pos Y3",
-            "Marble Surface Angle"
-        ],
-        "Excluded Hash Properties":
-        [   
+            "Marble Surface Angle",
             "Marble Vel X",        
-            "Marble Vel Y"    
+            "Marble Vel Y",
+            "Marble Motion 1",
+            "Pause State",
+            "Prev Pause State"
         ],
         "Rules":
         [
@@ -114,47 +160,16 @@
       
           "Actions":
           [
-            { "Type": "Set Trace Magnet", "Intensity": 1.0, "Offset": 4 }
-          ]
-         },
-      
-         {
-            "Label": 1000,
-            "Description": "Going right",
-            "Conditions":
-            [
-            ],
-        
-            "Satisfies": [ ],
-        
-            "Actions":
-            [
-                { "Type": "Set Point Magnet", "Intensity": 0.0, "X": 494.613281, "Y": 534.406250 }
-            ]
-         },
-
-         {
-          "Label": 1001,
-          "Description": "Win on reaching goal",
-          "Conditions":
-          [
-            { "Property": "Win Flag", "Op": "==", "Value":  0 }
-          ],
-      
-          "Satisfies": [ ],
-      
-          "Actions":
-          [
-           { "Type": "Trigger Win" }
+            { "Type": "Set Trace Magnet", "Intensity": 1.0, "Offset": 1 }
           ]
          },
 
          {
-            "Label": 1999,
-            "Description": "Fail on breaking",
+            "Label": 2000,
+            "Description": "Fail on falling",
             "Conditions":
             [
-              { "Property": "Marble Flags", "Op": ">", "Value":  1 }
+              { "Property": "Marble Pos Z", "Op": ">", "Value":  60 }
             ],
         
             "Satisfies": [ ],
@@ -162,6 +177,43 @@
             "Actions":
             [
              { "Type": "Trigger Fail" }
+            ]
+           },
+           
+           {
+            "Label": 1900,
+            "Description": "Win on reaching goal",
+            "Conditions":
+            [
+              { "Property": "Win Flag", "Op": "==", "Value":  0 }
+            ],
+        
+            "Satisfies": [ ],
+        
+            "Actions":
+            [
+             {
+               "Type": "Trigger Win"
+             },
+             {
+              "Type": "Add Reward",
+              "Value": 10000
+              },
+              {
+                  "Type": "Set Point Magnet",
+                  "Intensity": 0.0,
+                  "X": 0,
+                  "Y": 0
+              },
+              {
+                  "Type": "Set Last Input Magnet",
+                  "Intensity": -1.0
+              },
+              {
+                   "Type": "Set Trace Magnet",
+                   "Intensity": 0.0,
+                   "Offset": 0
+              }
             ]
            }
         ]
