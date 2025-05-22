@@ -1,0 +1,454 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 20000
+        },
+        "State Database": {
+            "Max Size (Mb)": 200000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Beetlejuice (U) [!].nes",
+        "Rom File SHA1": "CD3C92B7C27940C53DA8ED11B905048AF439942A",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "justBugs.initial.sol",
+        "Initial RAM Data File Path": "justBugs.bin",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 1024,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 1,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 700
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                    {
+                        "Property": "Level Transition State",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Pos X",
+                        "Op": "<",
+                        "Value": 550
+                    }
+                ],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|..L....A|",
+                    "|..|..L.....|",
+                    "|..|...R...A|",
+                    "|..|...R....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|......B.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "!=",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|..L.....|",
+                    "|..|...R....|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Beetlejuice",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Player Frame",
+            "Bug Worth",
+            "Player Pos X1",
+            "Player Pos X2",
+            "Player Pos X3",
+            "Player Vel X1",
+            "Player Vel X2",
+            "Player Pos Y1",
+            "Player Pos Y2",
+            "Screen Pos X",
+            "Screen Pos Y",
+            "Global Timer", 
+            "RNG1",         
+            "RNG2",         
+            "RNG3",         
+            "RNG4",         
+            "Beetle1 Type",
+            "Beetle2 Type",
+            "Beetle3 Type",
+            "Money 1",
+            "Money 2",
+            "Game State",
+            "Game Transition Timer",
+            "Exit Switch State",
+            "Level Transition State",
+            "Level Transition Timer",
+            "Level Transition 1",
+            "Level Transition 2",
+            "Prev Level Transition 1",
+            "Prev Level Transition 2"
+        ],
+        "Hash Properties": [
+            "Player Frame",
+            "Bug Worth",
+            "Player Pos X1",
+            "Player Pos X2",
+            "Player Pos X3",
+            "Player Vel X1",
+            "Player Vel X2",
+            "Player Pos Y1",
+            "Player Pos Y2",
+            "Screen Pos X",
+            "Screen Pos Y",
+            "RNG1",         
+            "RNG2",         
+            "RNG3",         
+            "RNG4",         
+            "Beetle1 Type",
+            "Beetle2 Type",
+            "Beetle3 Type",
+            "Money 1",
+            "Money 2",
+            "Game State",
+            "Game Transition Timer",
+            "Exit Switch State",
+            "Level Transition State",
+            "Level Transition Timer",
+            "Level Transition 1",
+            "Level Transition 2",
+            "Prev Level Transition 1",
+            "Prev Level Transition 2"
+        ],
+        "Rules": [
+            {
+                "Label": 988,
+                "Conditions": [
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 0.5,
+                        "Pos": 347
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 248
+                    },
+                    {
+                        "Type": "Set Screen Y Magnet",
+                        "Intensity": 1.0,
+                        "Pos": -128
+                    }
+                ]
+            },
+            {
+                "Label": 989,
+                "Conditions": [
+                    {
+                        "Property": "Screen Pos Y",
+                        "Op": "<=",
+                        "Value": -50
+                    }
+                ],
+                "Satisfies": [
+                    988
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0,
+                        "Pos": 347
+                    },
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 0.5,
+                        "Pos": 347
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 280
+                    },
+                    {
+                        "Type": "Set Screen Y Magnet",
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 990,
+                "Conditions": [
+                    {
+                        "Property": "Screen Pos Y",
+                        "Op": "<=",
+                        "Value": -50
+                    },
+                    {
+                        "Property": "Player Pos X",
+                        "Op": ">",
+                        "Value": 350
+                    }
+                ],
+                "Satisfies": [
+                    989
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0,
+                        "Pos": 347
+                    },
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 0.5,
+                        "Pos": 347
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 256
+                    },
+                    {
+                        "Type": "Set Screen Y Magnet",
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    }
+                ]
+            },
+            {
+                "Label": 991,
+                "Conditions": [
+                    {
+                        "Property": "Exit Switch State",
+                        "Op": "==",
+                        "Value": 31
+                    }
+                ],
+                "Satisfies": [ 990 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0,
+                        "Pos": 347
+                    },
+                    {
+                        "Type": "Set Screen Y Magnet",
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 285
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 248
+                    }
+                ]
+            },
+            {
+                "Label": 992,
+                "Conditions": [
+                    {
+                        "Property": "Exit Switch State",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Level Transition State",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ 991 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 0.0,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Level Transition Timer Magnet",
+                        "Intensity": 1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1000,
+                "Conditions": [
+                    {
+                        "Property": "Prev Level Transition 1",
+                        "Op": "==",
+                        "Value": 5
+                    },
+                    {
+                        "Property": "Prev Level Transition 2",
+                        "Op": "==",
+                        "Value": 1
+                    },
+                    {
+                        "Property": "Level Transition 2",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ 992],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0,
+                        "Pos": 347
+                    },
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 0.1,
+                        "Pos": 617
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 0.001,
+                        "Pos": 0
+                    },
+                    {
+                        "Type": "Set Level Transition Timer Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Money Magnet",
+                        "Intensity": 1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Bug Worth",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ 1000 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0,
+                        "Pos": 347
+                    },
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 0.1,
+                        "Pos": 660
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 0.001,
+                        "Pos": 312
+                    },
+                    {
+                        "Type": "Set Bug Worth Magnet",
+                        "Intensity": 10.0
+                    },
+                    {
+                        "Type": "Set Money Magnet",
+                        "Intensity": 1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Money",
+                        "Op": ">=",
+                        "Value": 225
+                    },
+                    {
+                        "Property": "Bug Worth",
+                        "Op": ">=",
+                        "Value": 175
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ]
+    }
+}

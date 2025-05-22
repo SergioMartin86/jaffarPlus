@@ -81,13 +81,19 @@ private:
     registerGameProperty("Marble Vel X",         &_lowMem[0x03D0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Vel Y",         &_lowMem[0x03E0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Dead Flag",     &_lowMem[0x0400], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Motion 1",      &_lowMem[0x0410], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Surface Angle", &_lowMem[0x0428], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Pause State",          &_lowMem[0x05CA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble In Catapult",   &_lowMem[0x0420], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     registerGameProperty("Marble Pos X",        &_marblePosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Marble Pos Y",        &_marblePosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Marble Pos Z",        &_marblePosZ, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Try New Inputs",      &_tryNewInputs, Property::datatype_t::dt_bool, Property::endianness_t::little);
+    registerGameProperty("Prev Pause State",    &_prevPauseState, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
+    registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Last Input Step", &_lastInputStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     _gameTimer             = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Timer"           )]->getPointer();
     _gameCycle             = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Cycle"           )]->getPointer();
     _winFlag               = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Win Flag"             )]->getPointer();
@@ -105,6 +111,7 @@ private:
     _marbleVelY            = (int8_t*) _propertyMap[jaffarCommon::hash::hashString("Marble Vel Y"         )]->getPointer();
     _marbleDeadFlag        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Dead Flag"     )]->getPointer();
     _marbleSurfaceAngle    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Surface Angle" )]->getPointer();
+    _pauseState            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Pause State"          )]->getPointer();
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
@@ -113,10 +120,14 @@ private:
     _prevInputIdx = _nullInputIdx;
     _prevInputRepeatedTimes = 0;
     _tryNewInputs = true;
+    _prevPauseState = *_pauseState;
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
+    // Storing previous pause state
+    _prevPauseState = *_pauseState;
+
     // Increasing counter if input is null
     if (input != _nullInputIdx) _lastInputStep = _currentStep;
 
@@ -140,26 +151,13 @@ private:
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
-    hashEngine.Update(&_lowMem[0x0001], 0x0018);
-    hashEngine.Update(&_lowMem[0x001C], 0x0050);
+    if (*_pauseState == 0) hashEngine.Update(_currentStep);
+    // hashEngine.Update(&_lowMem[0x0001], 0x0018);
+    // hashEngine.Update(&_lowMem[0x001C], 0x0050);
   }
 
   // Updating derivative values after updating the internal state
-  __INLINE__ void stateUpdatePostHook() override {}
-
-  __INLINE__ void ruleUpdatePreHook() override
-  {
-    // Resetting magnets ahead of rule re-evaluation
-    _pointMagnet.intensity = 0.0;
-    _pointMagnet.x         = 0.0;
-    _pointMagnet.y         = 0.0;
-    _stopProcessingReward  = false;
-
-    _traceMagnet.intensity = 0.0;
-    _traceMagnet.offset = 0;
-  }
-
-  __INLINE__ void ruleUpdatePostHook() override
+  __INLINE__ void stateUpdatePostHook() override
   {
     _marblePosX = (float)*_marblePosX1 * 256.0f + (float)*_marblePosX2 + (float)*_marblePosX3 / 256.0f;
     _marblePosY = (float)*_marblePosY1 * 256.0f + (float)*_marblePosY2 + (float)*_marblePosY3 / 256.0f;
@@ -173,7 +171,24 @@ private:
     if (*_marbleSurfaceAngle == 2) { _surfaceAngleX = 1.0; _surfaceAngleY = 0.5; }
     if (*_marbleSurfaceAngle == 255) { _surfaceAngleX = -5.0; _surfaceAngleY = -5.0; }
     if (*_marbleSurfaceAngle == 128) { _surfaceAngleX = -5.0; _surfaceAngleY = -5.0; }
-   
+  }
+
+  __INLINE__ void ruleUpdatePreHook() override
+  {
+    // Resetting magnets ahead of rule re-evaluation
+    _pointMagnet.intensity = 0.0;
+    _pointMagnet.x         = 0.0;
+    _pointMagnet.y         = 0.0;
+    _stopProcessingReward  = false;
+
+    _traceMagnet.intensity = 0.0;
+    _traceMagnet.offset = 0;
+
+    _lastInputMagnet    = 0.0;
+  }
+
+  __INLINE__ void ruleUpdatePostHook() override
+  {
     // Updating distance to user-defined point
     _marbleDistanceToPointX = std::abs(_pointMagnet.x - _marblePosX);
     _marbleDistanceToPointY = std::abs(_pointMagnet.y - _marblePosY);
@@ -217,7 +232,7 @@ private:
     float reward = 0.0;
 
     // Subtracting reward for having made an input recently (for early termination)
-    reward += _lastInputStepReward * _lastInputStep;
+    reward += _lastInputMagnet * _lastInputStep;
 
     // If this is a win state, then evaluate only w.r.t. how long since the last input
     if (_stopProcessingReward) return reward;
@@ -267,6 +282,8 @@ private:
         jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _traceDistance);
       }
     }
+
+    if (std::abs(_lastInputMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Last Input Magnet                      Intensity: %.5f\n", _lastInputMagnet);
   }
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
@@ -288,6 +305,14 @@ private:
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto offset    = jaffarCommon::json::getNumber<int>(actionJs, "Offset");
       rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.intensity = intensity, .offset = offset }; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Last Input Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto action    = [=, this]() { this->_lastInputMagnet = intensity; };
+      rule.addAction(action);
       recognizedActionType = true;
     }
 
@@ -365,6 +390,7 @@ private:
 
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
   pointMagnet_t _pointMagnet;
+  float         _lastInputMagnet         = 0.0;
 
   // Container for game-specific values
   uint8_t*  _gameTimer;
@@ -384,10 +410,12 @@ private:
   int8_t*   _marbleVelY;
   uint8_t*  _marbleDeadFlag;
   uint8_t*  _marbleSurfaceAngle;
+  uint8_t*  _pauseState;
 
   float  _marbleDistanceToPointX;
   float  _marbleDistanceToPointY;
   float _marbleDistanceToPoint;
+  uint8_t _prevPauseState;
 
   float  _marblePosX;
   float  _marblePosY;
