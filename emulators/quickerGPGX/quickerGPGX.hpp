@@ -15,6 +15,9 @@ namespace jaffarPlus
 namespace emulator
 {
 
+// Initialization seems to have some concurrency issues. This is to fix that
+static std::mutex _initMutex;
+
 class QuickerGPGX final : public Emulator
 {
 public:
@@ -23,6 +26,8 @@ public:
   // Constructor must only do configuration parsing
   QuickerGPGX(const nlohmann::json& config) : Emulator(config)
   {
+    _initMutex.lock();
+
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
@@ -56,10 +61,14 @@ public:
 
     // Creating internal emulator instance
     _quickerGPGX = std::make_unique<gpgx::EmuInstance>(config);
+
+    _initMutex.unlock();
   };
 
   void initializeImpl() override
   {
+    _initMutex.lock();
+
     // Initializing emulator
     _quickerGPGX->initialize();
 
@@ -107,7 +116,9 @@ public:
       const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
 
       // Running inputs in the initial sequence
+      _initMutex.unlock();
       for (const auto& inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+      _initMutex.lock();
     }
 
     // Pushing initial RAM data
@@ -133,6 +144,8 @@ public:
       // Pushing data into RAM
       memcpy(_quickerGPGX->getVideoRamPointer(), initialVRAMDataString.data(), initialVRAMDataString.size());
     }
+
+    _initMutex.unlock();
   }
 
   // Function to get a reference to the input parser from the base emulator

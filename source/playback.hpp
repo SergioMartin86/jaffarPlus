@@ -6,6 +6,7 @@
 #include "runner.hpp"
 #include <string>
 #include <vector>
+#include <algorithm>
 
 namespace jaffarPlus
 {
@@ -61,13 +62,21 @@ public:
       step.inputString = isEndOfSequence == false ? inputSequence[i] : "<End Of Sequence>";
 
       // Checking if the input is allowed
-      step.isInputAllowed = _runner->isInputAllowed(step.inputString);
+      bool isRegisteredInput = _runner->isInputRegistered(step.inputString);
 
       // Getting input index
       if (isEndOfSequence == true) step.inputIndex = 0;
-      if (isEndOfSequence == false && step.isInputAllowed == true) step.inputIndex = _runner->getInputIndex(step.inputString);
-      if (isEndOfSequence == false && step.isInputAllowed == false) step.inputIndex = _runner->registerInput(step.inputString);
+      if (isEndOfSequence == false && isRegisteredInput == true) step.inputIndex = _runner->getInputIndex(step.inputString);
+      if (isEndOfSequence == false && isRegisteredInput == false) step.inputIndex = _runner->registerInput(step.inputString);
 
+      // Checking if the input is allowed
+      step.isInputAllowed = false;
+      if (isRegisteredInput == true)
+      {
+        auto allowedInputs = _runner->getAllowedInputs();
+        step.isInputAllowed = std::find(allowedInputs.begin(), allowedInputs.end(), step.inputIndex) != allowedInputs.end();
+      }
+      
       // Getting state hash
       step.stateHash = _runner->computeHash();
 

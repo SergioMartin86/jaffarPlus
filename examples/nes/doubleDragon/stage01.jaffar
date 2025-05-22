@@ -1,0 +1,215 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 3300,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 50000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Double Dragon (U) [!].nes",
+        "Rom File SHA1": "84698B12F4E56A37C67BB47359758124C9B012BB",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "stage01.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 1024,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 3,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 3300
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": false
+            },
+
+            {
+                "Conditions": [
+                    {
+                        "Property": "Frame Type",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Inputs": [
+                    "|..|U.......|",
+                    "|..|U.L.....|",
+                    "|..|U..R....|",
+                    "|..|......B.|",
+                    "|..|.DL.....|",
+                    "|..|.D.R....|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|.......A|",
+                    "|..|......BA|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Double Dragon",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Current Step",
+            "Player Pos X1" ,
+            "Enemy 1 Pos X1",
+            "Enemy 2 Pos X1",
+            "Player Pos Y1" ,
+            "Enemy 1 Pos Y1",
+            "Enemy 2 Pos Y1",
+            "Screen Pos X1" ,
+            "Screen Pos X2" ,
+            "Screen Pos Y1" ,
+            "Player HP"     ,
+            "Enemy 1 HP"    ,
+            "Enemy 2 HP"    ,
+            "Global Timer"  ,
+            "Frame Type"    ,
+            "Player Input 1",
+            "Player Input 2",
+            "Player Action",
+            "Score",
+            "Score 1",
+            "Score 2",
+            "Score 3",
+            "Game State",
+            "Enemies Killed",
+            "Prev Enemy 1 HP",
+            "Prev Enemy 2 HP",
+            "Player Pos X",
+            "Player Pos Y",
+            "Screen Pos X",
+            "Screen Pos Y"
+        ],
+        "Hash Properties": [
+            "Player Pos X1" ,
+            "Enemy 1 Pos X1",
+            "Enemy 2 Pos X1",
+            "Player Pos Y1" ,
+            "Enemy 1 Pos Y1",
+            "Enemy 2 Pos Y1",
+            "Screen Pos X1" ,
+            "Screen Pos X2" ,
+            "Screen Pos Y1" ,
+            "Player HP"     ,
+            "Enemy 1 HP"    ,
+            "Enemy 2 HP"    ,
+            "Frame Type"    ,
+            "Player Input 1",
+            "Player Input 2",
+            "Player Action",
+            "Score 1",
+            "Score 2",
+            "Score 3",
+            "Game State",
+            "Enemies Killed",
+            "Prev Enemy 1 HP",
+            "Prev Enemy 2 HP"    
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Player / Enemy 1 Magnet",
+                        "Intensity": -0.01
+                    },
+                    {
+                        "Type": "Set Player / Enemy 2 Magnet",
+                        "Intensity": -0.01
+                    },
+                    {
+                        "Type": "Set Score Magnet",
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Set Player Point Magnet",
+                        "Intensity": 0.0001,
+                        "X": 146.0, 
+                        "Y": 80.0
+                    },
+                    {
+                        "Type": "Set Screen Point Magnet",
+                        "Intensity": 100.0,
+                        "X": 768.0, 
+                        "Y": 0.0
+                    }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions": [
+                    {
+                        "Property": "Game State",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    
+                ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Player HP",
+                        "Op": "<",
+                        "Value": 64
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

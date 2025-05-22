@@ -14,10 +14,10 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 40000
+            "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 10000
+            "Max Size (Mb)": 100000
         }
     },
     "Emulator Configuration": {
@@ -39,14 +39,14 @@
         "Nametable Block Size": 0
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
+        "Frameskip Rate": 4,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 370
+            "Max Size": 500
         },
         "Allowed Input Sets": [
             {
@@ -73,7 +73,7 @@
         "Game Name": "NES / Marble Madness",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Trace File Path": "jaffar.trace",
+        "Trace File Path": "stage01.trace",
         "Repeat Prev Input Times": 4,
         "Print Properties": [
             "Marble Pos X",
@@ -114,10 +114,25 @@
       
           "Actions":
           [
-            { "Type": "Set Trace Magnet", "Intensity": 1.0, "Offset": 1 }
+            { "Type": "Set Trace Magnet", "Intensity": 1.0, "Offset": 4 }
           ]
          },
       
+         {
+            "Label": 1000,
+            "Description": "Going right",
+            "Conditions":
+            [
+            ],
+        
+            "Satisfies": [ ],
+        
+            "Actions":
+            [
+                { "Type": "Set Point Magnet", "Intensity": 0.0, "X": 494.613281, "Y": 534.406250 }
+            ]
+         },
+
          {
           "Label": 1001,
           "Description": "Win on reaching goal",
@@ -149,24 +164,6 @@
              { "Type": "Trigger Fail" }
             ]
            }
-        ],
-
-        "Unused Rules":
-        [
-         {
-            "Label": 1000,
-            "Description": "Going right",
-            "Conditions":
-            [
-            ],
-        
-            "Satisfies": [ ],
-        
-            "Actions":
-            [
-                { "Type": "Set Point Magnet", "Intensity": 1.0, "X": 494.613281, "Y": 534.406250 }
-            ]
-         }
         ]
     }
 }
