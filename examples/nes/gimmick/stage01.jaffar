@@ -1,0 +1,101 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 10000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Gimmick! (J).nes",
+        "Rom File SHA1": "835FEE060B15700163A1F8AD9716A163BF79C8FD",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "stage01.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 1024,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 500
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|...R..B.|",
+                    "|..|...R....|",
+                    "|..|...R...A|",
+                    "|..|...R..BA|",
+                    "|..|..L....A|",
+                    "|..|......BA|",
+                    "|..|......B.|",
+                    "|..|........|",
+                    "|..|..L.....|",
+                    "|..|.......A|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Gimmick!",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 1024
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 0.001,
+                        "Pos": 0
+                    }
+                ]
+            }
+        ]
+    }
+}
