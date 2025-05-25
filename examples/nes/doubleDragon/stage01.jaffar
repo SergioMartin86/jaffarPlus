@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 3300,
+        "Max Steps": 500,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 50000
+            "Max Size (Mb)": 200000
         }
     },
     "Emulator Configuration": {
@@ -38,14 +38,14 @@
         ]
     },
     "Runner Configuration": {
-        "Frameskip Rate": 3,
+        "Frameskip Rate": 0,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 3300
+            "Max Size": 500
         },
         "Allowed Input Sets": [
             {
@@ -56,13 +56,42 @@
                 ],
                 "Stop Input Evaluation": false
             },
-
             {
                 "Conditions": [
                     {
                         "Property": "Frame Type",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Player In Action",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Player Action Timer",
                         "Op": "==",
-                        "Value": 1
+                        "Value": 1,
+                        "Description": "To account for jump direction"
+                    }
+                ],
+                "Inputs": [
+                    "|..|..L.....|",
+                    "|..|...R....|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Frame Type",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Player In Action",
+                        "Op": "==",
+                        "Value": 0
                     }
                 ],
                 "Inputs": [
@@ -89,35 +118,34 @@
         "Last Input Step Reward": 0.0,
         "Print Properties": [
             "Current Step",
-            "Player Pos X1" ,
             "Enemy 1 Pos X1",
             "Enemy 2 Pos X1",
-            "Player Pos Y1" ,
             "Enemy 1 Pos Y1",
             "Enemy 2 Pos Y1",
-            "Screen Pos X1" ,
-            "Screen Pos X2" ,
-            "Screen Pos Y1" ,
             "Player HP"     ,
             "Enemy 1 HP"    ,
             "Enemy 2 HP"    ,
-            "Global Timer"  ,
+            "Enemy 1 HP1"   ,
+            "Prev Enemy 1 HP1"   ,
+            "Enemy 2 HP1"   ,
+            "Prev Enemy 2 HP1"   ,
             "Frame Type"    ,
-            "Player Input 1",
-            "Player Input 2",
             "Player Action",
             "Score",
-            "Score 1",
-            "Score 2",
-            "Score 3",
             "Game State",
             "Enemies Killed",
-            "Prev Enemy 1 HP",
-            "Prev Enemy 2 HP",
+            "Enemies Spawned",
             "Player Pos X",
             "Player Pos Y",
             "Screen Pos X",
-            "Screen Pos Y"
+            "Screen Pos Y",
+            "Player Air State",
+            "Player In Action",
+            "Player Action Timer",
+            "Enemy 1 Stun State",
+            "Enemy 2 Stun State",
+            "Prev Enemy 1 Stun State",
+            "Prev Enemy 2 Stun State"
         ],
         "Hash Properties": [
             "Player Pos X1" ,
@@ -131,7 +159,9 @@
             "Screen Pos Y1" ,
             "Player HP"     ,
             "Enemy 1 HP"    ,
+            "Prev Enemy 1 HP1"   ,
             "Enemy 2 HP"    ,
+            "Prev Enemy 2 HP1"   ,
             "Frame Type"    ,
             "Player Input 1",
             "Player Input 2",
@@ -141,8 +171,14 @@
             "Score 3",
             "Game State",
             "Enemies Killed",
-            "Prev Enemy 1 HP",
-            "Prev Enemy 2 HP"    
+            "Enemies Spawned",
+            "Player Air State",
+            "Player In Action",
+            "Player Action Timer",
+            "Enemy 1 Stun State",
+            "Enemy 2 Stun State",
+            "Prev Enemy 1 Stun State",
+            "Prev Enemy 2 Stun State"
         ],
         "Rules": [
             {
@@ -159,20 +195,26 @@
                         "Intensity": -0.01
                     },
                     {
-                        "Type": "Set Score Magnet",
-                        "Intensity": 1.0
+                        "Type": "Set Enemy 1 HP Magnet",
+                        "Intensity": -1.0
+                    },
+                    {
+                        "Type": "Set Enemy 2 HP Magnet",
+                        "Intensity": -1.0
+                    },
+                    {
+                        "Type": "Set Enemies Killed Magnet",
+                        "Intensity": 5000.0
+                    },
+                    {
+                        "Type": "Set Enemies Spawned Magnet",
+                        "Intensity": 5000.0
                     },
                     {
                         "Type": "Set Player Point Magnet",
                         "Intensity": 0.0001,
-                        "X": 146.0, 
+                        "X": 255.0, 
                         "Y": 80.0
-                    },
-                    {
-                        "Type": "Set Screen Point Magnet",
-                        "Intensity": 100.0,
-                        "X": 768.0, 
-                        "Y": 0.0
                     }
                 ]
             },
@@ -180,9 +222,9 @@
                 "Label": 1004,
                 "Conditions": [
                     {
-                        "Property": "Game State",
+                        "Property": "Enemies Killed",
                         "Op": "==",
-                        "Value": 1
+                        "Value": 3
                     }
                 ],
                 "Satisfies": [
@@ -191,22 +233,6 @@
                 "Actions": [
                     {
                         "Type": "Trigger Win"
-                    }
-                ]
-            },
-            {
-                "Label": 1999,
-                "Conditions": [
-                    {
-                        "Property": "Player HP",
-                        "Op": "<",
-                        "Value": 64
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
                     }
                 ]
             }

@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 0,
+        "Max Steps": 2890,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 5000
+            "Max Size (Mb)": 200
         }
     },
     "Emulator Configuration": {
@@ -25,7 +25,7 @@
         "Rom File Path": "Best of the Best - Championship Karate (U).smc",
         "Rom File SHA1": "01A1CB3E4EA1714C145FF06A0826D6DF0ED36A06",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "fight02.initial.sol",
+        "Initial Sequence File Path": "training.initial.sol",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
         "Disabled State Properties": [
@@ -43,7 +43,7 @@
         "Show Allowed Inputs": true,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 2000
+            "Max Size": 3000
         },
         "Allowed Input Sets": [
             {
@@ -54,13 +54,12 @@
                 ],
                 "Stop Input Evaluation": false
             },
-
             {
                 "Conditions": [
                     {
-                        "Property": "Key Frame",
+                        "Property": "Frame Type",
                         "Op": "==",
-                        "Value": 1
+                        "Value": 5
                     },
                     {
                         "Property": "Player 1 Action 2",
@@ -74,6 +73,7 @@
                     }
                 ],
                 "Inputs": [
+                    "|..|....s.......|",
                     "|..|U...........|",
                     "|..|U.L.........|",
                     "|..|U..R........|",
@@ -116,7 +116,9 @@
             "Player 1 Action 1",     
             "Player 1 Action 2",     
             "Player 1 Action Frame",
-            "Player 1 Pos X"        
+            "Player 1 Pos X",
+            "Training Hits",
+            "Prev Training Hits" 
         ],
         "Hash Properties": [
             "Fight Active",
@@ -129,7 +131,9 @@
             "Player 1 Action 1",     
             "Player 1 Action 2",     
             "Player 1 Action Frame",
-            "Player 1 Pos X"     
+            "Player 1 Pos X",
+            "Training Hits",
+            "Prev Training Hits"   
         ],
         "Rules": [
             {
@@ -138,8 +142,8 @@
                 "Satisfies": [],
                 "Actions": [
                     {
-                        "Type": "Set Player 2 HP Magnet",
-                        "Intensity": -1.0
+                        "Type": "Set Training Hits Magnet",
+                        "Intensity": 1.0
                     }
                 ]
             },
@@ -147,9 +151,14 @@
                 "Label": 1004,
                 "Conditions": [
                     {
-                        "Property": "Player 2 HP",
+                        "Property": "Prev Training Hits",
+                        "Op": ">",
+                        "Value": 5
+                    },
+                    {
+                        "Property": "Training Hits",
                         "Op": "==",
-                        "Value": 0
+                        "Value": 2
                     }
                 ],
                 "Satisfies": [
@@ -158,22 +167,6 @@
                 "Actions": [
                     {
                         "Type": "Trigger Win"
-                    }
-                ]
-            },
-            {
-                "Label": 1999,
-                "Conditions": [
-                    {
-                        "Property": "Player 1 HP",
-                        "Op": "<",
-                        "Value": 255
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
                     }
                 ]
             }

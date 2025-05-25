@@ -1,0 +1,161 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 2890,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "tmp/jaffar.best.sol",
+            "Worst Solution Path": "tmp/jaffar.worst.sol",
+            "Best State Path": "tmp/jaffar.best.state",
+            "Worst State Path": "tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 200
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerSnes9x",
+        "Rom File Path": "Best of the Best - Championship Karate (U).smc",
+        "Rom File SHA1": "01A1CB3E4EA1714C145FF06A0826D6DF0ED36A06",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "reflexes.initial.sol",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "SRA",
+            "VRA",
+            "PPU"
+        ],
+        "Work RAM Serialization Size": 8192
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 3000
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|............|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Frame Type",
+                        "Op": "==",
+                        "Value": 5
+                    },
+                    {
+                        "Property": "Player 1 Action 2",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|....s.......|",
+                    "|..|U...........|",
+                    "|..|.D..........|",
+                    "|..|...R........|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "SNES / Best Of The Best",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+            "Global Timer",  
+            "Fight Active",        
+            "Player 1 HP",           
+            "Player 2 HP",           
+            "Player Input (Buttons)",
+            "Player Inputs (Pad)",   
+            "Frame Type",            
+            "Key Frame",             
+            "Player 1 Action 1",     
+            "Player 1 Action 2",     
+            "Player 1 Action Frame",
+            "Player 1 Pos X",
+            "Training Hits",
+            "Prev Training Hits",
+            "Reflexes",
+            "Reflex Hits",
+            "Reflexes Gained"
+        ],
+        "Hash Properties": [
+            "Global Timer",  
+            "Fight Active",
+            "Player 1 HP",           
+            "Player 2 HP",           
+            "Player Input (Buttons)",
+            "Player Inputs (Pad)",   
+            "Frame Type",            
+            "Key Frame",             
+            "Player 1 Action 1",     
+            "Player 1 Action 2",     
+            "Player 1 Action Frame",
+            "Player 1 Pos X",
+            "Training Hits",
+            "Prev Training Hits",
+            "Reflexes",
+            "Reflex Hits",
+            "Reflexes Gained"
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Reflexes Magnet",
+                        "Intensity": 1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions": [
+                    {
+                        "Property": "Reflexes Gained",
+                        "Op": ">=",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Frame Type",
+                        "Op": "==",
+                        "Value": 6
+                    }
+                ],
+                "Satisfies": [
+                    
+                ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ]
+    }
+}
