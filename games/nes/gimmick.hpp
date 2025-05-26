@@ -647,6 +647,9 @@ private:
     _star1PosX2                     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Star 1 Pos X 2"           )]->getPointer();   
     _star1Status                    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Star 1 Status"            )]->getPointer();   
 
+    registerGameProperty("Player Pos X"                , &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y"                , &_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
+
     // Initializing values
     _currentStep   = 0;
     _lastInputStep = 0;

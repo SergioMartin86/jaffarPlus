@@ -1,6 +1,7 @@
 option('emulator',
   type : 'combo',
   choices : [
+    'QuickNES',
     'QuickerNES',
     'QuickerNESArkanoid',
     'QuickerGPGX',

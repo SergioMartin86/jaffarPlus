@@ -12,6 +12,12 @@ endif
 
 endif
 
+if emulator == 'QuickNES'
+jaffarCPPFlags += '-D__JAFFAR_USE_QUICKNES'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_NES'
+subdir('quickNES')
+endif
+
 if emulator == 'QuickerSDLPoP'
 jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERSDLPOP'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_SDLPOP'

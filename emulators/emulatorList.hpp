@@ -2,6 +2,10 @@
 
 #include <emulator.hpp>
 
+#ifdef __JAFFAR_USE_QUICKNES
+#include "quickNES/quickNES.hpp"
+#endif
+
 #ifdef __JAFFAR_USE_QUICKERNES
 #include "quickerNES/quickerNES.hpp"
 #endif
@@ -79,6 +83,10 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json& emulatorCo
   const auto& emulatorName = jaffarCommon::json::getString(emulatorConfig, "Emulator Name");
 
 // Detecting emulator
+#ifdef __JAFFAR_USE_QUICKNES
+  DETECT_EMULATOR(emulator::QuickNES);
+#endif
+
 #ifdef __JAFFAR_USE_QUICKERNES
   DETECT_EMULATOR(emulator::QuickerNES);
 #endif
