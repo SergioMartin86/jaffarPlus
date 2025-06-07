@@ -145,7 +145,7 @@ private:
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
-    serializer.push(&gametic, sizeof(gametic));
+    // serializer.push(&gametic, sizeof(gametic));
     // serializer.push(&players[0].mo->x, sizeof(players[0].mo->x));
     // serializer.push(&players[0].mo->y, sizeof(players[0].mo->y));
     // serializer.push(&players[0].mo->z, sizeof(players[0].mo->z));
@@ -186,7 +186,7 @@ private:
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
-    deserializer.pop(&gametic, sizeof(gametic));
+    // deserializer.pop(&gametic, sizeof(gametic));
     // deserializer.pop(&players[0].mo->x, sizeof(players[0].mo->x));
     // deserializer.pop(&players[0].mo->y, sizeof(players[0].mo->y));
     // deserializer.pop(&players[0].mo->z, sizeof(players[0].mo->z));

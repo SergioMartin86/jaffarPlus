@@ -31,6 +31,15 @@ public:
     _inputHistoryEnabled      = jaffarCommon::json::getBoolean(inputHistoryJs, "Enabled");
     _inputHistoryMaxSize      = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size");
 
+    // Requires the runner to repeat all the input history until this point after deserialization
+    // This is useful in case where the game/emulator can only reload the initial state
+    _inputHistoryRepeat = jaffarCommon::json::getBoolean(inputHistoryJs, "Repeat");
+
+    // Cannot repeat inputs if no input history is enabled
+    if (_inputHistoryRepeat == true)
+      if (_inputHistoryEnabled == false)
+       JAFFAR_THROW_LOGIC("Repeat inputs is requested but the input history is disabled");
+
     // Storing game inputs for delayed parsing
     _allowedInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Allowed Input Sets");
 
@@ -268,9 +277,12 @@ public:
     // Deserializing current step
     deserializer.popContiguous(&_currentInputCount, sizeof(_currentInputCount));
 
-    // // Repeating inputs until this point
-    // for (size_t i = 0; i < _currentInputCount; i++)
-    //   _game->getEmulator()->advanceState(getInput(i));
+    // If requested, repeating inputs until this point
+    if (_inputHistoryRepeat == true)
+    {
+      for (size_t i = 0; i < _currentInputCount; i++)
+        _game->getEmulator()->advanceState(getInput(i));
+    }
   }
 
   // Getting the maximum differntial state size
@@ -439,6 +451,10 @@ private:
 
   // Option to bypass hash calculation
   bool _bypassHashCalculation;
+
+  // Requires the runner to repeat all the input history until this point after deserialization
+  // This is useful in case where the game/emulator can only reload the initial state
+  bool _inputHistoryRepeat;
 
   ///////////////////////////////
   // Input processing variables
