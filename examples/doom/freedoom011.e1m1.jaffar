@@ -22,17 +22,13 @@
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerDSDA",
-        "State Size": 5120,
+        "State Size": 1048576,
         "Initial Sequence File Path": "",
-        "IWAD File Path": "../../extern/jaffarPlus/extern/quickerDSDA/tests/wads/freedoom1.wad",
+        "IWAD File Path": "../../extern/quickerDSDA/tests/wads/freedoom1.wad",
         "Expected IWAD SHA1": "9E38DCC0D1E9FBD20382BA19A6BDF11F7A2B0502",
         "PWADS": [
             {
-                "File Path": "../../extern/jaffarPlus/extern/quickerDSDA/tests/wads/freedoom011.reduced.e1m1.wad",
-                "Expected SHA1": "1010C06B5CA5B87F3C414F7AB440CF6A87EE2F4C"
-            },
-            {
-                "File Path": "../../extern/jaffarPlus/extern/quickerDSDA/tests/wads/dsda-doom.wad",
+                "File Path": "../../extern/quickerDSDA/tests/wads/dsda-doom.wad",
                 "Expected SHA1": "D8604FA2A4154F80C3C2730DCB0836BB1D14323C"
             }
         ],
