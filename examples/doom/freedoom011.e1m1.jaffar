@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 1000
+            "Max Size (Mb)": 10
         }
     },
     "Emulator Configuration": {
@@ -45,7 +45,7 @@
         "Player 4 Present": false,
         "Prevent Level Exit": true,
         "Prevent Game End": false,
-        "Player Point of View": 1
+        "Player Point of View": 0
     },
     "Runner Configuration": {
         "Frameskip Rate": 0,
@@ -55,7 +55,8 @@
         "Bypass Hash Calculation": true,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 1000
+            "Max Size": 1000,
+            "Repeat": true
         },
         "Allowed Input Sets": [
             {

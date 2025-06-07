@@ -63,6 +63,7 @@ public:
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override
   {
+    // No serialization as this core requires inputs to be repeated from the beginning after loading the initial state
     //  _quickerDSDA->serializeState(serializer);
   };
 
@@ -70,6 +71,7 @@ public:
   {
     // _quickerDSDA->deserializeState(deserializer);
 
+    // Reload only initial state
     jaffarCommon::deserializer::Contiguous d(_saveBuffer);
     _quickerDSDA->deserializeState(d);
   };
