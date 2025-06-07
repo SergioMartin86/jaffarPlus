@@ -267,6 +267,10 @@ public:
 
     // Deserializing current step
     deserializer.popContiguous(&_currentInputCount, sizeof(_currentInputCount));
+
+    // // Repeating inputs until this point
+    // for (size_t i = 0; i < _currentInputCount; i++)
+    //   _game->getEmulator()->advanceState(getInput(i));
   }
 
   // Getting the maximum differntial state size

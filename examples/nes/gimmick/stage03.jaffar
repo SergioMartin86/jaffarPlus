@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 400000
+            "Max Size (Mb)": 50000
         }
     },
     "Emulator Configuration": {
@@ -25,7 +25,7 @@
         "Rom File Path": "Gimmick! (J).nes",
         "Rom File SHA1": "835FEE060B15700163A1F8AD9716A163BF79C8FD",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "stage01.initial.sol",
+        "Initial Sequence File Path": "stage03.initial.sol",
         "Initial RAM Data File Path": "",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
@@ -38,20 +38,21 @@
         ]
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
+        "Frameskip Rate": 2,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 125
+            "Max Size": 200
         },
         "Allowed Input Sets": [
             {
                 "Conditions": [
                 ],
                 "Inputs": [
+                    "|..|........|",
                     "|..|...R..B.|",
                     "|..|...R....|",
                     "|..|...R...A|",
@@ -59,9 +60,26 @@
                     "|..|..L....A|",
                     "|..|......BA|",
                     "|..|......B.|",
-                    "|..|........|",
                     "|..|..L.....|",
-                    "|..|.......A|"
+                    "|..|.......A|",
+                    "|..|..L...BA|",
+                    "|..|..L...B.|",
+                    "|..|U.L...BA|",
+                    "|..|U.L...B.|",
+                    "|..|.D.R...A|",
+                    "|..|UD.R..BA|",
+                    "|..|.D.R..BA|",
+                    "|..|.D.R....|",
+                    "|..|U..R..B.|",
+                    "|..|U..R..BA|",
+                    "|..|UD.R..B.|",
+                    "|..|U.....BA|",
+                    "|..|U.....B.|",
+                    "|..|U.......|",
+                    "|..|.DL.....|",
+                    "|..|.DL....A|",
+                    "|..|.DL...B.|",
+                    "|..|UDL...B.|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -73,51 +91,10 @@
         "Game Name": "NES / Gimmick!",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Trace File Path": "stage01.trace",
+        "Trace File Path": "",
         "Print Properties": [
         ],
         "Hash Properties": [
-        ],
-        "Unused Rules": [
-            {
-                "Label": 1000,
-                "Conditions": [
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Set Point X Magnet",
-                        "Intensity": 100.0,
-                        "Pos": 65.117
-                    },
-                    {
-                        "Type": "Set Point Y Magnet",
-                        "Intensity": 100.0,
-                        "Pos": 11.438
-                    }
-                ]
-            },
-            {
-                "Label": 1001,
-                "Conditions": [
-                    {
-                        "Property": "Current Checkpoint",
-                        "Op": ">=",
-                        "Value": 3
-                    },
-                    {
-                        "Property": "Player Status",
-                        "Op": "==",
-                        "Value": 210
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Win"
-                    }
-                ]
-            }
         ],
         "Rules": [
             {
@@ -127,10 +104,14 @@
                 "Satisfies": [],
                 "Actions": [
                     {
-                        "Type": "Set Trace Magnet",
-                        "Player Intensity": 1.0,
-                        "Star Intensity": 0.1,
-                        "Offset": 1
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 100.0,
+                        "Pos": 250.000
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 25.0
                     }
                 ]
             },
@@ -138,14 +119,14 @@
                 "Label": 1001,
                 "Conditions": [
                     {
-                        "Property": "Current Checkpoint",
+                        "Property": "Player Pos X",
                         "Op": ">=",
-                        "Value": 3
+                        "Value": 78
                     },
                     {
-                        "Property": "Player Status",
-                        "Op": "==",
-                        "Value": 210
+                        "Property": "Player Pos Y",
+                        "Op": ">=",
+                        "Value": 17
                     }
                 ],
                 "Satisfies": [],
@@ -154,7 +135,24 @@
                         "Type": "Trigger Win"
                     }
                 ]
+            },
+            {
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Player Pos Y",
+                        "Op": "<",
+                        "Value": 17
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
             }
+
         ]
     }
 }

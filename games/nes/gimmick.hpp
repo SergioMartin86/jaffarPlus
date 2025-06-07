@@ -19,9 +19,48 @@ class Gimmick final : public jaffarPlus::Game
 public:
   static __INLINE__ std::string getName() { return "NES / Gimmick!"; }
 
-  Gimmick(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
+  Gimmick(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
+  {
+    // Getting emulator name (for runtime use)
+    _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
+
+    // Loading trace
+    if (_traceFilePath != "")
+    {
+      _useTrace = true;
+      std::string traceData;
+      bool        status = jaffarCommon::file::loadStringFromFile(traceData, _traceFilePath.c_str());
+      if (status == false) JAFFAR_THROW_LOGIC("Could not find/read trace file: %s\n", _traceFilePath.c_str());
+
+      std::istringstream f(traceData);
+      std::string line;
+      while (std::getline(f, line))
+      {
+        auto coordinates = jaffarCommon::string::split(line, ' ');
+        float playerPosX = std::atof(coordinates[0].c_str());
+        float playerPosY = std::atof(coordinates[1].c_str());
+        float starPosX = std::atof(coordinates[2].c_str());
+        float starPosY = std::atof(coordinates[3].c_str());
+        _trace.push_back(traceEntry_t{
+          .playerPosX = playerPosX,
+          .playerPosY = playerPosY,
+          .starPosX = starPosX,
+          .starPosY = starPosY
+        });
+      }
+    }
+  }
 
 private:
+
+  struct traceEntry_t
+  {
+    float playerPosX;
+    float playerPosY;
+    float starPosX;
+    float starPosY;
+  };
+
   __INLINE__ void registerGameProperties() override
   {
     // Getting emulator's low memory pointer
@@ -656,6 +695,8 @@ private:
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
+
+    stateUpdatePostHook();
   }
 
 
@@ -953,26 +994,26 @@ private:
     hashEngine.Update(_object8Timer1        , sizeof(_object8Timer1          ));         
     hashEngine.Update(_object8Timer2        , sizeof(_object8Timer2          ));         
     hashEngine.Update(_object8DropItems     , sizeof(_object8DropItems       ));         
-    // hashEngine.Update(_star5PosY2           , sizeof(_star5PosY2             ));         
-    // hashEngine.Update(_star5PosY1           , sizeof(_star5PosY1             ));         
-    // hashEngine.Update(_star5PosX1           , sizeof(_star5PosX1             ));         
-    // hashEngine.Update(_star5PosX2           , sizeof(_star5PosX2             ));         
-    // hashEngine.Update(_star5Status          , sizeof(_star5Status            ));         
-    // hashEngine.Update(_star4PosY2           , sizeof(_star4PosY2             ));         
-    // hashEngine.Update(_star4PosY1           , sizeof(_star4PosY1             ));         
-    // hashEngine.Update(_star4PosX1           , sizeof(_star4PosX1             ));         
-    // hashEngine.Update(_star4PosX2           , sizeof(_star4PosX2             ));         
-    // hashEngine.Update(_star4Status          , sizeof(_star4Status            ));         
-    // hashEngine.Update(_star3PosY2           , sizeof(_star3PosY2             ));         
-    // hashEngine.Update(_star3PosY1           , sizeof(_star3PosY1             ));         
-    // hashEngine.Update(_star3PosX1           , sizeof(_star3PosX1             ));         
-    // hashEngine.Update(_star3PosX2           , sizeof(_star3PosX2             ));         
-    // hashEngine.Update(_star3Status          , sizeof(_star3Status            ));         
-    // hashEngine.Update(_star2PosY2           , sizeof(_star2PosY2             ));         
-    // hashEngine.Update(_star2PosY1           , sizeof(_star2PosY1             ));         
-    // hashEngine.Update(_star2PosX1           , sizeof(_star2PosX1             ));         
-    // hashEngine.Update(_star2PosX2           , sizeof(_star2PosX2             ));         
-    // hashEngine.Update(_star2Status          , sizeof(_star2Status            ));         
+    hashEngine.Update(_star5PosY2           , sizeof(_star5PosY2             ));         
+    hashEngine.Update(_star5PosY1           , sizeof(_star5PosY1             ));         
+    hashEngine.Update(_star5PosX1           , sizeof(_star5PosX1             ));         
+    hashEngine.Update(_star5PosX2           , sizeof(_star5PosX2             ));         
+    hashEngine.Update(_star5Status          , sizeof(_star5Status            ));         
+    hashEngine.Update(_star4PosY2           , sizeof(_star4PosY2             ));         
+    hashEngine.Update(_star4PosY1           , sizeof(_star4PosY1             ));         
+    hashEngine.Update(_star4PosX1           , sizeof(_star4PosX1             ));         
+    hashEngine.Update(_star4PosX2           , sizeof(_star4PosX2             ));         
+    hashEngine.Update(_star4Status          , sizeof(_star4Status            ));         
+    hashEngine.Update(_star3PosY2           , sizeof(_star3PosY2             ));         
+    hashEngine.Update(_star3PosY1           , sizeof(_star3PosY1             ));         
+    hashEngine.Update(_star3PosX1           , sizeof(_star3PosX1             ));         
+    hashEngine.Update(_star3PosX2           , sizeof(_star3PosX2             ));         
+    hashEngine.Update(_star3Status          , sizeof(_star3Status            ));         
+    hashEngine.Update(_star2PosY2           , sizeof(_star2PosY2             ));         
+    hashEngine.Update(_star2PosY1           , sizeof(_star2PosY1             ));         
+    hashEngine.Update(_star2PosX1           , sizeof(_star2PosX1             ));         
+    hashEngine.Update(_star2PosX2           , sizeof(_star2PosX2             ));         
+    hashEngine.Update(_star2Status          , sizeof(_star2Status            ));         
     hashEngine.Update(_star1PosY2           , sizeof(_star1PosY2             ));         
     hashEngine.Update(_star1PosY1           , sizeof(_star1PosY1             ));         
     hashEngine.Update(_star1PosX1           , sizeof(_star1PosX1             ));         
@@ -985,6 +1026,9 @@ private:
   {
    _playerPosX = (float)*_playerPosX1 + (float)*_playerPosX2 / 256.0;
    _playerPosY = (float)*_playerPosY1 + (float)*_playerPosY2 / 256.0;
+
+   _starPosX = (float)*_star1PosX2 + (float)*_star1PosX1 / 256.0;
+   _starPosY = (float)*_star1PosY1 + (float)*_star1PosY2 / 256.0;
   }
 
   __INLINE__ void ruleUpdatePreHook() override 
@@ -993,12 +1037,43 @@ private:
     _playerXMagnet.pos = 0.0; 
     _playerYMagnet.intensity = 0.0; 
     _playerYMagnet.pos = 0.0; 
+
+    _traceMagnet.playerIntensity = 0.0;
+    _traceMagnet.starIntensity = 0.0;
+    _traceMagnet.offset = 0;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
   {
     _playerDistanceToPointX = std::abs(_playerXMagnet.pos - _playerPosX);
     _playerDistanceToPointY = std::abs(_playerYMagnet.pos - _playerPosY);
+
+    // Updating trace stuff
+    if (_useTrace == true)
+    {
+      _traceStep = (uint16_t) std::max(std::min( (int)_currentStep + _traceMagnet.offset, (int) _trace.size() - 1), 0);
+      
+      _traceTargetPlayerPosX = _trace[_traceStep].playerPosX;
+      _traceTargetPlayerPosY = _trace[_traceStep].playerPosY;
+      _traceTargetStarPosX   = _trace[_traceStep].starPosX;
+      _traceTargetStarPosY   = _trace[_traceStep].starPosY;
+
+      // Updating distance to trace point
+      _traceDistancePlayerPosX = std::abs(_traceTargetPlayerPosX - _playerPosX);
+      _traceDistancePlayerPosY = std::abs(_traceTargetPlayerPosY - _playerPosY);
+      _traceDistanceStarPosX   = std::abs(_traceTargetStarPosX   - _starPosX);
+      _traceDistanceStarPosY   = std::abs(_traceTargetStarPosY   - _starPosY);
+
+      _traceDistancePlayer  = sqrtf(
+        _traceDistancePlayerPosX * _traceDistancePlayerPosX +
+        _traceDistancePlayerPosY * _traceDistancePlayerPosY
+      );
+
+      _traceDistanceStar  = sqrtf(
+        _traceDistanceStarPosX * _traceDistanceStarPosX +
+        _traceDistanceStarPosY * _traceDistanceStarPosY 
+      );
+    }
   }
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
@@ -1022,6 +1097,11 @@ private:
     reward += -1.0 * _playerXMagnet.intensity * _playerDistanceToPointX;
     reward += -1.0 * _playerYMagnet.intensity * _playerDistanceToPointY;
 
+    // If trace is used, compute its magnet's effect
+    if (_useTrace == true)  reward += -1.0 * _traceMagnet.playerIntensity * _traceDistancePlayer;
+    if (_useTrace == true)  reward += -1.0 * _traceMagnet.starIntensity * _traceDistanceStar;
+
+
     // Returning reward
     return reward;
   }
@@ -1030,6 +1110,8 @@ private:
   {
     jaffarCommon::logger::log("[J+]  + Player Pos X:                       %.3f\n", _playerPosX);
     jaffarCommon::logger::log("[J+]  + Player Pos Y:                       %.3f\n", _playerPosY);
+    jaffarCommon::logger::log("[J+]  + Star Pos X:                         %.3f\n", _starPosX);
+    jaffarCommon::logger::log("[J+]  + Star Pos Y:                         %.3f\n", _starPosY);
 
     if (std::abs(_playerXMagnet.intensity) > 0.0f)
     {
@@ -1041,6 +1123,35 @@ private:
     {
       jaffarCommon::logger::log("[J+]  + Point Y Magnet                           Intensity: %.5f, Pos: %3.3f\n", _playerYMagnet.intensity, _playerYMagnet.pos);
       jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _playerDistanceToPointY);
+    }
+
+    if (_useTrace == true)
+    {
+      if (std::abs(_traceMagnet.playerIntensity) > 0.0f)
+      {
+        jaffarCommon::logger::log("[J+]  + Player Trace Magnet                      Intensity: %.5f, Step: %u, X: %3.3f, Y: %3.3f\n",
+           _traceMagnet.playerIntensity,
+           _traceStep,
+           _traceTargetPlayerPosX,
+           _traceTargetPlayerPosY);
+
+        jaffarCommon::logger::log("[J+]    + Distance Player Pos X                  %3.3f\n", _traceDistancePlayerPosX);
+        jaffarCommon::logger::log("[J+]    + Distance Player Pos Y                  %3.3f\n", _traceDistancePlayerPosY);
+        jaffarCommon::logger::log("[J+]    + Player Total Distance                  %3.3f\n", _traceDistancePlayer);
+      }
+
+      if (std::abs(_traceMagnet.starIntensity) > 0.0f)
+      {
+        jaffarCommon::logger::log("[J+]  + Star Trace Magnet                       Intensity: %.5f, Step: %u, X: %3.3f, Y: %3.3f\n",
+           _traceMagnet.starIntensity,
+           _traceStep,
+           _traceTargetStarPosX,
+           _traceTargetStarPosY);
+
+        jaffarCommon::logger::log("[J+]    + Distance Star Pos X                    %3.3f\n", _traceDistanceStarPosX);
+        jaffarCommon::logger::log("[J+]    + Distance Star Pos Y                    %3.3f\n", _traceDistanceStarPosY);
+        jaffarCommon::logger::log("[J+]    + Star Total Distance                    %3.3f\n", _traceDistanceStar);
+      }
     }
   }
 
@@ -1064,6 +1175,16 @@ private:
       recognizedActionType = true;
     }
 
+    if (actionType == "Set Trace Magnet")
+    {
+      if (_useTrace == false) JAFFAR_THROW_LOGIC("Specified Trace Magnet, but no trace file was provided.");
+      auto playerIntensity = jaffarCommon::json::getNumber<float>(actionJs, "Player Intensity");
+      auto starIntensity = jaffarCommon::json::getNumber<float>(actionJs, "Star Intensity");
+      auto offset    = jaffarCommon::json::getNumber<int>(actionJs, "Offset");
+      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.playerIntensity = playerIntensity, .starIntensity = starIntensity, .offset = offset }; });
+      recognizedActionType = true;
+    }
+
     return recognizedActionType;
   }
 
@@ -1072,6 +1193,58 @@ private:
     // There is no discriminating state element, so simply return a zero hash
     return jaffarCommon::hash::hash_t();
   }
+
+  bool _isDumpingTrace = false;
+  std::string _traceDumpString;
+
+  // Datatype to describe a point magnet
+  struct traceMagnet_t
+  {
+    float playerIntensity = 0.0; // How strong the magnet is
+    float starIntensity = 0.0; // How strong the magnet is
+    int offset      = 0; // Which entry (step) to look at wrt the current emulation step
+  };
+
+  traceMagnet_t _traceMagnet;
+
+  __INLINE__ void playerPrintCommands() const override
+  {
+    jaffarCommon::logger::log("[J+] t: start/stop trace dumping (%s)\n", _isDumpingTrace ? "On" : "Off");
+  };
+
+  __INLINE__ bool playerParseCommand(const int command)
+  {
+    // If storing a trace, do it here
+    if (_isDumpingTrace == true) _traceDumpString +=
+     std::to_string(_playerPosX) +
+     std::string(" ") +
+     std::to_string(_playerPosY) +
+     std::string(" ") +
+     std::to_string(_starPosX) +
+     std::string(" ") +
+     std::to_string(_starPosY) +
+     std::string("\n");
+
+     if (command == 't')
+     {
+      if (_isDumpingTrace == false)
+      {
+        _isDumpingTrace = true;
+        _traceDumpString = "";
+        return false;
+      }
+      else
+      {
+        const std::string dumpOutputFile = "jaffar.trace";
+        jaffarCommon::logger::log("[J+] Dumping trace to file: '%s'", dumpOutputFile.c_str());
+        jaffarCommon::file::saveStringToFile(_traceDumpString, dumpOutputFile);
+        _isDumpingTrace = false;
+        return true;
+      }
+     }
+
+     return false;
+  };
 
   uint8_t* _screenX1;
   uint8_t* _screenX2;
@@ -1393,6 +1566,8 @@ private:
   // Derivative Values
   float _playerPosX;
   float _playerPosY;
+  float _starPosX;
+  float _starPosY;
 
   // Datatype to describe a point magnet
   struct pointMagnet_t
@@ -1405,6 +1580,31 @@ private:
   pointMagnet_t _playerYMagnet; 
   float _playerDistanceToPointX;
   float _playerDistanceToPointY;
+
+    // Whether we use a trace
+  bool _useTrace = false;
+
+  // Location of the trace file
+  std::string _traceFilePath;
+
+  // Trace contents
+  std::vector<traceEntry_t> _trace;
+
+  // Current trace target
+  uint16_t _traceStep;
+  float _traceTargetPlayerPosX;
+  float _traceTargetPlayerPosY;
+  float _traceTargetStarPosX;
+  float _traceTargetStarPosY;
+
+  float _traceDistancePlayerPosX;
+  float _traceDistancePlayerPosY;
+  float _traceDistancePlayer;
+
+  float _traceDistanceStarPosX;
+  float _traceDistanceStarPosY;
+  float _traceDistanceStar;
+
 };
 
 } // namespace nes
