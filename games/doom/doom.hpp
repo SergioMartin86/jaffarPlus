@@ -111,6 +111,8 @@ private:
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
   {
+    _effectiveStateSize = ((jaffarPlus::emulator::QuickerDSDA*)_emulator.get())->getEffectiveStateSize();
+    
     _playerPosX = jaffar::EmuInstance::getFloatFrom1616Fixed(players[0].mo->x);
     _playerPosY = jaffar::EmuInstance::getFloatFrom1616Fixed(players[0].mo->y);
     _playerPosZ = jaffar::EmuInstance::getFloatFrom1616Fixed(players[0].mo->z);
@@ -145,6 +147,7 @@ private:
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
+    serializer.push(&_effectiveStateSize, sizeof(_effectiveStateSize));
     // serializer.push(&gametic, sizeof(gametic));
     // serializer.push(&players[0].mo->x, sizeof(players[0].mo->x));
     // serializer.push(&players[0].mo->y, sizeof(players[0].mo->y));
@@ -186,6 +189,7 @@ private:
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
+    deserializer.pop(&_effectiveStateSize, sizeof(_effectiveStateSize));
     // deserializer.pop(&gametic, sizeof(gametic));
     // deserializer.pop(&players[0].mo->x, sizeof(players[0].mo->x));
     // deserializer.pop(&players[0].mo->y, sizeof(players[0].mo->y));
@@ -248,6 +252,7 @@ private:
     jaffarCommon::logger::log("[J+] Game Tic:   %d\n", gametic);
     jaffarCommon::logger::log("[J+] Level Exit: %s\n", reachedLevelExit == 1 ? "Yes" : "No");
     jaffarCommon::logger::log("[J+] Game End:   %s\n", reachedGameEnd == 1 ? "Yes" : "No");
+    jaffarCommon::logger::log("[J+] Effective State Size:   %lu bytes\n", _effectiveStateSize);
 
     if (players[0].mo != nullptr)
     {
@@ -320,6 +325,7 @@ private:
   pointMagnet_t _pointMagnet;
   float         _momentumMagnet;
   float         _totalMomentum;
+  size_t        _effectiveStateSize;
 
   float _playerPosX;
   float _playerPosY;

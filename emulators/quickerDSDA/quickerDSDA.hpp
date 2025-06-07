@@ -64,16 +64,21 @@ public:
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override
   {
     // No serialization as this core requires inputs to be repeated from the beginning after loading the initial state
-    //  _quickerDSDA->serializeState(serializer);
+     _quickerDSDA->serializeState(serializer);
   };
+
+  __INLINE__ size_t getEffectiveStateSize() const 
+  {
+    return headlessGetEffectiveSaveSize();
+  }
 
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override
   {
-    // _quickerDSDA->deserializeState(deserializer);
+    _quickerDSDA->deserializeState(deserializer);
 
-    // Reload only initial state
-    jaffarCommon::deserializer::Contiguous d(_saveBuffer);
-    _quickerDSDA->deserializeState(d);
+    // // Reload only initial state
+    // jaffarCommon::deserializer::Contiguous d(_saveBuffer);
+    // _quickerDSDA->deserializeState(d);
   };
 
   __INLINE__ void printInfo() const override {}
