@@ -22,14 +22,18 @@
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerDSDA",
-        "State Size": 1048576,
+        "State Size": 9216,
         "Initial Sequence File Path": "",
-        "IWAD File Path": "../../extern/quickerDSDA/tests/wads/freedoom1.wad",
-        "Expected IWAD SHA1": "9E38DCC0D1E9FBD20382BA19A6BDF11F7A2B0502",
+        "IWAD File Path": "../../extern/quickerDSDA/tests/wads/DOOM.WAD",
+        "Expected IWAD SHA1": "117015379C529573510BE08CF59810AA10BB934E",
         "PWADS": [
             {
                 "File Path": "../../extern/quickerDSDA/tests/wads/dsda-doom.wad",
                 "Expected SHA1": "D8604FA2A4154F80C3C2730DCB0836BB1D14323C"
+            },
+            {
+                "File Path": "../../extern/quickerDSDA/tests/wads/doom1.e1m1.reduced.wad",
+                "Expected SHA1": "8EA5293FF28113AF97941C5A694687AD86455E10"
             }
         ],
         "Skill Level": 1,
@@ -595,15 +599,15 @@
                     {
                         "Property": "Player Pos X",
                         "Op": ">",
-                        "Value": 955
+                        "Value": 1360
                     },
                     {
                         "Property": "Player Pos Y",
                         "Op": "<",
-                        "Value": -85
+                        "Value": -2400
                     },
                     {
-                        "Property": "Line[41] Activations",
+                        "Property": "Line[56] Activations",
                         "Op": "==",
                         "Value": 0
                     }
@@ -1080,7 +1084,8 @@
                     "|| -50, -40, -23,   0,.A.|",
                     "|| -50, -40, -24,   0,.A.|",
                     "|| -50, -40, -25,   0,.A.|",
-                    "|| -50, -40, -26,   0,.A.|"
+                    "|| -50, -40, -26,   0,.A.|",
+                    "|| -50, -50, -23,   0,.A.|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -1092,10 +1097,10 @@
         "Game Name": "Doom",
         "Frame Rate": 60.1,
         "Print Properties": [
-            "Line[41] Activations"
+            "Line[56] Activations"
         ],
         "Hash Properties": [
-            "Line[41] Activations"
+            "Line[56] Activations"
         ],
         "Rules": [
             {
@@ -1106,8 +1111,8 @@
                     {
                         "Type": "Set Point Magnet",
                         "Intensity": 1.0,
-                        "X": 960,
-                        "Y": -113,
+                        "X": 1498,
+                        "Y": -2449,
                         "Z": 0
                     }
                 ]
@@ -1116,7 +1121,7 @@
                 "Label": 1999,
                 "Conditions": [
                     {
-                        "Property": "Line[41] Activations",
+                        "Property": "Line[56] Activations",
                         "Op": ">",
                         "Value": 0
                     }
