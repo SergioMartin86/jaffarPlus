@@ -16,6 +16,7 @@
 #include "nes/bestOfTheBest.hpp"
 #include "nes/doubleDragon.hpp"
 #include "nes/gimmick.hpp"
+#include "nes/ninjaGaiden3.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_SDLPOP
@@ -117,6 +118,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   DETECT_GAME(nes::BestOfTheBest);
   DETECT_GAME(nes::DoubleDragon);
   DETECT_GAME(nes::Gimmick);
+  DETECT_GAME(nes::NinjaGaiden3);
 #ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
   DETECT_GAME(nes::Arkanoid2);
 #endif
