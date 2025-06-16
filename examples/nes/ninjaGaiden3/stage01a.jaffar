@@ -1,0 +1,198 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 10000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Ninja Gaiden III - The Ancient Ship of Doom (U) [!].nes",
+        "Rom File SHA1": "3F2E6DAC76BA14EFC177B5653AB043E53A04D365",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "stage01a.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 1024,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 900
+        },
+        "Allowed Input Sets": [ 
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|U.......|",
+                    "|..|.D......|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|.......A|",
+                    "|..|......B.|",
+                    "|..|U.L.....|",
+                    "|..|U..R....|",
+                    "|..|U......A|",
+                    "|..|U.L....A|",
+                    "|..|U..R...A|",
+                    "|..|U.....B.|",
+                    "|..|U.L...B.|",
+                    "|..|U..R..B.|",
+                    "|..|.DL.....|",
+                    "|..|.D.R....|",
+                    "|..|.D.....A|",
+                    "|..|.DL....A|",
+                    "|..|.D.R...A|",
+                    "|..|.D....B.|",
+                    "|..|.DL...B.|",
+                    "|..|.D.R..B.|",
+                    "|..|..L....A|",
+                    "|..|..L...B.|",
+                    "|..|...R...A|",
+                    "|..|...R..B.|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Ninja Gaiden 3",
+        "Frame Rate": 60.1,
+        "Trace File Path": "stage01a.trace",
+        "Enable Attack": true,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.01,
+                        "Offset": 2
+                    },
+                    {
+                        "Type": "Set Ninja Power Magnet",
+                        "Intensity": 0.01,
+                        "Min": 0.0,
+                        "Max": 40.0,
+                        "Center": 40.0
+                    }
+                ]
+            },
+
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Ninja Sword Type",
+                        "Op": ">=",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 5.0
+                    }
+                ]
+            },
+
+            {
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Ninja Sword Type",
+                        "Op": ">=",
+                        "Value": 1
+                    },
+                    {
+                        "Property": "Ninja Power",
+                        "Op": ">=",
+                        "Value": 30
+                    },
+                    {
+                        "Property": "Game Transition",
+                        "Op": "==",
+                        "Value": 128
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Prev Ninja Power",
+                        "Op": ">=",
+                        "Value": 40
+                    },
+                    {
+                        "Property": "Ninja Power",
+                        "Op": "<",
+                        "Value": 40
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}
