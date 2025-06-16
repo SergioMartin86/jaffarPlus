@@ -151,6 +151,8 @@ private:
     _weapon2Active                     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Weapon 2 Active"              )]->getPointer();
 
     registerGameProperty("Prev Ninja Power"          , &_prevNinjaPower, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Ninja Pos X"               , &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little); 
+    registerGameProperty("Ninja Pos Y"               , &_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little); 
 
     stateUpdatePostHook();
 
@@ -194,6 +196,11 @@ private:
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
+    // uint8_t _saveBuffer[1024*1024];
+    // jaffarCommon::serializer::Contiguous s(_saveBuffer);
+    // _emulator->serializeState(s);
+    // _emulator->advanceState(_nullInputIdx);
+
     hashEngine.Update(*_gameMode                 );
     hashEngine.Update(*_currentStage             );
     hashEngine.Update(*_gameTransition           );
@@ -231,7 +238,7 @@ private:
     hashEngine.Update(*_ninjaHorizontalCollision );
     hashEngine.Update(*_levelExitFlag1);
     hashEngine.Update(*_levelExitFlag2);
-  //  hashEngine.Update(*bufferedMovement);
+    hashEngine.Update(*_bufferedMovement);
     hashEngine.Update(_orbStateVector, ORB_COUNT);
     hashEngine.Update(_enemyStateVector, ENEMY_COUNT);
 
@@ -242,8 +249,13 @@ private:
     // Animation Array
     hashEngine.Update(&_lowMem[0x0060], 0x20);
     hashEngine.Update(&_lowMem[0x0080], 0x08);
+
+    // Ninja State
+     hashEngine.Update(&_lowMem[0x00F9], 0x00FF - 0x00F9);
 //    hashEngine.Update(&_lowMem[0x0400], 0x200);
 
+    // jaffarCommon::deserializer::Contiguous d(_saveBuffer);
+    // _emulator->deserializeState(d);
   }
 
   // Updating derivative values after updating the internal state
@@ -254,7 +266,9 @@ private:
     {
       _screenPosX = 0;
       _screenPosY = (float)*_screenPosY1 * 256.0 + (float)*_screenPosY2 + (float)*_screenPosY3 / 256.0;
-      _playerPosX = _screenPosX + (float)*_ninjaPosX1 + (float)*_ninjaPosX2 / 256.0;
+
+      // Only update if not visible (ninja frame == 15) because it affects position
+      if (*_ninjaFrame != 15)  _playerPosX = _screenPosX + (float)*_ninjaPosX1 + (float)*_ninjaPosX2 / 256.0;
       _playerPosY = _screenPosY + (float)*_ninjaPosY1 + (float)*_ninjaPosY2 / 256.0;
     }
 
@@ -263,7 +277,9 @@ private:
     {
       _screenPosX = (float)*_screenPosX1 * 256.0 + (float)*_screenPosX2 + (float)*_screenPosX3 / 256.0;
       _screenPosY = 0;
-      _playerPosX = _screenPosX + (float)*_ninjaPosX1 + (float)*_ninjaPosX2 / 256.0;
+
+      // Only update if not visible (ninja frame == 15) because it affects position
+      if (*_ninjaFrame != 15) _playerPosX = _screenPosX + (float)*_ninjaPosX1 + (float)*_ninjaPosX2 / 256.0;
       _playerPosY = _screenPosY + (float)*_ninjaPosY1 + (float)*_ninjaPosY2 / 256.0;
     }
 
@@ -332,6 +348,7 @@ private:
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
     serializer.pushContiguous(&_lastInputStep, sizeof(_lastInputStep));
     serializer.pushContiguous(&_prevNinjaPower, sizeof(_prevNinjaPower));
+    serializer.pushContiguous(&_playerPosX, sizeof(_playerPosX));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -339,6 +356,7 @@ private:
     deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
     deserializer.popContiguous(&_lastInputStep, sizeof(_lastInputStep));
     deserializer.popContiguous(&_prevNinjaPower, sizeof(_prevNinjaPower));
+    deserializer.popContiguous(&_playerPosX, sizeof(_playerPosX));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -349,6 +367,9 @@ private:
     // If trace is used, compute its magnet's effect
     if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensityX * _traceDistanceX;
     if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensityY * _traceDistanceY;
+
+    // Evaluating point magnet
+    reward += -1.0 * _pointMagnet.intensity * _playerDistanceToPoint;
 
     // Evaluating ninja power magnet
     {
@@ -780,7 +801,6 @@ private:
 
   uint16_t _currentStep;
   uint16_t _lastInputStep;
-
 };
 
 
