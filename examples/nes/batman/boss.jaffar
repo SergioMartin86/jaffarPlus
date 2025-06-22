@@ -1,0 +1,224 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": false,
+        "Max Steps": 460,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 100
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Batman (U) [!].nes",
+        "Rom File SHA1": "73B33E67E3C9E1116F9FCB021B10BB1171B8696A",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "boss.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 1024,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 460
+        },
+        "Allowed Input Sets": [ 
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|U.......|",
+                    "|..|.D......|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|.......A|",
+                    "|..|......B.|",
+                    "|..|U.L.....|",
+                    "|..|U..R....|",
+                    "|..|U......A|",
+                    "|..|U.....B.|",
+                    "|..|.DL.....|",
+                    "|..|.D.R....|",
+                    "|..|.D.....A|",
+                    "|..|.DL....A|",
+                    "|..|.D....B.|",
+                    "|..|..L....A|",
+                    "|..|..L...B.|",
+                    "|..|...R...A|",
+                    "|..|...R..B.|",
+                    "|..|U.L....A|",
+                    "|..|U..R...A|",
+                    "|..|U.....BA|",
+                    "|..|.D.R...A|",
+                    "|..|.D....BA|",
+                    "|..|..L...BA|",
+                    "|..|...R..BA|",
+                    "|..|U.L...B.|",
+                    "|..|U..R..B.|",
+                    "|..|.DL...B.|",
+                    "|..|.D.R..B.|",
+                    "|..|..LR...A|",
+                    "|..|......BA|",
+                    "|..|..LR....|",
+                    "|..|..L.S..A|",
+                    "|..|...RS..A|",
+                    "|..|...RS...|",
+                    "|..|..L.S...|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|U.......|",
+                    "|..|.D......|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|.......A|",
+                    "|..|......B.|",
+                    "|..|U.L.....|",
+                    "|..|U..R....|",
+                    "|..|U......A|",
+                    "|..|U.....B.|",
+                    "|..|.DL.....|",
+                    "|..|.D.R....|",
+                    "|..|.D.....A|",
+                    "|..|.DL....A|",
+                    "|..|.D....B.|",
+                    "|..|..L....A|",
+                    "|..|..L...B.|",
+                    "|..|...R...A|",
+                    "|..|...R..B.|",
+                    "|..|U.L....A|",
+                    "|..|U..R...A|",
+                    "|..|U.....BA|",
+                    "|..|.D.R...A|",
+                    "|..|.D....BA|",
+                    "|..|..L...BA|",
+                    "|..|...R..BA|",
+                    "|..|U.L...B.|",
+                    "|..|U..R..B.|",
+                    "|..|.DL...B.|",
+                    "|..|.D.R..B.|",
+                    "|..|..LR...A|",
+                    "|..|......BA|",
+                    "|..|..LR....|",
+                    "|..|..L.S..A|",
+                    "|..|...RS..A|",
+                    "|..|...RS...|",
+                    "|..|..L.S...|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Batman",
+        "Frame Rate": 60.1,
+        "Trace File Path": "boss.trace",
+        "Enable Attack": true,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 1.0,
+                        "Offset": 1
+                    },
+                    {
+                        "Type": "Set Boss HP Magnet",
+                        "Intensity": -100.0
+                    }
+                ]
+            },
+
+            {
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Boss HP",
+                        "Op": "<=",
+                        "Value": 5
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 0.0,
+                        "Intensity Y": 0.0,
+                        "Offset": 0
+                    },
+                    {
+                        "Type": "Set Last Input Step Reward",
+                        "Intensity": -1.0
+                    }
+                ]
+            },
+
+            {
+                "Label": 1003,
+                "Conditions": [
+                    {
+                        "Property": "Boss HP",
+                        "Op": "==",
+                        "Value": 255
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ]
+    }
+}
