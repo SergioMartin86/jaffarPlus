@@ -64,6 +64,7 @@ private:
     registerGameProperty("Game Mode"                   , &_lowMem[0x001F], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Current Stage"               , &_lowMem[0x005F], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Global Timer"                , &_lowMem[0x005E], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Frame Type"                  , &_lowMem[0x0005], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Game Transition"             , &_lowMem[0x002C], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Ninja Animation 1"           , &_lowMem[0x00FA], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Ninja Animation 2"           , &_lowMem[0x00FF], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
@@ -90,6 +91,7 @@ private:
     registerGameProperty("Screen Pos Y2"               , &_lowMem[0x0084], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Screen Pos Y3"               , &_lowMem[0x0059], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Boss HP"                     , &_lowMem[0x00A8], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Boss HP 2"                   , &_lowMem[0x049C], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Boss Pos Y"                  , &_lowMem[0x05A5], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Boss Pos X"                  , &_lowMem[0x052D], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Ninja Invincibility Timer"   , &_lowMem[0x00AD], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
@@ -104,11 +106,15 @@ private:
     registerGameProperty("Level Exit Flag 2"           , &_lowMem[0x01FE], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Weapon 1 Active"             , &_lowMem[0x04EE], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Weapon 2 Active"             , &_lowMem[0x04EF], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Last Input Step"             , &_lastInputStep, Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+
+    
 
     _gameMode                          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Mode"                    )]->getPointer();
-    _currentStage                      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Transition"              )]->getPointer();
+    _currentStage                      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Current Stage"                )]->getPointer();
     _globalTimer                       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer"                 )]->getPointer();
-    _gameTransition                    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer"                 )]->getPointer();
+    _gameTransition                    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Transition"              )]->getPointer();
+    _frameType                         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Frame Type"                   )]->getPointer();
     _ninjaAnimation1                   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ninja Animation 1"            )]->getPointer();
     _ninjaAnimation2                   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ninja Animation 2"            )]->getPointer();
     _ninjaAction                       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ninja Action"                 )]->getPointer();
@@ -134,6 +140,7 @@ private:
     _screenPosY2                       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos Y2"                )]->getPointer();
     _screenPosY3                       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos Y3"                )]->getPointer();
     _bossHP                            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Boss HP"                      )]->getPointer();
+    _bossHP2                           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Boss HP 2"                     )]->getPointer();
     _bossPosY                          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Boss Pos Y"                   )]->getPointer();
     _bossPosX                          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Boss Pos X"                   )]->getPointer();
     _ninjaInvincibilityTimer           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ninja Invincibility Timer"    )]->getPointer();
@@ -194,18 +201,14 @@ private:
     _currentStep++;
   }
 
-  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
+  __INLINE__ void calculateHashValues(MetroHash128& hashEngine) const
   {
-    // uint8_t _saveBuffer[1024*1024];
-    // jaffarCommon::serializer::Contiguous s(_saveBuffer);
-    // _emulator->serializeState(s);
-    // _emulator->advanceState(_nullInputIdx);
-
     hashEngine.Update(*_gameMode                 );
     hashEngine.Update(*_currentStage             );
     hashEngine.Update(*_gameTransition           );
+    hashEngine.Update(*_frameType);
     hashEngine.Update(*_ninjaAnimation1          );
-    hashEngine.Update(*_ninjaAnimation2          );
+    // hashEngine.Update(*_ninjaAnimation2          );
     hashEngine.Update(*_ninjaAction              );
     hashEngine.Update(*_ninjaFrame               );
     hashEngine.Update(*_ninjaWeapon              );
@@ -229,6 +232,7 @@ private:
     hashEngine.Update(*_screenPosY2              );
     hashEngine.Update(*_screenPosY3              );
     hashEngine.Update(*_bossHP                   );
+    hashEngine.Update(*_bossHP2                  );
     hashEngine.Update(*_bossPosY                 );
     hashEngine.Update(*_bossPosX                 );
   //  hashEngine.Update(*_ninjaInvincibilityTimer  );
@@ -239,8 +243,8 @@ private:
     hashEngine.Update(*_levelExitFlag1);
     hashEngine.Update(*_levelExitFlag2);
     hashEngine.Update(*_bufferedMovement);
-    hashEngine.Update(_orbStateVector, ORB_COUNT);
-    hashEngine.Update(_enemyStateVector, ENEMY_COUNT);
+    // hashEngine.Update(_orbStateVector, ORB_COUNT);
+    // hashEngine.Update(_enemyStateVector, ENEMY_COUNT);
 
     hashEngine.Update(_prevNinjaPower               );
     hashEngine.Update(_weapon1Active);
@@ -250,9 +254,33 @@ private:
     hashEngine.Update(&_lowMem[0x0060], 0x20);
     hashEngine.Update(&_lowMem[0x0080], 0x08);
 
+    // Ninja movement values
+    hashEngine.Update(&_lowMem[0x04CE]);
+    hashEngine.Update(&_lowMem[0x0700]);
+    hashEngine.Update(&_lowMem[0x00FF]);
+
     // Ninja State
-     hashEngine.Update(&_lowMem[0x00F9], 0x00FF - 0x00F9);
-//    hashEngine.Update(&_lowMem[0x0400], 0x200);
+    hashEngine.Update(&_lowMem[0x00F9], 0x00FF - 0x00F9);
+    // hashEngine.Update(&_lowMem[0x0400], 0x200);
+
+    // Pending actions
+    // hashEngine.Update(&_lowMem[0x0076]);
+    // hashEngine.Update(&_lowMem[0x007F]);
+
+    if (std::abs(_lastInputStepReward) > 0.0f) hashEngine.Update(_lastInputStep);
+  }
+
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
+  {
+    calculateHashValues(hashEngine);
+
+    // uint8_t _saveBuffer[1024*1024];
+    // jaffarCommon::serializer::Contiguous s(_saveBuffer);
+    // _emulator->serializeState(s);
+    // _emulator->advanceState(_nullInputIdx);
+    // _emulator->advanceState(_nullInputIdx);
+
+    // calculateHashValues(hashEngine);
 
     // jaffarCommon::deserializer::Contiguous d(_saveBuffer);
     // _emulator->deserializeState(d);
@@ -266,10 +294,6 @@ private:
     {
       _screenPosX = 0;
       _screenPosY = (float)*_screenPosY1 * 256.0 + (float)*_screenPosY2 + (float)*_screenPosY3 / 256.0;
-
-      // Only update if not visible (ninja frame == 15) because it affects position
-      if (*_ninjaFrame != 15)  _playerPosX = _screenPosX + (float)*_ninjaPosX1 + (float)*_ninjaPosX2 / 256.0;
-      _playerPosY = _screenPosY + (float)*_ninjaPosY1 + (float)*_ninjaPosY2 / 256.0;
     }
 
     // If game mode is 42, then it's a horizontal level
@@ -277,12 +301,18 @@ private:
     {
       _screenPosX = (float)*_screenPosX1 * 256.0 + (float)*_screenPosX2 + (float)*_screenPosX3 / 256.0;
       _screenPosY = 0;
-
-      // Only update if not visible (ninja frame == 15) because it affects position
-      if (*_ninjaFrame != 15) _playerPosX = _screenPosX + (float)*_ninjaPosX1 + (float)*_ninjaPosX2 / 256.0;
-      _playerPosY = _screenPosY + (float)*_ninjaPosY1 + (float)*_ninjaPosY2 / 256.0;
     }
 
+    // If game mode is 42, then it's a non-moving level
+    if (*_gameMode == 191)
+    {
+      _screenPosX = 0;
+      _screenPosY = 0;
+    }
+
+    // Only update if visible (ninja frame != 15) because it affects position
+    _playerPosX = _screenPosX + (float)*_ninjaPosX1 + (float)*_ninjaPosX2 / 256.0;
+    _playerPosY = _screenPosY + (float)*_ninjaPosY1 + (float)*_ninjaPosY2 / 256.0;
     _ninjaBossDistance = std::abs((float)*_ninjaPosX1 - (float)*_bossPosX) + std::abs((float)*_ninjaPosY1 - (float)*_bossPosY);
   }
 
@@ -315,6 +345,8 @@ private:
     _traceMagnet.intensityX = 0.0;
     _traceMagnet.intensityY = 0.0;
     _traceMagnet.offset = 0;
+
+    _lastInputStepReward = 0.0;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
@@ -348,7 +380,7 @@ private:
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
     serializer.pushContiguous(&_lastInputStep, sizeof(_lastInputStep));
     serializer.pushContiguous(&_prevNinjaPower, sizeof(_prevNinjaPower));
-    serializer.pushContiguous(&_playerPosX, sizeof(_playerPosX));
+    // serializer.pushContiguous(&_playerPosX, sizeof(_playerPosX));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -356,7 +388,7 @@ private:
     deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
     deserializer.popContiguous(&_lastInputStep, sizeof(_lastInputStep));
     deserializer.popContiguous(&_prevNinjaPower, sizeof(_prevNinjaPower));
-    deserializer.popContiguous(&_playerPosX, sizeof(_playerPosX));
+    // deserializer.popContiguous(&_playerPosX, sizeof(_playerPosX));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -391,12 +423,16 @@ private:
 
     // Evaluating boss HP magnet
     {
-      float boundedValue = (float)*_bossHP;
+      float boundedValue = (float)*_bossHP + (float)*_bossHP2;
       boundedValue = std::min(boundedValue, _bossHPMagnet.max);
       boundedValue = std::max(boundedValue, _bossHPMagnet.min);
       float diff = std::abs(_bossHPMagnet.center - boundedValue);
       reward += _bossHPMagnet.intensity * -diff;
     }
+
+    
+    // Subtracting reward for having made an input recently (for early termination)
+    reward += _lastInputStepReward * _lastInputStep;
 
     // Evaluating ninja's weapon magnet
     if (_ninjaWeaponMagnet.value == *_ninjaWeapon) reward += _ninjaWeaponMagnet.intensity;
@@ -434,11 +470,12 @@ private:
       if (*_ninjaAction == 0x0004) allowedInputSet.insert(allowedInputSet.end(), { _inputBL, _inputBR });
       if (*_ninjaAction == 0x0005) allowedInputSet.insert(allowedInputSet.end(), { _inputBL, _inputBR });
       if (*_ninjaAction == 0x000A) allowedInputSet.insert(allowedInputSet.end(), { _inputDA });
-      if (*_ninjaAction == 0x000C) allowedInputSet.insert(allowedInputSet.end(), { _inputB });
-      if (*_ninjaAction == 0x0011) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputAR, _inputAL, _inputDA, _inputUA });
+      if (*_ninjaAction == 0x000B) allowedInputSet.insert(allowedInputSet.end(), { _inputBR, _inputDB, _inputDR, _inputUB, _inputUR, _inputR, _inputBL });
+      if (*_ninjaAction == 0x000C) allowedInputSet.insert(allowedInputSet.end(), { _inputB, _inputUB });
+      if (*_ninjaAction == 0x0011) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputAR, _inputAL, _inputDA, _inputUA, _inputDB, _inputDR, _inputUB, _inputUR, _inputR, _inputL, _inputBR, _inputBL });
       if (*_ninjaAction == 0x0012) allowedInputSet.insert(allowedInputSet.end(), { _inputBL, _inputBR });
       if (*_ninjaAction == 0x0013) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputU, _inputAR, _inputAL, _inputBL, _inputBR, _inputDA, _inputUA });
-      if (*_ninjaAction == 0x0015) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputAR, _inputAL, _inputDA, _inputUA });
+      if (*_ninjaAction == 0x0015) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputAR, _inputAL, _inputDA, _inputUA, _inputDB, _inputDR, _inputUB, _inputUR, _inputR, _inputL });
     }
     else
     {
@@ -462,6 +499,7 @@ private:
       if (*_ninjaAction == 0x0012) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputU, _inputAR, _inputAL, _inputDA, _inputUA });
       if (*_ninjaAction == 0x0014) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputAR, _inputAL, _inputDA, _inputUA });
       if (*_ninjaAction == 0x000A) allowedInputSet.insert(allowedInputSet.end(), { _inputDA });
+      if (*_ninjaAction == 0x000B) allowedInputSet.insert(allowedInputSet.end(), { _inputBR, _inputDB, _inputDR, _inputUB, _inputUR, _inputR  });
       if (*_ninjaAction == 0x0011) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputAR, _inputAL, _inputDA, _inputUA });
       if (*_ninjaAction == 0x0013) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputU, _inputAR, _inputAL, _inputDA, _inputUA });
       if (*_ninjaAction == 0x0015) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputAR, _inputAL, _inputDA, _inputUA });
@@ -489,7 +527,7 @@ private:
     jaffarCommon::logger::log("[J+]   + Screen Pos X:                      %.3f: %02u + %02u + %02u\n", _screenPosX, *_screenPosX1, *_screenPosX2, *_screenPosX3);
     jaffarCommon::logger::log("[J+]   + Screen Pos Y:                      %.3f: %02u + %02u + %02u\n", _screenPosY, *_screenPosY1, *_screenPosY2, *_screenPosY3);
     jaffarCommon::logger::log("[J+]   + Ninja Invincibility:               %02u %02u\n", *_ninjaInvincibilityState, *_ninjaInvincibilityTimer);
-    jaffarCommon::logger::log("[J+]   + Boss HP:                           %02u\n", *_bossHP);
+    jaffarCommon::logger::log("[J+]   + Boss HP:                           %02u (Final Boss: %02u)\n", *_bossHP, *_bossHP2);
     jaffarCommon::logger::log("[J+]   + Boss Pos X:                        %02u\n", *_bossPosX);
     jaffarCommon::logger::log("[J+]   + Boss Pos Y:                        %02u\n", *_bossPosY);
     jaffarCommon::logger::log("[J+]   + Ninja/Boss Distance:               %.3f\n", _ninjaBossDistance);
@@ -502,12 +540,18 @@ private:
       jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _playerDistanceToPoint);
     }
 
-      if (std::abs(_screenMagnet.intensity) > 0.0f)
+    if (std::abs(_screenMagnet.intensity) > 0.0f)
     {
       jaffarCommon::logger::log("[J+]  + Screen Magnet                            Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _screenMagnet.intensity, _screenMagnet.x, _screenMagnet.y);
       jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _screenDistanceToPointX);
       jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _screenDistanceToPointY);
       jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _screenDistanceToPoint);
+    }
+
+    if (std::abs(_lastInputStepReward) > 0.0f)
+    {
+      jaffarCommon::logger::log("[J+]  + Last Input Magnet                        Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _lastInputStepReward);
+      jaffarCommon::logger::log("[J+]    + Last Input Step                        %04u\n", _lastInputStep);
     }
 
     if (_useTrace == true)
@@ -605,13 +649,20 @@ private:
       recognizedActionType = true;
     }
 
+    if (actionType == "Set Last Input Step Reward")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_lastInputStepReward = intensity; });
+      recognizedActionType = true;
+    }
+
     return recognizedActionType;
   }
 
   __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override
   {
     // There is no discriminating state element, so simply return a zero hash
-    return jaffarCommon::hash::hash_t();
+    return jaffarCommon::hash::hash_t({0, *_ninjaAction});
   }
 
   // Datatype to describe a point magnet
@@ -707,6 +758,9 @@ private:
     int offset      = 0; // Which entry (step) to look at wrt the current emulation step
   };
 
+  // Reward for the last time an input was made (for early termination)
+  float _lastInputStepReward;
+
   traceMagnet_t _traceMagnet;
 
   // Whether we use a trace
@@ -757,6 +811,7 @@ private:
   uint8_t* _currentStage            ;
   uint8_t* _globalTimer             ;
   uint8_t* _gameTransition;
+  uint8_t* _frameType;
   uint8_t* _ninjaAnimation1         ;
   uint8_t* _ninjaAnimation2         ;
   uint8_t* _ninjaAction             ;
@@ -796,6 +851,7 @@ private:
   uint8_t* _levelExitFlag2          ;
   uint8_t* _weapon1Active;
   uint8_t* _weapon2Active;
+  uint8_t* _bossHP2;
   
   uint8_t _prevNinjaPower              ;
 

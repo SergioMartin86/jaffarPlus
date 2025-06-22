@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 750,
+        "Max Steps": 160,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 50000
+            "Max Size (Mb)": 10000
         }
     },
     "Emulator Configuration": {
@@ -45,7 +45,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 750
+            "Max Size": 160
         },
         "Allowed Input Sets": [ 
             {
@@ -70,19 +70,12 @@
                     "|..|U.L.....|",
                     "|..|U..R....|",
                     "|..|U......A|",
-                    "|..|U.L....A|",
-                    "|..|U..R...A|",
                     "|..|U.....B.|",
-                    "|..|U.L...B.|",
-                    "|..|U..R..B.|",
                     "|..|.DL.....|",
                     "|..|.D.R....|",
                     "|..|.D.....A|",
                     "|..|.DL....A|",
-                    "|..|.D.R...A|",
                     "|..|.D....B.|",
-                    "|..|.DL...B.|",
-                    "|..|.D.R..B.|",
                     "|..|..L....A|",
                     "|..|..L...B.|",
                     "|..|...R...A|",
@@ -124,9 +117,14 @@
                 "Label": 1002,
                 "Conditions": [
                     {
-                        "Property": "Level Exit Flag 2",
-                        "Op": "==",
-                        "Value": 108
+                        "Property": "Ninja Pos X",
+                        "Op": ">=",
+                        "Value": 80
+                    },
+                    {
+                        "Property": "Ninja Pos Y",
+                        "Op": "<=",
+                        "Value": 272
                     }
                 ],
                 "Satisfies": [],

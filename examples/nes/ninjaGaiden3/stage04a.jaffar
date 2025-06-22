@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 750,
+        "Max Steps": 232,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 10000
+            "Max Size (Mb)": 20000
         }
     },
     "Emulator Configuration": {
@@ -25,7 +25,7 @@
         "Rom File Path": "Ninja Gaiden III - The Ancient Ship of Doom (U) [!].nes",
         "Rom File SHA1": "3F2E6DAC76BA14EFC177B5653AB043E53A04D365",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "stage02a.initial.tas.sol",
+        "Initial Sequence File Path": "stage04a.initial.sol",
         "Initial RAM Data File Path": "",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
@@ -45,7 +45,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 750
+            "Max Size": 232
         },
         "Allowed Input Sets": [ 
             {
@@ -70,19 +70,12 @@
                     "|..|U.L.....|",
                     "|..|U..R....|",
                     "|..|U......A|",
-                    "|..|U.L....A|",
-                    "|..|U..R...A|",
                     "|..|U.....B.|",
-                    "|..|U.L...B.|",
-                    "|..|U..R..B.|",
                     "|..|.DL.....|",
                     "|..|.D.R....|",
                     "|..|.D.....A|",
                     "|..|.DL....A|",
-                    "|..|.D.R...A|",
                     "|..|.D....B.|",
-                    "|..|.DL...B.|",
-                    "|..|.D.R..B.|",
                     "|..|..L....A|",
                     "|..|..L...B.|",
                     "|..|...R...A|",
@@ -98,7 +91,7 @@
     "Game Configuration": {
         "Game Name": "NES / Ninja Gaiden 3",
         "Frame Rate": 60.1,
-        "Trace File Path": "stage02a.trace",
+        "Trace File Path": "",
         "Enable Attack": true,
         "Last Input Step Reward": 0.0,
         "Print Properties": [
@@ -112,10 +105,15 @@
                 "Satisfies": [],
                 "Actions": [
                     {
-                        "Type": "Set Trace Magnet",
-                        "Intensity X": 1.0,
-                        "Intensity Y": 1.0,
-                        "Offset": 1
+                        "Type": "Set Boss HP Magnet",
+                        "Intensity": 1.0,
+                        "Center": 0,
+                        "Min": 0,
+                        "Max": 255
+                    },
+                    {
+                        "Type": "Set Ninja/Boss Distance Magnet",
+                        "Intensity": -0.0001
                     }
                 ]
             },
@@ -124,9 +122,9 @@
                 "Label": 1002,
                 "Conditions": [
                     {
-                        "Property": "Level Exit Flag 2",
+                        "Property": "Boss HP",
                         "Op": "==",
-                        "Value": 108
+                        "Value": 0
                     }
                 ],
                 "Satisfies": [],
