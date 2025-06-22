@@ -18,7 +18,9 @@ public:
     op_less,
     op_less_or_equal,
     op_bit_true,
-    op_bit_false
+    op_bit_false,
+    op_modulo_zero,
+    op_modulo_non_zero
   };
 
   Condition(const operator_t opType) : _opType(opType) {}
@@ -34,6 +36,8 @@ public:
     if (operation == ">=") return op_greater_or_equal;
     if (operation == "<") return op_less;
     if (operation == "<=") return op_less_or_equal;
+    if (operation == "%0") return op_modulo_zero;
+    if (operation == "%N") return op_modulo_non_zero;
     if (operation == "BitTrue") return op_bit_true;
     if (operation == "BitFalse") return op_bit_false;
 
@@ -63,6 +67,8 @@ public:
       case op_less_or_equal: _opFcPtr = _opLessOrEqual; break;
       case op_bit_true: _opFcPtr = _opBitTrue; break;
       case op_bit_false: _opFcPtr = _opBitFalse; break;
+      case op_modulo_zero: _opFcPtr = _opModuloZero; break;
+      case op_modulo_non_zero: _opFcPtr = _opModuloNonZero; break;
       default: break;
     }
   }
@@ -85,6 +91,8 @@ private:
   static __INLINE__ bool _opLessOrEqual(const T a, const T b) { return a <= b; }
   static __INLINE__ bool _opBitTrue(const T a, const T b) { return jaffarCommon::bitwise::getBitFlag(a, b); }
   static __INLINE__ bool _opBitFalse(const T a, const T b) { return !jaffarCommon::bitwise::getBitFlag(a, b); }
+  static __INLINE__ bool _opModuloZero(const T a, const T b) { return (uint64_t)a % (uint64_t)b == 0; }
+  static __INLINE__ bool _opModuloNonZero(const T a, const T b) { return (uint64_t)a % (uint64_t)b > 0; }
 
   bool (*_opFcPtr)(const T, const T);
 

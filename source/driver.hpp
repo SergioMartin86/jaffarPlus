@@ -184,15 +184,15 @@ public:
     _updateIntermediateResultMutex.lock();
 
     // Saving best solution and state
-    std::string timeSuffix = std::string(".") + std::to_string(_jobId);
+    std::string jobSuffix = std::string(".") + std::to_string(_jobId);
 
     // Saving files with standard name
     jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath);
     jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath);
 
-    // Saving files with a time suffix
-    jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath + timeSuffix);
-    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath + timeSuffix);
+    // Saving files with a job suffix
+    jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath + jobSuffix);
+    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath + jobSuffix);
 
     // Making sure the main thread is not currently writing
     _updateIntermediateResultMutex.unlock();
@@ -204,15 +204,15 @@ public:
     _updateIntermediateResultMutex.lock();
 
     // Saving best solution and state
-    std::string timeSuffix = std::string(".") + std::to_string(_jobId);
+    std::string jobSuffix = std::string(".") + std::to_string(_jobId);
 
     // Saving best solution and state
     jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath);
     jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath);
 
     // Saving best solution and state
-    jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath + timeSuffix);
-    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath + timeSuffix);
+    jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath + jobSuffix);
+    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath + jobSuffix);
 
     // Making sure the main thread is not currently writing
     _updateIntermediateResultMutex.unlock();
