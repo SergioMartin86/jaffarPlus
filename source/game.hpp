@@ -104,6 +104,9 @@ public:
     // Calling the pre-update hook
     stateUpdatePreHook();
 
+    // Update save solution last rule id
+    _saveSolutionCurrentLastRuleIdx = _saveSolutionCurrentLastRuleId;
+
     // Performing the requested input
     advanceStateImpl(input);
 
@@ -125,6 +128,12 @@ public:
 
     // Serializing checkpoint level
     serializer.push(&_checkpointLevel, sizeof(_checkpointLevel));
+
+    // Serializing the previous last rule id that activated a save solution
+    serializer.push(&_saveSolutionCurrentLastRuleIdx, sizeof(_saveSolutionCurrentLastRuleIdx));
+
+    // Serializing the current last rule id that activated a save solution
+    serializer.push(&_saveSolutionCurrentLastRuleId, sizeof(_saveSolutionCurrentLastRuleId));
 
     // Serializing state type
     serializer.push(&_stateType, sizeof(_stateType));
@@ -153,6 +162,12 @@ public:
 
     // Deserializing checkpoint level
     deserializer.pop(&_checkpointLevel, sizeof(_checkpointLevel));
+
+    // Deserializing the previous last rule id that activated a save solution
+    deserializer.pop(&_saveSolutionCurrentLastRuleIdx, sizeof(_saveSolutionCurrentLastRuleIdx));
+
+    // Deserializing the last rule id that activated a save solution
+    deserializer.pop(&_saveSolutionCurrentLastRuleId, sizeof(_saveSolutionCurrentLastRuleId));
 
     // Deserializing state type
     deserializer.pop(&_stateType, sizeof(_stateType));
@@ -307,6 +322,9 @@ public:
           _checkpointTolerance = rule->getCheckpointTolerance();
         }
 
+        // Evaluate save state rule and path if specified -- only if the current rule label is greater than the last rule to activate this
+        if (rule->isSaveSolutionRule() && (ssize_t)ruleIdx > _saveSolutionCurrentLastRuleIdx)   _saveSolutionCurrentLastRuleId = ruleIdx;
+        
         // Winning in the same rule superseeds checkpoint, and failing superseed everything
         if (rule->isWinRule()) _stateType = stateType_t::win;
         if (rule->isFailRule()) _stateType = stateType_t::fail;
@@ -444,6 +462,21 @@ public:
 
   // Function to get the state's checkpoint level
   __INLINE__ size_t getCheckpointTolerance() const { return _checkpointTolerance; }
+
+  // Function to get the state's path to save state, if set
+  __INLINE__ bool isSaveSolution() const { return _saveSolutionCurrentLastRuleId > _saveSolutionCurrentLastRuleIdx; }
+
+  // Function to get the previous last rule idx to set a save solution
+  __INLINE__ ssize_t getSaveSolutionPrevLastRuleIdx() const { return _saveSolutionCurrentLastRuleIdx; }
+
+  // Function to get the current last rule idx to set a save solution
+  __INLINE__ ssize_t getSaveSolutionCurrentLastRuleIdx() const { return _saveSolutionCurrentLastRuleId; }
+
+    // Function to get the state's path to save state, if set
+  __INLINE__ const std::string getSaveSolutionPath() const
+  {
+     return isSaveSolution() ? _rules[_saveSolutionCurrentLastRuleId]->getSaveSolutionPath() : "";
+  }
 
   // Function to get game name in runtime
   __INLINE__ std::string getName() const { return _gameName; }
@@ -592,6 +625,14 @@ protected:
       recognizedActionType = true;
     }
 
+    // Storing save state flags
+    if (actionType == "Trigger Save Solution")
+    {
+      rule.setSaveSolutionRule(true);
+      rule.setSaveSolutionPath(jaffarCommon::json::getString(actionJs, "Path"));
+      recognizedActionType = true;
+    }
+
     // If not recognized yet, it must be a game specific action
     if (recognizedActionType == false) recognizedActionType = parseRuleActionImpl(rule, actionType, actionJs);
 
@@ -646,6 +687,12 @@ protected:
 
   // For game states that represent checkpoints, store their tolerance here
   size_t _checkpointTolerance = 0;
+
+  // Save state will only activate if the rule id is bigger than the last rule id that activated it (Previous to preserve the state where it changes)
+  ssize_t _saveSolutionCurrentLastRuleIdx = -1;
+
+  // Save state will only activate if the rule id is bigger than the last rule id that activated it
+  ssize_t _saveSolutionCurrentLastRuleId = -1;
 
   // Underlying emulator instance
   const std::unique_ptr<Emulator> _emulator;

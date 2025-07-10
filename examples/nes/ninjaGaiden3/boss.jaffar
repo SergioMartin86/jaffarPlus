@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
-        "End On First Win State": false,
-        "Max Steps": 460,
+        "End On First Win State": true,
+        "Max Steps": 232,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 400000
+            "Max Size (Mb)": 20000
         }
     },
     "Emulator Configuration": {
@@ -25,7 +25,7 @@
         "Rom File Path": "Ninja Gaiden III - The Ancient Ship of Doom (U) [!].nes",
         "Rom File SHA1": "3F2E6DAC76BA14EFC177B5653AB043E53A04D365",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "boss.initial.sol",
+        "Initial Sequence File Path": "stage04a.initial.sol",
         "Initial RAM Data File Path": "",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
@@ -45,7 +45,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 460
+            "Max Size": 232
         },
         "Allowed Input Sets": [ 
             {
@@ -86,40 +86,14 @@
         ],
         "Test Candidate Inputs": false,
         "Candidate Input Sets": [
-            {
-                "Conditions": [
-                ],
-                "Inputs": [
-                    "|..|........|",
-                    "|..|U.......|",
-                    "|..|.D......|",
-                    "|..|..L.....|",
-                    "|..|...R....|",
-                    "|..|.......A|",
-                    "|..|......B.|",
-                    "|..|U.L.....|",
-                    "|..|U..R....|",
-                    "|..|U......A|",
-                    "|..|U.....B.|",
-                    "|..|.DL.....|",
-                    "|..|.D.R....|",
-                    "|..|.D.....A|",
-                    "|..|.DL....A|",
-                    "|..|.D....B.|",
-                    "|..|..L....A|",
-                    "|..|..L...B.|",
-                    "|..|...R...A|",
-                    "|..|...R..B.|"
-                ],
-                "Stop Input Evaluation": false
-            }
         ]
     },
     "Game Configuration": {
         "Game Name": "NES / Ninja Gaiden 3",
         "Frame Rate": 60.1,
-        "Trace File Path": "boss.trace",
+        "Trace File Path": "",
         "Enable Attack": true,
+        "Last Input Step Reward": 0.0,
         "Print Properties": [
         ],
         "Hash Properties": [
@@ -132,16 +106,14 @@
                 "Actions": [
                     {
                         "Type": "Set Boss HP Magnet",
-                        "Intensity": 100.0,
+                        "Intensity": 1.0,
                         "Center": 0,
                         "Min": 0,
                         "Max": 255
                     },
                     {
-                        "Type": "Set Trace Magnet",
-                        "Intensity X": 1.0,
-                        "Intensity Y": 1.0,
-                        "Offset": 0
+                        "Type": "Set Ninja/Boss Distance Magnet",
+                        "Intensity": -0.0001
                     }
                 ]
             },
@@ -151,35 +123,6 @@
                 "Conditions": [
                     {
                         "Property": "Boss HP",
-                        "Op": "<",
-                        "Value": 3
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Set Trace Magnet",
-                        "Intensity X": 0.0,
-                        "Intensity Y": 0.0,
-                        "Offset": 0
-                    },
-                    {
-                        "Type": "Set Last Input Step Reward",
-                        "Intensity": -1.0
-                    }
-                ]
-            },
-
-            {
-                "Label": 1003,
-                "Conditions": [
-                    {
-                        "Property": "Boss HP",
-                        "Op": "==",
-                        "Value": 0
-                    },
-                    {
-                        "Property": "Boss HP 2",
                         "Op": "==",
                         "Value": 0
                     }

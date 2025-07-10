@@ -61,6 +61,7 @@ public:
 
     // Getting Nametable size to use
     _NTABBlockSize = jaffarCommon::json::getNumber<size_t>(config, "Nametable Block Size");
+    _SRAMBlockSize = jaffarCommon::json::getNumber<size_t>(config, "SRAM Block Size");
 
     // Getting disabled state properties
     const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
@@ -111,6 +112,9 @@ public:
     // Setting Nametable block size to serialize. Some games don't use the entire memory so it's ok to reduce it
     _quickerNES->setNTABBlockSize(_NTABBlockSize);
 
+    // Setting SRAM block size to serialize. Some games don't use the entire memory so it's ok to reduce it
+    _quickerNES->setSRAMBlockSize(_SRAMBlockSize);
+
     // Getting input parser from the internal emulator
     const auto inputParser = _quickerNES->getInputParser();
 
@@ -150,11 +154,7 @@ public:
 
   __INLINE__ void printInfo() const override
   {
-    printMemoryBlockHash("LRAM");
-    printMemoryBlockHash("SRAM");
-    printMemoryBlockHash("NTAB");
-    printMemoryBlockHash("CHRR");
-    printMemoryBlockHash("SPRT");
+   jaffarCommon::logger::log("[J+]  + Initial Sequence File Path:          '%s'\n", _initialSequenceFilePath.c_str()); 
   }
 
   property_t getProperty(const std::string& propertyName) const override
@@ -322,6 +322,7 @@ private:
   std::unique_ptr<NESInstance> _quickerNES;
 
   size_t      _NTABBlockSize;
+  size_t      _SRAMBlockSize;
   std::string _romFilePath;
   std::string _romFileSHA1;
 

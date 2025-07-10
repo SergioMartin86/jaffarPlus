@@ -30,6 +30,8 @@ public:
   void setFailRule(const bool isFailRule) { _isFailRule = isFailRule; }
   void setCheckpointRule(const bool isCheckpointRule) { _isCheckpointRule = isCheckpointRule; }
   void setCheckpointTolerance(const size_t checkPointTolerance) { _checkPointTolerance = checkPointTolerance; }
+  void setSaveSolutionRule(const bool isSaveSolutionRule) { _isSaveSolutionRule = isSaveSolutionRule; }
+  void setSaveSolutionPath(const std::string& saveSolutionPath) { _saveSolutionPath = saveSolutionPath; }
   void addAction(const std::function<void()>& function) { _actions.push_back(function); }
   void addCondition(std::unique_ptr<Condition> condition) { _conditions.insert(std::move(condition)); }
   void addSatisfyRuleLabel(const label_t satisfyRuleLabel) { _satisfyRuleLabels.insert(satisfyRuleLabel); }
@@ -41,6 +43,8 @@ public:
   bool                                      isFailRule() const { return _isFailRule; }
   bool                                      isCheckpointRule() const { return _isCheckpointRule; }
   size_t                                    getCheckpointTolerance() const { return _checkPointTolerance; }
+  bool                                      isSaveSolutionRule() const { return _isSaveSolutionRule; }
+  const std::string&                        getSaveSolutionPath() const { return _saveSolutionPath; }
   const std::unordered_set<label_t>&        getSatisfyRuleLabels() const { return _satisfyRuleLabels; }
   const std::vector<Rule*>&                 getSatisfyRules() const { return _satisfyRules; }
   size_t                                    getIndex() const { return _index; }
@@ -66,6 +70,8 @@ private:
   bool   _isFailRule          = false;
   bool   _isCheckpointRule    = false;
   size_t _checkPointTolerance = 0;
+  bool   _isSaveSolutionRule    = false;
+  std::string _saveSolutionPath;
 
   // Stores rules that also satisfied if this one is
   std::unordered_set<label_t> _satisfyRuleLabels;

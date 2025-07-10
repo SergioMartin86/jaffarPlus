@@ -99,6 +99,9 @@ public:
     // Allocating memory for the best win state
     _stepBestWinState.stateData = malloc(stateSize);
 
+    // Allocating memory for manual state saving
+    _manualSaveSolution.stateData = malloc(stateSize);
+
     // Evaluate game rules on the initial state
     r.getGame()->evaluateRules();
 
@@ -170,6 +173,9 @@ public:
 
     // Resetting counter for the current step
     _currentStep = 0;
+
+    // Resetting last active manually solution save rule id
+    _manualSaveSolutionActiveLastRuleId = -1;
   }
 
   /**
@@ -202,6 +208,14 @@ public:
     // Clearing win state reward
     _stepBestWinState.reward = -std::numeric_limits<float>::infinity();
 
+    // Clearing manually saved state 
+    _manualSaveSolution.reward = -std::numeric_limits<float>::infinity();
+    _manualSaveSolution.path = "";
+    _manualSaveSolution.lastRuleIdx = -1;
+
+    // (Manual solution storing) Resetting last active rule id flag
+    _manualSaveSolutionUpdatedLastRuleId = false;
+
     // Performing one computation step in parallel
     JAFFAR_PARALLEL
     workerFunction();
@@ -215,6 +229,13 @@ public:
     const auto t1 = jaffarCommon::timing::now();
     _stateDb->advanceStep();
     _advanceStateDbThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t1);
+
+    // Updating last active last rule Id
+    if (_manualSaveSolutionUpdatedLastRuleId)
+    {
+      _manualSaveSolutionActiveLastRuleId = _manualSaveSolution.lastRuleIdx;
+      _manualSaveSolutionLastPath = _manualSaveSolution.path;
+    } 
 
     // Computing step time
     _currentStepTime = jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), tStep);
@@ -312,6 +333,7 @@ public:
 
   auto& getStateDb() const { return _stateDb; }
   auto  getStepBestWinState() const { return _stepBestWinState; }
+  auto  getManualSaveSolution() const { return _manualSaveSolution; }
   auto  getWinStatesFound() const { return _winStates.load(); }
   auto  getStateCount() const { return _stateDb->getStateCount(); }
 
@@ -416,6 +438,11 @@ public:
     jaffarCommon::logger::log("[J+] Hash Database Information:\n");
     _hashDb->printInfo();
 
+    jaffarCommon::logger::log("[J+] Manually Saved Solution:\n");
+    jaffarCommon::logger::log("[J+]   + Path:         '%s'\n", _manualSaveSolution.path.c_str());
+    jaffarCommon::logger::log("[J+]   + Reward:        %f\n", _manualSaveSolution.reward);
+    jaffarCommon::logger::log("[J+]   + Last Rule Idx: %ld (Active: %ld, Path: '%s')\n", _manualSaveSolution.lastRuleIdx, _manualSaveSolutionActiveLastRuleId, _manualSaveSolutionLastPath.c_str());
+
     // Printing candidate inpts
     jaffarCommon::logger::log("[J+] Candidate Inputs:\n");
     for (const auto& entry : _candidateInputsDetected)
@@ -426,6 +453,7 @@ public:
   }
 
 private:
+
   enum inputResult_t
   {
     repeated,
@@ -437,10 +465,18 @@ private:
     win
   };
 
-  struct winState
+  struct stateInfo_t
   {
     float reward;
     void* stateData;
+  };
+
+  struct manualSaveSolution_t
+  {
+    std::string path;
+    float reward;
+    void* stateData;
+    ssize_t lastRuleIdx;
   };
 
   /**
@@ -664,6 +700,28 @@ private:
       }
     }
 
+    // Checking for manual saved solution is required
+    const auto currentLastRuleIdx = r.getGame()->getSaveSolutionCurrentLastRuleIdx();
+    if (r.getGame()->isSaveSolution() && currentLastRuleIdx > _manualSaveSolutionActiveLastRuleId)
+    {
+      // Grab lock
+      _manualSaveSolutionLock.lock();
+
+      // Do this only if reward is better
+      if (reward > _manualSaveSolution.reward)
+      {
+        // Store path, data, and reward
+        _stateDb->saveStateFromRunner(r, _manualSaveSolution.stateData);
+        _manualSaveSolution.path = r.getGame()->getSaveSolutionPath();
+        _manualSaveSolution.reward = reward;
+        _manualSaveSolution.lastRuleIdx = currentLastRuleIdx;
+        _manualSaveSolutionUpdatedLastRuleId = true;
+      }
+
+      // Release lock
+      _manualSaveSolutionLock.unlock();
+    }
+
     // If store succeeded, return a normal execution
     return inputResult_t::normal;
   }
@@ -685,7 +743,16 @@ private:
 
   // Set of win states found
   std::mutex _stepBestWinStateLock;
-  winState   _stepBestWinState;
+  stateInfo_t   _stepBestWinState;
+
+  // Storage for manually triggered save solutionm
+
+  // Storage for manually triggered save solution state
+  std::mutex  _manualSaveSolutionLock;
+  manualSaveSolution_t _manualSaveSolution;
+  bool _manualSaveSolutionUpdatedLastRuleId;
+  ssize_t _manualSaveSolutionActiveLastRuleId;
+  std::string _manualSaveSolutionLastPath = "";
 
   // Checkpoint information
   size_t _checkpointLevel;
@@ -694,7 +761,7 @@ private:
 
   ///////////////// Configuration
 
-  // Thread count (set by openMP)
+  // Thread count
   size_t _threadCount;
 
   //////////////// Statistics

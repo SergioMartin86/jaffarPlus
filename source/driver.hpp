@@ -145,6 +145,9 @@ public:
       updateBestState();
       updateWorstState();
 
+      // Storing manually saved solution, if required
+      storeManualSaveSolution();
+
       // Printing information
       printInfo();
 
@@ -178,6 +181,21 @@ public:
     return exitReason;
   }
 
+  void storeManualSaveSolution()
+  {
+    auto manualSaveSolution = _engine->getManualSaveSolution();
+
+    if (manualSaveSolution.path != "")
+    {
+      // Loading worst state state into runner
+      _engine->getStateDb()->loadStateIntoRunner(*_runner, manualSaveSolution.stateData);
+
+      // Saving manually stored solution
+      std::string solutionData = _runner->getInputHistoryString();
+      jaffarCommon::file::saveStringToFile(solutionData, manualSaveSolution.path);
+    }
+  }
+
   void saveBestStateInformation()
   {
     // Making sure the main thread is not currently writing
@@ -187,12 +205,12 @@ public:
     std::string jobSuffix = std::string(".") + std::to_string(_jobId);
 
     // Saving files with standard name
-    jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath);
-    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath);
+    if (_saveIntermediateBestSolutionPath != "") jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath);
+    if (_saveIntermediateBestStatePath != "")    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath);
 
     // Saving files with a job suffix
-    jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath + jobSuffix);
-    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath + jobSuffix);
+    if (_saveIntermediateBestSolutionPath != "") jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath + jobSuffix);
+    if (_saveIntermediateBestStatePath != "")    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath + jobSuffix);
 
     // Making sure the main thread is not currently writing
     _updateIntermediateResultMutex.unlock();
@@ -207,12 +225,12 @@ public:
     std::string jobSuffix = std::string(".") + std::to_string(_jobId);
 
     // Saving best solution and state
-    jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath);
-    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath);
+    if (_saveIntermediateWorstSolutionPath != "") jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath);
+    if (_saveIntermediateWorstStatePath != "")    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath);
 
     // Saving best solution and state
-    jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath + jobSuffix);
-    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath + jobSuffix);
+    if (_saveIntermediateWorstSolutionPath != "") jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath + jobSuffix);
+    if (_saveIntermediateWorstStatePath != "")    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath + jobSuffix);
 
     // Making sure the main thread is not currently writing
     _updateIntermediateResultMutex.unlock();

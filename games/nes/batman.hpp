@@ -113,48 +113,53 @@ private:
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
 
-    _inputU   = _emulator->registerInput("|..|U.......|");
-    _inputD   = _emulator->registerInput("|..|.D......|");
-    _inputL   = _emulator->registerInput("|..|..L.....|");
-    _inputR   = _emulator->registerInput("|..|...R....|");
-    _inputA   = _emulator->registerInput("|..|.......A|");
-    _inputB   = _emulator->registerInput("|..|......B.|");
-    _inputUL  = _emulator->registerInput("|..|U.L.....|");
-    _inputUR  = _emulator->registerInput("|..|U..R....|");
-    _inputUA  = _emulator->registerInput("|..|U......A|");
-    _inputUB  = _emulator->registerInput("|..|U.....B.|");
-    _inputDL  = _emulator->registerInput("|..|.DL.....|");
-    _inputDR  = _emulator->registerInput("|..|.D.R....|");
-    _inputDA  = _emulator->registerInput("|..|.D.....A|");
-    _inputDB  = _emulator->registerInput("|..|.D....B.|");
-    _inputAL  = _emulator->registerInput("|..|..L....A|");
-    _inputBL  = _emulator->registerInput("|..|..L...B.|");
-    _inputAR  = _emulator->registerInput("|..|...R...A|");
-    _inputBR  = _emulator->registerInput("|..|...R..B.|");
-    _inputULA = _emulator->registerInput("|..|U.L....A|");
-    _inputURA = _emulator->registerInput("|..|U..R...A|");
-    _inputUBA = _emulator->registerInput("|..|U.....BA|");
-    _inputDLA = _emulator->registerInput("|..|.DL....A|");
-    _inputDRA = _emulator->registerInput("|..|.D.R...A|");
-    _inputDBA = _emulator->registerInput("|..|.D....BA|");
-    _inputBLA = _emulator->registerInput("|..|..L...BA|");
-    _inputBRA = _emulator->registerInput("|..|...R..BA|");
-    _inputULB = _emulator->registerInput("|..|U.L...B.|");
-    _inputURB = _emulator->registerInput("|..|U..R..B.|");
-    _inputDLB = _emulator->registerInput("|..|.DL...B.|");
-    _inputDRB = _emulator->registerInput("|..|.D.R..B.|");
+    _inputU      = _emulator->registerInput("|..|U.......|");
+    _inputD      = _emulator->registerInput("|..|.D......|");
+    _inputL      = _emulator->registerInput("|..|..L.....|");
+    _inputR      = _emulator->registerInput("|..|...R....|");
+    _inputA      = _emulator->registerInput("|..|.......A|");
+    _inputB      = _emulator->registerInput("|..|......B.|");
+    _inputUL     = _emulator->registerInput("|..|U.L.....|");
+    _inputUR     = _emulator->registerInput("|..|U..R....|");
+    _inputUA     = _emulator->registerInput("|..|U......A|");
+    _inputUB     = _emulator->registerInput("|..|U.....B.|");
+    _inputDL     = _emulator->registerInput("|..|.DL.....|");
+    _inputDR     = _emulator->registerInput("|..|.D.R....|");
+    _inputDA     = _emulator->registerInput("|..|.D.....A|");
+    _inputDB     = _emulator->registerInput("|..|.D....B.|");
+    _inputAL     = _emulator->registerInput("|..|..L....A|");
+    _inputBL     = _emulator->registerInput("|..|..L...B.|");
+    _inputAR     = _emulator->registerInput("|..|...R...A|");
+    _inputBR     = _emulator->registerInput("|..|...R..B.|");
+    _inputULA    = _emulator->registerInput("|..|U.L....A|");
+    _inputURA    = _emulator->registerInput("|..|U..R...A|");
+    _inputUBA    = _emulator->registerInput("|..|U.....BA|");
+    _inputDLA    = _emulator->registerInput("|..|.DL....A|");
+    _inputDRA    = _emulator->registerInput("|..|.D.R...A|");
+    _inputDBA    = _emulator->registerInput("|..|.D....BA|");
+    _inputBLA    = _emulator->registerInput("|..|..L...BA|");
+    _inputBRA    = _emulator->registerInput("|..|...R..BA|");
+    _inputULB    = _emulator->registerInput("|..|U.L...B.|");
+    _inputURB    = _emulator->registerInput("|..|U..R..B.|");
+    _inputDLB    = _emulator->registerInput("|..|.DL...B.|");
+    _inputDRB    = _emulator->registerInput("|..|.D.R..B.|");
 
-    _inputBA  = _emulator->registerInput("|..|......BA|");
-    _inputUBA = _emulator->registerInput("|..|U.....BA|");
-    _inputLRA = _emulator->registerInput("|..|..LR...A|");
-    _inputRBA = _emulator->registerInput("|..|...R..BA|");
-    _inputLBA = _emulator->registerInput("|..|..L...BA|");
-    _inputLR  = _emulator->registerInput("|..|..LR....|");
+    _inputBA     = _emulator->registerInput("|..|......BA|");
+    _inputUBA    = _emulator->registerInput("|..|U.....BA|");
+    _inputLRA    = _emulator->registerInput("|..|..LR...A|");
+    _inputRBA    = _emulator->registerInput("|..|...R..BA|");
+    _inputLBA    = _emulator->registerInput("|..|..L...BA|");
+    _inputLR     = _emulator->registerInput("|..|..LR....|");
 
-    _inputARS = _emulator->registerInput("|..|...RS..A|");
-    _inputALS = _emulator->registerInput("|..|..L.S..A|");
-    _inputRS  = _emulator->registerInput("|..|...RS...|");
-    _inputLS  = _emulator->registerInput("|..|..L.S...|");
+    _inputARS    = _emulator->registerInput("|..|...RS..A|");
+    _inputALS    = _emulator->registerInput("|..|..L.S..A|");
+    _inputRS     = _emulator->registerInput("|..|...RS...|");
+    _inputRs     = _emulator->registerInput("|..|...R.s..|");
+    _inputLS     = _emulator->registerInput("|..|..L.S...|");
+    _inputLs     = _emulator->registerInput("|..|..L..s..|");
+
+    _inputStart  = _emulator->registerInput("|..|....S...|");
+    _inputSelect = _emulator->registerInput("|..|.....s..|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -168,31 +173,35 @@ private:
 
   __INLINE__ void calculateHashValues(MetroHash128& hashEngine) const
   {
-    hashEngine.Update(*_gameMode               );
-    hashEngine.Update(*_globalTimer            );
-    hashEngine.Update(*_RNGValue               );
-    hashEngine.Update(*_batmanAnimationState   );
-    hashEngine.Update(*_batmanAction           );
-    hashEngine.Update(*_batmanDirection        );
-    hashEngine.Update(*_batmanHP               );
-    hashEngine.Update(*_screenPosX1            );
-    hashEngine.Update(*_screenPosY1            );
-    hashEngine.Update(*_batmanWeapon           );
-    hashEngine.Update(*_batmanAmmo             );
-    hashEngine.Update(*_batmanPosX1            );
-    hashEngine.Update(*_batmanPosX2            );
-    hashEngine.Update(*_batmanPosX3            );
-    hashEngine.Update(*_batmanPosY1            );
-    hashEngine.Update(*_batmanPosY2            );
-    hashEngine.Update(*_batmanPosY3            );
-    hashEngine.Update(*_bossX                  );
-    hashEngine.Update(*_bossY                  );
-    hashEngine.Update(*_bossHP                 );
-    hashEngine.Update(*_batmanJumpTimer        );
-    hashEngine.Update(*_levelStartTimer        );
+    // hashEngine.Update(*_gameMode               );
+    // // hashEngine.Update(*_globalTimer            );
+    // hashEngine.Update(*_RNGValue               );
+    // hashEngine.Update(*_batmanAnimationState   );
+    // hashEngine.Update(*_batmanAction           );
+    // hashEngine.Update(*_batmanDirection        );
+    // hashEngine.Update(*_batmanHP               );
+    // hashEngine.Update(*_screenPosX1            );
+    // hashEngine.Update(*_screenPosY1            );
+    // hashEngine.Update(*_batmanWeapon           );
+    // hashEngine.Update(*_batmanAmmo             );
+    // hashEngine.Update(*_batmanPosX1            );
+    // hashEngine.Update(*_batmanPosX2            );
+    // hashEngine.Update(*_batmanPosX3            );
+    // hashEngine.Update(*_batmanPosY1            );
+    // hashEngine.Update(*_batmanPosY2            );
+    // hashEngine.Update(*_batmanPosY3            );
+    // hashEngine.Update(*_bossX                  );
+    // hashEngine.Update(*_bossY                  );
+    // hashEngine.Update(*_bossHP                 );
+    // hashEngine.Update(*_batmanJumpTimer        );
+    // hashEngine.Update(*_levelStartTimer        );
     
-    // hash.Update(&_emu->_baseMem[0x0030], 0x00F4 - 0x0030);
-    // hash.Update(&_emu->_baseMem[0x00F9], 0x0800 - 0x00F9);
+    // hashEngine.Update(&_lowMem[0x0000], 0x00B3 - 0x0000);
+    // hashEngine.Update(&_lowMem[0x00B5], 0x00F4 - 0x00B5);
+    // hashEngine.Update(&_lowMem[0x00F5], 0x00F9 - 0x00F5); // Inputs. Necessary for some movement buffering
+    // hashEngine.Update(&_lowMem[0x00F9], 0x0800 - 0x00F9);
+
+    hashEngine.Update(&_lowMem[0x0000], 0x07FF - 0x0000);
 
     if (std::abs(_lastInputStepReward) > 0.0f) hashEngine.Update(_lastInputStep);
   }
@@ -201,16 +210,16 @@ private:
   {
     calculateHashValues(hashEngine);
 
-    // uint8_t _saveBuffer[1024*1024];
-    // jaffarCommon::serializer::Contiguous s(_saveBuffer);
-    // _emulator->serializeState(s);
-    // _emulator->advanceState(_nullInputIdx);
-    // _emulator->advanceState(_nullInputIdx);
+    //  uint8_t _saveBuffer[1024*1024];
+    //  jaffarCommon::serializer::Contiguous s(_saveBuffer);
+    //  _emulator->serializeState(s);
+    //  _emulator->advanceState(_nullInputIdx);
+    // // _emulator->advanceState(_nullInputIdx);
 
-    // calculateHashValues(hashEngine);
+    //  calculateHashValues(hashEngine);
 
-    // jaffarCommon::deserializer::Contiguous d(_saveBuffer);
-    // _emulator->deserializeState(d);
+    //  jaffarCommon::deserializer::Contiguous d(_saveBuffer);
+    //  _emulator->deserializeState(d);
   }
 
   // Updating derivative values after updating the internal state
@@ -312,61 +321,61 @@ private:
 
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
-    if (*_batmanAction == 0x0000) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0001) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0002) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0003) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0004) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA, _inputBL });
-    if (*_batmanAction == 0x0005) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0006) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0007) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0008) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0009) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x000A) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x000B) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x000C) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x000D) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputBA, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputRBA, _inputLBA });
-    if (*_batmanAction == 0x000E) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputBR, _inputBL, _inputAR, _inputARS, _inputRS,  _inputAL });
+    if (*_batmanAction == 0x0000) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0001) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0002) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0003) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0004) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA, _inputBL });
+    if (*_batmanAction == 0x0005) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0006) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0007) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0008) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0009) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x000A) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x000B) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x000C) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x000D) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputBA, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputRBA, _inputLBA });
+    if (*_batmanAction == 0x000E) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputBR, _inputBL, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL });
     if (*_batmanAction == 0x0010) allowedInputSet.insert(allowedInputSet.end(), { _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL });
-    if (*_batmanAction == 0x0011) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputBL, _inputRBA });
-    if (*_batmanAction == 0x0012) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputAR, _inputARS, _inputRS,  _inputBR, _inputBL, _inputRBA });
+    if (*_batmanAction == 0x0011) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputBL, _inputRBA });
+    if (*_batmanAction == 0x0012) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputBL, _inputRBA });
     if (*_batmanAction == 0x0015) allowedInputSet.insert(allowedInputSet.end(), { _inputA });
-    if (*_batmanAction == 0x0016) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0020) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0029) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL });
-    if (*_batmanAction == 0x002A) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL });
-    if (*_batmanAction == 0x002B) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputBL });
+    if (*_batmanAction == 0x0016) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0020) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0029) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL });
+    if (*_batmanAction == 0x002A) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL });
+    if (*_batmanAction == 0x002B) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputBL });
     if (*_batmanAction == 0x002C) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDRA });
     if (*_batmanAction == 0x000D) allowedInputSet.insert(allowedInputSet.end(), { _inputDB, _inputDBA });
     if (*_batmanAction == 0x000E) allowedInputSet.insert(allowedInputSet.end(), { _inputD, _inputRBA });
-    if (*_batmanAction == 0x0010) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputBA, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDA, _inputDB, _inputRBA, _inputLBA, _inputDBA, _inputDRB, _inputDLB });
-    if (*_batmanAction == 0x0011) allowedInputSet.insert(allowedInputSet.end(), { _inputBA, _inputAL, _inputALS, _inputLS,  _inputDB, _inputLBA, _inputDBA, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS });
-    if (*_batmanAction == 0x0012) allowedInputSet.insert(allowedInputSet.end(), { _inputBA, _inputAL, _inputALS, _inputLS,  _inputLBA, _inputDBA });
-    if (*_batmanAction == 0x0017) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
+    if (*_batmanAction == 0x0010) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputBA, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDA, _inputDB, _inputRBA, _inputLBA, _inputDBA, _inputDRB, _inputDLB });
+    if (*_batmanAction == 0x0011) allowedInputSet.insert(allowedInputSet.end(), { _inputBA, _inputAL, _inputALS, _inputLS, _inputLs,  _inputDB, _inputLBA, _inputDBA, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS });
+    if (*_batmanAction == 0x0012) allowedInputSet.insert(allowedInputSet.end(), { _inputBA, _inputAL, _inputALS, _inputLS, _inputLs,  _inputLBA, _inputDBA });
+    if (*_batmanAction == 0x0017) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
     if (*_batmanAction == 0x0018) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
     if (*_batmanAction == 0x0019) allowedInputSet.insert(allowedInputSet.end(), { _inputD, _inputDR, _inputDL });
-    if (*_batmanAction == 0x001A) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
+    if (*_batmanAction == 0x001A) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
     if (*_batmanAction == 0x001B) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
-    if (*_batmanAction == 0x001C) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
-    if (*_batmanAction == 0x001D) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
-    if (*_batmanAction == 0x001E) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
-    if (*_batmanAction == 0x0021) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
+    if (*_batmanAction == 0x001C) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
+    if (*_batmanAction == 0x001D) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
+    if (*_batmanAction == 0x001E) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
+    if (*_batmanAction == 0x0021) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
     if (*_batmanAction == 0x0022) allowedInputSet.insert(allowedInputSet.end(), { _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDR, _inputDL });
-    if (*_batmanAction == 0x0023) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDL, _inputLRA });
-    if (*_batmanAction == 0x0024) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputAL, _inputALS, _inputLS,  _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0023) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0024) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputAL, _inputALS, _inputLS, _inputLs,  _inputDR, _inputDL, _inputLRA });
     if (*_batmanAction == 0x0025) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDR, _inputDL });
-    if (*_batmanAction == 0x0026) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
-    if (*_batmanAction == 0x0027) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
-    if (*_batmanAction == 0x0028) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDR, _inputDL, _inputLRA });
+    if (*_batmanAction == 0x0026) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
+    if (*_batmanAction == 0x0027) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB });
+    if (*_batmanAction == 0x0028) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDR, _inputDL, _inputLRA });
     if (*_batmanAction == 0x0029) allowedInputSet.insert(allowedInputSet.end(), { _inputB, _inputBA, _inputBR, _inputBL, _inputDR, _inputRBA, _inputLBA, _inputDLA, _inputDLB });
-    if (*_batmanAction == 0x002A) allowedInputSet.insert(allowedInputSet.end(), { _inputBA, _inputRBA, _inputLBA });
-    if (*_batmanAction == 0x002B) allowedInputSet.insert(allowedInputSet.end(), { _inputAL, _inputALS, _inputLS,  _inputDA, _inputDLA, _inputDLB });
-    if (*_batmanAction == 0x002C) allowedInputSet.insert(allowedInputSet.end(), { _inputAL, _inputALS, _inputLS,  _inputDA, _inputAR });
-    if (*_batmanAction == 0x002D) allowedInputSet.insert(allowedInputSet.end(), { _inputB, _inputR, _inputA, _inputL, _inputD, _inputBA, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDA, _inputDB, _inputDR, _inputDL, _inputDLB, _inputDLA, _inputDRB, _inputDRA, _inputLBA, _inputRBA });
-    if (*_batmanAction == 0x002E) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBA, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputDA, _inputRBA, _inputLBA, _inputDRA, _inputDRB, _inputDLA, _inputDR, _inputLR });
-    if (*_batmanAction == 0x002F) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBA, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputRBA, _inputLBA, _inputDRA, _inputDLA });
-    if (*_batmanAction == 0x0030) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBA, _inputAR, _inputARS, _inputRS,  _inputBR, _inputAL, _inputALS, _inputLS,  _inputBL, _inputRBA, _inputLBA });
-    if (*_batmanAction == 0x0031) allowedInputSet.insert(allowedInputSet.end(), { _inputB, _inputR, _inputD, _inputL, _inputA, _inputAL, _inputALS, _inputLS,  _inputDB, _inputDA, _inputBL, _inputBR, _inputAR, _inputARS, _inputRS,  _inputBA, _inputRBA, _inputLBA, _inputDRA, _inputDLA, _inputDLB, _inputDR });
+    if (*_batmanAction == 0x002A) allowedInputSet.insert(allowedInputSet.end(), { _inputBA, _inputRBA, _inputLBA, _inputLS, _inputLs, _inputRS, _inputRs});
+    if (*_batmanAction == 0x002B) allowedInputSet.insert(allowedInputSet.end(), { _inputAL, _inputALS, _inputLS, _inputLs,  _inputDA, _inputDLA, _inputDLB });
+    if (*_batmanAction == 0x002C) allowedInputSet.insert(allowedInputSet.end(), { _inputAL, _inputALS, _inputLS, _inputLs,  _inputDA, _inputAR });
+    if (*_batmanAction == 0x002D) allowedInputSet.insert(allowedInputSet.end(), { _inputB, _inputR, _inputA, _inputL, _inputD, _inputBA, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDA, _inputDB, _inputDR, _inputDL, _inputDLB, _inputDLA, _inputDRB, _inputDRA, _inputLBA, _inputRBA });
+    if (*_batmanAction == 0x002E) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBA, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputDA, _inputRBA, _inputLBA, _inputDRA, _inputDRB, _inputDLA, _inputDR, _inputLR });
+    if (*_batmanAction == 0x002F) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBA, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputRBA, _inputLBA, _inputDRA, _inputDLA });
+    if (*_batmanAction == 0x0030) allowedInputSet.insert(allowedInputSet.end(), { _inputA, _inputB, _inputR, _inputL, _inputD, _inputBA, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBR, _inputAL, _inputALS, _inputLS, _inputLs,  _inputBL, _inputRBA, _inputLBA });
+    if (*_batmanAction == 0x0031) allowedInputSet.insert(allowedInputSet.end(), { _inputB, _inputR, _inputD, _inputL, _inputA, _inputAL, _inputALS, _inputLS, _inputLs,  _inputDB, _inputDA, _inputBL, _inputBR, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect,    _inputBA, _inputRBA, _inputLBA, _inputDRA, _inputDLA, _inputDLB, _inputDR });
   }
 
   void printInfoImpl() const override
@@ -656,6 +665,12 @@ private:
   InputSet::inputIndex_t _inputALS ;
   InputSet::inputIndex_t _inputRS  ;
   InputSet::inputIndex_t _inputLS  ;
+
+  InputSet::inputIndex_t _inputRs;
+  InputSet::inputIndex_t _inputLs;
+
+  InputSet::inputIndex_t _inputStart;
+  InputSet::inputIndex_t _inputSelect;
 
   uint8_t* _gameMode             ;
   uint8_t* _globalTimer          ;

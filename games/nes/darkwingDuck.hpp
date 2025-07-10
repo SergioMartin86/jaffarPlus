@@ -83,50 +83,50 @@ private:
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
 
-    _inputU   = _emulator->registerInput("|..|U.......|");
-    _inputD   = _emulator->registerInput("|..|.D......|");
-    _inputL   = _emulator->registerInput("|..|..L.....|");
-    _inputR   = _emulator->registerInput("|..|...R....|");
-    _inputA   = _emulator->registerInput("|..|.......A|");
-    _inputB   = _emulator->registerInput("|..|......B.|");
-    _inputUL  = _emulator->registerInput("|..|U.L.....|");
-    _inputUR  = _emulator->registerInput("|..|U..R....|");
-    _inputUA  = _emulator->registerInput("|..|U......A|");
-    _inputUB  = _emulator->registerInput("|..|U.....B.|");
-    _inputDL  = _emulator->registerInput("|..|.DL.....|");
-    _inputDR  = _emulator->registerInput("|..|.D.R....|");
-    _inputDA  = _emulator->registerInput("|..|.D.....A|");
-    _inputDB  = _emulator->registerInput("|..|.D....B.|");
-    _inputAL  = _emulator->registerInput("|..|..L....A|");
-    _inputBL  = _emulator->registerInput("|..|..L...B.|");
-    _inputAR  = _emulator->registerInput("|..|...R...A|");
-    _inputBR  = _emulator->registerInput("|..|...R..B.|");
-    _inputULA = _emulator->registerInput("|..|U.L....A|");
-    _inputURA = _emulator->registerInput("|..|U..R...A|");
-    _inputUBA = _emulator->registerInput("|..|U.....BA|");
-    _inputDLA = _emulator->registerInput("|..|.DL....A|");
-    _inputDRA = _emulator->registerInput("|..|.D.R...A|");
-    _inputDBA = _emulator->registerInput("|..|.D....BA|");
-    _inputBLA = _emulator->registerInput("|..|..L...BA|");
-    _inputBRA = _emulator->registerInput("|..|...R..BA|");
-    _inputULB = _emulator->registerInput("|..|U.L...B.|");
-    _inputURB = _emulator->registerInput("|..|U..R..B.|");
-    _inputDLB = _emulator->registerInput("|..|.DL...B.|");
-    _inputDRB = _emulator->registerInput("|..|.D.R..B.|");
+    _input_U   = _emulator->registerInput("|..|U.......|");
+    _input_D   = _emulator->registerInput("|..|.D......|");
+    _input_L   = _emulator->registerInput("|..|..L.....|");
+    _input_R   = _emulator->registerInput("|..|...R....|");
+    _input_A   = _emulator->registerInput("|..|.......A|");
+    _input_B   = _emulator->registerInput("|..|......B.|");
+    _input_UL  = _emulator->registerInput("|..|U.L.....|");
+    _input_UR  = _emulator->registerInput("|..|U..R....|");
+    _input_UA  = _emulator->registerInput("|..|U......A|");
+    _input_UB  = _emulator->registerInput("|..|U.....B.|");
+    _input_DL  = _emulator->registerInput("|..|.DL.....|");
+    _input_DR  = _emulator->registerInput("|..|.D.R....|");
+    _input_DA  = _emulator->registerInput("|..|.D.....A|");
+    _input_DB  = _emulator->registerInput("|..|.D....B.|");
+    _input_AL  = _emulator->registerInput("|..|..L....A|");
+    _input_BL  = _emulator->registerInput("|..|..L...B.|");
+    _input_AR  = _emulator->registerInput("|..|...R...A|");
+    _input_BR  = _emulator->registerInput("|..|...R..B.|");
+    _input_ULA = _emulator->registerInput("|..|U.L....A|");
+    _input_URA = _emulator->registerInput("|..|U..R...A|");
+    _input_UBA = _emulator->registerInput("|..|U.....BA|");
+    _input_DLA = _emulator->registerInput("|..|.DL....A|");
+    _input_DRA = _emulator->registerInput("|..|.D.R...A|");
+    _input_DBA = _emulator->registerInput("|..|.D....BA|");
+    _input_BLA = _emulator->registerInput("|..|..L...BA|");
+    _input_BRA = _emulator->registerInput("|..|...R..BA|");
+    _input_ULB = _emulator->registerInput("|..|U.L...B.|");
+    _input_URB = _emulator->registerInput("|..|U..R..B.|");
+    _input_DLB = _emulator->registerInput("|..|.DL...B.|");
+    _input_DRB = _emulator->registerInput("|..|.D.R..B.|");
 
-    _inputBA  = _emulator->registerInput("|..|......BA|");
-    _inputUBA = _emulator->registerInput("|..|U.....BA|");
-    _inputLRA = _emulator->registerInput("|..|..LR...A|");
-    _inputRBA = _emulator->registerInput("|..|...R..BA|");
-    _inputLBA = _emulator->registerInput("|..|..L...BA|");
-    _inputLR  = _emulator->registerInput("|..|..LR....|");
+    _input_BA  = _emulator->registerInput("|..|......BA|");
+    _input_UBA = _emulator->registerInput("|..|U.....BA|");
+    _input_LRA = _emulator->registerInput("|..|..LR...A|");
+    _input_RBA = _emulator->registerInput("|..|...R..BA|");
+    _input_LBA = _emulator->registerInput("|..|..L...BA|");
+    _input_LR  = _emulator->registerInput("|..|..LR....|");
 
-    _inputARS = _emulator->registerInput("|..|...RS..A|");
-    _inputALS = _emulator->registerInput("|..|..L.S..A|");
-    _inputRS  = _emulator->registerInput("|..|...RS...|");
-    _inputLS  = _emulator->registerInput("|..|..L.S...|");
+    _input_ARS = _emulator->registerInput("|..|...RS..A|");
+    _input_ALS = _emulator->registerInput("|..|..L.S..A|");
+    _input_RS  = _emulator->registerInput("|..|...RS...|");
+    _input_LS  = _emulator->registerInput("|..|..L.S...|");
 
-    _inputSelect  = _emulator->registerInput("|..|...s....|");
+    _input_s  = _emulator->registerInput("|..|...s....|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -257,8 +257,8 @@ private:
 
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
-    if (*_gameMode == 0x0001) allowedInputSet.insert(allowedInputSet.end(), { _inputSelect, _inputR, _inputL, _inputU, _inputA, _inputD, _inputDA, _inputUL, _inputUR, _inputUA, _inputDL, _inputDR, _inputLR, _inputAL, _inputAR, _inputULA, _inputURA, _inputLRA });
-    if (*_gameMode == 0x000E) allowedInputSet.insert(allowedInputSet.end(), { _inputSelect, _inputA,  _inputR, _inputL, _inputD, _inputU, _inputAR, _inputAL, _inputUA, _inputURA, _inputULA });
+    if (*_gameMode == 0x0001) allowedInputSet.insert(allowedInputSet.end(), { _input_s, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DA, _input_UL, _input_UR, _input_UA, _input_DL, _input_DR, _input_LR, _input_AL, _input_AR, _input_ULA, _input_URA, _input_LRA });
+    if (*_gameMode == 0x000E) allowedInputSet.insert(allowedInputSet.end(), { _input_s, _input_A,  _input_R, _input_L, _input_D, _input_U, _input_AR, _input_AL, _input_UA, _input_URA, _input_ULA });
   }
 
   void printInfoImpl() const override
@@ -436,47 +436,47 @@ private:
   float _traceDistance;
   
   // Possible inputs
-  InputSet::inputIndex_t _inputU  ;
-  InputSet::inputIndex_t _inputD  ;
-  InputSet::inputIndex_t _inputL  ;
-  InputSet::inputIndex_t _inputR  ;
-  InputSet::inputIndex_t _inputA  ;
-  InputSet::inputIndex_t _inputB  ;
-  InputSet::inputIndex_t _inputUL ;
-  InputSet::inputIndex_t _inputUR ;
-  InputSet::inputIndex_t _inputUA ;
-  InputSet::inputIndex_t _inputUB ;
-  InputSet::inputIndex_t _inputDL ;
-  InputSet::inputIndex_t _inputDR ;
-  InputSet::inputIndex_t _inputDA ;
-  InputSet::inputIndex_t _inputDB ;
-  InputSet::inputIndex_t _inputAL ;
-  InputSet::inputIndex_t _inputBL ;
-  InputSet::inputIndex_t _inputAR ;
-  InputSet::inputIndex_t _inputBR ;
-  InputSet::inputIndex_t _inputULA;
-  InputSet::inputIndex_t _inputURA;
-  InputSet::inputIndex_t _inputUBA;
-  InputSet::inputIndex_t _inputDLA;
-  InputSet::inputIndex_t _inputDRA;
-  InputSet::inputIndex_t _inputDBA;
-  InputSet::inputIndex_t _inputBLA;
-  InputSet::inputIndex_t _inputBRA;
-  InputSet::inputIndex_t _inputULB;
-  InputSet::inputIndex_t _inputURB;
-  InputSet::inputIndex_t _inputDLB;
-  InputSet::inputIndex_t _inputDRB;
-  InputSet::inputIndex_t _inputLRA;
-  InputSet::inputIndex_t _inputBA;
-  InputSet::inputIndex_t _inputRBA;
-  InputSet::inputIndex_t _inputLBA;
-  InputSet::inputIndex_t _inputLR;
+  InputSet::inputIndex_t _input_U  ;
+  InputSet::inputIndex_t _input_D  ;
+  InputSet::inputIndex_t _input_L  ;
+  InputSet::inputIndex_t _input_R  ;
+  InputSet::inputIndex_t _input_A  ;
+  InputSet::inputIndex_t _input_B  ;
+  InputSet::inputIndex_t _input_UL ;
+  InputSet::inputIndex_t _input_UR ;
+  InputSet::inputIndex_t _input_UA ;
+  InputSet::inputIndex_t _input_UB ;
+  InputSet::inputIndex_t _input_DL ;
+  InputSet::inputIndex_t _input_DR ;
+  InputSet::inputIndex_t _input_DA ;
+  InputSet::inputIndex_t _input_DB ;
+  InputSet::inputIndex_t _input_AL ;
+  InputSet::inputIndex_t _input_BL ;
+  InputSet::inputIndex_t _input_AR ;
+  InputSet::inputIndex_t _input_BR ;
+  InputSet::inputIndex_t _input_ULA;
+  InputSet::inputIndex_t _input_URA;
+  InputSet::inputIndex_t _input_UBA;
+  InputSet::inputIndex_t _input_DLA;
+  InputSet::inputIndex_t _input_DRA;
+  InputSet::inputIndex_t _input_DBA;
+  InputSet::inputIndex_t _input_BLA;
+  InputSet::inputIndex_t _input_BRA;
+  InputSet::inputIndex_t _input_ULB;
+  InputSet::inputIndex_t _input_URB;
+  InputSet::inputIndex_t _input_DLB;
+  InputSet::inputIndex_t _input_DRB;
+  InputSet::inputIndex_t _input_LRA;
+  InputSet::inputIndex_t _input_BA;
+  InputSet::inputIndex_t _input_RBA;
+  InputSet::inputIndex_t _input_LBA;
+  InputSet::inputIndex_t _input_LR;
 
-  InputSet::inputIndex_t _inputARS ;
-  InputSet::inputIndex_t _inputALS ;
-  InputSet::inputIndex_t _inputRS  ;
-  InputSet::inputIndex_t _inputLS  ;
-  InputSet::inputIndex_t _inputSelect;
+  InputSet::inputIndex_t _input_ARS ;
+  InputSet::inputIndex_t _input_ALS ;
+  InputSet::inputIndex_t _input_RS  ;
+  InputSet::inputIndex_t _input_LS  ;
+  InputSet::inputIndex_t _input_s;
 
   uint8_t* _gameMode         ;
   uint8_t* _globalTimer      ;

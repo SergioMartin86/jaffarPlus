@@ -1,0 +1,880 @@
+#pragma once
+
+#include <emulator.hpp>
+#include <game.hpp>
+#include <jaffarCommon/json.hpp>
+#include <numeric>
+
+namespace jaffarPlus
+{
+
+namespace games
+{
+
+namespace nes
+{
+
+class Metroid final : public jaffarPlus::Game
+{
+public:
+  static __INLINE__ std::string getName() { return "NES / Metroid"; }
+
+  Metroid(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
+  {
+    // Getting emulator name (for runtime use)
+    _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
+
+    // Loading trace
+    if (_traceFilePath != "")
+    {
+      _useTrace = true;
+      std::string traceData;
+      bool        status = jaffarCommon::file::loadStringFromFile(traceData, _traceFilePath.c_str());
+      if (status == false) JAFFAR_THROW_LOGIC("Could not find/read trace file: %s\n", _traceFilePath.c_str());
+
+      std::istringstream f(traceData);
+      std::string line;
+      while (std::getline(f, line))
+      {
+        auto coordinates = jaffarCommon::string::split(line, ' ');
+        float x = std::atof(coordinates[0].c_str());
+        float y = std::atof(coordinates[1].c_str());
+        _trace.push_back(traceEntry_t{
+          .x = x,
+          .y = y,
+        });
+      }
+    }
+  }
+
+private:
+  __INLINE__ void registerGameProperties() override
+  {
+    // Getting emulator's low memory pointer
+    _lowMem = _emulator->getProperty("LRAM").pointer;
+    _srmMem = _emulator->getProperty("SRAM").pointer;
+
+    // Registering native game properties
+
+    // Setting relevant metroid pointers
+
+    // https://datacrystal.romhacking.net/wiki/Metroid:RAM_map
+
+    registerGameProperty("Pause Mode"               , &_lowMem[0x0000], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Frame Counter"            , &_lowMem[0x002D], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("NMI Flag"                 , &_lowMem[0x001A], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Game Mode"                , &_lowMem[0x001E], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus Pos X1"             , &_lowMem[0x0051], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Screen Pos X1"            , &_lowMem[0x0050], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Screen Pos X2"            , &_lowMem[0x00FD], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus Pos Y1"             , &_lowMem[0x0052], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Screen Pos Y1"            , &_lowMem[0x004F], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Screen Pos Y2"            , &_lowMem[0x00FC], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus Animation"          , &_lowMem[0x0306], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus Direction"          , &_lowMem[0x004D], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus Door Side"          , &_lowMem[0x004E], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus Door State"         , &_lowMem[0x0056], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus Jump State"         , &_lowMem[0x0314], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Equipment Flags"          , &_srmMem[0x0878], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus Selected Weapon"    , &_lowMem[0x0056], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Missile Count"            , &_srmMem[0x0879], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus HP 1"               , &_lowMem[0x0107], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Samus HP 2"               , &_lowMem[0x0106], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Door1 State"              , &_lowMem[0x0380], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Door2 State"              , &_lowMem[0x0390], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Door3 State"              , &_lowMem[0x03A0], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Door4 State"              , &_lowMem[0x03B0], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Door1 Timer"              , &_lowMem[0x038F], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Door2 Timer"              , &_lowMem[0x039F], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Door3 Timer"              , &_lowMem[0x03AF], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Door4 Timer"              , &_lowMem[0x03BF], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Bullet 1 State"           , &_lowMem[0x03D0], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Bullet 2 State"           , &_lowMem[0x03E0], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Bullet 3 State"           , &_lowMem[0x03F0], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Bullet 1 Pos X"           , &_lowMem[0x03DE], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Bullet 2 Pos X"           , &_lowMem[0x03EE], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Bullet 3 Pos X"           , &_lowMem[0x03FE], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Bullet 1 Pos Y"           , &_lowMem[0x03DD], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Bullet 2 Pos Y"           , &_lowMem[0x03ED], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Bullet 3 Pos Y"           , &_lowMem[0x03FD], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Upper Door State"         , &_lowMem[0x0380], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+
+    registerGameProperty("Enemy 1 State"           , &_lowMem[0x0406], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 State"           , &_lowMem[0x0416], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 3 State"           , &_lowMem[0x0426], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 4 State"           , &_lowMem[0x0436], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 5 State"           , &_lowMem[0x0446], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 6 State"           , &_lowMem[0x0456], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+
+
+    registerGameProperty("Enemy 1 Pos Y"           , &_lowMem[0x0400], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 1 Pos X"           , &_lowMem[0x0401], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 Pos Y"           , &_lowMem[0x0410], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 Pos X"           , &_lowMem[0x0411], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 3 Pos Y"           , &_lowMem[0x0420], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 3 Pos X"           , &_lowMem[0x0421], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 4 Pos Y"           , &_lowMem[0x0430], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 4 Pos X"           , &_lowMem[0x0431], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 5 Pos Y"           , &_lowMem[0x0440], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 5 Pos X"           , &_lowMem[0x0441], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 6 Pos Y"           , &_lowMem[0x0450], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 6 Pos X"           , &_lowMem[0x0451], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    
+    registerGameProperty("Samus HP"                , &_samusHP, Property::datatype_t::dt_float32, Property::endianness_t::little);
+
+
+    _pauseMode                = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Pause Mode"               )]->getPointer();
+    _frameCounter             = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Frame Counter"            )]->getPointer();
+    _NMIFlag                  = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("NMI Flag"                 )]->getPointer();
+    _gameMode                 = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Game Mode"                )]->getPointer();
+    _samusPosX1               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus Pos X1"             )]->getPointer();
+    _screenPosX1              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Screen Pos X1"            )]->getPointer();
+    _screenPosX2              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Screen Pos X2"            )]->getPointer();
+    _samusPosY1               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus Pos Y1"             )]->getPointer();
+    _screenPosY1              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Screen Pos Y1"            )]->getPointer();
+    _screenPosY2              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Screen Pos Y2"            )]->getPointer();
+    _samusAnimation           = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus Animation"          )]->getPointer();
+    _samusDirection           = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus Direction"          )]->getPointer();
+    _samusDoorSide            = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus Door Side"          )]->getPointer();
+    _samusDoorState           = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus Door State"         )]->getPointer();
+    _samusJumpState           = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus Jump State"         )]->getPointer();
+    _equipmentFlags           = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Equipment Flags"          )]->getPointer();
+    _samusSelectedWeapon      = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus Selected Weapon"    )]->getPointer();
+    _missileCount             = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Missile Count"            )]->getPointer();
+    _samusHP1                 = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus HP 1"               )]->getPointer();
+    _samusHP2                 = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Samus HP 2"               )]->getPointer();
+    _door1State               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Door1 State"              )]->getPointer();
+    _door2State               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Door2 State"              )]->getPointer();
+    _door3State               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Door3 State"              )]->getPointer();
+    _door4State               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Door4 State"              )]->getPointer();
+    _door1Timer               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Door1 Timer"              )]->getPointer();
+    _door2Timer               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Door2 Timer"              )]->getPointer();
+    _door3Timer               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Door3 Timer"              )]->getPointer();
+    _door4Timer               = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Door4 Timer"              )]->getPointer();
+    _bullet1State             = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Bullet 1 State"           )]->getPointer();
+    _bullet2State             = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Bullet 2 State"           )]->getPointer();
+    _bullet3State             = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Bullet 3 State"           )]->getPointer();
+    _bullet1PosX              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Bullet 1 Pos X"           )]->getPointer();
+    _bullet2PosX              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Bullet 2 Pos X"           )]->getPointer();
+    _bullet3PosX              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Bullet 3 Pos X"           )]->getPointer();
+    _bullet1PosY              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Bullet 1 Pos Y"           )]->getPointer();
+    _bullet2PosY              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Bullet 2 Pos Y"           )]->getPointer();
+    _bullet3PosY              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Bullet 3 Pos Y"           )]->getPointer();
+    _upperDoorState           = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Upper Door State"         )]->getPointer();
+
+    _enemy1State              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 1 State"           )]->getPointer();
+    _enemy2State              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 2 State"           )]->getPointer();
+    _enemy3State              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 3 State"           )]->getPointer();
+    _enemy4State              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 4 State"           )]->getPointer();
+    _enemy5State              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 5 State"           )]->getPointer();
+    _enemy6State              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 6 State"           )]->getPointer();
+
+    registerGameProperty("Samus Pos X"        , &_samusPosX,   Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Samus Pos Y"        , &_samusPosY,   Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Lag Frame Counter"        , &_lagFrameCounter,   Property::datatype_t::dt_uint16, Property::endianness_t::little); 
+    registerGameProperty("Pause Frame Counter"      , &_pauseFrameCounter, Property::datatype_t::dt_uint16, Property::endianness_t::little); 
+
+    for (size_t i = 0; i < 0x800; i++)
+    {
+      char name[512];
+      sprintf(name, "RAM Value [0x%03lX]", i);
+      registerGameProperty(std::string(name), &_lowMem[i], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    }
+
+    for (size_t i = 0; i < 0x1400; i++)
+    {
+      char name[512];
+      sprintf(name, "WRAM Value [0x%04lX]", i);
+      registerGameProperty(std::string(name), &_srmMem[i], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    }
+
+    // Initializing values
+    _currentStep   = 0;
+    _lastInputStep = 0;
+
+    // Getting index for a non input
+    _nullInputIdx = _emulator->registerInput("|..|........|........|");
+    _input_U      = _emulator->registerInput("|..|U.......|........|");
+    _input_D      = _emulator->registerInput("|..|.D......|........|");
+    _input_L      = _emulator->registerInput("|..|..L.....|........|");
+    _input_R      = _emulator->registerInput("|..|...R....|........|");
+    _input_A      = _emulator->registerInput("|..|.......A|........|");
+    _input_B      = _emulator->registerInput("|..|......B.|........|");
+    _input_UD     = _emulator->registerInput("|..|UD......|........|");
+    _input_UL     = _emulator->registerInput("|..|U.L.....|........|");
+    _input_UR     = _emulator->registerInput("|..|U..R....|........|");
+    _input_UA     = _emulator->registerInput("|..|U......A|........|");
+    _input_UB     = _emulator->registerInput("|..|U.....B.|........|");
+    _input_DL     = _emulator->registerInput("|..|.DL.....|........|");
+    _input_DR     = _emulator->registerInput("|..|.D.R....|........|");
+    _input_DA     = _emulator->registerInput("|..|.D.....A|........|");
+    _input_DB     = _emulator->registerInput("|..|.D....B.|........|");
+    _input_AL     = _emulator->registerInput("|..|..L....A|........|");
+    _input_BL     = _emulator->registerInput("|..|..L...B.|........|");
+    _input_AR     = _emulator->registerInput("|..|...R...A|........|");
+    _input_BR     = _emulator->registerInput("|..|...R..B.|........|");
+    _input_UDA    = _emulator->registerInput("|..|UD.....A|........|");
+    _input_ULA    = _emulator->registerInput("|..|U.L....A|........|");
+    _input_URA    = _emulator->registerInput("|..|U..R...A|........|");
+    _input_UBA    = _emulator->registerInput("|..|U.....BA|........|");
+    _input_DLA    = _emulator->registerInput("|..|.DL....A|........|");
+    _input_DRA    = _emulator->registerInput("|..|.D.R...A|........|");
+    _input_DBA    = _emulator->registerInput("|..|.D....BA|........|");
+    _input_BLA    = _emulator->registerInput("|..|..L...BA|........|");
+    _input_BRA    = _emulator->registerInput("|..|...R..BA|........|");
+    _input_ULB    = _emulator->registerInput("|..|UD....B.|........|");
+    _input_ULB    = _emulator->registerInput("|..|U.L...B.|........|");
+    _input_URB    = _emulator->registerInput("|..|U..R..B.|........|");
+    _input_DLB    = _emulator->registerInput("|..|.DL...B.|........|");
+    _input_DRB    = _emulator->registerInput("|..|.D.R..B.|........|");
+    _input_BA     = _emulator->registerInput("|..|......BA|........|");
+    _input_UBA    = _emulator->registerInput("|..|U.....BA|........|");
+    _input_UDR    = _emulator->registerInput("|..|UD.R....|........|");
+    _input_UDL    = _emulator->registerInput("|..|UDL.....|........|");
+    _input_LRA    = _emulator->registerInput("|..|..LR...A|........|");
+    _input_LRB    = _emulator->registerInput("|..|..LR..B.|........|");
+    _input_RBA    = _emulator->registerInput("|..|...R..BA|........|");
+    _input_LBA    = _emulator->registerInput("|..|..L...BA|........|");
+    _input_LR     = _emulator->registerInput("|..|..LR....|........|");
+    _input_ARS    = _emulator->registerInput("|..|...RS..A|........|");
+    _input_ALS    = _emulator->registerInput("|..|..L.S..A|........|");
+    _input_RS     = _emulator->registerInput("|..|...RS...|........|");
+    _input_LS     = _emulator->registerInput("|..|..L.S...|........|");
+    _input_URBA   = _emulator->registerInput("|..|U..R..BA|........|");
+    _input_ULBA   = _emulator->registerInput("|..|U.L...BA|........|");
+    _input_sA     = _emulator->registerInput("|..|.....s.A|........|");
+    _input_RsA    = _emulator->registerInput("|..|...R.s.A|........|");
+    _input_LsA    = _emulator->registerInput("|..|..L..s.A|........|");
+    _input_UsA    = _emulator->registerInput("|..|U....s.A|........|");
+    _input_DsA    = _emulator->registerInput("|..|.D...s.A|........|");
+    _input_URs    = _emulator->registerInput("|..|U..R.s..|........|");
+    _input_URsA   = _emulator->registerInput("|..|U..R.s.A|........|");
+    _input_Us     = _emulator->registerInput("|..|U....s..|........|");
+    _input_Rs     = _emulator->registerInput("|..|...R.s..|........|");
+    _input_Ls     = _emulator->registerInput("|..|..L..s..|........|");
+
+    _lagFrameCounter     = 0;
+    _pauseFrameCounter   = 0;
+
+    stateUpdatePostHook();
+  }
+
+  __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
+  {
+    _emulator->advanceState(input);
+    
+    // count lag frames
+    if (*_NMIFlag == 1) (_lagFrameCounter)++;
+    if (*_pauseMode == 0) (_pauseFrameCounter)++;
+
+    // Increasing counter if input is null
+    if (input != _nullInputIdx) _lastInputStep = _currentStep;
+    _currentStep++;
+  }
+
+  __INLINE__ void calculateHashValues(MetroHash128& hashEngine) const
+  {
+      hashEngine.Update(*_pauseMode);
+      hashEngine.Update(*_gameMode);
+      hashEngine.Update(*_NMIFlag);
+      hashEngine.Update(*_samusPosX1);
+      hashEngine.Update(*_screenPosX1);
+      hashEngine.Update(*_screenPosX2);
+      hashEngine.Update(*_samusPosY1);
+      hashEngine.Update(*_screenPosY1);
+      hashEngine.Update(*_screenPosY2);
+      hashEngine.Update(_lagFrameCounter);
+      // hashEngine.Update(_pauseFrameCounter);
+      hashEngine.Update(*_missileCount);
+      hashEngine.Update(*_samusSelectedWeapon);
+      hashEngine.Update(*_samusAnimation);
+      hashEngine.Update(*_samusDirection);
+      hashEngine.Update(*_samusDoorSide);
+      hashEngine.Update(*_samusJumpState);
+      hashEngine.Update(*_equipmentFlags);
+
+      hashEngine.Update(*_door1State);
+      hashEngine.Update(*_door2State);
+      hashEngine.Update(*_door3State);
+      hashEngine.Update(*_door4State);
+      hashEngine.Update(*_upperDoorState);
+
+    //  hashEngine.Update(*door1Timer);
+    //  hashEngine.Update(*door2Timer);
+    //  hashEngine.Update(*door3Timer);
+    //  hashEngine.Update(*door4Timer);
+
+      hashEngine.Update(*_bullet1State);
+      // hashEngine.Update(*_bullet2State);
+      // hashEngine.Update(*_bullet3State);
+      // hashEngine.Update(*_bullet1PosX);
+      // hashEngine.Update(*_bullet2PosX);
+      // hashEngine.Update(*_bullet3PosX);
+      // hashEngine.Update(*_bullet1PosY);
+      // hashEngine.Update(*_bullet2PosY);
+      // hashEngine.Update(*_bullet3PosY);
+
+      // Samus-specific hashes
+      hashEngine.Update(_lowMem[0x0053]); // Run Frame
+      hashEngine.Update(_lowMem[0x0300]); // Buffered ACtion
+      hashEngine.Update(_lowMem[0x0304]); // Buffered ACtion
+      hashEngine.Update(_lowMem[0x0305]); // Buffered ACtion
+      hashEngine.Update(_lowMem[0x0306]); // Buffered ACtion
+      hashEngine.Update(_lowMem[0x0308]); // Vertical Speed
+      hashEngine.Update(_lowMem[0x030F]); // Buffered ACtion
+      hashEngine.Update(_lowMem[0x0314]); // Buffered ACtion
+      hashEngine.Update(_lowMem[0x0316]); // Jump State2
+      hashEngine.Update(_lowMem[0x0310]); // Vertical Accel
+      hashEngine.Update(_lowMem[0x0315]); // Buffered ACtion
+      hashEngine.Update(_lowMem[0x030A]); // Hit By Enemy
+
+      // Top Block states
+      // hashEngine.Update(_lowMem[0x0500]); 
+      // hashEngine.Update(_lowMem[0x0510]); 
+      // hashEngine.Update(_lowMem[0x0520]); 
+      // hashEngine.Update(_lowMem[0x0530]); 
+      // hashEngine.Update(_lowMem[0x0540]); 
+      // hashEngine.Update(_lowMem[0x0550]); 
+      // hashEngine.Update(_lowMem[0x0560]); 
+      // hashEngine.Update(_lowMem[0x0570]); 
+      // hashEngine.Update(_lowMem[0x0580]); 
+      // hashEngine.Update(_lowMem[0x0590]); 
+      // hashEngine.Update(_lowMem[0x05A0]); 
+      // hashEngine.Update(_lowMem[0x05B0]); 
+      // hashEngine.Update(_lowMem[0x05C0]); 
+      // hashEngine.Update(_lowMem[0x05D0]);
+      // hashEngine.Update(_lowMem[0x05E0]);
+
+      // hashEngine.Update(_lowMem[0x0503]); 
+      // hashEngine.Update(_lowMem[0x0513]); 
+      // hashEngine.Update(_lowMem[0x0523]); 
+      // hashEngine.Update(_lowMem[0x0533]); 
+      // hashEngine.Update(_lowMem[0x0543]); 
+      // hashEngine.Update(_lowMem[0x0553]); 
+      // hashEngine.Update(_lowMem[0x0563]); 
+      // hashEngine.Update(_lowMem[0x0573]); 
+      // hashEngine.Update(_lowMem[0x0583]); 
+      // hashEngine.Update(_lowMem[0x0593]); 
+      // hashEngine.Update(_lowMem[0x05A3]); 
+      // hashEngine.Update(_lowMem[0x05B3]); 
+      // hashEngine.Update(_lowMem[0x05C3]); 
+      // hashEngine.Update(_lowMem[0x05D3]);
+      // hashEngine.Update(_lowMem[0x05E3]);
+
+      // Enemies X and Y
+      // hashEngine.Update(&_lowMem[0x0400], 2); 
+      // hashEngine.Update(&_lowMem[0x0410], 2); 
+      // hashEngine.Update(&_lowMem[0x0420], 2); 
+      // hashEngine.Update(&_lowMem[0x0430], 2); 
+      // hashEngine.Update(&_lowMem[0x0440], 2); 
+      // hashEngine.Update(&_lowMem[0x0450], 2); 
+
+      // Enemies Dead
+      hashEngine.Update(_lowMem[0x0406] > 0); 
+      hashEngine.Update(_lowMem[0x0416] > 0);
+      hashEngine.Update(_lowMem[0x0426] > 0); 
+      hashEngine.Update(_lowMem[0x0436] > 0); 
+      hashEngine.Update(_lowMem[0x0446] > 0); 
+      hashEngine.Update(_lowMem[0x0456] > 0); 
+
+    //    hashEngine.Update(&_lowMem[0x0300], 0x0020);
+    //    hashEngine.Update(&_lowMem[0x0314], 0x0010);
+
+    //    hashEngine.Update(&_lowMem[0x0000], 0x0800);
+    //    hashEngine.Update(&_emu->_highMem[0x0000], 0x2000);
+
+    if (std::abs(_lastInputStepReward) > 0.0f) hashEngine.Update(_lastInputStep);
+  }
+
+  __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
+  {
+    calculateHashValues(hashEngine);
+
+    // uint8_t _saveBuffer[1024*1024];
+    // jaffarCommon::serializer::Contiguous s(_saveBuffer);
+    // _emulator->serializeState(s);
+    // _emulator->advanceState(_nullInputIdx);
+    // _emulator->advanceState(_nullInputIdx);
+
+    // calculateHashValues(hashEngine);
+
+    // jaffarCommon::deserializer::Contiguous d(_saveBuffer);
+    // _emulator->deserializeState(d);
+  }
+
+  // Updating derivative values after updating the internal state
+  __INLINE__ void stateUpdatePostHook() override
+  {
+    uint8_t realScreenPosX1 = *_screenPosX2 == 0 ? *_screenPosX1+1 : *_screenPosX1;
+    _samusPosX = (float)realScreenPosX1 * 256 + (float)*_screenPosX2 + (float)*_samusPosX1;
+    _samusPosY = (float)*_screenPosY1 * 256 + (float)*_screenPosY2 + (float)*_samusPosY1;
+
+    _bulletCount = (uint8_t)(*_bullet1State > 0) + (uint8_t)(*_bullet2State > 0) + (uint8_t)(*_bullet3State > 0);
+    _samusHP = 10.0 * (float)*_samusHP1 + (float)*_samusHP2 / 16.0;
+  }
+
+  __INLINE__ void ruleUpdatePreHook() override 
+  {
+    _pointMagnet.intensity = 0.0; 
+    _pointMagnet.x = 0.0; 
+    _pointMagnet.y = 0.0; 
+
+    _traceMagnet.intensityX = 0.0;
+    _traceMagnet.intensityY = 0.0;
+    _traceMagnet.offset = 0;
+
+    _lagFrameCounterMagnet = 0.0;
+    _missileCountMagnet = 0.0;
+    _samusHPMagnet = 0.0;
+    _lastInputStepReward = 0.0;
+  }
+
+  __INLINE__ void ruleUpdatePostHook() override
+  {
+    // Updating distance to user-defined point
+    _samusDistanceToPointX = std::abs(_pointMagnet.x - _samusPosX);
+    _samusDistanceToPointY = std::abs(_pointMagnet.y - _samusPosY);
+    _samusDistanceToPoint  =  sqrtf(_samusDistanceToPointX * _samusDistanceToPointX + _samusDistanceToPointY * _samusDistanceToPointY);
+
+    // Updating trace stuff
+    if (_useTrace == true)
+    {
+      _traceStep = (uint16_t) std::max(std::min( (int)_currentStep + _traceMagnet.offset, (int) _trace.size() - 1), 0);
+      _traceTargetX = _trace[_traceStep].x;
+      _traceTargetY = _trace[_traceStep].y;
+
+      // Updating distance to trace point
+      _traceDistanceX = std::abs(_traceTargetX - _samusPosX);
+      _traceDistanceY = std::abs(_traceTargetY - _samusPosY);
+      _traceDistance  = sqrtf(_traceDistanceX * _traceDistanceX + _traceDistanceY * _traceDistanceY);
+    }
+  }
+
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
+  {
+    serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
+    serializer.pushContiguous(&_lastInputStep, sizeof(_lastInputStep));
+    serializer.pushContiguous(&_lagFrameCounter, sizeof(_lagFrameCounter));
+    serializer.pushContiguous(&_pauseFrameCounter, sizeof(_pauseFrameCounter));
+  }
+
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
+  {
+    deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
+    deserializer.popContiguous(&_lastInputStep, sizeof(_lastInputStep));
+    deserializer.popContiguous(&_lagFrameCounter, sizeof(_lagFrameCounter));
+    deserializer.popContiguous(&_pauseFrameCounter, sizeof(_pauseFrameCounter));
+  }
+
+  __INLINE__ float calculateGameSpecificReward() const
+  {
+    // Getting rewards from rules
+    float reward = 0.0;
+
+    // If trace is used, compute its magnet's effect
+    if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensityX * _traceDistanceX;
+    if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensityY * _traceDistanceY;
+
+    // Evaluating lag frame counter reward
+    reward += _lagFrameCounterMagnet * ((float)_lagFrameCounter + (float)_pauseFrameCounter);
+
+    // Evaluating missile count
+    reward += _missileCountMagnet * (float)*_missileCount;
+
+    // Evaluating Samus HP
+    reward += _samusHPMagnet * _samusHP;
+
+    // Evaluating point magnet
+    reward += -1.0 * _pointMagnet.intensity * _samusDistanceToPoint;
+
+    // Subtracting reward for having made an input recently (for early termination)
+    reward += _lastInputStepReward * _lastInputStep;
+
+    // Returning reward
+    return reward;
+  }
+
+  __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
+  {
+
+    if (*_samusAnimation == 0x0001) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_AL, _input_AR });
+    if (*_samusAnimation == 0x0002) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_AL, _input_AR, _input_Rs, _input_Ls });
+    if (*_samusAnimation == 0x0003) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_AL, _input_AR, _input_Rs, _input_Ls });
+    if (*_samusAnimation == 0x0005) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB });
+    if (*_samusAnimation == 0x0007) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DB, _input_UD, _input_UL, _input_UR, _input_UB, _input_UA, _input_DA, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DBA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB, _input_UDB });
+    if (*_samusAnimation == 0x0008) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DB, _input_UD, _input_UL, _input_UR, _input_UB, _input_UA, _input_DA, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DBA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB, _input_UDB, _input_LsA });
+    if (*_samusAnimation == 0x000A) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_U, _input_A, _input_L, _input_D, _input_UR, _input_UB, _input_UA, _input_UL, _input_DL, _input_DB, _input_LR, _input_UD, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_ULB, _input_ULA, _input_URB, _input_UDB, _input_URA, _input_UBA, _input_DLB, _input_DBA, _input_LRB, _input_LBA, _input_RBA });
+    if (*_samusAnimation == 0x000B) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_U, _input_L, _input_D, _input_A, _input_LR, _input_UL, _input_UR, _input_UB, _input_DL, _input_DB, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DBA, _input_RBA, _input_URB, _input_ULB, _input_URA, _input_ULA, _input_sA, _input_RsA, _input_LsA });
+    if (*_samusAnimation == 0x000C) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_U, _input_A, _input_L, _input_UR, _input_UB, _input_DL, _input_DB, _input_UL, _input_LR, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_ULA, _input_URB, _input_URA, _input_ULB, _input_UBA, _input_DLA, _input_LRA, _input_LBA, _input_RBA });
+    if (*_samusAnimation == 0x000D) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_LR, _input_BL, _input_BA, _input_AL, _input_BR, _input_AR, _input_UDA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_RBA, _input_DLB, _input_DLA, _input_LBA, _input_LRB, _input_LRA, _input_URBA, _input_ULBA, _input_Us, _input_LsA });
+    if (*_samusAnimation == 0x000F) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_A, _input_D, _input_DA, _input_UL, _input_UR, _input_UB, _input_UA, _input_DB, _input_LR, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DLA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB, _input_UDA });
+    if (*_samusAnimation == 0x0010) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DLA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB });
+    if (*_samusAnimation == 0x0011) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_A, _input_L, _input_U, _input_AL, _input_UR, _input_UL, _input_UB, _input_DB, _input_BL, _input_BR, _input_AR, _input_BA, _input_ULA, _input_ULB, _input_URB, _input_URA, _input_UBA, _input_LBA, _input_RBA, _input_URBA, _input_ULBA });
+    if (*_samusAnimation == 0x0012) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB, _input_Rs, _input_Ls });
+    if (*_samusAnimation == 0x0013) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_D, _input_U, _input_UA, _input_UD, _input_UDR });
+    if (*_samusAnimation == 0x0014) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_U });
+    if (*_samusAnimation == 0x0017) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_D, _input_U, _input_BR, _input_DR, _input_DL, _input_UD, _input_DRA, _input_DLA, _input_UDR, _input_UDL });
+    if (*_samusAnimation == 0x0018) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_D, _input_U, _input_UDR });
+    if (*_samusAnimation == 0x0019) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_D, _input_U, _input_AR, _input_AL });
+    if (*_samusAnimation == 0x001A) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_U });
+    if (*_samusAnimation == 0x0020) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_D, _input_L, _input_R, _input_A, _input_BR, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_DB, _input_BA, _input_LR, _input_BL, _input_AL, _input_AR, _input_LRA, _input_DLA, _input_LBA, _input_UBA, _input_RBA, _input_URA, _input_URB, _input_ULA, _input_ULB });
+    if (*_samusAnimation == 0x0021) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DA, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_DB, _input_LR, _input_BA, _input_BL, _input_AL, _input_AR, _input_BR, _input_RBA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_LRB, _input_DLB, _input_DLA, _input_DBA, _input_LBA, _input_LRA, _input_URsA });
+    if (*_samusAnimation == 0x0023) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_LR, _input_LRB, _input_DLB });
+    if (*_samusAnimation == 0x0024) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL });
+    if (*_samusAnimation == 0x0025) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U });
+    if (*_samusAnimation == 0x0027) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_UD, _input_BR, _input_DA, _input_BA, _input_BL, _input_AL, _input_AR, _input_UDB, _input_UDA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_DBA, _input_LBA, _input_RBA });
+    if (*_samusAnimation == 0x0028) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_UD, _input_BR, _input_DA, _input_BA, _input_BL, _input_AL, _input_AR, _input_UDB, _input_UDA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_DBA, _input_LBA, _input_RBA });
+    if (*_samusAnimation == 0x0034) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_D, _input_L, _input_R, _input_A, _input_BR, _input_AR, _input_AL, _input_BL, _input_LR, _input_BA, _input_DB, _input_UL, _input_DL, _input_UA, _input_UB, _input_UR, _input_ULB, _input_URB, _input_DBA, _input_RBA });
+    if (*_samusAnimation == 0x0035) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_U, _input_A, _input_L, _input_D, _input_UR, _input_UB, _input_UA, _input_UL, _input_DL, _input_DB, _input_DA, _input_UD, _input_LR, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_ULB, _input_UDB, _input_ULA, _input_URB, _input_URA, _input_UDR, _input_UBA, _input_DLB, _input_DLA, _input_DBA, _input_LRB, _input_LRA, _input_LBA, _input_RBA });
+    if (*_samusAnimation == 0x0036) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_LR, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LRA, _input_LBA, _input_DLA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB, _input_UDA, _input_UsA, _input_DsA, _input_URs });
+    if (*_samusAnimation == 0x0038) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_UD, _input_URB, _input_ULB, _input_URA, _input_ULA });
+    if (*_samusAnimation == 0x0039) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB });
+    if (*_samusAnimation == 0x003A) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB });
+    if (*_samusAnimation == 0x003C) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB, _input_UDL });
+    if (*_samusAnimation == 0x003E) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB });
+    if (*_samusAnimation == 0x0040) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB });
+  }
+
+  void printInfoImpl() const override
+  {
+    jaffarCommon::logger::log("[J+]  + Frame Counter:          %03u\n", *_frameCounter);
+    jaffarCommon::logger::log("[J+]  + Game Mode:              %02u\n", *_gameMode);
+    jaffarCommon::logger::log("[J+]  + NMI Flag:               %02u\n", *_NMIFlag);
+    jaffarCommon::logger::log("[J+]  + Lag Frame Counter:      %05u\n", _lagFrameCounter);
+    jaffarCommon::logger::log("[J+]  + Pause Frame Counter:    %05u\n", _pauseFrameCounter);
+    jaffarCommon::logger::log("[J+]  + Samus Pos X:            %f (%02u %02u %02u)\n", _samusPosX, *_screenPosX1, *_screenPosX2, *_samusPosX1);
+    jaffarCommon::logger::log("[J+]  + Samus Pos Y:            %f (%02u %02u %02u)\n", _samusPosY, *_screenPosY1, *_screenPosY2, *_samusPosY1);
+    jaffarCommon::logger::log("[J+]  + Samus Animation:        0x%X\n", *_samusAnimation);
+    jaffarCommon::logger::log("[J+]  + Samus Direction:        %03u\n", *_samusDirection);
+    jaffarCommon::logger::log("[J+]  + Samus Door Side:        %03u\n", *_samusDoorSide);
+    jaffarCommon::logger::log("[J+]  + Samus Door State:       %03u\n", *_samusDoorState);
+    jaffarCommon::logger::log("[J+]  + Samus Jump State:       %03u\n", *_samusJumpState);
+    jaffarCommon::logger::log("[J+]  + Enemy States:           [ %02u, %02u, %02u, %02u, %02u, %02u ]\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State, *_enemy6State );
+    jaffarCommon::logger::log("[J+]  + Door States:            [ %02u, %02u, %02u, %02u ]\n", *_door1State, *_door2State, *_door3State, *_door4State);
+    jaffarCommon::logger::log("[J+]  + Door Timers:            [ %02u, %02u, %02u, %02u ]\n", *_door1Timer, *_door2Timer, *_door3Timer, *_door4Timer);
+    jaffarCommon::logger::log("[J+]  + Bullet Count:           %02u\n", _bulletCount);
+    jaffarCommon::logger::log("[J+]  + Bullet States:          [ %02u, %02u, %02u ]\n", *_bullet1State, *_bullet2State, *_bullet3State);
+    jaffarCommon::logger::log("[J+]  + Bullet Pos X:           [ %02u, %02u, %02u ]\n", *_bullet1PosX, *_bullet2PosX, *_bullet3PosX);
+    jaffarCommon::logger::log("[J+]  + Bullet Pos Y:           [ %02u, %02u, %02u ]\n", *_bullet1PosY, *_bullet2PosY, *_bullet3PosY);
+    jaffarCommon::logger::log("[J+]  + Equipment Flags:        %03u\n", *_equipmentFlags);
+    jaffarCommon::logger::log("[J+]  + Samus Selected Weapon:  %03u\n", *_samusSelectedWeapon);
+    jaffarCommon::logger::log("[J+]  + Samus Missile Count:    %02u\n", *_missileCount);
+    jaffarCommon::logger::log("[J+]  + Samus HP:               %02f (%02u x 10 + %02u)\n", _samusHP, *_samusHP1, *_samusHP2);
+
+    if (std::abs(_pointMagnet.intensity) > 0.0f)
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _samusDistanceToPointX);
+      jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _samusDistanceToPointY);
+      jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _samusDistanceToPoint);
+    }
+
+    if (std::abs(_missileCountMagnet) > 0.0f)
+      jaffarCommon::logger::log("[J+]  + Missile Count Magnet                    Intensity: %.5f\n", _missileCountMagnet);
+
+    if (std::abs(_samusHPMagnet) > 0.0f)
+      jaffarCommon::logger::log("[J+]  + Samus HP Magnet                         Intensity: %.5f\n", _samusHPMagnet);
+
+    if (std::abs(_lastInputStepReward) > 0.0f)
+    {
+      jaffarCommon::logger::log("[J+]  + Last Input Magnet                        Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _lastInputStepReward);
+      jaffarCommon::logger::log("[J+]    + Last Input Step                        %04u\n", _lastInputStep);
+    }
+
+    if (_useTrace == true)
+    {
+      if (std::abs(_traceMagnet.intensityX) > 0.0f || std::abs(_traceMagnet.intensityY) > 0.0f)
+      {
+        jaffarCommon::logger::log("[J+]  + Trace Magnet                             Intensity: (X: %.5f, Y: %.5f), Step: %u (%+1u), X: %3.3f, Y: %3.3f\n", _traceMagnet.intensityX, _traceMagnet.intensityY, _traceStep, _traceMagnet.offset, _traceTargetX, _traceTargetY);
+        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _traceDistanceX);
+        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _traceDistanceY);
+        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _traceDistance);
+      }
+    }
+  }
+
+  bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
+  {
+    bool recognizedActionType = false;
+
+    if (actionType == "Set Trace Magnet")
+    {
+      if (_useTrace == false) JAFFAR_THROW_LOGIC("Specified Trace Magnet, but no trace file was provided.");
+      auto intensityX = jaffarCommon::json::getNumber<float>(actionJs, "Intensity X");
+      auto intensityY = jaffarCommon::json::getNumber<float>(actionJs, "Intensity Y");
+      auto offset    = jaffarCommon::json::getNumber<int>(actionJs, "Offset");
+      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.intensityX = intensityX, .intensityY = intensityY, .offset = offset }; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Point Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto x       = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y       = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Last Input Step Reward")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_lastInputStepReward = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Lag Frame Counter Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_lagFrameCounterMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Missile Count Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_missileCountMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Samus HP Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_samusHPMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    return recognizedActionType;
+  }
+
+  __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override
+  {
+    // There is no discriminating state element, so simply return a zero hash
+    // return jaffarCommon::hash::hash_t({0, *_samusAction});
+    return jaffarCommon::hash::hash_t({0, 0});
+  }
+
+  // Datatype to describe a point magnet
+  bool _isDumpingTrace = false;
+  std::string _traceDumpString;
+
+  __INLINE__ void playerPrintCommands() const override
+  {
+    jaffarCommon::logger::log("[J+] t: start/stop trace dumping (%s)\n", _isDumpingTrace ? "On" : "Off");
+  };
+
+  __INLINE__ bool playerParseCommand(const int command)
+  {
+    // If storing a trace, do it here
+    if (_isDumpingTrace == true) _traceDumpString += std::to_string(_samusPosX) + std::string(" ") + std::to_string(_samusPosY) + std::string("\n");
+
+     if (command == 't')
+     {
+      if (_isDumpingTrace == false)
+      {
+        _isDumpingTrace = true;
+        _traceDumpString = "";
+        return false;
+      }
+      else
+      {
+        const std::string dumpOutputFile = "jaffar.trace";
+        jaffarCommon::logger::log("[J+] Dumping trace to file: '%s'", dumpOutputFile.c_str());
+        jaffarCommon::file::saveStringToFile(_traceDumpString, dumpOutputFile);
+        _isDumpingTrace = false;
+        return true;
+      }
+     }
+
+     return false;
+  };
+
+
+  // Datatype to describe a point magnet
+  struct pointMagnet_t
+  {
+    float intensity = 0.0; // How strong the magnet is
+    float x         = 0.0; // What is the point of attraction X
+    float y         = 0.0; // What is the point of attraction X
+  };
+  pointMagnet_t _pointMagnet;
+  pointMagnet_t _screenMagnet;
+
+  float _samusDistanceToPointX;
+  float _samusDistanceToPointY;
+  float _samusDistanceToPoint;
+
+  // Datatype to describe a magnet
+  struct weaponMagnet_t {
+    float intensity = 0.0; // How strong the magnet is
+    uint8_t value = 0;  // Specifies the weapon number
+  };
+
+  // Null input index to remember the last valid input
+  InputSet::inputIndex_t _nullInputIdx;
+
+  uint8_t* _lowMem;
+  uint8_t* _srmMem;
+
+  float _samusPosX;
+  float _samusPosY;
+  
+  struct traceMagnet_t
+  {
+    float intensityX = 0.0; // How strong the magnet is on X
+    float intensityY = 0.0; // How strong the magnet is on Y
+    int offset      = 0; // Which entry (step) to look at wrt the current emulation step
+  };
+
+  // Reward for the last time an input was made (for early termination)
+  float _lastInputStepReward;
+  traceMagnet_t _traceMagnet;
+  float _lagFrameCounterMagnet;
+  float _missileCountMagnet;
+  float _samusHPMagnet;
+
+  // Whether we use a trace
+  bool _useTrace = false;
+
+  // Location of the trace file
+  std::string _traceFilePath;
+
+  // Trace contents
+  struct traceEntry_t
+  {
+    float x;
+    float y;
+  };
+  std::vector<traceEntry_t> _trace;
+
+  // Current trace target
+  uint16_t _traceStep;
+  float _traceTargetX;
+  float _traceTargetY;
+  float _traceDistanceX;
+  float _traceDistanceY;
+  float _traceDistance;
+  
+  // Possible inputs
+  InputSet::inputIndex_t _input_U  ;
+  InputSet::inputIndex_t _input_D  ;
+  InputSet::inputIndex_t _input_L  ;
+  InputSet::inputIndex_t _input_R  ;
+  InputSet::inputIndex_t _input_A  ;
+  InputSet::inputIndex_t _input_B  ;
+  InputSet::inputIndex_t _input_UD;
+  InputSet::inputIndex_t _input_UL ;
+  InputSet::inputIndex_t _input_UR ;
+  InputSet::inputIndex_t _input_UA ;
+  InputSet::inputIndex_t _input_UB ;
+  InputSet::inputIndex_t _input_DL ;
+  InputSet::inputIndex_t _input_DR ;
+  InputSet::inputIndex_t _input_DA ;
+  InputSet::inputIndex_t _input_DB ;
+  InputSet::inputIndex_t _input_AL ;
+  InputSet::inputIndex_t _input_BL ;
+  InputSet::inputIndex_t _input_AR ;
+  InputSet::inputIndex_t _input_BR ;
+  InputSet::inputIndex_t _input_ULA;
+  InputSet::inputIndex_t _input_URA;
+  InputSet::inputIndex_t _input_UBA;
+  InputSet::inputIndex_t _input_DLA;
+  InputSet::inputIndex_t _input_DRA;
+  InputSet::inputIndex_t _input_DBA;
+  InputSet::inputIndex_t _input_BLA;
+  InputSet::inputIndex_t _input_BRA;
+  InputSet::inputIndex_t _input_UDB;
+  InputSet::inputIndex_t _input_ULB;
+  InputSet::inputIndex_t _input_URB;
+  InputSet::inputIndex_t _input_DLB;
+  InputSet::inputIndex_t _input_DRB;
+  InputSet::inputIndex_t _input_LRA;
+  InputSet::inputIndex_t _input_LRB;
+  InputSet::inputIndex_t _input_BA;
+  InputSet::inputIndex_t _input_RBA;
+  InputSet::inputIndex_t _input_LBA;
+  InputSet::inputIndex_t _input_LR;
+  InputSet::inputIndex_t _input_UDA;
+  InputSet::inputIndex_t _input_UDR;
+  InputSet::inputIndex_t _input_UDL;
+  InputSet::inputIndex_t _input_ARS ;
+  InputSet::inputIndex_t _input_ALS ;
+  InputSet::inputIndex_t _input_RS  ;
+  InputSet::inputIndex_t _input_LS  ;
+  InputSet::inputIndex_t _input_s;
+  InputSet::inputIndex_t _input_sA;
+  InputSet::inputIndex_t _input_URBA;
+  InputSet::inputIndex_t _input_ULBA;
+  InputSet::inputIndex_t _input_RsA;
+  InputSet::inputIndex_t _input_LsA;
+  InputSet::inputIndex_t _input_UsA;
+  InputSet::inputIndex_t _input_DsA;
+  InputSet::inputIndex_t _input_URs  ;
+  InputSet::inputIndex_t _input_URsA ;
+  InputSet::inputIndex_t _input_Us   ;
+  InputSet::inputIndex_t _input_Rs   ;
+  InputSet::inputIndex_t _input_Ls   ;
+
+  uint8_t* _pauseMode           ;
+  uint8_t* _frameCounter        ;
+  uint8_t* _NMIFlag             ;
+  uint8_t* _gameMode            ;
+  uint8_t* _samusPosX1        ;
+  uint8_t* _screenPosX1         ;
+  uint8_t* _screenPosX2         ;
+  uint8_t* _samusPosY1        ;
+  uint8_t* _screenPosY1         ;
+  uint8_t* _screenPosY2         ;
+  uint8_t* _samusAnimation      ;
+  uint8_t* _samusDirection      ;
+  uint8_t* _samusDoorSide       ;
+  uint8_t* _samusDoorState      ;
+  uint8_t* _samusJumpState      ;
+  uint8_t* _equipmentFlags      ;
+  uint8_t* _samusSelectedWeapon ;
+  uint8_t* _missileCount        ;
+  uint8_t* _samusHP1            ;
+  uint8_t* _samusHP2            ;
+  uint8_t* _door1State          ;
+  uint8_t* _door2State          ;
+  uint8_t* _door3State          ;
+  uint8_t* _door4State          ;
+  uint8_t* _door1Timer          ;
+  uint8_t* _door2Timer          ;
+  uint8_t* _door3Timer          ;
+  uint8_t* _door4Timer          ;
+  uint8_t* _bullet1State        ;
+  uint8_t* _bullet2State        ;
+  uint8_t* _bullet3State        ;
+  uint8_t* _bullet1PosX         ;
+  uint8_t* _bullet2PosX         ;
+  uint8_t* _bullet3PosX         ;
+  uint8_t* _bullet1PosY         ;
+  uint8_t* _bullet2PosY         ;
+  uint8_t* _bullet3PosY         ;
+  uint8_t* _upperDoorState;
+  
+  uint8_t* _enemy1State        ;
+  uint8_t* _enemy2State        ;
+  uint8_t* _enemy3State        ;
+  uint8_t* _enemy4State        ;
+  uint8_t* _enemy5State        ;
+  uint8_t* _enemy6State        ;
+
+  uint16_t _lagFrameCounter     ;
+  uint16_t _pauseFrameCounter   ;
+
+  // Game values
+
+  uint16_t _currentStep;
+  uint16_t _lastInputStep;
+  uint8_t _bulletCount;
+  float _samusHP;
+};
+
+
+} // namespace nes
+
+} // namespace games
+
+} // namespace jaffarPlus

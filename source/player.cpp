@@ -147,6 +147,8 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       jaffarCommon::logger::log("[J+] Solution File:              '%s'\n", solutionFile.c_str());
       jaffarCommon::logger::log("[J+] Sequence Length:             %lu\n", sequenceLength);
       jaffarCommon::logger::log("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
+      jaffarCommon::logger::log("[J+] Checkpoint:                  Level: %lu, Tolerance: %lu\n", r.getGame()->getCheckpointLevel(), r.getGame()->getCheckpointTolerance());
+      jaffarCommon::logger::log("[J+] Manual Save Solution:        Active: %s, Path: '%s', Last Rule: (Current: %ld), (Prev: %ld)\n", r.getGame()->isSaveSolution() ? "Yes" : "No", r.getGame()->getSaveSolutionPath().c_str(), r.getGame()->getSaveSolutionCurrentLastRuleIdx(), r.getGame()->getSaveSolutionPrevLastRuleIdx());
       p.printInfo();
 
       // Print General Commands
@@ -263,6 +265,7 @@ int main(int argc, char* argv[])
   program.add_argument("--unattended").help("Indicates the player not to print the interactive prompt nor wait for inputs").default_value(false).implicit_value(true);
   program.add_argument("--disableRender").help("Do not render game window.").default_value(false).implicit_value(true);
   program.add_argument("--frameskip").help("How many frames to skip between renderings.").default_value(std::string("1")).required();
+  program.add_argument("--initialSequence").help("Overrides the solution file to use as initial sequence to play before starting.").default_value(std::string("")).required();
 
   // Try to parse arguments
   try
@@ -298,6 +301,9 @@ int main(int argc, char* argv[])
   // Getting frameskip
   frameskip = std::stoul(program.get<std::string>("--frameskip"));
 
+  // Getting frameskip
+  const std::string initialSequence = program.get<std::string>("--initialSequence");
+
   // Initializing terminal
   jaffarCommon::logger::initializeTerminal();
 
@@ -327,6 +333,9 @@ int main(int argc, char* argv[])
   auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
   auto gameConfig     = jaffarCommon::json::getObject(config, "Game Configuration");
   auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
+
+  // Overriding initial solution file, if provided
+  if (initialSequence != "") emulatorConfig["Initial Sequence File Path"] = initialSequence;
 
   // Disabling frameskip, if enabled
   runnerConfig["Frameskip Rate"] = 0;
