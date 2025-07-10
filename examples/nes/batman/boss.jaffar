@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 100
+            "Max Size (Mb)": 150000
         }
     },
     "Emulator Configuration": {
@@ -170,7 +170,7 @@
                         "Type": "Set Trace Magnet",
                         "Intensity X": 1.0,
                         "Intensity Y": 1.0,
-                        "Offset": 1
+                        "Offset": 0
                     },
                     {
                         "Type": "Set Boss HP Magnet",
@@ -190,6 +190,10 @@
                 ],
                 "Satisfies": [],
                 "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
                     {
                         "Type": "Set Trace Magnet",
                         "Intensity X": 0.0,
