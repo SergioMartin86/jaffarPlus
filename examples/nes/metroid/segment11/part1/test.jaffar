@@ -1,0 +1,346 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 400,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 20000
+        },
+        "State Database": {
+            "Max Size (Mb)": 500
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "../../Metroid (U) (PRG0) [!].nes",
+        "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "test.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "Joypad",
+        "Nametable Block Size": 4096,
+        "SRAM Block Size": 3072,
+        "Disabled State Properties": [
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 4,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 400
+        },
+        "Allowed Input Sets": [ 
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|U.......|........|",
+                    "|..|.D......|........|",
+                    "|..|..L.....|........|",
+                    "|..|...R....|........|",
+                    "|..|.......A|........|",
+                    "|..|......B.|........|",
+                    "|..|UD......|........|",
+                    "|..|U.L.....|........|",
+                    "|..|U..R....|........|",
+                    "|..|U......A|........|",
+                    "|..|U.....B.|........|",
+                    "|..|.DL.....|........|",
+                    "|..|.D.R....|........|",
+                    "|..|.D.....A|........|",
+                    "|..|.D....B.|........|",
+                    "|..|..L....A|........|",
+                    "|..|..L...B.|........|",
+                    "|..|...R...A|........|",
+                    "|..|...R..B.|........|",
+                    "|..|UD.....A|........|",
+                    "|..|U.L....A|........|",
+                    "|..|U..R...A|........|",
+                    "|..|U.....BA|........|",
+                    "|..|.DL....A|........|",
+                    "|..|.D.R...A|........|",
+                    "|..|.D....BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|...R..BA|........|",
+                    "|..|UD....B.|........|",
+                    "|..|U.L...B.|........|",
+                    "|..|U..R..B.|........|",
+                    "|..|.DL...B.|........|",
+                    "|..|.D.R..B.|........|",
+                    "|..|......BA|........|",
+                    "|..|U.....BA|........|",
+                    "|..|UD.R....|........|",
+                    "|..|UDL.....|........|",
+                    "|..|..LR...A|........|",
+                    "|..|..LR..B.|........|",
+                    "|..|...R..BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|..LR....|........|",
+                    "|..|...RS..A|........|",
+                    "|..|..L.S..A|........|",
+                    "|..|...RS...|........|",
+                    "|..|..L.S...|........|",
+                    "|..|U..R..BA|........|",
+                    "|..|U.L...BA|........|",
+                    "|..|.....s.A|........|",
+                    "|..|...R.s.A|........|",
+                    "|..|..L..s.A|........|",
+                    "|..|U....s.A|........|",
+                    "|..|.D...s.A|........|",
+                    "|..|U..R.s..|........|",
+                    "|..|U..R.s.A|........|",
+                    "|..|U....s..|........|",
+                    "|..|...R.s..|........|",
+                    "|..|..L..s..|........|",
+                    "|..|.....s..|........|",
+                    "|..|....S...|........|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Metroid",
+        "Frame Rate": 60.1,
+        "Allow Fire": true,
+        "Trace File Path": "test.trace",
+        "Print Properties": [
+            "RNG"
+        ],
+        "Hash Properties": [
+            "Enemy 6 Pos X",
+            "Enemy 6 State",
+            "Bullet 1 Pos X",
+            "Bullet 1 State",
+            "RNG"
+        ],
+        "Rules": [
+            {
+                "Label": 500,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 1.0,
+                        "Offset": 0
+                    },
+                    {
+                        "Type": "Set Samus HP Magnet",
+                        "Intensity": 0.01
+                    },
+                    {
+                        "Type": "Set Missile Count Magnet",
+                        "Intensity": 5
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Bullet 1 State",
+                        "Op": "==",
+                        "Value": 11
+                    },
+                    {
+                        "Property": "Bullet 1 Vel X",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": ">",
+                        "Value": 2800
+                    },
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": "<",
+                        "Value": 3200
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10
+                    }
+                ]
+            },
+            {
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Enemy 6 State",
+                        "Op": "==",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": ">",
+                        "Value": 2850
+                    },
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": "<",
+                        "Value": 3200
+                    }
+                ],
+                "Satisfies": [ 1001 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10
+                    }
+                ]
+            },
+            {
+                "Label": 1003,
+                "Conditions": [
+                    {
+                        "Property": "Missile Grab Status",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ 1002 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 100
+                    }
+                ]
+            },
+            {
+                "Label": 2010,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": ">=",
+                        "Value": 70
+                    },
+                    {
+                        "Property": "Samus Animation",
+                        "Op": ">=",
+                        "Value": 23
+                    },
+                    {
+                        "Property": "Samus Animation",
+                        "Op": "<=",
+                        "Value": 26
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1099,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 68
+                    }
+                ],
+                "Satisfies": [ ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1098,
+                "Conditions": [
+                    {
+                        "Property": "Samus HP",
+                        "Op": "<",
+                        "Value": 30
+                    }
+                ],
+                "Satisfies": [ ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1096,
+                "Conditions": [
+                    {
+                        "Property": "Bullet 1 State",
+                        "Op": "==",
+                        "Value": 11
+                    },
+                    {
+                        "Property": "Bullet 1 Vel Y",
+                        "Op": "!=",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1096,
+                "Conditions": [
+                    {
+                        "Property": "Bullet 1 State",
+                        "Op": "==",
+                        "Value": 11
+                    },
+                    {
+                        "Property": "Bullet 1 Vel X",
+                        "Op": "<",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

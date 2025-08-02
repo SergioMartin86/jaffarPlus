@@ -1,0 +1,743 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 1400,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "",
+            "Worst State Path": ""
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 200000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
+        "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "test.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "Joypad",
+        "Nametable Block Size": 4096,
+        "SRAM Block Size": 3072,
+        "Disabled State Properties": [
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 1400
+        },
+        "Allowed Input Sets": [ 
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|U.......|........|",
+                    "|..|.D......|........|",
+                    "|..|..L.....|........|",
+                    "|..|...R....|........|",
+                    "|..|.......A|........|",
+                    "|..|......B.|........|",
+                    "|..|UD......|........|",
+                    "|..|U.L.....|........|",
+                    "|..|U..R....|........|",
+                    "|..|U......A|........|",
+                    "|..|U.....B.|........|",
+                    "|..|.DL.....|........|",
+                    "|..|.D.R....|........|",
+                    "|..|.D.....A|........|",
+                    "|..|.D....B.|........|",
+                    "|..|..L....A|........|",
+                    "|..|..L...B.|........|",
+                    "|..|...R...A|........|",
+                    "|..|...R..B.|........|",
+                    "|..|UD.....A|........|",
+                    "|..|U.L....A|........|",
+                    "|..|U..R...A|........|",
+                    "|..|U.....BA|........|",
+                    "|..|.DL....A|........|",
+                    "|..|.D.R...A|........|",
+                    "|..|.D....BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|...R..BA|........|",
+                    "|..|UD....B.|........|",
+                    "|..|U.L...B.|........|",
+                    "|..|U..R..B.|........|",
+                    "|..|.DL...B.|........|",
+                    "|..|.D.R..B.|........|",
+                    "|..|......BA|........|",
+                    "|..|U.....BA|........|",
+                    "|..|UD.R....|........|",
+                    "|..|UDL.....|........|",
+                    "|..|..LR...A|........|",
+                    "|..|..LR..B.|........|",
+                    "|..|...R..BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|..LR....|........|",
+                    "|..|...RS..A|........|",
+                    "|..|..L.S..A|........|",
+                    "|..|...RS...|........|",
+                    "|..|..L.S...|........|",
+                    "|..|U..R..BA|........|",
+                    "|..|U.L...BA|........|",
+                    "|..|.....s.A|........|",
+                    "|..|...R.s.A|........|",
+                    "|..|..L..s.A|........|",
+                    "|..|U....s.A|........|",
+                    "|..|.D...s.A|........|",
+                    "|..|U..R.s..|........|",
+                    "|..|U..R.s.A|........|",
+                    "|..|U....s..|........|",
+                    "|..|...R.s..|........|",
+                    "|..|..L..s..|........|",
+                    "|..|.....s..|........|",
+                    "|..|....S...|........|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Metroid",
+        "Frame Rate": 60.1,
+	    "Allow Fire": true,
+        "Trace File Path": "test.trace",
+        "Print Properties": [
+            "Door 1 State",
+            "Door 2 State",
+            "Door 2 Timer",
+            "Door Transition Timer",
+            "Pause Frame Counter",
+            "Lag Frame Counter",
+            "RAM Value [0x5C6]"
+        ],
+        "Hash Properties": [
+            "Door 2 State",
+            "Door 2 Timer",
+            "Bullet 1 State",
+            "Door Transition Timer",
+            "Pause Frame Counter",
+            "Lag Frame Counter",
+            "RAM Value [0x5C6]"
+        ],
+        "Rules": [
+            {
+                "Label": 1,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Samus HP Magnet",
+                        "Intensity": 0.01
+                    },
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 0.5,
+                        "Intensity Y": 1.0,
+                        "Offset": 1
+                    },
+                    {
+                        "Type": "Set Lag Frame Counter Magnet",
+                        "Intensity": -0.1
+                    }
+                ]
+            },
+            {
+                "Label": 1014,
+                "Conditions": [
+                    {
+                        "Property": "Door 2 State",
+                        "Op": "==",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2400
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1015,
+                "Conditions": [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 131
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2400
+                    }
+                ],
+                "Satisfies": [ 1014  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Door Transition Timer Reward",
+                        "Intensity": 1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1115,
+                "Conditions":
+                [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 131
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2400
+                    },
+                    {
+                        "Property": "Samus Direction",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1016,
+                "Conditions":
+                [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Screen Pos X1",
+                        "Op": "==",
+                        "Value": 21
+                    }
+                ],
+                "Satisfies": [ 1015 ],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 0.0,
+                        "Intensity Y": 0.0,
+                        "Offset": 0
+                    },
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Door Transition Timer Reward",
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Set Missile Count Magnet",
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Set Missile Grab Status Magnet",
+                        "Intensity": 2.0
+                    },
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.2,
+                        "Offset": 3
+                    }
+                ]
+            },
+            {
+                "Label": 1217,
+                "Conditions": [
+                    {
+                        "Property": "Door 2 Timer",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Missile Count",
+                        "Op": "==",
+                        "Value": 74
+                    }
+                ],
+                "Satisfies": [ 1016 ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1017,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": "<",
+                        "Value": 5380
+                    },
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": ">",
+                        "Value": 5360
+                    },
+                    {
+                        "Property": "Bullet 1 State",
+                        "Op": "==",
+                        "Value": 11
+                    },
+                    {
+                        "Property": "Bullet 1 Vel X",
+                        "Op": "<",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ 1016 ],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.6,
+                        "Offset": 2
+                    },
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Missile Grab Status Magnet",
+                        "Intensity": 1.00
+                    },
+                    {
+                        "Type": "Set Missile Count Magnet",
+                        "Intensity": -0.001
+                    },
+                    {
+                        "Type": "Set Door 2 Timer Magnet",
+                        "Intensity": -2.0
+                    }
+                ]
+            },
+            {
+                "Label": 1018,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": "<",
+                        "Value": 5200
+                    },
+                    {
+                        "Property": "Door 2 Timer",
+                        "Op": ">",
+                        "Value": 10
+                    },
+                    {
+                        "Property": "Missile Count",
+                        "Op": ">=",
+                        "Value": 70
+                    }
+                ],
+                "Satisfies": [ 1017 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Missile Grab Status Magnet",
+                        "Intensity": 0.00
+                    },
+                    {
+                        "Type": "Set Missile Count Magnet",
+                        "Intensity": 0.1
+                    },
+                    {
+                        "Type": "Set Door 2 Timer Magnet",
+                        "Intensity": 0.0
+                    }
+                ]
+            },
+            {
+                "Label": 1020,
+                "Conditions": [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 130
+                    },
+                    {
+                        "Property": "Screen Pos X1",
+                        "Op": "==",
+                        "Value": 20
+                    },
+                    {
+                        "Property": "Missile Count",
+                        "Op": "==",
+                        "Value": 70
+                    }
+                ],
+                "Satisfies": [ 1018 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Door Transition Timer Reward",
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 0.0,
+                        "Intensity Y": 0.0,
+                        "Offset": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1021,
+                "Conditions": [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Screen Pos X1",
+                        "Op": "==",
+                        "Value": 19
+                    },
+                    {
+                        "Property": "Screen Pos X2",
+                        "Op": "<=",
+                        "Value": 30
+                    }
+                ],
+                "Satisfies": [ 1020 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5116,
+                        "Y": 2914,
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.0
+                    }
+                ]
+            },
+            {
+                "Label": 1022,
+                "Conditions": [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Screen Pos X1",
+                        "Op": "==",
+                        "Value": 19
+                    },
+                    {
+                        "Property": "Samus Pos X2",
+                        "Op": "<=",
+                        "Value": 186
+                    }
+                ],
+                "Satisfies": [ 1021 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 200.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5116,
+                        "Y": 2914,
+                        "Intensity X": 1.0,
+                        "Intensity Y": 1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1023,
+                "Conditions": [
+                    {
+                        "Property": "Screen Pos X1",
+                        "Op": "==",
+                        "Value": 19
+                    },
+                    {
+                        "Property": "RAM Value [0x5C6]",
+                        "Op": "<",
+                        "Value": 7
+                    }
+                ],
+                "Satisfies": [ 1022  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 20.0
+                    }
+                ]
+            },
+            {
+                "Label": 1024,
+                "Conditions": [
+                    {
+                        "Property": "Equipment Flags",
+                        "Op": "==",
+                        "Value": 144
+                    }
+                ],
+                "Satisfies": [ 1023  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 0,
+                        "Y": 0,
+                        "Intensity X": 0.0,
+                        "Intensity Y": 0.0
+                    },
+                    {
+                        "Type": "Set Pause Frame Counter Magnet",
+                        "Intensity": 1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1025,
+                "Conditions": [
+                    {
+                        "Property": "Game Mode",
+                        "Op": "==",
+                        "Value": 9
+                    }
+                ],
+                "Satisfies": [ 1024 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    }
+                ]
+            },
+            {
+                "Label": 1026,
+                "Conditions": [
+                    {
+                        "Property": "Prev Game Mode",
+                        "Op": "==",
+                        "Value": 9
+                    },
+                    {
+                        "Property": "Game Mode",
+                        "Op": "==",
+                        "Value": 3
+                    }
+                ],
+                "Satisfies": [   ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1990,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 200
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+
+                ]
+            },
+            {
+                "Label": 1991,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 73
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1992,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 70
+                        
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1993,
+                "Conditions": [
+                    {
+                        "Property": "Samus HP 1",
+                        "Op": "==",
+                        "Value": 153
+                    },
+                    {
+                        "Property": "Screen Pos X1",
+                        "Op": "==",
+                        "Value": 22
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1994,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 75
+                    },
+                    {
+                        "Property": "Screen Pos X1",
+                        "Op": "==",
+                        "Value": 22
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1995,
+                "Conditions": [
+                    {
+                        "Property": "Missile Grab Status",
+                        "Op": ">",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1996,
+                "Conditions": [
+                    {
+                        "Property": "Screen Pos X1",
+                        "Op": "==",
+                        "Value": 20
+                    },
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": "<",
+                        "Value": 5440
+                    },
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": ">",
+                        "Value": 5420
+                    },
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 75
+                    }
+                ],
+                "Satisfies": [ 1016 ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

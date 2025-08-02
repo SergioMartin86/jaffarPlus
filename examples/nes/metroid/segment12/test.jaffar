@@ -1,0 +1,286 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 1500,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "",
+            "Worst State Path": ""
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 20000
+        },
+        "State Database": {
+            "Max Size (Mb)": 10000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
+        "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "test.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "Joypad",
+        "Nametable Block Size": 4096,
+        "SRAM Block Size": 3072,
+        "Disabled State Properties": [
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 1500
+        },
+        "Allowed Input Sets": [ 
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|U.......|........|",
+                    "|..|.D......|........|",
+                    "|..|..L.....|........|",
+                    "|..|...R....|........|",
+                    "|..|.......A|........|",
+                    "|..|......B.|........|",
+                    "|..|UD......|........|",
+                    "|..|U.L.....|........|",
+                    "|..|U..R....|........|",
+                    "|..|U......A|........|",
+                    "|..|U.....B.|........|",
+                    "|..|.DL.....|........|",
+                    "|..|.D.R....|........|",
+                    "|..|.D.....A|........|",
+                    "|..|.D....B.|........|",
+                    "|..|..L....A|........|",
+                    "|..|..L...B.|........|",
+                    "|..|...R...A|........|",
+                    "|..|...R..B.|........|",
+                    "|..|UD.....A|........|",
+                    "|..|U.L....A|........|",
+                    "|..|U..R...A|........|",
+                    "|..|U.....BA|........|",
+                    "|..|.DL....A|........|",
+                    "|..|.D.R...A|........|",
+                    "|..|.D....BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|...R..BA|........|",
+                    "|..|UD....B.|........|",
+                    "|..|U.L...B.|........|",
+                    "|..|U..R..B.|........|",
+                    "|..|.DL...B.|........|",
+                    "|..|.D.R..B.|........|",
+                    "|..|......BA|........|",
+                    "|..|U.....BA|........|",
+                    "|..|UD.R....|........|",
+                    "|..|UDL.....|........|",
+                    "|..|..LR...A|........|",
+                    "|..|..LR..B.|........|",
+                    "|..|...R..BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|..LR....|........|",
+                    "|..|...RS..A|........|",
+                    "|..|..L.S..A|........|",
+                    "|..|...RS...|........|",
+                    "|..|..L.S...|........|",
+                    "|..|U..R..BA|........|",
+                    "|..|U.L...BA|........|",
+                    "|..|.....s.A|........|",
+                    "|..|...R.s.A|........|",
+                    "|..|..L..s.A|........|",
+                    "|..|U....s.A|........|",
+                    "|..|.D...s.A|........|",
+                    "|..|U..R.s..|........|",
+                    "|..|U..R.s.A|........|",
+                    "|..|U....s..|........|",
+                    "|..|...R.s..|........|",
+                    "|..|..L..s..|........|",
+                    "|..|.....s..|........|",
+                    "|..|....S...|........|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Metroid",
+        "Frame Rate": 60.1,
+        "Allow Fire": true,
+        "Allow Change Weapon": false,
+        "Trace File Path": "test.trace",
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 0.5,
+                        "Intensity Y": 1.0,
+                        "Offset": 1
+                    }
+                ]
+            },
+            {
+                "Label": 2999,
+                "Conditions": [
+                    {
+                        "Property": "Enemy 6 Freeze Timer",
+                        "Op": ">",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1133,
+                "Conditions": [
+                    {
+                        "Property": "Bullet 1 State",
+                        "Op": "==",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Bullet 1 Vel X",
+                        "Op": "<",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Bullet 1 Pos X",
+                        "Op": "<",
+                        "Value": 60
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<=",
+                        "Value": 1392
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">=",
+                        "Value": 1371
+                    }
+                ],
+                "Satisfies": [ ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+						"Value": 1
+                    }
+                ]
+            },
+            {
+                "Label": 1134,
+                "Conditions": [
+                    {
+                        "Property": "Door 4 State",
+                        "Op": "==",
+                        "Value": 3
+                    }
+                ],
+                "Satisfies": [ 1133 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+						"Value": 1
+                    }
+                ]
+            },
+            {
+                "Label": 1049,
+                "Conditions": [
+                    {
+                        "Property": "Door 2 State",
+                        "Op": ">=",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Satisfies": [   ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 100.0
+                    }
+                ]
+            },
+            {
+                "Label": 1050,
+                "Conditions": [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 132
+                    },
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1099,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 71
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

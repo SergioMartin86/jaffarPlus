@@ -1,0 +1,653 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 500,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "",
+            "Worst State Path": ""
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 20000
+        },
+        "State Database": {
+            "Max Size (Mb)": 10000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
+        "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "test.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "Joypad",
+        "Nametable Block Size": 4096,
+        "SRAM Block Size": 3072,
+        "Disabled State Properties": [
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 500
+        },
+        "Allowed Input Sets": [ 
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|U.......|........|",
+                    "|..|.D......|........|",
+                    "|..|..L.....|........|",
+                    "|..|...R....|........|",
+                    "|..|.......A|........|",
+                    "|..|......B.|........|",
+                    "|..|UD......|........|",
+                    "|..|U.L.....|........|",
+                    "|..|U..R....|........|",
+                    "|..|U......A|........|",
+                    "|..|U.....B.|........|",
+                    "|..|.DL.....|........|",
+                    "|..|.D.R....|........|",
+                    "|..|.D.....A|........|",
+                    "|..|.D....B.|........|",
+                    "|..|..L....A|........|",
+                    "|..|..L...B.|........|",
+                    "|..|...R...A|........|",
+                    "|..|...R..B.|........|",
+                    "|..|UD.....A|........|",
+                    "|..|U.L....A|........|",
+                    "|..|U..R...A|........|",
+                    "|..|U.....BA|........|",
+                    "|..|.DL....A|........|",
+                    "|..|.D.R...A|........|",
+                    "|..|.D....BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|...R..BA|........|",
+                    "|..|UD....B.|........|",
+                    "|..|U.L...B.|........|",
+                    "|..|U..R..B.|........|",
+                    "|..|.DL...B.|........|",
+                    "|..|.D.R..B.|........|",
+                    "|..|......BA|........|",
+                    "|..|U.....BA|........|",
+                    "|..|UD.R....|........|",
+                    "|..|UDL.....|........|",
+                    "|..|..LR...A|........|",
+                    "|..|..LR..B.|........|",
+                    "|..|...R..BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|..LR....|........|",
+                    "|..|...RS..A|........|",
+                    "|..|..L.S..A|........|",
+                    "|..|...RS...|........|",
+                    "|..|..L.S...|........|",
+                    "|..|U..R..BA|........|",
+                    "|..|U.L...BA|........|",
+                    "|..|.....s.A|........|",
+                    "|..|...R.s.A|........|",
+                    "|..|..L..s.A|........|",
+                    "|..|U....s.A|........|",
+                    "|..|.D...s.A|........|",
+                    "|..|U..R.s..|........|",
+                    "|..|U..R.s.A|........|",
+                    "|..|U....s..|........|",
+                    "|..|...R.s..|........|",
+                    "|..|..L..s..|........|",
+                    "|..|.....s..|........|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Metroid",
+        "Frame Rate": 60.1,
+        "Trace File Path": "test.trace",
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 1.0,
+                        "Offset": 2
+                    },
+                    {
+                        "Type": "Set Missile Count Magnet",
+                        "Intensity": 0.50
+                    },
+                    {
+                        "Type": "Set Samus HP Magnet",
+                        "Intensity": 0.1
+                    }
+                ]
+            },
+            {
+                "Label": 1000,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3639
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint01.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3587
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint02.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3506
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint03.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1003,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3440
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint04.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3376
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint05.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1005,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3339
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint06.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1006,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3249
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint07.sol"
+                    },
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1007,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3182
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint08.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1008,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3125
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint09.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1009,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 3086
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint10.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1010,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 2995
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Save Solution",
+						"Path": "checkpoint11.sol"
+                    }
+                ]
+            },
+            {
+                "Label": 1011,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 2931
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    },
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1012,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 2866
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    }
+                ]
+            },
+            {
+                "Label": 1013,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 2830
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Checkpoint",
+						"Tolerance": 5
+                    }
+                ]
+            },
+            {
+                "Label": 1014,
+                "Conditions": [
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2600
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 2730
+                    },
+                    {
+                        "Property": "Samus Jump State",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Missile Count",
+                        "Op": ">=",
+                        "Value": 72
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1015,
+                "Conditions": [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 129
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1099,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 71
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

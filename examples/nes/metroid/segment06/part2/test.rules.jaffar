@@ -1,0 +1,548 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 530,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "",
+            "Worst State Path": ""
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 1000
+        },
+        "State Database": {
+            "Max Size (Mb)": 20000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
+        "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "test.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "Joypad",
+        "Nametable Block Size": 4096,
+        "SRAM Block Size": 3072,
+        "Disabled State Properties": [
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 530
+        },
+        "Allowed Input Sets": [ 
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|U.......|........|",
+                    "|..|.D......|........|",
+                    "|..|..L.....|........|",
+                    "|..|...R....|........|",
+                    "|..|.......A|........|",
+                    "|..|......B.|........|",
+                    "|..|UD......|........|",
+                    "|..|U.L.....|........|",
+                    "|..|U..R....|........|",
+                    "|..|U......A|........|",
+                    "|..|U.....B.|........|",
+                    "|..|.DL.....|........|",
+                    "|..|.D.R....|........|",
+                    "|..|.D.....A|........|",
+                    "|..|.D....B.|........|",
+                    "|..|..L....A|........|",
+                    "|..|..L...B.|........|",
+                    "|..|...R...A|........|",
+                    "|..|...R..B.|........|",
+                    "|..|UD.....A|........|",
+                    "|..|U.L....A|........|",
+                    "|..|U..R...A|........|",
+                    "|..|U.....BA|........|",
+                    "|..|.DL....A|........|",
+                    "|..|.D.R...A|........|",
+                    "|..|.D....BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|...R..BA|........|",
+                    "|..|UD....B.|........|",
+                    "|..|U.L...B.|........|",
+                    "|..|U..R..B.|........|",
+                    "|..|.DL...B.|........|",
+                    "|..|.D.R..B.|........|",
+                    "|..|......BA|........|",
+                    "|..|U.....BA|........|",
+                    "|..|UD.R....|........|",
+                    "|..|UDL.....|........|",
+                    "|..|..LR...A|........|",
+                    "|..|..LR..B.|........|",
+                    "|..|...R..BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|..LR....|........|",
+                    "|..|...RS..A|........|",
+                    "|..|..L.S..A|........|",
+                    "|..|...RS...|........|",
+                    "|..|..L.S...|........|",
+                    "|..|U..R..BA|........|",
+                    "|..|U.L...BA|........|",
+                    "|..|.....s.A|........|",
+                    "|..|...R.s.A|........|",
+                    "|..|..L..s.A|........|",
+                    "|..|U....s.A|........|",
+                    "|..|.D...s.A|........|",
+                    "|..|U..R.s..|........|",
+                    "|..|U..R.s.A|........|",
+                    "|..|U....s..|........|",
+                    "|..|...R.s..|........|",
+                    "|..|..L..s..|........|",
+                    "|..|.....s..|........|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Metroid",
+        "Frame Rate": 60.1,
+	    "Allow Fire": false,
+        "Trace File Path": "test.trace",
+        "Print Properties": [
+            "Door 2 State",
+            "Door 2 Timer"
+
+        ],
+        "Hash Properties": [
+            "Door 2 State",
+            "Door 2 Timer",
+            "Bullet 1 State"
+        ],
+        "Rules": [
+            {
+                "Label": 1,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Samus HP Magnet",
+                        "Intensity": 0.01
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5688.0,
+                        "Y": 1980.0,
+                        "Intensity X": 0.2,
+                        "Intensity Y": 0.1
+                    },
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 1.0,
+                        "Offset": 1
+                    }
+                ]
+            },
+            {
+                "Label": 2,
+                "Conditions":
+                [
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 8
+                    }
+		        ],
+                "Satisfies": [ 1 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5832.0,
+                        "Y": 2239.0,
+                        "Intensity X": 0.1,
+                        "Intensity Y": 0.2
+                    }
+                ]
+	        },
+            {
+                "Label": 102,
+                "Conditions":
+                [
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 8
+                    },
+                    {
+                        "Property": "Samus Pos X",
+                        "Op": ">",
+                        "Value": 5764
+                    }
+		        ],
+                "Satisfies": [ 2 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5832.0,
+                        "Y": 2047.0,
+                        "Intensity X": 0.1,
+                        "Intensity Y": 0.2
+                    }
+                ]
+	        },
+            {
+                "Label": 3,
+                "Conditions":
+                [
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 8
+                    },
+                    {
+                        "Property": "Samus Pos Y1",
+                        "Op": ">",
+                        "Value": 120
+                    }
+	        	],
+                "Satisfies": [ 102 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5832.0,
+                        "Y": 1571.0,
+                        "Intensity X": 0.1,
+                        "Intensity Y": 0.2
+                    }
+                ]
+                },
+                {
+                    "Label": 4,
+                    "Conditions":
+                    [
+                        {
+                            "Property": "Screen Pos Y1",
+                            "Op": "==",
+                            "Value": 7
+                        },
+                        {
+                            "Property": "Screen Pos Y2",
+                            "Op": ">",
+                            "Value": 95
+                        },
+                        {
+                            "Property": "Screen Pos Y2",
+                            "Op": "<",
+                            "Value": 110
+                        },
+                        {
+                            "Property": "Samus Pos Y1",
+                            "Op": ">",
+                            "Value": 95
+                        },
+                        {
+                            "Property": "Samus Pos Y1",
+                            "Op": "<",
+                            "Value": 110
+                        }
+                    ],
+                    "Satisfies": [ 3 ],
+                    "Actions": [
+                        {
+                            "Type": "Add Reward",
+                            "Value": 1000.0
+                        }
+                     ]
+                },
+                {
+                    "Label": 5,
+                    "Conditions":
+                    [
+                        {
+                            "Property": "Screen Pos Y1",
+                            "Op": "==",
+                            "Value": 6
+                        },
+                        {
+                            "Property": "Screen Pos Y2",
+                            "Op": ">",
+                            "Value": 250
+                        },
+                        {
+                            "Property": "Samus Pos Y1",
+                            "Op": "<",
+                            "Value": -10
+                        }
+                    ],
+                    "Satisfies": [ 4 ],
+                    "Actions": [
+                        {
+                            "Type": "Add Reward",
+                            "Value": 1000.0
+                        }
+                     ]
+                },
+              {
+                "Label": 6,
+                "Conditions":
+                [
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Screen Pos Y2",
+                        "Op": ">",
+                        "Value": 250
+                    },
+                    {
+                        "Property": "Samus Pos Y1",
+                        "Op": "<",
+                        "Value": -10
+                    }
+                ],
+                "Satisfies": [ 4 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5704.0,
+                        "Y": 2400.0,
+                        "Intensity X": 0.1,
+                        "Intensity Y": 0.2
+                    }
+                ]
+                },
+                {
+                    "Label": 7,
+                    "Conditions":
+                    [
+                        {
+                            "Property": "Screen Pos Y1",
+                            "Op": "==",
+                            "Value": 8
+                        },
+                        {
+                            "Property": "Screen Pos Y2",
+                            "Op": ">",
+                            "Value": 250
+                        },
+                        {
+                            "Property": "Samus Pos Y1",
+                            "Op": "<",
+                            "Value": -10
+                        }
+                    ],
+                    "Satisfies": [ 6 ],
+                    "Actions": [
+                        {
+                            "Type": "Add Reward",
+                            "Value": 1000.0
+                        },
+                        {
+                            "Type": "Set Point Magnet",
+                            "X": 5704.0,
+                            "Y": 2414.0,
+                            "Intensity X": 0.1,
+                            "Intensity Y": 0.2
+                        }
+                     ]
+                },
+            {
+                "Label": 8,
+                "Conditions":
+                [
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 8
+                    },
+                    {
+                        "Property": "Screen Pos Y2",
+                        "Op": ">",
+                        "Value": 230
+                    },
+                    {
+                        "Property": "Samus Pos Y1",
+                        "Op": "<",
+                        "Value": -110
+                    }
+                ],
+                "Satisfies": [ 7 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5716.0,
+                        "Y": 2253.0,
+                        "Intensity X": 0.1,
+                        "Intensity Y": 0.2
+                    }
+                ]
+            },
+            {
+                "Label": 9,
+                "Conditions":
+                [
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 9
+                    }
+                ],
+                "Satisfies": [ 8 ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    },
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5667.0,
+                        "Y": 2645.0,
+                        "Intensity X": 0.1,
+                        "Intensity Y": 0.2
+                    }
+                ]
+            },
+            {
+                "Label": 1015,
+                "Conditions": [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 131
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": ">",
+                        "Value": 2400
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+
+                ]
+              },
+                {
+                "Label": 1990,
+                "Conditions": [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 131
+                    },
+                    {
+                        "Property": "Samus Pos Y",
+                        "Op": "<",
+                        "Value": 2400
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1991,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 75
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+
+                ]
+            },
+            {
+                "Label": 1950,
+                "Conditions": [
+                    {
+                        "Property": "Samus HP 1",
+                        "Op": "==",
+                        "Value": 153
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1952,
+                "Conditions": [
+                    {
+                        "Property": "Samus HP",
+                        "Op": "<",
+                        "Value": 9.99
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}
