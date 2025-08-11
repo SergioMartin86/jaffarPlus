@@ -1,0 +1,537 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 500,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 20000
+        },
+        "State Database": {
+            "Max Size (Mb)": 40000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
+        "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "test.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "Joypad",
+        "Nametable Block Size": 4096,
+        "SRAM Block Size": 3072,
+        "Disabled State Properties": [
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 500
+        },
+        "Allowed Input Sets": [ 
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|U.......|........|",
+                    "|..|.D......|........|",
+                    "|..|..L.....|........|",
+                    "|..|...R....|........|",
+                    "|..|.......A|........|",
+                    "|..|......B.|........|",
+                    "|..|UD......|........|",
+                    "|..|U.L.....|........|",
+                    "|..|U..R....|........|",
+                    "|..|U......A|........|",
+                    "|..|U.....B.|........|",
+                    "|..|.DL.....|........|",
+                    "|..|.D.R....|........|",
+                    "|..|.D.....A|........|",
+                    "|..|.D....B.|........|",
+                    "|..|..L....A|........|",
+                    "|..|..L...B.|........|",
+                    "|..|...R...A|........|",
+                    "|..|...R..B.|........|",
+                    "|..|UD.....A|........|",
+                    "|..|U.L....A|........|",
+                    "|..|U..R...A|........|",
+                    "|..|U.....BA|........|",
+                    "|..|.DL....A|........|",
+                    "|..|.D.R...A|........|",
+                    "|..|.D....BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|...R..BA|........|",
+                    "|..|UD....B.|........|",
+                    "|..|U.L...B.|........|",
+                    "|..|U..R..B.|........|",
+                    "|..|.DL...B.|........|",
+                    "|..|.D.R..B.|........|",
+                    "|..|......BA|........|",
+                    "|..|U.....BA|........|",
+                    "|..|UD.R....|........|",
+                    "|..|UDL.....|........|",
+                    "|..|..LR...A|........|",
+                    "|..|..LR..B.|........|",
+                    "|..|...R..BA|........|",
+                    "|..|..L...BA|........|",
+                    "|..|..LR....|........|",
+                    "|..|...RS..A|........|",
+                    "|..|..L.S..A|........|",
+                    "|..|...RS...|........|",
+                    "|..|..L.S...|........|",
+                    "|..|U..R..BA|........|",
+                    "|..|U.L...BA|........|",
+                    "|..|.....s.A|........|",
+                    "|..|...R.s.A|........|",
+                    "|..|..L..s.A|........|",
+                    "|..|U....s.A|........|",
+                    "|..|.D...s.A|........|",
+                    "|..|U..R.s..|........|",
+                    "|..|U..R.s.A|........|",
+                    "|..|U....s..|........|",
+                    "|..|...R.s..|........|",
+                    "|..|..L..s..|........|",
+                    "|..|.....s..|........|",
+                    "|..|....S...|........|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Metroid",
+        "Frame Rate": 60.1,
+        "Allow Fire": true,
+        "Allow Change Weapon": false,
+        "Trace File Path": "test.trace",
+        "Print Properties": [
+        "WRAM Value [0x17F9]",
+        "WRAM Value [0x17FA]",
+        "WRAM Value [0x17FB]",
+        "WRAM Value [0x17FC]",
+        "WRAM Value [0x17FD]"
+        ],
+        "Hash Properties": [
+        "Bullet 1 State"
+        ],
+        "Rules": [
+            {
+                "Label": 999,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.0,
+                        "X": -58,
+                        "Y": 0
+                    },
+                    {
+                        "Type": "Set Allow Change Weapon",
+                        "Value": false
+                    },
+                    {
+                        "Type": "Set Hash Bullet Enabled",
+                        "Value": true
+                    }
+                ]
+            },
+            {
+                "Label": 1000,
+                "Conditions":
+                [
+                    {
+                        "Property": "Enemy 5 State",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 100.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.0,
+                        "X": -53.0,
+                        "Y": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions":
+                [
+                    {
+                        "Property": "Enemy 5 HP",
+                        "Op": "==",
+                        "Value": 5
+                    }
+                 ],
+                "Satisfies": [  1000 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Enemy 5 HP Magnet",
+                        "Intensity": -50.0
+                    },
+                    {
+                        "Type": "Set Missile Count Magnet",
+                        "Intensity": -2.0
+                    }
+                ]
+            },
+            {
+                "Label": 1002,
+                "Conditions":
+                [
+                    {
+                        "Property": "Enemy 5 HP",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ 1001 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Enemy 5 HP Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Enemy 5 State Magnet",
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Set Missile Count Magnet",
+                        "Intensity": 10.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity X": 0.01,
+                        "Intensity Y": 0.0,
+                        "X": -85,
+                        "Y": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1102,
+                "Conditions":
+                [
+                    {
+                        "Property": "Missile Grab Status",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ 1002 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10.0
+                    }
+                ]
+            },
+            {
+                "Label": 1103,
+                "Conditions":
+                [
+                    {
+                        "Property": "Missile Count",
+                        "Op": ">",
+                        "Value": 70
+                    }
+                ],
+                "Satisfies": [ 1102 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.0,
+                        "X": -490,
+                        "Y": 0
+                    },
+                ]
+            },
+            {
+                "Label": 1203,
+                "Conditions":
+                [
+                    {
+                        "Property": "Missile Count",
+                        "Op": ">",
+                        "Value": 70
+                    },
+                    {
+                        "Property": "Samus Selected Weapon",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [ 1103 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 100.0
+                    }
+                ]
+            },
+            {
+                "Label": 1403,
+                "Conditions":
+                [
+                    {
+                        "Property": "Samus Rel Pos X",
+                        "Op": "<",
+                        "Value": -219.81
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 300.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity X"Intensity: 1.0,
+                        "Intensity Y": 1.0,
+                        "X": -678,
+                        "Y": -79.0
+                    },
+                    {
+                        "Type": "Set Hash Bullet Enabled",
+                        "Value": false
+		    }
+                ]
+            },
+            {
+                "Label": 1003,
+                "Conditions":
+                [
+                    {
+                        "Property": "Samus Rel Pos X",
+                        "Op": "<",
+                        "Value": -221.81
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 300.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 1.0,
+                        "X": -678,
+                        "Y": -79.0
+                    },
+                    {
+                        "Type": "Set Hash Bullet Enabled",
+                        "Value": false
+		    }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions":
+                [
+                    {
+                        "Property": "Samus Rel Pos X",
+                        "Op": "<",
+                        "Value": -273
+                    }
+                ],
+                "Satisfies": [ 1003 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 300.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.0,
+                        "X": -490,
+                        "Y": 0
+                    }
+                ]
+            },
+           {
+                "Label": 1006,
+                "Conditions": [
+                    {
+                        "Property": "Door 4 State",
+                        "Op": ">=",
+                        "Value": 3
+                    }
+                ],
+                "Satisfies": [ 1004   ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    }
+                ]
+            },
+            {
+                "Label": 1050,
+                "Conditions": [
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 130
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1950,
+                "Conditions": [
+                    {
+                        "Property": "Samus HP 1",
+                        "Op": "==",
+                        "Value": 153
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1951,
+                "Conditions": [
+                    {
+                        "Property": "Samus Rel Pos X",
+                        "Op": "<",
+                        "Value": -687
+                    },
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 73
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1952,
+                "Conditions": [
+                    {
+                        "Property": "Bullet 1 State",
+                        "Op": "==",
+                        "Value": 11
+                    },
+                    {
+                        "Property": "Bullet 1 Vel Y",
+                        "Op": "!=",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1953,
+                "Conditions": [
+                    {
+                        "Property": "Bullet 1 State",
+                        "Op": "==",
+                        "Value": 11
+                    },
+                    {
+                        "Property": "Bullet 1 Vel X",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1954,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 43
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

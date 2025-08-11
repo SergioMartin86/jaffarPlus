@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 400,
+        "Max Steps": 800,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 3000
+            "Max Size (Mb)": 10000
         }
     },
     "Emulator Configuration": {
@@ -25,7 +25,7 @@
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "test.initial.sol",
+        "Initial Sequence File Path": "direct.initial.sol",
         "Initial RAM Data File Path": "",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "Joypad",
@@ -45,7 +45,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 400
+            "Max Size": 1000
         },
         "Allowed Input Sets": [ 
             {
@@ -149,87 +149,14 @@
                 "Actions": [
                     {
                         "Type": "Set Point Magnet",
-                        "Intensity X": 0.2,
-                        "Intensity Y": 1.0,
-                        "X": 865,
-                        "Y": 2167
-                    },
-                    {
-                        "Type": "Set Missile Count Magnet",
-                        "Intensity": -1.0
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.1,
+                        "X": 2000,
+                        "Y": -500
                     },
                     {
                         "Type": "Set Door 1 Timer Magnet",
                         "Intensity": -10.0
-                    },
-                    {
-                        "Type": "Set Hash Bullet Enabled",
-                        "Value": false
-                    }
-                ]
-            },
-            {
-                "Label": 501,
-                "Conditions": [
-                    {
-                        "Property": "Samus Pos Y",
-                        "Op": ">",
-                        "Value": 1450
-                    }
-                ],
-                "Satisfies": [  ],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 50.0
-                    },
-                    {
-                        "Type": "Set Point Magnet",
-                        "Intensity X": 0.2,
-                        "Intensity Y": 1.0,
-                        "X": 893,
-                        "Y": 2167
-                    }
-                ]
-            },
-            {
-                "Label": 502,
-                "Conditions": [
-                    {
-                        "Property": "Samus Pos Y",
-                        "Op": ">",
-                        "Value": 1980
-                    }
-                ],
-                "Satisfies": [ 501 ],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 50.0
-                    },
-                    {
-                        "Type": "Set Point Magnet",
-                        "Intensity X": 0.2,
-                        "Intensity Y": 1.0,
-                        "X": 1005,
-                        "Y": 2167
-                    }
-                ]
-            },
-            {
-                "Label": 1200,
-                "Conditions": [
-                    {
-                        "Property": "Samus Pos Y",
-                        "Op": ">",
-                        "Value": 2055
-                    }
-                ],
-                "Satisfies": [ 502 ],
-                "Actions": [
-                    {
-                        "Type": "Set Hash Bullet Enabled",
-                        "Value": true
                     }
                 ]
             },
@@ -242,7 +169,7 @@
                         "Value": 3
                     }
                 ],
-                "Satisfies": [ 1200  ],
+                "Satisfies": [   ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -250,7 +177,6 @@
                     }
                 ]
             },
-
             {
                 "Label": 1050,
                 "Conditions": [
@@ -262,7 +188,7 @@
                     {
                         "Property": "Missile Count",
                         "Op": ">=",
-                        "Value": 59
+                        "Value": 53
                     }
                 ],
                 "Satisfies": [  ],
@@ -292,14 +218,9 @@
                 "Label": 1951,
                 "Conditions": [
                     {
-                        "Property": "Samus Pos Y",
+                        "Property": "Samus HP",
                         "Op": "<",
-                        "Value": 2055
-                    },
-                    {
-                        "Property": "Samus Selected Weapon",
-                        "Op": "==",
-                        "Value": 1
+                        "Value": 5.0
                     }
                 ],
                 "Satisfies": [  ],
@@ -309,7 +230,6 @@
                     }
                 ]
             }
-
         ]
     }
 }

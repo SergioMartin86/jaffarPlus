@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 1200,
+        "Max Steps": 500,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -17,12 +17,12 @@
             "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 10000
+            "Max Size (Mb)": 20000
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
-        "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
+        "Rom File Path": "../../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
         "Initial Sequence File Path": "test.initial.sol",
@@ -45,14 +45,13 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 1200
+            "Max Size": 500
         },
         "Allowed Input Sets": [ 
             {
                 "Conditions": [
                 ],
                 "Inputs": [
-                    "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
@@ -60,6 +59,7 @@
                 "Conditions": [
                 ],
                 "Inputs": [
+                    "|..|........|........|",
                     "|..|U.......|........|",
                     "|..|.D......|........|",
                     "|..|..L.....|........|",
@@ -119,7 +119,11 @@
                     "|..|...R.s..|........|",
                     "|..|..L..s..|........|",
                     "|..|.....s..|........|",
-                    "|..|....S...|........|"
+                    "|..|.....sB.|........|",
+                    "|..|....S...|........|",
+                    "|..|..L.S...|........|",
+                    "|..|....S..A|........|",
+                    "|..|....S.B.|........|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -132,93 +136,76 @@
         "Game Name": "NES / Metroid",
         "Frame Rate": 60.1,
         "Allow Fire": true,
-        "Allow Change Weapon": true,
+        "Allow Pause": false,
         "Trace File Path": "test.trace",
         "Print Properties": [
         ],
         "Hash Properties": [
-        "Door 1 Timer",
-        "Door 1 State",
-        "Bullet 1 State"
         ],
         "Rules": [
             {
-                "Label": 500,
+                "Label": 999,
                 "Conditions": [],
                 "Satisfies": [],
                 "Actions": [
                     {
-                        "Type": "Set Trace Magnet",
-                        "Intensity X": 0.0,
-                        "Intensity Y": 1.0,
-                        "Offset": 0
-                    },
-                    {
                         "Type": "Set Point Magnet",
                         "Intensity X": 1.0,
                         "Intensity Y": 0.0,
-                        "X": 1000,
+                        "X": -2000,
                         "Y": 0
                     },
                     {
-                        "Type": "Set Missile Count Magnet",
-                        "Intensity": 3.0
+                        "Type": "Set Allow Change Weapon",
+                        "Value": false
+                    },
+                    {
+                        "Type": "Set Hash Bullet Enabled",
+                        "Value": true
                     }
                 ]
             },
-            {
-                "Label": 1000,
-                "Conditions": [
-                    {
-                        "Property": "Screen Pos X1",
-                        "Op": "==",
-                        "Value": 9
-                    },
-                    {
-                        "Property": "Screen Pos X2",
-                        "Op": ">=",
-                        "Value": 140
-                    },
-                    {
-                        "Property": "Screen Scroll X2",
-                        "Op": ">=",
-                        "Value": 200
-                    }
-                ],
-                "Satisfies": [   ],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 1000.0
-                    },
-                    {
-                        "Type": "Set Missile Count Magnet",
-                        "Intensity": -1.0
-                    },
-                    {
-                        "Type": "Set Door 1 Timer Magnet",
-                        "Intensity": -10.0
-                    }
-                ]
-            },
-            {
+           {
                 "Label": 1001,
                 "Conditions": [
                     {
-                        "Property": "Door 1 State",
+                        "Property": "Door 4 State",
                         "Op": ">=",
                         "Value": 3
                     }
                 ],
-                "Satisfies": [  1000 ],
+                "Satisfies": [    ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
-                        "Value": 10000.0
+                        "Value": 100.0
+                    }
+                ]
+            },
+            {
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Door 4 State",
+                        "Op": ">=",
+                        "Value": 3
                     },
                     {
-                        "Type": "Set Missile Count Magnet",
-                        "Intensity": 3.0
+                        "Property": "Samus Animation",
+                        "Op": ">=",
+                        "Value": 19
+                    },
+                    {
+                        "Property": "Samus Animation",
+                        "Op": "<=",
+                        "Value": 26
+                    }
+                ],
+                "Satisfies": [  1001  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 100.0
                     }
                 ]
             },
@@ -228,12 +215,51 @@
                     {
                         "Property": "Samus Door State",
                         "Op": "==",
-                        "Value": 129
+                        "Value": 130
                     },
                     {
-                        "Property": "Missile Count",
+                        "Property": "Samus Animation",
                         "Op": ">=",
-                        "Value": 53
+                        "Value": 19
+                    },
+                    {
+                        "Property": "Samus Animation",
+                        "Op": "<=",
+                        "Value": 26
+                    },
+                    {
+                        "Property": "Samus Pos Y2",
+                        "Op": ">=",
+                        "Value": 118
+                    }
+                ],
+                "Satisfies": [  1002 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Door Transition Timer Reward",
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1051,
+                "Conditions": [
+                    {
+                        "Property": "Screen Pos X1",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Samus Door State",
+                        "Op": "==",
+                        "Value": 0
                     }
                 ],
                 "Satisfies": [  ],

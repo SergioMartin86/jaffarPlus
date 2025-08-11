@@ -132,14 +132,22 @@
         "Game Name": "NES / Metroid",
         "Frame Rate": 60.1,
         "Allow Fire": true,
-        "Allow Change Weapon": true,
+        "Allow Change Weapon": false,
         "Trace File Path": "test.trace",
         "Print Properties": [
+        "WRAM Value [0x17FA]",
+        "WRAM Value [0x17FB]",
+        "WRAM Value [0x17FC]",
+        "WRAM Value [0x17FD]"
         ],
         "Hash Properties": [
-        "Door 1 Timer",
-        "Door 1 State",
-        "Bullet 1 State"
+        "Door 2 Timer",
+        "Door 2 State",
+        "Bullet 1 State",
+        "WRAM Value [0x17FA]",
+        "WRAM Value [0x17FB]",
+        "WRAM Value [0x17FC]",
+        "WRAM Value [0x17FD]"
         ],
         "Rules": [
             {
@@ -149,20 +157,9 @@
                 "Actions": [
                     {
                         "Type": "Set Trace Magnet",
-                        "Intensity X": 0.0,
-                        "Intensity Y": 1.0,
-                        "Offset": 0
-                    },
-                    {
-                        "Type": "Set Point Magnet",
                         "Intensity X": 1.0,
-                        "Intensity Y": 0.0,
-                        "X": 1000,
-                        "Y": 0
-                    },
-                    {
-                        "Type": "Set Missile Count Magnet",
-                        "Intensity": 3.0
+                        "Intensity Y": 1.0,
+                        "Offset": 1
                     }
                 ]
             },
@@ -170,19 +167,9 @@
                 "Label": 1000,
                 "Conditions": [
                     {
-                        "Property": "Screen Pos X1",
-                        "Op": "==",
-                        "Value": 9
-                    },
-                    {
-                        "Property": "Screen Pos X2",
-                        "Op": ">=",
-                        "Value": 140
-                    },
-                    {
-                        "Property": "Screen Scroll X2",
-                        "Op": ">=",
-                        "Value": 200
+                        "Property": "Samus Rel Pos Y",
+                        "Op": ">",
+                        "Value": 980
                     }
                 ],
                 "Satisfies": [   ],
@@ -196,8 +183,11 @@
                         "Intensity": -1.0
                     },
                     {
-                        "Type": "Set Door 1 Timer Magnet",
+                        "Type": "Set Door 2 Timer Magnet",
                         "Intensity": -10.0
+                    },
+                    {
+                        "Type": "Trigger Win"
                     }
                 ]
             },
@@ -205,7 +195,7 @@
                 "Label": 1001,
                 "Conditions": [
                     {
-                        "Property": "Door 1 State",
+                        "Property": "Door 2 State",
                         "Op": ">=",
                         "Value": 3
                     }
@@ -228,12 +218,12 @@
                     {
                         "Property": "Samus Door State",
                         "Op": "==",
-                        "Value": 129
+                        "Value": 131
                     },
                     {
                         "Property": "Missile Count",
                         "Op": ">=",
-                        "Value": 53
+                        "Value": 48
                     }
                 ],
                 "Satisfies": [  ],
@@ -250,6 +240,43 @@
                         "Property": "Samus HP 1",
                         "Op": "==",
                         "Value": 153
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1951,
+                "Conditions": [
+                    {
+                        "Property": "Samus Rel Pos Y",
+                        "Op": "<",
+                        "Value": 980
+                    },
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 53
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1952,
+                "Conditions": [
+                    {
+                        "Property": "Samus HP 2",
+                        "Op": "<",
+                        "Value": 10
                     }
                 ],
                 "Satisfies": [  ],

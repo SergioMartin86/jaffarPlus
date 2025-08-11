@@ -22,8 +22,8 @@ public:
   Metroid(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     _allowFire = jaffarCommon::json::getBoolean(config, "Allow Fire");
-    _allowChangeWeapon = jaffarCommon::json::getBoolean(config, "Allow Change Weapon");
     _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
+    _allowPause = jaffarCommon::json::getBoolean(config, "Allow Pause");
 
     // Loading trace
     if (_traceFilePath != "")
@@ -61,7 +61,7 @@ private:
 
     // https://datacrystal.romhacking.net/wiki/Metroid:RAM_map
 
-    registerGameProperty("Pause Mode"               , &_lowMem[0x0000], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
+    registerGameProperty("Pause Mode"               , &_lowMem[0x0031], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Frame Counter"            , &_lowMem[0x002D], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
 
     registerGameProperty("NMI Flag"                 , &_lowMem[0x001A], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -120,7 +120,8 @@ private:
     registerGameProperty("Bullet 3 Vel X"           , &_lowMem[0x03F9], Property::datatype_t::dt_int8,  Property::endianness_t::little); 
     registerGameProperty("Bullet 1 Vel Y"           , &_lowMem[0x03D8], Property::datatype_t::dt_int8,  Property::endianness_t::little); 
     registerGameProperty("Bullet 2 Vel Y"           , &_lowMem[0x03E8], Property::datatype_t::dt_int8,  Property::endianness_t::little); 
-    registerGameProperty("Bullet 3 Vel Y"           , &_lowMem[0x03F8], Property::datatype_t::dt_int8,  Property::endianness_t::little); 
+    registerGameProperty("Bullet 3 Vel Y"           , &_lowMem[0x03F8], Property::datatype_t::dt_int8,  Property::endianness_t::little);
+    registerGameProperty("Bullet 1 Sprite"          , &_lowMem[0x03D6], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
     registerGameProperty("Upper Door State"         , &_lowMem[0x0380], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     registerGameProperty("Enemy 1 State"           , &_lowMem[0x0406], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -137,6 +138,13 @@ private:
     registerGameProperty("Enemy 5 Freeze Timer"     , &_lowMem[0x044D], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Enemy 6 Freeze Timer"     , &_lowMem[0x045D], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
+    registerGameProperty("Enemy 1 HP"               , &_lowMem[0x040B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 HP"               , &_lowMem[0x041B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 3 HP"               , &_lowMem[0x042B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 4 HP"               , &_lowMem[0x043B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 5 HP"               , &_lowMem[0x044B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 6 HP"               , &_lowMem[0x045B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+
     registerGameProperty("Enemy 1 Pos Y"           , &_lowMem[0x0400], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Enemy 1 Pos X"           , &_lowMem[0x0401], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Enemy 2 Pos Y"           , &_lowMem[0x0410], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -149,6 +157,15 @@ private:
     registerGameProperty("Enemy 5 Pos X"           , &_lowMem[0x0441], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Enemy 6 Pos Y"           , &_lowMem[0x0450], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Enemy 6 Pos X"           , &_lowMem[0x0451], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+
+    registerGameProperty("Boss Door 1 Hits"           , &_lowMem[0x075B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Boss Door 2 Hits"           , &_lowMem[0x0763], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Boss Door 3 Hits"           , &_lowMem[0x076B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Boss Door 4 Hits"           , &_lowMem[0x0773], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Boss Door 5 Hits"           , &_lowMem[0x077B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Boss Glass Hit"             , &_lowMem[0x0413], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Boss Hits"                  , &_lowMem[0x0099], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Boss Pain State"            , &_lowMem[0x009F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     registerGameProperty("Missile Grab Status"     , &_lowMem[0x0095], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     
@@ -225,6 +242,13 @@ private:
     _enemy5State              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 5 State"           )]->getPointer();
     _enemy6State              = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 6 State"           )]->getPointer();
 
+    _enemy1HP                  = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 1 HP"           )]->getPointer();
+    _enemy2HP                  = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 2 HP"           )]->getPointer();
+    _enemy3HP                  = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 3 HP"           )]->getPointer();
+    _enemy4HP                  = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 4 HP"           )]->getPointer();
+    _enemy5HP                  = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 5 HP"           )]->getPointer();
+    _enemy6HP                  = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 6 HP"           )]->getPointer();
+
     _enemy1FreezeTimer        = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 1 Freeze Timer"           )]->getPointer();
     _enemy2FreezeTimer        = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 2 Freeze Timer"           )]->getPointer();
     _enemy3FreezeTimer        = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 3 Freeze Timer"           )]->getPointer();
@@ -232,13 +256,25 @@ private:
     _enemy5FreezeTimer        = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 5 Freeze Timer"           )]->getPointer();
     _enemy6FreezeTimer        = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Enemy 6 Freeze Timer"           )]->getPointer();
 
+    _bossDoor1Hits       = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Boss Door 1 Hits"         )]->getPointer();
+    _bossDoor2Hits       = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Boss Door 2 Hits"         )]->getPointer();
+    _bossDoor3Hits       = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Boss Door 3 Hits"         )]->getPointer();
+    _bossDoor4Hits       = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Boss Door 4 Hits"         )]->getPointer();
+    _bossDoor5Hits       = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Boss Door 5 Hits"         )]->getPointer();
+    _bossGlassHit        = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Boss Glass Hit"           )]->getPointer();
+    _bossHits            = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Boss Hits"                )]->getPointer();
+    _bossPainState       = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Boss Pain State"          )]->getPointer();
+
     _missileGrabStatus         = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Missile Grab Status"      )]->getPointer();
 
     registerGameProperty("Samus Pos X"        , &_samusPosX,   Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Samus Pos Y"        , &_samusPosY,   Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Samus Rel Pos X"    , &_samusRelPosX,   Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Samus Rel Pos Y"    , &_samusRelPosY,   Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Lag Frame Counter"        , &_lagFrameCounter,   Property::datatype_t::dt_uint16, Property::endianness_t::little); 
     registerGameProperty("Pause Frame Counter"      , &_pauseFrameCounter, Property::datatype_t::dt_uint16, Property::endianness_t::little); 
     registerGameProperty("Prev Game Mode"      , &_prevGameMode, Property::datatype_t::dt_uint16, Property::endianness_t::little); 
+    registerGameProperty("Boss Pending Hits"      , &_bossPendingHits, Property::datatype_t::dt_float32, Property::endianness_t::little); 
     
 
     for (size_t i = 0; i < 0x800; i++)
@@ -260,6 +296,7 @@ private:
     _lastInputStep = 0;
 
     // Getting index for a non input
+    _input_S      = _emulator->registerInput("|..|....S...|........|");
     _nullInputIdx = _emulator->registerInput("|..|........|........|");
     _input_U      = _emulator->registerInput("|..|U.......|........|");
     _input_D      = _emulator->registerInput("|..|.D......|........|");
@@ -304,11 +341,14 @@ private:
     _input_LBA    = _emulator->registerInput("|..|..L...BA|........|");
     _input_LR     = _emulator->registerInput("|..|..LR....|........|");
     _input_ARS    = _emulator->registerInput("|..|...RS..A|........|");
+    _input_BS     = _emulator->registerInput("|..|....S.B.|........|");
+    _input_AS     = _emulator->registerInput("|..|....S..A|........|");
     _input_ALS    = _emulator->registerInput("|..|..L.S..A|........|");
     _input_RS     = _emulator->registerInput("|..|...RS...|........|");
     _input_LS     = _emulator->registerInput("|..|..L.S...|........|");
     _input_URBA   = _emulator->registerInput("|..|U..R..BA|........|");
     _input_ULBA   = _emulator->registerInput("|..|U.L...BA|........|");
+    _input_sB     = _emulator->registerInput("|..|.....sB.|........|");
     _input_sA     = _emulator->registerInput("|..|.....s.A|........|");
     _input_RsA    = _emulator->registerInput("|..|...R.s.A|........|");
     _input_LsA    = _emulator->registerInput("|..|..L..s.A|........|");
@@ -320,12 +360,13 @@ private:
     _input_Rs     = _emulator->registerInput("|..|...R.s..|........|");
     _input_Ls     = _emulator->registerInput("|..|..L..s..|........|");
     _input_s      = _emulator->registerInput("|..|.....s..|........|");
-    _input_S      = _emulator->registerInput("|..|....S...|........|");
 
     _lagFrameCounter     = 0;
     _pauseFrameCounter   = 0;
     _doorTransitionTimer = 0;
     _prevGameMode = *_gameMode;
+    _pauseModePrev = *_pauseMode;
+    _bossPendingHits = 255.0;
 
     _samusRelPosX = 0.0;
     _samusRelPosY = 0.0;
@@ -335,6 +376,7 @@ private:
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
+    _pauseModePrev = *_pauseMode;
     _prevGameMode = *_gameMode;
 
     auto samusPrevPosX = (float)*_samusPosX2 + (float)*_samusPosX3 / 256.0;
@@ -344,7 +386,7 @@ private:
     
     // count lag frames
     if (*_NMIFlag == 1) (_lagFrameCounter)++;
-    if (*_gameMode != 3) (_pauseFrameCounter)++;
+    if (*_pauseMode == 1) (_pauseFrameCounter)++;
     if (*_samusDoorState > 0) (_doorTransitionTimer)++;
 
     // Increasing counter if input is null
@@ -354,11 +396,10 @@ private:
     auto samusCurrPosX = (float)*_samusPosX2 + (float)*_samusPosX3 / 256.0;
     auto samusCurrPosY = (float)*_samusPosY2 + (float)*_samusPosY3 / 256.0;
 
-    if (samusPrevPosX > 240 && samusCurrPosX < 20) samusCurrPosX += 256.0;
-    if (samusPrevPosY > 240 && samusCurrPosY < 20) samusCurrPosX += 256.0;
-
-    if (samusCurrPosX > 240 && samusPrevPosX < 20) samusPrevPosX += 256.0;
-    if (samusCurrPosY > 240 && samusPrevPosY < 20) samusPrevPosX += 256.0;
+    if (samusPrevPosX > 200 && samusCurrPosX < 30) samusCurrPosX += 256.0;
+    if (samusPrevPosY > 200 && samusCurrPosY < 30) samusCurrPosY += 256.0;
+    if (samusCurrPosX > 200 && samusPrevPosX < 30) samusPrevPosX += 256.0;
+    if (samusCurrPosY > 200 && samusPrevPosY < 30) samusPrevPosY += 256.0;
 
     _samusRelPosX += samusCurrPosX - samusPrevPosX;
     _samusRelPosY += samusCurrPosY - samusPrevPosY;
@@ -374,14 +415,14 @@ private:
 
       hashEngine.Update(*_samusPosX1);
       hashEngine.Update(*_samusPosX2);
-      hashEngine.Update(*_samusPosX3);
+      // hashEngine.Update(*_samusPosX3);
 
       hashEngine.Update(*_screenPosX1);
       hashEngine.Update(*_screenPosX2);
 
       hashEngine.Update(*_samusPosY1);
       hashEngine.Update(*_samusPosY2);
-      hashEngine.Update(*_samusPosY3);
+      // hashEngine.Update(*_samusPosY3);
 
       hashEngine.Update(*_screenPosY1);
       hashEngine.Update(*_screenPosY2);
@@ -419,10 +460,10 @@ private:
       hashEngine.Update(*_bullet1State);
       // hashEngine.Update(*_bullet2State);
       // hashEngine.Update(*_bullet3State);
-      hashEngine.Update(*_bullet1PosX % 5);
+      hashEngine.Update(*_bullet1PosX);
       //hashEngine.Update(*_bullet2PosX);
       // hashEngine.Update(*_bullet3PosX);
-      hashEngine.Update(*_bullet1PosY % 5);
+      hashEngine.Update(*_bullet1PosY / 32);
       // hashEngine.Update(*_bullet2PosY);
       // hashEngine.Update(*_bullet3PosY);
     }
@@ -443,6 +484,16 @@ private:
       hashEngine.Update(_lowMem[0x0315]); // Buffered ACtion
       hashEngine.Update(_lowMem[0x030A]); // Hit By Enemy
       hashEngine.Update(_lowMem[0x0683]); // sound (transform into ball)
+
+      // Boss room
+      hashEngine.Update(*_bossDoor1Hits);
+      hashEngine.Update(*_bossDoor2Hits);
+      hashEngine.Update(*_bossDoor3Hits);
+      hashEngine.Update(*_bossDoor4Hits);
+      hashEngine.Update(*_bossDoor5Hits);
+      hashEngine.Update(*_bossGlassHit);
+      hashEngine.Update(*_bossHits);
+      hashEngine.Update(*_bossPainState);
 
       // hashEngine.Update(&_lowMem[0x0300], 0x20);
 
@@ -505,8 +556,25 @@ private:
       hashEngine.Update(*_enemy5FreezeTimer > 1);
       hashEngine.Update(*_enemy6FreezeTimer > 1);
 
+      // Metroid Capture
+      // hashEngine.Update(_srmMem[0x17F0] % 2);
+      // hashEngine.Update(_srmMem[0x17F1] % 2);
+      // hashEngine.Update(_srmMem[0x17F2] % 2);
+      // hashEngine.Update(_srmMem[0x17F3] % 2);
+      // hashEngine.Update(_srmMem[0x17F4] % 2);
+      // hashEngine.Update(_srmMem[0x17F5] % 2);
+      // hashEngine.Update(_srmMem[0x17F6] % 2);
+      // hashEngine.Update(_srmMem[0x17F7] % 2);
+      // hashEngine.Update(_srmMem[0x17F8] % 2);
+      // hashEngine.Update(_srmMem[0x17F9] % 2);
+      // hashEngine.Update(_srmMem[0x17FA] % 2);
+      // hashEngine.Update(_srmMem[0x17FB] % 2);
+      // hashEngine.Update(_srmMem[0x17FC] % 2);
+      // hashEngine.Update(_srmMem[0x17FD] % 2);
+      // hashEngine.Update(_srmMem[0x17FE] % 2);
+
       // Controller 1 AutoRepeat timer
-      hashEngine.Update(_lowMem[0x0018] % 2); 
+      // hashEngine.Update(_lowMem[0x0018] % 2); 
 
     //    hashEngine.Update(&_lowMem[0x0300], 0x0020);
     //    hashEngine.Update(&_lowMem[0x0314], 0x0010);
@@ -564,6 +632,16 @@ private:
 
     _bulletCount = (uint8_t)(*_bullet1State > 0) + (uint8_t)(*_bullet2State > 0) + (uint8_t)(*_bullet3State > 0);
     _samusHP = 10.0 * (float)*_samusHP1 + (float)*_samusHP2 / 16.0;
+
+    _bossPendingHits = 0.0;
+    _bossPendingHits += 8.0 - (float)*_bossDoor1Hits;
+    _bossPendingHits += 8.0 - (float)*_bossDoor2Hits;
+    _bossPendingHits += 8.0 - (float)*_bossDoor3Hits;
+    _bossPendingHits += 8.0 - (float)*_bossDoor4Hits;
+    _bossPendingHits += 8.0 - (float)*_bossDoor5Hits;
+    _bossPendingHits += *_bossGlassHit == 1 ? 1.0 : 0.0;
+    _bossPendingHits += 32.0 - (float)*_bossHits;
+    _bossPendingHits += (float)*_bossPainState / 18.0;
   }
 
   __INLINE__ void ruleUpdatePreHook() override 
@@ -585,9 +663,15 @@ private:
     _missileGrabStatusMagnet = 0.0;
     _door1TimerMagnet = 0.0;
     _door2TimerMagnet = 0.0;
+    _door4TimerMagnet = 0.0;
     _pauseFrameCounterMagnet = 0.0;
+    _enemy5HPMagnet = 0.0;
+    _enemy5StateMagnet = 0.0;
+    _bossPendingHitsMagnet = 0.0;
+    _bullet1PosXMagnet = 0.0;
 
     _hashBulletEnabled = true;
+    _allowChangeWeapon = true;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
@@ -595,7 +679,6 @@ private:
     // Updating distance to user-defined point
     _samusDistanceToPointX = std::abs(_pointMagnet.x - _samusRelPosX);
     _samusDistanceToPointY = std::abs(_pointMagnet.y - _samusRelPosY);
-    _samusDistanceToPoint  =  sqrtf(_samusDistanceToPointX * _samusDistanceToPointX + _samusDistanceToPointY * _samusDistanceToPointY);
 
     // Updating trace stuff
     if (_useTrace == true)
@@ -625,6 +708,8 @@ private:
     serializer.pushContiguous(&_hashBulletEnabled, sizeof(_hashBulletEnabled));
     serializer.pushContiguous(&_samusRelPosX, sizeof(_samusRelPosX));
     serializer.pushContiguous(&_samusRelPosY, sizeof(_samusRelPosY));
+    serializer.pushContiguous(&_bossPendingHits, sizeof(_bossPendingHits));
+    serializer.pushContiguous(&_pauseModePrev, sizeof(_pauseModePrev));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -638,6 +723,8 @@ private:
     deserializer.popContiguous(&_hashBulletEnabled, sizeof(_hashBulletEnabled));
     deserializer.popContiguous(&_samusRelPosX, sizeof(_samusRelPosX));
     deserializer.popContiguous(&_samusRelPosY, sizeof(_samusRelPosY));
+    deserializer.popContiguous(&_bossPendingHits, sizeof(_bossPendingHits));
+    deserializer.popContiguous(&_pauseModePrev, sizeof(_pauseModePrev));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -650,7 +737,7 @@ private:
     if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensityY * _traceDistanceY;
 
     // Evaluating lag frame counter reward
-    reward += _lagFrameCounterMagnet * ((float)_lagFrameCounter + (float)_pauseFrameCounter);
+    reward += _lagFrameCounterMagnet * (float)_lagFrameCounter;
 
     // Evaluating missile count
     reward += _missileCountMagnet * (float)*_missileCount;
@@ -674,8 +761,19 @@ private:
     // Rewarding hitting doors with missiles
     reward += _door1TimerMagnet * (float) *_door1Timer;
     reward += _door2TimerMagnet * (float) *_door2Timer;
+    reward += _door4TimerMagnet * (float) *_door4Timer;
+
+    // Rewarding enemy 5 hp
+    reward += _enemy5HPMagnet * (float) (*_enemy5HP == 255 ? 5 : *_enemy5HP);
+    reward += _enemy5StateMagnet * (float) *_enemy5State;
 
     reward += _pauseFrameCounterMagnet * (float) _pauseFrameCounter;
+
+    // Rewarding boss room hits
+    reward += _bossPendingHitsMagnet * (float) _bossPendingHits;
+
+    // Reward Bullet 1 Pos X
+    reward += _bullet1PosXMagnet * (float) *_bullet1PosX;
 
     // Returning reward
     return reward;
@@ -685,25 +783,35 @@ private:
   {
     if (*_samusDoorState != 0)
     {
-      allowedInputSet.insert(allowedInputSet.end(), { _input_S });
+      allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx });
+      if (_pauseModePrev == *_pauseMode) allowedInputSet.insert(allowedInputSet.end(), { _input_S });
       return;
     }
+
+    if (*_pauseMode == 1)
+    {
+      if (_pauseModePrev == *_pauseMode) allowedInputSet.insert(allowedInputSet.end(), { _input_S });
+      if (*_pauseMode == 1 && _pauseModePrev == 0) allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx });
+      return;
+    } 
 
     if (*_gameMode == 9)
     {
+      allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx });
       return;
     }
 
+    allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx });
     if (*_samusAnimation == 0x0001) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_AL, _input_AR, _input_UR, _input_UL });
     if (*_samusAnimation == 0x0002) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_AL, _input_AR, _input_Rs, _input_Ls, _input_UR, _input_UL });
     if (*_samusAnimation == 0x0003) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_AL, _input_AR, _input_Rs, _input_Ls, _input_UR, _input_UL });
     if (*_samusAnimation == 0x0005) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB });
     if (*_samusAnimation == 0x0007) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DB, _input_UD, _input_UL, _input_UR, _input_UB, _input_UA, _input_DA, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DBA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB, _input_UDB });
     if (*_samusAnimation == 0x0008) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DB, _input_UD, _input_UL, _input_UR, _input_UB, _input_UA, _input_DA, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DBA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB, _input_UDB, _input_LsA });
-    if (*_samusAnimation == 0x000A) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_U, _input_A, _input_L, _input_D, _input_UR, _input_UB, _input_UA, _input_UL, _input_DL, _input_DB, _input_LR, _input_UD, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_ULB, _input_ULA, _input_URB, _input_UDB, _input_URA, _input_UBA, _input_DLB, _input_DBA, _input_LRB, _input_LBA, _input_RBA });
+    if (*_samusAnimation == 0x000A) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_U, _input_A, _input_L, _input_D, _input_UR, _input_UB, _input_UA, _input_UL, _input_DL, _input_DB, _input_LR, _input_UD, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_ULB, _input_ULA, _input_URB, _input_UDB, _input_URA, _input_UBA, _input_DLB, _input_DBA, _input_LRB, _input_LBA, _input_RBA, _input_sB });
     if (*_samusAnimation == 0x000B) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_U, _input_L, _input_D, _input_A, _input_LR, _input_UL, _input_UR, _input_UB, _input_DL, _input_DB, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DBA, _input_RBA, _input_URB, _input_ULB, _input_URA, _input_ULA, _input_sA, _input_RsA, _input_LsA });
     if (*_samusAnimation == 0x000C) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_U, _input_A, _input_L, _input_UR, _input_UB, _input_DL, _input_DB, _input_UL, _input_LR, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_ULA, _input_URB, _input_URA, _input_ULB, _input_UBA, _input_DLA, _input_LRA, _input_LBA, _input_RBA });
-    if (*_samusAnimation == 0x000D) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_LR, _input_BL, _input_BA, _input_AL, _input_BR, _input_AR, _input_UDA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_RBA, _input_DLB, _input_DLA, _input_LBA, _input_LRB, _input_LRA, _input_URBA, _input_ULBA, _input_Us, _input_LsA, _input_Ls, _input_Rs });
+    if (*_samusAnimation == 0x000D) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_LR, _input_BL, _input_BA, _input_AL, _input_BR, _input_AR, _input_UDA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_RBA, _input_DLB, _input_DLA, _input_LBA, _input_LRB, _input_LRA, _input_URBA, _input_ULBA, _input_Us, _input_LsA, _input_Ls, _input_Rs, _input_s });
     if (*_samusAnimation == 0x000F) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_A, _input_D, _input_DA, _input_UL, _input_UR, _input_UB, _input_UA, _input_DB, _input_LR, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DLA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB, _input_UDA });
     if (*_samusAnimation == 0x0010) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_BL, _input_AL, _input_BR, _input_AR, _input_BA, _input_LBA, _input_DLA, _input_RBA, _input_UBA, _input_URA, _input_URB, _input_ULA, _input_ULB });
     if (*_samusAnimation == 0x0011) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_A, _input_L, _input_U, _input_Ls, _input_AL, _input_UR, _input_UL, _input_UA, _input_UB, _input_DB, _input_BL, _input_BR, _input_AR, _input_BA, _input_ULA, _input_ULB, _input_URB, _input_URA, _input_UBA, _input_LBA, _input_RBA, _input_URBA, _input_ULBA });
@@ -712,12 +820,12 @@ private:
     if (*_samusAnimation == 0x0014) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_U });
     if (*_samusAnimation == 0x0017) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_D, _input_U, _input_BR, _input_DR, _input_DL, _input_UD, _input_DRA, _input_DLA, _input_UDR, _input_UDL, _input_UL, _input_UR, _input_AL, _input_AR });
     if (*_samusAnimation == 0x0018) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_D, _input_U, _input_UDR, _input_UL, _input_UR, _input_AL, _input_AR });
-    if (*_samusAnimation == 0x0019) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_D, _input_U, _input_AR, _input_AL, _input_UL, _input_UR });
-    if (*_samusAnimation == 0x001A) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_U, _input_AR, _input_AL, _input_UL, _input_UR });
-    if (*_samusAnimation == 0x0020) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_D, _input_L, _input_R, _input_A, _input_BR, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_DB, _input_BA, _input_LR, _input_BL, _input_AL, _input_AR, _input_LRA, _input_DLA, _input_LBA, _input_UBA, _input_RBA, _input_URA, _input_URB, _input_ULA, _input_ULB });
-    if (*_samusAnimation == 0x0021) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DA, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_DB, _input_LR, _input_BA, _input_BL, _input_AL, _input_AR, _input_BR, _input_RBA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_LRB, _input_DLB, _input_DLA, _input_DBA, _input_LBA, _input_LRA, _input_URsA });
+    if (*_samusAnimation == 0x0019) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_D, _input_U, _input_AR, _input_AL, _input_UL, _input_UR, _input_Ls, _input_Rs });
+    if (*_samusAnimation == 0x001A) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_R, _input_L, _input_U, _input_AR, _input_AL, _input_UL, _input_UR, _input_Ls, _input_Rs });
+    if (*_samusAnimation == 0x0020) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_D, _input_L, _input_R, _input_A, _input_BR, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_DB, _input_BA, _input_LR, _input_BL, _input_AL, _input_AR, _input_LRA, _input_DLA, _input_LBA, _input_UBA, _input_RBA, _input_URA, _input_URB, _input_ULA, _input_ULB, _input_Ls, _input_Rs });
+    if (*_samusAnimation == 0x0021) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DA, _input_UL, _input_UR, _input_UB, _input_UA, _input_DL, _input_DB, _input_LR, _input_BA, _input_BL, _input_AL, _input_AR, _input_BR, _input_RBA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_LRB, _input_DLB, _input_DLA, _input_DBA, _input_LBA, _input_LRA, _input_URsA, _input_Ls, _input_Rs });
     if (*_samusAnimation == 0x0023) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_LR, _input_LRB, _input_DLB });
-    if (*_samusAnimation == 0x0024) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_AR, _input_AL });
+    if (*_samusAnimation == 0x0024) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_AR, _input_AL, _input_LR });
     if (*_samusAnimation == 0x0025) allowedInputSet.insert(allowedInputSet.end(), { _input_A, _input_B, _input_R, _input_L, _input_U, _input_UR, _input_UL });
     if (*_samusAnimation == 0x0027) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_UD, _input_BR, _input_DA, _input_BA, _input_BL, _input_AL, _input_AR, _input_UDB, _input_UDA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_DBA, _input_LBA, _input_RBA });
     if (*_samusAnimation == 0x0028) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_DB, _input_UL, _input_UR, _input_UB, _input_UA, _input_UD, _input_BR, _input_DA, _input_BA, _input_BL, _input_AL, _input_AR, _input_UDB, _input_UDA, _input_ULB, _input_ULA, _input_URB, _input_URA, _input_UBA, _input_DBA, _input_LBA, _input_RBA });
@@ -730,6 +838,11 @@ private:
     if (*_samusAnimation == 0x003C) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB, _input_UDL });
     if (*_samusAnimation == 0x003E) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_R, _input_L, _input_U, _input_BR, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB });
     if (*_samusAnimation == 0x0040) allowedInputSet.insert(allowedInputSet.end(), { _input_B, _input_U, _input_BL, _input_UA, _input_UB, _input_UR, _input_UL, _input_URB, _input_ULB });
+
+    if (_allowPause == true)
+    {
+     allowedInputSet.insert(allowedInputSet.end(), { _input_ALS, _input_LS, _input_S, _input_AS, _input_BS });
+    }
 
     if (_allowFire == false)
     {
@@ -792,10 +905,12 @@ private:
   {
     jaffarCommon::logger::log("[J+]  + Frame Counter:          %03u\n", *_frameCounter);
     jaffarCommon::logger::log("[J+]  + Game Mode:              %02u (Prev: %02u)\n", *_gameMode, _prevGameMode);
+    jaffarCommon::logger::log("[J+]  + Pause Mode:             %02u (Prev: %02u)\n", *_pauseMode, _pauseModePrev);
     jaffarCommon::logger::log("[J+]  + NMI Flag:               %02u (%03u, %03u)\n", *_NMIFlag, *_NMIData, *_NMIPALData);
     jaffarCommon::logger::log("[J+]  + Lag Frame Counter:      %05u\n", _lagFrameCounter);
     jaffarCommon::logger::log("[J+]  + Pause Frame Counter:    %05u\n", _pauseFrameCounter);
     jaffarCommon::logger::log("[J+]  + Hash Bullet Enabled:    %s\n", _hashBulletEnabled ? "True" : "False");
+    jaffarCommon::logger::log("[J+]  + Allow Change Weapon:    %s\n", _allowChangeWeapon ? "True" : "False");
 
     jaffarCommon::logger::log("[J+]  + Samus Rel Pos X:        %4.3f\n", _samusRelPosX);
     jaffarCommon::logger::log("[J+]  + Samus Rel Pos Y:        %4.3f\n", _samusRelPosY);
@@ -815,8 +930,14 @@ private:
     jaffarCommon::logger::log("[J+]  + Samus Jump State:       %03u\n", *_samusJumpState);
     jaffarCommon::logger::log("[J+]  + Enemy States:           [ %02u, %02u, %02u, %02u, %02u, %02u ]\n", *_enemy1State, *_enemy2State, *_enemy3State, *_enemy4State, *_enemy5State, *_enemy6State );
     jaffarCommon::logger::log("[J+]  + Enemy Freeze Timer:     [ %02u, %02u, %02u, %02u, %02u, %02u ]\n", *_enemy1FreezeTimer, *_enemy2FreezeTimer, *_enemy3FreezeTimer, *_enemy4FreezeTimer, *_enemy5FreezeTimer, *_enemy6FreezeTimer );
+    jaffarCommon::logger::log("[J+]  + Enemy HP:               [ %02u, %02u, %02u, %02u, %02u, %02u ]\n", *_enemy1HP, *_enemy2HP, *_enemy3HP, *_enemy4HP, *_enemy5HP, *_enemy6HP );
     jaffarCommon::logger::log("[J+]  + Door States:            [ %02u, %02u, %02u, %02u ]\n", *_door1State, *_door2State, *_door3State, *_door4State);
     jaffarCommon::logger::log("[J+]  + Door Timers:            [ %02u, %02u, %02u, %02u ]\n", *_door1Timer, *_door2Timer, *_door3Timer, *_door4Timer);
+    jaffarCommon::logger::log("[J+]  + Boss Door Hits:         [ %02u, %02u, %02u, %02u, %02u ]\n", *_bossDoor1Hits, *_bossDoor2Hits, *_bossDoor3Hits, *_bossDoor4Hits, *_bossDoor5Hits);
+    jaffarCommon::logger::log("[J+]  + Boss Glass Hit:         %02u\n", *_bossGlassHit);
+    jaffarCommon::logger::log("[J+]  + Boss Hits:              %02u\n", *_bossHits);
+    jaffarCommon::logger::log("[J+]  + Boss Pain State:        %02u\n", *_bossPainState);
+    jaffarCommon::logger::log("[J+]  + Boss Pending Hits:      %3.3f\n", _bossPendingHits);
     jaffarCommon::logger::log("[J+]  + Bullet Count:           %02u\n", _bulletCount);
     jaffarCommon::logger::log("[J+]  + Bullet States:          [ %02u, %02u, %02u ]\n", *_bullet1State, *_bullet2State, *_bullet3State);
     jaffarCommon::logger::log("[J+]  + Bullet Pos X:           [ %02u, %02u, %02u ]\n", *_bullet1PosX, *_bullet2PosX, *_bullet3PosX);
@@ -828,12 +949,20 @@ private:
     jaffarCommon::logger::log("[J+]  + Samus Missile Count:    %02u (Grab State: %02u)\n", *_missileCount, *_missileGrabStatus);
     jaffarCommon::logger::log("[J+]  + Samus HP:               %02f (%02u x 10 + %02u)\n", _samusHP, *_samusHP1, *_samusHP2);
 
-    if (std::abs(_pointMagnet.intensityX) > 0.0f || std::abs(_pointMagnet.intensityY) > 0.0f)
+    if (std::abs(_pointMagnet.intensityX) > 0.0f)
     {
-      jaffarCommon::logger::log("[J+]  + Point Magnet                            Intensity X: %3.3f/Y: %3.3f, Position X: %3.3f, Y: %3.3f\n", _pointMagnet.intensityX, _pointMagnet.intensityY, _pointMagnet.x, _pointMagnet.y);
-      jaffarCommon::logger::log("[J+]    + Distance X                            %3.3f\n", _samusDistanceToPointX);
-      jaffarCommon::logger::log("[J+]    + Distance Y                            %3.3f\n", _samusDistanceToPointY);
-      jaffarCommon::logger::log("[J+]    + Total Distance                        %3.3f\n", _samusDistanceToPoint);
+      jaffarCommon::logger::log("[J+]  + Point Magnet X                          \n");
+      jaffarCommon::logger::log("[J+]    + Intensity                             %3.3f\n", _pointMagnet.intensityX);
+      jaffarCommon::logger::log("[J+]    + Position                              %3.3f\n", _pointMagnet.x);
+      jaffarCommon::logger::log("[J+]    + Distance                              %3.3f\n", _samusDistanceToPointX);
+    }
+
+    if (std::abs(_pointMagnet.intensityY) > 0.0f)
+    {
+      jaffarCommon::logger::log("[J+]  + Point Magnet Y                          \n");
+      jaffarCommon::logger::log("[J+]    + Intensity                             %3.3f\n", _pointMagnet.intensityY);
+      jaffarCommon::logger::log("[J+]    + Position                              %3.3f\n", _pointMagnet.y);
+      jaffarCommon::logger::log("[J+]    + Distance                              %3.3f\n", _samusDistanceToPointY);
     }
 
     if (std::abs(_missileCountMagnet) > 0.0f)
@@ -860,12 +989,28 @@ private:
 
     if (std::abs(_door2TimerMagnet) > 0.0f)
       jaffarCommon::logger::log("[J+]  + Door 2 Timer Magnet                     Intensity: %.5f\n", _door2TimerMagnet);
+    
+    if (std::abs(_door2TimerMagnet) > 0.0f)
+      jaffarCommon::logger::log("[J+]  + Door 4 Timer Magnet                     Intensity: %.5f\n", _door2TimerMagnet);
+
+    if (std::abs(_enemy5HPMagnet) > 0.0f)
+      jaffarCommon::logger::log("[J+]  + Enemy 5 HP Magnet                       Intensity: %.5f\n", _enemy5HPMagnet);
+      
+    if (std::abs(_enemy5StateMagnet) > 0.0f)
+      jaffarCommon::logger::log("[J+]  + Enemy 5 State Magnet                    Intensity: %.5f\n", _enemy5StateMagnet);
       
     if (std::abs(_pauseFrameCounterMagnet) > 0.0f)
       jaffarCommon::logger::log("[J+]  + Pause Frame Counter Magnet              Intensity: %.5f\n", _pauseFrameCounterMagnet);
       
     if (std::abs(_lagFrameCounterMagnet) > 0.0f)
       jaffarCommon::logger::log("[J+]  + Lag Frame Count Magnet                  Intensity: %.5f\n", _lagFrameCounterMagnet);
+
+    if (std::abs(_bossPendingHitsMagnet) > 0.0f)
+      jaffarCommon::logger::log("[J+]  + Boss Pending Hits Manget                Intensity: %.5f\n", _bossPendingHitsMagnet);
+
+    if (std::abs(_bullet1PosXMagnet) > 0.0f)
+      jaffarCommon::logger::log("[J+]  + Bullet 1 Pos X                          Intensity: %.5f, Effect: %3.3f\n", _bullet1PosXMagnet, _bullet1PosXMagnet * (float) *_bullet1PosX);
+      
 
     if (_useTrace == true)
     {
@@ -945,6 +1090,27 @@ private:
       recognizedActionType = true;
     }
 
+    if (actionType == "Set Enemy 5 HP Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_enemy5HPMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Enemy 5 State Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_enemy5StateMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Bullet 1 Pos X Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_bullet1PosXMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
     if (actionType == "Set Door 1 Timer Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
@@ -952,13 +1118,20 @@ private:
       recognizedActionType = true;
     }
 
-
     if (actionType == "Set Door 2 Timer Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       rule.addAction([=, this]() { this->_door2TimerMagnet = intensity; });
       recognizedActionType = true;
     }
+
+    if (actionType == "Set Door 4 Timer Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_door4TimerMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
 
     if (actionType == "Set Pause Frame Counter Magnet")
     {
@@ -974,6 +1147,19 @@ private:
       recognizedActionType = true;
     }
 
+    if (actionType == "Set Allow Change Weapon")
+    {
+      auto value = jaffarCommon::json::getBoolean(actionJs, "Value");
+      rule.addAction([=, this]() { this->_allowChangeWeapon = value; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Boss Pending Hits Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_bossPendingHitsMagnet = intensity; });
+      recognizedActionType = true;
+    }
 
     return recognizedActionType;
   }
@@ -1034,7 +1220,6 @@ private:
 
   float _samusDistanceToPointX;
   float _samusDistanceToPointY;
-  float _samusDistanceToPoint;
 
   // Datatype to describe a magnet
   struct weaponMagnet_t {
@@ -1068,12 +1253,18 @@ private:
   float _missileGrabStatusMagnet;
   float _door1TimerMagnet;
   float _door2TimerMagnet;
+  float _door4TimerMagnet;
   float _pauseFrameCounterMagnet;
+  float _enemy5HPMagnet;
+  float _enemy5StateMagnet;
+  float _bossPendingHitsMagnet;
+  float _bullet1PosXMagnet;
 
   // Whether we use a trace
   bool _useTrace = false;
   bool _allowFire;
-  bool _allowChangeWeapon;
+  bool _allowPause;
+  bool _allowChangeWeapon = true;
   bool _hashBulletEnabled = true;
 
   // Location of the trace file
@@ -1142,6 +1333,7 @@ private:
   InputSet::inputIndex_t _input_UDL;
   InputSet::inputIndex_t _input_ARS ;
   InputSet::inputIndex_t _input_ALS ;
+  InputSet::inputIndex_t _input_AS ;
   InputSet::inputIndex_t _input_RS  ;
   InputSet::inputIndex_t _input_LS  ;
   InputSet::inputIndex_t _input_s;
@@ -1158,6 +1350,8 @@ private:
   InputSet::inputIndex_t _input_Rs   ;
   InputSet::inputIndex_t _input_Ls   ;
   InputSet::inputIndex_t _input_S;
+  InputSet::inputIndex_t _input_sB;
+  InputSet::inputIndex_t _input_BS;
 
   uint8_t* _pauseMode           ;
   uint8_t* _frameCounter        ;
@@ -1226,6 +1420,23 @@ private:
   uint8_t* _enemy5State        ;
   uint8_t* _enemy6State        ;
 
+  uint8_t* _enemy1HP        ;
+  uint8_t* _enemy2HP        ;
+  uint8_t* _enemy3HP        ;
+  uint8_t* _enemy4HP        ;
+  uint8_t* _enemy5HP        ;
+  uint8_t* _enemy6HP        ;
+
+  uint8_t* _bossDoor1Hits;
+  uint8_t* _bossDoor2Hits;
+  uint8_t* _bossDoor3Hits;
+  uint8_t* _bossDoor4Hits;
+  uint8_t* _bossDoor5Hits;
+  uint8_t* _bossGlassHit;
+  uint8_t* _bossHits;
+  uint8_t* _bossPainState;
+
+
   uint8_t* _enemy1FreezeTimer;
   uint8_t* _enemy2FreezeTimer;
   uint8_t* _enemy3FreezeTimer;
@@ -1244,6 +1455,8 @@ private:
   uint8_t _bulletCount;
   float _samusHP;
   uint8_t _prevGameMode;
+  float _bossPendingHits;
+  uint8_t _pauseModePrev;
 };
 
 

@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 1200,
+        "Max Steps": 800,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 10000
+            "Max Size (Mb)": 50000
         }
     },
     "Emulator Configuration": {
@@ -45,7 +45,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 1200
+            "Max Size": 800
         },
         "Allowed Input Sets": [ 
             {
@@ -149,51 +149,13 @@
                 "Actions": [
                     {
                         "Type": "Set Trace Magnet",
-                        "Intensity X": 0.0,
-                        "Intensity Y": 1.0,
-                        "Offset": 0
-                    },
-                    {
-                        "Type": "Set Point Magnet",
                         "Intensity X": 1.0,
-                        "Intensity Y": 0.0,
-                        "X": 1000,
-                        "Y": 0
+                        "Intensity Y": 0.5,
+                        "Offset": 1
                     },
                     {
                         "Type": "Set Missile Count Magnet",
                         "Intensity": 3.0
-                    }
-                ]
-            },
-            {
-                "Label": 1000,
-                "Conditions": [
-                    {
-                        "Property": "Screen Pos X1",
-                        "Op": "==",
-                        "Value": 9
-                    },
-                    {
-                        "Property": "Screen Pos X2",
-                        "Op": ">=",
-                        "Value": 140
-                    },
-                    {
-                        "Property": "Screen Scroll X2",
-                        "Op": ">=",
-                        "Value": 200
-                    }
-                ],
-                "Satisfies": [   ],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 1000.0
-                    },
-                    {
-                        "Type": "Set Missile Count Magnet",
-                        "Intensity": -1.0
                     },
                     {
                         "Type": "Set Door 1 Timer Magnet",
@@ -202,7 +164,7 @@
                 ]
             },
             {
-                "Label": 1001,
+                "Label": 1049,
                 "Conditions": [
                     {
                         "Property": "Door 1 State",
@@ -210,15 +172,11 @@
                         "Value": 3
                     }
                 ],
-                "Satisfies": [  1000 ],
+                "Satisfies": [   ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
                         "Value": 10000.0
-                    },
-                    {
-                        "Type": "Set Missile Count Magnet",
-                        "Intensity": 3.0
                     }
                 ]
             },
@@ -250,6 +208,22 @@
                         "Property": "Samus HP 1",
                         "Op": "==",
                         "Value": 153
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1951,
+                "Conditions": [
+                    {
+                        "Property": "Samus HP",
+                        "Op": "<",
+                        "Value": 5.0
                     }
                 ],
                 "Satisfies": [  ],
