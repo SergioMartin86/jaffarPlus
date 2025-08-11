@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 1200,
+        "Max Steps": 100,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -39,13 +39,13 @@
     },
     "Runner Configuration": {
         "Frameskip Rate": 0,
-        "Hash Step Tolerance": 0,
+        "Hash Step Tolerance": 2,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": false,
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 1200
+            "Max Size": 100
         },
         "Allowed Input Sets": [ 
             {
@@ -137,8 +137,8 @@
         "Print Properties": [
         ],
         "Hash Properties": [
-        "Door 1 Timer",
-        "Door 1 State",
+        "Door 2 Timer",
+        "Door 2 State",
         "Bullet 1 State"
         ],
         "Rules": [
@@ -149,54 +149,16 @@
                 "Actions": [
                     {
                         "Type": "Set Trace Magnet",
-                        "Intensity X": 0.0,
-                        "Intensity Y": 1.0,
-                        "Offset": 0
-                    },
-                    {
-                        "Type": "Set Point Magnet",
                         "Intensity X": 1.0,
-                        "Intensity Y": 0.0,
-                        "X": 1000,
-                        "Y": 0
-                    },
-                    {
-                        "Type": "Set Missile Count Magnet",
-                        "Intensity": 3.0
-                    }
-                ]
-            },
-            {
-                "Label": 1000,
-                "Conditions": [
-                    {
-                        "Property": "Screen Pos X1",
-                        "Op": "==",
-                        "Value": 9
-                    },
-                    {
-                        "Property": "Screen Pos X2",
-                        "Op": ">=",
-                        "Value": 140
-                    },
-                    {
-                        "Property": "Screen Scroll X2",
-                        "Op": ">=",
-                        "Value": 200
-                    }
-                ],
-                "Satisfies": [   ],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 1000.0
+                        "Intensity Y": 1.0,
+                        "Offset": 1
                     },
                     {
                         "Type": "Set Missile Count Magnet",
                         "Intensity": -1.0
                     },
                     {
-                        "Type": "Set Door 1 Timer Magnet",
+                        "Type": "Set Door 2 Timer Magnet",
                         "Intensity": -10.0
                     }
                 ]
@@ -205,12 +167,12 @@
                 "Label": 1001,
                 "Conditions": [
                     {
-                        "Property": "Door 1 State",
+                        "Property": "Door 2 State",
                         "Op": ">=",
                         "Value": 3
                     }
                 ],
-                "Satisfies": [  1000 ],
+                "Satisfies": [   ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -228,12 +190,7 @@
                     {
                         "Property": "Samus Door State",
                         "Op": "==",
-                        "Value": 129
-                    },
-                    {
-                        "Property": "Missile Count",
-                        "Op": ">=",
-                        "Value": 53
+                        "Value": 131
                     }
                 ],
                 "Satisfies": [  ],
@@ -250,6 +207,38 @@
                         "Property": "Samus HP 1",
                         "Op": "==",
                         "Value": 153
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1951,
+                "Conditions": [
+                    {
+                        "Property": "Missile Count",
+                        "Op": "<",
+                        "Value": 48
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1952,
+                "Conditions": [
+                    {
+                        "Property": "Samus HP 2",
+                        "Op": "<",
+                        "Value": 10
                     }
                 ],
                 "Satisfies": [  ],
