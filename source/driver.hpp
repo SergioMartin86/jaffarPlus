@@ -203,14 +203,15 @@ public:
 
     // Saving best solution and state
     std::string jobSuffix = std::string(".") + std::to_string(_jobId);
+    std::string stepSuffix = std::string(".") + std::to_string(_currentStep);
 
     // Saving files with standard name
     if (_saveIntermediateBestSolutionPath != "") jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath);
     if (_saveIntermediateBestStatePath != "")    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath);
 
-    // Saving files with a job suffix
-    if (_saveIntermediateBestSolutionPath != "") jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath + jobSuffix);
-    if (_saveIntermediateBestStatePath != "")    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath + jobSuffix);
+    // Saving files with a job suffix and step number
+    if (_saveIntermediateBestSolutionPath != "") jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath + jobSuffix + stepSuffix);
+    if (_saveIntermediateBestStatePath != "")    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath + jobSuffix + stepSuffix);
 
     // Making sure the main thread is not currently writing
     _updateIntermediateResultMutex.unlock();

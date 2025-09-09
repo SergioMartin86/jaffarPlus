@@ -15,6 +15,10 @@ namespace nes
 
 class PacManChampionship final : public jaffarPlus::Game
 {
+
+const uint8_t _mapBlockXCount = 47;
+const uint8_t _mapBlockYCount = 26;
+
 public:
   static __INLINE__ std::string getName() { return "NES / Pac-Man Championship"; }
 
@@ -42,6 +46,8 @@ private:
     registerGameProperty("Player Pos X1", &_lowMem[0x047B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Pos X2", &_lowMem[0x047C], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Pos Y2", &_lowMem[0x04FD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Block X", &_lowMem[0x04C9], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Block Y", &_lowMem[0x048E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Wall Skid", &_lowMem[0x04A3], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     registerGameProperty("Ghost Capture Timer 1", &_lowMem[0x0446], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -77,6 +83,8 @@ private:
     _playerPosX1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X1")]->getPointer();
     _playerPosX2  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X2")]->getPointer();
     _playerPosY2  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y2")]->getPointer();
+    _playerBlockX  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Block X")]->getPointer();
+    _playerBlockY  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Block Y")]->getPointer();
     _playerWallSkid  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Wall Skid")]->getPointer();
         
     _ghostCaptureTimer1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ghost Capture Timer 1")]->getPointer();
@@ -103,17 +111,67 @@ private:
     registerGameProperty("Score", &_score, Property::datatype_t::dt_uint32, Property::endianness_t::little);
     registerGameProperty("Player Pos X", &_playerPosX, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Player Pos Y", &_playerPosY, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Prev Pos X", &_playerPrevPosX, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Prev Pos Y", &_playerPrevPosY, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Prev Ghost Capture Timer 1", &_prevGhostCaptureTimer1, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     _input_U      = _emulator->registerInput("|..|U.......|");
     _input_D      = _emulator->registerInput("|..|.D......|");
     _input_L      = _emulator->registerInput("|..|..L.....|");
     _input_R      = _emulator->registerInput("|..|...R....|");
+
+    _mapTileMemPosUC = 0;
+    _mapTileMemPosDC = 0;
+    _mapTileMemPosCL = 0;
+    _mapTileMemPosCR = 0;
+    _mapTileBlockXUC  = 0;
+    _mapTileBlockXDC  = 0;
+    _mapTileBlockXCL  = 0;
+    _mapTileBlockXCR  = 0;
+    _mapTileBlockYUC  = 0;
+    _mapTileBlockYDC  = 0;
+    _mapTileBlockYCL  = 0;
+    _mapTileBlockYCR  = 0;
+    _mapTileTypeUC = 0;
+    _mapTileTypeDC = 0;
+    _mapTileTypeCL = 0;
+    _mapTileTypeCR = 0;
+
+   _mapTileMemPosUL  = 0;
+   _mapTileMemPosUR  = 0;
+   _mapTileMemPosDL  = 0;
+   _mapTileMemPosDR  = 0;
+   _mapTileBlockXUL  = 0;
+   _mapTileBlockXUR  = 0;
+   _mapTileBlockXDL  = 0;
+   _mapTileBlockXDR  = 0;
+   _mapTileBlockYUL  = 0;
+   _mapTileBlockYUR  = 0;
+   _mapTileBlockYDL  = 0;
+   _mapTileBlockYDR  = 0;
+   _mapTileTypeUL = 0;
+   _mapTileTypeUR = 0;
+   _mapTileTypeDL = 0;
+   _mapTileTypeDR = 0;
+
+   _playerPrevPosX = 0;
+   _playerPrevPosY = 0;
+
+    _currentStep = 0;
+    _prevGhostCaptureTimer1 = 0;
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
+    _playerPrevPosX = _playerPosX;
+    _playerPrevPosY = _playerPosY;
+    _prevGhostCaptureTimer1 = *_ghostCaptureTimer1;
+
     // Running emulator
     _emulator->advanceState(input);
+
+    _currentStep++;
   }
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
@@ -131,6 +189,8 @@ private:
     hashEngine.Update(*_playerPosX1   );
     hashEngine.Update(*_playerPosX2   );
     hashEngine.Update(*_playerPosY2   );
+    hashEngine.Update(*_playerBlockX   );
+    hashEngine.Update(*_playerBlockY   );
     hashEngine.Update(*_ghostCaptureTimer1);
     hashEngine.Update(*_ghostCaptureTimer2);
     hashEngine.Update(*_ghost1State);
@@ -154,6 +214,10 @@ private:
     hashEngine.Update(&_srmMem[0x0000], 0x0580); // The stage's situation (pebbles, walls)
   }
 
+  __INLINE__ uint8_t adjustMapBlockPosX(const uint8_t blockX, const int8_t offset) { uint16_t blockVal = ((uint16_t)_mapBlockXCount + (uint16_t)blockX + offset) % _mapBlockXCount; return (uint8_t) blockVal;}
+  __INLINE__ uint8_t adjustMapBlockPosY(const uint8_t blockY, const int8_t offset) { uint16_t blockVal = ((uint16_t)_mapBlockYCount + (uint16_t)blockY + offset) % _mapBlockYCount; return (uint8_t) blockVal;}
+  __INLINE__ uint16_t getMapMemPos(const uint8_t blockX, const uint8_t blockY) { return (uint16_t)blockY * (uint16_t)_mapBlockXCount + (uint16_t)blockX; }
+
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
    {
@@ -167,6 +231,46 @@ private:
 
     _playerPosX = (uint16_t)*_playerPosX1 + (uint16_t)*_playerPosX2;
     _playerPosY = (uint16_t)*_playerPosY2;
+
+    _mapTileBlockXUC = adjustMapBlockPosX(*_playerBlockX, 16 + 0);
+    _mapTileBlockXDC = adjustMapBlockPosX(*_playerBlockX, 16 + 0);
+    _mapTileBlockXCL = adjustMapBlockPosX(*_playerBlockX, 16 - 1);
+    _mapTileBlockXCR = adjustMapBlockPosX(*_playerBlockX, 16 + 1);
+    _mapTileBlockXCC = adjustMapBlockPosX(*_playerBlockX, 16 + 0);
+    _mapTileBlockXUL = adjustMapBlockPosX(*_playerBlockX, 16 - 1);
+    _mapTileBlockXUR = adjustMapBlockPosX(*_playerBlockX, 16 + 1);
+    _mapTileBlockXDL = adjustMapBlockPosX(*_playerBlockX, 16 - 1);
+    _mapTileBlockXDR = adjustMapBlockPosX(*_playerBlockX, 16 + 1);
+
+    _mapTileBlockYUC = adjustMapBlockPosY(*_playerBlockY, -1);
+    _mapTileBlockYDC = adjustMapBlockPosY(*_playerBlockY, +1);
+    _mapTileBlockYCL = adjustMapBlockPosY(*_playerBlockY, 0);
+    _mapTileBlockYCR = adjustMapBlockPosY(*_playerBlockY, 0);
+    _mapTileBlockYCC = adjustMapBlockPosY(*_playerBlockY, 0);
+    _mapTileBlockYUL = adjustMapBlockPosY(*_playerBlockY, -1);
+    _mapTileBlockYUR = adjustMapBlockPosY(*_playerBlockY, -1);
+    _mapTileBlockYDL = adjustMapBlockPosY(*_playerBlockY, +1);
+    _mapTileBlockYDR = adjustMapBlockPosY(*_playerBlockY, +1);
+
+    _mapTileMemPosUC = getMapMemPos(_mapTileBlockXUC, _mapTileBlockYUC);
+    _mapTileMemPosDC = getMapMemPos(_mapTileBlockXDC, _mapTileBlockYDC);
+    _mapTileMemPosCL = getMapMemPos(_mapTileBlockXCL, _mapTileBlockYCL);
+    _mapTileMemPosCR = getMapMemPos(_mapTileBlockXCR, _mapTileBlockYCR);
+    _mapTileMemPosUL = getMapMemPos(_mapTileBlockXUL, _mapTileBlockYUL);
+    _mapTileMemPosUR = getMapMemPos(_mapTileBlockXUR, _mapTileBlockYUR);
+    _mapTileMemPosDL = getMapMemPos(_mapTileBlockXDL, _mapTileBlockYDL);
+    _mapTileMemPosDR = getMapMemPos(_mapTileBlockXDR, _mapTileBlockYDR);
+    _mapTileMemPosCC = getMapMemPos(_mapTileBlockXCC, _mapTileBlockYCC);
+
+    _mapTileTypeUC = _srmMem[_mapTileMemPosUC];
+    _mapTileTypeDC = _srmMem[_mapTileMemPosDC];
+    _mapTileTypeCL = _srmMem[_mapTileMemPosCL];
+    _mapTileTypeCR = _srmMem[_mapTileMemPosCR];
+    _mapTileTypeUL = _srmMem[_mapTileMemPosUL];
+    _mapTileTypeUR = _srmMem[_mapTileMemPosUR];
+    _mapTileTypeDL = _srmMem[_mapTileMemPosDL];
+    _mapTileTypeDR = _srmMem[_mapTileMemPosDR];
+    _mapTileTypeCC = _srmMem[_mapTileMemPosCC];
    }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -179,16 +283,22 @@ private:
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
+    serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
     serializer.pushContiguous(&_score, sizeof(_score));
     serializer.pushContiguous(&_playerPosX, sizeof(_playerPosX));
     serializer.pushContiguous(&_playerPosY, sizeof(_playerPosY));
+    serializer.pushContiguous(&_playerPrevPosX, sizeof(_playerPrevPosX));
+    serializer.pushContiguous(&_playerPrevPosY, sizeof(_playerPrevPosY));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
+    deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
     deserializer.popContiguous(&_score, sizeof(_score));
     deserializer.popContiguous(&_playerPosX, sizeof(_playerPosX));
     deserializer.popContiguous(&_playerPosY, sizeof(_playerPosY));
+    deserializer.popContiguous(&_playerPrevPosX, sizeof(_playerPrevPosX));
+    deserializer.popContiguous(&_playerPrevPosY, sizeof(_playerPrevPosY));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -202,12 +312,28 @@ private:
 
   void printInfoImpl() const override
   {
+    jaffarCommon::logger::log("[J+]  + Current Step:            0x%04X\n", _currentStep);
+    jaffarCommon::logger::log("[J+]  + Ghost Capture Timer1:    0x%03X (Prev: 0x%03X)\n", *_ghostCaptureTimer1, _prevGhostCaptureTimer1);
+    jaffarCommon::logger::log("[J+]  + Player Pos X:            %05u (Prev: %05u)\n", _playerPosX, _playerPrevPosX);
+    jaffarCommon::logger::log("[J+]  + Player Pos Y:            %05u (Prev: %05u)\n", _playerPosY, _playerPrevPosY);
+
+    jaffarCommon::logger::log("[J+]  + Tile Mem:       0x%04X    0x%04X    0x%04X\n", _mapTileMemPosUL, _mapTileMemPosUC, _mapTileMemPosUR);
+    jaffarCommon::logger::log("[J+]  + Tile Mem:       0x%04X    0x%04X    0x%04X\n", _mapTileMemPosCL, _mapTileMemPosCC, _mapTileMemPosCR);
+    jaffarCommon::logger::log("[J+]  + Tile Mem:       0x%04X    0x%04X    0x%04X\n", _mapTileMemPosDL, _mapTileMemPosDC, _mapTileMemPosDR);
+    
+    jaffarCommon::logger::log("[J+]  + Tile Pos:      (%02u, %02u)     (%02u, %02u)     (%02u, %02u)\n", _mapTileBlockXUL, _mapTileBlockYUL, _mapTileBlockXUC, _mapTileBlockYUC, _mapTileBlockXUR, _mapTileBlockYUR);
+    jaffarCommon::logger::log("[J+]  + Tile Pos:      (%02u, %02u)     (%02u, %02u)     (%02u, %02u)\n", _mapTileBlockXCL, _mapTileBlockYCL, _mapTileBlockXCC, _mapTileBlockYCC, _mapTileBlockXCR, _mapTileBlockYCR);
+    jaffarCommon::logger::log("[J+]  + Tile Pos:      (%02u, %02u)     (%02u, %02u)     (%02u, %02u)\n", _mapTileBlockXDL, _mapTileBlockYDL, _mapTileBlockXDC, _mapTileBlockYDC, _mapTileBlockXDR, _mapTileBlockYDR);
+
+    jaffarCommon::logger::log("[J+]  + Tile Type:     %02u    %02u    %02u\n", _mapTileTypeUL, _mapTileTypeUC, _mapTileTypeUR);
+    jaffarCommon::logger::log("[J+]  + Tile Type:     %02u    %02u    %02u\n", _mapTileTypeCL, _mapTileTypeCC, _mapTileTypeCR);
+    jaffarCommon::logger::log("[J+]  + Tile Type:     %02u    %02u    %02u\n", _mapTileTypeDL, _mapTileTypeDC, _mapTileTypeDR);
   }
 
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
 
-      // If capturing a ghost, only option is to press the current directions
+      // If capturing a ghost, only option is to press the current direction
       if (*_ghostCaptureTimer1 > 0)
       {
           if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
@@ -217,37 +343,119 @@ private:
           return;
       }
 
+      /* Method 0
+      // Gauntlet
+      bool allowU = false;
+      bool allowD = false;
+      bool allowL = false;
+      bool allowR = false;
 
+      // Only change directions at specific coordinates
+      if (_mapTileTypeUC <= 3) allowU = true;
+      if (_mapTileTypeDC <= 3) allowD = true;
+      if (_mapTileTypeCL <= 3) allowL = true;
+      if (_mapTileTypeCR <= 3) allowR = true;
+
+      // Consider corners, when going up
+      if (*_playerDirection == 1)  if (_mapTileTypeUR <= 3) { allowR = true; }
+      if (*_playerDirection == 1)  if (_mapTileTypeUL <= 3) { allowL = true; }
+
+      // Consider corners, when going down
+      if (*_playerDirection == 2)  if (_mapTileTypeDR <= 3) { allowR = true; }
+      if (*_playerDirection == 2)  if (_mapTileTypeDL <= 3) { allowL = true; }
+
+      // Consider corners, when going left
+      if (*_playerDirection == 3)  if (_mapTileTypeUL <= 3) { allowU = true; }
+      if (*_playerDirection == 3)  if (_mapTileTypeDL <= 3) { allowD = true; }
+
+      // Consider corners, when going Right
+      if (*_playerDirection == 4)  if (_mapTileTypeUR <= 3) { allowU = true; }
+      if (*_playerDirection == 4)  if (_mapTileTypeDR <= 3) { allowD = true; }
+
+      // If we are already heading in that direction, allow to continue in any condition
+      if (*_playerDirection == 1) allowU = true; // Up
+      if (*_playerDirection == 2) allowD = true; // Down
+      if (*_playerDirection == 3) allowL = true; // Left
+      if (*_playerDirection == 4) allowR = true; // Right
+
+      // Adding the command
+      if (allowU == true) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
+      if (allowD == true) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
+      if (allowL == true) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
+      if (allowR == true) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+      */
+
+      /////// Method 1
+      // // Gauntlet
+      // bool allowU = true;
+      // bool allowD = true;
+      // bool allowL = true;
+      // bool allowR = true;
+
+      // // Only allow to turn on given coordinates
+      // if (_playerPosX % 4 > 0) allowU = false;
+      // if (_playerPosX % 4 > 0) allowD = false;
+      // if (_playerPosX % 4 > 0) allowL = false;
+      // if (_playerPosX % 4 > 0) allowR = false;
+      // if (_playerPosY % 4 > 0) allowU = false;
+      // if (_playerPosY % 4 > 0) allowD = false;
+      // if (_playerPosY % 4 > 0) allowL = false;
+      // if (_playerPosY % 4 > 0) allowR = false;
+
+      // // Only change directions at specific coordinates
+      // if (_mapTileTypeUC > 3) allowU = false;
+      // if (_mapTileTypeDC > 3) allowD = false;
+      // if (_mapTileTypeCL > 3) allowL = false;
+      // if (_mapTileTypeCR > 3) allowR = false;
+      
+      // // If we are already heading in that direction, allow to continue in any condition
+      // if (*_playerDirection == 1) allowU = true; // Up
+      // if (*_playerDirection == 2) allowD = true; // Down
+      // if (*_playerDirection == 3) allowL = true; // Left
+      // if (*_playerDirection == 4) allowR = true; // Right
+
+      // // Adding the command
+      // if (allowU == true) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
+      // if (allowD == true) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
+      // if (allowL == true) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
+      // if (allowR == true) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+
+      /////// Method 2
       allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_R, _input_U, _input_D});
       return;
 
-      // Up
-      if (*_playerDirection == 1)
-      {
-        allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_D});
-        if (_playerPosY % 8 == 5) allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_R});
-      }
+      /////// Method 3
+      // // Up
+      // if (*_playerDirection == 1)
+      // {
+      //   allowedInputSet.insert(allowedInputSet.end(), {_input_U });
+      //   if (_playerPosY % 6 == 0) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
+      //   if (_playerPosY % 6 == 0) allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_R});
+      // }
 
-      // Down
-      if (*_playerDirection == 2)
-      {
-        allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_D});
-        if (_playerPosY % 8 == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_R});
-      }
+      // // Down
+      // if (*_playerDirection == 2)
+      // {
+      //   allowedInputSet.insert(allowedInputSet.end(), {_input_D });
+      //   if (_playerPosY % 6 == 0) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
+      //   if (_playerPosY % 6 == 0) allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_R});
+      // }
 
-      // Left
-      if (*_playerDirection == 3)
-      {
-        allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_R});
-        if (_playerPosX % 8 == 3) allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_D});
-      }
+      // // Left
+      // if (*_playerDirection == 3)
+      // {
+      //   allowedInputSet.insert(allowedInputSet.end(), {_input_L });
+      //   if (_playerPosX % 6 == 0) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+      //   if (_playerPosX % 6 == 0) allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_D});
+      // }
 
-      // Right
-      if (*_playerDirection == 4)
-      {
-        allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_R});
-        if (_playerPosX % 8 == 4) allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_D});
-      }
+      // // Right
+      // if (*_playerDirection == 4)
+      // {
+      //   allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+      //   if (_playerPosX % 6 == 0) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
+      //   if (_playerPosX % 6 == 0) allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_D});
+      // }
   }
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
@@ -275,6 +483,8 @@ private:
   uint8_t*  _playerPosX1 ;
   uint8_t*  _playerPosX2 ;
   uint8_t*  _playerPosY2 ;
+  uint8_t*  _playerBlockX;
+  uint8_t*  _playerBlockY;
   uint8_t*  _playerWallSkid;
 
   uint8_t* _ghostCaptureTimer1;
@@ -301,15 +511,60 @@ private:
   uint32_t _score;
   uint16_t _playerPosX;
   uint16_t _playerPosY;
+  uint16_t _playerPrevPosX;
+  uint16_t _playerPrevPosY;
 
   // Pointer to emulator's low memory storage
   uint8_t* _lowMem;
   uint8_t* _srmMem;
 
-  InputSet::inputIndex_t _input_U  ;
-  InputSet::inputIndex_t _input_D  ;
-  InputSet::inputIndex_t _input_L  ;
-  InputSet::inputIndex_t _input_R  ;
+  uint16_t _mapTileMemPosUC ;
+  uint16_t _mapTileMemPosDC ;
+  uint16_t _mapTileMemPosCL ;
+  uint16_t _mapTileMemPosCR ;
+  uint16_t _mapTileMemPosUL ;
+  uint16_t _mapTileMemPosUR ;
+  uint16_t _mapTileMemPosDL ;
+  uint16_t _mapTileMemPosDR ;
+  uint16_t _mapTileMemPosCC ;
+
+  uint8_t _mapTileBlockXUC ;
+  uint8_t _mapTileBlockXDC ;
+  uint8_t _mapTileBlockXCL ;
+  uint8_t _mapTileBlockXCR ;
+  uint8_t _mapTileBlockXUL ;
+  uint8_t _mapTileBlockXUR ;
+  uint8_t _mapTileBlockXDL ;
+  uint8_t _mapTileBlockXDR ;
+  uint8_t _mapTileBlockXCC ;
+  
+  uint8_t _mapTileBlockYUC ;
+  uint8_t _mapTileBlockYDC ;
+  uint8_t _mapTileBlockYCL ;
+  uint8_t _mapTileBlockYCR ;
+  uint8_t _mapTileBlockYUL ;
+  uint8_t _mapTileBlockYUR ;
+  uint8_t _mapTileBlockYDL ;
+  uint8_t _mapTileBlockYDR ;
+  uint8_t _mapTileBlockYCC ;
+
+  uint8_t _mapTileTypeUC;
+  uint8_t _mapTileTypeDC;
+  uint8_t _mapTileTypeCL;
+  uint8_t _mapTileTypeCR;
+  uint8_t _mapTileTypeUL;
+  uint8_t _mapTileTypeUR;
+  uint8_t _mapTileTypeDL;
+  uint8_t _mapTileTypeDR;
+  uint8_t _mapTileTypeCC;
+
+  InputSet::inputIndex_t _input_U;
+  InputSet::inputIndex_t _input_D;
+  InputSet::inputIndex_t _input_L;
+  InputSet::inputIndex_t _input_R;
+
+  uint16_t _currentStep;
+  uint8_t _prevGhostCaptureTimer1;
 };
 
 } // namespace nes
