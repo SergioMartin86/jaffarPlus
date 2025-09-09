@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 500,
+        "Max Steps": 600,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -17,13 +17,14 @@
             "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 420000
+            "Max Size (Mb)": 50000
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
+        "Use Flat Code Map": false,
         "Initial State File Path": "",
         "Initial Sequence File Path": "test.initial.sol",
         "Initial RAM Data File Path": "",
@@ -45,7 +46,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 500
+            "Max Size": 600
         },
         "Allowed Input Sets": [ 
             {
@@ -102,10 +103,10 @@
                     "|..|...R..BA|........|",
                     "|..|..L...BA|........|",
                     "|..|..LR....|........|",
+                    "|..|..LRS...|........|",
                     "|..|...RS..A|........|",
                     "|..|..L.S..A|........|",
                     "|..|...RS...|........|",
-                    "|..|..L.S...|........|",
                     "|..|U..R..BA|........|",
                     "|..|U.L...BA|........|",
                     "|..|.....s.A|........|",
@@ -122,6 +123,7 @@
                     "|..|.....sB.|........|",
                     "|..|....S...|........|",
                     "|..|..L.S...|........|",
+                    "|..|..L.S.B.|........|",
                     "|..|....S..A|........|",
                     "|..|....S.B.|........|"
                 ],
@@ -136,91 +138,39 @@
         "Game Name": "NES / Metroid",
         "Frame Rate": 60.1,
         "Allow Fire": true,
-        "Allow Pause": true,
+        "Allow Pause": false,
         "Trace File Path": "test.trace",
         "Print Properties": [
-            "Bullet 1 Sprite"
+            "Bullet 1 Sprite",
+            "Boss Hits"
         ],
         "Hash Properties": [
+            "Enemy Apparitions Counter",
             "Bullet 1 Sprite",
+            "Bullet 1 Prev State",
+            "Bullet 1 State",
             "Bullet 2 State",
-            "Bullet 3 State" 
+            "Bullet 3 State",
+            "Enemy 1 Active"          ,
+            "Enemy 2 Active"          ,
+            "Enemy 3 Active"          ,
+            "Enemy 1 Shape"           ,
+            "Enemy 2 Shape"           ,
+            "Enemy 3 Shape"           
         ],
         "Rules": [
             {
-                "Label": 996,
-                "Conditions": [
-                ],
-                "Satisfies": [   ],
-                "Actions": [
-                    {
-                        "Type": "Set Point Magnet",
-                        "Intensity X": 1.0,
-                        "Intensity Y": 0.0,
-                        "X": -720,
-                        "Y": 0
-                    },
-                    {
-                        "Type": "Set Allow Change Weapon",
-                        "Value": false
-                    },
-                    {
-                        "Type": "Set Pause Frame Counter Magnet",
-                        "Intensity": -2.0
-                    },
-                    {
-                        "Type": "Set Lag Frame Counter Magnet",
-                        "Intensity": -2.0
-                    }
-                ]
-            },
-            {
-                "Label": 997,
-                "Conditions": [
-                    {
-                        "Property": "Samus Door State",
-                        "Op": "==",
-                        "Value": 130
-                    }
-                ],
-                "Satisfies": [ 996  ],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 10000.0
-                    },
-                    {
-                        "Type": "Set Door Transition Timer Reward",
-                        "Intensity": 1.0
-                    }
-                ]
-            },
-            {
                 "Label": 998,
                 "Conditions": [
-                    {
-                        "Property": "Screen Pos X1",
-                        "Op": "==",
-                        "Value": 4
-                    },
-                    {
-                        "Property": "Samus Door State",
-                        "Op": "==",
-                        "Value": 0
-                    }
                 ],
-                "Satisfies": [ 997 ],
+                "Satisfies": [  ],
                 "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 20000.0
-                    },
                     {
                         "Type": "Set Point Magnet",
                         "Intensity X": 1.0,
                         "Intensity Y": 1.0,
-                        "X": -720,
-                        "Y": 0
+                        "X": -7,
+                        "Y": -18
                     },
                     {
                         "Type": "Set Trace Magnet",
@@ -230,59 +180,15 @@
                     },
                     {
                         "Type": "Set Boss Pending Hits Magnet",
-                        "Intensity": -100.0
+                        "Intensity": -1000.0
                     },
                     {
                         "Type": "Set Missile Count Magnet",
-                        "Intensity": -50.0
+                        "Intensity": -30.00
                     },
                     {
                         "Type": "Set Bullet 1 Pos X Magnet",
-                        "Intensity": -0.15
-                    },
-                    {
-                        "Type": "Set Allow Change Weapon",
-                        "Value": true
-                    }
-                ]
-            },
-            {
-                "Label": 999,
-                "Conditions": [
-                    {
-                        "Property": "Boss Pending Hits",
-                        "Op": "<",
-                        "Value": 66
-                    },
-                    {
-                        "Property": "Samus Rel Pos X",
-                        "Op": "<",
-                        "Value": -140
-                    },
-                    {
-                        "Property": "Samus Jump State",
-                        "Op": "==",
-                        "Value": 0
-                    },
-                    {
-                        "Property": "Bullet 1 State",
-                        "Op": "==",
-                        "Value": 11
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 100.0
-                    },
-                    {
-                        "Type": "Trigger Checkpoint",
-						"Tolerance": 6
-                    },
-                    {
-                        "Type": "Trigger Save Solution",
-						"Path": "checkpoint01.sol"
+                        "Intensity": -1.00
                     }
                 ]
             },
@@ -291,8 +197,49 @@
                 "Conditions": [
                     {
                         "Property": "Boss Hits",
-                        "Op": ">=",
+                        "Op": "==",
                         "Value": 32
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000000.0
+                    },
+                    {
+                        "Type": "Set Boss Pain State Magnet",
+                        "Intensity": -100.00
+                    },
+                    {
+                        "Type": "Set Boss Pending Hits Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Missile Count Magnet",
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 1.0,
+                        "X": -700,
+                        "Y": -18
+                    }
+                ]
+            },
+            {
+                "Label": 1051,
+                "Conditions": [
+                    {
+                        "Property": "Boss Hits",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Boss Pain State",
+                        "Op": "==",
+                        "Value": 40
                     }
                 ],
                 "Satisfies": [  ],
@@ -427,9 +374,19 @@
                 "Label": 1996,
                 "Conditions": [
                     {
-                        "Property": "Samus Rel Pos Y",
+                        "Property": "Bullet 1 Prev State",
+                        "Op": "==",
+                        "Value": 11
+                    },
+                    {
+                        "Property": "Bullet 1 State",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Bullet 1 Pos X",
                         "Op": ">",
-                        "Value": 40
+                        "Value": 100
                     }
                 ],
                 "Satisfies": [ ],
@@ -440,17 +397,12 @@
                 ]
             },
             {
-                "Label": 1997,
+                "Label": 1998,
                 "Conditions": [
                     {
-                        "Property": "Screen Pos X1",
-                        "Op": "==",
-                        "Value": 5
-                    },
-                        {
-                        "Property": "Missile Count",
-                        "Op": "<",
-                        "Value": 73
+                        "Property": "Lag Frame Counter",
+                        "Op": ">",
+                        "Value": 0
                     }
                 ],
                 "Satisfies": [ ],
