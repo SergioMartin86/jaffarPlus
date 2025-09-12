@@ -157,6 +157,8 @@ private:
 
    _playerPrevPosX = 0;
    _playerPrevPosY = 0;
+   _isKeyFrame = true;
+   _prevScore = _score;
 
     _currentStep = 0;
     _prevGhostCaptureTimer1 = 0;
@@ -167,6 +169,7 @@ private:
     _playerPrevPosX = _playerPosX;
     _playerPrevPosY = _playerPosY;
     _prevGhostCaptureTimer1 = *_ghostCaptureTimer1;
+    _prevScore = _score;
 
     // Running emulator
     _emulator->advanceState(input);
@@ -229,6 +232,11 @@ private:
       (uint32_t)*_score100000 * 100000u +
       (uint32_t)*_score1000000 * 1000000u;
 
+    _isKeyFrame = false;
+    if (_prevScore != _score) _isKeyFrame = true;
+    if (*_ghostCaptureTimer1 == 1) _isKeyFrame = true;
+    // if (_currentStep % 32 == 0) _isKeyFrame = true;
+
     _playerPosX = (uint16_t)*_playerPosX1 + (uint16_t)*_playerPosX2;
     _playerPosY = (uint16_t)*_playerPosY2;
 
@@ -285,6 +293,8 @@ private:
   {
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
     serializer.pushContiguous(&_score, sizeof(_score));
+    serializer.pushContiguous(&_prevScore, sizeof(_prevScore));
+    serializer.pushContiguous(&_isKeyFrame, sizeof(_isKeyFrame));
     serializer.pushContiguous(&_playerPosX, sizeof(_playerPosX));
     serializer.pushContiguous(&_playerPosY, sizeof(_playerPosY));
     serializer.pushContiguous(&_playerPrevPosX, sizeof(_playerPrevPosX));
@@ -295,6 +305,8 @@ private:
   {
     deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
     deserializer.popContiguous(&_score, sizeof(_score));
+    deserializer.popContiguous(&_prevScore, sizeof(_prevScore));
+    deserializer.popContiguous(&_isKeyFrame, sizeof(_isKeyFrame));
     deserializer.popContiguous(&_playerPosX, sizeof(_playerPosX));
     deserializer.popContiguous(&_playerPosY, sizeof(_playerPosY));
     deserializer.popContiguous(&_playerPrevPosX, sizeof(_playerPrevPosX));
@@ -306,6 +318,9 @@ private:
     // Getting rewards from score
     float reward = (float) _score;
 
+    // Rewarding time passing after capturing a ghost
+    reward -= (float)*_ghostCaptureTimer2 * 0.001f;
+
     // Returning reward
     return reward;
   }
@@ -313,7 +328,10 @@ private:
   void printInfoImpl() const override
   {
     jaffarCommon::logger::log("[J+]  + Current Step:            0x%04X\n", _currentStep);
+    jaffarCommon::logger::log("[J+]  + Score:                   %lu (Prev: %lu)\n", _score, _prevScore);
+    jaffarCommon::logger::log("[J+]  + Is Key Frame:            %s\n", _isKeyFrame ? "True" : "False");
     jaffarCommon::logger::log("[J+]  + Ghost Capture Timer1:    0x%03X (Prev: 0x%03X)\n", *_ghostCaptureTimer1, _prevGhostCaptureTimer1);
+    jaffarCommon::logger::log("[J+]  + Ghost Capture Timer2:    0x%03X\n", *_ghostCaptureTimer2);
     jaffarCommon::logger::log("[J+]  + Player Pos X:            %05u (Prev: %05u)\n", _playerPosX, _playerPrevPosX);
     jaffarCommon::logger::log("[J+]  + Player Pos Y:            %05u (Prev: %05u)\n", _playerPosY, _playerPrevPosY);
 
@@ -334,7 +352,7 @@ private:
   {
 
       // If capturing a ghost, only option is to press the current direction
-      if (*_ghostCaptureTimer1 > 0)
+      if (*_ghostCaptureTimer1 > 1)
       {
           if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
           if (*_playerDirection == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
@@ -343,7 +361,6 @@ private:
           return;
       }
 
-      /* Method 0
       // Gauntlet
       bool allowU = false;
       bool allowD = false;
@@ -378,29 +395,30 @@ private:
       if (*_playerDirection == 3) allowL = true; // Left
       if (*_playerDirection == 4) allowR = true; // Right
 
+      // Only allow to 180 degree turns on key frames
+      if (*_playerDirection == 1 && _isKeyFrame == false) allowD = false;
+      if (*_playerDirection == 2 && _isKeyFrame == false) allowU = false;
+      if (*_playerDirection == 3 && _isKeyFrame == false) allowR = false;
+      if (*_playerDirection == 4 && _isKeyFrame == false) allowL = false;
+
       // Adding the command
       if (allowU == true) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
       if (allowD == true) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
       if (allowL == true) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
       if (allowR == true) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
-      */
 
       /////// Method 1
-      // // Gauntlet
+      // Gauntlet
       // bool allowU = true;
       // bool allowD = true;
       // bool allowL = true;
       // bool allowR = true;
 
-      // // Only allow to turn on given coordinates
-      // if (_playerPosX % 4 > 0) allowU = false;
-      // if (_playerPosX % 4 > 0) allowD = false;
-      // if (_playerPosX % 4 > 0) allowL = false;
-      // if (_playerPosX % 4 > 0) allowR = false;
-      // if (_playerPosY % 4 > 0) allowU = false;
-      // if (_playerPosY % 4 > 0) allowD = false;
-      // if (_playerPosY % 4 > 0) allowL = false;
-      // if (_playerPosY % 4 > 0) allowR = false;
+      // // Only allow to turn on key frames
+      // if (*_playerDirection == 1 && _isKeyFrame == false) allowD = false;
+      // if (*_playerDirection == 2 && _isKeyFrame == false) allowU = false;
+      // if (*_playerDirection == 3 && _isKeyFrame == false) allowR = false;
+      // if (*_playerDirection == 4 && _isKeyFrame == false) allowL = false;
 
       // // Only change directions at specific coordinates
       // if (_mapTileTypeUC > 3) allowU = false;
@@ -420,9 +438,29 @@ private:
       // if (allowL == true) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
       // if (allowR == true) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
 
+      /////// Method X
+
+      // // Up
+      // if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_L, _input_R});
+      // if (*_playerDirection == 1 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
+
+      // // Down
+      // if (*_playerDirection == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_D, _input_L, _input_R});
+      // if (*_playerDirection == 2 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
+
+      // // Left
+      // if (*_playerDirection == 3) allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_U, _input_D});
+      // if (*_playerDirection == 3 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+
+      // // Right
+      // if (*_playerDirection == 4) allowedInputSet.insert(allowedInputSet.end(), {_input_R, _input_U, _input_D});
+      // if (*_playerDirection == 4 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
+
+      // return;
+
       /////// Method 2
-      allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_R, _input_U, _input_D});
-      return;
+      // allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_R, _input_U, _input_D});
+      // return;
 
       /////// Method 3
       // // Up
@@ -509,6 +547,7 @@ private:
   uint8_t* _ghost4Direction;
 
   uint32_t _score;
+  uint32_t _prevScore;
   uint16_t _playerPosX;
   uint16_t _playerPosY;
   uint16_t _playerPrevPosX;
@@ -565,6 +604,7 @@ private:
 
   uint16_t _currentStep;
   uint8_t _prevGhostCaptureTimer1;
+  bool _isKeyFrame;
 };
 
 } // namespace nes
