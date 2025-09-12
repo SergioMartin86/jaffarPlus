@@ -14,10 +14,10 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 10000
+            "Max Size (Mb)": 50000
         }
     },
     "Emulator Configuration": {
@@ -31,7 +31,7 @@
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
         "Nametable Block Size": 4096,
-        "SRAM Block Size": 4128,
+        "SRAM Block Size": 1792,
         "Disabled State Properties": [
             "CHRR",
             "NTAB",
@@ -46,7 +46,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 20480
+            "Max Size": 18400
         },
         "Allowed Input Sets": [ 
             {
