@@ -37,6 +37,11 @@ static std::vector<std::vector<size_t>> _numaDistanceMatrix;
 static std::vector<std::vector<size_t>> _numaPreferenceMatrix;
 
 /**
+ * Delegate thread per numa domain
+ */
+static std::vector<ssize_t> _numaDelegateThreadId;
+
+/**
 * Thread local storage of preferred NUMA domain
 */
 static thread_local int _preferredNumaDomain;
@@ -106,7 +111,7 @@ __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
       for (const auto& entry : _localPreferenceMap)
       {
         const auto& localPreferenceGroup = entry.second;
-        for (ssize_t j = 0; j < localPreferenceGroup.size(); j++)
+        for (ssize_t j = 0; j < (ssize_t)localPreferenceGroup.size(); j++)
         {
           const size_t offset = (j + i) % localPreferenceGroup.size();
           _numaPreferenceMatrix[i].push_back(localPreferenceGroup[offset]);
@@ -124,13 +129,24 @@ __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
     //   printf("\n");
     // }
 
+    //// Setting one delegate thread per NUMA domain for administrative (allocation) purposes
+    // Initializing numa delegate thread storage
+    _numaDelegateThreadId.resize(_numaCount);
+    for (int i = 0; i < _numaCount; i++) _numaDelegateThreadId[i] = -1;
+
     // Detecting thread-specific NUMA information
+    std::mutex workMutex;
     JAFFAR_PARALLEL
     {
       // Getting thread information from the system
       _myThreadId          = sched_getcpu();
       _preferredNumaDomain = numa_node_of_cpu(_myThreadId);
       _preferredNumaGroup = _preferredNumaDomain / _numaDomainsPerGroup;
+
+      // Setting myself as numa delegate, if I'm the lowest cpu id in the numa domain
+      workMutex.lock();
+      if (_numaDelegateThreadId[_preferredNumaDomain] == -1) _numaDelegateThreadId[_preferredNumaDomain] = _myThreadId;
+      workMutex.unlock();
     }
 }
 
