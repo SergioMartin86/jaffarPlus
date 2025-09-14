@@ -70,6 +70,7 @@ private:
     registerGameProperty("Ghost 2 Direction", &_lowMem[0x03E8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Ghost 3 Direction", &_lowMem[0x03E9], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Ghost 4 Direction", &_lowMem[0x03EA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Bonus Multiplier", &_lowMem[0x0455], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
     _gameMode  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Mode")]->getPointer();
@@ -107,6 +108,7 @@ private:
     _ghost2Direction  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ghost 2 Direction")]->getPointer();
     _ghost3Direction  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ghost 3 Direction")]->getPointer();
     _ghost4Direction  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ghost 4 Direction")]->getPointer();
+    _bonusMultiplier  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Bonus Multiplier")]->getPointer();
 
     registerGameProperty("Score", &_score, Property::datatype_t::dt_uint32, Property::endianness_t::little);
     registerGameProperty("Player Pos X", &_playerPosX, Property::datatype_t::dt_uint16, Property::endianness_t::little);
@@ -115,6 +117,7 @@ private:
     registerGameProperty("Player Prev Pos Y", &_playerPrevPosY, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Prev Ghost Capture Timer 1", &_prevGhostCaptureTimer1, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Prev Bonus Multiplier", &_prevBonusMultiplier, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     _input_U      = _emulator->registerInput("|..|U.......|");
     _input_D      = _emulator->registerInput("|..|.D......|");
@@ -162,6 +165,7 @@ private:
 
     _currentStep = 0;
     _prevGhostCaptureTimer1 = 0;
+    _prevBonusMultiplier = *_bonusMultiplier;
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -170,6 +174,7 @@ private:
     _playerPrevPosY = _playerPosY;
     _prevGhostCaptureTimer1 = *_ghostCaptureTimer1;
     _prevScore = _score;
+    _prevBonusMultiplier = *_bonusMultiplier;
 
     // Running emulator
     _emulator->advanceState(input);
@@ -299,6 +304,7 @@ private:
     serializer.pushContiguous(&_playerPosY, sizeof(_playerPosY));
     serializer.pushContiguous(&_playerPrevPosX, sizeof(_playerPrevPosX));
     serializer.pushContiguous(&_playerPrevPosY, sizeof(_playerPrevPosY));
+    serializer.pushContiguous(&_prevBonusMultiplier, sizeof(_prevBonusMultiplier));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -311,6 +317,7 @@ private:
     deserializer.popContiguous(&_playerPosY, sizeof(_playerPosY));
     deserializer.popContiguous(&_playerPrevPosX, sizeof(_playerPrevPosX));
     deserializer.popContiguous(&_playerPrevPosY, sizeof(_playerPrevPosY));
+    deserializer.popContiguous(&_prevBonusMultiplier, sizeof(_prevBonusMultiplier));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -546,12 +553,15 @@ private:
   uint8_t* _ghost3Direction;
   uint8_t* _ghost4Direction;
 
+  uint8_t* _bonusMultiplier;
+
   uint32_t _score;
   uint32_t _prevScore;
   uint16_t _playerPosX;
   uint16_t _playerPosY;
   uint16_t _playerPrevPosX;
   uint16_t _playerPrevPosY;
+  uint8_t _prevBonusMultiplier;
 
   // Pointer to emulator's low memory storage
   uint8_t* _lowMem;
