@@ -355,25 +355,8 @@ public:
           // Extracting next state
           _numaNextStateQueues[_preferredNumaDomain]->unsafe_extract(stateItr);
 
-          // Get target NUMA domain for the state
-          int targetNumaIdx = getStateNumaDomain(statePtr);
-
-          // Pushing state in the NUMA domain that it belongs to.
-          // If not possible, at least to the closest one possible
-          bool success = false;
-          for (size_t i = 0; i < (size_t)_numaCount; i++)
-          {
-            const auto numaIdx = _numaPreferenceMatrix[targetNumaIdx][i];
-            if (_numaCurrentStateQueues[numaIdx]->wasSize() < _maxStatesPerNuma[numaIdx])
-            {
-             _numaCurrentStateQueues[numaIdx]->push_back(statePtr);
-             success = true;
-             break;
-            }
-
-            // Check for success
-            if (success == false) JAFFAR_THROW_RUNTIME("Failed on pushing new state. This must be a bug in Jaffar\n");
-          }
+          // Pushing state in the correct numa domain queue
+          _numaCurrentStateQueues[_preferredNumaDomain]->push_back_no_lock(statePtr);
         }
 
         // Now establishing worst state (the last of this numa queue is a candidate)
