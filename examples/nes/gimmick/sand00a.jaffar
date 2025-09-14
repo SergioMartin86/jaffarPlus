@@ -18,7 +18,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 10000
+            "Max Size (Mb)": 300000
         }
     },
     "Emulator Configuration": {
