@@ -1,0 +1,196 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "NUMA Domains Per Group": 2,
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 100000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickNES",
+        "Rom File Path": "Gimmick! (J).nes",
+        "Rom File SHA1": "835FEE060B15700163A1F8AD9716A163BF79C8FD",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "sand00a.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 1024,
+        "Serialize Only RAM": true,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip Rate": 0,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 1024
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                    {
+                        "Property": "Star 1 Status",
+                        "Op": ">=",
+                        "Value": 128
+                    },
+                    {
+                        "Property": "Star 1 Status",
+                        "Op": "<",
+                        "Value": 160
+                    }
+                ],
+                "Inputs": [
+                    "|..|......B.|",
+                    "|..|..L...B.|",
+                    "|..|...R..B.|",
+                    "|..|..L...BA|",
+                    "|..|...R..BA|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Star 1 Status",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|.......A|",
+                    "|..|..L....A|",
+                    "|..|...R...A|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|......B.|",
+                    "|..|.......A|",
+                    "|..|..L...B.|",
+                    "|..|..L....A|",
+                    "|..|...R..B.|",
+                    "|..|...R...A|",
+                    "|..|..L...BA|",
+                    "|..|...R..BA|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Gimmick!",
+        "Frame Rate": 60.1,
+        "Last Input Step Reward": 0.0,
+        "Trace File Path": "",
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 124.000
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 0.0,
+                        "Pos": 0.0
+                    },
+                    {
+                        "Type": "Set Star Use Magnet",
+                        "Intensity": 0.5
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Player Pos X",
+                        "Op": ">",
+                        "Value": 121
+                    }
+                ],
+                "Satisfies": [ 1000 ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Point X Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 125.000
+                    },
+                    {
+                        "Type": "Set Point Y Magnet",
+                        "Intensity": 2.0,
+                        "Pos": 43.594
+                    },
+                    {
+                        "Type": "Set Star Use Magnet",
+                        "Intensity": 0.0
+                    }
+                ]
+            },
+            {
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Current Checkpoint",
+                        "Op": ">",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ]
+    }
+}

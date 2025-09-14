@@ -1,28 +1,18 @@
 #pragma once
 
+#include "numa.hpp"
 #include <cstdlib>
 #include <jaffarCommon/concurrent.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/parallel.hpp>
 #include <memory>
-#include <numa.h>
 #include <utmpx.h>
 
 #define _JAFFAR_STATE_PADDING_BYTES 64
 
 namespace jaffarPlus
 {
-
-/**
- * Thread local storage of preferred NUMA domain
- */
-thread_local static int _preferredNumaDomain;
-
-/**
- * Thread local storage of my cpu id
- */
-thread_local static int _myThreadId;
 
 class StateDb
 {
@@ -34,7 +24,7 @@ public:
 
     ///////// Getting original state sizes from the runner
 
-    // Checking maximum db sizes per each numa
+    // Checking maximum db sizes per each numa group
     _maxSizeMb = jaffarCommon::json::getNumber<size_t>(config, "Max Size (Mb)");
 
     // Overriding if provided
@@ -55,13 +45,6 @@ public:
 
     // Padding is the difference between the aligned state size and the raw one
     _stateSizePadding = _stateSize - _stateSizeRaw;
-
-    // Checking whether the numa library calls are available
-    const auto numaAvailable = numa_available();
-    if (numaAvailable != 0) JAFFAR_THROW_RUNTIME("The system does not provide NUMA detection support.");
-
-    // Getting number of noma domains
-    _numaCount = numa_max_node() + 1;
 
     // Setting counters for database state popping
     _numaNonLocalDatabaseStateCount = 0;
@@ -129,13 +112,9 @@ public:
     // Determining the preferred numa domain for each thread. This depends on OpenMP using always the same set of threads.
     JAFFAR_PARALLEL
     {
-      _myThreadId          = sched_getcpu();
-      int node             = numa_node_of_cpu(_myThreadId);
-      _preferredNumaDomain = node;
-
       // Setting myself as numa delegate, if I'm the lowest cpu id in the numa domain
       _workMutex.lock();
-      if (_myThreadId < _numaDelegateThreadId[node]) _numaDelegateThreadId[node] = _myThreadId;
+      if (_myThreadId < _numaDelegateThreadId[_preferredNumaDomain]) _numaDelegateThreadId[_preferredNumaDomain] = _myThreadId;
       _workMutex.unlock();
     }
 
@@ -442,10 +421,6 @@ public:
   void* getWorstState() const { return _worstState; }
 
 private:
-  /**
-   * Number of numa domains
-   */
-  int _numaCount;
 
   void* _bestState  = nullptr;
   void* _worstState = nullptr;
