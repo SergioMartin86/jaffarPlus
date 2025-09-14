@@ -56,6 +56,7 @@ public:
     _numaLocalFreeStateCount    = 0;
     _numaFreeStateNotFoundCount = 0;
     _numaStealingFreeStateCount = 0;
+    _numaDistanceAccumulator = 0;
 
     // Splitting state database equally among numa domains
     size_t stateDbSizePerNUMA = std::ceil((_maxSizeMb * 1024 * 1024) / _numaCount);
@@ -203,8 +204,9 @@ public:
     jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
     jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
 
-    for (int i = 0; i < _numaCount; i++)
-      jaffarCommon::logger::log("[J+]  + NUMA Domain %d                  States: %lu (Max: %lu), Size: %.3f Mb (%.6f Gb)\n", i, _currentStatesPerNuma[i], _maxStatesPerNuma[i],
+    // Only print the first and the last
+    for (int i = 0; i < _numaCount; i++) if (i == 0 || i == _numaCount - 1)
+      jaffarCommon::logger::log("[J+]  + NUMA Domain %3d                States: %lu (Max: %lu), Size: %.3f Mb (%.6f Gb)\n", i, _currentStatesPerNuma[i], _maxStatesPerNuma[i],
                                 (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
 
     size_t totalDatabaseStatesRequested = _numaNonLocalDatabaseStateCount + _numaLocalDatabaseStateCount + _numaDatabaseStateNotFoundCount;
@@ -226,6 +228,11 @@ public:
                               100.0 * (double)_numaStealingFreeStateCount.load() / (double)totalFreeStatesRequested);
     jaffarCommon::logger::log("[J+]  + Numa No Free State Found Rate:                  %5.3f%%\n",
                               100.0 * (double)_numaFreeStateNotFoundCount.load() / (double)totalFreeStatesRequested);
+
+    size_t NUMAAccessCount = _numaNonLocalDatabaseStateCount + _numaLocalDatabaseStateCount + _numaNonLocalFreeStateCount + _numaLocalFreeStateCount + _numaStealingFreeStateCount;
+    jaffarCommon::logger::log("[J+]  + Average NUMA Distance:                          %lu / %lu = %5.3f\n", _numaDistanceAccumulator.load(), NUMAAccessCount,
+                              (double)_numaDistanceAccumulator.load() / (double)NUMAAccessCount);
+                              
   }
 
   __INLINE__ void* getFreeState()
@@ -234,42 +241,36 @@ public:
     void* stateSpace;
 
     // Trying to get free space for a new state
-    bool success = _freeStateQueues[_preferredNumaDomain]->try_pop(stateSpace);
-
-    // If successful, return the pointer immediately
-    if (success == true)
+    for (size_t i = 0; i < _numaCount; i++)
     {
-      _numaLocalFreeStateCount++;
-      return stateSpace;
+      const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
+      bool success = _freeStateQueues[numaIdx]->try_pop(stateSpace);
+
+      // If successful, return the pointer immediately
+      if (success == true)
+      {
+        _numaDistanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
+        if (numaIdx == _preferredNumaDomain) _numaLocalFreeStateCount++;
+        else _numaNonLocalFreeStateCount++;
+        return stateSpace;
+      }
     }
 
-    // Trying all other free state queues now
-    for (int i = 0; (size_t)i < _freeStateQueues.size(); i++)
-      if (i != _preferredNumaDomain)
-      {
-        // Trying to get free space for a new state
-        bool success = _freeStateQueues[i]->try_pop(stateSpace);
-
-        // If successful, return the pointer immediately
-        if (success == true)
-        {
-          _numaNonLocalFreeStateCount++;
-          return stateSpace;
-        }
-      }
-
     // If failed, then try to get it from the back of my numa-specific queues. Looking for the worst state possible
-    success = _numaCurrentStateQueues[_preferredNumaDomain]->pop_back_get(stateSpace);
 
-    // If failed, then try other numa domains
-    for (int i = 0; i < _numaCount && success == false; i++)
-      if (i != _preferredNumaDomain) success = _numaCurrentStateQueues[i]->pop_back_get(stateSpace);
-
-    // If successful, return the pointer immediately
-    if (success == true)
+    // Trying to get free space for a new state
+    for (size_t i = 0; i < _numaCount; i++)
     {
-      _numaStealingFreeStateCount++;
-      return stateSpace;
+      const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
+      bool success = _numaCurrentStateQueues[numaIdx]->pop_back_get(stateSpace);
+
+      // If successful, return the pointer immediately
+      if (success == true)
+      {
+        _numaDistanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
+        _numaStealingFreeStateCount++;
+        return stateSpace;
+      }
     }
 
     // Otherwise, return a null pointer. The state will be discarded
@@ -308,6 +309,9 @@ public:
    */
   __INLINE__ void advanceStep()
   {
+    // // Resetting NUMA distance accumulator
+    // _numaDistanceAccumulator = 0;
+
     // Calculation of best and worst states
     float bestStateReward  = std::numeric_limits<float>::lowest();
     float worstStateReward = std::numeric_limits<float>::max();
@@ -375,25 +379,21 @@ public:
     // Pointer to return
     void* statePtr;
 
-    // Check the numa's state queue first
-    bool success = _numaCurrentStateQueues[_preferredNumaDomain]->pop_front_get(statePtr);
-    if (success == true)
+    // Trying to next state
+    for (size_t i = 0; i < _numaCount; i++)
     {
-      _numaLocalDatabaseStateCount++;
-      return statePtr;
-    }
+      const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
+      bool success = _numaCurrentStateQueues[numaIdx]->pop_front_get(statePtr);
 
-    // If still no success, check the other numa queues
-    for (int i = 0; i < _numaCount; i++)
-      if (i != _preferredNumaDomain)
+      // If successful, return the pointer immediately
+      if (success == true)
       {
-        bool success = _numaCurrentStateQueues[i]->pop_front_get(statePtr);
-        if (success == true)
-        {
-          _numaNonLocalDatabaseStateCount++;
-          return statePtr;
-        }
+        _numaDistanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
+        if (numaIdx == _preferredNumaDomain) _numaLocalDatabaseStateCount++;
+        else _numaNonLocalDatabaseStateCount++;
+        return statePtr;
       }
+    }
 
     // If no success at all, just return a nullptr
     _numaDatabaseStateNotFoundCount++;
@@ -486,6 +486,11 @@ private:
    * Count of free states failed to be retrieved
    */
   std::atomic<size_t> _numaFreeStateNotFoundCount;
+
+  /**
+   * Accumulator for NUMA distance
+   */
+  std::atomic<size_t> _numaDistanceAccumulator;
 
   /**
    * User-provided maximum megabytes to use for the state database

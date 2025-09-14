@@ -27,6 +27,16 @@ static int _numaGroupCount;
 static int _threadCount;
 
 /**
+ * NUMA Distance Matrix
+ */
+static std::vector<std::vector<size_t>> _numaDistanceMatrix;
+
+/**
+ * NUMA Preference Matrix
+ */
+static std::vector<std::vector<size_t>> _numaPreferenceMatrix;
+
+/**
 * Thread local storage of preferred NUMA domain
 */
 static thread_local int _preferredNumaDomain;
@@ -46,6 +56,7 @@ static thread_local int _myThreadId;
 */
 __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
 {
+
     // Setting numa domains per group, if grouping is used
     _numaDomainsPerGroup = numaDomainsPerGroup;
 
@@ -67,6 +78,51 @@ __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
 
     // Getting number of threads
     _threadCount = jaffarCommon::parallel::getMaxThreadCount();
+
+    // Check NUMA distances
+    _numaDistanceMatrix.resize(_numaCount);
+    for(ssize_t i = 0; i < _numaCount; i++) _numaDistanceMatrix[i].resize(_numaCount);
+    for(ssize_t i = 0; i < _numaCount; i++) for(ssize_t j = 0; j < _numaCount; j++) _numaDistanceMatrix[i][j] = (size_t)numa_distance(i,j);
+
+    // printf("NUMA Distances:\n");
+    // for(ssize_t i = 0; i < _numaCount; i++)
+    // {
+    //   for(ssize_t j = 0; j < _numaCount; j++)
+    //   {
+    //     printf("%3lu ", _numaDistanceMatrix[i][j]);
+    //   }
+    //   printf("\n");
+    // }
+
+    // Establishing NUMA preference matrix
+    _numaPreferenceMatrix.resize(_numaCount);
+    for(ssize_t i = 0; i < _numaCount; i++)
+    {
+      // Putting NUMA domains in the same group based on distance
+      std::map<size_t, std::vector<int>> _localPreferenceMap;
+      for(ssize_t j = 0; j < _numaCount; j++) _localPreferenceMap[_numaDistanceMatrix[i][j]].push_back(j);
+
+      // Assigning NUMA domains based on local preference
+      for (const auto& entry : _localPreferenceMap)
+      {
+        const auto& localPreferenceGroup = entry.second;
+        for (ssize_t j = 0; j < localPreferenceGroup.size(); j++)
+        {
+          const size_t offset = (j + i) % localPreferenceGroup.size();
+          _numaPreferenceMatrix[i].push_back(localPreferenceGroup[offset]);
+        }  
+      }
+    }
+
+    // printf("NUMA Locality Preferences:\n");
+    // for(ssize_t i = 0; i < _numaCount; i++)
+    // {
+    //   for(ssize_t j = 0; j < _numaCount; j++)
+    //   {
+    //     printf("%3lu ", _numaPreferenceMatrix[i][j]);
+    //   }
+    //   printf("\n");
+    // }
 
     // Detecting thread-specific NUMA information
     JAFFAR_PARALLEL
