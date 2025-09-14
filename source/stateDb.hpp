@@ -379,7 +379,7 @@ public:
     bool success = _numaCurrentStateQueues[_preferredNumaDomain]->pop_front_get(statePtr);
     if (success == true)
     {
-      _numaLocalFreeStateCount++;
+      _numaLocalDatabaseStateCount++;
       return statePtr;
     }
 
