@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 50000
+            "Max Size (Mb)": 400000
         }
     },
     "Emulator Configuration": {
@@ -122,6 +122,22 @@
                         "Property": "Player Wall Skid",
                         "Op": ">",
                         "Value": 0
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 4,
+                "Conditions": [
+                    {
+                        "Property": "Bonus Multiplier",
+                        "Op": "<",
+                        "Value": "Prev Bonus Multiplier"
                     }
                 ],
                 "Satisfies": [  ],
