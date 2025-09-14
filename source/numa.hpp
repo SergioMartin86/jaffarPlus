@@ -1,0 +1,81 @@
+#pragma once
+
+#include <jaffarCommon/parallel.hpp>
+#include <numa.h>
+
+namespace jaffarPlus
+{
+
+/**
+* Number of NUMA domains detected
+*/
+static int _numaCount;
+
+/**
+* Number of NUMA domains per group
+*/
+static int _numaDomainsPerGroup;
+
+/**
+* Number of NUMA groups
+*/
+static int _numaGroupCount;
+
+/**
+ * Number of threads to use
+ */
+static int _threadCount;
+
+/**
+* Thread local storage of preferred NUMA domain
+*/
+static thread_local int _preferredNumaDomain;
+
+/**
+* Thread local storage of preferred NUMA Group
+*/
+static thread_local int _preferredNumaGroup;
+
+/**
+* Thread local storage of my cpu id
+*/
+static thread_local int _myThreadId;
+
+/*
+* Function to initialize NUMA / core affinity aspects
+*/
+__INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
+{
+    // Setting numa domains per group, if grouping is used
+    _numaDomainsPerGroup = numaDomainsPerGroup;
+
+    // Checking that NUMA grouping is correct
+    if (_numaCount % _numaDomainsPerGroup > 0) JAFFAR_THROW_RUNTIME("Hash DB grouping (%lu) does not divide the NUMA domain count exactly (%lu)\n", _numaDomainsPerGroup, _numaCount);
+
+    // Checking whether the numa library calls are available
+    const auto numaAvailable = numa_available();
+    if (numaAvailable != 0) JAFFAR_THROW_RUNTIME("The system does not provide NUMA detection support.");
+
+    // Getting number of noma domains
+    _numaCount = numa_max_node() + 1;
+    
+    // Setting number of NUMA groups
+    _numaGroupCount = _numaCount / _numaDomainsPerGroup;
+
+    // Overriding thread count, if requested
+    if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_THREAD_COUNT")) jaffarCommon::parallel::setThreadCount(std::stoul(value));
+
+    // Getting number of threads
+    _threadCount = jaffarCommon::parallel::getMaxThreadCount();
+
+    // Detecting thread-specific NUMA information
+    JAFFAR_PARALLEL
+    {
+      // Getting thread information from the system
+      _myThreadId          = sched_getcpu();
+      _preferredNumaDomain = numa_node_of_cpu(_myThreadId);
+      _preferredNumaGroup = _preferredNumaDomain / _numaDomainsPerGroup;
+    }
+}
+
+} // namespace jaffarPlus

@@ -35,6 +35,9 @@ public:
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
+    // Getting initial state file from the configuration
+    _serializeOnlyRAM = jaffarCommon::json::getBoolean(config, "Serialize Only RAM");
+
     // For testing purposes, the initial state file can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKNES_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
@@ -145,8 +148,17 @@ public:
   // State advancing function
   void advanceStateImpl(const jaffar::input_t& input) override { _quickNES->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override { _quickNES->serializeState(serializer); };
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override { _quickNES->deserializeState(deserializer); };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override
+  {
+    if (_serializeOnlyRAM) serializer.pushContiguous(_quickNES->getLowMem(), _quickNES->getLowMemSize());
+    else _quickNES->serializeState(serializer); 
+  };
+
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override
+  {
+    if (_serializeOnlyRAM) deserializer.popContiguous(_quickNES->getLowMem(), _quickNES->getLowMemSize());
+    else _quickNES->deserializeState(deserializer);
+  };
 
   __INLINE__ void printInfo() const override
   {
@@ -309,6 +321,7 @@ private:
     jaffarCommon::logger::log("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }
 
+  bool _serializeOnlyRAM;
   std::unique_ptr<NESInstance> _quickNES;
 
   size_t      _NTABBlockSize;

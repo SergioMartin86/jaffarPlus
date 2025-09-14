@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 30000
+            "Max Size (Mb)": 300000
         }
     },
     "Emulator Configuration": {
@@ -42,7 +42,7 @@
         "Frameskip Rate": 0,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": false,
-        "Show Allowed Inputs": true,
+        "Show Allowed Inputs": false,
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,

@@ -17,16 +17,18 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 1000
+            "Max Size (Mb)": 50000
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
-        "Rom File Path": "../../../extern/jaffarPlus/extern/quickerNES/tests/roms/Super Mario Bros. (JU) (PRG0) [!].nes",
+        "Rom File Path": "Super Mario Bros. (JU) (PRG0) [!].nes",
         "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
         "Initial Sequence File Path": "world101a.quickerNES.initial.sol",
         "Initial State File Path": "",
         "Initial RAM Data File Path": "",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 0,
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
         "Disabled State Properties": [

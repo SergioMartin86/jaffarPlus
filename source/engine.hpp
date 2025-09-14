@@ -4,6 +4,7 @@
 #include "hashDb.hpp"
 #include "runner.hpp"
 #include "stateDb.hpp"
+#include "numa.hpp"
 #include <algorithm>
 #include <emulatorList.hpp>
 #include <gameList.hpp>
@@ -24,11 +25,10 @@ public:
   // Base constructor
   Engine(const nlohmann::json& emulatorConfig, const nlohmann::json& gameConfig, const nlohmann::json& runnerConfig, const nlohmann::json& engineConfig)
   {
-    // Overriding thread count, if requested
-    if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_THREAD_COUNT")) jaffarCommon::parallel::setThreadCount(std::stoul(value));
+    const int numaDomainsPerGroup = jaffarCommon::json::getNumber<size_t>(engineConfig, "NUMA Domains Per Group");
 
-    // Getting number of threads
-    _threadCount = jaffarCommon::parallel::getMaxThreadCount();
+    // Initializing NUMA and threading subsystems
+    initializeNUMA(numaDomainsPerGroup);
 
     // Sanity check
     if (_threadCount == 0) JAFFAR_THROW_LOGIC("The number of worker threads must be at least one. Provided: %lu\n", _threadCount);
@@ -42,14 +42,11 @@ public:
     // Creating runners, one per thread
     JAFFAR_PARALLEL
     {
-      // Getting my thread id
-      int threadId = jaffarCommon::parallel::getThreadId();
-
       // Creating runner from the configuration
       auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
 
       // Storing runner
-      _runners[threadId] = std::move(r);
+      _runners[_myThreadId] = std::move(r);
     }
 
     // Grabbing a runner to do continue build the state databases
@@ -74,11 +71,8 @@ public:
     // Initializing runners, one per thread
     JAFFAR_PARALLEL
     {
-      // Getting my thread id
-      int threadId = jaffarCommon::parallel::getThreadId();
-
       // Creating thread's own runner
-      auto& r = _runners[threadId];
+      auto& r = _runners[_myThreadId];
 
       // Initializing runner
       r->initialize();
@@ -246,7 +240,7 @@ public:
     // Getting maximum thread step time
     _maxThreadStepTimeThreadId = 0;
     _maxThreadStepTime         = _threadStepTime[0];
-    for (size_t i = 0; i < _threadCount; i++)
+    for (ssize_t i = 0; i < _threadCount; i++)
       if (_threadStepTime[i] > _maxThreadStepTime)
       {
         _maxThreadStepTimeThreadId = i;
@@ -343,6 +337,7 @@ public:
   void printInfo()
   {
     // Printing information
+    jaffarCommon::logger::log("[J+] Thread Count / NUMA Domains / NUMA Groups:      %3d / %d / %d\n", _threadCount, _numaCount, _numaGroupCount);
     jaffarCommon::logger::log("[J+] Elapsed Time (Step/Total):                  %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_currentStepTime),
                               100.0 * ((double)(_subTotalAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_totalRunningTime),
                               100.0 * ((double)_subTotalAverageCumulativeTime) / (double)(_totalRunningTime));
@@ -758,11 +753,6 @@ private:
   size_t _checkpointLevel;
   size_t _checkpointTolerance;
   size_t _checkpointCutoff;
-
-  ///////////////// Configuration
-
-  // Thread count
-  size_t _threadCount;
 
   //////////////// Statistics
 
