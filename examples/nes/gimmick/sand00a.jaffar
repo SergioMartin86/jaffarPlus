@@ -18,7 +18,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 300000
+            "Max Size (Mb)": 50000
         }
     },
     "Emulator Configuration": {
@@ -116,7 +116,7 @@
         "Game Name": "NES / Gimmick!",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Trace File Path": "",
+        "Trace File Path": "sand00a.trace",
         "Print Properties": [
         ],
         "Hash Properties": [
@@ -130,7 +130,7 @@
                 "Actions": [
                     {
                         "Type": "Set Point X Magnet",
-                        "Intensity": 1.0,
+                        "Intensity": 0.0,
                         "Pos": 124.000
                     },
                     {
@@ -141,6 +141,12 @@
                     {
                         "Type": "Set Star Use Magnet",
                         "Intensity": 0.5
+                    },
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Player Intensity": 1.0,
+                        "Star Intensity": 1.0,
+                        "Offset": 1.000
                     }
                 ]
             },
@@ -161,12 +167,12 @@
                     },
                     {
                         "Type": "Set Point X Magnet",
-                        "Intensity": 1.0,
+                        "Intensity": 0.0,
                         "Pos": 125.000
                     },
                     {
                         "Type": "Set Point Y Magnet",
-                        "Intensity": 2.0,
+                        "Intensity": 0.0,
                         "Pos": 43.594
                     },
                     {
