@@ -35,6 +35,7 @@ private:
 
     // Registering native game properties
     registerGameProperty("Game Mode", &_lowMem[0x0033], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Lag Frame", &_lowMem[0x001E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Score x10", &_lowMem[0x0457], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Score x100", &_lowMem[0x0458], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Score x1000", &_lowMem[0x0459], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -71,9 +72,12 @@ private:
     registerGameProperty("Ghost 3 Direction", &_lowMem[0x03E9], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Ghost 4 Direction", &_lowMem[0x03EA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Bonus Multiplier", &_lowMem[0x0455], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Fruit 1 Status", &_lowMem[0x0481], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Fruit 2 Status", &_lowMem[0x0482], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
     _gameMode  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Mode")]->getPointer();
+    _lagFrame  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Lag Frame")]->getPointer();
     _score10  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score x10")]->getPointer();
     _score100  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score x100")]->getPointer();
     _score1000  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score x1000")]->getPointer();
@@ -109,6 +113,8 @@ private:
     _ghost3Direction  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ghost 3 Direction")]->getPointer();
     _ghost4Direction  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ghost 4 Direction")]->getPointer();
     _bonusMultiplier  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Bonus Multiplier")]->getPointer();
+    _fruit1Status  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Fruit 1 Status")]->getPointer();
+    _fruit2Status  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Fruit 2 Status")]->getPointer();
 
     registerGameProperty("Score", &_score, Property::datatype_t::dt_uint32, Property::endianness_t::little);
     registerGameProperty("Player Pos X", &_playerPosX, Property::datatype_t::dt_uint16, Property::endianness_t::little);
@@ -163,6 +169,13 @@ private:
    _isKeyFrame = true;
    _prevScore = _score;
 
+   _prevGhost1State = *_ghost1State;
+   _prevGhost2State = *_ghost2State;
+   _prevGhost3State = *_ghost3State;
+   _prevGhost4State = *_ghost4State;
+   _prevFruit1Status = *_fruit1Status;
+   _prevFruit2Status = *_fruit2Status;
+
     _currentStep = 0;
     _prevGhostCaptureTimer1 = 0;
     _prevBonusMultiplier = *_bonusMultiplier;
@@ -175,6 +188,12 @@ private:
     _prevGhostCaptureTimer1 = *_ghostCaptureTimer1;
     _prevScore = _score;
     _prevBonusMultiplier = *_bonusMultiplier;
+    _prevGhost1State = *_ghost1State;
+    _prevGhost2State = *_ghost2State;
+    _prevGhost3State = *_ghost3State;
+    _prevGhost4State = *_ghost4State;
+    _prevFruit1Status = *_fruit1Status;
+    _prevFruit2Status = *_fruit2Status;
 
     // Running emulator
     _emulator->advanceState(input);
@@ -219,7 +238,7 @@ private:
     hashEngine.Update(*_ghost4Direction);
     hashEngine.Update(*_playerWallSkid);
 
-    hashEngine.Update(&_srmMem[0x0000], 0x0580); // The stage's situation (pebbles, walls)
+    // hashEngine.Update(&_srmMem[0x0000], 0x0580); // The stage's situation (pebbles, walls)
   }
 
   __INLINE__ uint8_t adjustMapBlockPosX(const uint8_t blockX, const int8_t offset) { uint16_t blockVal = ((uint16_t)_mapBlockXCount + (uint16_t)blockX + offset) % _mapBlockXCount; return (uint8_t) blockVal;}
@@ -239,6 +258,12 @@ private:
 
     _isKeyFrame = false;
     if (_prevScore != _score) _isKeyFrame = true;
+    if (_prevGhost1State != *_ghost1State) _isKeyFrame = true;
+    if (_prevGhost2State != *_ghost2State) _isKeyFrame = true;
+    if (_prevGhost3State != *_ghost3State) _isKeyFrame = true;
+    if (_prevGhost4State != *_ghost4State) _isKeyFrame = true;
+    if (_prevFruit1Status != *_fruit1Status) _isKeyFrame = true;
+    if (_prevFruit2Status != *_fruit2Status) _isKeyFrame = true;
     if (*_ghostCaptureTimer1 == 1) _isKeyFrame = true;
     // if (_currentStep % 32 == 0) _isKeyFrame = true;
 
@@ -305,6 +330,12 @@ private:
     serializer.pushContiguous(&_playerPrevPosX, sizeof(_playerPrevPosX));
     serializer.pushContiguous(&_playerPrevPosY, sizeof(_playerPrevPosY));
     serializer.pushContiguous(&_prevBonusMultiplier, sizeof(_prevBonusMultiplier));
+    serializer.pushContiguous(&_prevGhost1State, sizeof(_prevGhost1State));
+    serializer.pushContiguous(&_prevGhost2State, sizeof(_prevGhost2State));
+    serializer.pushContiguous(&_prevGhost3State, sizeof(_prevGhost3State));
+    serializer.pushContiguous(&_prevGhost4State, sizeof(_prevGhost4State));
+    serializer.pushContiguous(&_prevFruit1Status, sizeof(_prevFruit1Status));
+    serializer.pushContiguous(&_prevFruit2Status, sizeof(_prevFruit2Status));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -318,6 +349,12 @@ private:
     deserializer.popContiguous(&_playerPrevPosX, sizeof(_playerPrevPosX));
     deserializer.popContiguous(&_playerPrevPosY, sizeof(_playerPrevPosY));
     deserializer.popContiguous(&_prevBonusMultiplier, sizeof(_prevBonusMultiplier));
+    deserializer.popContiguous(&_prevGhost1State, sizeof(_prevGhost1State));
+    deserializer.popContiguous(&_prevGhost2State, sizeof(_prevGhost2State));
+    deserializer.popContiguous(&_prevGhost3State, sizeof(_prevGhost3State));
+    deserializer.popContiguous(&_prevGhost4State, sizeof(_prevGhost4State));
+    deserializer.popContiguous(&_prevFruit1Status, sizeof(_prevFruit1Status));
+    deserializer.popContiguous(&_prevFruit2Status, sizeof(_prevFruit2Status));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -337,8 +374,13 @@ private:
     jaffarCommon::logger::log("[J+]  + Current Step:            0x%04X\n", _currentStep);
     jaffarCommon::logger::log("[J+]  + Score:                   %lu (Prev: %lu)\n", _score, _prevScore);
     jaffarCommon::logger::log("[J+]  + Is Key Frame:            %s\n", _isKeyFrame ? "True" : "False");
+    jaffarCommon::logger::log("[J+]  + Lag Frame:               %02u\n", _lagFrame);
     jaffarCommon::logger::log("[J+]  + Ghost Capture Timer1:    0x%03X (Prev: 0x%03X)\n", *_ghostCaptureTimer1, _prevGhostCaptureTimer1);
     jaffarCommon::logger::log("[J+]  + Ghost Capture Timer2:    0x%03X\n", *_ghostCaptureTimer2);
+    jaffarCommon::logger::log("[J+]  + Ghost States:            [ %02u %02u %02u %02u ]\n", *_ghost1State, *_ghost2State, *_ghost3State, *_ghost4State);
+    jaffarCommon::logger::log("[J+]  + Prev Ghost States:       [ %02u %02u %02u %02u ]\n", _prevGhost1State, _prevGhost2State, _prevGhost3State, _prevGhost4State);
+    jaffarCommon::logger::log("[J+]  + Fruit States:            [ %02u %02u ]\n", *_fruit1Status, *_fruit2Status);
+    jaffarCommon::logger::log("[J+]  + Prev Fruit States:       [ %02u %02u ]\n", _prevFruit1Status, _prevFruit2Status);
     jaffarCommon::logger::log("[J+]  + Player Pos X:            %05u (Prev: %05u)\n", _playerPosX, _playerPrevPosX);
     jaffarCommon::logger::log("[J+]  + Player Pos Y:            %05u (Prev: %05u)\n", _playerPosY, _playerPrevPosY);
 
@@ -517,6 +559,7 @@ private:
   }
 
   uint8_t*  _gameMode ;
+  uint8_t*  _lagFrame ;
   uint8_t*  _score10  ;
   uint8_t*  _score100 ;
   uint8_t*  _score1000 ;
@@ -554,6 +597,9 @@ private:
   uint8_t* _ghost4Direction;
 
   uint8_t* _bonusMultiplier;
+
+  uint8_t* _fruit1Status;
+  uint8_t* _fruit2Status;
 
   uint32_t _score;
   uint32_t _prevScore;
@@ -615,6 +661,14 @@ private:
   uint16_t _currentStep;
   uint8_t _prevGhostCaptureTimer1;
   bool _isKeyFrame;
+
+  uint8_t _prevGhost1State;
+  uint8_t _prevGhost2State;
+  uint8_t _prevGhost3State;
+  uint8_t _prevGhost4State;
+  uint8_t _prevFruit1Status;
+  uint8_t _prevFruit2Status;
+
 };
 
 } // namespace nes

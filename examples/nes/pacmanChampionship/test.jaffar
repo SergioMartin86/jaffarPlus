@@ -18,7 +18,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 100000
+            "Max Size (Mb)": 20000
         }
     },
     "Emulator Configuration": {
@@ -79,7 +79,8 @@
         "Print Properties": [
             "Player Direction",
             "Player Pos X",
-            "Player Pos Y"
+            "Player Pos Y",
+            "Bonus Multiplier"
         ],
         "Hash Properties": [
         ],
