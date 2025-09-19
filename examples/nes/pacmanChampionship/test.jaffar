@@ -1,6 +1,6 @@
 {
     "Driver Configuration": {
-        "End On First Win State": true,
+        "End On First Win State": false,
         "Max Steps": 18400,
         "Save Intermediate Results": {
             "Enabled": true,
@@ -12,13 +12,13 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 8,
+        "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 50000
         },
         "State Database": {
-            "Max Size (Mb)": 20000
+            "Max Size (Mb)": 40000
         }
     },
     "Emulator Configuration": {
@@ -124,22 +124,6 @@
                         "Property": "Player Wall Skid",
                         "Op": ">",
                         "Value": 0
-                    }
-                ],
-                "Satisfies": [  ],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
-                    }
-                ]
-            },
-            {
-                "Label": 4,
-                "Conditions": [
-                    {
-                        "Property": "Bonus Multiplier",
-                        "Op": "<",
-                        "Value": "Prev Bonus Multiplier"
                     }
                 ],
                 "Satisfies": [  ],
