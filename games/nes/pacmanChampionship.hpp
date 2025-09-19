@@ -72,6 +72,7 @@ private:
     registerGameProperty("Ghost 3 Direction", &_lowMem[0x03E9], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Ghost 4 Direction", &_lowMem[0x03EA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Bonus Multiplier", &_lowMem[0x0455], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Bonus Multiplier Timer", &_lowMem[0x04B3], Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Fruit 1 Status", &_lowMem[0x0481], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Fruit 2 Status", &_lowMem[0x0482], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
@@ -113,6 +114,7 @@ private:
     _ghost3Direction  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ghost 3 Direction")]->getPointer();
     _ghost4Direction  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Ghost 4 Direction")]->getPointer();
     _bonusMultiplier  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Bonus Multiplier")]->getPointer();
+    _bonusMultiplierTimer  = (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Bonus Multiplier Timer")]->getPointer();
     _fruit1Status  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Fruit 1 Status")]->getPointer();
     _fruit2Status  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Fruit 2 Status")]->getPointer();
 
@@ -265,7 +267,7 @@ private:
     if (_prevFruit1Status != *_fruit1Status) _isKeyFrame = true;
     if (_prevFruit2Status != *_fruit2Status) _isKeyFrame = true;
     if (*_ghostCaptureTimer1 == 1) _isKeyFrame = true;
-    // if (_currentStep % 32 == 0) _isKeyFrame = true;
+    if (_currentStep % 8 == 0) _isKeyFrame = true;
 
     _playerPosX = (uint16_t)*_playerPosX1 + (uint16_t)*_playerPosX2;
     _playerPosY = (uint16_t)*_playerPosY2;
@@ -365,6 +367,14 @@ private:
     // Rewarding time passing after capturing a ghost
     reward -= (float)*_ghostCaptureTimer2 * 0.001f;
 
+    // Punishing time remaining for score
+    // if (*_bonusMultiplierTimer > 0) 
+    // {
+    //   const float multiplier = 50.0f;
+    //   const float maxTime = 600.0f;
+    //   reward += multiplier * (float)*_bonusMultiplierTimer;
+    // }
+
     // Returning reward
     return reward;
   }
@@ -375,6 +385,7 @@ private:
     jaffarCommon::logger::log("[J+]  + Score:                   %lu (Prev: %lu)\n", _score, _prevScore);
     jaffarCommon::logger::log("[J+]  + Is Key Frame:            %s\n", _isKeyFrame ? "True" : "False");
     jaffarCommon::logger::log("[J+]  + Lag Frame:               %02u\n", _lagFrame);
+    jaffarCommon::logger::log("[J+]  + Bonus Multiplier:        %02u (Timer: %05u)\n", *_bonusMultiplier, *_bonusMultiplierTimer);
     jaffarCommon::logger::log("[J+]  + Ghost Capture Timer1:    0x%03X (Prev: 0x%03X)\n", *_ghostCaptureTimer1, _prevGhostCaptureTimer1);
     jaffarCommon::logger::log("[J+]  + Ghost Capture Timer2:    0x%03X\n", *_ghostCaptureTimer2);
     jaffarCommon::logger::log("[J+]  + Ghost States:            [ %02u %02u %02u %02u ]\n", *_ghost1State, *_ghost2State, *_ghost3State, *_ghost4State);
@@ -597,6 +608,7 @@ private:
   uint8_t* _ghost4Direction;
 
   uint8_t* _bonusMultiplier;
+  uint16_t* _bonusMultiplierTimer;
 
   uint8_t* _fruit1Status;
   uint8_t* _fruit2Status;
