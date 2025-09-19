@@ -65,6 +65,9 @@ __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
     // Setting numa domains per group, if grouping is used
     _numaDomainsPerGroup = numaDomainsPerGroup;
 
+    // Getting number of noma domains
+    _numaCount = numa_max_node() + 1;
+    
     // Checking that NUMA grouping is correct
     if (_numaCount % _numaDomainsPerGroup > 0) JAFFAR_THROW_RUNTIME("Hash DB grouping (%lu) does not divide the NUMA domain count exactly (%lu)\n", _numaDomainsPerGroup, _numaCount);
 
@@ -72,9 +75,6 @@ __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
     const auto numaAvailable = numa_available();
     if (numaAvailable != 0) JAFFAR_THROW_RUNTIME("The system does not provide NUMA detection support.");
 
-    // Getting number of noma domains
-    _numaCount = numa_max_node() + 1;
-    
     // Setting number of NUMA groups
     _numaGroupCount = _numaCount / _numaDomainsPerGroup;
 
