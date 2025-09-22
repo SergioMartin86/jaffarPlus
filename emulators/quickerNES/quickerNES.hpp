@@ -32,6 +32,12 @@ public:
   // Constructor must only do configuration parsing
   QuickerNES(const nlohmann::json& config) : Emulator(config)
   {
+    // Specifies how to map code ROM
+    // Flat: The game program memory is placed raw in a contiguous array. This is faster for instruction decoding but every page switch triggers a full copy
+    // Paged: The game program memory is properly distributed in pages whose address is determined by pointers. The indirection adds cost to instruction decoding but does not require a copy on switch
+    // Use flat for games or sections that do not perform frequent bank switching; paged, otherwise
+    _useFlatCodeMap = jaffarCommon::json::getBoolean(config, "Use Flat Code Map");
+
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
@@ -144,6 +150,9 @@ public:
       // Pushing data into RAM
       memcpy(_quickerNES->getLowMem(), initialRAMDataString.data(), 0x800);
     }
+
+    // Flattening code map, if required
+    if (_useFlatCodeMap == true) _quickerNES->useFlatCodeMap();
   }
 
   // State advancing function
@@ -321,6 +330,7 @@ private:
 
   std::unique_ptr<NESInstance> _quickerNES;
 
+  bool        _useFlatCodeMap;
   size_t      _NTABBlockSize;
   size_t      _SRAMBlockSize;
   std::string _romFilePath;
