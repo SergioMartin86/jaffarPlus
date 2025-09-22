@@ -1,4 +1,5 @@
 run-clang-format
+*.smc
 .mono
 .clang-format
 *.bk

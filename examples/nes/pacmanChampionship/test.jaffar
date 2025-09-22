@@ -12,18 +12,20 @@
         }
     },
     "Engine Configuration": {
+        "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 3000
+            "Max Store Size (Mb)": 50000
         },
         "State Database": {
-            "Max Size (Mb)": 8000
+            "Max Size (Mb)": 40000
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
         "Rom File Path": "Pac-Man - Championship Edition (USA, Europe) (Namco Museum Archives Vol 1).nes",
         "Rom File SHA1": "90AB4682C1CFBE78D9E32BAFF37600B0114F6E74",
+        "Use Flat Code Map": false,
         "Initial State File Path": "",
         "Initial Sequence File Path": "test.initial.sol",
         "Initial RAM Data File Path": "",
@@ -78,7 +80,8 @@
         "Print Properties": [
             "Player Direction",
             "Player Pos X",
-            "Player Pos Y"
+            "Player Pos Y",
+            "Bonus Multiplier"
         ],
         "Hash Properties": [
         ],

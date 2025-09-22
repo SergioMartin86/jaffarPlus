@@ -22,7 +22,7 @@
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerSnes9x",
-        "Rom File Path": "../../../extern/jaffarPlus/extern/quickerSnes9x/tests/roms/Super Off Road (U) [!].smc",
+        "Rom File Path": "Super Off Road (U) [!].smc",
         "Rom File SHA1": "1784C53C1B60047337109A5A9BF6A638D77B4219",
         "Initial State File Path": "",
         "Initial Sequence File Path": "race64.initial.sol",

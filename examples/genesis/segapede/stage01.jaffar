@@ -17,12 +17,12 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 1000
+            "Max Size (Mb)": 10000
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerGPGX",
-        "Rom File Path": "../../../extern/jaffarPlus/extern/quickerGPGX/tests/roms/Segapede (Prototype).md",
+        "Rom File Path": "Segapede (Prototype).md",
         "Rom File SHA1": "3452959175FA7631AF01E8821CB8B8410F5FBB79",
         "Initial State File Path": "",
         "Initial Sequence File Path": "stage01.initial.sol",
