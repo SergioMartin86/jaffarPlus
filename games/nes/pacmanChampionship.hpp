@@ -35,7 +35,6 @@ private:
 
     // Registering native game properties
     registerGameProperty("Game Mode", &_lowMem[0x0033], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Lag Frame", &_lowMem[0x001E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Score x10", &_lowMem[0x0457], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Score x100", &_lowMem[0x0458], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Score x1000", &_lowMem[0x0459], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -78,7 +77,6 @@ private:
 
     // Getting some properties' pointers now for quick access later
     _gameMode  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Mode")]->getPointer();
-    _lagFrame  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Lag Frame")]->getPointer();
     _score10  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score x10")]->getPointer();
     _score100  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score x100")]->getPointer();
     _score1000  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score x1000")]->getPointer();
@@ -240,6 +238,15 @@ private:
     hashEngine.Update(*_ghost4Direction);
     hashEngine.Update(*_playerWallSkid);
 
+    // Lag Frame Accounting
+     hashEngine.Update(&_lowMem[0x0000], 0x10);
+     hashEngine.Update(_lowMem[0x001E]);
+     hashEngine.Update(_lowMem[0x003C]);
+    //  hashEngine.Update(_lowMem[0x02C6]);
+    //  hashEngine.Update(_lowMem[0x0242]);
+    //  hashEngine.Update(_lowMem[0x049C]);
+    //  hashEngine.Update(_lowMem[0x04BD]);
+    // hashEngine.Update(&_lowMem[0x0000], 0x001F);
     // hashEngine.Update(&_srmMem[0x0000], 0x0580); // The stage's situation (pebbles, walls)
   }
 
@@ -267,7 +274,7 @@ private:
     if (_prevFruit1Status != *_fruit1Status) _isKeyFrame = true;
     if (_prevFruit2Status != *_fruit2Status) _isKeyFrame = true;
     if (*_ghostCaptureTimer1 == 1) _isKeyFrame = true;
-    if (_currentStep % 8 == 0) _isKeyFrame = true;
+    // if (_currentStep % 8 == 0) _isKeyFrame = true;
 
     _playerPosX = (uint16_t)*_playerPosX1 + (uint16_t)*_playerPosX2;
     _playerPosY = (uint16_t)*_playerPosY2;
@@ -384,7 +391,6 @@ private:
     jaffarCommon::logger::log("[J+]  + Current Step:            0x%04X\n", _currentStep);
     jaffarCommon::logger::log("[J+]  + Score:                   %lu (Prev: %lu)\n", _score, _prevScore);
     jaffarCommon::logger::log("[J+]  + Is Key Frame:            %s\n", _isKeyFrame ? "True" : "False");
-    jaffarCommon::logger::log("[J+]  + Lag Frame:               %02u\n", _lagFrame);
     jaffarCommon::logger::log("[J+]  + Bonus Multiplier:        %02u (Timer: %05u)\n", *_bonusMultiplier, *_bonusMultiplierTimer);
     jaffarCommon::logger::log("[J+]  + Ghost Capture Timer1:    0x%03X (Prev: 0x%03X)\n", *_ghostCaptureTimer1, _prevGhostCaptureTimer1);
     jaffarCommon::logger::log("[J+]  + Ghost Capture Timer2:    0x%03X\n", *_ghostCaptureTimer2);
@@ -570,7 +576,6 @@ private:
   }
 
   uint8_t*  _gameMode ;
-  uint8_t*  _lagFrame ;
   uint8_t*  _score10  ;
   uint8_t*  _score100 ;
   uint8_t*  _score1000 ;
