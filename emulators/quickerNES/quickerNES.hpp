@@ -37,7 +37,7 @@ public:
     // Paged: The game program memory is properly distributed in pages whose address is determined by pointers. The indirection adds cost to instruction decoding but does not require a copy on switch
     // Use flat for games or sections that do not perform frequent bank switching; paged, otherwise
     _useFlatCodeMap = jaffarCommon::json::getBoolean(config, "Use Flat Code Map");
-
+    
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
@@ -72,6 +72,9 @@ public:
     // Getting disabled state properties
     const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
     for (const auto& property : disabledStateProperties) _disabledStateProperties.push_back(property);
+
+    // Storing whether to use a flat code map
+    _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
 
     // Creating internal emulator instance
     _quickerNES = std::make_unique<NESInstance>(config);
@@ -150,7 +153,7 @@ public:
       // Pushing data into RAM
       memcpy(_quickerNES->getLowMem(), initialRAMDataString.data(), 0x800);
     }
-
+    
     // Flattening code map, if required
     if (_useFlatCodeMap == true) _quickerNES->useFlatCodeMap();
   }
@@ -164,6 +167,7 @@ public:
   __INLINE__ void printInfo() const override
   {
    jaffarCommon::logger::log("[J+]  + Initial Sequence File Path:          '%s'\n", _initialSequenceFilePath.c_str()); 
+   jaffarCommon::logger::log("[J+]  + Uses Flat Code Map:                  %s\n", _useFlatCodeMap ? "True" : "False"); 
   }
 
   property_t getProperty(const std::string& propertyName) const override

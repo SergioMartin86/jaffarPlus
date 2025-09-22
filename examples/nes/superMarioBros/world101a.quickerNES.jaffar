@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 1000
+            "Max Size (Mb)": 50000
         }
     },
     "Emulator Configuration": {
@@ -28,6 +28,8 @@
         "Initial State File Path": "",
         "Use Flat Code Map": true,
         "Initial RAM Data File Path": "",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 0,
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
 	"SRAM Block Size": 8192,

@@ -17,12 +17,12 @@
             "Max Store Size (Mb)": 5000
         },
         "State Database": {
-            "Max Size (Mb)": 1000
+            "Max Size (Mb)": 100000
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerGPGX",
-        "Rom File Path": "../../../extern/jaffarPlus/extern/quickerGPGX/tests/roms/Micro Machines (USA).md",
+        "Rom File Path": "Micro Machines (USA).md",
         "Rom File SHA1": "39B25DBFA7A80AEBDEFC19AC2DF4BC75B934BBDA",
         "Initial State File Path": "race00a.state",
         "Initial Sequence File Path": "",
