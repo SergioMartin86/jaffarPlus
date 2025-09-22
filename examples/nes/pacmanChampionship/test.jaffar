@@ -29,6 +29,7 @@
         "Initial State File Path": "",
         "Initial Sequence File Path": "test.initial.sol",
         "Initial RAM Data File Path": "",
+        "Use Flat Code Map": false,
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
         "Nametable Block Size": 4096,
