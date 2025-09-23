@@ -30,9 +30,9 @@ private:
     registerGameProperty("Screen Pos X1"             ,&_lowMem[0x071B], Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Player Animation"          ,&_lowMem[0x0001], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Player State"              ,&_lowMem[0x000E], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    registerGameProperty("Player Pos X1"             ,&_lowMem[0x0086], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    registerGameProperty("Player Pos X2"             ,&_lowMem[0x0400], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    registerGameProperty("Player Pos X3"             ,&_lowMem[0x006D], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Player Pos X1"             ,&_lowMem[0x006D], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Player Pos X2"             ,&_lowMem[0x0086], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Player Pos X3"             ,&_lowMem[0x0400], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Player Pos Y2"             ,&_lowMem[0x00CE], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Player Pos Y3"             ,&_lowMem[0x0416], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Player Moving Direction"   ,&_lowMem[0x0045], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
@@ -266,8 +266,8 @@ private:
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
   {
-    _playerPosX = ((float)*_playerPosX1) / 256.0f + (float)*_playerPosX2 + ((float)*_playerPosX3) * 256.0f;
-    _playerPosY = ((float)*_playerPosY2) / 256.0f + (float)*_playerPosY3;
+    _playerPosX = (float)*_playerPosX1 * 256.0f + (float)*_playerPosX2 + ((float)*_playerPosX3) / 256.0f;
+    _playerPosY = (float)*_playerPosY2 + (float)*_playerPosY3 / 256.0f;
     _screenPosX = (float)*_screenPosX1 * 256.0f + (float)*_screenPosX2;
     _playerScreenOffset = _playerPosX - _screenPosX;
   }
