@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
-        "End On First Win State": true,
-        "Max Steps": 0,
+        "End On First Win State": false,
+        "Max Steps": 500,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -12,6 +12,7 @@
         }
     },
     "Engine Configuration": {
+        "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
             "Max Store Size (Mb)": 10000
@@ -25,12 +26,12 @@
         "Rom File Path": "Gimmick! (J).nes",
         "Rom File SHA1": "835FEE060B15700163A1F8AD9716A163BF79C8FD",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "sand00b.initial.sol",
+        "Initial Sequence File Path": "boss00b.initial.sol",
         "Initial RAM Data File Path": "",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
         "Nametable Block Size": 1024,
-        "Serialize Only RAM": true,
+        "Serialize Only RAM": false,
         "Disabled State Properties": [
             "SRAM",
             "CHRR",
@@ -40,15 +41,28 @@
     },
     "Runner Configuration": {
         "Frameskip Rate": 0,
-        "Hash Step Tolerance": 1,
+        "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 400
+            "Max Size": 500
         },
         "Allowed Input Sets": [
+            {
+                "Conditions": [
+                    {
+                        "Property": "Current Step",
+                        "Op": ">=",
+                        "Value": 80
+                    }
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": true
+            },
             {
                 "Conditions": [
                     {
@@ -115,32 +129,29 @@
         "Game Name": "NES / Gimmick!",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Trace File Path": "",
+        "Trace File Path": "boss00b.trace",
         "Print Properties": [
-            "Star 1 Status"
+            "Star 1 Status",
+            "Current Step"
         ],
         "Hash Properties": [
         ],
         "Rules": [
             {
-                "Label": 1000,
+                "Label": 999,
                 "Conditions": [
                 ],
                 "Satisfies": [],
                 "Actions": [
                     {
-                        "Type": "Set Point X Magnet",
-                        "Intensity": 1.0,
-                        "Pos": 124.000
-                    },
-                    {
-                        "Type": "Set Point Y Magnet",
-                        "Intensity": 0.0,
-                        "Pos": 0.0
+                        "Type": "Set Trace Magnet",
+                        "Player Intensity": 1.0,
+                        "Star Intensity": 1.0,
+                        "Offset": 0
                     },
                     {
                         "Type": "Set Star Use Magnet",
-                        "Intensity": 5.0
+                        "Intensity": 1.0
                     }
                 ]
             },
@@ -148,26 +159,16 @@
                 "Label": 1001,
                 "Conditions": [
                     {
-                        "Property": "Player Pos X",
-                        "Op": ">",
-                        "Value": 121
+                        "Property": "Current Step",
+                        "Op": ">=",
+                        "Value": 80
                     }
                 ],
-                "Satisfies": [ 1000 ],
+                "Satisfies": [],
                 "Actions": [
                     {
-                        "Type": "Add Reward",
-                        "Value": 10000.0
-                    },
-                    {
-                        "Type": "Set Point X Magnet",
-                        "Intensity": 1.0,
-                        "Pos": 125.000
-                    },
-                    {
-                        "Type": "Set Point Y Magnet",
-                        "Intensity": 2.0,
-                        "Pos": 43.594
+                        "Type": "Set Hash Current Step",
+                        "Value": true
                     }
                 ]
             },
@@ -175,15 +176,63 @@
                 "Label": 1002,
                 "Conditions": [
                     {
-                        "Property": "Current Checkpoint",
-                        "Op": ">",
+                        "Property": "Object 1 Health",
+                        "Op": "==",
                         "Value": 0
                     }
                 ],
                 "Satisfies": [],
                 "Actions": [
                     {
+                        "Type": "Add Reward",
+                        "Value": 100000.0
+                    },
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Player Intensity": 0.0,
+                        "Star Intensity": 0.0,
+                        "Offset": 0
+                    },
+                    {
+                        "Type": "Set Last Input Step Magnet",
+                        "Intensity": -1.0
+                    }
+                ]
+            },
+            {
+                "Label": 1003,
+                "Conditions": [
+                    {
+                        "Property": "Object 1 Health",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Object 1 Pos Y 1",
+                        "Op": ">=",
+                        "Value": 12
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
                         "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Player Status",
+                        "Op": ">",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
                     }
                 ]
             }

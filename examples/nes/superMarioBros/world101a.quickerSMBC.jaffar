@@ -12,17 +12,18 @@
         }
     },
     "Engine Configuration": {
+        "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 1000
+            "Max Size (Mb)": 10000
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerSMBC",
-        "Rom File Path": "../../../extern/quickerSMBC/tests/roms/Super Mario Bros. (JU) (PRG0) [!].nes",
+        "Rom File Path": "Super Mario Bros. (JU) (PRG0) [!].nes",
         "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
         "Initial State File Path": "world101a.quickerSMBC.state",
         "Disabled State Properties": [
@@ -47,7 +48,15 @@
                 "Conditions": [],
                 "Inputs": [
                     "|..|........|",
-                    "|..|...R..B.|"
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|..L....A|",
+                    "|..|...R...A|",
+                    "|..|..L...B.|",
+                    "|..|...R..B.|",
+                    "|..|..L...BA|",
+                    "|..|...R..BA|",
+                    "|..|.D......|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -60,21 +69,8 @@
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
         "Print Properties": [
-            "Mario Vel X1",
-            "Mario Vel Y1",
-            "Mario Vel Y2",
-            "Mario Walking Frame"
         ],
         "Hash Properties": [
-            "Mario Pos X1",
-            "Mario Pos X2",
-            "Mario Pos X3",
-            "Mario Pos Y1",
-            "Mario Pos Y2",
-            "Mario Vel X1",
-            "Mario Vel Y1",
-            "Mario Vel Y2",
-            "Mario Walking Frame"
         ],
         "Rules": [
             {
@@ -94,7 +90,7 @@
                 "Label": 1999,
                 "Conditions": [
                     {
-                        "Property": "Mario Pos X",
+                        "Property": "Player Pos X",
                         "Op": ">",
                         "Value": 100
                     }

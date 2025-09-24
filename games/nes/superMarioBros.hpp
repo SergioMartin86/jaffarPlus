@@ -175,7 +175,12 @@ private:
     _warpAreaOffset           =  (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Warp Area Offset"          )]->getPointer();
 
     registerGameProperty("Player Pos X"          , &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
-    registerGameProperty("Player Pos X"          , &_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y"          , &_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
+
+    _playerPosX = 0;
+    _playerPosY = 0;
+    _screenPosX = 0;
+    _playerScreenOffset = 0;
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -288,9 +293,21 @@ private:
     _playerDistanceToPoint  = sqrtf(_playerDistanceToPointX * _playerDistanceToPointX + _playerDistanceToPointY * _playerDistanceToPointY);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override {}
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
+  {
+     serializer.push(&_playerPosX, sizeof(_playerPosX));
+     serializer.push(&_playerPosY, sizeof(_playerPosY));
+     serializer.push(&_screenPosX, sizeof(_screenPosX));
+     serializer.push(&_playerScreenOffset, sizeof(_playerScreenOffset));
+  }
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) {}
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
+  {
+     deserializer.pop(&_playerPosX, sizeof(_playerPosX));
+     deserializer.pop(&_playerPosY, sizeof(_playerPosY));
+     deserializer.pop(&_screenPosX, sizeof(_screenPosX));
+     deserializer.pop(&_playerScreenOffset, sizeof(_playerScreenOffset));
+  }
 
   __INLINE__ float calculateGameSpecificReward() const
   {

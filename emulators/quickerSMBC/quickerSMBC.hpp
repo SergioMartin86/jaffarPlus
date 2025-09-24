@@ -50,9 +50,7 @@ public:
   void initializeImpl() override
   {
     // Initializing emulator
-    _mutex.lock();
     _quickerSMBC->initialize();
-    _mutex.unlock();
 
 // Only load rom file if using player
 #ifdef _JAFFAR_PLAYER
@@ -143,9 +141,6 @@ private:
 
   std::string _romFilePath = "";
   std::string _romFileSHA1;
-
-  // Mutex required to avoid crashes during initialization
-  std::mutex _mutex;
 
   std::string _initialStateFilePath;
 };
