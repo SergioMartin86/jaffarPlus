@@ -685,13 +685,15 @@ private:
     _star1PosX1                     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Star 1 Pos X 1"           )]->getPointer();   
     _star1PosX2                     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Star 1 Pos X 2"           )]->getPointer();   
     _star1Status                    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Star 1 Status"            )]->getPointer();   
-
+    
+    registerGameProperty("Current Step"                , &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Player Pos X"                , &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Player Pos Y"                , &_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
 
     // Initializing values
     _currentStep   = 0;
     _lastInputStep = 0;
+    _hashCurrentStep = false;
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
@@ -711,39 +713,41 @@ private:
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
+    if (_hashCurrentStep == true) hashEngine.Update(_currentStep);         
+
     hashEngine.Update(_screenX1             , sizeof(_screenX1               ));         
     hashEngine.Update(_screenX2             , sizeof(_screenX2               ));         
     hashEngine.Update(_screenX3             , sizeof(_screenX3               ));         
     hashEngine.Update(_screenY              , sizeof(_screenY                ));         
-    // hashEngine.Update(_objectIterator       , sizeof(_objectIterator         ));         
+    hashEngine.Update(_objectIterator       , sizeof(_objectIterator         ));         
     hashEngine.Update(_currentLevel         , sizeof(_currentLevel           ));         
     hashEngine.Update(_currentCheckpoint    , sizeof(_currentCheckpoint      ));         
-    // hashEngine.Update(_enemyDataPointer1    , sizeof(_enemyDataPointer1      ));         
-    // hashEngine.Update(_enemyDataPointer2    , sizeof(_enemyDataPointer2      ));         
-    // hashEngine.Update(_CHRTimer             , sizeof(_CHRTimer               ));         
-    // hashEngine.Update(_CHRIndex             , sizeof(_CHRIndex               ));         
+    hashEngine.Update(_enemyDataPointer1    , sizeof(_enemyDataPointer1      ));         
+    hashEngine.Update(_enemyDataPointer2    , sizeof(_enemyDataPointer2      ));         
+    hashEngine.Update(_CHRTimer             , sizeof(_CHRTimer               ));         
+    hashEngine.Update(_CHRIndex             , sizeof(_CHRIndex               ));         
     hashEngine.Update(_IRQIndex             , sizeof(_IRQIndex               ));         
-    // hashEngine.Update(_screenUpdate         , sizeof(_screenUpdate           ));         
-    // hashEngine.Update(_playerMaxHP          , sizeof(_playerMaxHP            ));         
-    // hashEngine.Update(_scoreIncrease1       , sizeof(_scoreIncrease1         ));         
-    // hashEngine.Update(_scoreIncrease2       , sizeof(_scoreIncrease2         ));         
-    // hashEngine.Update(_score1               , sizeof(_score1                 ));         
-    // hashEngine.Update(_score2               , sizeof(_score2                 ));         
-    // hashEngine.Update(_score3               , sizeof(_score3                 ));         
-    // hashEngine.Update(_score4               , sizeof(_score4                 ));         
-    // hashEngine.Update(_score5               , sizeof(_score5                 ));         
-    // hashEngine.Update(_score6               , sizeof(_score6                 ));         
-    // hashEngine.Update(_score7               , sizeof(_score7                 ));         
-    // hashEngine.Update(_enemyKills           , sizeof(_enemyKills             ));         
-    // hashEngine.Update(_item1                , sizeof(_item1                  ));         
-    // hashEngine.Update(_item2                , sizeof(_item2                  ));         
-    // hashEngine.Update(_item3                , sizeof(_item3                  ));         
-    // hashEngine.Update(_itemAmount           , sizeof(_itemAmount             ));         
-    // hashEngine.Update(_PRGBank1             , sizeof(_PRGBank1               ));         
-    // hashEngine.Update(_PRGBank2             , sizeof(_PRGBank2               ));         
-    // hashEngine.Update(_screenLocked         , sizeof(_screenLocked           ));         
+    hashEngine.Update(_screenUpdate         , sizeof(_screenUpdate           ));         
+    hashEngine.Update(_playerMaxHP          , sizeof(_playerMaxHP            ));         
+    hashEngine.Update(_scoreIncrease1       , sizeof(_scoreIncrease1         ));         
+    hashEngine.Update(_scoreIncrease2       , sizeof(_scoreIncrease2         ));         
+    hashEngine.Update(_score1               , sizeof(_score1                 ));         
+    hashEngine.Update(_score2               , sizeof(_score2                 ));         
+    hashEngine.Update(_score3               , sizeof(_score3                 ));         
+    hashEngine.Update(_score4               , sizeof(_score4                 ));         
+    hashEngine.Update(_score5               , sizeof(_score5                 ));         
+    hashEngine.Update(_score6               , sizeof(_score6                 ));         
+    hashEngine.Update(_score7               , sizeof(_score7                 ));         
+    hashEngine.Update(_enemyKills           , sizeof(_enemyKills             ));         
+    hashEngine.Update(_item1                , sizeof(_item1                  ));         
+    hashEngine.Update(_item2                , sizeof(_item2                  ));         
+    hashEngine.Update(_item3                , sizeof(_item3                  ));         
+    hashEngine.Update(_itemAmount           , sizeof(_itemAmount             ));         
+    hashEngine.Update(_PRGBank1             , sizeof(_PRGBank1               ));         
+    hashEngine.Update(_PRGBank2             , sizeof(_PRGBank2               ));         
+    hashEngine.Update(_screenLocked         , sizeof(_screenLocked           ));         
     hashEngine.Update(_playerJumping        , sizeof(_playerJumping          ));         
-    // hashEngine.Update(_cutsceneState        , sizeof(_cutsceneState          ));         
+    hashEngine.Update(_cutsceneState        , sizeof(_cutsceneState          ));         
     // hashEngine.Update(_musicSong            , sizeof(_musicSong              ));         
     // hashEngine.Update(_yumetaroState        , sizeof(_yumetaroState          ));         
     // hashEngine.Update(_skipMap              , sizeof(_skipMap                ));         
@@ -781,14 +785,14 @@ private:
     // hashEngine.Update(_object2SpeedY        , sizeof(_object2SpeedY          ));         
     // hashEngine.Update(_object2SpeedX        , sizeof(_object2SpeedX          ));         
     // hashEngine.Update(_object2Stand         , sizeof(_object2Stand           ));         
-    // hashEngine.Update(_object3Status        , sizeof(_object3Status          ));         
-    // hashEngine.Update(_object3PosY2         , sizeof(_object3PosY2           ));         
-    // hashEngine.Update(_object3PosY1         , sizeof(_object3PosY1           ));         
-    // hashEngine.Update(_object3PosX2         , sizeof(_object3PosX2           ));         
-    // hashEngine.Update(_object3PosX1         , sizeof(_object3PosX1           ));         
-    // hashEngine.Update(_object3SpeedY        , sizeof(_object3SpeedY          ));         
-    // hashEngine.Update(_object3SpeedX        , sizeof(_object3SpeedX          ));         
-    // hashEngine.Update(_object3Stand         , sizeof(_object3Stand           ));         
+    hashEngine.Update(_object3Status        , sizeof(_object3Status          ));         
+    hashEngine.Update(_object3PosY2         , sizeof(_object3PosY2           ));         
+    hashEngine.Update(_object3PosY1         , sizeof(_object3PosY1           ));         
+    hashEngine.Update(_object3PosX2         , sizeof(_object3PosX2           ));         
+    hashEngine.Update(_object3PosX1         , sizeof(_object3PosX1           ));         
+    hashEngine.Update(_object3SpeedY        , sizeof(_object3SpeedY          ));         
+    hashEngine.Update(_object3SpeedX        , sizeof(_object3SpeedX          ));         
+    hashEngine.Update(_object3Stand         , sizeof(_object3Stand           ));         
     // hashEngine.Update(_object4Status        , sizeof(_object4Status          ));         
     // hashEngine.Update(_object4PosY2         , sizeof(_object4PosY2           ));         
     // hashEngine.Update(_object4PosY1         , sizeof(_object4PosY1           ));         
@@ -840,10 +844,10 @@ private:
     // hashEngine.Update(_respawnTimer         , sizeof(_respawnTimer           ));         
     // // hashEngine.Update(_globaltimer1         , sizeof(_globaltimer1           ));         
     // // hashEngine.Update(_globaltimer2         , sizeof(_globaltimer2           ));         
-    // // hashEngine.Update(_playerInputs1        , sizeof(_playerInputs1          ));         
-    // // hashEngine.Update(_playerInputs2        , sizeof(_playerInputs2          ));         
-    // // hashEngine.Update(_playerButtons1       , sizeof(_playerButtons1         ));         
-    // // hashEngine.Update(_playerButtons2       , sizeof(_playerButtons2         ));         
+    hashEngine.Update(_playerInputs1        , sizeof(_playerInputs1          ));         
+    hashEngine.Update(_playerInputs2        , sizeof(_playerInputs2          ));         
+    hashEngine.Update(_playerButtons1       , sizeof(_playerButtons1         ));         
+    hashEngine.Update(_playerButtons2       , sizeof(_playerButtons2         ));         
     hashEngine.Update(_PPUScrollY           , sizeof(_PPUScrollY             ));         
     hashEngine.Update(_PPUScrollX           , sizeof(_PPUScrollX             ));         
     hashEngine.Update(_PPUMaskMirror        , sizeof(_PPUMaskMirror          ));         
@@ -856,18 +860,18 @@ private:
     // hashEngine.Update(_secretItemsCollected6, sizeof(_secretItemsCollected6  ));         
     hashEngine.Update(_playerAnimationState , sizeof(_playerAnimationState   ));         
     hashEngine.Update(_playerDirection      , sizeof(_playerDirection        ));         
-    // hashEngine.Update(_playerHitboxY2       , sizeof(_playerHitboxY2         ));         
-    // hashEngine.Update(_playerHitboxY1       , sizeof(_playerHitboxY1         ));         
-    // hashEngine.Update(_playerHitboxX2       , sizeof(_playerHitboxX2         ));         
-    // hashEngine.Update(_playerHitboxX1       , sizeof(_playerHitboxX1         ));         
-    // hashEngine.Update(_playerHealth         , sizeof(_playerHealth           ));         
-    // hashEngine.Update(_playerObjectType     , sizeof(_playerObjectType       ));         
+    hashEngine.Update(_playerHitboxY2       , sizeof(_playerHitboxY2         ));         
+    hashEngine.Update(_playerHitboxY1       , sizeof(_playerHitboxY1         ));         
+    hashEngine.Update(_playerHitboxX2       , sizeof(_playerHitboxX2         ));         
+    hashEngine.Update(_playerHitboxX1       , sizeof(_playerHitboxX1         ));         
+    hashEngine.Update(_playerHealth         , sizeof(_playerHealth           ));         
+    hashEngine.Update(_playerObjectType     , sizeof(_playerObjectType       ));         
     hashEngine.Update(_playerIsStood        , sizeof(_playerIsStood          ));         
     hashEngine.Update(_playerIsStanding     , sizeof(_playerIsStanding       ));         
     hashEngine.Update(_playerOnWall         , sizeof(_playerOnWall           ));         
     // hashEngine.Update(_playerTimer1         , sizeof(_playerTimer1           ));         
     // hashEngine.Update(_playerTimer2         , sizeof(_playerTimer2           ));         
-    // hashEngine.Update(_playerDropItem       , sizeof(_playerDropItem         ));         
+    hashEngine.Update(_playerDropItem       , sizeof(_playerDropItem         ));         
     // hashEngine.Update(_weaponAnimationState , sizeof(_weaponAnimationState   ));         
     // hashEngine.Update(_weaponDirection      , sizeof(_weaponDirection        ));         
     // hashEngine.Update(_weaponHitboxY2       , sizeof(_weaponHitboxY2         ));         
@@ -910,19 +914,19 @@ private:
     // hashEngine.Update(_object2Timer1        , sizeof(_object2Timer1          ));         
     // hashEngine.Update(_object2Timer2        , sizeof(_object2Timer2          ));         
     // hashEngine.Update(_object2DropItem      , sizeof(_object2DropItem        ));         
-    // hashEngine.Update(_object3AnimationState, sizeof(_object3AnimationState  ));         
-    // hashEngine.Update(_object3Direction     , sizeof(_object3Direction       ));         
-    // hashEngine.Update(_object3HitboxY2      , sizeof(_object3HitboxY2        ));         
-    // hashEngine.Update(_object3HitboxY1      , sizeof(_object3HitboxY1        ));         
-    // hashEngine.Update(_object3HitboxX2      , sizeof(_object3HitboxX2        ));         
-    // hashEngine.Update(_object3HitboxX1      , sizeof(_object3HitboxX1        ));         
-    // hashEngine.Update(_object3Health        , sizeof(_object3Health          ));         
-    // hashEngine.Update(_object3ObjectType    , sizeof(_object3ObjectType      ));         
-    // hashEngine.Update(_object3IsStood       , sizeof(_object3IsStood         ));         
-    // hashEngine.Update(_object3IsStanding    , sizeof(_object3IsStanding      ));         
-    // hashEngine.Update(_object3OnWall        , sizeof(_object3OnWall          ));         
-    // hashEngine.Update(_object3Timer1        , sizeof(_object3Timer1          ));         
-    // hashEngine.Update(_object3Timer2        , sizeof(_object3Timer2          ));         
+    hashEngine.Update(_object3AnimationState, sizeof(_object3AnimationState  ));         
+    hashEngine.Update(_object3Direction     , sizeof(_object3Direction       ));         
+    hashEngine.Update(_object3HitboxY2      , sizeof(_object3HitboxY2        ));         
+    hashEngine.Update(_object3HitboxY1      , sizeof(_object3HitboxY1        ));         
+    hashEngine.Update(_object3HitboxX2      , sizeof(_object3HitboxX2        ));         
+    hashEngine.Update(_object3HitboxX1      , sizeof(_object3HitboxX1        ));         
+    hashEngine.Update(_object3Health        , sizeof(_object3Health          ));         
+    hashEngine.Update(_object3ObjectType    , sizeof(_object3ObjectType      ));         
+    hashEngine.Update(_object3IsStood       , sizeof(_object3IsStood         ));         
+    hashEngine.Update(_object3IsStanding    , sizeof(_object3IsStanding      ));         
+    hashEngine.Update(_object3OnWall        , sizeof(_object3OnWall          ));         
+    hashEngine.Update(_object3Timer1        , sizeof(_object3Timer1          ));         
+    hashEngine.Update(_object3Timer2        , sizeof(_object3Timer2          ));         
     // hashEngine.Update(_object3DropItem      , sizeof(_object3DropItem        ));         
     // hashEngine.Update(_object4AnimationState, sizeof(_object4AnimationState  ));         
     // hashEngine.Update(_object4Direction     , sizeof(_object4Direction       ));         
@@ -1015,10 +1019,10 @@ private:
     // hashEngine.Update(_star2PosX2           , sizeof(_star2PosX2             ));         
     // hashEngine.Update(_star2Status          , sizeof(_star2Status            ));         
     // hashEngine.Update(_star1PosY2           , sizeof(_star1PosY2             ));         
-    hashEngine.Update(_star1PosY1           , sizeof(_star1PosY1             ));         
-    hashEngine.Update(_star1PosX1           , sizeof(_star1PosX1             ));         
-    hashEngine.Update(_star1PosX2           , sizeof(_star1PosX2             ));         
-    hashEngine.Update(_star1Status          , sizeof(_star1Status            ));         
+    // hashEngine.Update(_star1PosY1           , sizeof(_star1PosY1             ));         
+    // hashEngine.Update(_star1PosX1           , sizeof(_star1PosX1             ));         
+    // hashEngine.Update(_star1PosX2           , sizeof(_star1PosX2             ));         
+    // hashEngine.Update(_star1Status          , sizeof(_star1Status            ));         
   }
 
   // Updating derivative values after updating the internal state
@@ -1033,6 +1037,8 @@ private:
     _starUse = 0.0;
     if (*_star1Status >= 128 && *_star1Status <= 169) _starUse = 0.1 + (*_star1Status - 128) / 41.0;
     if (*_star1Status == 1) _starUse = 1.1;
+
+    _object3PosX = (float)*_object3PosX1 + (float)*_object3PosX2 / 256.0;
   }
 
   __INLINE__ void ruleUpdatePreHook() override 
@@ -1042,17 +1048,24 @@ private:
     _playerYMagnet.intensity = 0.0; 
     _playerYMagnet.pos = 0.0; 
 
+    _object3PosXMagnet.intensity = 0.0;
+    _object3PosXMagnet.pos = 0.0;
+
     _traceMagnet.playerIntensity = 0.0;
     _traceMagnet.starIntensity = 0.0;
     _traceMagnet.offset = 0;
 
     _starUseMagnet = 0.0;
+    _lastInputStepMagnet = 0.0;
+    _bossHPMagnet = 0.0;
+    _hashCurrentStep = false;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
   {
     _playerDistanceToPointX = std::abs(_playerXMagnet.pos - _playerPosX);
     _playerDistanceToPointY = std::abs(_playerYMagnet.pos - _playerPosY);
+    _object3DistanceToPointX = std::abs(_object3PosXMagnet.pos - _object3PosX);
 
     // Updating trace stuff
     if (_useTrace == true)
@@ -1104,12 +1117,15 @@ private:
     // Distance to point magnet
     reward += -1.0 * _playerXMagnet.intensity * _playerDistanceToPointX;
     reward += -1.0 * _playerYMagnet.intensity * _playerDistanceToPointY;
+    reward += -1.0 * _object3PosXMagnet.intensity * _object3DistanceToPointX;
 
     // If trace is used, compute its magnet's effect
     if (_useTrace == true)  reward += -1.0 * _traceMagnet.playerIntensity * _traceDistancePlayer;
     if (_useTrace == true)  reward += -1.0 * _traceMagnet.starIntensity * _traceDistanceStar;
 
     reward += _starUse * _starUseMagnet;
+    reward += _lastInputStepMagnet * _lastInputStep;
+    reward += _bossHPMagnet * (float)*_object1Health;
 
     // Returning reward
     return reward;
@@ -1122,6 +1138,9 @@ private:
     jaffarCommon::logger::log("[J+]  + Star Pos X:                         %.3f\n", _starPosX);
     jaffarCommon::logger::log("[J+]  + Star Pos Y:                         %.3f\n", _starPosY);
     jaffarCommon::logger::log("[J+]  + Star Use:                           %.3f\n", _starUse);
+    jaffarCommon::logger::log("[J+]  + Last Input Step:                    %4u\n", _lastInputStep);
+    jaffarCommon::logger::log("[J+]  + Boss HP:                            %2u\n", *_object1Health);
+    jaffarCommon::logger::log("[J+]  + Hash Current Step:                  %s\n", _hashCurrentStep ? "True" : "False");
 
     if (std::abs(_playerXMagnet.intensity) > 0.0f)
     {
@@ -1135,9 +1154,25 @@ private:
       jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _playerDistanceToPointY);
     }
 
+    if (std::abs(_object3PosXMagnet.intensity) > 0.0f)
+    {
+      jaffarCommon::logger::log("[J+]  + Object 3 Point X Magnet                  Intensity: %.5f, Pos: %3.3f\n", _object3PosXMagnet.intensity, _object3PosXMagnet.pos);
+      jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _object3DistanceToPointX);
+    }
+
     if (std::abs(_starUseMagnet) > 0.0f)
     {
       jaffarCommon::logger::log("[J+]  + Star Use Magnet                          Intensity: %.5f Effect: %3.3f\n", _starUseMagnet, _starUse * _starUseMagnet);
+    }
+
+    if (std::abs(_bossHPMagnet) > 0.0f)
+    {
+      jaffarCommon::logger::log("[J+]  + Boss HP Magnet                          Intensity: %.5f\n", _bossHPMagnet);
+    }
+
+    if (std::abs(_lastInputStepMagnet) > 0.0f)
+    {
+      jaffarCommon::logger::log("[J+]  + Last Input Step Magnet                   Intensity: %.5f\n", _lastInputStepMagnet);
     }
 
     if (_useTrace == true)
@@ -1190,10 +1225,32 @@ private:
       recognizedActionType = true;
     }
 
+      if (actionType == "Set Object 3 Point X Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto pos       = jaffarCommon::json::getNumber<float>(actionJs, "Pos");
+      rule.addAction([=, this]() { this->_object3PosXMagnet = pointMagnet_t{.intensity = intensity, .pos = pos}; });
+      recognizedActionType = true;
+    }
+
     if (actionType == "Set Star Use Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       rule.addAction([=, this]() { this->_starUseMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Boss HP Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_bossHPMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Hash Current Step")
+    {
+      auto value = jaffarCommon::json::getBoolean(actionJs, "Value");
+      rule.addAction([=, this]() { this->_hashCurrentStep = value; });
       recognizedActionType = true;
     }
 
@@ -1204,6 +1261,13 @@ private:
       auto starIntensity = jaffarCommon::json::getNumber<float>(actionJs, "Star Intensity");
       auto offset    = jaffarCommon::json::getNumber<int>(actionJs, "Offset");
       rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.playerIntensity = playerIntensity, .starIntensity = starIntensity, .offset = offset }; });
+      recognizedActionType = true;
+    }
+
+    if (actionType == "Set Last Input Step Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_lastInputStepMagnet = intensity; });
       recognizedActionType = true;
     }
 
@@ -1590,6 +1654,7 @@ private:
   float _playerPosY;
   float _starPosX;
   float _starPosY;
+  float _object3PosX;
 
   // Datatype to describe a point magnet
   struct pointMagnet_t
@@ -1600,9 +1665,15 @@ private:
 
   pointMagnet_t _playerXMagnet; 
   pointMagnet_t _playerYMagnet; 
+  pointMagnet_t _object3PosXMagnet;
   float _playerDistanceToPointX;
   float _playerDistanceToPointY;
+  float _object3DistanceToPointX;
+
   float _starUseMagnet;
+  float _lastInputStepMagnet;
+  float _bossHPMagnet;
+  bool _hashCurrentStep;
 
     // Whether we use a trace
   bool _useTrace = false;

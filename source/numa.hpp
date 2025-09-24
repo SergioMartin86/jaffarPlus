@@ -61,12 +61,26 @@ static thread_local int _myThreadId;
 */
 __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
 {
+    // Getting number of threads
+    _threadCount = jaffarCommon::parallel::getMaxThreadCount();
 
-    // Setting numa domains per group, if grouping is used
-    _numaDomainsPerGroup = numaDomainsPerGroup;
+    // Accept serial execution if thread count is one
+    if (_threadCount == 1)
+    {
+      // Setting numa domains per group, if grouping is used
+      _numaDomainsPerGroup = 1;
 
-    // Getting number of noma domains
-    _numaCount = numa_max_node() + 1;
+      // Getting number of noma domains
+      _numaCount = 1;
+    }
+    else
+    {
+      // Setting numa domains per group, if grouping is used
+      _numaDomainsPerGroup = numaDomainsPerGroup;
+
+      // Getting number of noma domains
+      _numaCount = numa_max_node() + 1;
+    }
     
     // Checking that NUMA grouping is correct
     if (_numaCount % _numaDomainsPerGroup > 0) JAFFAR_THROW_RUNTIME("Hash DB grouping (%lu) does not divide the NUMA domain count exactly (%lu)\n", _numaDomainsPerGroup, _numaCount);
@@ -80,9 +94,6 @@ __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
 
     // Overriding thread count, if requested
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_THREAD_COUNT")) jaffarCommon::parallel::setThreadCount(std::stoul(value));
-
-    // Getting number of threads
-    _threadCount = jaffarCommon::parallel::getMaxThreadCount();
 
     // Check NUMA distances
     _numaDistanceMatrix.resize(_numaCount);
