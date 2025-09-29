@@ -12,6 +12,7 @@
         }
     },
     "Engine Configuration": {
+         "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
             "Max Store Size (Mb)": 20000
@@ -21,6 +22,7 @@
         }
     },
     "Emulator Configuration": {
+
         "Emulator Name": "QuickerNES",
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
