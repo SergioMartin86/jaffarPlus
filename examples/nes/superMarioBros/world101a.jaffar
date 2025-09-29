@@ -15,25 +15,24 @@
         "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 5000
+            "Max Size (Mb)": 400000
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
         "Rom File Path": "Super Mario Bros. (JU) (PRG0) [!].nes",
         "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
-        "Initial Sequence File Path": "world101a.quickerNES.initial.sol",
+        "Initial Sequence File Path": "world101a.initial.sol",
         "Initial State File Path": "",
-        "Use Flat Code Map": true,
-        "Initial RAM Data File Path": "",
         "Use Flat Code Map": false,
+        "Initial RAM Data File Path": "",
         "SRAM Block Size": 0,
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
-	"SRAM Block Size": 8192,
+	    "SRAM Block Size": 8192,
         "Disabled State Properties": [
             "SRAM",
             "CHRR",
@@ -51,7 +50,7 @@
         "Show Allowed Inputs": true,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 1000
+            "Max Size": 400
         },
         "Allowed Input Sets": [
             {
@@ -60,13 +59,42 @@
                     "|..|........|",
                     "|..|..L.....|",
                     "|..|...R....|",
+                    "|..|..LR....|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Vel Y1",
+                        "Op": "<=",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|.......A|",
                     "|..|..L....A|",
                     "|..|...R...A|",
+                    "|..|..LR...A|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Vel Y1",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|.D......|",
                     "|..|..L...B.|",
                     "|..|...R..B.|",
+                    "|..|..LR..B.|",
                     "|..|..L...BA|",
                     "|..|...R..BA|",
-                    "|..|.D......|"
+                    "|..|..LR..BA|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -78,6 +106,7 @@
         "Game Name": "NES / Super Mario Bros",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
+        "Trace File Path": "world101a.trace",
         "Print Properties": [
         ],
         "Hash Properties": [
@@ -89,10 +118,10 @@
                 "Satisfies": [],
                 "Actions": [
                     {
-                        "Type": "Set Point Magnet",
-                        "Intensity": 1.0,
-                        "X": 2560,
-                        "Y": 40
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.1,
+                        "Offset": 1
                     }
                 ]
             },
@@ -100,9 +129,9 @@
                 "Label": 1999,
                 "Conditions": [
                     {
-                        "Property": "Player Pos X",
-                        "Op": ">",
-                        "Value": 1000
+                        "Property": "Player State",
+                        "Op": "==",
+                        "Value": 3
                     }
                 ],
                 "Satisfies": [],
