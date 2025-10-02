@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 0,
+        "Max Steps": 120,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -25,7 +25,7 @@
         "Emulator Name": "QuickerNES",
         "Rom File Path": "Super Mario Bros. (JU) (PRG0) [!].nes",
         "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
-        "Initial Sequence File Path": "world101a.initial.sol",
+        "Initial Sequence File Path": "world101b.initial.sol",
         "Initial State File Path": "",
         "Use Flat Code Map": false,
         "Initial RAM Data File Path": "",
@@ -50,7 +50,7 @@
         "Show Allowed Inputs": true,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 400
+            "Max Size": 120
         },
         "Allowed Input Sets": [
             {
@@ -106,7 +106,7 @@
         "Game Name": "NES / Super Mario Bros",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Trace File Path": "world101a.trace",
+        "Trace File Path": "world101b.trace",
         "Print Properties": [
         ],
         "Hash Properties": [
@@ -120,8 +120,8 @@
                     {
                         "Type": "Set Trace Magnet",
                         "Intensity X": 1.0,
-                        "Intensity Y": 0.1,
-                        "Offset": 1
+                        "Intensity Y": 1.0,
+                        "Offset": 0
                     }
                 ]
             },
@@ -131,7 +131,7 @@
                     {
                         "Property": "Player State",
                         "Op": "==",
-                        "Value": 3
+                        "Value": 2
                     }
                 ],
                 "Satisfies": [],

@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 0,
+        "Max Steps": 250,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -25,7 +25,7 @@
         "Emulator Name": "QuickerNES",
         "Rom File Path": "Super Mario Bros. (JU) (PRG0) [!].nes",
         "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
-        "Initial Sequence File Path": "world101a.initial.sol",
+        "Initial Sequence File Path": "world101c.initial.sol",
         "Initial State File Path": "",
         "Use Flat Code Map": false,
         "Initial RAM Data File Path": "",
@@ -50,7 +50,7 @@
         "Show Allowed Inputs": true,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 400
+            "Max Size": 250
         },
         "Allowed Input Sets": [
             {
@@ -58,8 +58,7 @@
                 "Inputs": [
                     "|..|........|",
                     "|..|..L.....|",
-                    "|..|...R....|",
-                    "|..|..LR....|"
+                    "|..|...R....|"
                 ],
                 "Stop Input Evaluation": false
             },
@@ -67,28 +66,31 @@
                 "Conditions": [
                     {
                         "Property": "Player Vel Y1",
-                        "Op": "<=",
+                        "Op": "<",
                         "Value": 0
                     }
                 ],
                 "Inputs": [
                     "|..|.......A|",
                     "|..|..L....A|",
-                    "|..|...R...A|",
-                    "|..|..LR...A|"
+                    "|..|...R...A|"
                 ],
                 "Stop Input Evaluation": false
             },
             {
                 "Conditions": [
                     {
-                        "Property": "Player Vel Y1",
+                        "Property": "Player Floating Mode",
                         "Op": "==",
                         "Value": 0
                     }
                 ],
                 "Inputs": [
                     "|..|.D......|",
+                    "|..|.......A|",
+                    "|..|..LR....|",
+                    "|..|..L....A|",
+                    "|..|...R...A|",
                     "|..|..L...B.|",
                     "|..|...R..B.|",
                     "|..|..LR..B.|",
@@ -106,7 +108,7 @@
         "Game Name": "NES / Super Mario Bros",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Trace File Path": "world101a.trace",
+        "Trace File Path": "world101c.trace",
         "Print Properties": [
         ],
         "Hash Properties": [
@@ -131,7 +133,7 @@
                     {
                         "Property": "Player State",
                         "Op": "==",
-                        "Value": 3
+                        "Value": 5
                     }
                 ],
                 "Satisfies": [],
