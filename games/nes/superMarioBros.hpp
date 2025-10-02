@@ -124,6 +124,7 @@ private:
     registerGameProperty("Player GamePad 1"          ,&_lowMem[0x000A], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Player GamePad 2"          ,&_lowMem[0x000D], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Warp Area Offset"          ,&_lowMem[0x0750], Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Warp Zone Control"         ,&_lowMem[0x06D6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
       
     _screenPosX1              =  (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X1"             )]->getPointer();
@@ -198,6 +199,7 @@ private:
     _playerGamePad1           =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player GamePad 1"          )]->getPointer();
     _playerGamePad2           =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player GamePad 2"          )]->getPointer();
     _warpAreaOffset           =  (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Warp Area Offset"          )]->getPointer();
+    _warpZoneControl          =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Warp Zone Control"         )]->getPointer();
 
     registerGameProperty("Player Pos X"          , &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Player Pos Y"          , &_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
@@ -295,6 +297,7 @@ private:
     // hashEngine.Update(*_powerUpActive);
 
     hashEngine.Update(*_warpAreaOffset);
+    hashEngine.Update(*_warpZoneControl);
   }
 
   // Updating derivative values after updating the internal state
@@ -542,6 +545,7 @@ private:
   uint8_t * _playerGamePad1       ;
   uint8_t * _playerGamePad2       ;
   uint16_t* _warpAreaOffset       ;
+  uint8_t * _warpZoneControl;
 
   // Game-Specific values
   float _playerDistanceToPointX;
