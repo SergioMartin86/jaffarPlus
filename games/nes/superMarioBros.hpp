@@ -35,11 +35,17 @@ public:
       while (std::getline(f, line))
       {
         auto coordinates = jaffarCommon::string::split(line, ' ');
-        float x = std::atof(coordinates[0].c_str());
-        float y = std::atof(coordinates[1].c_str());
+        float posx = std::atof(coordinates[0].c_str());
+        float posy = std::atof(coordinates[1].c_str());
+        float velx = std::atof(coordinates[2].c_str());
+        float vely = std::atof(coordinates[3].c_str());
+        float screenPosx = std::atof(coordinates[4].c_str());
         _trace.push_back(traceEntry_t{
-          .x = x,
-          .y = y,
+          .posx = posx,
+          .posy = posy,
+          .velx = velx,
+          .vely = vely,
+          .screenPosx = screenPosx
         });
       }
     }
@@ -52,7 +58,6 @@ private:
     _lowMem = _emulator->getProperty("LRAM").pointer;
 
     // Thanks to https://datacrystal.romhacking.net/wiki/Super_Player_Bros.:RAM_map and https://tasvideos.org/GameResources/NES/SuperMarioBros for helping me find some of these items
-    registerGameProperty("Screen Pos X1"             ,&_lowMem[0x071B], Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Player Animation"          ,&_lowMem[0x0001], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Player State"              ,&_lowMem[0x000E], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Player Pos X1"             ,&_lowMem[0x006D], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
@@ -77,8 +82,9 @@ private:
     registerGameProperty("Time Left 100"             ,&_lowMem[0x07F8], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Time Left 10"              ,&_lowMem[0x07F9], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Time Left 1"               ,&_lowMem[0x07FA], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    registerGameProperty("Screen Pos X2"             ,&_lowMem[0x071A], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    registerGameProperty("Screen Pos X3"             ,&_lowMem[0x071C], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Screen Pos X1"             ,&_lowMem[0x071A], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Screen Pos X2"             ,&_lowMem[0x071C], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Screen Pos X3"             ,&_lowMem[0x071B], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Current World"             ,&_lowMem[0x075F], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Current Stage"             ,&_lowMem[0x075C], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Level Entry Flag"          ,&_lowMem[0x0752], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
@@ -125,9 +131,10 @@ private:
     registerGameProperty("Player GamePad 2"          ,&_lowMem[0x000D], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Warp Area Offset"          ,&_lowMem[0x0750], Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Warp Zone Control"         ,&_lowMem[0x06D6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Next Screen"               ,&_lowMem[0x071B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
       
-    _screenPosX1              =  (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X1"             )]->getPointer();
+    _screenPosX1              =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X1"             )]->getPointer();
     _playerAnimation          =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Animation"          )]->getPointer();
     _playerState              =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player State"              )]->getPointer();
     _playerPosX1              =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X1"             )]->getPointer();
@@ -200,6 +207,7 @@ private:
     _playerGamePad2           =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player GamePad 2"          )]->getPointer();
     _warpAreaOffset           =  (uint16_t*)_propertyMap[jaffarCommon::hash::hashString("Warp Area Offset"          )]->getPointer();
     _warpZoneControl          =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Warp Zone Control"         )]->getPointer();
+    _nextScreen               =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Next Screen"               )]->getPointer();
 
     registerGameProperty("Player Pos X"          , &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Player Pos Y"          , &_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
@@ -209,6 +217,12 @@ private:
     _screenPosX = 0;
     _playerScreenOffset = 0;
     _currentStep = 0;
+
+    // Getting emulator save state size
+    _tempStorageSize = _emulator->getStateSize();
+    _tempStorage     = (uint8_t*)malloc(_tempStorageSize);
+
+    _nullInputIdx      = _emulator->registerInput("|..|........|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -222,6 +236,75 @@ private:
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
+    // #define SMB_HASH_LOOKAHEAD
+
+    #ifdef SMB_HASH_LOOKAHEAD
+    // Storing current state
+    jaffarCommon::serializer::Contiguous s(_tempStorage, _tempStorageSize);
+    _emulator->serializeState(s);
+
+    //  Advancing emulator state
+    _emulator->advanceState(_nullInputIdx);
+    #endif
+
+    // If entering the pipe, hash with timer to wait for going down
+    if (*_playerState == 3) hashEngine.Update(_currentStep);
+
+    //#define __HASH_METHOD_0
+    #define __HASH_METHOD_1
+
+    #ifdef __HASH_METHOD_0
+    {
+      const size_t start = 0x0000;
+      const size_t end = 0x0008;
+      const size_t diff = end - start;
+      hashEngine.Update(&_lowMem[start], diff);
+    }
+    // // Skipping input state
+    {
+      const size_t start = 0x000E;
+      const size_t end = 0x06FB;
+      const size_t diff = end - start;
+      hashEngine.Update(&_lowMem[start], diff);
+    }
+    //  Skipping input state
+    {
+      const size_t start = 0x06FE;
+      const size_t end = 0x0747;
+      const size_t diff = end - start;
+      hashEngine.Update(&_lowMem[start], diff);
+    }
+    // Skipping input state
+    {
+      const size_t start = 0x074E;
+      const size_t end = 0x077E;
+      const size_t diff = end - start;
+      hashEngine.Update(&_lowMem[start], diff);
+    }
+    
+    hashEngine.Update(*_animationTimer);
+    hashEngine.Update(*_jumpSwimTimer);
+    hashEngine.Update(*_runningTimer);
+    hashEngine.Update(*_blockBounceTimer);
+    hashEngine.Update(*_sideCollisionTimer);
+     hashEngine.Update(*_jumpspringTimer);
+    // hashEngine.Update(*_gameControlTimer);
+     hashEngine.Update(*_climbSideTimer);
+    // hashEngine.Update(*_enemyFrameTimer);
+    // hashEngine.Update(*_frenzyEnemyTimer);
+    // hashEngine.Update(*_bowserFireTimer);
+    // hashEngine.Update(*_stompTimer);
+    // hashEngine.Update(*_airBubbleTimer);
+    // hashEngine.Update(*_fallPitTimer);
+    // hashEngine.Update(*_multiCoinBlockTimer);
+    // hashEngine.Update(*_invincibleTimer);
+    // hashEngine.Update(*_starTimer);
+    // hashEngine.Update(*_powerUpActive);
+
+    #endif
+
+    #ifdef __HASH_METHOD_1
+    
       // Adding fixed hash elements
     hashEngine.Update(*_screenPosX1);
     hashEngine.Update(*_playerAnimation);
@@ -272,19 +355,18 @@ private:
     hashEngine.Update(*_enemy4Type);
     hashEngine.Update(*_enemy5Type);
 
-    // hashEngine.Update(*_playerCollision);
+    hashEngine.Update(*_playerCollision);
     // hashEngine.Update(*_enemyCollision);
     hashEngine.Update(*_hitDetectionFlag);
 
-    // To Reduce timer pressure on hash, have 0, 1, and >1 as possibilities only
-    hashEngine.Update(*_animationTimer < 2 ? *_animationTimer : (uint8_t)2);
-    hashEngine.Update(*_jumpSwimTimer < 2 ? *_jumpSwimTimer : (uint8_t)2);
-    hashEngine.Update(*_runningTimer < 2 ? *_runningTimer : (uint8_t)2);
-    hashEngine.Update(*_blockBounceTimer < 2 ? *_blockBounceTimer : (uint8_t)2);
-    // hashEngine.Update(*_sideCollisionTimer);
-    // hashEngine.Update(*_jumpspringTimer);
+    hashEngine.Update(*_animationTimer);
+    hashEngine.Update(*_jumpSwimTimer);
+    hashEngine.Update(*_runningTimer);
+    hashEngine.Update(*_blockBounceTimer);
+    hashEngine.Update(*_sideCollisionTimer);
+     hashEngine.Update(*_jumpspringTimer);
     // hashEngine.Update(*_gameControlTimer);
-    // hashEngine.Update(*_climbSideTimer);
+     hashEngine.Update(*_climbSideTimer);
     // hashEngine.Update(*_enemyFrameTimer);
     // hashEngine.Update(*_frenzyEnemyTimer);
     // hashEngine.Update(*_bowserFireTimer);
@@ -298,6 +380,50 @@ private:
 
     hashEngine.Update(*_warpAreaOffset);
     hashEngine.Update(*_warpZoneControl);
+    hashEngine.Update(*_nextScreen);
+
+    hashEngine.Update(_lowMem[0x0000]); // 	Temp/various uses. Is used in vertical physics for gravity acceleration (value copied from 0x0709).
+    hashEngine.Update(_lowMem[0x0002]); // 	Temp/various. Something to do with player y (but it skips to 0 every x frames, even when you dont move)
+    hashEngine.Update(_lowMem[0x0003]); // 	Player's direction (and others). 1 - Right 2 - Left
+    hashEngine.Update(_lowMem[0x0005]); // 	Something to do with player x (same as 0x0002)
+    hashEngine.Update(_lowMem[0x03AD]); // 	Player x pos within current screen offset
+    hashEngine.Update(_lowMem[0x03B8]); // 	Player y pos within current screen (vertical screens always offset at 0?)
+    hashEngine.Update(_lowMem[0x0400]); // 	Player Object X-MoveForce.
+    hashEngine.Update(_lowMem[0x0416]); // 	Player Object YMF_Dummy.
+    hashEngine.Update(_lowMem[0x0433]); // 	Player vertical fractional velocity. This is not accounted for when clamping to max fall velocity etc.
+    hashEngine.Update(_lowMem[0x0450]); // 	Player max velocity to the left. Values taken from 0xE4: max walking vel 0xD8: max running vel (changes to this when pressing B+L)
+    hashEngine.Update(_lowMem[0x0456]); // 	Player max velocity to the right 0x1C - max walking vel 0x30 - max running vel (changes to this when pressing B+R)
+    hashEngine.Update(_lowMem[0x0490]); // 	Player Collision_Bits,if you collided with Any Block / Object / Brick , Then Value will change to 0xFE otherwise it will stay 0xFF.
+    hashEngine.Update(_lowMem[0x04AC]); // 	Player hitbox (1x4 bytes, <<x1,y1> <x2,y2>>)
+    hashEngine.Update(&_lowMem[0x0500], 0x019F); // -0x069F	Current tile (Does not effect graphics)
+    hashEngine.Update(_lowMem[0x06D5]); // 	PlayerGfx_Offset , Player sprite Mario state (didn't check them myself)
+    hashEngine.Update(_lowMem[0x0700]); // 	Player X-Speed Absolute ,Player speed in _either_ direction (0 - 0x28)
+    hashEngine.Update(_lowMem[0x0701]); // 	Friction Adder High ,Is breaking when 1 (freeze this and you immediately stand still when you stop moving)
+    hashEngine.Update(_lowMem[0x0702]); // 	Walk animation (didn't check values)
+    hashEngine.Update(_lowMem[0x0704]); // 	Swimming Flag ,Set to 0 to swim
+    hashEngine.Update(_lowMem[0x0705]); // 	Player X-MoveForce, runs when you press left or right
+    hashEngine.Update(_lowMem[0x0709]); // 	Current gravity which will be applied to the player sprite (see 0x0000, 0x0433 and Notes page).
+    hashEngine.Update(_lowMem[0x070A]); // 	Current fall gravity (not sure how this is decided). 
+    hashEngine.Update(_lowMem[0x070B]); // 	When not 0, runs big-small animation (but does not affect anything internally)
+    hashEngine.Update(_lowMem[0x070C]); // 	Player walk animation delay, in game frames (1/60 s). 0x05=slow walk, 0x03=full walk speed, 0x02=fastest/running speed
+    hashEngine.Update(_lowMem[0x070D]); // 	Player walk animation current frame index (0,1,2,0,etc)
+    hashEngine.Update(_lowMem[0x0714]); // 	0x04 when ducking as big mario, 0 otherwise (also when ducking as small). Keeps being 4 when you slide of an edge while ducking (so does not affect image, but does when set to 4 and being small...). When this register is frozen, you can move like normal, you're just ducking while doing so.
+    hashEngine.Update(_lowMem[0x071C]); // 	ScreenEdge X-Position, loads next screen when player past it?
+    hashEngine.Update(_lowMem[0x071D]); // 	Player x position, moves screen position forward when this moves
+    hashEngine.Update(_lowMem[0x071E]); // 	Column Sets . Counts back, done when this is FF. you can see the level being built in memory up as this counter progresses, one frame at a time.
+    hashEngine.Update(_lowMem[0x071F]); // 	AreaParser TaskNumber, runs from 4 to 0.
+    hashEngine.Update(_lowMem[0x0722]); // 	Player HitDetect Flag. Determines whether allow Player to Pass through from Bricks or not. (Settting it to 0xFF will cause Player to Penetrate through Walls/Bricks)
+    hashEngine.Update(_lowMem[0x0723]); // 	Scroll Lock, 1 = Prevent screen from scrolling right, i.e. Bowser, warp zone, etc. 0 = Allow scroll.
+    hashEngine.Update(_lowMem[0x0754]); // 	Player's state. This also affects hitting stuff. Decreases when you eat a mushroom! Increases when you get hit.
+    hashEngine.Update(_lowMem[0x0755]); // 	Player_Position For Scroll. It moves up to 0x70 (sometimes even 0x72) when player moves. When this register is frozen, NOTHING changes in the level, not even internally.
+    
+    #endif
+
+    #ifdef SMB_HASH_LOOKAHEAD
+    // Recovering emulator state
+    jaffarCommon::deserializer::Contiguous d(_tempStorage, _tempStorageSize);
+    _emulator->deserializeState(d);
+    #endif
   }
 
   // Updating derivative values after updating the internal state
@@ -316,8 +442,11 @@ private:
     _pointMagnet.x         = 0.0;
     _pointMagnet.y         = 0.0;
 
-    _traceMagnet.intensityX = 0.0;
-    _traceMagnet.intensityY = 0.0;
+    _traceMagnet.intensityPosX = 0.0;
+    _traceMagnet.intensityPosY = 0.0;
+    _traceMagnet.intensityVelX = 0.0;
+    _traceMagnet.intensityVelY = 0.0;
+    _traceMagnet.intensityScreenX = 0.0;
     _traceMagnet.offset = 0;
 
   }
@@ -333,16 +462,24 @@ private:
     if (_useTrace == true)
     {
       _traceStep = (uint16_t) std::max(std::min( (int)_currentStep + _traceMagnet.offset, (int) _trace.size() - 1), 0);
-      _traceTargetX = _trace[_traceStep].x;
-      _traceTargetY = _trace[_traceStep].y;
+      _tracePosTargetX = _trace[_traceStep].posx;
+      _tracePosTargetY = _trace[_traceStep].posy;
+      _traceVelTargetX = _trace[_traceStep].velx;
+      _traceVelTargetY = _trace[_traceStep].vely;
+      _traceScreenPosTargetX = _trace[_traceStep].screenPosx;
 
       // Updating distance to trace point
-      _traceDistanceX = std::abs(_traceTargetX - _playerPosX);
-      _traceDistanceY = std::abs(_traceTargetY - _playerPosY);
+      _tracePosDistanceX = std::abs(_tracePosTargetX - _playerPosX);
+      _tracePosDistanceY = std::abs(_tracePosTargetY - _playerPosY);
+      _traceVelDistanceX = std::abs(_traceVelTargetX - (float)*_playerVelX1);
+      _traceVelDistanceY = std::abs(_traceVelTargetY - (float)*_playerVelY1);
+      _traceScreenPosDistanceX = std::abs(_traceScreenPosTargetX - _playerScreenOffset);
 
-      if (_traceDistanceX > 100) _traceDistanceX = 10.0;
-      if (_traceDistanceY > 100) _traceDistanceX = 10.0;
-      _traceDistance  = sqrtf(_traceDistanceX * _traceDistanceX + _traceDistanceY * _traceDistanceY);
+      _tracePosEffectX = _tracePosDistanceX * _traceMagnet.intensityPosX;
+      _tracePosEffectY = _tracePosDistanceY * _traceMagnet.intensityPosY;
+      _traceVelEffectX = _traceVelDistanceX * _traceMagnet.intensityVelX / 40.0; // Normalized by maximum
+      _traceVelEffectY = _traceVelDistanceY * _traceMagnet.intensityVelY / 5.0; // Normalized by maximum
+      _traceScreenPosEffectX = _traceScreenPosDistanceX * _traceMagnet.intensityScreenX;
     }
   }
 
@@ -370,9 +507,12 @@ private:
     float reward = 0.0;
 
     // If trace is used, compute its magnet's effect
-    if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensityX * _traceDistanceX;
-    if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensityY * _traceDistanceY;
-
+    if (_useTrace == true)  reward += -1.0 * _tracePosEffectX;
+    if (_useTrace == true)  reward += -1.0 * _tracePosEffectY;
+    if (_useTrace == true)  reward += -1.0 * _traceVelEffectX;
+    if (_useTrace == true)  reward += -1.0 * _traceVelEffectY;
+    if (_useTrace == true)  reward += -1.0 * _traceScreenPosEffectX;
+    
     // Distance to point magnet
     reward += -1.0 * _pointMagnet.intensity * _playerDistanceToPoint;
 
@@ -389,7 +529,7 @@ private:
     jaffarCommon::logger::log("[J+]  + Player State:            %02u\n", *_playerState);
     jaffarCommon::logger::log("[J+]  + Screen Pos X:            %5.3f (%03u %03u %03u)\n", _screenPosX, *_screenPosX1, *_screenPosX2, *_screenPosX3);
     jaffarCommon::logger::log("[J+]  + Player Pos X:            %5.3f (%03u %03u %03u)\n", _playerPosX, *_playerPosX1, *_playerPosX2, *_playerPosX3);
-    jaffarCommon::logger::log("[J+]  + Player / Screen Offset:  %04d\n", _playerScreenOffset);
+    jaffarCommon::logger::log("[J+]  + Player / Screen Offset:  %5.3f\n", _playerScreenOffset);
     jaffarCommon::logger::log("[J+]  + Player Pos Y:            %5.3f\n", _playerPosY);
     jaffarCommon::logger::log("[J+]  + Player SubPixel X/Y:     %02u / %02u\n", *_playerPosX3, *_playerPosY3);
     jaffarCommon::logger::log("[J+]  + Player Vel X:            %02d (Force: %02d, MaxL: %02d, MaxR: %02d)\n", *_playerVelX1, *_playerMomentumX, *_playerMaxVelLeft, *_playerMaxVelRight);
@@ -400,6 +540,7 @@ private:
     jaffarCommon::logger::log("[J+]  + Player Facing Direction: %s\n", *_playerFacingDirection == 1 ? "Right" : "Left");
     jaffarCommon::logger::log("[J+]  + Player Floating Mode:    %02u\n", *_playerFloatingMode);
     jaffarCommon::logger::log("[J+]  + Player Walking:          %02u %02u %02u\n", *_playerWalkingMode, *_playerWalkingDelay, *_playerWalkingFrame);
+    jaffarCommon::logger::log("[J+]  + Player Collision:        %02u\n", *_playerCollision);
     jaffarCommon::logger::log("[J+]  + Player 1 Inputs:         %02u %02u %02u %02u\n", *_playerInput, *_playerButtons, *_playerGamePad1, *_playerGamePad2);
     jaffarCommon::logger::log("[J+]  + Powerup Active:          %1u\n", *_powerUpActive);
     jaffarCommon::logger::log("[J+]  + Enemy Active:            %1u%1u%1u%1u%1u\n", *_enemy1Active, *_enemy2Active, *_enemy3Active, *_enemy4Active, *_enemy5Active);
@@ -407,7 +548,8 @@ private:
     jaffarCommon::logger::log("[J+]  + Enemy Type:              %02u %02u %02u %02u %02u\n", *_enemy1Type, *_enemy2Type, *_enemy3Type, *_enemy4Type, *_enemy5Type);
     jaffarCommon::logger::log("[J+]  + Hit Detection Flags:     %02u %02u %02u\n", *_playerCollision, *_enemyCollision, *_hitDetectionFlag);
     jaffarCommon::logger::log("[J+]  + LevelEntry / GameMode:   %02u / %02u\n", *_levelEntryFlag, *_gameMode);
-    jaffarCommon::logger::log("[J+]  + Warp Area Offset:        %04u\n", *_warpAreaOffset);
+    jaffarCommon::logger::log("[J+]  + Warp:                    Offset: %04u, Zone %02u\n", *_warpAreaOffset, *_warpZoneControl);
+    jaffarCommon::logger::log("[J+]  + Next Screen:             %02u\n", *_nextScreen);
     jaffarCommon::logger::log("[J+]  + Timers:                  %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u %02u\n", *_animationTimer, *_jumpSwimTimer, *_runningTimer, *_blockBounceTimer, *_sideCollisionTimer, *_jumpspringTimer, *_gameControlTimer, *_climbSideTimer, *_enemyFrameTimer, *_frenzyEnemyTimer, *_bowserFireTimer, *_stompTimer, *_airBubbleTimer, *_multiCoinBlockTimer, *_invincibleTimer, *_starTimer);
 
     if (std::abs(_pointMagnet.intensity) > 0.0f)
@@ -420,13 +562,12 @@ private:
 
     if (_useTrace == true)
     {
-      if (std::abs(_traceMagnet.intensityX) > 0.0f || std::abs(_traceMagnet.intensityY) > 0.0f)
-      {
-        jaffarCommon::logger::log("[J+]  + Trace Magnet                             Intensity: (X: %.5f, Y: %.5f), Step: %u (%+1u), X: %3.3f, Y: %3.3f\n", _traceMagnet.intensityX, _traceMagnet.intensityY, _traceStep, _traceMagnet.offset, _traceTargetX, _traceTargetY);
-        jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _traceDistanceX);
-        jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _traceDistanceY);
-        jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _traceDistance);
-      }
+      jaffarCommon::logger::log("[J+]  + Trace Magnet Step:                      %u (%+1u)\n", _traceStep, _traceMagnet.offset);
+      if (std::abs(_traceMagnet.intensityPosX) > 0.0f)    jaffarCommon::logger::log("[J+]    + Pos X    / Intensity  %8.3f / Target %8.3f / Distance %7.3f / Effect %7.4f\n", _traceMagnet.intensityPosX, _tracePosTargetX, _tracePosDistanceX, _tracePosEffectX);
+      if (std::abs(_traceMagnet.intensityPosY) > 0.0f)    jaffarCommon::logger::log("[J+]    + Pos Y    / Intensity  %8.3f / Target %8.3f / Distance %7.3f / Effect %7.4f\n", _traceMagnet.intensityPosY, _tracePosTargetY, _tracePosDistanceY, _tracePosEffectY);
+      if (std::abs(_traceMagnet.intensityVelX) > 0.0f)    jaffarCommon::logger::log("[J+]    + Vel X    / Intensity  %8.3f / Target %8.3f / Distance %7.3f / Effect %7.4f\n", _traceMagnet.intensityVelX, _traceVelTargetX, _traceVelDistanceX, _traceVelEffectX);
+      if (std::abs(_traceMagnet.intensityVelY) > 0.0f)    jaffarCommon::logger::log("[J+]    + Vel Y    / Intensity  %8.3f / Target %8.3f / Distance %7.3f / Effect %7.4f\n", _traceMagnet.intensityVelY, _traceVelTargetY, _traceVelDistanceY, _traceVelEffectY);
+      if (std::abs(_traceMagnet.intensityScreenX) > 0.0f) jaffarCommon::logger::log("[J+]    + Screen X / Intensity  %8.3f / Target %8.3f / Distance %7.3f / Effect %7.4f\n", _traceMagnet.intensityScreenX, _traceScreenPosTargetX, _traceScreenPosDistanceX, _traceScreenPosEffectX);
     }
   }
 
@@ -446,10 +587,20 @@ private:
     if (actionType == "Set Trace Magnet")
     {
       if (_useTrace == false) JAFFAR_THROW_LOGIC("Specified Trace Magnet, but no trace file was provided.");
-      auto intensityX = jaffarCommon::json::getNumber<float>(actionJs, "Intensity X");
-      auto intensityY = jaffarCommon::json::getNumber<float>(actionJs, "Intensity Y");
+      auto intensityPosX = jaffarCommon::json::getNumber<float>(actionJs, "Intensity Pos X");
+      auto intensityPosY = jaffarCommon::json::getNumber<float>(actionJs, "Intensity Pos Y");
+      auto intensityVelX = jaffarCommon::json::getNumber<float>(actionJs, "Intensity Vel X");
+      auto intensityVelY = jaffarCommon::json::getNumber<float>(actionJs, "Intensity Vel Y");
+      auto intensityScreenX = jaffarCommon::json::getNumber<float>(actionJs, "Intensity Screen X");
       auto offset    = jaffarCommon::json::getNumber<int>(actionJs, "Offset");
-      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.intensityX = intensityX, .intensityY = intensityY, .offset = offset }; });
+      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{
+        .intensityPosX = intensityPosX,
+        .intensityPosY = intensityPosY,
+        .intensityVelX = intensityVelX,
+        .intensityVelY = intensityVelY,
+        .intensityScreenX = intensityScreenX,
+        .offset = offset };
+       });
       recognizedActionType = true;
     }
 
@@ -458,8 +609,52 @@ private:
 
   __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override
   {
-    // There is no discriminating state element, so simply return a zero hash
-    return jaffarCommon::hash::hash_t();
+    jaffarCommon::hash::hash_t inputHash;
+
+    inputHash.first |= (uint64_t)*_playerPosX1 << 0;
+    inputHash.first |= (uint64_t)*_playerPosX2 << 8;
+    inputHash.first |= (uint64_t)*_playerPosX3 << 16;
+    inputHash.first |= (uint64_t)*_playerPosY2 << 24;
+    inputHash.first |= (uint64_t)*_playerPosX3 << 32;
+    inputHash.first |= (uint64_t)*_playerVelX1 << 40;
+    inputHash.first |= (uint64_t)*_playerVelY1 << 48;
+    inputHash.first |= (uint64_t)*_playerVelY2 << 56;
+
+    inputHash.second += _lowMem[0x0000] + 
+                        _lowMem[0x0002] + 
+                        _lowMem[0x0003] + 
+                        _lowMem[0x0005] + 
+                        _lowMem[0x03AD] + 
+                        _lowMem[0x03B8] + 
+                        _lowMem[0x0400] + 
+                        _lowMem[0x0416] + 
+                        _lowMem[0x0433] + 
+                        _lowMem[0x0450] + 
+                        _lowMem[0x0456] + 
+                        _lowMem[0x0490] + 
+                        _lowMem[0x04AC] + 
+                        _lowMem[0x06D5] + 
+                        _lowMem[0x0700] + 
+                        _lowMem[0x0701] + 
+                        _lowMem[0x0702] + 
+                        _lowMem[0x0704] + 
+                        _lowMem[0x0705] + 
+                        _lowMem[0x0709] + 
+                        _lowMem[0x070A] + 
+                        _lowMem[0x070B] + 
+                        _lowMem[0x070C] + 
+                        _lowMem[0x070D] + 
+                        _lowMem[0x0714] + 
+                        _lowMem[0x071C] + 
+                        _lowMem[0x071D] + 
+                        _lowMem[0x071E] + 
+                        _lowMem[0x071F] + 
+                        _lowMem[0x0722] + 
+                        _lowMem[0x0723] + 
+                        _lowMem[0x0754] + 
+                        _lowMem[0x0755];
+
+    return inputHash;
   }
 
   // Datatype to describe a point magnet
@@ -473,7 +668,7 @@ private:
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
   pointMagnet_t _pointMagnet;
 
-  uint16_t* _screenPosX1          ;
+  uint8_t* _screenPosX1          ;
   uint8_t * _playerAnimation      ;
   uint8_t * _playerState          ;
   uint8_t * _playerPosX1          ;
@@ -546,6 +741,7 @@ private:
   uint8_t * _playerGamePad2       ;
   uint16_t* _warpAreaOffset       ;
   uint8_t * _warpZoneControl;
+  uint8_t * _nextScreen;
 
   // Game-Specific values
   float _playerDistanceToPointX;
@@ -573,7 +769,11 @@ private:
   __INLINE__ bool playerParseCommand(const int command)
   {
     // If storing a trace, do it here
-    if (_isDumpingTrace == true) _traceDumpString += std::to_string(_playerPosX) + std::string(" ") + std::to_string(_playerPosY) + std::string("\n");
+    if (_isDumpingTrace == true) _traceDumpString += std::to_string(_playerPosX) + std::string(" ") +
+                                                     std::to_string(_playerPosY) + std::string(" ") +
+                                                     std::to_string(*_playerVelX1) + std::string(" ") +
+                                                     std::to_string(*_playerVelY1) + std::string(" ") +
+                                                     std::to_string(_playerScreenOffset) + std::string("\n");
 
      if (command == 't')
      {
@@ -601,16 +801,22 @@ private:
 
   struct traceMagnet_t
   {
-    float intensityX = 0.0; // How strong the magnet is on X
-    float intensityY = 0.0; // How strong the magnet is on Y
+    float intensityPosX = 0.0;
+    float intensityPosY = 0.0;
+    float intensityVelX = 0.0;
+    float intensityVelY = 0.0;
+    float intensityScreenX = 0.0;
     int offset      = 0; // Which entry (step) to look at wrt the current emulation step
   };
 
   // Trace contents
   struct traceEntry_t
   {
-    float x;
-    float y;
+    float posx;
+    float posy;
+    float velx;
+    float vely;
+    float screenPosx;
   };
   std::vector<traceEntry_t> _trace;
 
@@ -620,14 +826,33 @@ private:
 
   // Current trace target
   uint16_t _traceStep;
-  float _traceTargetX;
-  float _traceTargetY;
-  float _traceDistanceX;
-  float _traceDistanceY;
-  float _traceDistance;
+  
+  float _tracePosTargetX;
+  float _tracePosTargetY;
+  float _traceVelTargetX;
+  float _traceVelTargetY;
+  float _traceScreenPosTargetX;
+ 
+  float _tracePosDistanceX;
+  float _tracePosDistanceY;
+  float _traceVelDistanceX;
+  float _traceVelDistanceY;
+  float _traceScreenPosDistanceX;
+
+  float _tracePosEffectX;
+  float _tracePosEffectY;
+  float _traceVelEffectX;
+  float _traceVelEffectY;
+  float _traceScreenPosEffectX;
 
   // Pointer to emulator's low memory storage
   uint8_t* _lowMem;
+
+  // Temporary storage for the emulator state for calculating hash
+  uint8_t* _tempStorage;
+  size_t   _tempStorageSize;
+
+  InputSet::inputIndex_t _nullInputIdx;
 };
 
 } // namespace nes

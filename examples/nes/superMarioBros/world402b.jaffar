@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 1300,
+        "Max Steps": 430,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -25,7 +25,7 @@
         "Emulator Name": "QuickerNES",
         "Rom File Path": "Super Mario Bros. (JU) (PRG0) [!].nes",
         "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
-        "Initial Sequence File Path": "world102a.initial.sol",
+        "Initial Sequence File Path": "world402b.initial.sol",
         "Initial State File Path": "",
         "Use Flat Code Map": false,
         "Initial RAM Data File Path": "",
@@ -46,11 +46,11 @@
         "Bypass Hash Calculation": false,
         "Frameskip Rate": 0,
         "Hash Step Tolerance": 4,
-        "Show Empty Input Slots": true,
-        "Show Allowed Inputs": true,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 1300
+            "Max Size": 430
         },
         "Allowed Input Sets": [
             {
@@ -101,6 +101,7 @@
                     "|..|...R..BA|",
                     "|..|..LR..BA|",
                     "|..|UDL...B.|",
+                    "|..|UD.R..B.|",
                     "|..|.DLR..B.|",
                     "|..|.DL...B.|"
                 ],
@@ -172,7 +173,7 @@
         "Game Name": "NES / Super Mario Bros",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Trace File Path": "world102a.trace",
+        "Trace File Path": "world402b.trace",
         "Print Properties": [
         ],
         "Hash Properties": [
@@ -185,26 +186,12 @@
                 "Actions": [
                     {
                         "Type": "Set Trace Magnet",
-                        "Intensity X": 1.0,
-                        "Intensity Y": 0.1,
-                        "Offset": 0
-                    }
-                ]
-            },
-            {
-                "Label": 1001,
-                "Conditions": [
-                    {
-                        "Property": "Warp Zone Control",
-                        "Op": ">",
-                        "Value": 1
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 5.0
+                        "Intensity Pos X": 1.0,
+                        "Intensity Pos Y": 0.1,
+                        "Intensity Vel X": 0.01,
+                        "Intensity Vel Y": 0.01,
+                        "Intensity Screen X": 0.5,
+                        "Offset": 1
                     }
                 ]
             },
@@ -215,16 +202,6 @@
                         "Property": "Player State",
                         "Op": "==",
                         "Value": 3
-                    },
-                    {
-                        "Property": "Warp Zone Control",
-                        "Op": ">",
-                        "Value": 1
-                    },
-                    {
-                        "Property": "Player Pos X",
-                        "Op": "<",
-                        "Value": 2880
                     }
                 ],
                 "Satisfies": [],
@@ -254,14 +231,9 @@
                 "Label": 1998,
                 "Conditions": [
                     {
-                        "Property": "Player Vel X1",
-                        "Op": "<",
-                        "Value": -4
-                    },
-                    {
-                        "Property": "Warp Zone Control",
-                        "Op": "<",
-                        "Value": 4
+                        "Property": "Warp Area Offset",
+                        "Op": "==",
+                        "Value": 2114
                     }
                 ],
                 "Satisfies": [],
