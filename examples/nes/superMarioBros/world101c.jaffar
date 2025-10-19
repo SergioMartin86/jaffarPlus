@@ -18,7 +18,7 @@
             "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 400000
+            "Max Size (Mb)": 1000
         }
     },
     "Emulator Configuration": {
@@ -88,6 +88,36 @@
                 "Inputs": [
                     "|..|.D......|",
                     "|..|.......A|",
+                    "|..|UDLR....|",
+                    "|..|.DLR....|",
+                    "|..|..LR....|",
+                    "|..|..L....A|",
+                    "|..|...R...A|",
+                    "|..|......B.|",
+                    "|..|..L...B.|",
+                    "|..|...R..B.|",
+                    "|..|..LR..B.|",
+                    "|..|..L...BA|",
+                    "|..|...R..BA|",
+                    "|..|..LR..BA|",
+                    "|..|UDL...B.|",
+                    "|..|.DLR..B.|",
+                    "|..|.DL...B.|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|U.......|",
+                    "|..|.D......|",
+                    "|..|.......A|",
+                    "|..|......B.|",
+                    "|..|......BA|",
                     "|..|..LR....|",
                     "|..|..L....A|",
                     "|..|...R...A|",
@@ -96,13 +126,47 @@
                     "|..|..LR..B.|",
                     "|..|..L...BA|",
                     "|..|...R..BA|",
-                    "|..|..LR..BA|"
+                    "|..|..LR..BA|",
+                    "|..|U......A|",
+                    "|..|U.....B.|",
+                    "|..|U.....BA|",
+                    "|..|U.LR....|",
+                    "|..|U.L....A|",
+                    "|..|U..R...A|",
+                    "|..|U.L...B.|",
+                    "|..|U..R..B.|",
+                    "|..|U.LR..B.|",
+                    "|..|U.L...BA|",
+                    "|..|U..R..BA|",
+                    "|..|U.LR..BA|",
+                    "|..|.D.....A|",
+                    "|..|.D....B.|",
+                    "|..|.D....BA|",
+                    "|..|.DLR....|",
+                    "|..|.DL....A|",
+                    "|..|.D.R...A|",
+                    "|..|.DL...B.|",
+                    "|..|.D.R..B.|",
+                    "|..|.DLR..B.|",
+                    "|..|.DL...BA|",
+                    "|..|.D.R..BA|",
+                    "|..|.DLR..BA|",
+                    "|..|UD.....A|",
+                    "|..|UD....B.|",
+                    "|..|UD....BA|",
+                    "|..|UDLR....|",
+                    "|..|UDL....A|",
+                    "|..|UD.R...A|",
+                    "|..|UDL...B.|",
+                    "|..|UD.R..B.|",
+                    "|..|UDLR..B.|",
+                    "|..|UDL...BA|",
+                    "|..|UD.R..BA|",
+                    "|..|UDLR..BA|"
                 ],
                 "Stop Input Evaluation": false
             }
-        ],
-        "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        ]
     },
     "Game Configuration": {
         "Game Name": "NES / Super Mario Bros",
@@ -122,8 +186,8 @@
                     {
                         "Type": "Set Trace Magnet",
                         "Intensity X": 1.0,
-                        "Intensity Y": 0.1,
-                        "Offset": 1
+                        "Intensity Y": 0.01,
+                        "Offset": 0
                     }
                 ]
             },
