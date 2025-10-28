@@ -34,8 +34,11 @@ public:
     // Getting emulator name (for runtime use)
     _gameName = jaffarCommon::json::getString(config, "Game Name");
 
-    // Parsing printable game properties
+    // Parsing frame rate
     _frameRate = jaffarCommon::json::getNumber<float>(config, "Frame Rate");
+
+    // Parsing whether to bypass emulator state load/saving
+    _bypassEmulatorState = jaffarCommon::json::getBoolean(config, "Bypass Emulator State");
 
     // Marking printable properties
     const auto& printProperties = jaffarCommon::json::getArray<std::string>(config, "Print Properties");
@@ -118,7 +121,7 @@ public:
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const
   {
     // Serializing internal emulator state
-    _emulator->serializeState(serializer);
+    if (_bypassEmulatorState == false) _emulator->serializeState(serializer);
 
     // Storage for game-specific data
     serializeStateImpl(serializer);
@@ -149,7 +152,7 @@ public:
     stateUpdatePreHook();
 
     // Storage for the internal emulator state
-    _emulator->deserializeState(deserializer);
+    if (_bypassEmulatorState == false) _emulator->deserializeState(deserializer);
 
     // Storage for game-specific data
     deserializeStateImpl(deserializer);
@@ -720,6 +723,9 @@ protected:
 
   // Inverse frame rate to play the game with, required for correct playback
   float _frameRate;
+
+  // Flag to bypass emulator saving to allow the game take care of it entirely
+  bool _bypassEmulatorState;
 
   // Game name (for runtime use)
   std::string _gameName;

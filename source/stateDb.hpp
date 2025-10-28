@@ -6,6 +6,8 @@
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/parallel.hpp>
+#include <jaffarCommon/serializers/differential.hpp>
+#include <jaffarCommon/deserializers/differential.hpp>
 #include <memory>
 #include <utmpx.h>
 
@@ -29,6 +31,12 @@ public:
 
     // Overriding if provided
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
+
+    // Parsing whether to use differential compression
+    const auto differentialCompressionJs = jaffarCommon::json::getObject(config, "Differential Compression");
+    _differentialCompressionEnabled = jaffarCommon::json::getBoolean(differentialCompressionJs, "Enabled");
+    _differentialCompressionBufferSize = jaffarCommon::json::getNumber<size_t>(differentialCompressionJs, "Buffer Size");
+    _differentialCompressionUseZlibCompression = jaffarCommon::json::getBoolean(differentialCompressionJs, "Use Zlib Compression");
   }
 
   ~StateDb() = default;
@@ -41,10 +49,34 @@ public:
     // We want to align each state to 512 bits (64 bytes) to favor vectorized access
     // Now calculating the necessary padding to reach the next multiple of 64 bytes
     _stateSize = _stateSizeRaw;
-    if (_stateSize % _JAFFAR_STATE_PADDING_BYTES != 0) _stateSize = ((_stateSizeRaw / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
+
+    // Reserving storage for the base data buffer for differential compression, if needed
+    _differentialCompressionEncodeBaseState = (uint8_t*) malloc (_stateSizeRaw);
+    _differentialCompressionDecodeBaseState = (uint8_t*) malloc (_stateSizeRaw);
+
+    // If using differential compression
+    if (_differentialCompressionEnabled == true)
+    {
+      // Set the state size to the maximum compression buffer size
+      _stateSize = _differentialCompressionBufferSize;
+
+      // Reserving storage for the temporary output buffer for differential compression, one per thread
+      _differentialCompressionBuffer.resize(_threadCount);
+      JAFFAR_PARALLEL
+      {
+       _differentialCompressionBuffer[_myThreadId] = (uint8_t*) calloc (_stateSizeRaw, 1);
+      }
+
+      // Resetting maximum differential bytes used so far
+      _differentialCompressionMaxBytesUsed = 0;
+    }
+
+    // Padding state size to enforce alignment and prevent false sharing as much as possible
+    const size_t baseStateSize = _stateSize;
+    if (_stateSize % _JAFFAR_STATE_PADDING_BYTES != 0) _stateSize = ((baseStateSize / _JAFFAR_STATE_PADDING_BYTES) + 1) * _JAFFAR_STATE_PADDING_BYTES;
 
     // Padding is the difference between the aligned state size and the raw one
-    _stateSizePadding = _stateSize - _stateSizeRaw;
+    _stateSizePadding = _stateSize - baseStateSize;
 
     // Setting counters for database state popping
     _numaNonLocalDatabaseStateCount = 0;
@@ -138,15 +170,37 @@ public:
   /**
    * Saves the runner state into the provided state data pointer
    */
-  __INLINE__ size_t saveStateFromRunner(Runner& r, void* statePtr) const
+  __INLINE__ size_t saveStateFromRunner(Runner& r, void* statePtr)
   {
+    // If using differential compression, the output pointer is the intermediate buffer. Otherwise, just use the passed pointer
+    uint8_t* stateBuffer = _differentialCompressionEnabled ? _differentialCompressionBuffer[_myThreadId] : (uint8_t*)statePtr;
+
     // Storage for the state size after deserialization
     size_t serializedSize = 0;
 
     // Serializing the runner state into the memory received
-    jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
+    jaffarCommon::serializer::Contiguous s(stateBuffer, _stateSizeRaw);
     r.serializeState(s);
     serializedSize = s.getOutputSize();
+
+    // If using differential compression, compress now into the passed state pointer
+    if (_differentialCompressionEnabled)
+    {
+      // Creating differential compressor with respect to the base state
+      jaffarCommon::serializer::Differential s(_differentialCompressionBuffer[_myThreadId], _stateSize, _differentialCompressionEncodeBaseState, _stateSizeRaw, _differentialCompressionUseZlibCompression);
+
+      // Now push the state buffer into the differential buffer output
+      s.push(stateBuffer, _stateSizeRaw);
+
+      // Getting number of differential bytes used
+      const auto diffBytesCount = s.getDifferentialBytesCount();
+
+      // Keeping track of the most bytes used
+      if (diffBytesCount > _differentialCompressionMaxBytesUsed) _differentialCompressionMaxBytesUsed = diffBytesCount;
+
+      // Copy the differential output buffer into the passed state pointer
+      memcpy(statePtr, _differentialCompressionBuffer[_myThreadId], _stateSize);
+    }
 
     return serializedSize;
   }
@@ -162,6 +216,7 @@ public:
     // Encoding internal runner state into the state pointer
     try
     {
+      // Getting state from the runner
       saveStateFromRunner(r, statePtr);
     }
     catch (const std::runtime_error& x)
@@ -186,8 +241,21 @@ public:
    */
   __INLINE__ void loadStateIntoRunner(Runner& r, const void* statePtr)
   {
-    // Deserializing the runner state from the memory received
-    jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
+    // If using differential compression, the input pointer is the intermediate buffer. Otherwise, just use the passed pointer
+    uint8_t* stateBuffer = _differentialCompressionEnabled ? _differentialCompressionBuffer[_myThreadId] : (uint8_t*)statePtr;
+
+    // If using differential compression, now do the decompressing
+    if (_differentialCompressionEnabled == true)
+    {
+      // Creating differential decompressor, using the provided state pointer as input
+      jaffarCommon::deserializer::Differential d(statePtr, _stateSize, _differentialCompressionDecodeBaseState, _stateSizeRaw, _differentialCompressionUseZlibCompression);
+
+      // Extracting state into input buffer
+      d.pop(_differentialCompressionBuffer[_myThreadId], _stateSizeRaw);
+    }
+
+    // Now contiguously decompressing into the runner
+    jaffarCommon::deserializer::Contiguous d(stateBuffer, _stateSizeRaw);
     r.deserializeState(d);
   }
 
@@ -203,6 +271,8 @@ public:
                               (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
     jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
     jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
+        if (_differentialCompressionEnabled)
+    jaffarCommon::logger::log("[J+]  + Max Differential Bytes:        %lu / %lu bytes (%.2f%%)\n", _differentialCompressionMaxBytesUsed, _stateSize, 100.0 * ((double)_differentialCompressionMaxBytesUsed) / (double)_stateSize); 
 
     // Only print the first and the last
     for (int i = 0; i < _numaCount; i++) if (i == 0 || i == _numaCount - 1)
@@ -372,6 +442,10 @@ public:
         }
       }
     }
+
+    // If using differential compression, set the best state as encoding base state and transfer the current encoding base state to the decoder
+    memcpy(_differentialCompressionDecodeBaseState, _differentialCompressionEncodeBaseState, _stateSizeRaw);
+    memcpy(_differentialCompressionEncodeBaseState, _bestState, _stateSizeRaw);
   }
 
   __INLINE__ void* popState()
@@ -411,14 +485,27 @@ public:
   }
 
   /**
+   * Manual setter for base state, to be used for differential compression
+   */
+  __INLINE__ void setDifferentialCompressionEncodeBaseState(const void* stateData) 
+  {
+    memcpy(_differentialCompressionEncodeBaseState, stateData, _stateSizeRaw);
+  }
+
+  /**
    * This function returns a pointer to the best state found in the current state database
    */
-  void* getBestState() const { return _bestState; }
+  __INLINE__ void* getBestState() const { return _bestState; }
 
   /**
    * This function returns a pointer to the worst state found in the current state database
    */
-  void* getWorstState() const { return _worstState; }
+  __INLINE__ void* getWorstState() const { return _worstState; }
+
+  /**
+  * Gets the state sizes, as stored in the database  
+  */
+  __INLINE__ size_t getStateSizeInDatabase() const { return _stateSize; }
 
 private:
 
@@ -546,6 +633,43 @@ private:
    * Number of bytes to allocate per NUMA domain
    */
   std::vector<size_t> _allocableBytesPerNuma;
+
+  /**
+   * Establishes whether to use diffeerntial compression for state storage.
+   * This is a tradeoff between computation load and memory use
+   */
+  bool _differentialCompressionEnabled; 
+
+  /**
+   * Size for the compression buffer
+   */
+  size_t _differentialCompressionBufferSize;
+
+  /**
+   * Temporary storage for the compression output, one per thread
+   */
+  std::vector<uint8_t*> _differentialCompressionBuffer;
+
+  /**
+   * Temporary storage for the compression output for encoding
+   */
+  uint8_t* _differentialCompressionEncodeBaseState;
+
+  /**
+   * Temporary storage for the compression output for encoding
+   */
+  uint8_t* _differentialCompressionDecodeBaseState;
+
+  /**
+   * Establishes whether to use Zlib compression to increase compression ratio.
+   * It is computationally demanding
+   */
+  bool _differentialCompressionUseZlibCompression;
+
+  /**
+   * For statistics, store the maximum byte use of the differential compression buffer
+   */
+  size_t _differentialCompressionMaxBytesUsed;
 };
 
 } // namespace jaffarPlus

@@ -68,67 +68,6 @@ public:
    */
   void initialize()
   {
-    // Initializing runners, one per thread
-    JAFFAR_PARALLEL
-    {
-      // Creating thread's own runner
-      auto& r = _runners[_myThreadId];
-
-      // Initializing runner
-      r->initialize();
-    }
-
-    // Initializing State Db
-    _stateDb->initialize();
-
-    // Initializing hash database
-    _hashDb->initialize();
-
-    // Grabbing a runner to do continue initialization
-    auto& r = *_runners[0];
-
-    // Getting memory for the reference state
-    const auto stateSize = r.getStateSize();
-
-    // Allocating memory for the best win state
-    _stepBestWinState.stateData = malloc(stateSize);
-
-    // Allocating memory for manual state saving
-    _manualSaveSolution.stateData = malloc(stateSize);
-
-    // Evaluate game rules on the initial state
-    r.getGame()->evaluateRules();
-
-    // Determining new game state type
-    r.getGame()->updateGameStateType();
-
-    // Running game-specific rule actions
-    r.getGame()->runGameSpecificRuleActions();
-
-    // Updating game reward
-    r.getGame()->updateReward();
-
-    // Getting reward for the initial state
-    const auto reward = r.getGame()->getReward();
-
-    // Getting a free state data pointer to store the state into
-    auto stateData = _stateDb->getFreeState();
-
-    // Pushing initial state to the next state database
-    _stateDb->pushState(reward, r, stateData);
-
-    // Advancing the step in the state database
-    _stateDb->advanceStep();
-
-    // Getting hash from first state
-    const auto hash = r.computeHash();
-
-    // Adding it to the hash DB
-    _hashDb->insertHash(hash);
-  }
-
-  void reset()
-  {
     // Initializing state counters
     _totalBaseStatesProcessed = 0;
     _totalNewStatesProcessed  = 0;
@@ -170,6 +109,67 @@ public:
 
     // Resetting last active manually solution save rule id
     _manualSaveSolutionActiveLastRuleId = -1;
+
+    // Initializing runners, one per thread
+    JAFFAR_PARALLEL
+    {
+      // Creating thread's own runner
+      auto& r = _runners[_myThreadId];
+
+      // Initializing runner
+      r->initialize();
+    }
+
+    // Initializing State Db
+    _stateDb->initialize();
+
+    // Initializing hash database
+    _hashDb->initialize();
+
+    // Grabbing a runner to do continue initialization
+    auto& r = *_runners[0];
+
+    // Evaluate game rules on the initial state
+    r.getGame()->evaluateRules();
+
+    // Determining new game state type
+    r.getGame()->updateGameStateType();
+
+    // Running game-specific rule actions
+    r.getGame()->runGameSpecificRuleActions();
+
+    // Updating game reward
+    r.getGame()->updateReward();
+
+    // Getting reward for the initial state
+    const auto reward = r.getGame()->getReward();
+    
+    // Getting a free state data pointer to store the state into
+    auto stateData = _stateDb->getFreeState();
+
+    // Manually setting the initial base state for differential compression, if needed
+    _stateDb->setDifferentialCompressionEncodeBaseState(stateData);
+
+    // Pushing initial state to the next state database
+    _stateDb->pushState(reward, r, stateData);
+
+    // Advancing the step in the state database
+    _stateDb->advanceStep();
+
+    // Getting memory for the reference state
+    _stateSizeInDatabase = _stateDb->getStateSizeInDatabase();
+
+    // Allocating memory for the best win state
+    _stepBestWinState.stateData = malloc(_stateSizeInDatabase);
+
+    // Allocating memory for manual state saving
+    _manualSaveSolution.stateData = malloc(_stateSizeInDatabase);
+
+    // Getting hash from first state
+    const auto hash = r.computeHash();
+
+    // Adding it to the hash DB
+    _hashDb->insertHash(hash);
   }
 
   /**
@@ -446,6 +446,8 @@ public:
       for (const auto input : entry.second) jaffarCommon::logger::log("[J+]    + %3lu %s\n", input, _runners[0]->getInputStringFromIndex(input).c_str());
     }
   }
+
+  __INLINE__ size_t getStateSizeInDatabase() const { return _stateSizeInDatabase; }
 
 private:
 
@@ -735,6 +737,9 @@ private:
 
   // The thread-safe hash database to check for repeated states
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
+
+  // State size, as stored in the database
+  size_t _stateSizeInDatabase;
 
   // Set of win states found
   std::mutex _stepBestWinStateLock;

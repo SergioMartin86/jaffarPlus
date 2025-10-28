@@ -1,24 +1,28 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 430,
+        "Max Steps": 500,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 8,
+        "NUMA Domains Per Group": 2,
         "Hash Database": {
             "Max Store Count": 2,
             "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 100000
+            "Max Size (Mb)": 100000,
+            "Differential Compression":
+            {
+                "Enabled": true,
+                "Buffer Size": 1344,
+                "Use Zlib Compression": false
+            }
         }
     },
     "Emulator Configuration": {
@@ -45,12 +49,12 @@
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
         "Frameskip Rate": 0,
-        "Hash Step Tolerance": 4,
+        "Hash Step Tolerance": 1,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 430
+            "Max Size": 500
         },
         "Allowed Input Sets": [
             {
@@ -103,7 +107,10 @@
                     "|..|UDL...B.|",
                     "|..|UD.R..B.|",
                     "|..|.DLR..B.|",
-                    "|..|.DL...B.|"
+                    "|..|.DL...B.|",
+                    "|..|UDL...BA|",
+                    "|..|UDLR.sBA|",
+                    "|..|UD....BA|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -163,7 +170,8 @@
                     "|..|UDLR..B.|",
                     "|..|UDL...BA|",
                     "|..|UD.R..BA|",
-                    "|..|UDLR..BA|"
+                    "|..|UDLR..BA|",
+                    "|..|UDLR.sBA|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -172,6 +180,7 @@
     "Game Configuration": {
         "Game Name": "NES / Super Mario Bros",
         "Frame Rate": 60.1,
+        "Bypass Emulator State": true,
         "Last Input Step Reward": 0.0,
         "Trace File Path": "world402b.trace",
         "Print Properties": [
@@ -190,7 +199,7 @@
                         "Intensity Pos Y": 0.1,
                         "Intensity Vel X": 0.01,
                         "Intensity Vel Y": 0.01,
-                        "Intensity Screen X": 0.5,
+                        "Intensity Screen X": 0.0,
                         "Offset": 1
                     }
                 ]
@@ -202,6 +211,11 @@
                         "Property": "Player State",
                         "Op": "==",
                         "Value": 3
+                    },
+                    {
+                        "Property": "Player Pos X",
+                        "Op": "<",
+                        "Value": 832
                     }
                 ],
                 "Satisfies": [],
@@ -218,22 +232,6 @@
                         "Property": "Player State",
                         "Op": "==",
                         "Value": 11
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
-                    }
-                ]
-            },
-            {
-                "Label": 1998,
-                "Conditions": [
-                    {
-                        "Property": "Warp Area Offset",
-                        "Op": "==",
-                        "Value": 2114
                     }
                 ],
                 "Satisfies": [],

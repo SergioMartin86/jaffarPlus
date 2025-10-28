@@ -51,8 +51,6 @@ public:
     _saveIntermediateFrequency           = jaffarCommon::json::getNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
     _saveIntermediateBestSolutionPath    = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path");
     _saveIntermediateWorstSolutionPath   = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst Solution Path");
-    _saveIntermediateBestStatePath       = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best State Path");
-    _saveIntermediateWorstStatePath      = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst State Path");
 
     // Getting component configurations
     auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
@@ -92,7 +90,7 @@ public:
     _engine->initialize();
 
     // Allocating space for the current best and worst states
-    _stateSize = _runner->getStateSize();
+    _stateSize = _engine->getStateSizeInDatabase();
     _bestStateStorage.resize(_stateSize);
     _worstStateStorage.resize(_stateSize);
   }
@@ -100,9 +98,6 @@ public:
   // Start running engine loop
   int run()
   {
-    // Resetting engine
-    _engine->reset();
-
     // Internal flag to indicate we are still running
     _hasFinished = false;
 
@@ -207,11 +202,9 @@ public:
 
     // Saving files with standard name
     if (_saveIntermediateBestSolutionPath != "") jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath);
-    if (_saveIntermediateBestStatePath != "")    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath);
 
     // Saving files with a job suffix and step number
     if (_saveIntermediateBestSolutionPath != "") jaffarCommon::file::saveStringToFile(_bestSolutionStorage, _saveIntermediateBestSolutionPath + jobSuffix + stepSuffix);
-    if (_saveIntermediateBestStatePath != "")    jaffarCommon::file::saveStringToFile(_bestStateStorage, _saveIntermediateBestStatePath + jobSuffix + stepSuffix);
 
     // Making sure the main thread is not currently writing
     _updateIntermediateResultMutex.unlock();
@@ -227,11 +220,9 @@ public:
 
     // Saving best solution and state
     if (_saveIntermediateWorstSolutionPath != "") jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath);
-    if (_saveIntermediateWorstStatePath != "")    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath);
 
     // Saving best solution and state
     if (_saveIntermediateWorstSolutionPath != "") jaffarCommon::file::saveStringToFile(_worstSolutionStorage, _saveIntermediateWorstSolutionPath + jobSuffix);
-    if (_saveIntermediateWorstStatePath != "")    jaffarCommon::file::saveStringToFile(_worstStateStorage, _saveIntermediateWorstStatePath + jobSuffix);
 
     // Making sure the main thread is not currently writing
     _updateIntermediateResultMutex.unlock();
@@ -461,12 +452,6 @@ private:
 
   // Path to store the worst solution found so far
   std::string _saveIntermediateWorstSolutionPath;
-
-  // Path to store the best state found so far
-  std::string _saveIntermediateBestStatePath;
-
-  // Path to store the worst solution found so far
-  std::string _saveIntermediateWorstStatePath;
 
   // Update intermediate result mutex
   std::mutex _updateIntermediateResultMutex;

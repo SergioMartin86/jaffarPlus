@@ -2,6 +2,7 @@
 
 #include <emulator.hpp>
 #include <game.hpp>
+#include <atomic>
 #include <jaffarCommon/json.hpp>
 
 namespace jaffarPlus
@@ -16,10 +17,11 @@ namespace nes
 class SuperMarioBros final : public jaffarPlus::Game
 {
 public:
+
   static __INLINE__ std::string getName() { return "NES / Super Mario Bros"; }
 
   SuperMarioBros(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
-  {
+{
     _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
 
     // Loading trace
@@ -250,7 +252,7 @@ private:
     // If entering the pipe, hash with timer to wait for going down
     if (*_playerState == 3) hashEngine.Update(_currentStep);
 
-    //#define __HASH_METHOD_0
+    // #define __HASH_METHOD_0
     #define __HASH_METHOD_1
 
     #ifdef __HASH_METHOD_0
@@ -278,6 +280,13 @@ private:
     {
       const size_t start = 0x074E;
       const size_t end = 0x077E;
+      const size_t diff = end - start;
+      hashEngine.Update(&_lowMem[start], diff);
+    }
+    // Skipping timers state
+    {
+      const size_t start = 0x07C0;
+      const size_t end = 0x07FF;
       const size_t diff = end - start;
       hashEngine.Update(&_lowMem[start], diff);
     }
@@ -431,6 +440,7 @@ private:
   {
     _playerPosX = (float)*_playerPosX1 * 256.0f + (float)*_playerPosX2 + ((float)*_playerPosX3) / 256.0f;
     _playerPosY = (float)*_playerPosY2 + (float)*_playerPosY3 / 256.0f;
+    if (_playerPosY > 210.0f) _playerPosY -= 256.0f;
     _screenPosX = (float)*_screenPosX1 * 256.0f + (float)*_screenPosX2;
     _playerScreenOffset = _playerPosX - _screenPosX;
   }
@@ -485,6 +495,7 @@ private:
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
+     serializer.push(_lowMem, 0x800);
      serializer.push(&_currentStep, sizeof(_currentStep));
      serializer.push(&_playerPosX, sizeof(_playerPosX));
      serializer.push(&_playerPosY, sizeof(_playerPosY));
@@ -494,6 +505,7 @@ private:
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
+     deserializer.pop(_lowMem, 0x800);
      deserializer.pop(&_currentStep, sizeof(_currentStep));
      deserializer.pop(&_playerPosX, sizeof(_playerPosX));
      deserializer.pop(&_playerPosY, sizeof(_playerPosY));

@@ -3,22 +3,26 @@
         "End On First Win State": true,
         "Max Steps": 630,
         "Save Intermediate Results": {
-            "Enabled": false,
+            "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
         "NUMA Domains Per Group": 2,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 30000
         },
         "State Database": {
-            "Max Size (Mb)": 100000
+            "Max Size (Mb)": 100000,
+            "Differential Compression":
+            {
+                "Enabled": true,
+                "Buffer Size": 1344,
+                "Use Zlib Compression": false
+            }
         }
     },
     "Emulator Configuration": {
@@ -45,11 +49,11 @@
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
         "Frameskip Rate": 0,
-        "Hash Step Tolerance": 4,
+        "Hash Step Tolerance": 2,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": false,
         "Store Input History": {
-            "Enabled": false,
+            "Enabled": true,
             "Max Size": 630
         },
         "Allowed Input Sets": [
@@ -173,6 +177,7 @@
     "Game Configuration": {
         "Game Name": "NES / Super Mario Bros",
         "Frame Rate": 60.1,
+        "Bypass Emulator State": true,
         "Last Input Step Reward": 0.0,
         "Trace File Path": "world402a.trace",
         "Print Properties": [
