@@ -21,6 +21,7 @@
 #include "nes/darkwingDuck.hpp"
 #include "nes/metroid.hpp"
 #include "nes/pacmanChampionship.hpp"
+#include "nes/pipeDream.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_SDLPOP
@@ -127,6 +128,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   DETECT_GAME(nes::DarkwingDuck);
   DETECT_GAME(nes::Metroid);
   DETECT_GAME(nes::PacManChampionship);
+  DETECT_GAME(nes::PipeDream);
 #ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
   DETECT_GAME(nes::Arkanoid2);
 #endif

@@ -1,0 +1,143 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 300,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "NUMA Domains Per Group": 2,
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 30000
+        },
+        "State Database": {
+            "Max Size (Mb)": 300000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 1344,
+                "Use Zlib Compression": true
+            }
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Pipe Dream (U) [!].nes",
+        "Rom File SHA1": "4929C3CD3D69239A16FAE52B2570E099CC6F4BC8",
+        "Initial Sequence File Path": "initial.sol",
+        "Initial State File Path": "",
+        "Use Flat Code Map": false,
+        "Initial RAM Data File Path": "",
+        "SRAM Block Size": 0,
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+	    "SRAM Block Size": 8192,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT",
+            "CTRL"
+        ],
+        "Nametable Block Size": 2048
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip Rate": 1,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 300
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|U.......|",
+                    "|..|.D......|",
+                    "|..|.......A|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Pipe Dream",
+        "Frame Rate": 60.1,
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [
+                    {
+                        "Property": "Current Depth",
+                        "Op": "==",
+                        "Value": "Target Score"
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Game State",
+                        "Op": "!=",
+                        "Value": 255
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Piece Replacement State",
+                        "Op": "!=",
+                        "Value": 7
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+	        }
+        ]
+    }
+}

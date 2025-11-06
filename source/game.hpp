@@ -488,7 +488,7 @@ public:
   __INLINE__ bool isInitialized() const { return _isInitialized; }
 
   // Function for new input discovery
-  virtual jaffarCommon::hash::hash_t getStateInputHash() = 0;
+  virtual jaffarCommon::hash::hash_t getStateInputHash() { return jaffarCommon::hash::hash_t(); };
 
   // Function to enable a game code to provide additional allowed inputs based on complex decisions
   virtual __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) {}
