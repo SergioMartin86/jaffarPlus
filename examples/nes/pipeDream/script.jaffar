@@ -10,7 +10,7 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 2,
+        "NUMA Domains Per Group": 1,
         "Hash Database": {
             "Max Store Count": 2,
             "Max Store Size (Mb)": 30000
