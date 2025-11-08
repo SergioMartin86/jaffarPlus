@@ -12,13 +12,13 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 8,
+        "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 100000
         },
         "State Database": {
-            "Max Size (Mb)": 400000
+            "Max Size (Mb)": 1000000
         }
     },
     "Emulator Configuration": {

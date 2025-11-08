@@ -10,17 +10,17 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 2,
+        "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 30000
+            "Max Store Size (Mb)": 50000
         },
         "State Database": {
-            "Max Size (Mb)": 100000,
+            "Max Size (Mb)": 1300000,
             "Differential Compression":
             {
                 "Enabled": true,
-                "Buffer Size": 1344,
+                "Buffer Size": 1536,
                 "Use Zlib Compression": false
             }
         }
@@ -223,7 +223,7 @@
                         "Intensity Vel X": 0.0,
                         "Intensity Vel Y": 0.0,
                         "Intensity Screen X": 0.0,
-                        "Offset": 1
+                        "Offset": 0
                     }
                 ]
             },

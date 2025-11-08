@@ -252,8 +252,8 @@ private:
     // If entering the pipe, hash with timer to wait for going down
     if (*_playerState == 3) hashEngine.Update(_currentStep);
 
-    // #define __HASH_METHOD_0
-    #define __HASH_METHOD_1
+    #define __HASH_METHOD_0
+    // #define __HASH_METHOD_1
 
     #ifdef __HASH_METHOD_0
     {
@@ -297,18 +297,18 @@ private:
     hashEngine.Update(*_blockBounceTimer);
     hashEngine.Update(*_sideCollisionTimer);
      hashEngine.Update(*_jumpspringTimer);
-    // hashEngine.Update(*_gameControlTimer);
+    hashEngine.Update(*_gameControlTimer % 2);
      hashEngine.Update(*_climbSideTimer);
-    // hashEngine.Update(*_enemyFrameTimer);
-    // hashEngine.Update(*_frenzyEnemyTimer);
-    // hashEngine.Update(*_bowserFireTimer);
-    // hashEngine.Update(*_stompTimer);
-    // hashEngine.Update(*_airBubbleTimer);
-    // hashEngine.Update(*_fallPitTimer);
-    // hashEngine.Update(*_multiCoinBlockTimer);
-    // hashEngine.Update(*_invincibleTimer);
-    // hashEngine.Update(*_starTimer);
-    // hashEngine.Update(*_powerUpActive);
+    hashEngine.Update(*_enemyFrameTimer % 2);
+    hashEngine.Update(*_frenzyEnemyTimer % 2);
+    hashEngine.Update(*_bowserFireTimer % 2);
+    hashEngine.Update(*_stompTimer % 2);
+    hashEngine.Update(*_airBubbleTimer % 2);
+    hashEngine.Update(*_fallPitTimer % 2);
+    hashEngine.Update(*_multiCoinBlockTimer % 2);
+    hashEngine.Update(*_invincibleTimer % 2);
+    hashEngine.Update(*_starTimer % 2);
+    hashEngine.Update(*_powerUpActive % 2);
 
     #endif
 
