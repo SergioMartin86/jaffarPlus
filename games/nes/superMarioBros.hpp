@@ -252,8 +252,8 @@ private:
     // If entering the pipe, hash with timer to wait for going down
     if (*_playerState == 3) hashEngine.Update(_currentStep);
 
-    #define __HASH_METHOD_0
-    // #define __HASH_METHOD_1
+    // #define __HASH_METHOD_0
+    #define __HASH_METHOD_1
 
     #ifdef __HASH_METHOD_0
     {
