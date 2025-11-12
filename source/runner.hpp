@@ -46,8 +46,11 @@ public:
     // Getting candidate input sets
     _candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
 
-    // Getting frame skip rate
-    _frameskipRate = jaffarCommon::json::getNumber<size_t>(config, "Frameskip Rate");
+    // Getting frame skip configuration
+    const auto frameskipJs = jaffarCommon::json::getObject(config, "Frameskip");
+    _frameskipRate = jaffarCommon::json::getNumber<size_t>(frameskipJs, "Rate");
+    _frameskipUseCustomInput = jaffarCommon::json::getBoolean(frameskipJs, "Use Custom Input");
+    _frameskipCustomInput = jaffarCommon::json::getString(frameskipJs, "Custom Input");
 
     // Option to bypass hash calculation via MetroHash and get it straight from the game
     _bypassHashCalculation = jaffarCommon::json::getBoolean(config, "Bypass Hash Calculation");
@@ -211,8 +214,10 @@ public:
     // If frameskip was set, execute it now
     for (size_t i = 0; i < _frameskipRate; i++)
     {
-      _game->advanceState(inputIdx);
-      pushInput(inputIdx);
+      InputSet::inputIndex_t frameskipInputIdx = inputIdx;
+      if (_frameskipUseCustomInput) frameskipInputIdx = getInputIndex(_frameskipCustomInput);
+      _game->advanceState(frameskipInputIdx);
+      pushInput(frameskipInputIdx);
     }
   }
 
@@ -455,6 +460,12 @@ private:
 
   // How many frames to skip
   size_t _frameskipRate;
+
+  // Whether to use a custom input. False will repeat the last input
+  bool _frameskipUseCustomInput;
+
+  // The custom input to use if not repeating the last
+  std::string _frameskipCustomInput;
 
   ///////////////////////////////////////////
   // Allowed and candidate input sets

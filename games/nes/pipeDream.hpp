@@ -63,6 +63,10 @@ public:
       { 0x02, { "╥", false, false, false, false,  false, false, false, true,  direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x08, { "╞", false, false, false, false,  false, true,  false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x04, { "╡", false, false, false, false,  true,  false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
+      { 0x10, { "╩", false, false, true,  false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
+      { 0x20, { "╦", false, false, false, true,   false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
+      { 0x80, { "╠", false, true,  false, false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
+      { 0x40, { "╣", true,  false, false, false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x12, { "↓", false, false, true,  false,  false, false, false, true , direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x21, { "↑", false, false, false, true,   false, false, true,  false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x48, { "→", true,  false, false, false,  false, true,  false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
@@ -127,10 +131,12 @@ private:
     _pieceReplacementState  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Replacement State"              )]->getPointer(); 
     _pieceReplacementTimer  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Replacement Timer"              )]->getPointer(); 
 
-    registerGameProperty("Current Depth"            ,&_currentDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Forward Depth"            ,&_forwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Backward Depth"           ,&_backwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Pieces On Board"          ,&_piecesOnBoard, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Target Score"             ,&_targetScore, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Lingering Pieces"         ,&_lingeringPieces, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Ends Have Met"            ,&_endsHaveMet, Property::datatype_t::dt_bool , Property::endianness_t::little);
 
     _nullInputIdx      = _emulator->registerInput("|..|........|");
     _buttonAInputIdx   = _emulator->registerInput("|..|.......A|");
@@ -146,7 +152,8 @@ private:
     _targetScore = *_pendingScore;
 
     // Looking for starter piece
-    bool startPieceFound = false;
+    _startPieceFound = false;
+    _endPieceFound = false;
     for (uint8_t i = 0; i < __PIPE_DREAM_GRID_ROWS; i++)
      for (uint8_t j = 0; j < __PIPE_DREAM_GRID_COLS; j++)
      {
@@ -155,12 +162,13 @@ private:
       // Storing initial pieces (fixed)
       if (pieceType != 0x00) _initialPieces.insert({i, j});
 
+      // Start Pieces
       if (pieceType == 0x01) // Up Facing
       {
         _startPieceRow = i;
         _startPieceCol = j;
         _startPieceDirection = direction_t::up;
-        startPieceFound = true;
+        _startPieceFound = true;
         break;
       }
 
@@ -169,7 +177,7 @@ private:
         _startPieceRow = i;
         _startPieceCol = j;
         _startPieceDirection = direction_t::down;
-        startPieceFound = true;
+        _startPieceFound = true;
         break;
       }
 
@@ -178,7 +186,7 @@ private:
         _startPieceRow = i;
         _startPieceCol = j;
         _startPieceDirection = direction_t::right;
-        startPieceFound = true;
+        _startPieceFound = true;
         break;
       }
 
@@ -187,12 +195,49 @@ private:
         _startPieceRow = i;
         _startPieceCol = j;
         _startPieceDirection = direction_t::left;
-        startPieceFound = true;
+        _startPieceFound = true;
+        break;
+      }
+
+      // End Pieces
+      if (pieceType == 0x10) // Up Facing
+      {
+        _endPieceRow = i;
+        _endPieceCol = j;
+        _endPieceFound = true;
+        _endPieceDirection = direction_t::down;
+        break;
+      }
+
+      if (pieceType == 0x20) // Down Facing
+      {
+        _endPieceRow = i;
+        _endPieceCol = j;
+        _endPieceFound = true;
+        _endPieceDirection = direction_t::up;
+        break;
+      }
+
+      if (pieceType == 0x80) // Right Facing
+      {
+        _endPieceRow = i;
+        _endPieceCol = j;
+        _endPieceFound = true;
+        _endPieceDirection = direction_t::left;
+        break;
+      }
+
+      if (pieceType == 0x40) // Left Facing
+      {
+        _endPieceRow = i;
+        _endPieceCol = j;
+        _endPieceFound = true;
+        _endPieceDirection = direction_t::right;
         break;
       }
 
      }
-    if (startPieceFound == false) JAFFAR_THROW_LOGIC("Could not find starter piece");
+    if (_startPieceFound == false) JAFFAR_THROW_LOGIC("Could not find starter piece");
 
     _inputAPressCount = 0;
     _connectivity = 0;
@@ -208,11 +253,11 @@ private:
     _currentStep++;
 
     if (input == _buttonAInputIdx) _inputAPressCount++;
+    _lastInput = input;
   }
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
-    hashEngine.Update(_currentStep % 2      ); // Keep timer since we are only placing pieces on even turns
     hashEngine.Update(*_playerInput1 > 0    );
     hashEngine.Update(*_playerPosX          );
     hashEngine.Update(*_playerPosY          );
@@ -234,11 +279,34 @@ private:
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
   {
-    const auto path = calculatePipePath();
     std::set<piecePos_t> piecesInPath;
-    for (auto& piece : path) piecesInPath.insert(piece);
 
-    _currentDepth = path.size();
+    const auto forwardPath = calculatePipePath();
+    for (auto& piece : forwardPath) piecesInPath.insert(piece);
+    _forwardDepth = forwardPath.size();
+
+    _backwardDepth = 0;
+    _distanceBetweenEnds = 0;
+    _endsHaveMet = false;
+
+    if (_endPieceFound == true)
+    {
+      const auto inversePath = calculateInversePipePath();
+      for (auto& piece : inversePath) piecesInPath.insert(piece);
+      _backwardDepth = inversePath.size();
+
+      // Checking if ends have met
+      const auto& lastForwardPiecePos = forwardPath.rbegin();
+      if (lastForwardPiecePos->first == _endPieceRow && lastForwardPiecePos->second == _endPieceCol) _endsHaveMet = true;
+
+      // If they haven't met, check distance between both ends
+      if (_endsHaveMet == false)
+      {
+        const auto& lastInversePiecePos = inversePath.rbegin();
+        _distanceBetweenEnds = std::abs((int8_t)lastForwardPiecePos->first - (int8_t)lastInversePiecePos->first) + std::abs((int8_t)lastForwardPiecePos->second - (int8_t)lastInversePiecePos->second);
+      }
+    }
+
     _piecesOnBoard = 0;
     _lingeringPieces = 0;
     for (uint8_t i = 0; i < __PIPE_DREAM_GRID_ROWS; i++)
@@ -258,9 +326,9 @@ private:
       } 
      }      
 
-    _distanceToReward = std::abs((int8_t)_targetScore - (int8_t)_currentDepth);
-
+    _distanceToReward = std::abs((int8_t)_targetScore - (int8_t)_forwardDepth);
     _connectivity = calculateConnectivity();
+
   }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -275,23 +343,31 @@ private:
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
      serializer.push(&_currentStep, sizeof(_currentStep));
-     serializer.push(&_currentDepth, sizeof(_currentDepth));
+     serializer.push(&_forwardDepth, sizeof(_forwardDepth));
+     serializer.push(&_backwardDepth, sizeof(_backwardDepth));
      serializer.push(&_piecesOnBoard, sizeof(_piecesOnBoard));
      serializer.push(&_distanceToReward, sizeof(_distanceToReward));
      serializer.push(&_inputAPressCount, sizeof(_inputAPressCount));
      serializer.push(&_lingeringPieces, sizeof(_lingeringPieces));
      serializer.push(&_connectivity, sizeof(_connectivity));
+     serializer.push(&_endsHaveMet, sizeof(_endsHaveMet));
+     serializer.push(&_distanceBetweenEnds, sizeof(_distanceBetweenEnds));
+     serializer.push(&_lastInput, sizeof(_lastInput));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
      deserializer.pop(&_currentStep, sizeof(_currentStep));
-     deserializer.pop(&_currentDepth, sizeof(_currentDepth));
+     deserializer.pop(&_forwardDepth, sizeof(_forwardDepth));
+     deserializer.pop(&_backwardDepth, sizeof(_backwardDepth));
      deserializer.pop(&_piecesOnBoard, sizeof(_piecesOnBoard));
      deserializer.pop(&_distanceToReward, sizeof(_distanceToReward));
      deserializer.pop(&_inputAPressCount, sizeof(_inputAPressCount));
      deserializer.pop(&_lingeringPieces, sizeof(_lingeringPieces));
      deserializer.pop(&_connectivity, sizeof(_connectivity));
+     deserializer.pop(&_endsHaveMet, sizeof(_endsHaveMet));
+     deserializer.pop(&_distanceBetweenEnds, sizeof(_distanceBetweenEnds));
+     deserializer.pop(&_lastInput, sizeof(_lastInput));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -299,8 +375,7 @@ private:
     // Getting rewards from rules
     float reward = 0.0;
 
-    // Adding depth to reward
-    reward += - (float)_distanceToReward + (float)_connectivity * 0.01f;
+    reward += - 10.0f * (float)_distanceBetweenEnds - (float)_distanceToReward + 0.01f * (float)_connectivity;
 
     // Returning reward
     return reward;
@@ -323,73 +398,40 @@ private:
     bool allowD = true;
     bool allowL = true;
     bool allowR = true;
-    // bool allowUL = true;
-    // bool allowUR = true;
-    // bool allowDL = true;
-    // bool allowDR = true;
 
-    if (*_playerPosX == 0)                          { allowL = false; } // allowUL = false; allowDL = false; }
-    if (*_playerPosX == __PIPE_DREAM_GRID_COLS - 1) { allowR = false; } // allowUR = false; allowDR = false; } 
-    if (*_playerPosY == 0)                          { allowU = false; } // allowUL = false; allowUR = false; }
-    if (*_playerPosY == __PIPE_DREAM_GRID_ROWS - 1) { allowD = false; } // allowDL = false; allowDR = false; }
+    // if (*_playerPosX == 0)                          allowL = false; 
+    // if (*_playerPosX == __PIPE_DREAM_GRID_COLS - 1) allowR = false;  
+    // if (*_playerPosY == 0)                          allowU = false; 
+    // if (*_playerPosY == __PIPE_DREAM_GRID_ROWS - 1) allowD = false; 
 
-    // Do not place piece if there is one there already. Don't even linger
-    const uint8_t playerPosIdx = *_playerPosY * __PIPE_DREAM_GRID_COLS + *_playerPosX;
-    const uint8_t tileType = _gridStart[playerPosIdx];
-    if (tileType != 0x00)
-    {
-      allowN = false;
-      allowA = false;
-    } 
-
-    // Do not place piece if already placing one
-    if (canPlacePiece() == false) allowA = false;
-
-    // Force placing a piece if you can
-    if (canPlacePiece() == true && *_piecesPlaced > 0)
-    {
-      allowN  = false;
-      allowA  = true;
-      allowU  = false;
-      allowD  = false;
-      allowL  = false;
-      allowR  = false;
-      // allowUL = false;
-      // allowUR = false;
-      // allowDL = false;
-      // allowDR = false;
-    }
-
-    // Only add inputs if on even steps
-    // if (_currentStep % 2 == 1)
+    // // Do not place piece if there is one there already. Don't even linger
+    // const uint8_t playerPosIdx = *_playerPosY * __PIPE_DREAM_GRID_COLS + *_playerPosX;
+    // const uint8_t tileType = _gridStart[playerPosIdx];
+    // if (tileType != 0x00)
     // {
-    //   allowN = true;
+    //   // allowN = false;
     //   allowA = false;
-    //   allowU = false;
-    //   allowD = false;
-    //   allowL = false;
-    //   allowR = false;
-    //   // allowUL = false;
-    //   // allowUR = false;
-    //   // allowDL = false;
-    //   // allowDR = false;
     // } 
 
-    // // If a movement has been made in the previous frame, do not press anything now
-    // if (*_playerInput1 > 0)
+    // // Do not place piece if already placing one
+    // if (canPlacePiece() == false) allowA = false;
+
+    // // Force placing a piece if you can
+    // if (canPlacePiece() == true && *_piecesPlaced > 0)
     // {
-    //   allowN  = true;
-    //   allowA  = false;
+    //   allowN  = false;
+    //   allowA  = true;
     //   allowU  = false;
     //   allowD  = false;
     //   allowL  = false;
     //   allowR  = false;
-    //   // allowUL = false;
-    //   // allowUR = false;
-    //   // allowDL = false;
-    //   // allowDR = false;
-    // } 
+    // }
 
+    // // Prevent going back on our tracks (1-deep)
+    // if (_lastInput == _buttonUInputIdx) allowD = false;
+    // if (_lastInput == _buttonDInputIdx) allowU = false;
+    // if (_lastInput == _buttonLInputIdx) allowR = false;
+    // if (_lastInput == _buttonRInputIdx) allowL = false;
 
     if (allowN  == true) allowedInputSet.push_back(_nullInputIdx    );
     if (allowA  == true) allowedInputSet.push_back(_buttonAInputIdx );
@@ -397,10 +439,6 @@ private:
     if (allowD  == true) allowedInputSet.push_back(_buttonDInputIdx );
     if (allowL  == true) allowedInputSet.push_back(_buttonLInputIdx );
     if (allowR  == true) allowedInputSet.push_back(_buttonRInputIdx );
-    //if (allowUL == true) allowedInputSet.push_back(_buttonULInputIdx );
-    //if (allowUR == true) allowedInputSet.push_back(_buttonURInputIdx );
-    //if (allowDL == true) allowedInputSet.push_back(_buttonDLInputIdx );
-    //if (allowDR == true) allowedInputSet.push_back(_buttonDRInputIdx );
   }
 
 
@@ -408,7 +446,10 @@ private:
   {
     jaffarCommon::logger::log("[J+]  + Current Step:            %04u\n", _currentStep);
     jaffarCommon::logger::log("[J+]  + Game State:              %02u\n", *_gameState);
-    jaffarCommon::logger::log("[J+]  + Current Depth:           %02u / %02u (Dist: %02u)\n", _currentDepth, _targetScore, _distanceToReward);
+    jaffarCommon::logger::log("[J+]  + Forward Depth:           %02u\n", _forwardDepth);
+    jaffarCommon::logger::log("[J+]  + Backward Depth:          %02u\n", _backwardDepth);
+    jaffarCommon::logger::log("[J+]  + Ends Have Met:           %s (Distance: %02u)\n", _endsHaveMet ? "True" : "False", _distanceBetweenEnds);
+    jaffarCommon::logger::log("[J+]  + Target Score:            %02u (Distance: %02u)\n", _targetScore, _distanceToReward);
     jaffarCommon::logger::log("[J+]  + Pending Score:           %02u\n", *_pendingScore);
     jaffarCommon::logger::log("[J+]  + Connectivity:            %04u\n", _connectivity);
     jaffarCommon::logger::log("[J+]  + Player Input:            %02u\n", *_playerInput1);
@@ -494,6 +535,72 @@ private:
       if (currentDirection == direction_t::right && nextPiece.RRedirection != direction_t::none) nextDirection = nextPiece.RRedirection;
       if (currentDirection == direction_t::up    && nextPiece.URedirection != direction_t::none) nextDirection = nextPiece.URedirection;
       if (currentDirection == direction_t::down  && nextPiece.DRedirection != direction_t::none) nextDirection = nextPiece.DRedirection;
+      
+      // Updating values for the next iteration
+      currentPieceRow = nextPieceRow;
+      currentPieceCol = nextPieceCol;
+      currentDirection = nextDirection;
+
+      // Increasing Depth
+      path.push_back({currentPieceRow, currentPieceCol});
+    }
+
+    return path;
+  }
+
+  __INLINE__ direction_t getOppositeDirection(const direction_t direction) const
+  {
+     if (direction == direction_t::up) return direction_t::down;
+     if (direction == direction_t::down) return direction_t::up;
+     if (direction == direction_t::left) return direction_t::right;
+     if (direction == direction_t::right) return direction_t::left;
+     return direction_t::none;
+  }
+
+  __INLINE__ std::vector<piecePos_t> calculateInversePipePath() const
+  {
+    uint8_t currentPieceRow = _endPieceRow;
+    uint8_t currentPieceCol = _endPieceCol;
+    uint8_t currentDirection = _endPieceDirection;
+
+    std::vector<piecePos_t> path;
+    path.push_back({currentPieceRow, currentPieceCol});
+
+    while(true)
+    {
+      // Checking boundaries
+      if (currentPieceCol == 0                          && currentDirection == direction_t::right) break;
+      if (currentPieceCol == __PIPE_DREAM_GRID_COLS - 1 && currentDirection == direction_t::left)  break;
+      if (currentPieceRow == 0                          && currentDirection == direction_t::down)  break;
+      if (currentPieceRow == __PIPE_DREAM_GRID_ROWS - 1 && currentDirection == direction_t::up)    break;
+
+      // Getting next piece's position
+      uint8_t nextPieceCol = currentPieceCol;
+      if (currentDirection == direction_t::right) nextPieceCol--;
+      if (currentDirection == direction_t::left)  nextPieceCol++;
+
+      uint8_t nextPieceRow = currentPieceRow;
+      if (currentDirection == direction_t::down)  nextPieceRow--;
+      if (currentDirection == direction_t::up)    nextPieceRow++;
+
+      // Getting next piece's information
+      const uint8_t nextPieceIdx = nextPieceRow * __PIPE_DREAM_GRID_COLS + nextPieceCol;
+      const uint8_t nextPieceType = _gridStart[nextPieceIdx];
+      if (_pieceTypes.contains(nextPieceType) == false) { printf("Did not recognize next piece type: 0%02X", nextPieceType); break; }
+      const auto& nextPiece = _pieceTypes.at(nextPieceType);
+
+      // Checking if it accepts the incoming stream
+      if (currentDirection == direction_t::left  && nextPiece.LOutConnectivity == false) break;  
+      if (currentDirection == direction_t::right && nextPiece.ROutConnectivity == false) break;
+      if (currentDirection == direction_t::up    && nextPiece.UOutConnectivity == false) break;
+      if (currentDirection == direction_t::down  && nextPiece.DOutConnectivity == false) break;
+
+      // Checking if direction changes
+      auto nextDirection = currentDirection;
+      if (currentDirection == direction_t::left  && nextPiece.RRedirection != direction_t::none) nextDirection = getOppositeDirection(nextPiece.RRedirection);
+      if (currentDirection == direction_t::right && nextPiece.LRedirection != direction_t::none) nextDirection = getOppositeDirection(nextPiece.LRedirection);
+      if (currentDirection == direction_t::up    && nextPiece.DRedirection != direction_t::none) nextDirection = getOppositeDirection(nextPiece.DRedirection);
+      if (currentDirection == direction_t::down  && nextPiece.URedirection != direction_t::none) nextDirection = getOppositeDirection(nextPiece.URedirection);
       
       // Updating values for the next iteration
       currentPieceRow = nextPieceRow;
@@ -603,13 +710,28 @@ private:
   uint8_t _startPieceRow;
   uint8_t _startPieceCol;
   direction_t _startPieceDirection;
-  uint8_t _currentDepth;
+  bool _startPieceFound;
+
+  uint8_t _endPieceRow; 
+  uint8_t _endPieceCol;
+  direction_t _endPieceDirection;
+  bool _endPieceFound;
+
+  uint8_t _distanceBetweenEnds;
+  bool _endsHaveMet;
+
+  uint8_t _forwardDepth;
+  uint8_t _backwardDepth;
+
   uint8_t _piecesOnBoard;
   uint8_t _targetScore;
   uint8_t _lingeringPieces;
   uint8_t _distanceToReward;
   uint8_t _inputAPressCount;
   uint16_t _connectivity;
+
+  InputSet::inputIndex_t _lastInput;
+
 };
 
 } // namespace nes
