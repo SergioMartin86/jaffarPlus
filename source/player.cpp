@@ -338,7 +338,7 @@ int main(int argc, char* argv[])
   if (initialSequence != "") emulatorConfig["Initial Sequence File Path"] = initialSequence;
 
   // Disabling frameskip, if enabled
-  runnerConfig["Frameskip Rate"] = 0;
+  runnerConfig["Frameskip"]["Rate"] = 0;
 
   // Creating runner from the configuration
   auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);

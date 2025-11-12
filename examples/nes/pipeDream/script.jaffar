@@ -10,10 +10,10 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 1,
+        "NUMA Domains Per Group": 2,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 30000
+            "Max Store Size (Mb)": 20000
         },
         "State Database": {
             "Max Size (Mb)": 300000,
@@ -48,13 +48,18 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip Rate": 1,
-        "Hash Step Tolerance": 0,
+        "Frameskip":
+        {
+          "Rate": 1,
+          "Use Custom Input": true,
+          "Custom Input": "|..|........|"
+        },
+        "Hash Step Tolerance": 1,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 300
+            "Max Size": 600
         },
         "Allowed Input Sets": [
             {
@@ -94,9 +99,9 @@
                 "Label": 1000,
                 "Conditions": [
                     {
-                        "Property": "Current Depth",
+                        "Property": "Ends Have Met",
                         "Op": "==",
-                        "Value": "Target Score"
+                        "Value": true
                     }
                 ],
                 "Satisfies": [],

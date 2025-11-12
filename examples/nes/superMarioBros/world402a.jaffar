@@ -13,10 +13,10 @@
         "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 50000
+            "Max Store Size (Mb)": 100000
         },
         "State Database": {
-            "Max Size (Mb)": 1300000,
+            "Max Size (Mb)": 1000000,
             "Differential Compression":
             {
                 "Enabled": true,
@@ -48,7 +48,12 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip Rate": 0,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": ""
+        },
         "Hash Step Tolerance": 2,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": false,
