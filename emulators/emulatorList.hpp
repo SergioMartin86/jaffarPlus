@@ -62,6 +62,11 @@
 #include "quickerBan/quickerBan.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_PIPEBOT
+#include "pipeBot/pipeBot.hpp"
+#endif
+
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
@@ -142,6 +147,11 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json& emulatorCo
 #ifdef __JAFFAR_USE_QUICKERBAN
   DETECT_EMULATOR(emulator::QuickerBan);
 #endif
+
+#ifdef __JAFFAR_USE_PIPEBOT
+  DETECT_EMULATOR(emulator::PipeBot);
+#endif
+
 
   // Check if recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized\n", emulatorName.c_str());

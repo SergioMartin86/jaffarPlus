@@ -10,10 +10,10 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 2,
+        "NUMA Domains Per Group": 1,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 10000
         },
         "State Database": {
             "Max Size (Mb)": 300000,
@@ -51,7 +51,7 @@
         "Frameskip":
         {
           "Rate": 1,
-          "Use Custom Input": true,
+          "Use Custom Input": false,
           "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 1,

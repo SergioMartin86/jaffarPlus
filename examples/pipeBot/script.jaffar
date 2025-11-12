@@ -1,0 +1,92 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 20,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "NUMA Domains Per Group": 2,
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 20000
+        },
+        "State Database": {
+            "Max Size (Mb)": 300000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 1344,
+                "Use Zlib Compression": true
+            }
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "PipeBot",
+        "Row Count": 8,
+        "Col Count": 10,
+        "Initial Pieces":
+         [
+            { 
+                "Row": 4,
+                "Col": 3, 
+                "Type": 8
+            },
+            { 
+                "Row": 5,
+                "Col": 8, 
+                "Type": 64
+            }
+         ]
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 20
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|  6,  5|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "PipeBot / PipeBot",
+        "Frame Rate": 60.1,
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+        ]
+    }
+}
