@@ -82,6 +82,10 @@
 #include "gba/tollrunner.hpp"
 #endif
 
+#ifdef __JAFFAR_ENABLE_PIPEBOT
+#include "pipeBot/pipeBot.hpp"
+#endif
+
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -186,6 +190,10 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
 
 #ifdef __JAFFAR_ENABLE_DOOM
   DETECT_GAME(doom::Doom);
+#endif
+
+#ifdef __JAFFAR_ENABLE_PIPEBOT
+  DETECT_GAME(pipeBot::PipeBot);
 #endif
 
   // Check if game was recognized

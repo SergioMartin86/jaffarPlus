@@ -16,7 +16,8 @@ option('emulator',
     'QuickerMGBA',
     'QuickerGambatte',
     'QuickerDSDA',
-    'QuickerBan'
+    'QuickerBan',
+    'PipeBot'
    ],
   description : 'Selects the emulation core to compile JaffarPlus with'
 )
