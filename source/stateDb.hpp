@@ -11,7 +11,7 @@
 #include <memory>
 #include <utmpx.h>
 
-#define _JAFFAR_STATE_PADDING_BYTES 64
+#define _JAFFAR_STATE_PADDING_BYTES 16
 
 namespace jaffarPlus
 {

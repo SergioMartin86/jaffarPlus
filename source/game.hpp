@@ -493,6 +493,9 @@ public:
   // Function to enable a game code to provide additional allowed inputs based on complex decisions
   virtual __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) {}
 
+  // Function to report what all the possible input that the game might require
+  virtual __INLINE__ std::set<std::string> getAllPossibleInputs() { return {}; }
+
   // Player-specific commands
   virtual void playerPrintCommands() const {}           // If the game has any specific player commands, print them now
   virtual bool playerParseCommand(const int command) { return false; } // If the game has any specific player commands, print them now

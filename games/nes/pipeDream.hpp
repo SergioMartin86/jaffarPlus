@@ -204,7 +204,7 @@ private:
       {
         _endPieceRow = i;
         _endPieceCol = j;
-        _endPieceFound = true;
+        // _endPieceFound = true;
         _endPieceDirection = direction_t::down;
         break;
       }
@@ -213,7 +213,7 @@ private:
       {
         _endPieceRow = i;
         _endPieceCol = j;
-        _endPieceFound = true;
+        // _endPieceFound = true;
         _endPieceDirection = direction_t::up;
         break;
       }
@@ -222,7 +222,7 @@ private:
       {
         _endPieceRow = i;
         _endPieceCol = j;
-        _endPieceFound = true;
+        // _endPieceFound = true;
         _endPieceDirection = direction_t::left;
         break;
       }
@@ -231,7 +231,7 @@ private:
       {
         _endPieceRow = i;
         _endPieceCol = j;
-        _endPieceFound = true;
+        // _endPieceFound = true;
         _endPieceDirection = direction_t::right;
         break;
       }
