@@ -18,245 +18,271 @@ class PipeBot final : public jaffarPlus::Game
 {
 public:
 
-  typedef std::pair<uint8_t, uint8_t> piecePos_t;
+  struct piecePath_t
+  {
+    uint8_t row;
+    uint8_t col;
+    emulator::PipeBot::direction_t direction;
+  };
 
   static __INLINE__ std::string getName() { return "PipeBot / PipeBot"; }
 
-  PipeBot(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
+  PipeBot(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) 
+    : jaffarPlus::Game(std::move(emulator), config),
+      _pipeBot((emulator::PipeBot*)_emulator.get())
   {
+    _rowCount = _pipeBot->getRowCount();
+    _colCount = _pipeBot->getColCount();
+
+    const auto distanceLimiterJs = jaffarCommon::json::getObject(config, "Distance Limiter");
+    _distanceLimiterInitialRow = jaffarCommon::json::getNumber<uint8_t>(distanceLimiterJs, "Initial Row");
+    _distanceLimiterInitialCol = jaffarCommon::json::getNumber<uint8_t>(distanceLimiterJs, "Initial Col");
+    _distanceLimiterMaxRowDistance = jaffarCommon::json::getNumber<uint8_t>(distanceLimiterJs, "Max Row Distance");
+    _distanceLimiterMaxColDistance = jaffarCommon::json::getNumber<uint8_t>(distanceLimiterJs, "Max Col Distance");
+
+    _targetScore = jaffarCommon::json::getNumber<uint8_t>(config, "Target Score");
   }
+
+  struct possibleInput_t
+  {
+    std::string inputString;
+    InputSet::inputIndex_t inputIndex;
+    uint8_t row;
+    uint8_t col;
+  };
 
 private:
   __INLINE__ void registerGameProperties() override
   {
-    // // Getting emulator's low memory pointer
-    const auto gridProperty = _emulator->getProperty("Grid");
-    _grid = gridProperty.pointer;
-    _gridSize = gridProperty.size;
+    // Getting emulator's low memory pointer
+    _grid = _emulator->getProperty("Grid").pointer;
 
-    // registerGameProperty("Player Input 1"           ,&_grid[0x000E], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Player Input 2"           ,&_grid[0x0010], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Player Input 3"           ,&_grid[0x009B], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Player Input 4"           ,&_grid[0x009D], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Player Input 5"           ,&_grid[0x00CE], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Player Input 6"           ,&_grid[0x01FA], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Player Input 7"           ,&_grid[0x0486], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Player Pos X"             ,&_grid[0x00AA], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Player Pos Y"             ,&_grid[0x00A8], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Piece Placing Status"     ,&_grid[0x0079], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Piece Placing Timer 1"    ,&_grid[0x007B], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Piece Placing Timer 2"    ,&_grid[0x007D], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Piece Placing Pos X"      ,&_grid[0x007F], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Piece Placing Pos Y"      ,&_grid[0x0081], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Grid Start"               ,&_grid[0x05B0], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Grid End"                 ,&_grid[0x05FF], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Pieces Placed"            ,&_grid[0x00F2], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Game State"               ,&_grid[0x00FA], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Pending Score"            ,&_grid[0x0447], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Piece Replacement State"  ,&_grid[0x00C4], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Piece Replacement Timer"  ,&_grid[0x00EB], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Forward Depth"            ,&_forwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Backward Depth"           ,&_backwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Pieces On Board"          ,&_piecesOnBoard, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Target Score"             ,&_targetScore, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Lingering Pieces"         ,&_lingeringPieces, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Ends Have Met"            ,&_endsHaveMet, Property::datatype_t::dt_bool , Property::endianness_t::little);
 
-    // _playerInput1        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 1"            )]->getPointer();
-    // _playerInput2        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 2"            )]->getPointer();
-    // _playerInput3        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 3"            )]->getPointer();
-    // _playerInput4        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 4"            )]->getPointer();
-    // _playerInput5        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 5"            )]->getPointer();
-    // _playerInput6        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 6"            )]->getPointer();
-    // _playerInput7        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 7"            )]->getPointer();
-    // _playerPosX          =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos X"              )]->getPointer();
-    // _playerPosY          =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y"              )]->getPointer();
-    // _piecePlacingStatus  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Placing Status"      )]->getPointer();
-    // _piecePlacingTimer1  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Placing Timer 1"     )]->getPointer();
-    // _piecePlacingTimer2  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Placing Timer 2"     )]->getPointer();
-    // _piecePlacingPosX    =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Placing Pos X"       )]->getPointer();
-    // _piecePlacingPosY    =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Placing Pos Y"       )]->getPointer();
-    // _gridStart           =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Grid Start"                )]->getPointer();
-    // _gridEnd             =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Grid End"                  )]->getPointer();
-    // _piecesPlaced        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Pieces Placed"             )]->getPointer();  
-    // _gameState           =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Game State"                )]->getPointer(); 
-    // _pendingScore        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Pending Score"             )]->getPointer(); 
-    // _pieceReplacementState  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Replacement State"              )]->getPointer(); 
-    // _pieceReplacementTimer  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Replacement Timer"              )]->getPointer(); 
+    // Looking for starter piece
+    _startPieceFound = false;
+    _endPieceFound = false;
+    for (uint8_t i = 0; i < _rowCount; i++)
+     for (uint8_t j = 0; j < _colCount; j++)
+     {
+      const auto pieceType = _pipeBot->getPiece(i,j);
 
-    // registerGameProperty("Forward Depth"            ,&_forwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Backward Depth"           ,&_backwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Pieces On Board"          ,&_piecesOnBoard, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Target Score"             ,&_targetScore, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Lingering Pieces"         ,&_lingeringPieces, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    // registerGameProperty("Ends Have Met"            ,&_endsHaveMet, Property::datatype_t::dt_bool , Property::endianness_t::little);
-
-    // _nullInputIdx      = _emulator->registerInput("|..|........|");
-    // _buttonAInputIdx   = _emulator->registerInput("|..|.......A|");
-    // _buttonUInputIdx   = _emulator->registerInput("|..|U.......|");
-    // _buttonDInputIdx   = _emulator->registerInput("|..|.D......|");
-    // _buttonLInputIdx   = _emulator->registerInput("|..|..L.....|");
-    // _buttonRInputIdx   = _emulator->registerInput("|..|...R....|");
-    // // _buttonULInputIdx  = _emulator->registerInput("|..|U.L.....|");
-    // // _buttonURInputIdx  = _emulator->registerInput("|..|U..R....|");
-    // // _buttonDLInputIdx  = _emulator->registerInput("|..|.DL.....|");
-    // // _buttonDRInputIdx  = _emulator->registerInput("|..|.D.R....|");
-
-    // _targetScore = *_pendingScore;
-
-    // // Looking for starter piece
-    // _startPieceFound = false;
-    // _endPieceFound = false;
-    // for (uint8_t i = 0; i < __PIPE_DREAM_GRID_ROWS; i++)
-    //  for (uint8_t j = 0; j < __PIPE_DREAM_GRID_COLS; j++)
-    //  {
-    //   const auto pieceType = _gridStart[i * __PIPE_DREAM_GRID_COLS + j];
+      // Gathering initial pieces
+      if (pieceType != 0x00) _initialPieces.insert({i,j});
       
-    //   // Storing initial pieces (fixed)
-    //   if (pieceType != 0x00) _initialPieces.insert({i, j});
+      // Start Pieces
+      if (pieceType == 0x01) // Up Facing
+      {
+        _startPieceRow = i;
+        _startPieceCol = j;
+        _startPieceDirection = emulator::PipeBot::direction_t::up;
+        _startPieceFound = true;
+        break;
+      }
 
-    //   // Start Pieces
-    //   if (pieceType == 0x01) // Up Facing
-    //   {
-    //     _startPieceRow = i;
-    //     _startPieceCol = j;
-    //     _startPieceDirection = direction_t::up;
-    //     _startPieceFound = true;
-    //     break;
-    //   }
+      if (pieceType == 0x02) // Down Facing
+      {
+        _startPieceRow = i;
+        _startPieceCol = j;
+        _startPieceDirection = emulator::PipeBot::direction_t::down;
+        _startPieceFound = true;
+        break;
+      }
 
-    //   if (pieceType == 0x02) // Down Facing
-    //   {
-    //     _startPieceRow = i;
-    //     _startPieceCol = j;
-    //     _startPieceDirection = direction_t::down;
-    //     _startPieceFound = true;
-    //     break;
-    //   }
+      if (pieceType == 0x08) // Right Facing
+      {
+        _startPieceRow = i;
+        _startPieceCol = j;
+        _startPieceDirection = emulator::PipeBot::direction_t::right;
+        _startPieceFound = true;
+        break;
+      }
 
-    //   if (pieceType == 0x08) // Right Facing
-    //   {
-    //     _startPieceRow = i;
-    //     _startPieceCol = j;
-    //     _startPieceDirection = direction_t::right;
-    //     _startPieceFound = true;
-    //     break;
-    //   }
+      if (pieceType == 0x04) // Left Facing
+      {
+        _startPieceRow = i;
+        _startPieceCol = j;
+        _startPieceDirection = emulator::PipeBot::direction_t::left;
+        _startPieceFound = true;
+        break;
+      }
 
-    //   if (pieceType == 0x04) // Left Facing
-    //   {
-    //     _startPieceRow = i;
-    //     _startPieceCol = j;
-    //     _startPieceDirection = direction_t::left;
-    //     _startPieceFound = true;
-    //     break;
-    //   }
+      // End Pieces
+      if (pieceType == 0x10) // Up Facing
+      {
+        _endPieceRow = i;
+        _endPieceCol = j;
+        _endPieceFound = true;
+        _endPieceDirection = emulator::PipeBot::direction_t::down;
+        break;
+      }
 
-    //   // End Pieces
-    //   if (pieceType == 0x10) // Up Facing
-    //   {
-    //     _endPieceRow = i;
-    //     _endPieceCol = j;
-    //     _endPieceFound = true;
-    //     _endPieceDirection = direction_t::down;
-    //     break;
-    //   }
+      if (pieceType == 0x20) // Down Facing
+      {
+        _endPieceRow = i;
+        _endPieceCol = j;
+        _endPieceFound = true;
+        _endPieceDirection = emulator::PipeBot::direction_t::up;
+        break;
+      }
 
-    //   if (pieceType == 0x20) // Down Facing
-    //   {
-    //     _endPieceRow = i;
-    //     _endPieceCol = j;
-    //     _endPieceFound = true;
-    //     _endPieceDirection = direction_t::up;
-    //     break;
-    //   }
+      if (pieceType == 0x80) // Right Facing
+      {
+        _endPieceRow = i;
+        _endPieceCol = j;
+        _endPieceFound = true;
+        _endPieceDirection = emulator::PipeBot::direction_t::left;
+        break;
+      }
 
-    //   if (pieceType == 0x80) // Right Facing
-    //   {
-    //     _endPieceRow = i;
-    //     _endPieceCol = j;
-    //     _endPieceFound = true;
-    //     _endPieceDirection = direction_t::left;
-    //     break;
-    //   }
+      if (pieceType == 0x40) // Left Facing
+      {
+        _endPieceRow = i;
+        _endPieceCol = j;
+        _endPieceFound = true;
+        _endPieceDirection = emulator::PipeBot::direction_t::right;
+        break;
+      }
 
-    //   if (pieceType == 0x40) // Left Facing
-    //   {
-    //     _endPieceRow = i;
-    //     _endPieceCol = j;
-    //     _endPieceFound = true;
-    //     _endPieceDirection = direction_t::right;
-    //     break;
-    //   }
+     }
+    if (_startPieceFound == false) JAFFAR_THROW_LOGIC("Could not find starter piece");
 
-    //  }
-    // if (_startPieceFound == false) JAFFAR_THROW_LOGIC("Could not find starter piece");
+    _connectivity = 0;
+    _piecesReplaced = 0;
 
-    // _inputAPressCount = 0;
-    // _connectivity = 0;
+    // Creating list of inputs
+    _possibleInputs.resize(_rowCount);
+    for (uint8_t i = 0; i < _rowCount; i++)
+    {
+      _possibleInputs[i].resize(_colCount);
+      for (uint8_t j = 0; j < _colCount; j++)
+      {
+        char inputBuffer[256];
+        sprintf(inputBuffer, "|%3u,%3u|", i, j);
+        const std::string inputString(inputBuffer);
+        const auto inputCode = _emulator->registerInput(inputString);
 
+        const auto newInput = possibleInput_t({inputString, inputCode, i, j});
+        _possibleInputs[i][j] = newInput;
+        _inputMap[inputCode] = newInput;
+      }
+    }
+
+    _distanceLimiterCurrentRow = _distanceLimiterInitialRow;
+    _distanceLimiterCurrentCol = _distanceLimiterInitialCol;
   }
 
+  // Function to report what all the possible input that the game might require
+  __INLINE__ std::set<std::string> getAllPossibleInputs() override
+  {
+    std::set<std::string> possibleInputs;
+    for (size_t i = 0; i < _possibleInputs.size(); i++)
+     for (size_t j = 0; j < _possibleInputs[i].size(); j++)
+      possibleInputs.insert(_possibleInputs[i][j].inputString);
+
+    return possibleInputs;
+  }
+  
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     // Running emulator
-    _emulator->advanceState(input);
+
+    const auto& piece = _inputMap[input];
+    if (_pipeBot->getPiece(piece.row, piece.col) != 0x00) _piecesReplaced++;
+    
+    _pipeBot->placeNextPiece(piece.row, piece.col);
 
     // Advancing current step
     _currentStep++;
+
+    // Setting current column and row
+    _distanceLimiterCurrentRow = piece.row;
+    _distanceLimiterCurrentCol = piece.col;
   }
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
-    hashEngine.Update(_grid, _gridSize);
+    hashEngine.Update(_grid, _rowCount * _colCount * sizeof(uint8_t));
+    hashEngine.Update(_piecesReplaced);
+    hashEngine.Update(_distanceLimiterCurrentRow);
+    hashEngine.Update(_distanceLimiterCurrentCol);
   }
 
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
   {
-    // std::set<piecePos_t> piecesInPath;
+    std::set<std::pair<uint8_t, uint8_t>> piecesInPath;
 
-    // const auto forwardPath = calculatePipePath();
-    // for (auto& piece : forwardPath) piecesInPath.insert(piece);
-    // _forwardDepth = forwardPath.size();
+    const auto forwardPath = calculatePipePath();
+    for (auto& piece : forwardPath) piecesInPath.insert({piece.row, piece.col});
+    _forwardDepth = forwardPath.size();
 
-    // _backwardDepth = 0;
-    // _distanceBetweenEnds = 0;
-    // _endsHaveMet = false;
+    _backwardDepth = 0;
+    _distanceBetweenEnds = 0;
+    _endsHaveMet = false;
 
-    // if (_endPieceFound == true)
-    // {
-    //   const auto inversePath = calculateInversePipePath();
-    //   for (auto& piece : inversePath) piecesInPath.insert(piece);
-    //   _backwardDepth = inversePath.size();
+    if (_endPieceFound == true)
+    {
+      const auto inversePath = calculateInversePipePath();
+      for (auto& piece : inversePath) piecesInPath.insert({piece.row, piece.col});
+      _backwardDepth = inversePath.size();
 
-    //   // Checking if ends have met
-    //   const auto& lastForwardPiecePos = forwardPath.rbegin();
-    //   if (lastForwardPiecePos->first == _endPieceRow && lastForwardPiecePos->second == _endPieceCol) _endsHaveMet = true;
+      // Checking if ends have met
+      const auto& lastForwardPiecePos = *forwardPath.rbegin();
 
-    //   // If they haven't met, check distance between both ends
-    //   if (_endsHaveMet == false)
-    //   {
-    //     const auto& lastInversePiecePos = inversePath.rbegin();
-    //     _distanceBetweenEnds = std::abs((int8_t)lastForwardPiecePos->first - (int8_t)lastInversePiecePos->first) + std::abs((int8_t)lastForwardPiecePos->second - (int8_t)lastInversePiecePos->second);
-    //   }
-    // }
+      if (lastForwardPiecePos.row == _endPieceRow && lastForwardPiecePos.col == _endPieceCol) _endsHaveMet = true;
 
-    // _piecesOnBoard = 0;
-    // _lingeringPieces = 0;
-    // for (uint8_t i = 0; i < __PIPE_DREAM_GRID_ROWS; i++)
-    //  for (uint8_t j = 0; j < __PIPE_DREAM_GRID_COLS; j++)
-    //  { 
-    //   const auto pieceType = _gridStart[i * __PIPE_DREAM_GRID_COLS + j];
-    //   if (pieceType != 0)
-    //   {
-    //     _piecesOnBoard++;
-    //     if (piecesInPath.contains({i,j}) == false)
-    //     {
-    //       _lingeringPieces++;
+      // If they haven't met, check distance between both ends
+      if (_endsHaveMet == false)
+      {
+        const auto& lastInversePiecePos = *inversePath.rbegin();
 
-    //       // Clearing lingering pieces, if not fixed
-    //       // if (_initialPieces.contains({i,j}) == false) _gridStart[i * __PIPE_DREAM_GRID_COLS + j] = 0x00;
-    //     } 
-    //   } 
-    //  }      
+        // Making adjustments based on direction
+        auto forwardRow = lastForwardPiecePos.row;
+        auto forwardCol = lastForwardPiecePos.col;
+        const auto forwardDir = lastForwardPiecePos.direction;
+        if (forwardDir == emulator::PipeBot::direction_t::up)    forwardRow = forwardRow - 1;
+        if (forwardDir == emulator::PipeBot::direction_t::down)  forwardRow = forwardRow + 1;
+        if (forwardDir == emulator::PipeBot::direction_t::left)  forwardCol = forwardCol - 1;
+        if (forwardDir == emulator::PipeBot::direction_t::right) forwardCol = forwardCol + 1;
 
-    // _distanceToReward = std::abs((int8_t)_targetScore - (int8_t)_forwardDepth);
-    // _connectivity = calculateConnectivity();
+        auto inverseRow = lastInversePiecePos.row;
+        auto inverseCol = lastInversePiecePos.col;
+        const auto inverseDir = lastInversePiecePos.direction;
+        if (inverseDir == emulator::PipeBot::direction_t::up)    inverseRow = inverseRow + 1;
+        if (inverseDir == emulator::PipeBot::direction_t::down)  inverseRow = inverseRow - 1;
+        if (inverseDir == emulator::PipeBot::direction_t::left)  inverseCol = inverseCol + 1;
+        if (inverseDir == emulator::PipeBot::direction_t::right) inverseCol = inverseCol - 1;
+
+        _distanceBetweenEnds = std::abs((int16_t)forwardRow - (int16_t)inverseRow) + std::abs((int16_t)forwardCol - (int16_t)inverseCol);
+      }
+    }
+
+    _piecesOnBoard = 0;
+    _lingeringPieces = 0;
+    for (uint8_t i = 0; i < _rowCount; i++)
+     for (uint8_t j = 0; j < _colCount; j++)
+     { 
+      const auto piece = _pipeBot->getPiece(i,j);
+      if (piece != 0)
+      {
+        _piecesOnBoard++;
+        if (piecesInPath.contains({i,j}) == false)
+        {
+          _lingeringPieces++;
+        } 
+      } 
+     }      
+
+    //  if (_endsHaveMet == false) _distanceToReward = std::abs((int8_t)_targetScore - (int8_t)_forwardDepth - (int8_t)_backwardDepth);
+    //  if (_endsHaveMet == true) _distanceToReward = std::abs((int8_t)_targetScore - (int8_t)_forwardDepth);
+    _distanceToReward = std::abs((int8_t)_targetScore - (int8_t)_forwardDepth);
+    _connectivity = calculateConnectivity();
 
   }
 
@@ -271,30 +297,34 @@ private:
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
-    //  serializer.push(&_currentStep, sizeof(_currentStep));
-    //  serializer.push(&_forwardDepth, sizeof(_forwardDepth));
-    //  serializer.push(&_backwardDepth, sizeof(_backwardDepth));
-    //  serializer.push(&_piecesOnBoard, sizeof(_piecesOnBoard));
-    //  serializer.push(&_distanceToReward, sizeof(_distanceToReward));
-    //  serializer.push(&_inputAPressCount, sizeof(_inputAPressCount));
-    //  serializer.push(&_lingeringPieces, sizeof(_lingeringPieces));
-    //  serializer.push(&_connectivity, sizeof(_connectivity));
-    //  serializer.push(&_endsHaveMet, sizeof(_endsHaveMet));
-    //  serializer.push(&_distanceBetweenEnds, sizeof(_distanceBetweenEnds));
+     serializer.push(&_currentStep, sizeof(_currentStep));
+     serializer.push(&_forwardDepth, sizeof(_forwardDepth));
+     serializer.push(&_backwardDepth, sizeof(_backwardDepth));
+     serializer.push(&_piecesOnBoard, sizeof(_piecesOnBoard));
+     serializer.push(&_distanceToReward, sizeof(_distanceToReward));
+     serializer.push(&_lingeringPieces, sizeof(_lingeringPieces));
+     serializer.push(&_connectivity, sizeof(_connectivity));
+     serializer.push(&_endsHaveMet, sizeof(_endsHaveMet));
+     serializer.push(&_distanceBetweenEnds, sizeof(_distanceBetweenEnds));
+     serializer.push(&_distanceLimiterCurrentRow, sizeof(_distanceLimiterCurrentRow));
+     serializer.push(&_distanceLimiterCurrentCol, sizeof(_distanceLimiterCurrentCol));
+     serializer.push(&_piecesReplaced, sizeof(_piecesReplaced));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
-    //  deserializer.pop(&_currentStep, sizeof(_currentStep));
-    //  deserializer.pop(&_forwardDepth, sizeof(_forwardDepth));
-    //  deserializer.pop(&_backwardDepth, sizeof(_backwardDepth));
-    //  deserializer.pop(&_piecesOnBoard, sizeof(_piecesOnBoard));
-    //  deserializer.pop(&_distanceToReward, sizeof(_distanceToReward));
-    //  deserializer.pop(&_inputAPressCount, sizeof(_inputAPressCount));
-    //  deserializer.pop(&_lingeringPieces, sizeof(_lingeringPieces));
-    //  deserializer.pop(&_connectivity, sizeof(_connectivity));
-    //  deserializer.pop(&_endsHaveMet, sizeof(_endsHaveMet));
-    //  deserializer.pop(&_distanceBetweenEnds, sizeof(_distanceBetweenEnds));
+     deserializer.pop(&_currentStep, sizeof(_currentStep));
+     deserializer.pop(&_forwardDepth, sizeof(_forwardDepth));
+     deserializer.pop(&_backwardDepth, sizeof(_backwardDepth));
+     deserializer.pop(&_piecesOnBoard, sizeof(_piecesOnBoard));
+     deserializer.pop(&_distanceToReward, sizeof(_distanceToReward));
+     deserializer.pop(&_lingeringPieces, sizeof(_lingeringPieces));
+     deserializer.pop(&_connectivity, sizeof(_connectivity));
+     deserializer.pop(&_endsHaveMet, sizeof(_endsHaveMet));
+     deserializer.pop(&_distanceBetweenEnds, sizeof(_distanceBetweenEnds));
+     deserializer.pop(&_distanceLimiterCurrentRow, sizeof(_distanceLimiterCurrentRow));
+     deserializer.pop(&_distanceLimiterCurrentCol, sizeof(_distanceLimiterCurrentCol));
+     deserializer.pop(&_piecesReplaced, sizeof(_piecesReplaced));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -302,100 +332,41 @@ private:
     // Getting rewards from rules
     float reward = 0.0;
 
-    // reward += - 10.0f * (float)_distanceBetweenEnds - (float)_distanceToReward + 0.01f * (float)_connectivity;
+    // reward += - (float)_distanceBetweenEnds - (float)_distanceToReward + 0.001f * (float)_connectivity;
+    reward += - (float)_distanceToReward + 0.001f * (float)_connectivity - (float)_lingeringPieces * 0.001f;
 
     // Returning reward
     return reward;
   }
 
-  // __INLINE__ bool canPlacePiece() const 
-  // {
-  //    if (*_piecePlacingStatus > 0) return false;
-  //    if (*_pieceReplacementState != 255 && *_pieceReplacementState != 7) return false;
-  //    return true;
-  // }
-
   // Function to enable a game code to provide additional allowed inputs based on complex decisions
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
-    // // The gauntlet
-    // bool allowN = true;
-    // bool allowA = true;
-    // bool allowU = true;
-    // bool allowD = true;
-    // bool allowL = true;
-    // bool allowR = true;
-
-    // if (*_playerPosX == 0)                          allowL = false; 
-    // if (*_playerPosX == __PIPE_DREAM_GRID_COLS - 1) allowR = false;  
-    // if (*_playerPosY == 0)                          allowU = false; 
-    // if (*_playerPosY == __PIPE_DREAM_GRID_ROWS - 1) allowD = false; 
-
-    // // Do not place piece if there is one there already. Don't even linger
-    // const uint8_t playerPosIdx = *_playerPosY * __PIPE_DREAM_GRID_COLS + *_playerPosX;
-    // const uint8_t tileType = _gridStart[playerPosIdx];
-    // if (tileType != 0x00)
-    // {
-    //   // allowN = false;
-    //   allowA = false;
-    // } 
-
-    // // Do not place piece if already placing one
-    // if (canPlacePiece() == false) allowA = false;
-
-    // // Force placing a piece if you can
-    // if (canPlacePiece() == true && *_piecesPlaced > 0)
-    // {
-    //   allowN  = false;
-    //   allowA  = true;
-    //   allowU  = false;
-    //   allowD  = false;
-    //   allowL  = false;
-    //   allowR  = false;
-    // }
-
-    // // Prevent going back on our tracks (1-deep)
-    // if (_lastInput == _buttonUInputIdx) allowD = false;
-    // if (_lastInput == _buttonDInputIdx) allowU = false;
-    // if (_lastInput == _buttonLInputIdx) allowR = false;
-    // if (_lastInput == _buttonRInputIdx) allowL = false;
-
-    // if (allowN  == true) allowedInputSet.push_back(_nullInputIdx    );
-    // if (allowA  == true) allowedInputSet.push_back(_buttonAInputIdx );
-    // if (allowU  == true) allowedInputSet.push_back(_buttonUInputIdx );
-    // if (allowD  == true) allowedInputSet.push_back(_buttonDInputIdx );
-    // if (allowL  == true) allowedInputSet.push_back(_buttonLInputIdx );
-    // if (allowR  == true) allowedInputSet.push_back(_buttonRInputIdx );
+    for (size_t i = 0; i < _possibleInputs.size(); i++)
+     for (size_t j = 0; j < _possibleInputs[i].size(); j++)
+      // if (_pipeBot->getPiece(i,j) == 0x00)
+      if (_initialPieces.contains({i,j}) == false)
+      {
+        uint8_t rowDistance =  std::abs((int16_t)_distanceLimiterCurrentRow - (int16_t)i);
+        uint8_t colDistance =  std::abs((int16_t)_distanceLimiterCurrentCol - (int16_t)j);
+        if (rowDistance <= _distanceLimiterMaxRowDistance && colDistance <= _distanceLimiterMaxColDistance)
+           allowedInputSet.push_back(_possibleInputs[i][j].inputIndex);
+      }
   }
 
 
   void printInfoImpl() const override
   {
-    // jaffarCommon::logger::log("[J+]  + Current Step:            %04u\n", _currentStep);
-    // jaffarCommon::logger::log("[J+]  + Game State:              %02u\n", *_gameState);
-    // jaffarCommon::logger::log("[J+]  + Forward Depth:           %02u\n", _forwardDepth);
-    // jaffarCommon::logger::log("[J+]  + Backward Depth:          %02u\n", _backwardDepth);
-    // jaffarCommon::logger::log("[J+]  + Ends Have Met:           %s (Distance: %02u)\n", _endsHaveMet ? "True" : "False", _distanceBetweenEnds);
-    // jaffarCommon::logger::log("[J+]  + Target Score:            %02u (Distance: %02u)\n", _targetScore, _distanceToReward);
-    // jaffarCommon::logger::log("[J+]  + Pending Score:           %02u\n", *_pendingScore);
-    // jaffarCommon::logger::log("[J+]  + Connectivity:            %04u\n", _connectivity);
-    // jaffarCommon::logger::log("[J+]  + Player Input:            %02u\n", *_playerInput1);
-    // jaffarCommon::logger::log("[J+]  + Player Pos X:            %02u\n", *_playerPosX);
-    // jaffarCommon::logger::log("[J+]  + Player Pos Y:            %02u\n", *_playerPosY);
-    // jaffarCommon::logger::log("[J+]  + Piece Placing Status:    %02u\n", *_piecePlacingStatus);
-    // jaffarCommon::logger::log("[J+]  + Piece Placing Timer 1:   %02u\n", *_piecePlacingTimer1);
-    // jaffarCommon::logger::log("[J+]  + Piece Placing Timer 2:   %02u\n", *_piecePlacingTimer2);
-    // jaffarCommon::logger::log("[J+]  + Piece Placing Pos X:     %02u\n", *_piecePlacingPosX);
-    // jaffarCommon::logger::log("[J+]  + Piece Placing Pos Y:     %02u\n", *_piecePlacingPosY);
-    // jaffarCommon::logger::log("[J+]  + Pieces Placed:           %02u\n", *_piecesPlaced );
-    // jaffarCommon::logger::log("[J+]  + Pieces Lingering:        %02u\n", _lingeringPieces );
-    // jaffarCommon::logger::log("[J+]  + Pieces On Board:         %02u\n", _piecesOnBoard );
-    // jaffarCommon::logger::log("[J+]  + Initial Pieces:          %02u\n", _initialPieces.size() );
-    // jaffarCommon::logger::log("[J+]  + Input A Pressed Count:   %02u\n", _inputAPressCount );
-    
-    
-    // jaffarCommon::logger::log("[J+]  + Piece Replacement:       %02u (%03u)\n", *_pieceReplacementState, *_pieceReplacementTimer );
-
+    jaffarCommon::logger::log("[J+]  + Current Step:            %04u\n", _currentStep);
+    jaffarCommon::logger::log("[J+]  + Forward Depth:           %02u\n", _forwardDepth);
+    jaffarCommon::logger::log("[J+]  + Backward Depth:          %02u\n", _backwardDepth);
+    jaffarCommon::logger::log("[J+]  + Ends Have Met:           %s (Distance: %02u)\n", _endsHaveMet ? "True" : "False", _distanceBetweenEnds);
+    jaffarCommon::logger::log("[J+]  + Target Score:            %02u (Distance: %02u)\n", _targetScore, _distanceToReward);
+    jaffarCommon::logger::log("[J+]  + Connectivity:            %04u\n", _connectivity);
+    jaffarCommon::logger::log("[J+]  + Pieces Lingering:        %02u\n", _lingeringPieces );
+    jaffarCommon::logger::log("[J+]  + Pieces On Board:         %02u\n", _piecesOnBoard );
+    jaffarCommon::logger::log("[J+]  + Pieces Replaced:         %02u\n", _piecesReplaced );
+    jaffarCommon::logger::log("[J+]  + Current Position:        %02u %02u\n", _distanceLimiterCurrentRow, _distanceLimiterCurrentCol );
   }
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
@@ -405,246 +376,219 @@ private:
     return recognizedActionType;
   }
 
-  // __INLINE__ std::vector<piecePos_t> calculatePipePath() const
-  // {
-  //   uint8_t currentPieceRow = _startPieceRow;
-  //   uint8_t currentPieceCol = _startPieceCol;
-  //   uint8_t currentDirection = _startPieceDirection;
+  __INLINE__ std::vector<piecePath_t> calculatePipePath() const
+  {
+    uint8_t currentPieceRow = _startPieceRow;
+    uint8_t currentPieceCol = _startPieceCol;
+    emulator::PipeBot::direction_t currentDirection = _startPieceDirection;
 
-  //   std::vector<piecePos_t> path;
-  //   path.push_back({currentPieceRow, currentPieceCol});
+    std::vector<piecePath_t> path;
+    path.push_back({currentPieceRow, currentPieceCol, currentDirection});
 
-  //   while(true)
-  //   {
-  //     // Checking boundaries
-  //     if (currentPieceCol == 0                          && currentDirection == direction_t::left)  break;
-  //     if (currentPieceCol == __PIPE_DREAM_GRID_COLS - 1 && currentDirection == direction_t::right) break;
-  //     if (currentPieceRow == 0                          && currentDirection == direction_t::up)    break;
-  //     if (currentPieceRow == __PIPE_DREAM_GRID_ROWS - 1 && currentDirection == direction_t::down)  break;
+    while(true)
+    {
+      // Checking boundaries
+      if (currentPieceCol == 0                          && currentDirection == emulator::PipeBot::direction_t::left)  break;
+      if (currentPieceCol == _colCount - 1 && currentDirection == emulator::PipeBot::direction_t::right) break;
+      if (currentPieceRow == 0                          && currentDirection == emulator::PipeBot::direction_t::up)    break;
+      if (currentPieceRow == _rowCount - 1 && currentDirection == emulator::PipeBot::direction_t::down)  break;
 
-  //     // Getting next piece's position
-  //     uint8_t nextPieceCol = currentPieceCol;
-  //     if (currentDirection == direction_t::left)  nextPieceCol--;
-  //     if (currentDirection == direction_t::right) nextPieceCol++;
+      // Getting next piece's position
+      uint8_t nextPieceCol = currentPieceCol;
+      if (currentDirection == emulator::PipeBot::direction_t::left)  nextPieceCol--;
+      if (currentDirection == emulator::PipeBot::direction_t::right) nextPieceCol++;
 
-  //     uint8_t nextPieceRow = currentPieceRow;
-  //     if (currentDirection == direction_t::up)   nextPieceRow--;
-  //     if (currentDirection == direction_t::down) nextPieceRow++;
+      uint8_t nextPieceRow = currentPieceRow;
+      if (currentDirection == emulator::PipeBot::direction_t::up)   nextPieceRow--;
+      if (currentDirection == emulator::PipeBot::direction_t::down) nextPieceRow++;
 
-  //     // Getting next piece's information
-  //     const uint8_t nextPieceIdx = nextPieceRow * __PIPE_DREAM_GRID_COLS + nextPieceCol;
-  //     const uint8_t nextPieceType = _gridStart[nextPieceIdx];
-  //     if (_pieceTypes.contains(nextPieceType) == false) { printf("Did not recognize next piece type: 0%02X", nextPieceType); break; }
-  //     const auto& nextPiece = _pieceTypes.at(nextPieceType);
+      // Getting next piece's information
+      const uint8_t nextPiece = _pipeBot->getPiece(nextPieceRow, nextPieceCol);
+      const auto& nextPieceType = _pipeBot->getPieceType(nextPiece);
 
-  //     // Checking if it accepts the incoming stream
-  //     if (currentDirection == direction_t::left  && nextPiece.RInConnectivity == false) break;  
-  //     if (currentDirection == direction_t::right && nextPiece.LInConnectivity == false) break;
-  //     if (currentDirection == direction_t::up    && nextPiece.DInConnectivity == false) break;
-  //     if (currentDirection == direction_t::down  && nextPiece.UInConnectivity == false) break;
+      // Checking if it accepts the incoming stream
+      if (currentDirection == emulator::PipeBot::direction_t::left  && nextPieceType.RInConnectivity == false) break;  
+      if (currentDirection == emulator::PipeBot::direction_t::right && nextPieceType.LInConnectivity == false) break;
+      if (currentDirection == emulator::PipeBot::direction_t::up    && nextPieceType.DInConnectivity == false) break;
+      if (currentDirection == emulator::PipeBot::direction_t::down  && nextPieceType.UInConnectivity == false) break;
 
-  //     // Checking if direction changes
-  //     auto nextDirection = currentDirection;
-  //     if (currentDirection == direction_t::left  && nextPiece.LRedirection != direction_t::none) nextDirection = nextPiece.LRedirection;
-  //     if (currentDirection == direction_t::right && nextPiece.RRedirection != direction_t::none) nextDirection = nextPiece.RRedirection;
-  //     if (currentDirection == direction_t::up    && nextPiece.URedirection != direction_t::none) nextDirection = nextPiece.URedirection;
-  //     if (currentDirection == direction_t::down  && nextPiece.DRedirection != direction_t::none) nextDirection = nextPiece.DRedirection;
+      // Checking if direction changes
+      auto nextDirection = currentDirection;
+      if (currentDirection == emulator::PipeBot::direction_t::left  && nextPieceType.LRedirection != emulator::PipeBot::direction_t::none) nextDirection = nextPieceType.LRedirection;
+      if (currentDirection == emulator::PipeBot::direction_t::right && nextPieceType.RRedirection != emulator::PipeBot::direction_t::none) nextDirection = nextPieceType.RRedirection;
+      if (currentDirection == emulator::PipeBot::direction_t::up    && nextPieceType.URedirection != emulator::PipeBot::direction_t::none) nextDirection = nextPieceType.URedirection;
+      if (currentDirection == emulator::PipeBot::direction_t::down  && nextPieceType.DRedirection != emulator::PipeBot::direction_t::none) nextDirection = nextPieceType.DRedirection;
       
-  //     // Updating values for the next iteration
-  //     currentPieceRow = nextPieceRow;
-  //     currentPieceCol = nextPieceCol;
-  //     currentDirection = nextDirection;
+      // Updating values for the next iteration
+      currentPieceRow = nextPieceRow;
+      currentPieceCol = nextPieceCol;
+      currentDirection = nextDirection;
 
-  //     // Increasing Depth
-  //     path.push_back({currentPieceRow, currentPieceCol});
-  //   }
+      // Increasing Depth
+      path.push_back({currentPieceRow, currentPieceCol, currentDirection});
+    }
 
-  //   return path;
-  // }
+    return path;
+  }
 
-  // __INLINE__ direction_t getOppositeDirection(const direction_t direction) const
-  // {
-  //    if (direction == direction_t::up) return direction_t::down;
-  //    if (direction == direction_t::down) return direction_t::up;
-  //    if (direction == direction_t::left) return direction_t::right;
-  //    if (direction == direction_t::right) return direction_t::left;
-  //    return direction_t::none;
-  // }
+  __INLINE__ emulator::PipeBot::direction_t getOppositeDirection(const emulator::PipeBot::direction_t direction) const
+  {
+     if (direction == emulator::PipeBot::direction_t::up) return emulator::PipeBot::direction_t::down;
+     if (direction == emulator::PipeBot::direction_t::down) return emulator::PipeBot::direction_t::up;
+     if (direction == emulator::PipeBot::direction_t::left) return emulator::PipeBot::direction_t::right;
+     if (direction == emulator::PipeBot::direction_t::right) return emulator::PipeBot::direction_t::left;
+     return emulator::PipeBot::direction_t::none;
+  }
 
-  // __INLINE__ std::vector<piecePos_t> calculateInversePipePath() const
-  // {
-  //   uint8_t currentPieceRow = _endPieceRow;
-  //   uint8_t currentPieceCol = _endPieceCol;
-  //   uint8_t currentDirection = _endPieceDirection;
+  __INLINE__ std::vector<piecePath_t> calculateInversePipePath() const
+  {
+    uint8_t currentPieceRow = _endPieceRow;
+    uint8_t currentPieceCol = _endPieceCol;
+    emulator::PipeBot::direction_t currentDirection = _endPieceDirection;
 
-  //   std::vector<piecePos_t> path;
-  //   path.push_back({currentPieceRow, currentPieceCol});
+    std::vector<piecePath_t> path;
+    path.push_back({currentPieceRow, currentPieceCol, currentDirection});
 
-  //   while(true)
-  //   {
-  //     // Checking boundaries
-  //     if (currentPieceCol == 0                          && currentDirection == direction_t::right) break;
-  //     if (currentPieceCol == __PIPE_DREAM_GRID_COLS - 1 && currentDirection == direction_t::left)  break;
-  //     if (currentPieceRow == 0                          && currentDirection == direction_t::down)  break;
-  //     if (currentPieceRow == __PIPE_DREAM_GRID_ROWS - 1 && currentDirection == direction_t::up)    break;
+    while(true)
+    {
+      // Checking boundaries
+      if (currentPieceCol == 0              && currentDirection == emulator::PipeBot::direction_t::right) break;
+      if (currentPieceCol == _colCount - 1  && currentDirection == emulator::PipeBot::direction_t::left)  break;
+      if (currentPieceRow == 0              && currentDirection == emulator::PipeBot::direction_t::down)  break;
+      if (currentPieceRow == _rowCount - 1  && currentDirection == emulator::PipeBot::direction_t::up)    break;
 
-  //     // Getting next piece's position
-  //     uint8_t nextPieceCol = currentPieceCol;
-  //     if (currentDirection == direction_t::right) nextPieceCol--;
-  //     if (currentDirection == direction_t::left)  nextPieceCol++;
+      // Getting next piece's position
+      uint8_t nextPieceCol = currentPieceCol;
+      if (currentDirection == emulator::PipeBot::direction_t::right) nextPieceCol--;
+      if (currentDirection == emulator::PipeBot::direction_t::left)  nextPieceCol++;
 
-  //     uint8_t nextPieceRow = currentPieceRow;
-  //     if (currentDirection == direction_t::down)  nextPieceRow--;
-  //     if (currentDirection == direction_t::up)    nextPieceRow++;
+      uint8_t nextPieceRow = currentPieceRow;
+      if (currentDirection == emulator::PipeBot::direction_t::down)  nextPieceRow--;
+      if (currentDirection == emulator::PipeBot::direction_t::up)    nextPieceRow++;
 
-  //     // Getting next piece's information
-  //     const uint8_t nextPieceIdx = nextPieceRow * __PIPE_DREAM_GRID_COLS + nextPieceCol;
-  //     const uint8_t nextPieceType = _gridStart[nextPieceIdx];
-  //     if (_pieceTypes.contains(nextPieceType) == false) { printf("Did not recognize next piece type: 0%02X", nextPieceType); break; }
-  //     const auto& nextPiece = _pieceTypes.at(nextPieceType);
+      // Getting next piece's information
+      const uint8_t nextPiece = _pipeBot->getPiece(nextPieceRow, nextPieceCol);
+      const auto& nextPieceType = _pipeBot->getPieceType(nextPiece);
 
-  //     // Checking if it accepts the incoming stream
-  //     if (currentDirection == direction_t::left  && nextPiece.LOutConnectivity == false) break;  
-  //     if (currentDirection == direction_t::right && nextPiece.ROutConnectivity == false) break;
-  //     if (currentDirection == direction_t::up    && nextPiece.UOutConnectivity == false) break;
-  //     if (currentDirection == direction_t::down  && nextPiece.DOutConnectivity == false) break;
+      // Checking if it accepts the incoming stream
+      if (currentDirection == emulator::PipeBot::direction_t::left  && nextPieceType.LOutConnectivity == false) break;  
+      if (currentDirection == emulator::PipeBot::direction_t::right && nextPieceType.ROutConnectivity == false) break;
+      if (currentDirection == emulator::PipeBot::direction_t::up    && nextPieceType.UOutConnectivity == false) break;
+      if (currentDirection == emulator::PipeBot::direction_t::down  && nextPieceType.DOutConnectivity == false) break;
 
-  //     // Checking if direction changes
-  //     auto nextDirection = currentDirection;
-  //     if (currentDirection == direction_t::left  && nextPiece.RRedirection != direction_t::none) nextDirection = getOppositeDirection(nextPiece.RRedirection);
-  //     if (currentDirection == direction_t::right && nextPiece.LRedirection != direction_t::none) nextDirection = getOppositeDirection(nextPiece.LRedirection);
-  //     if (currentDirection == direction_t::up    && nextPiece.DRedirection != direction_t::none) nextDirection = getOppositeDirection(nextPiece.DRedirection);
-  //     if (currentDirection == direction_t::down  && nextPiece.URedirection != direction_t::none) nextDirection = getOppositeDirection(nextPiece.URedirection);
+      // Checking if direction changes
+      auto nextDirection = currentDirection;
+      if (currentDirection == emulator::PipeBot::direction_t::left  && nextPieceType.RRedirection != emulator::PipeBot::direction_t::none) nextDirection = getOppositeDirection(nextPieceType.RRedirection);
+      if (currentDirection == emulator::PipeBot::direction_t::right && nextPieceType.LRedirection != emulator::PipeBot::direction_t::none) nextDirection = getOppositeDirection(nextPieceType.LRedirection);
+      if (currentDirection == emulator::PipeBot::direction_t::up    && nextPieceType.DRedirection != emulator::PipeBot::direction_t::none) nextDirection = getOppositeDirection(nextPieceType.DRedirection);
+      if (currentDirection == emulator::PipeBot::direction_t::down  && nextPieceType.URedirection != emulator::PipeBot::direction_t::none) nextDirection = getOppositeDirection(nextPieceType.URedirection);
       
-  //     // Updating values for the next iteration
-  //     currentPieceRow = nextPieceRow;
-  //     currentPieceCol = nextPieceCol;
-  //     currentDirection = nextDirection;
+      // Updating values for the next iteration
+      currentPieceRow = nextPieceRow;
+      currentPieceCol = nextPieceCol;
+      currentDirection = nextDirection;
 
-  //     // Increasing Depth
-  //     path.push_back({currentPieceRow, currentPieceCol});
-  //   }
+      // Increasing Depth
+      path.push_back({currentPieceRow, currentPieceCol, currentDirection});
+    }
 
-  //   return path;
-  // }
+    return path;
+  }
 
-  // __INLINE__ uint16_t calculateConnectivity() const
-  // {
-  //   uint16_t connectivity = 0;
+  __INLINE__ uint16_t calculateConnectivity() const
+  {
+    uint16_t connectivity = 0;
 
-  //   for (uint8_t i = 0; i < __PIPE_DREAM_GRID_ROWS; i++)
-  //    for (uint8_t j = 0; j < __PIPE_DREAM_GRID_COLS; j++)
-  //    { 
-  //     const auto pieceType = _gridStart[i * __PIPE_DREAM_GRID_COLS + j];
-  //     const auto& piece = _pieceTypes.at(pieceType);
+    for (uint8_t i = 0; i < _rowCount; i++)
+     for (uint8_t j = 0; j < _colCount; j++)
+     { 
+      const auto piece = _pipeBot->getPiece(i, j);
+      const auto& pieceType = _pipeBot->getPieceType(piece);
 
-  //     if (pieceType != 0x00)
-  //     {
-  //       // Up
-  //       if (i > 0)
-  //       {
-  //         const auto boundaryPieceType = _gridStart[(i - 1) * __PIPE_DREAM_GRID_COLS + j];
-  //         const auto& boundaryPiece = _pieceTypes.at(boundaryPieceType);
-  //         if (piece.UOutConnectivity == true && boundaryPiece.DInConnectivity  == true) connectivity++;
-  //         if (piece.UInConnectivity  == true && boundaryPiece.DOutConnectivity == true) connectivity++;
-  //       }
+      if (piece != 0x00)
+      {
+        // Up
+        if (i > 0)
+        {
+          const auto boundaryPiece = _pipeBot->getPiece(i-1, j);
+          const auto& boundaryPieceType = _pipeBot->getPieceType(boundaryPiece);
+          if (pieceType.UOutConnectivity == true && boundaryPieceType.DInConnectivity  == true) connectivity++;
+          if (pieceType.UInConnectivity  == true && boundaryPieceType.DOutConnectivity == true) connectivity++;
+        }
 
-  //       // Down
-  //       if (i < (__PIPE_DREAM_GRID_ROWS - 1))
-  //       {
-  //         const auto boundaryPieceType = _gridStart[(i + 1) * __PIPE_DREAM_GRID_COLS + j];
-  //         const auto& boundaryPiece = _pieceTypes.at(boundaryPieceType);
-  //         if (piece.DOutConnectivity == true && boundaryPiece.UInConnectivity  == true) connectivity++;
-  //         if (piece.DInConnectivity  == true && boundaryPiece.UOutConnectivity == true) connectivity++;
-  //       }
+        // Down
+        if (i < (_rowCount - 1))
+        {
+          const auto boundaryPiece = _pipeBot->getPiece(i+1, j);
+          const auto& boundaryPieceType = _pipeBot->getPieceType(boundaryPiece);
+          if (pieceType.DOutConnectivity == true && boundaryPieceType.UInConnectivity  == true) connectivity++;
+          if (pieceType.DInConnectivity  == true && boundaryPieceType.UOutConnectivity == true) connectivity++;
+        }
 
-  //       // Left
-  //       if (j > 0)
-  //       {
-  //         const auto boundaryPieceType = _gridStart[i * __PIPE_DREAM_GRID_COLS + (j - 1)];
-  //         const auto& boundaryPiece = _pieceTypes.at(boundaryPieceType);
-  //         if (piece.LOutConnectivity == true && boundaryPiece.RInConnectivity  == true) connectivity++;
-  //         if (piece.LInConnectivity  == true && boundaryPiece.ROutConnectivity == true) connectivity++;
-  //       }
+        // Left
+        if (j > 0)
+        {
+          const auto boundaryPiece = _pipeBot->getPiece(i, j-1);
+          const auto& boundaryPieceType = _pipeBot->getPieceType(boundaryPiece);
+          if (pieceType.LOutConnectivity == true && boundaryPieceType.RInConnectivity  == true) connectivity++;
+          if (pieceType.LInConnectivity  == true && boundaryPieceType.ROutConnectivity == true) connectivity++;
+        }
 
-  //       // Right
-  //       if (j < (__PIPE_DREAM_GRID_COLS - 1))
-  //       {
-  //         const auto boundaryPieceType = _gridStart[i * __PIPE_DREAM_GRID_COLS + (j + 1)];
-  //         const auto& boundaryPiece = _pieceTypes.at(boundaryPieceType);
-  //         if (piece.ROutConnectivity == true && boundaryPiece.LInConnectivity  == true) connectivity++;
-  //         if (piece.RInConnectivity  == true && boundaryPiece.LOutConnectivity == true) connectivity++;
-  //       }
-  //     }
-  //    }    
+        // Right
+        if (j < (_colCount - 1))
+        {
+          const auto boundaryPiece = _pipeBot->getPiece(i, j+1);
+          const auto& boundaryPieceType = _pipeBot->getPieceType(boundaryPiece);
+          if (pieceType.ROutConnectivity == true && boundaryPieceType.LInConnectivity  == true) connectivity++;
+          if (pieceType.RInConnectivity  == true && boundaryPieceType.LOutConnectivity == true) connectivity++;
+        }
+      }
+     }    
 
-  //   return connectivity;
-  // }
-
-  // uint8_t* _playerInput1        ;
-  // uint8_t* _playerInput2        ;
-  // uint8_t* _playerInput3        ;
-  // uint8_t* _playerInput4        ;
-  // uint8_t* _playerInput5        ;
-  // uint8_t* _playerInput6        ;
-  // uint8_t* _playerInput7        ;
-  // uint8_t* _playerPosX          ;
-  // uint8_t* _playerPosY          ;
-  // uint8_t* _piecePlacingStatus  ;
-  // uint8_t* _piecePlacingTimer1  ;
-  // uint8_t* _piecePlacingTimer2  ;
-  // uint8_t* _piecePlacingPosX    ;
-  // uint8_t* _piecePlacingPosY    ;
-  // uint8_t* _gridStart           ;
-  // uint8_t* _gridEnd             ;
-  // uint8_t* _piecesPlaced        ;
-  // uint8_t* _gameState;
-  // uint8_t* _pendingScore;
-  // uint8_t* _pieceReplacementState;
-  // uint8_t* _pieceReplacementTimer;
+    return connectivity;
+  }
 
   uint16_t _currentStep;
 
-  // InputSet::inputIndex_t _nullInputIdx;
-  // InputSet::inputIndex_t _buttonAInputIdx;
-  // InputSet::inputIndex_t _buttonUInputIdx;
-  // InputSet::inputIndex_t _buttonDInputIdx;
-  // InputSet::inputIndex_t _buttonLInputIdx;
-  // InputSet::inputIndex_t _buttonRInputIdx;
-  // // InputSet::inputIndex_t _buttonULInputIdx;
-  // // InputSet::inputIndex_t _buttonURInputIdx;
-  // // InputSet::inputIndex_t _buttonDLInputIdx;
-  // // InputSet::inputIndex_t _buttonDRInputIdx;
+  uint8_t _startPieceRow;
+  uint8_t _startPieceCol;
+  emulator::PipeBot::direction_t _startPieceDirection;
+  bool _startPieceFound;
 
-  // std::map<uint8_t, pieceType_t> _pieceTypes;
+  uint8_t _endPieceRow; 
+  uint8_t _endPieceCol;
+  emulator::PipeBot::direction_t _endPieceDirection;
+  bool _endPieceFound;
 
-  // std::set<piecePos_t> _initialPieces;
+  uint8_t _distanceBetweenEnds;
+  bool _endsHaveMet;
 
-  // uint8_t _startPieceRow;
-  // uint8_t _startPieceCol;
-  // direction_t _startPieceDirection;
-  // bool _startPieceFound;
+  uint8_t _forwardDepth;
+  uint8_t _backwardDepth;
+  uint8_t _piecesOnBoard;
+  uint8_t _targetScore;
+  uint8_t _lingeringPieces;
+  uint8_t _distanceToReward;
+  uint8_t _piecesReplaced;
+  uint16_t _connectivity;
 
-  // uint8_t _endPieceRow; 
-  // uint8_t _endPieceCol;
-  // direction_t _endPieceDirection;
-  // bool _endPieceFound;
-
-  // uint8_t _distanceBetweenEnds;
-  // bool _endsHaveMet;
-
-  // uint8_t _forwardDepth;
-  // uint8_t _backwardDepth;
-
-  // uint8_t _piecesOnBoard;
-  // uint8_t _targetScore;
-  // uint8_t _lingeringPieces;
-  // uint8_t _distanceToReward;
-  // uint8_t _inputAPressCount;
-  // uint16_t _connectivity;
+  emulator::PipeBot* const _pipeBot;
+  uint8_t _rowCount;
+  uint8_t _colCount; 
 
   uint8_t* _grid;
-  size_t _gridSize;
+
+  uint8_t _distanceLimiterInitialRow;
+  uint8_t _distanceLimiterInitialCol;
+  uint8_t _distanceLimiterMaxRowDistance;
+  uint8_t _distanceLimiterMaxColDistance;
+  uint8_t _distanceLimiterCurrentRow;
+  uint8_t _distanceLimiterCurrentCol;
+  
+  std::vector<std::vector<possibleInput_t>> _possibleInputs;
+  std::map<InputSet::inputIndex_t, possibleInput_t> _inputMap;
+
+  std::set<std::pair<uint8_t, uint8_t>> _initialPieces;
 
 };
 

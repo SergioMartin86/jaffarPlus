@@ -70,6 +70,9 @@ public:
     if (_testCandidateInputs == true)
       for (const auto& inputSetJs : _candidateInputSetsJs) _candidateInputSets.push_back(parseInputSet(inputSetJs));
 
+    // Parsing inputs declared directly by the game's code
+    for (const auto& input : _game->getAllPossibleInputs()) registerInput(input);
+
     // If storing input history, allocate input history storage
     if (_inputHistoryEnabled == true)
     {

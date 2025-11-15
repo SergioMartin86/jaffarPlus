@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 20,
+        "Max Steps": 28,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -16,7 +16,7 @@
             "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 300000,
+            "Max Size (Mb)": 2000,
             "Differential Compression":
             {
                 "Enabled": false, 
@@ -29,6 +29,7 @@
         "Emulator Name": "PipeBot",
         "Row Count": 8,
         "Col Count": 10,
+        "Next Piece Queue": [ 85, 153, 51, 255, 18, 102, 132, 204, 85, 51, 51, 102, 170, 85, 204, 170, 204, 255, 153, 102, 18, 255, 255, 204, 204, 85, 204, 170, 85, 51 ],
         "Initial Pieces":
          [
             { 
@@ -56,7 +57,7 @@
         "Show Allowed Inputs": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 20
+            "Max Size": 30
         },
         "Allowed Input Sets": [
             {
@@ -80,13 +81,54 @@
     "Game Configuration": {
         "Game Name": "PipeBot / PipeBot",
         "Frame Rate": 60.1,
+        "Distance Limiter":
+        {
+            "Initial Row": 4,
+            "Initial Col": 4,
+            "Max Row Distance": 4,
+            "Max Col Distance": 4
+        },
         "Bypass Emulator State": false,
         "Last Input Step Reward": 0.0,
+        "Target Score": 20,
         "Print Properties": [
         ],
         "Hash Properties": [
         ],
         "Rules": [
+            {   
+                "Label": 1000,
+                "Conditions": [
+                    {
+                        "Property": "Ends Have Met",
+                        "Op": "==",
+                        "Value": true
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+		            	"Value": 1.0
+                    }
+                ]
+            },
+            {   
+                "Label": 1001,
+                "Conditions": [
+                    {
+                        "Property": "Forward Depth",
+                        "Op": "==",
+                        "Value": "Target Score"
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+	    }
         ]
     }
 }
