@@ -15,17 +15,23 @@
         "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 50000
         },
         "State Database": {
-            "Max Size (Mb)": 10000
+            "Max Size (Mb)": 100000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 6000,
+                "Use Zlib Compression": false
+            }
         }
+        
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
         "Rom File Path": "Pac-Man - Championship Edition (USA, Europe) (Namco Museum Archives Vol 1).nes",
         "Rom File SHA1": "90AB4682C1CFBE78D9E32BAFF37600B0114F6E74",
-        "Use Flat Code Map": false,
         "Initial State File Path": "",
         "Initial Sequence File Path": "test.initial.sol",
         "Initial RAM Data File Path": "",
@@ -41,7 +47,12 @@
         ]
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
@@ -77,6 +88,7 @@
     "Game Configuration": {
         "Game Name": "NES / Pac-Man Championship",
         "Frame Rate": 600.1,
+        "Bypass Emulator State": false,
         "Print Properties": [
             "Player Direction",
             "Player Pos X",

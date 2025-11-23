@@ -46,10 +46,15 @@ public:
     direction_t DRedirection;
   };
 
-  struct piece_t 
+  struct piecePos_t 
   {
     uint8_t row;
     uint8_t col;
+  };
+
+  struct piece_t 
+  {
+    piecePos_t pos;
     uint8_t type;
   };
 
@@ -60,6 +65,7 @@ public:
   {
     _rowCount = jaffarCommon::json::getNumber<uint8_t>(config, "Row Count");
     _colCount = jaffarCommon::json::getNumber<uint32_t>(config, "Col Count");
+    _targetScore = jaffarCommon::json::getNumber<uint8_t>(config, "Target Score");
     _grid = (uint8_t*) malloc (_rowCount * _colCount * sizeof(uint8_t));
 
     _pieceTypes = 
@@ -70,10 +76,10 @@ public:
       { 0x02, { "╥", false, false, false, false,  false, false, false, true,  direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x08, { "╞", false, false, false, false,  false, true,  false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x04, { "╡", false, false, false, false,  true,  false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
-      { 0x10, { "╩", false, false, true,  false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
-      { 0x20, { "╦", false, false, false, true,   false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
-      { 0x80, { "╠", false, true,  false, false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
-      { 0x40, { "╣", true,  false, false, false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
+      { 0x10, { "╩", false, false, false, false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
+      { 0x20, { "╦", false, false, false, false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
+      { 0x80, { "╠", false, false, false, false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
+      { 0x40, { "╣", false, false, false, false,  false, false, false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x12, { "↓", false, false, true,  false,  false, false, false, true , direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x21, { "↑", false, false, false, true,   false, false, true,  false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
       { 0x48, { "→", true,  false, false, false,  false, true,  false, false, direction_t::none, direction_t::none, direction_t::none,  direction_t::none,   } },
@@ -97,46 +103,161 @@ public:
 
       const uint8_t pieceRow  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Row"); 
       const uint8_t pieceCol  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Col"); 
-      _initialPieces.push_back(piece_t({.row = pieceRow, .col = pieceCol, .type = pieceType}));
+      _initialPieces.push_back(piece_t({.pos { pieceRow, pieceCol }, .type = pieceType}));
     }
 
+    const auto& upHolePiecesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Up Hole Pieces");
+    for (const auto& pieceJs : upHolePiecesJs)
+    {
+      const uint8_t pieceRow  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Row"); 
+      const uint8_t pieceCol  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Col"); 
+      _upHolePieces.insert({ pieceRow, pieceCol });
+    }
 
+    const auto& downHolePiecesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Down Hole Pieces");
+    for (const auto& pieceJs : downHolePiecesJs)
+    {
+      const uint8_t pieceRow  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Row"); 
+      const uint8_t pieceCol  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Col"); 
+      _downHolePieces.insert({ pieceRow, pieceCol });
+    }
+
+    const auto& leftHolePiecesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Left Hole Pieces");
+    for (const auto& pieceJs : leftHolePiecesJs)
+    {
+      const uint8_t pieceRow  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Row"); 
+      const uint8_t pieceCol  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Col"); 
+      _leftHolePieces.insert({ pieceRow, pieceCol });
+    }
+
+    const auto& rightHolePiecesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Right Hole Pieces");
+    for (const auto& pieceJs : rightHolePiecesJs)
+    {
+      const uint8_t pieceRow  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Row"); 
+      const uint8_t pieceCol  = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Col"); 
+      _rightHolePieces.insert({ pieceRow, pieceCol });
+    }
+    
     _inputParser = std::make_unique<jaffar::InputParser>(config);
+    _currentPieceIdx = 0;
+
+    // resetting grid to initial state
+    reset();
   };
 
   ~PipeBot() { free (_grid); }
 
   void initializeImpl() override
   {
-    // resetting grid to initial state
-    reset();
+
   }
 
   __INLINE__ uint8_t getRowCount() const { return _rowCount; }
   __INLINE__ uint8_t getColCount() const { return _colCount; }
 
+  __INLINE__ auto& getInitialPieces() const { return _initialPieces; }
+
   __INLINE__ void reset()
   {
-    for (size_t i = 0; i < _rowCount; i++) for (size_t j = 0; j < _colCount; j++) setPiece(i, j, 0x00);
-    for (const auto& piece : _initialPieces) setPiece(piece.row, piece.col, piece.type);
+    for (uint8_t i = 0; i < _rowCount; i++) for (uint8_t j = 0; j < _colCount; j++) setPiece({i, j}, 0x00);
+    for (const auto& piece : _initialPieces) setPiece({ piece.pos.row, piece.pos.col }, piece.type);
   }
 
-  __INLINE__ void setPiece(const uint8_t row, const uint8_t col, const uint8_t type)
+  __INLINE__ void setPiece(const piecePos_t pos, const uint8_t type)
   {
-    _grid[row * _colCount + col] = type; 
+    _grid[pos.row * _colCount + pos.col] = type; 
   }
 
-  __INLINE__ void placeNextPiece(const uint8_t row, const uint8_t col)
+  __INLINE__ uint8_t getTargetScore() const { return _targetScore; }
+
+  __INLINE__ bool hasLeftPiece(const piecePos_t pos)
+  {    
+    if (pos.col == 0) 
+    {
+      if (_leftHolePieces.contains({pos.row, pos.col})) return true;
+      return false;
+    }
+    return true;
+  }
+
+  __INLINE__ bool hasRightPiece(const piecePos_t pos)
+  {    
+    if (pos.col == _colCount - 1)
+    {
+      if (_rightHolePieces.contains({pos.row, pos.col})) return true;
+      return false;
+    } 
+    return true;
+  }
+
+  __INLINE__ bool hasUpPiece(const piecePos_t pos)
+  {    
+    if (pos.row == 0)
+    {
+      if (_upHolePieces.contains({pos.row, pos.col})) return true;
+      return false;
+    } 
+    return true;
+  }
+
+  __INLINE__ bool hasDownPiece(const piecePos_t pos)
+  {    
+    if (pos.row == _rowCount - 1)
+    {
+      if (_downHolePieces.contains({pos.row, pos.col})) return true;
+      return false;
+    } 
+    return true;
+  }
+
+  __INLINE__ piecePos_t getLeftPiecePos(const piecePos_t pos)
+  {    
+    auto nextPos = pos;
+    if (nextPos.col == 0) nextPos.col = _colCount -1;
+    else nextPos.col = nextPos.col - 1;
+    return nextPos;
+  }
+
+  __INLINE__ piecePos_t getRightPiecePos(const piecePos_t pos)
+  {    
+    auto nextPos = pos;
+    if (nextPos.col == _colCount - 1) nextPos.col = 0;
+    else nextPos.col = nextPos.col + 1;
+    return nextPos;
+  }
+
+  __INLINE__ piecePos_t getUpPiecePos(const piecePos_t pos)
+  {    
+    auto nextPos = pos;
+    if (nextPos.row == 0) nextPos.row = _rowCount - 1;
+    else nextPos.row = nextPos.row - 1;
+    return nextPos;
+  }
+
+  __INLINE__ piecePos_t getDownPiecePos(const piecePos_t pos)
+  {    
+    auto nextPos = pos;
+    if (nextPos.row == _rowCount - 1) nextPos.row = 0;
+    else nextPos.row = nextPos.row + 1;
+    return nextPos;
+  }
+
+  __INLINE__ void placeNextPiece(const piecePos_t pos)
   {
     if (_currentPieceIdx >= _nextPieceQueue.size()) JAFFAR_THROW_LOGIC("Ran out of pieces");
     const auto piece = _nextPieceQueue[_currentPieceIdx];
-    setPiece(row, col, piece); 
+    setPiece(pos, piece); 
     _currentPieceIdx++;
   }
 
-  __INLINE__ uint8_t getPiece(const uint8_t row, const uint8_t col) const
+  __INLINE__ uint8_t getNextPiece()
+  {    
+    return _nextPieceQueue[_currentPieceIdx];
+  }
+
+  __INLINE__ uint8_t getPiece(const piecePos_t pos) const
   {
-    return _grid[row * _colCount + col];
+    return _grid[pos.row * _colCount + pos.col];
   }
 
   __INLINE__ const pieceType_t& getPieceType(const uint8_t typeId) const
@@ -174,14 +295,16 @@ public:
   { 
     const auto& nextPiece = _nextPieceQueue[_currentPieceIdx];
     const auto& nextPieceType = _pieceTypes.at(nextPiece);
-    jaffarCommon::logger::log("[J+]  + Next Piece: %s, %u (0x%X)\n", nextPieceType.shape.c_str(), nextPiece, nextPiece); 
+    
+    jaffarCommon::logger::log("[J+]  + Initial Pieces: %lu\n", _initialPieces.size()); 
+    jaffarCommon::logger::log("[J+]  + Next Piece: %s, %u (0x%X, Idx: %lu)\n", nextPieceType.shape.c_str(), nextPiece, nextPiece, _currentPieceIdx); 
     jaffarCommon::logger::log("[J+]  + Grid:\n");
-    for (size_t i = 0; i < _rowCount; i++)
+    for (uint8_t i = 0; i < _rowCount; i++)
     {
       jaffarCommon::logger::log("[J+]    "); 
-      for (size_t j = 0; j < _colCount; j++)
+      for (uint8_t j = 0; j < _colCount; j++)
       {
-        const auto pieceType = getPiece(i,j);
+        const auto pieceType = getPiece({i,j});
         if (_pieceTypes.contains(pieceType) == false) { printf("Did not recognize next piece type: 0%02X", pieceType); break; }
         const auto& piece = _pieceTypes.at(pieceType);
         jaffarCommon::logger::log("%s", piece.shape.c_str());
@@ -229,10 +352,16 @@ private:
   uint8_t _rowCount;
   uint8_t _colCount;
   uint8_t* _grid;
+  uint8_t _targetScore;
 
   std::map<uint8_t, pieceType_t> _pieceTypes;
   std::vector<piece_t> _initialPieces;
   std::unique_ptr<jaffar::InputParser> _inputParser;
+
+  std::set<std::pair<uint8_t, uint8_t>> _upHolePieces;
+  std::set<std::pair<uint8_t, uint8_t>> _downHolePieces;
+  std::set<std::pair<uint8_t, uint8_t>> _leftHolePieces;
+  std::set<std::pair<uint8_t, uint8_t>> _rightHolePieces;
 
 
   std::vector<uint8_t> _nextPieceQueue;
