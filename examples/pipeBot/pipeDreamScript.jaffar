@@ -13,10 +13,10 @@
         "NUMA Domains Per Group": 1,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 0000
+            "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 3000,
+            "Max Size (Mb)": 30000,
             "Differential Compression":
             {
                 "Enabled": false, 
@@ -27,9 +27,9 @@
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
-        "Rom File Path": "Pipe Dream (U) [!].nes",
+        "Rom File Path": "../nes/pipeDream/Pipe Dream (U) [!].nes",
         "Rom File SHA1": "4929C3CD3D69239A16FAE52B2570E099CC6F4BC8",
-        "Initial Sequence File Path": "initial.sol",
+        "Initial Sequence File Path": "pipeDreamInitial.sol",
         "Initial State File Path": "",
         "Use Flat Code Map": false,
         "Initial RAM Data File Path": "",
@@ -105,8 +105,8 @@
                     },
                     {
                         "Property": "Lingering Pieces",
-                        "Op": "==",
-                        "Value": 0
+                        "Op": "<=",
+                        "Value": 5
                     }
                 ],
                 "Satisfies": [],

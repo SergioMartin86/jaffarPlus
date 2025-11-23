@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 28,
+        "Max Steps": 50,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -29,20 +29,19 @@
         "Emulator Name": "PipeBot",
         "Row Count": 8,
         "Col Count": 10,
-        "Next Piece Queue": [ 85, 153, 51, 255, 18, 102, 132, 204, 85, 51, 51, 102, 170, 85, 204, 170, 204, 255, 153, 102, 18, 255, 255, 204, 204, 85, 204, 170, 85, 51 ],
-        "Initial Pieces":
-         [
-            { 
-                "Row": 4,
-                "Col": 3, 
-                "Type": 8
-            },
-            { 
-                "Row": 5,
-                "Col": 8, 
-                "Type": 64
-            }
-         ]
+        "Up Hole Pieces":
+        [
+        ],
+        "Down Hole Pieces":
+        [
+        ],
+        "Left Hole Pieces":
+        [
+        ],
+        "Right Hole Pieces":
+        [
+        ],
+                "Next Piece Queue": [ 255, 153, 102, 204,  51,  85, 170, 102,  51, 170, 153,  85, 102, 102, 204, 255,  85,  51, 255, 204, 102, 102, 153, 170, 204, 102,  85, 255,  51, 153, 170,  85,  85, 153, 102, 204, 255,  85,  51, 170, 204, 170, 153,  51,  51, 102,  85, 255,  51, 102,  85,  51, 153, 170, 204, 255,  85, 255, 153,  51, 255, 204, 102, 170,  51, 204,  85, 153, 102, 170, 170, 255,  51,  85, 255, 204, 102 ],         "Initial Pieces": [ { "Row":   1, "Col":   1, "Type":   2 }  ],         "Target Score": 19 
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
@@ -57,7 +56,7 @@
         "Show Allowed Inputs": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 30
+            "Max Size": 50
         },
         "Allowed Input Sets": [
             {
@@ -83,43 +82,28 @@
         "Frame Rate": 60.1,
         "Distance Limiter":
         {
-            "Initial Row": 4,
-            "Initial Col": 4,
-            "Max Row Distance": 4,
-            "Max Col Distance": 4
+            "Max Row Distance": 10,
+            "Max Col Distance": 10
         },
         "Bypass Emulator State": false,
         "Last Input Step Reward": 0.0,
-        "Target Score": 20,
         "Print Properties": [
         ],
         "Hash Properties": [
         ],
         "Rules": [
             {   
-                "Label": 1000,
-                "Conditions": [
-                    {
-                        "Property": "Ends Have Met",
-                        "Op": "==",
-                        "Value": true
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-		            	"Value": 1.0
-                    }
-                ]
-            },
-            {   
                 "Label": 1001,
                 "Conditions": [
                     {
                         "Property": "Forward Depth",
-                        "Op": "==",
+                        "Op": ">=",
                         "Value": "Target Score"
+                    },
+                    {
+                        "Property": "Last Crossing Piece Distance To Goal",
+                        "Op": ">",
+                        "Value": 3
                     }
                 ],
                 "Satisfies": [],
@@ -128,7 +112,23 @@
                         "Type": "Trigger Win"
                     }
                 ]
-	    }
+	        },
+            {   
+                "Label": 1002,
+                "Conditions": [
+                    {
+                        "Property": "Replaced Pieces",
+                        "Op": ">",
+                        "Value": 5
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+	        }
         ]
     }
 }

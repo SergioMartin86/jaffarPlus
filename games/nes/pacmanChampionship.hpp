@@ -267,14 +267,15 @@ private:
 
     _isKeyFrame = false;
     if (_prevScore != _score) _isKeyFrame = true;
-    if (_prevGhost1State != *_ghost1State) _isKeyFrame = true;
-    if (_prevGhost2State != *_ghost2State) _isKeyFrame = true;
-    if (_prevGhost3State != *_ghost3State) _isKeyFrame = true;
-    if (_prevGhost4State != *_ghost4State) _isKeyFrame = true;
+    // if (_prevGhost1State != *_ghost1State) _isKeyFrame = true;
+    // if (_prevGhost2State != *_ghost2State) _isKeyFrame = true;
+    // if (_prevGhost3State != *_ghost3State) _isKeyFrame = true;
+    // if (_prevGhost4State != *_ghost4State) _isKeyFrame = true;
     if (_prevFruit1Status != *_fruit1Status) _isKeyFrame = true;
     if (_prevFruit2Status != *_fruit2Status) _isKeyFrame = true;
     if (*_ghostCaptureTimer1 == 1) _isKeyFrame = true;
-    // if (_currentStep % 8 == 0) _isKeyFrame = true;
+    if (_currentStep % 32 == 0) _isKeyFrame = true;
+    if (_playerPrevPosX == _playerPosX && _playerPrevPosY == _playerPosY) _isKeyFrame = true;
 
     _playerPosX = (uint16_t)*_playerPosX1 + (uint16_t)*_playerPosX2;
     _playerPosY = (uint16_t)*_playerPosY2;
@@ -427,51 +428,65 @@ private:
           return;
       }
 
-      // Gauntlet
-      bool allowU = false;
-      bool allowD = false;
-      bool allowL = false;
-      bool allowR = false;
+      // If current step is a key frame, try everything
+      if (_isKeyFrame == true) 
+      {
+        allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_D, _input_L, _input_R});
+        return;
+      }
 
-      // Only change directions at specific coordinates
-      if (_mapTileTypeUC <= 3) allowU = true;
-      if (_mapTileTypeDC <= 3) allowD = true;
-      if (_mapTileTypeCL <= 3) allowL = true;
-      if (_mapTileTypeCR <= 3) allowR = true;
+      // Else just return the same direction  
+      if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
+      if (*_playerDirection == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
+      if (*_playerDirection == 3) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
+      if (*_playerDirection == 4) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+      return;
 
-      // Consider corners, when going up
-      if (*_playerDirection == 1)  if (_mapTileTypeUR <= 3) { allowR = true; }
-      if (*_playerDirection == 1)  if (_mapTileTypeUL <= 3) { allowL = true; }
+      // // Gauntlet
+      // bool allowU = false;
+      // bool allowD = false;
+      // bool allowL = false;
+      // bool allowR = false;
 
-      // Consider corners, when going down
-      if (*_playerDirection == 2)  if (_mapTileTypeDR <= 3) { allowR = true; }
-      if (*_playerDirection == 2)  if (_mapTileTypeDL <= 3) { allowL = true; }
+      // // Only change directions at specific coordinates
+      // if (_mapTileTypeUC <= 3) allowU = true;
+      // if (_mapTileTypeDC <= 3) allowD = true;
+      // if (_mapTileTypeCL <= 3) allowL = true;
+      // if (_mapTileTypeCR <= 3) allowR = true;
 
-      // Consider corners, when going left
-      if (*_playerDirection == 3)  if (_mapTileTypeUL <= 3) { allowU = true; }
-      if (*_playerDirection == 3)  if (_mapTileTypeDL <= 3) { allowD = true; }
+      // // Consider corners, when going up
+      // if (*_playerDirection == 1)  if (_mapTileTypeUR <= 3) { allowR = true; }
+      // if (*_playerDirection == 1)  if (_mapTileTypeUL <= 3) { allowL = true; }
 
-      // Consider corners, when going Right
-      if (*_playerDirection == 4)  if (_mapTileTypeUR <= 3) { allowU = true; }
-      if (*_playerDirection == 4)  if (_mapTileTypeDR <= 3) { allowD = true; }
+      // // Consider corners, when going down
+      // if (*_playerDirection == 2)  if (_mapTileTypeDR <= 3) { allowR = true; }
+      // if (*_playerDirection == 2)  if (_mapTileTypeDL <= 3) { allowL = true; }
 
-      // If we are already heading in that direction, allow to continue in any condition
-      if (*_playerDirection == 1) allowU = true; // Up
-      if (*_playerDirection == 2) allowD = true; // Down
-      if (*_playerDirection == 3) allowL = true; // Left
-      if (*_playerDirection == 4) allowR = true; // Right
+      // // Consider corners, when going left
+      // if (*_playerDirection == 3)  if (_mapTileTypeUL <= 3) { allowU = true; }
+      // if (*_playerDirection == 3)  if (_mapTileTypeDL <= 3) { allowD = true; }
 
-      // Only allow to 180 degree turns on key frames
-      if (*_playerDirection == 1 && _isKeyFrame == false) allowD = false;
-      if (*_playerDirection == 2 && _isKeyFrame == false) allowU = false;
-      if (*_playerDirection == 3 && _isKeyFrame == false) allowR = false;
-      if (*_playerDirection == 4 && _isKeyFrame == false) allowL = false;
+      // // Consider corners, when going Right
+      // if (*_playerDirection == 4)  if (_mapTileTypeUR <= 3) { allowU = true; }
+      // if (*_playerDirection == 4)  if (_mapTileTypeDR <= 3) { allowD = true; }
 
-      // Adding the command
-      if (allowU == true) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
-      if (allowD == true) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
-      if (allowL == true) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
-      if (allowR == true) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+      // // If we are already heading in that direction, allow to continue in any condition
+      // if (*_playerDirection == 1) allowU = true; // Up
+      // if (*_playerDirection == 2) allowD = true; // Down
+      // if (*_playerDirection == 3) allowL = true; // Left
+      // if (*_playerDirection == 4) allowR = true; // Right
+
+      // // Only allow to 180 degree turns on key frames
+      // if (*_playerDirection == 1 && _isKeyFrame == false) allowD = false;
+      // if (*_playerDirection == 2 && _isKeyFrame == false) allowU = false;
+      // if (*_playerDirection == 3 && _isKeyFrame == false) allowR = false;
+      // if (*_playerDirection == 4 && _isKeyFrame == false) allowL = false;
+
+      // // Adding the command
+      // if (allowU == true) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
+      // if (allowD == true) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
+      // if (allowL == true) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
+      // if (allowR == true) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
 
       /////// Method 1
       // Gauntlet

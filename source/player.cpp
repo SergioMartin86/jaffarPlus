@@ -25,6 +25,9 @@ bool isReproduce;
 // Number of frames to skip between renderings
 size_t frameskip;
 
+// Command to run initially and then exit
+std::string runCommand;
+
 bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disableRender)
 {
   // If sequence file defined, load it and play it
@@ -49,7 +52,6 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
   const auto stateSize = r.getStateSize();
 
   // Printing information
-  jaffarCommon::logger::log("[J+] ********** Creating Playback Sequence **********\n");
   jaffarCommon::logger::refreshTerminal();
 
   // Instantiating playback instance
@@ -104,6 +106,15 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
 
     // Checking if the current input is within the allowed inputs for this state
     const auto isInputAllowed = p.isInputAllowed(currentStep);
+
+    // If running a command, don't print frame info, and finalize immediately after
+    if (runCommand != "")
+    {
+      isFinalize = true;
+      showFrameInfo = false;
+      isReproduce = false;
+      isUnattended = true;
+    }
 
     // Printing data and commands
     if (showFrameInfo)
@@ -181,6 +192,9 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
 
     // If it's not reproducing, grab command with a wait
     if (isReproduce == false && isUnattended == false) command = jaffarCommon::logger::waitForKeyPress();
+
+    // If running a command given from the console, set it now
+    if (runCommand != "") command = runCommand[0];
 
     // Handle commands
     switch (command)
@@ -266,6 +280,7 @@ int main(int argc, char* argv[])
   program.add_argument("--disableRender").help("Do not render game window.").default_value(false).implicit_value(true);
   program.add_argument("--frameskip").help("How many frames to skip between renderings.").default_value(std::string("1")).required();
   program.add_argument("--initialSequence").help("Overrides the solution file to use as initial sequence to play before starting.").default_value(std::string("")).required();
+  program.add_argument("--runCommand").help("Specifies a command to run and then exit").default_value(std::string(""));
 
   // Try to parse arguments
   try
@@ -303,6 +318,9 @@ int main(int argc, char* argv[])
 
   // Getting frameskip
   const std::string initialSequence = program.get<std::string>("--initialSequence");
+
+  // Getting command to run (if any)
+  runCommand = program.get<std::string>("--runCommand");
 
   // Initializing terminal
   jaffarCommon::logger::initializeTerminal();

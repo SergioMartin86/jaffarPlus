@@ -108,6 +108,7 @@ private:
     registerGameProperty("Pending Score"            ,&_lowMem[0x0447], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Piece Replacement State"  ,&_lowMem[0x00C4], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Piece Replacement Timer"  ,&_lowMem[0x00EB], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Accelerator State"        ,&_lowMem[0x00D5], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
 
     _playerInput1        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 1"            )]->getPointer();
     _playerInput2        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 2"            )]->getPointer();
@@ -130,6 +131,7 @@ private:
     _pendingScore        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Pending Score"             )]->getPointer(); 
     _pieceReplacementState  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Replacement State"              )]->getPointer(); 
     _pieceReplacementTimer  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Replacement Timer"              )]->getPointer(); 
+    _acceleratorState    =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Accelerator State"             )]->getPointer(); 
 
     registerGameProperty("Forward Depth"            ,&_forwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Backward Depth"           ,&_backwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
@@ -150,6 +152,79 @@ private:
     // _buttonDRInputIdx  = _emulator->registerInput("|..|.D.R....|");
 
     _targetScore = *_pendingScore;
+    _inputAPressCount = 0;
+    _connectivity = 0;
+
+    // Now trying to get the set of pieces we can work with
+    constexpr size_t tmpBufferSize = 32768;
+    uint8_t tmpBuffer[tmpBufferSize];
+    jaffarCommon::serializer::Contiguous s(tmpBuffer, tmpBufferSize);
+    jaffarCommon::deserializer::Contiguous d(tmpBuffer, tmpBufferSize);
+    
+    _emulator->serializeState(s);
+
+    // Advancing the state once, just in case
+    _emulator->advanceState(_nullInputIdx);
+
+    // Storing initial pieces (fixed)
+    for (uint8_t i = 0; i < __PIPE_DREAM_GRID_ROWS; i++)
+     for (uint8_t j = 0; j < __PIPE_DREAM_GRID_COLS; j++)
+     {
+      const auto pieceType = _gridStart[i * __PIPE_DREAM_GRID_COLS + j];
+      if (pieceType != 0x00) _initialPieces.insert({i, j});
+     }
+
+    // printf("Initial Pieces: %lu\n", _initialPieces.size());
+
+    // Now trying to get the set of pieces we can work with
+
+    // Setting initial position at zero zero
+    *_playerPosX = 0;
+    *_playerPosY = 0;
+
+    // Preventing accelerator from stopping us earlier
+    *_acceleratorState = 8;
+
+    // Function to advance to the next placing position
+    auto advancePos = [&]()
+    {
+      (*_playerPosX)++;
+      if (*_playerPosX == __PIPE_DREAM_GRID_COLS)
+      {
+        *_playerPosX = 0;
+        (*_playerPosY)++;
+      }
+    };
+
+    // Attempting to place pieces until the game starts
+    while (*_acceleratorState == 8)
+    {
+      if (*_playerPosX == __PIPE_DREAM_GRID_COLS - 1 && *_playerPosY == __PIPE_DREAM_GRID_ROWS - 1) break;
+
+      // If there is an initial piece here, advance position
+      if (_initialPieces.contains({*_playerPosX, *_playerPosY}))  { advancePos(); continue; }
+
+      // Try to place piece and advance 
+      if (canPlacePiece() == true)
+      {
+        _emulator->advanceState(_buttonAInputIdx);
+        _emulator->advanceState(_nullInputIdx);
+        advancePos();
+      } 
+      // else just wait
+      else _emulator->advanceState(_nullInputIdx);
+    }
+
+    // Gathering available pieces
+    for (uint8_t i = 0; i < __PIPE_DREAM_GRID_ROWS; i++)
+     for (uint8_t j = 0; j < __PIPE_DREAM_GRID_COLS; j++)
+     {
+      const auto pieceType = _gridStart[i * __PIPE_DREAM_GRID_COLS + j];
+      if (pieceType != 0x00 && _initialPieces.contains({i,j}) == false) _availablePieces.push_back(pieceType);
+     }
+
+    // Recover the original state
+    _emulator->deserializeState(d);
 
     // Looking for starter piece
     _startPieceFound = false;
@@ -159,9 +234,6 @@ private:
      {
       const auto pieceType = _gridStart[i * __PIPE_DREAM_GRID_COLS + j];
       
-      // Storing initial pieces (fixed)
-      if (pieceType != 0x00) _initialPieces.insert({i, j});
-
       // Start Pieces
       if (pieceType == 0x01) // Up Facing
       {
@@ -169,7 +241,6 @@ private:
         _startPieceCol = j;
         _startPieceDirection = direction_t::up;
         _startPieceFound = true;
-        break;
       }
 
       if (pieceType == 0x02) // Down Facing
@@ -178,7 +249,6 @@ private:
         _startPieceCol = j;
         _startPieceDirection = direction_t::down;
         _startPieceFound = true;
-        break;
       }
 
       if (pieceType == 0x08) // Right Facing
@@ -187,7 +257,6 @@ private:
         _startPieceCol = j;
         _startPieceDirection = direction_t::right;
         _startPieceFound = true;
-        break;
       }
 
       if (pieceType == 0x04) // Left Facing
@@ -196,7 +265,6 @@ private:
         _startPieceCol = j;
         _startPieceDirection = direction_t::left;
         _startPieceFound = true;
-        break;
       }
 
       // End Pieces
@@ -206,7 +274,6 @@ private:
         _endPieceCol = j;
         // _endPieceFound = true;
         _endPieceDirection = direction_t::down;
-        break;
       }
 
       if (pieceType == 0x20) // Down Facing
@@ -215,7 +282,6 @@ private:
         _endPieceCol = j;
         // _endPieceFound = true;
         _endPieceDirection = direction_t::up;
-        break;
       }
 
       if (pieceType == 0x80) // Right Facing
@@ -224,7 +290,6 @@ private:
         _endPieceCol = j;
         // _endPieceFound = true;
         _endPieceDirection = direction_t::left;
-        break;
       }
 
       if (pieceType == 0x40) // Left Facing
@@ -233,14 +298,10 @@ private:
         _endPieceCol = j;
         // _endPieceFound = true;
         _endPieceDirection = direction_t::right;
-        break;
       }
 
      }
     if (_startPieceFound == false) JAFFAR_THROW_LOGIC("Could not find starter piece");
-
-    _inputAPressCount = 0;
-    _connectivity = 0;
 
   }
 
@@ -465,7 +526,7 @@ private:
     jaffarCommon::logger::log("[J+]  + Pieces On Board:         %02u\n", _piecesOnBoard );
     jaffarCommon::logger::log("[J+]  + Initial Pieces:          %02u\n", _initialPieces.size() );
     jaffarCommon::logger::log("[J+]  + Input A Pressed Count:   %02u\n", _inputAPressCount );
-    
+    jaffarCommon::logger::log("[J+]  + Available Pieces:        %02lu\n", _availablePieces.size() );
     
     jaffarCommon::logger::log("[J+]  + Piece Replacement:       %02u (%03u)\n", *_pieceReplacementState, *_pieceReplacementTimer );
     jaffarCommon::logger::log("[J+]  + Grid:\n");
@@ -614,6 +675,31 @@ private:
     return path;
   }
 
+  __INLINE__ void playerPrintCommands() const override
+  {
+    jaffarCommon::logger::log("[J+] t: Print Initial Info\n");
+  };
+
+  __INLINE__ bool playerParseCommand(const int command)
+  {
+     if (command == 't')
+     {
+      jaffarCommon::logger::log("        \"Next Piece Queue\": [");
+      for (size_t i = 0; i < _availablePieces.size(); i++) jaffarCommon::logger::log(" %3u%s", _availablePieces[i], i == _availablePieces.size() - 1 ? "" : ",");
+      jaffarCommon::logger::log(" ], ");
+
+      jaffarCommon::logger::log("        \"Initial Pieces\": [");
+      for (auto itr = _initialPieces.begin(); itr != _initialPieces.end(); itr++) jaffarCommon::logger::log(" { \"Row\": %3u, \"Col\": %3u, \"Type\": %3u }%s ", itr->first, itr->second, _gridStart[itr->first * __PIPE_DREAM_GRID_COLS + itr->second], (itr->first == _initialPieces.rbegin()->first) && (itr->second == _initialPieces.rbegin()->second) ? "" : ",");
+      jaffarCommon::logger::log(" ], ");
+
+      jaffarCommon::logger::log("        \"Target Score\": %u ", _targetScore);
+
+      return true;
+     }
+
+     return false;
+  };
+
   __INLINE__ uint16_t calculateConnectivity() const
   {
     uint16_t connectivity = 0;
@@ -688,7 +774,7 @@ private:
   uint8_t* _pendingScore;
   uint8_t* _pieceReplacementState;
   uint8_t* _pieceReplacementTimer;
-
+  uint8_t* _acceleratorState;
   uint16_t _currentStep;
   uint8_t* _lowMem;
 
@@ -706,6 +792,7 @@ private:
   std::map<uint8_t, pieceType_t> _pieceTypes;
 
   std::set<piecePos_t> _initialPieces;
+  std::vector<uint8_t> _availablePieces;
 
   uint8_t _startPieceRow;
   uint8_t _startPieceCol;

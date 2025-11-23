@@ -1,84 +1,84 @@
 {
     "Driver Configuration": {
-        "End On First Win State": true,
-        "Max Steps": 300,
+        "End On First Win State": false,
+        "Max Steps": 600,
         "Save Intermediate Results": {
             "Enabled": true,
-            "Frequency (s)": 1.0,
+            "Frequency (s)": 5.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 1,
+        "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 0000
+            "Max Store Size (Mb)": 50000
         },
         "State Database": {
-            "Max Size (Mb)": 3000,
+            "Max Size (Mb)": 1000000,
             "Differential Compression":
             {
                 "Enabled": false, 
-                "Buffer Size": 1344,
-                "Use Zlib Compression": true
+                "Buffer Size": 6000,
+                "Use Zlib Compression": false
             }
         }
+        
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
-        "Rom File Path": "Pipe Dream (U) [!].nes",
-        "Rom File SHA1": "4929C3CD3D69239A16FAE52B2570E099CC6F4BC8",
-        "Initial Sequence File Path": "initial.sol",
+        "Rom File Path": "Pac-Man - Championship Edition (USA, Europe) (Namco Museum Archives Vol 1).nes",
+        "Rom File SHA1": "90AB4682C1CFBE78D9E32BAFF37600B0114F6E74",
         "Initial State File Path": "",
-        "Use Flat Code Map": false,
+        "Initial Sequence File Path": "twistedEye.initial.sol",
         "Initial RAM Data File Path": "",
-        "SRAM Block Size": 0,
+        "Use Flat Code Map": false,
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
-	    "SRAM Block Size": 8192,
+        "Nametable Block Size": 4096,
+        "SRAM Block Size": 1792,
         "Disabled State Properties": [
-            "SRAM",
             "CHRR",
             "NTAB",
-            "SPRT",
-            "CTRL"
-        ],
-        "Nametable Block Size": 2048
+            "SPRT"
+        ]
     },
     "Runner Configuration": {
-        "Bypass Hash Calculation": false,
         "Frameskip":
         {
-          "Rate": 1,
+          "Rate": 0,
           "Use Custom Input": false,
           "Custom Input": "|..|........|"
         },
-        "Hash Step Tolerance": 1,
-        "Show Empty Input Slots": false,
-        "Show Allowed Inputs": false,
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
             "Max Size": 600
         },
-        "Allowed Input Sets": [
+        "Allowed Input Sets": [ 
             {
-                "Conditions": [],
+            "Conditions": [
+                ],
                 "Inputs": [
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [],
+                "Conditions": [
+                ],
                 "Inputs": [
-                    "|..|........|",
-                    "|..|..L.....|",
-                    "|..|...R....|",
                     "|..|U.......|",
                     "|..|.D......|",
-                    "|..|.......A|"
+                    "|..|..L.....|",
+                    "|..|...R....|"
                 ],
-                "Stop Input Evaluation": false
+                "Stop Input Evaluation": true
             }
         ],
         "Test Candidate Inputs": false,
@@ -86,30 +86,28 @@
         ]
     },
     "Game Configuration": {
-        "Game Name": "NES / Pipe Dream",
-        "Frame Rate": 60.1,
+        "Game Name": "NES / Pac-Man Championship",
+        "Frame Rate": 60,
         "Bypass Emulator State": false,
-        "Last Input Step Reward": 0.0,
         "Print Properties": [
+            "Player Direction",
+            "Player Pos X",
+            "Player Pos Y",
+            "Bonus Multiplier"
         ],
         "Hash Properties": [
         ],
         "Rules": [
             {
-                "Label": 1000,
+                "Label": 1,
                 "Conditions": [
                     {
-                        "Property": "Forward Depth",
+                        "Property": "Game Mode",
                         "Op": "==",
-                        "Value": "Target Score"
-                    },
-                    {
-                        "Property": "Lingering Pieces",
-                        "Op": "==",
-                        "Value": 0
+                        "Value": 8
                     }
                 ],
-                "Satisfies": [],
+                "Satisfies": [  ],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -117,15 +115,15 @@
                 ]
             },
             {
-                "Label": 1001,
+                "Label": 2,
                 "Conditions": [
                     {
-                        "Property": "Game State",
-                        "Op": "!=",
-                        "Value": 255
+                        "Property": "Game Mode",
+                        "Op": "==",
+                        "Value": 4
                     }
                 ],
-                "Satisfies": [],
+                "Satisfies": [  ],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -133,21 +131,21 @@
                 ]
             },
             {
-                "Label": 1002,
+                "Label": 3,
                 "Conditions": [
                     {
-                        "Property": "Piece Replacement State",
-                        "Op": "!=",
-                        "Value": 7
+                        "Property": "Player Wall Skid",
+                        "Op": ">",
+                        "Value": 0
                     }
                 ],
-                "Satisfies": [],
+                "Satisfies": [  ],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
-	        }
+            }
         ]
     }
 }

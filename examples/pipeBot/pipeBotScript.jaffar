@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 300,
+        "Max Steps": 50,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -10,13 +10,13 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 1,
+        "NUMA Domains Per Group": 2,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 0000
+            "Max Store Size (Mb)": 20000
         },
         "State Database": {
-            "Max Size (Mb)": 3000,
+            "Max Size (Mb)": 2000,
             "Differential Compression":
             {
                 "Enabled": false, 
@@ -26,40 +26,37 @@
         }
     },
     "Emulator Configuration": {
-        "Emulator Name": "QuickerNES",
-        "Rom File Path": "Pipe Dream (U) [!].nes",
-        "Rom File SHA1": "4929C3CD3D69239A16FAE52B2570E099CC6F4BC8",
-        "Initial Sequence File Path": "initial.sol",
-        "Initial State File Path": "",
-        "Use Flat Code Map": false,
-        "Initial RAM Data File Path": "",
-        "SRAM Block Size": 0,
-        "Controller 1 Type": "Joypad",
-        "Controller 2 Type": "None",
-	    "SRAM Block Size": 8192,
-        "Disabled State Properties": [
-            "SRAM",
-            "CHRR",
-            "NTAB",
-            "SPRT",
-            "CTRL"
+        "Emulator Name": "PipeBot",
+        "Row Count": 8,
+        "Col Count": 10,
+        "Up Hole Pieces":
+        [
         ],
-        "Nametable Block Size": 2048
+        "Down Hole Pieces":
+        [
+        ],
+        "Left Hole Pieces":
+        [
+        ],
+        "Right Hole Pieces":
+        [
+        ],
+        __REPLACE__
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
         "Frameskip":
         {
-          "Rate": 1,
+          "Rate": 0,
           "Use Custom Input": false,
           "Custom Input": "|..|........|"
         },
-        "Hash Step Tolerance": 1,
+        "Hash Step Tolerance": 0,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 600
+            "Max Size": 50
         },
         "Allowed Input Sets": [
             {
@@ -71,12 +68,7 @@
             {
                 "Conditions": [],
                 "Inputs": [
-                    "|..|........|",
-                    "|..|..L.....|",
-                    "|..|...R....|",
-                    "|..|U.......|",
-                    "|..|.D......|",
-                    "|..|.......A|"
+                    "|  6,  5|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -86,8 +78,13 @@
         ]
     },
     "Game Configuration": {
-        "Game Name": "NES / Pipe Dream",
+        "Game Name": "PipeBot / PipeBot",
         "Frame Rate": 60.1,
+        "Distance Limiter":
+        {
+            "Max Row Distance": 10,
+            "Max Col Distance": 10
+        },
         "Bypass Emulator State": false,
         "Last Input Step Reward": 0.0,
         "Print Properties": [
@@ -95,18 +92,18 @@
         "Hash Properties": [
         ],
         "Rules": [
-            {
-                "Label": 1000,
+            {   
+                "Label": 1001,
                 "Conditions": [
                     {
                         "Property": "Forward Depth",
-                        "Op": "==",
+                        "Op": ">=",
                         "Value": "Target Score"
                     },
                     {
-                        "Property": "Lingering Pieces",
-                        "Op": "==",
-                        "Value": 0
+                        "Property": "Last Crossing Piece Distance To Goal",
+                        "Op": ">",
+                        "Value": 3
                     }
                 ],
                 "Satisfies": [],
@@ -115,30 +112,14 @@
                         "Type": "Trigger Win"
                     }
                 ]
-            },
-            {
-                "Label": 1001,
-                "Conditions": [
-                    {
-                        "Property": "Game State",
-                        "Op": "!=",
-                        "Value": 255
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
-                    }
-                ]
-            },
-            {
+	        },
+            {   
                 "Label": 1002,
                 "Conditions": [
                     {
-                        "Property": "Piece Replacement State",
-                        "Op": "!=",
-                        "Value": 7
+                        "Property": "Replaced Pieces",
+                        "Op": ">",
+                        "Value": 5
                     }
                 ],
                 "Satisfies": [],
