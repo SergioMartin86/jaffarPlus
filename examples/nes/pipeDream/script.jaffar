@@ -13,7 +13,7 @@
         "NUMA Domains Per Group": 1,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 0000
+            "Max Store Size (Mb)": 10000
         },
         "State Database": {
             "Max Size (Mb)": 3000,

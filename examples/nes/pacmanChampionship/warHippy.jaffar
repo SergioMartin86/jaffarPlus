@@ -1,0 +1,135 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": false,
+        "Max Steps": 500,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 5.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol",
+            "Best State Path": "/tmp/jaffar.best.state",
+            "Worst State Path": "/tmp/jaffar.worst.state"
+        }
+    },
+    "Engine Configuration": {
+        "NUMA Domains Per Group": 12,
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 50000
+        },
+        "State Database": {
+            "Max Size (Mb)": 1000000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 6000,
+                "Use Zlib Compression": false
+            }
+        }
+        
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Pac-Man - Championship Edition (USA, Europe) (Namco Museum Archives Vol 1).nes",
+        "Rom File SHA1": "90AB4682C1CFBE78D9E32BAFF37600B0114F6E74",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "warHippy.initial.sol",
+        "Initial RAM Data File Path": "",
+        "Use Flat Code Map": false,
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Nametable Block Size": 4096,
+        "SRAM Block Size": 1792,
+        "Disabled State Properties": [
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ]
+    },
+    "Runner Configuration": {
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Bypass Hash Calculation": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 500
+        },
+        "Allowed Input Sets": [ 
+            {
+            "Conditions": [
+                ],
+                "Inputs": [
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|U.......|",
+                    "|..|.D......|",
+                    "|..|..L.....|",
+                    "|..|...R....|"
+                ],
+                "Stop Input Evaluation": true
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Pac-Man Championship",
+        "Frame Rate": 60,
+        "Bypass Emulator State": false,
+        "Print Properties": [
+            "Player Direction",
+            "Player Pos X",
+            "Player Pos Y",
+            "Bonus Multiplier"
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1,
+                "Conditions": [
+                    {
+                        "Property": "Game Mode",
+                        "Op": "==",
+                        "Value": 8
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 2,
+                "Conditions": [
+                    {
+                        "Property": "Game Mode",
+                        "Op": "==",
+                        "Value": 4
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ]
+    }
+}

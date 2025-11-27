@@ -350,7 +350,9 @@ public:
       jaffarCommon::logger::log("[J+] Current Reward (Best / Worst):               %.6f / %.6f (Diff: %.6f)\n", _bestStateReward, _worstStateReward,
                                 _bestStateReward - _worstStateReward);
 
-    if (_winStatesFound > 0) jaffarCommon::logger::log("[J+] Best Win State Reward:                       %.3f\n", _bestStateReward);
+    if (_winStatesFound > 0)
+      jaffarCommon::logger::log("[J+] Current Reward (Win / Worst):                %.6f / %.6f (Diff: %.6f)\n", _bestStateReward, _worstStateReward,
+                                _bestStateReward - _worstStateReward);
 
     // Printing engine information
     jaffarCommon::logger::log("[J+] Engine Information: \n");

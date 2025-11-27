@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
-        "End On First Win State": true,
-        "Max Steps": 50,
+        "End On First Win State": false,
+        "Max Steps": 150,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -12,11 +12,12 @@
     "Engine Configuration": {
         "NUMA Domains Per Group": 2,
         "Hash Database": {
+	    "Enabled": true,
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 50000
         },
         "State Database": {
-            "Max Size (Mb)": 2000,
+            "Max Size (Mb)": 100000,
             "Differential Compression":
             {
                 "Enabled": false, 
@@ -31,15 +32,29 @@
         "Col Count": 10,
         "Up Hole Pieces":
         [
+          { "Row": 0, "Col": 1 },
+          { "Row": 0, "Col": 2 },
+          { "Row": 0, "Col": 3 },
+          { "Row": 0, "Col": 5 },
+          { "Row": 0, "Col": 8 }
         ],
         "Down Hole Pieces":
         [
+          { "Row": 7, "Col": 1 },
+          { "Row": 7, "Col": 2 },
+          { "Row": 7, "Col": 3 },
+          { "Row": 7, "Col": 5 },
+          { "Row": 7, "Col": 8 }
         ],
         "Left Hole Pieces":
         [
+          { "Row": 2, "Col": 0 },
+          { "Row": 5, "Col": 0 }
         ],
         "Right Hole Pieces":
         [
+          { "Row": 2, "Col": 9 },
+          { "Row": 5, "Col": 9 }
         ],
         __REPLACE__
     },
@@ -56,7 +71,7 @@
         "Show Allowed Inputs": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 50
+            "Max Size": 150
         },
         "Allowed Input Sets": [
             {
@@ -95,37 +110,17 @@
             {   
                 "Label": 1001,
                 "Conditions": [
-                    {
-                        "Property": "Forward Depth",
-                        "Op": ">=",
-                        "Value": "Target Score"
-                    },
-                    {
-                        "Property": "Last Crossing Piece Distance To Goal",
+                        {
+                        "Property": "Score",
                         "Op": ">",
-                        "Value": 3
+                        "Value": 80000
                     }
+
                 ],
                 "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
-                    }
-                ]
-	        },
-            {   
-                "Label": 1002,
-                "Conditions": [
-                    {
-                        "Property": "Replaced Pieces",
-                        "Op": ">",
-                        "Value": 5
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
                     }
                 ]
 	        }

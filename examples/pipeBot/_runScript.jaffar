@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
-        "End On First Win State": true,
-        "Max Steps": 50,
+        "End On First Win State": false,
+        "Max Steps": 150,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -12,11 +12,12 @@
     "Engine Configuration": {
         "NUMA Domains Per Group": 2,
         "Hash Database": {
+	    "Enabled": true,
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 50000
         },
         "State Database": {
-            "Max Size (Mb)": 2000,
+            "Max Size (Mb)": 100000,
             "Differential Compression":
             {
                 "Enabled": false, 
@@ -31,17 +32,31 @@
         "Col Count": 10,
         "Up Hole Pieces":
         [
+          { "Row": 0, "Col": 1 },
+          { "Row": 0, "Col": 2 },
+          { "Row": 0, "Col": 3 },
+          { "Row": 0, "Col": 5 },
+          { "Row": 0, "Col": 8 }
         ],
         "Down Hole Pieces":
         [
+          { "Row": 7, "Col": 1 },
+          { "Row": 7, "Col": 2 },
+          { "Row": 7, "Col": 3 },
+          { "Row": 7, "Col": 5 },
+          { "Row": 7, "Col": 8 }
         ],
         "Left Hole Pieces":
         [
+          { "Row": 2, "Col": 0 },
+          { "Row": 5, "Col": 0 }
         ],
         "Right Hole Pieces":
         [
+          { "Row": 2, "Col": 9 },
+          { "Row": 5, "Col": 9 }
         ],
-                "Next Piece Queue": [ 255, 153, 102, 204,  51,  85, 170, 102,  51, 170, 153,  85, 102, 102, 204, 255,  85,  51, 255, 204, 102, 102, 153, 170, 204, 102,  85, 255,  51, 153, 170,  85,  85, 153, 102, 204, 255,  85,  51, 170, 204, 170, 153,  51,  51, 102,  85, 255,  51, 102,  85,  51, 153, 170, 204, 255,  85, 255, 153,  51, 255, 204, 102, 170,  51, 204,  85, 153, 102, 170, 170, 255,  51,  85, 255, 204, 102 ],         "Initial Pieces": [ { "Row":   1, "Col":   1, "Type":   2 }  ],         "Target Score": 19 
+                "Next Piece Queue": [ 255, 204,  85, 170, 102, 153,  51, 204, 153, 204, 170,  51, 255, 255, 102,  85, 204, 153,  85, 170, 102, 153, 132, 255, 170, 170, 170, 204, 255,  51, 153,  85,  85,  51, 255, 170,  18, 153, 102, 255, 204, 153, 170, 132, 102,  51, 255,  85,  85, 153, 204, 153, 170, 132, 255, 102, 102,  85, 102, 255,  51,  72, 204, 153, 102,  18,  85, 153, 153, 255,  51, 204, 255, 102, 204,  85, 153, 170,  51, 255,  51, 170, 153, 102,  85, 204,  51, 170,  85, 153, 170,  72,  51, 204, 102, 170,  51, 102,  72, 153,  85, 255, 204,  85,  51,  85,  33, 204, 170, 255, 153, 102, 153, 204, 255,  85, 255, 170,  51, 102, 255, 102, 153,  51, 170,  72, 204,  51,  51, 170, 255, 153, 204, 255,  85, 102, 102, 204, 255,  51, 255,  85, 153,  33,  51,  72, 204, 153,  33, 102,  85, 255, 102, 255, 255,  51, 102, 153, 204, 170,  72, 204, 255, 170,  51,  85, 153,  85,  72,  85, 170, 255,  51, 102, 204,  85, 153,  85, 170, 102,  51,  85,  51, 255, 170, 153,  85, 204,  85,  51,  72, 102, 170, 153, 255, 204, 102, 102,  85,  18,  51, 153, 204,  51,  85, 102, 102, 255, 204, 170, 102,  85, 153,  51, 255,  51, 204, 153, 255, 170, 170,  33,  51,  85, 132, 170,  51, 153, 153, 255,  85, 204,  85, 204, 170,  51, 153, 102, 153, 255, 153,  51,  85, 102,  51, 255, 102, 170, 102, 255, 204, 153, 102, 255,  51,  85, 204,  85, 170, 153, 102, 255, 255,  51,  18,  33, 153, 170, 255, 204,  85,  51, 102,  85, 204,  51, 170, 204, 153, 170,  85, 153, 102, 170, 153, 132,  51, 204, 204, 102, 153, 153, 255, 255, 170,  85, 153,  85, 255 ],         "Initial Pieces": [ { "Row":   1, "Col":   2, "Type":  51 },  { "Row":   1, "Col":   5, "Type": 204 },  { "Row":   1, "Col":   7, "Type":  51 },  { "Row":   3, "Col":   1, "Type": 204 },  { "Row":   3, "Col":   6, "Type": 204 },  { "Row":   3, "Col":   8, "Type":   4 },  { "Row":   4, "Col":   3, "Type":  51 },  { "Row":   5, "Col":   1, "Type": 128 },  { "Row":   5, "Col":   5, "Type":  51 },  { "Row":   5, "Col":   7, "Type":  51 }  ],         "Target Score": 45 
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
@@ -56,7 +71,7 @@
         "Show Allowed Inputs": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 50
+            "Max Size": 150
         },
         "Allowed Input Sets": [
             {
@@ -95,37 +110,17 @@
             {   
                 "Label": 1001,
                 "Conditions": [
-                    {
-                        "Property": "Forward Depth",
-                        "Op": ">=",
-                        "Value": "Target Score"
-                    },
-                    {
-                        "Property": "Last Crossing Piece Distance To Goal",
+                        {
+                        "Property": "Score",
                         "Op": ">",
-                        "Value": 3
+                        "Value": 80000
                     }
+
                 ],
                 "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
-                    }
-                ]
-	        },
-            {   
-                "Label": 1002,
-                "Conditions": [
-                    {
-                        "Property": "Replaced Pieces",
-                        "Op": ">",
-                        "Value": 5
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
                     }
                 ]
 	        }

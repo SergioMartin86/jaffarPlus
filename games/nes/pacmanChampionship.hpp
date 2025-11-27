@@ -429,18 +429,18 @@ private:
       }
 
       // If current step is a key frame, try everything
-      if (_isKeyFrame == true) 
+      // if (_isKeyFrame == true) 
       {
         allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_D, _input_L, _input_R});
         return;
       }
 
-      // Else just return the same direction  
-      if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
-      if (*_playerDirection == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
-      if (*_playerDirection == 3) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
-      if (*_playerDirection == 4) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
-      return;
+      // // Else just return the same direction  
+      // if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
+      // if (*_playerDirection == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
+      // if (*_playerDirection == 3) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
+      // if (*_playerDirection == 4) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+      // return;
 
       // // Gauntlet
       // bool allowU = false;
