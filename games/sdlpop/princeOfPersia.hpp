@@ -189,12 +189,26 @@ private:
       propertyName = std::string("Transformable Object[") + std::to_string(i) + std::string("] Type");
       registerGameProperty(propertyName, &_gameState->trobs[i].type, Property::datatype_t::dt_int8, Property::endianness_t::little);
     }
+
+    // Getting emulator save state size
+    _tempStorageSize = _emulator->getStateSize();
+    _tempStorage     = (uint8_t*)malloc(_tempStorageSize);
+
+    // Getting index for a non input
+    _nullInputIdx = _emulator->registerInput("|.|.....|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override { _emulator->advanceState(input); }
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
+    //     // Storing current state
+    // jaffarCommon::serializer::Contiguous s(_tempStorage, _tempStorageSize);
+    // _emulator->serializeState(s);
+
+    // //  Advancing emulator state
+    // _emulator->advanceState(_nullInputIdx);
+
     hashEngine.Update(_gameState->checkpoint);
     hashEngine.Update(_gameState->upside_down);
     hashEngine.Update(_gameState->drawn_room);
@@ -215,6 +229,8 @@ private:
     hashEngine.Update(_gameState->pickup_obj_type);
     hashEngine.Update(_gameState->offguard);
     hashEngine.Update(_gameState->Guard);
+    hashEngine.Update(_gameState->Char);
+    hashEngine.Update(_gameState->Opp);
     hashEngine.Update(_gameState->guardhp_curr);
     hashEngine.Update(_gameState->guardhp_max);
     hashEngine.Update(_gameState->demo_index);
@@ -237,10 +253,38 @@ private:
     hashEngine.Update(_gameState->can_guard_see_kid);
     hashEngine.Update(_gameState->collision_row);
     hashEngine.Update(_gameState->jumped_through_mirror);
-    hashEngine.Update(_gameState->kidPreviousFrame);
+    hashEngine.Update(_gameState->curr_row_coll_room);
+    hashEngine.Update(_gameState->curr_row_coll_flags);
+    hashEngine.Update(_gameState->below_row_coll_room);
+    hashEngine.Update(_gameState->below_row_coll_flags);
+    hashEngine.Update(_gameState->above_row_coll_room);
+    hashEngine.Update(_gameState->above_row_coll_flags);
+    hashEngine.Update(_gameState->prev_coll_room);
+    hashEngine.Update(_gameState->prev_coll_flags);
+
+    // hashEngine.Update(_gameState->control_x);
+    // hashEngine.Update(_gameState->control_y);
+    // hashEngine.Update(_gameState->control_shift);
+    // hashEngine.Update(_gameState->control_forward);
+    // hashEngine.Update(_gameState->control_backward);
+    // hashEngine.Update(_gameState->control_up);
+    // hashEngine.Update(_gameState->control_down);
+    // hashEngine.Update(_gameState->control_shift2);
+    hashEngine.Update(_gameState->ctrl1_forward);
+    hashEngine.Update(_gameState->ctrl1_backward);
+    hashEngine.Update(_gameState->ctrl1_up);
+    hashEngine.Update(_gameState->ctrl1_down);
+    hashEngine.Update(_gameState->ctrl1_shift2);
 
     // Hashing all mobs by default
     hashEngine.Update(_gameState->mobs);
+    // hashEngine.Update(_gameState->trobs);
+    // hashEngine.Update(_gameState->level);
+
+    // // Recovering emulator state
+    // jaffarCommon::deserializer::Contiguous d(_tempStorage, _tempStorageSize);
+    // _emulator->deserializeState(d);
+
   }
 
   // Updating derivative values after updating the internal state
@@ -490,9 +534,10 @@ private:
     return recognizedActionType;
   }
 
-  __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override { return jaffarCommon::hash::calculateMetroHash(&_gameState->Kid.frame, sizeof(uint8_t)); }
+  __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override { return {0, _gameState->Kid.frame}; }
 
 private:
+
   quicker::sdlPopState_t* _gameState;
 
   // Values artificially added to the state
@@ -518,6 +563,13 @@ private:
   float _levelDoorOpenMagnet;
   float _unitedWithShadowMagnet;
   float _guardHPMagnet;
+
+  // Temporary storage for the emulator state for calculating hash
+  uint8_t* _tempStorage;
+  size_t   _tempStorageSize;
+
+  // Null input index to remember the last valid input
+  InputSet::inputIndex_t _nullInputIdx;
 
   //  struct mobsIndex_t
   //  {

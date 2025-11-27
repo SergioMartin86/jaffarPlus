@@ -254,7 +254,7 @@ public:
   // Serialization routine
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const
   {
-    // Performing differential serialization of the internal game instance
+    // Performing serialization of the internal game instance
     _game->serializeState(serializer);
 
     // Serializing input history data
@@ -267,7 +267,7 @@ public:
   // Deeserialization routine
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer)
   {
-    // Performing differential serialization of the internal game instance
+    // Performing serialization of the internal game instance
     _game->deserializeState(deserializer);
 
     // Deserializing input history

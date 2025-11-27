@@ -58,6 +58,9 @@ private:
     registerGameProperty("Lingering Pieces"         ,&_lingeringPieces, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Replaced Pieces"         ,&_piecesReplaced, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Last Crossing Piece Distance To Goal",&_lastCrossingPieceDistanceToGoal, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Remaining Free Places",  &_remainingFreePlaces, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+
+    registerGameProperty("Score",  &_score, Property::datatype_t::dt_int32 , Property::endianness_t::little);
 
     // Getting initial pieces
     for (const auto& piece : _pipeBot->getInitialPieces()) _initialPieces.insert({piece.pos.row, piece.pos.col});
@@ -139,6 +142,9 @@ private:
     _playerCurrentRow = _playerInitialRow;
     _playerCurrentCol = _playerInitialCol;
     _pieceReplacedChecksum = 0;
+    _crossingPieceCount = 0;
+    _score = 0;
+    _remainingFreePlaces = 80;
   }
 
   // Function to report what all the possible input that the game might require
@@ -176,10 +182,11 @@ private:
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     hashEngine.Update(_grid, _rowCount * _colCount * sizeof(uint8_t));
-    hashEngine.Update(_piecesReplaced);
-    hashEngine.Update(_playerCurrentRow);
-    hashEngine.Update(_playerCurrentCol);
-    hashEngine.Update(_pieceReplacedChecksum);
+    // hashEngine.Update(_piecesReplaced);
+    // hashEngine.Update(_currentStep);
+    // hashEngine.Update(_playerCurrentRow);
+    // hashEngine.Update(_playerCurrentCol);
+    // hashEngine.Update(_pieceReplacedChecksum);
   }
 
   // Updating derivative values after updating the internal state
@@ -193,11 +200,13 @@ private:
 
     _piecesOnBoard = 0;
     _lingeringPieces = 0;
+    _remainingFreePlaces = 0;
     for (uint8_t i = 0; i < _rowCount; i++)
      for (uint8_t j = 0; j < _colCount; j++)
      { 
       const auto piece = _pipeBot->getPiece({i,j});
-      if (piece != 0)
+      if (piece == 0x00) _remainingFreePlaces++;
+      if (piece != 0x00)
       {
         _piecesOnBoard++;
         if (piecesInPath.contains({i,j}) == false && _initialPieces.contains({i,j}) == false)
@@ -210,8 +219,17 @@ private:
     _distanceToReward = std::abs((int8_t)_targetScore - (int8_t)_forwardDepth);
     _connectivity = calculateConnectivity();
 
-    _lastCrossingPieceStep = getLastCrossingPiece(forwardPath);
-    _lastCrossingPieceDistanceToGoal = (uint8_t)std::max(0, (int16_t)_targetScore - (int16_t)_lastCrossingPieceStep);
+    // _lastCrossingPieceStep = getLastCrossingPiece(forwardPath);
+    // _lastCrossingPieceDistanceToGoal = (uint8_t)std::max(0, (int16_t)_targetScore - (int16_t)_lastCrossingPieceStep);
+
+    _crossingPieceCount = getCrossingPieceCount(forwardPath);
+
+    _score = (100 * _forwardDepth) + (10000 * _crossingPieceCount) - (10 * _piecesReplaced) - (50 * _lingeringPieces) - (10 * _remainingFreePlaces) + (1 * _connectivity);
+    
+    // If the end piece is an end piece, the score is doubled
+    const auto& endPiecePos = forwardPath.rbegin()->pos;
+    const auto endPieceType = _pipeBot->getPiece(endPiecePos);
+    if (endPieceType == 0x10 || endPieceType == 0x20 || endPieceType == 0x40 || endPieceType == 0x80) _score = _score * 2;
   }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -234,7 +252,7 @@ private:
      serializer.push(&_playerCurrentRow, sizeof(_playerCurrentRow));
      serializer.push(&_playerCurrentCol, sizeof(_playerCurrentCol));
      serializer.push(&_piecesReplaced, sizeof(_piecesReplaced));
-     serializer.push(&_pieceReplacedChecksum, sizeof(_pieceReplacedChecksum));
+    //  serializer.push(&_pieceReplacedChecksum, sizeof(_pieceReplacedChecksum));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -248,7 +266,7 @@ private:
      deserializer.pop(&_playerCurrentRow, sizeof(_playerCurrentRow));
      deserializer.pop(&_playerCurrentCol, sizeof(_playerCurrentCol));
      deserializer.pop(&_piecesReplaced, sizeof(_piecesReplaced));
-     deserializer.pop(&_pieceReplacedChecksum, sizeof(_pieceReplacedChecksum));
+    //  deserializer.pop(&_pieceReplacedChecksum, sizeof(_pieceReplacedChecksum));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -256,7 +274,8 @@ private:
     // Getting rewards from rules
     float reward = 0.0;
 
-    reward += - (float)_distanceToReward + 0.001f * (float)_connectivity - (float)_lingeringPieces * 0.001f;
+    // reward += - (float)_distanceToReward + 0.001f * (float)_connectivity - (float)_lingeringPieces * 0.001f;
+    reward += (float)_score;
 
     // Returning reward
     return reward;
@@ -272,11 +291,14 @@ private:
       {
         // Only replace like with like
         // if (_pipeBot->getPiece(i,j) != 0x00 && _pipeBot->getNextPiece() != _pipeBot->getPiece(i,j)) continue;
+
+        // Don't try starter pieces
+        allowedInputSet.push_back(_possibleInputs[i][j].inputIndex);
         
-          uint8_t rowDistance =  std::abs((int16_t)_playerCurrentRow - (int16_t)i);
-          uint8_t colDistance =  std::abs((int16_t)_playerCurrentCol - (int16_t)j);
-          if (rowDistance <= _distanceLimiterMaxRowDistance && colDistance <= _distanceLimiterMaxColDistance)
-            allowedInputSet.push_back(_possibleInputs[i][j].inputIndex);
+          // uint8_t rowDistance =  std::abs((int16_t)_playerCurrentRow - (int16_t)i);
+          // uint8_t colDistance =  std::abs((int16_t)_playerCurrentCol - (int16_t)j);
+          // if (rowDistance <= _distanceLimiterMaxRowDistance && colDistance <= _distanceLimiterMaxColDistance)
+            // allowedInputSet.push_back(_possibleInputs[i][j].inputIndex);
       }
   }
 
@@ -285,7 +307,10 @@ private:
   {
     jaffarCommon::logger::log("[J+]  + Current Step:            %04u\n", _currentStep);
     jaffarCommon::logger::log("[J+]  + Forward Depth:           %02u\n", _forwardDepth);
-    jaffarCommon::logger::log("[J+]  + Target Score:            %02u (Distance: %02u)\n", _targetScore, _distanceToReward);
+    jaffarCommon::logger::log("[J+]  + Current Score:           %d\n", _score);
+    jaffarCommon::logger::log("[J+]  + Crossing Piece Count:    %02u\n", _crossingPieceCount);
+    jaffarCommon::logger::log("[J+]  + Remaining Free Places    %02u\n", _remainingFreePlaces);
+    //jaffarCommon::logger::log("[J+]  + Target Score:            %02u (Distance: %02u)\n", _targetScore, _distanceToReward);
     jaffarCommon::logger::log("[J+]  + Connectivity:            %04u\n", _connectivity);
     jaffarCommon::logger::log("[J+]  + Pieces Lingering:        %02u\n", _lingeringPieces );
     jaffarCommon::logger::log("[J+]  + Pieces On Board:         %02u\n", _piecesOnBoard );
@@ -293,8 +318,7 @@ private:
     jaffarCommon::logger::log("[J+]  + Player Initial Position: %02u %02u\n", _playerInitialRow, _playerInitialCol );
     jaffarCommon::logger::log("[J+]  + Player Current Position: %02u %02u\n", _playerCurrentRow, _playerCurrentCol );
     jaffarCommon::logger::log("[J+]  + Initial Pieces:          %02lu\n", _initialPieces.size());
-    
-    jaffarCommon::logger::log("[J+]  + Last Crossing Piece:     %02u (Distance to Goal: %02u)\n", _lastCrossingPieceStep, _lastCrossingPieceDistanceToGoal );
+    // jaffarCommon::logger::log("[J+]  + Last Crossing Piece:     %02u (Distance to Goal: %02u)\n", _lastCrossingPieceStep, _lastCrossingPieceDistanceToGoal );
   }
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
@@ -317,6 +341,21 @@ private:
     }
 
     return lastCrossingPiece;
+  }
+
+  __INLINE__ uint8_t getCrossingPieceCount(const std::vector<piecePath_t>& piecePath) const
+  {
+    uint8_t crossingPieceCount = 0; 
+
+    std::set<std::pair<uint8_t, uint8_t>> visitedPieces;
+    for (uint8_t i = 0; i < piecePath.size(); i++)
+    {
+      const auto& piece = piecePath[i];
+      if (visitedPieces.contains({piece.pos.row, piece.pos.col})) crossingPieceCount++;
+      visitedPieces.insert({piece.pos.row, piece.pos.col});
+    }
+
+    return crossingPieceCount;
   }
 
   __INLINE__ std::vector<piecePath_t> calculatePipePath() const
@@ -460,8 +499,12 @@ private:
   uint8_t _distanceToReward;
   uint8_t _piecesReplaced;
   uint16_t _connectivity;
+  uint8_t _crossingPieceCount;
 
   uint16_t _pieceReplacedChecksum;
+
+  int32_t _score;
+  uint8_t _remainingFreePlaces;
 
   emulator::PipeBot* const _pipeBot;
   uint8_t _rowCount;

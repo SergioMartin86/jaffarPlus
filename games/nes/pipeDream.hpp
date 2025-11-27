@@ -109,6 +109,7 @@ private:
     registerGameProperty("Piece Replacement State"  ,&_lowMem[0x00C4], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Piece Replacement Timer"  ,&_lowMem[0x00EB], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Accelerator State"        ,&_lowMem[0x00D5], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Start Timer"              ,&_lowMem[0x00AF], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
 
     _playerInput1        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 1"            )]->getPointer();
     _playerInput2        =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Player Input 2"            )]->getPointer();
@@ -132,6 +133,7 @@ private:
     _pieceReplacementState  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Replacement State"              )]->getPointer(); 
     _pieceReplacementTimer  =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Piece Replacement Timer"              )]->getPointer(); 
     _acceleratorState    =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Accelerator State"             )]->getPointer(); 
+    _startTimer          =  (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Start Timer"             )]->getPointer(); 
 
     registerGameProperty("Forward Depth"            ,&_forwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Backward Depth"           ,&_backwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
@@ -185,43 +187,22 @@ private:
     // Preventing accelerator from stopping us earlier
     *_acceleratorState = 8;
 
-    // Function to advance to the next placing position
-    auto advancePos = [&]()
+    // Getting 300 pieces out of the queue
+    const size_t piecesToGather = 300;
+    for (size_t i = 0; i < piecesToGather; i++)
     {
-      (*_playerPosX)++;
-      if (*_playerPosX == __PIPE_DREAM_GRID_COLS)
-      {
-        *_playerPosX = 0;
-        (*_playerPosY)++;
-      }
-    };
-
-    // Attempting to place pieces until the game starts
-    while (*_acceleratorState == 8)
-    {
-      if (*_playerPosX == __PIPE_DREAM_GRID_COLS - 1 && *_playerPosY == __PIPE_DREAM_GRID_ROWS - 1) break;
-
-      // If there is an initial piece here, advance position
-      if (_initialPieces.contains({*_playerPosX, *_playerPosY}))  { advancePos(); continue; }
-
       // Try to place piece and advance 
-      if (canPlacePiece() == true)
-      {
-        _emulator->advanceState(_buttonAInputIdx);
-        _emulator->advanceState(_nullInputIdx);
-        advancePos();
-      } 
-      // else just wait
-      else _emulator->advanceState(_nullInputIdx);
-    }
+      *_startTimer = 16;
+      while (canPlacePiece() == false) _emulator->advanceState(_nullInputIdx);
+      
+      // Getting next piece, if placed
+      const auto pieceType = _gridStart[0];
+      if (pieceType != 0x00) _availablePieces.push_back(pieceType);
 
-    // Gathering available pieces
-    for (uint8_t i = 0; i < __PIPE_DREAM_GRID_ROWS; i++)
-     for (uint8_t j = 0; j < __PIPE_DREAM_GRID_COLS; j++)
-     {
-      const auto pieceType = _gridStart[i * __PIPE_DREAM_GRID_COLS + j];
-      if (pieceType != 0x00 && _initialPieces.contains({i,j}) == false) _availablePieces.push_back(pieceType);
-     }
+      // Placing new piece
+      _emulator->advanceState(_buttonAInputIdx);
+      _emulator->advanceState(_nullInputIdx);
+    }
 
     // Recover the original state
     _emulator->deserializeState(d);
@@ -777,6 +758,7 @@ private:
   uint8_t* _acceleratorState;
   uint16_t _currentStep;
   uint8_t* _lowMem;
+  uint8_t* _startTimer;
 
   InputSet::inputIndex_t _nullInputIdx;
   InputSet::inputIndex_t _buttonAInputIdx;

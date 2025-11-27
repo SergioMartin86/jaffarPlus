@@ -23,7 +23,7 @@ currentReverseOrderIdx = 1
 for k, v in usedInputs.items():
    idxSubList = v[:-1]
    for idx in idxSubList:
-    inputs[idx] = inputs[-currentReverseOrderIdx]
+    #inputs[idx] = inputs[-currentReverseOrderIdx]
     currentReverseOrderIdx = currentReverseOrderIdx + 1
 
 nullInput  = '|..|........|'
@@ -73,7 +73,7 @@ for input in inputs:
 
     # If the last piece didn't replace a piece, the frames to wait are 12 (minus one from the null input)
     framesUntilNextPiece = 11
-    if (input in usedInputs): framesUntilNextPiece = 88
+    if (input in usedInputs): framesUntilNextPiece = 25
 
     # Adding piece to used piece set
     usedInputs.add(input)

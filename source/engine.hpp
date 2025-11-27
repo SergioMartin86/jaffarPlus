@@ -57,7 +57,9 @@ public:
     _stateDb                   = std::make_unique<jaffarPlus::StateDb>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
 
     // Creating hash database
-    _hashDb = std::make_unique<jaffarPlus::HashDb>(jaffarCommon::json::getObject(engineConfig, "Hash Database"));
+    const auto hashDbConfig = jaffarCommon::json::getObject(engineConfig, "Hash Database");
+    _hashDbEnabled  = jaffarCommon::json::getBoolean(hashDbConfig, "Enabled");
+    if (_hashDbEnabled == true) _hashDb = std::make_unique<jaffarPlus::HashDb>(jaffarCommon::json::getObject(engineConfig, "Hash Database"));
 
     // Reserving storage for timing information
     _threadStepTime.resize(_threadCount);
@@ -124,7 +126,7 @@ public:
     _stateDb->initialize();
 
     // Initializing hash database
-    _hashDb->initialize();
+    if (_hashDbEnabled == true) _hashDb->initialize();
 
     // Grabbing a runner to do continue initialization
     auto& r = *_runners[0];
@@ -144,11 +146,19 @@ public:
     // Getting reward for the initial state
     const auto reward = r.getGame()->getReward();
     
-    // Getting a free state data pointer to store the state into
-    auto stateData = _stateDb->getFreeState();
+    // Getting initial state data from the runner
+    uint8_t* initialStateData = (uint8_t*) malloc (r.getStateSize());
+    jaffarCommon::serializer::Contiguous s(initialStateData, r.getStateSize());
+    r.serializeState(s);
 
     // Manually setting the initial base state for differential compression, if needed
-    _stateDb->setDifferentialCompressionEncodeBaseState(stateData);
+    _stateDb->setDifferentialCompressionEncodeBaseState(initialStateData);
+
+    // Freeing temporary buffer
+    free(initialStateData);
+
+    // Getting a free state data pointer to store the state into
+    auto stateData = _stateDb->getFreeState();
 
     // Pushing initial state to the next state database
     _stateDb->pushState(reward, r, stateData);
@@ -169,7 +179,7 @@ public:
     const auto hash = r.computeHash();
 
     // Adding it to the hash DB
-    _hashDb->insertHash(hash);
+    if (_hashDbEnabled == true) _hashDb->insertHash(hash);
   }
 
   /**
@@ -216,7 +226,7 @@ public:
 
     // Advancing hash database state
     const auto t0 = jaffarCommon::timing::now();
-    _hashDb->advanceStep();
+    if (_hashDbEnabled == true) _hashDb->advanceStep();
     _advanceHashDbThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t0);
 
     // Swapping next and current state databases
@@ -430,8 +440,11 @@ public:
     jaffarCommon::logger::log("[J+] State Database Information:\n");
     _stateDb->printInfo();
 
-    jaffarCommon::logger::log("[J+] Hash Database Information:\n");
-    _hashDb->printInfo();
+    if (_hashDbEnabled == true)
+    {
+      jaffarCommon::logger::log("[J+] Hash Database Information:\n");
+      _hashDb->printInfo();
+    }
 
     jaffarCommon::logger::log("[J+] Manually Saved Solution:\n");
     jaffarCommon::logger::log("[J+]   + Path:         '%s'\n", _manualSaveSolution.path.c_str());
@@ -606,7 +619,7 @@ private:
 
     // Checking if hash is repeated (i.e., has been seen before)
     const auto t3         = jaffarCommon::timing::now();
-    bool       hashExists = _hashDb->checkHashExists(hash);
+    bool       hashExists = _hashDbEnabled ? _hashDb->checkHashExists(hash) : false;
     _checkHashThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t3);
 
     // If state is repeated then we are not interested in it, continue
@@ -734,6 +747,9 @@ private:
 
   // The thread-safe state database that contains current and next step's states.
   std::unique_ptr<jaffarPlus::StateDb> _stateDb;
+
+  // Whether to use hashing. Some games cannot incur loops so using a HashDB is a waste of memory and computation
+  bool  _hashDbEnabled;
 
   // The thread-safe hash database to check for repeated states
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
