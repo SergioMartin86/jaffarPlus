@@ -242,17 +242,10 @@ public:
     return nextPos;
   }
 
-  __INLINE__ void placeNextPiece(const piecePos_t pos)
-  {
-    if (_currentPieceIdx >= _nextPieceQueue.size()) JAFFAR_THROW_LOGIC("Ran out of pieces");
-    const auto piece = _nextPieceQueue[_currentPieceIdx];
-    setPiece(pos, piece); 
-    _currentPieceIdx++;
-  }
-
   __INLINE__ uint8_t getNextPiece()
   {    
-    return _nextPieceQueue[_currentPieceIdx];
+    if (_currentPieceIdx >= _nextPieceQueue.size()) return 0x00;
+    return _nextPieceQueue[_currentPieceIdx++];
   }
 
   __INLINE__ uint8_t getPiece(const piecePos_t pos) const

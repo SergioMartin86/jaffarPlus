@@ -169,7 +169,8 @@ private:
       _pieceReplacedChecksum = (_pieceReplacedChecksum + piece.col) * piece.row ;
     } 
     
-    _pipeBot->placeNextPiece({piece.row, piece.col});
+    const auto nextPiece = _pipeBot->getNextPiece();
+    _pipeBot->setPiece({piece.row, piece.col}, nextPiece);
 
     // Advancing current step
     _currentStep++;
@@ -284,16 +285,23 @@ private:
   // Function to enable a game code to provide additional allowed inputs based on complex decisions
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
-    for (size_t i = 0; i < _possibleInputs.size(); i++)
-     for (size_t j = 0; j < _possibleInputs[i].size(); j++)
-      // 
-      if (_initialPieces.contains({i,j}) == false)
+    for (uint8_t i = 0; i < _possibleInputs.size(); i++)
+     for (uint8_t j = 0; j < _possibleInputs[i].size(); j++)
+      //
+      if (_pipeBot->getPiece({i,j}) == 0x00) 
+      //if (_initialPieces.contains({i,j}) == false)
       {
+	bool addInput = false;
         // Only replace like with like
         // if (_pipeBot->getPiece(i,j) != 0x00 && _pipeBot->getNextPiece() != _pipeBot->getPiece(i,j)) continue;
 
         // Don't try starter pieces
-        allowedInputSet.push_back(_possibleInputs[i][j].inputIndex);
+        if (_pipeBot->hasLeftPiece({i,j})) addInput = true;
+        if (_pipeBot->hasRightPiece({i,j})) addInput = true;
+        if (_pipeBot->hasUpPiece({i,j})) addInput = true;
+        if (_pipeBot->hasDownPiece({i,j})) addInput = true;
+		
+        if(addInput == true)  allowedInputSet.push_back(_possibleInputs[i][j].inputIndex);
         
           // uint8_t rowDistance =  std::abs((int16_t)_playerCurrentRow - (int16_t)i);
           // uint8_t colDistance =  std::abs((int16_t)_playerCurrentCol - (int16_t)j);
