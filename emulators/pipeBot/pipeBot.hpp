@@ -58,6 +58,12 @@ public:
     uint8_t type;
   };
 
+  struct piecePath_t
+  {
+    emulator::PipeBot::piecePos_t pos;
+    emulator::PipeBot::direction_t direction;
+  };
+
   static std::string getName() { return "PipeBot"; }
 
   // Constructor must only do configuration parsing
@@ -143,6 +149,52 @@ public:
 
     // resetting grid to initial state
     reset();
+
+        // Looking for starter piece
+    _startPieceFound = false;
+    for (uint8_t i = 0; i < _rowCount; i++)
+     for (uint8_t j = 0; j < _colCount; j++)
+     {
+      const auto pieceType = getPiece({i,j});
+      
+      // Start Pieces
+      if (pieceType == 0x01) // Up Facing
+      {
+        _startPieceRow = i;
+        _startPieceCol = j;
+        _startPieceDirection = emulator::PipeBot::direction_t::up;
+        _startPieceFound = true;
+        _currentPos = getUpPiecePos({i,j});
+      }
+
+      if (pieceType == 0x02) // Down Facing
+      {
+        _startPieceRow = i;
+        _startPieceCol = j;
+        _startPieceDirection = emulator::PipeBot::direction_t::down;
+        _startPieceFound = true;
+        _currentPos = getDownPiecePos({i,j});
+      }
+
+      if (pieceType == 0x08) // Right Facing
+      {
+        _startPieceRow = i;
+        _startPieceCol = j;
+        _startPieceDirection = emulator::PipeBot::direction_t::right;
+        _startPieceFound = true;
+        _currentPos = getRightPiecePos({i,j});
+      }
+
+      if (pieceType == 0x04) // Left Facing
+      {
+        _startPieceRow = i;
+        _startPieceCol = j;
+        _startPieceDirection = emulator::PipeBot::direction_t::left;
+        _startPieceFound = true;
+        _currentPos = getLeftPiecePos({i,j});
+      }
+     }
+    if (_startPieceFound == false) JAFFAR_THROW_LOGIC("Could not find starter piece");
   };
 
   ~PipeBot() { free (_grid); }
@@ -170,7 +222,7 @@ public:
 
   __INLINE__ uint8_t getTargetScore() const { return _targetScore; }
 
-  __INLINE__ bool hasLeftPiece(const piecePos_t pos)
+  __INLINE__ bool hasLeftPiece(const piecePos_t pos) const
   {    
     if (pos.col == 0) 
     {
@@ -180,7 +232,7 @@ public:
     return true;
   }
 
-  __INLINE__ bool hasRightPiece(const piecePos_t pos)
+  __INLINE__ bool hasRightPiece(const piecePos_t pos) const
   {    
     if (pos.col == _colCount - 1)
     {
@@ -190,7 +242,7 @@ public:
     return true;
   }
 
-  __INLINE__ bool hasUpPiece(const piecePos_t pos)
+  __INLINE__ bool hasUpPiece(const piecePos_t pos) const
   {    
     if (pos.row == 0)
     {
@@ -200,7 +252,7 @@ public:
     return true;
   }
 
-  __INLINE__ bool hasDownPiece(const piecePos_t pos)
+  __INLINE__ bool hasDownPiece(const piecePos_t pos) const
   {    
     if (pos.row == _rowCount - 1)
     {
@@ -210,7 +262,7 @@ public:
     return true;
   }
 
-  __INLINE__ piecePos_t getLeftPiecePos(const piecePos_t pos)
+  __INLINE__ piecePos_t getLeftPiecePos(const piecePos_t pos) const
   {    
     auto nextPos = pos;
     if (nextPos.col == 0) nextPos.col = _colCount -1;
@@ -218,7 +270,7 @@ public:
     return nextPos;
   }
 
-  __INLINE__ piecePos_t getRightPiecePos(const piecePos_t pos)
+  __INLINE__ piecePos_t getRightPiecePos(const piecePos_t pos) const
   {    
     auto nextPos = pos;
     if (nextPos.col == _colCount - 1) nextPos.col = 0;
@@ -226,7 +278,7 @@ public:
     return nextPos;
   }
 
-  __INLINE__ piecePos_t getUpPiecePos(const piecePos_t pos)
+  __INLINE__ piecePos_t getUpPiecePos(const piecePos_t pos) const
   {    
     auto nextPos = pos;
     if (nextPos.row == 0) nextPos.row = _rowCount - 1;
@@ -234,7 +286,7 @@ public:
     return nextPos;
   }
 
-  __INLINE__ piecePos_t getDownPiecePos(const piecePos_t pos)
+  __INLINE__ piecePos_t getDownPiecePos(const piecePos_t pos) const
   {    
     auto nextPos = pos;
     if (nextPos.row == _rowCount - 1) nextPos.row = 0;
@@ -242,7 +294,7 @@ public:
     return nextPos;
   }
 
-  __INLINE__ uint8_t getNextPiece()
+  __INLINE__ uint8_t getNextPiece() 
   {    
     if (_currentPieceIdx >= _nextPieceQueue.size()) return 0x00;
     return _nextPieceQueue[_currentPieceIdx++];
@@ -259,6 +311,7 @@ public:
     return _pieceTypes.at(typeId);
   }
 
+  __INLINE__ auto getPieceTypeCollection() const { return _pieceTypes; }
 
   // Function to get a reference to the input parser from the base emulator
   jaffar::InputParser* getInputParser() const override
@@ -269,28 +322,96 @@ public:
   // State advancing function
   void advanceStateImpl(const jaffar::input_t& input) override
   {
-    
+    setPiece(_currentPos, input.type);
+
+    // Calculating path: 
+    const auto forwardPath = calculatePipePath();
+    const auto& lastPiece = *forwardPath.rbegin();
+    _currentDirection = lastPiece.direction;
+    if (lastPiece.direction == direction_t::up) _currentPos = getUpPiecePos(lastPiece.pos);
+    if (lastPiece.direction == direction_t::down) _currentPos = getDownPiecePos(lastPiece.pos);
+    if (lastPiece.direction == direction_t::left) _currentPos = getLeftPiecePos(lastPiece.pos);
+    if (lastPiece.direction == direction_t::right) _currentPos = getRightPiecePos(lastPiece.pos);
+  }
+
+  __INLINE__ std::vector<piecePath_t> calculatePipePath() const
+  {
+    uint8_t currentPieceRow = _startPieceRow;
+    uint8_t currentPieceCol = _startPieceCol;
+    emulator::PipeBot::direction_t currentDirection = _startPieceDirection;
+
+    std::vector<piecePath_t> path;
+    path.push_back({currentPieceRow, currentPieceCol, currentDirection});
+
+    while(true)
+    {
+      // Checking boundaries
+      if (currentDirection == emulator::PipeBot::direction_t::left  && hasLeftPiece ({currentPieceRow, currentPieceCol}) == false)  break;
+      if (currentDirection == emulator::PipeBot::direction_t::right && hasRightPiece({currentPieceRow, currentPieceCol}) == false)  break;
+      if (currentDirection == emulator::PipeBot::direction_t::up    && hasUpPiece   ({currentPieceRow, currentPieceCol}) == false)  break;
+      if (currentDirection == emulator::PipeBot::direction_t::down  && hasDownPiece ({currentPieceRow, currentPieceCol}) == false)  break;
+
+      // Getting next piece's position
+      emulator::PipeBot::piecePos_t nextPiecePos;
+      if (currentDirection == emulator::PipeBot::direction_t::left)  nextPiecePos = getLeftPiecePos( {currentPieceRow, currentPieceCol});
+      if (currentDirection == emulator::PipeBot::direction_t::right) nextPiecePos = getRightPiecePos({currentPieceRow, currentPieceCol});
+      if (currentDirection == emulator::PipeBot::direction_t::up)    nextPiecePos = getUpPiecePos(   {currentPieceRow, currentPieceCol});
+      if (currentDirection == emulator::PipeBot::direction_t::down)  nextPiecePos = getDownPiecePos( {currentPieceRow, currentPieceCol});
+
+      // Getting next piece's information
+      const uint8_t nextPiece = getPiece(nextPiecePos);
+      const auto& nextPieceType = getPieceType(nextPiece);
+
+      // Checking if it accepts the incoming stream
+      if (currentDirection == emulator::PipeBot::direction_t::left  && nextPieceType.RInConnectivity == false) break;  
+      if (currentDirection == emulator::PipeBot::direction_t::right && nextPieceType.LInConnectivity == false) break;
+      if (currentDirection == emulator::PipeBot::direction_t::up    && nextPieceType.DInConnectivity == false) break;
+      if (currentDirection == emulator::PipeBot::direction_t::down  && nextPieceType.UInConnectivity == false) break;
+
+      // Checking if direction changes
+      auto nextDirection = currentDirection;
+      if (currentDirection == emulator::PipeBot::direction_t::left  && nextPieceType.LRedirection != emulator::PipeBot::direction_t::none) nextDirection = nextPieceType.LRedirection;
+      if (currentDirection == emulator::PipeBot::direction_t::right && nextPieceType.RRedirection != emulator::PipeBot::direction_t::none) nextDirection = nextPieceType.RRedirection;
+      if (currentDirection == emulator::PipeBot::direction_t::up    && nextPieceType.URedirection != emulator::PipeBot::direction_t::none) nextDirection = nextPieceType.URedirection;
+      if (currentDirection == emulator::PipeBot::direction_t::down  && nextPieceType.DRedirection != emulator::PipeBot::direction_t::none) nextDirection = nextPieceType.DRedirection;
+      
+      // Updating values for the next iteration
+      currentPieceRow = nextPiecePos.row;
+      currentPieceCol = nextPiecePos.col;
+      currentDirection = nextDirection;
+
+      // Increasing Depth
+      path.push_back({currentPieceRow, currentPieceCol, currentDirection});
+    }
+
+    return path;
   }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override
   {
      serializer.push(_grid, _rowCount * _colCount * sizeof(uint8_t)); 
-     serializer.push(&_currentPieceIdx, sizeof(_currentPieceIdx));
+     serializer.push(&_currentPos, sizeof(_currentPos)); 
+     serializer.push(&_currentDirection, sizeof(_currentDirection)); 
+     
+    //  serializer.push(&_currentPieceIdx, sizeof(_currentPieceIdx));
   };
 
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override
   {
      deserializer.pop(_grid, _rowCount * _colCount * sizeof(uint8_t));
-     deserializer.pop(&_currentPieceIdx, sizeof(_currentPieceIdx));
+     deserializer.pop(&_currentPos, sizeof(_currentPos)); 
+     deserializer.pop(&_currentDirection, sizeof(_currentDirection)); 
+
+    //  deserializer.pop(&_currentPieceIdx, sizeof(_currentPieceIdx));
   };
 
   __INLINE__ void printInfo() const override
   { 
-    const auto& nextPiece = _nextPieceQueue[_currentPieceIdx];
-    const auto& nextPieceType = _pieceTypes.at(nextPiece);
+    // const auto& nextPiece = _nextPieceQueue[_currentPieceIdx];
+    // const auto& nextPieceType = _pieceTypes.at(nextPiece);
     
     jaffarCommon::logger::log("[J+]  + Initial Pieces: %lu\n", _initialPieces.size()); 
-    jaffarCommon::logger::log("[J+]  + Next Piece: %s, %u (0x%X, Idx: %lu)\n", nextPieceType.shape.c_str(), nextPiece, nextPiece, _currentPieceIdx); 
+    jaffarCommon::logger::log("[J+]  + Current Pos: %u, %u\n", _currentPos.row, _currentPos.col); 
     jaffarCommon::logger::log("[J+]  + Grid:\n");
     for (uint8_t i = 0; i < _rowCount; i++)
     {
@@ -306,6 +427,9 @@ public:
     }
   }
 
+  __INLINE__ auto getCurrentPos() const { return _currentPos; }
+  __INLINE__ auto getCurrentDirection() const { return _currentDirection; }
+  
   property_t getProperty(const std::string& propertyName) const override
   {
     if (propertyName == "Grid") return property_t(_grid, _rowCount * _colCount * sizeof(uint8_t));
@@ -356,10 +480,16 @@ private:
   std::set<std::pair<uint8_t, uint8_t>> _leftHolePieces;
   std::set<std::pair<uint8_t, uint8_t>> _rightHolePieces;
 
+  uint8_t _startPieceRow;
+  uint8_t _startPieceCol;
+  emulator::PipeBot::direction_t _startPieceDirection;
+  bool _startPieceFound;
 
   std::vector<uint8_t> _nextPieceQueue;
   size_t _currentPieceIdx;
 
+  piecePos_t _currentPos;
+  direction_t _currentDirection;
 };
 
 } // namespace emulator

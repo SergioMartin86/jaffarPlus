@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": false,
-        "Max Steps": 150,
+        "Max Steps": 120,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -10,14 +10,14 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 2,
+        "NUMA Domains Per Group": 12,
         "Hash Database": {
-	    "Enabled": true,
+	    "Enabled": false,
             "Max Store Count": 2,
             "Max Store Size (Mb)": 50000
         },
         "State Database": {
-            "Max Size (Mb)": 100000,
+            "Max Size (Mb)": 1000000,
             "Differential Compression":
             {
                 "Enabled": false, 
@@ -67,11 +67,11 @@
           "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 0,
-        "Show Empty Input Slots": false,
-        "Show Allowed Inputs": false,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 150
+            "Max Size": 120
         },
         "Allowed Input Sets": [
             {
@@ -83,7 +83,7 @@
             {
                 "Conditions": [],
                 "Inputs": [
-                    "|  6,  5|"
+                    "| 18|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -95,11 +95,6 @@
     "Game Configuration": {
         "Game Name": "PipeBot / PipeBot",
         "Frame Rate": 60.1,
-        "Distance Limiter":
-        {
-            "Max Row Distance": 10,
-            "Max Col Distance": 10
-        },
         "Bypass Emulator State": false,
         "Last Input Step Reward": 0.0,
         "Print Properties": [
@@ -111,9 +106,9 @@
                 "Label": 1001,
                 "Conditions": [
                         {
-                        "Property": "Score",
-                        "Op": ">",
-                        "Value": 80000
+                        "Property": "End Is Met",
+                        "Op": "==",
+                        "Value": true
                     }
 
                 ],
