@@ -14,6 +14,9 @@ with open(args.inputs, 'r') as inputs_file: inputs = list(filter(None, inputs_fi
 #print(currentRow)
 #print(currentCol)
 
+print(inputs)
+exit(0)
+
 # First detecting replacements and sending them to the back
 usedInputs = dict()
 for input in inputs: usedInputs[input] = []
