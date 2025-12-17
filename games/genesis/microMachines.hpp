@@ -76,6 +76,7 @@ private:
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
+    _BInputIdx = _emulator->registerInput("|..|.....B..|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -83,7 +84,16 @@ private:
     _player1LapsRemainingPrev = *_player1LapsRemaining;
     _player1CheckpointPrev    = *_player1Checkpoint1;
 
+    printf("_player1PosY: %u\n", *_player1PosY);
     _emulator->advanceState(input);
+    _emulator->advanceState(_BInputIdx);
+    _emulator->advanceState(_BInputIdx);
+    _emulator->advanceState(_BInputIdx);
+    _emulator->advanceState(_BInputIdx);
+    _emulator->advanceState(_BInputIdx);
+    _emulator->advanceState(_BInputIdx);
+    printf("Advancing State\n");
+    printf("_player1PosY: %u\n", *_player1PosY);
 
     // Increasing counter if input is null
     if (input != _nullInputIdx) _lastInputStep = _currentStep;
@@ -354,6 +364,7 @@ private:
 
   // Null input index to remember the last valid input
   InputSet::inputIndex_t _nullInputIdx;
+  InputSet::inputIndex_t _BInputIdx;
 };
 
 } // namespace genesis

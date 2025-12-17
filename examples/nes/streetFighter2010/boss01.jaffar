@@ -1,0 +1,180 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 300,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "NUMA Domains Per Group": 2,
+        "Hash Database": {
+            "Enabled": true, 
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 10000
+        },
+        "State Database": {
+            "Max Size (Mb)": 3000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 1344,
+                "Use Zlib Compression": true
+            }
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Street Fighter 2010 - The Final Fight (U) [!].nes",
+        "Rom File SHA1": "92F1DC8FC7C9420CF26D063611FA7D9067197740",
+        "Initial Sequence File Path": "boss01.initial.sol",
+        "Initial State File Path": "",
+        "Use Flat Code Map": false,
+        "Initial RAM Data File Path": "",
+        "SRAM Block Size": 0,
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+	    "SRAM Block Size": 8192,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT",
+            "CTRL"
+        ],
+        "Nametable Block Size": 2048
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
+        "Hash Step Tolerance": 1,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 300
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|U.......|",
+                    "|..|.D......|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|.......A|",
+                    "|..|......B.|",
+                    "|..|U.L.....|",
+                    "|..|U..R....|",
+                    "|..|U......A|",
+                    "|..|U.....B.|",
+                    "|..|UD......|",
+                    "|..|.DL.....|",
+                    "|..|.D.R....|",
+                    "|..|.D.....A|",
+                    "|..|.D....B.|",
+                    "|..|..L....A|",
+                    "|..|..L...B.|",
+                    "|..|...R...A|",
+                    "|..|...R..B.|",
+                    "|..|U.L....A|",
+                    "|..|U..R...A|",
+                    "|..|U.....BA|",
+                    "|..|.DL....A|",
+                    "|..|.D.R...A|",
+                    "|..|.D....BA|",
+                    "|..|..L...BA|",
+                    "|..|...R..BA|",
+                    "|..|U.L...B.|",
+                    "|..|U..R..B.|",
+                    "|..|UD....B.|",
+                    "|..|.DL...B.|",
+                    "|..|.D.R..B.|",
+                    "|..|......BA|",
+                    "|..|U.....BA|",
+                    "|..|..LR...A|",
+                    "|..|...R..BA|",
+                    "|..|..L...BA|",
+                    "|..|..LR....|",
+                    "|..|.D.R..BA|",
+                    "|..|.DL...BA|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Street Fighter 2010",
+        "Frame Rate": 60.1,
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions":
+                [
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                    { "Type": "Set Boss HP Magnet", "Intensity": -1000.0 }, 
+                    { "Type": "Set Player Pos X Magnet", "Intensity": 1.0, "Pos": 144.0  }
+                ]
+            },
+            
+            {
+                "Label": 1001,
+                "Conditions":
+                [
+                { "Property": "Boss HP", "Op": "==", "Value": -1 }
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                    { "Type": "Add Reward", "Value": 100000.0 },
+                    { "Type": "Set Player Pos X Magnet", "Intensity": 1.0, "Pos": 148.0  } 
+                ]
+            },
+            
+            {
+                "Label": 1100,
+                "Conditions":
+                [
+                { "Property": "Open Level", "Op": "==", "Value": 10 }
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                    { "Type": "Trigger Win" }
+                ]
+            }
+        ]
+    }
+}

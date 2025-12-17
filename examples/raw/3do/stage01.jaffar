@@ -22,7 +22,7 @@
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerRAWGL",
-        "Game Data Path": "3do/Out of this World (USA).iso",
+        "Game Data Path": "Out of this World (USA).iso",
         "Initial State File Path": "stage01.state",
         "Initial Sequence File Path": "",
         "Initial RAM Data File Path": "",
@@ -50,17 +50,17 @@
             {
                 "Conditions": [],
                 "Inputs": [
-                    ".....",
-                    "....F",
-                    "U...F",
-                    "U.L.F",
-                    "U..RF",
-                    "..L.F",
-                    "...RF",
-                    "U.L..",
-                    "U..R.",
-                    "..L..",
-                    "...R."
+                    "......",
+                    ".....F",
+                    ".U...F",
+                    ".U.L.F",
+                    ".U..RF",
+                    "...L.F",
+                    "....RF",
+                    ".U.L..",
+                    ".U..R.",
+                    "...L..",
+                    "....R."
                 ],
                 "Stop Input Evaluation": false
             }

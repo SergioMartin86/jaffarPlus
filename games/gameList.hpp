@@ -22,6 +22,8 @@
 #include "nes/metroid.hpp"
 #include "nes/pacmanChampionship.hpp"
 #include "nes/pipeDream.hpp"
+#include "nes/kungFu.hpp"
+#include "nes/streetFighter2010.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_SDLPOP
@@ -133,6 +135,8 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   DETECT_GAME(nes::Metroid);
   DETECT_GAME(nes::PacManChampionship);
   DETECT_GAME(nes::PipeDream);
+  DETECT_GAME(nes::KungFu);
+  DETECT_GAME(nes::StreetFighter2010);
 #ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
   DETECT_GAME(nes::Arkanoid2);
 #endif
