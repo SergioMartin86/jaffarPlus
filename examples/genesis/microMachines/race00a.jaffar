@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 0,
+        "Max Steps": 800,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -12,21 +12,28 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 12,
+        "NUMA Domains Per Group": 2,
         "Hash Database": {
+            "Enabled": true,
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 5000
+            "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 100000
+            "Max Size (Mb)": 12000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 2048,
+                "Use Zlib Compression": false
+            }
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerGPGX",
         "Rom File Path": "Micro Machines (USA).md",
         "Rom File SHA1": "39B25DBFA7A80AEBDEFC19AC2DF4BC75B934BBDA",
-        "Initial State File Path": "race00a.state",
-        "Initial Sequence File Path": "",
+        "Initial State File Path": "",
+        "Initial Sequence File Path": "race00a.initial.sol",
         "Initial RAM Data File Path": "",
         "Initial Video RAM Data File Path": "",
         "Bios File Path": "",
@@ -36,15 +43,19 @@
         "Disabled State Properties": [
             "VRAM",
             "SATM"
-        ],
-        "Work RAM Serialization Size": 50000
+        ]
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip Rate": 0,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
         "Store Input History": {
             "Enabled": true,
             "Max Size": 800
@@ -82,6 +93,7 @@
     "Game Configuration": {
         "Game Name": "Genesis / Micro Machines",
         "Frame Rate": 120,
+        "Bypass Emulator State": false,
         "Print Properties": [
             "Current Race",
             "Current Step",

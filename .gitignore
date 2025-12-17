@@ -13,6 +13,8 @@ test.sbatch
 *.sfc
 *.rom
 *.bin
+*.iso
+*.cue
 *.tmp
 jaffar.state
 *.sol.translated

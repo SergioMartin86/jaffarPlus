@@ -1,0 +1,146 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 300,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "NUMA Domains Per Group": 12,
+        "Hash Database": {
+            "Enabled": true, 
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 100000
+        },
+        "State Database": {
+            "Max Size (Mb)": 10000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 1024,
+                "Use Zlib Compression": true
+            }
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Kung Fu (U) [!].nes",
+        "Rom File SHA1": "C054A885FB9B00D3F6797A35BA5579F2896A254A",
+        "Initial Sequence File Path": "lvl03b.initial.sol",
+        "Initial State File Path": "",
+        "Use Flat Code Map": false,
+        "Initial RAM Data File Path": "",
+        "SRAM Block Size": 0,
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+	    "SRAM Block Size": 8192,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT",
+            "CTRL"
+        ],
+        "Nametable Block Size": 2048
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
+        "Hash Step Tolerance": 1,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 300
+        },
+        "Allowed Input Sets": [
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Kung Fu",
+        "Frame Rate": 60.1,
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions":
+                [
+                ],
+                
+                "Satisfies": [ ],
+                
+                "Actions":
+                [
+                    { "Type": "Set Hero Pos X Magnet", "Intensity": 1.0, "Pos": 0 },
+                    { "Type": "Set Boss HP Magnet", "Intensity": -10.0 },
+                    { "Type": "Set Hero HP Magnet", "Intensity": -2.0 }
+                ]
+            },
+            
+            {
+                "Label": 1001,
+                "Conditions":
+                [
+                  { "Property": "Boss HP", "Op": ">", "Value": 200 }
+                ],
+                
+                "Satisfies": [ ],
+                
+                "Actions":
+                [
+                    { "Type": "Add Reward", "Value": 10000.0 },
+                    { "Type": "Set Boss HP Magnet", "Intensity": 0.0 }
+                ]
+            },
+            
+            {
+                "Label": 1003,
+                "Conditions":
+                [
+                 { "Property": "Game Mode", "Op": "==", "Value": 3 }
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                 { "Type": "Trigger Win" }
+                ]
+            },
+            
+            
+            {
+                "Label": 1900,
+                "Conditions":
+                [
+                    { "Property": "Boss HP", "Op": ">", "Value": 200 },
+                    { "Property": "Hero HP", "Op": ">", "Value": 35 }
+                ],
+                
+                "Satisfies": [ ],
+                
+                "Actions":
+                [
+                  { "Type": "Trigger Fail" }
+                ]
+            }
+        ]
+    }
+}
