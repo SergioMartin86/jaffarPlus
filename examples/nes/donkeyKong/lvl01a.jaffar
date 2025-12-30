@@ -1,0 +1,129 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 650,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "NUMA Domains Per Group": 12,
+        "Hash Database": {
+            "Enabled": true, 
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 100000
+        },
+        "State Database": {
+            "Max Size (Mb)": 300000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 1024,
+                "Use Zlib Compression": true
+            }
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Donkey Kong (U) (PRG1) [!].nes",
+        "Rom File SHA1": "D8DFACBFEC34CDC871D73C901811551FE1706923",
+        "Initial Sequence File Path": "lvl01a.initial.sol",
+        "Initial State File Path": "",
+        "Use Flat Code Map": false,
+        "Initial RAM Data File Path": "",
+        "SRAM Block Size": 0,
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+	    "SRAM Block Size": 8192,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT",
+            "CTRL"
+        ],
+        "Nametable Block Size": 2048
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
+        "Hash Step Tolerance": 1,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 650
+        },
+        "Allowed Input Sets": [
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Donkey Kong",
+        "Frame Rate": 60.1,
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions":
+                [
+                ],
+                
+                "Satisfies": [ ],
+                
+                "Actions":
+                [
+                    { "Type": "Set Mario Pos X Magnet", "Intensity": 1.0, "Pos": 145 },
+                    { "Type": "Set Mario Pos Y Magnet", "Intensity": 1.0, "Pos": 28 }
+                ]
+            },
+            
+            {
+                "Label": 1003,
+                "Conditions":
+                [
+                 { "Property": "Game State", "Op": "==", "Value": 0 },
+                 { "Property": "Mario Alive", "Op": "==", "Value": 0 }
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                 { "Type": "Trigger Win" }
+                ]
+            },
+
+            {
+                "Label": 1004,
+                "Conditions":
+                [
+                 { "Property": "Game State", "Op": "==", "Value": 1 },
+                 { "Property": "Mario Alive", "Op": "==", "Value": 0 }
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                 { "Type": "Trigger Fail" }
+                ]
+            }
+        ]
+    }
+}

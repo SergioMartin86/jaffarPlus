@@ -24,6 +24,9 @@
 #include "nes/pipeDream.hpp"
 #include "nes/kungFu.hpp"
 #include "nes/streetFighter2010.hpp"
+#include "nes/exciteBike.hpp"
+#include "nes/donkeyKong.hpp"
+#include "nes/pinball.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_SDLPOP
@@ -137,6 +140,9 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   DETECT_GAME(nes::PipeDream);
   DETECT_GAME(nes::KungFu);
   DETECT_GAME(nes::StreetFighter2010);
+  DETECT_GAME(nes::ExciteBike);
+  DETECT_GAME(nes::DonkeyKong);
+  DETECT_GAME(nes::Pinball);
 #ifdef __JAFFAR_USE_QUICKERNES_ARKANOID
   DETECT_GAME(nes::Arkanoid2);
 #endif

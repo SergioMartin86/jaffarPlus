@@ -25,11 +25,13 @@
         "Rom File Path": "Ninja Gaiden III - The Ancient Ship of Doom (U) [!].nes",
         "Rom File SHA1": "3F2E6DAC76BA14EFC177B5653AB043E53A04D365",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "stage04a.initial.sol",
+        "Initial Sequence File Path": "boss.initial.sol",
         "Initial RAM Data File Path": "",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
         "Nametable Block Size": 1024,
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 0,
         "Disabled State Properties": [
             "SRAM",
             "CHRR",
@@ -38,7 +40,12 @@
         ]
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": false,
@@ -94,6 +101,7 @@
         "Trace File Path": "",
         "Enable Attack": true,
         "Last Input Step Reward": 0.0,
+        "Bypass Emulator State": false,
         "Print Properties": [
         ],
         "Hash Properties": [
