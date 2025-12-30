@@ -91,8 +91,14 @@ public:
     // Now parsing rules
     parseRules(_rulesJs);
 
+    // Update internals pre initialization (first state update)
+    stateUpdatePreHook();
+
     // Calling game-specific initializer
     initializeImpl();
+
+    // Update internals post initialization
+    stateUpdatePostHook();
 
     // Set this as initialized
     _isInitialized = true;
@@ -504,7 +510,8 @@ public:
   virtual jaffarCommon::hash::hash_t getDirectStateHash() const { return jaffarCommon::hash::hash_t(); }
 
 protected:
-  void registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)
+
+  void* registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)
   {
     // Creating property
     auto property = std::make_unique<Property>(name, pointer, dataType, endianness);
@@ -514,6 +521,9 @@ protected:
 
     // Adding property to the map for later reference
     _propertyMap[propertyNameHash] = std::move(property);
+
+    // Return the pointer proper (this is just sugar to make the use of this function more compact)
+    return pointer;
   }
 
   // Parsing game rules

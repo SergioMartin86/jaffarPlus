@@ -49,7 +49,8 @@ private:
     registerGameProperty("Boss02 Y1"              ,&_lowMem[0x055F], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Boss02 X2"              ,&_lowMem[0x04DF], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Boss02 Y2"              ,&_lowMem[0x053F], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    registerGameProperty("Boss HP"                ,&_lowMem[0x05FF], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Boss HP 1"              ,&_lowMem[0x05FF], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Boss HP 2"              ,&_lowMem[0x05F4], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Boss Timer"             ,&_lowMem[0x065F], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Open Level"             ,&_lowMem[0x007D], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Exit Level"             ,&_lowMem[0x0085], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
@@ -86,7 +87,8 @@ private:
     _boss02Y1           =   (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Boss02 Y1"       )]->getPointer();
     _boss02X2           =   (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Boss02 X2"       )]->getPointer();
     _boss02Y2           =   (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Boss02 Y2"       )]->getPointer();
-    _bossHP             =   (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Boss HP"         )]->getPointer();
+    _bossHP1            =   (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Boss HP 1"       )]->getPointer();
+    _bossHP2            =   (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Boss HP 2"       )]->getPointer();
     _bossTimer          =   (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Boss Timer"      )]->getPointer();
     _openLevel          =   (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Open Level"      )]->getPointer();
     _portalTimer        =   (uint8_t *)_propertyMap[jaffarCommon::hash::hashString("Portal Timer"    )]->getPointer();
@@ -108,6 +110,7 @@ private:
     registerGameProperty("Boss 02 Pos Y"      ,&_boss02PosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Player Pos X"       ,&_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Player Pos Y"       ,&_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Boss HP"            ,&_bossHP, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     _currentStep = 0;
     _nullInputIdx      = _emulator->registerInput("|..|........|");
@@ -155,6 +158,7 @@ private:
 
     _lastInput = _nullInputIdx;
     _allowFire = true;
+    _bossDeathTimer = 0;
 
     stateUpdatePostHook();
   }
@@ -166,6 +170,7 @@ private:
 
     // Advancing current step
     _currentStep++;
+    if (*_lagFrame == 0 && *_bossHP2 == 255) _bossDeathTimer++;
 
     _lastInput = input;
   }
@@ -174,7 +179,7 @@ private:
   {
     //  hashEngine.Update(*_RNGValue    );
       hashEngine.Update(*_lagFrame    );
-     hashEngine.Update(*_lagType     );
+      hashEngine.Update(*_lagType     );
       hashEngine.Update(*_playerHP    );
       hashEngine.Update(*_playerPosX1 );
       hashEngine.Update(*_playerPosX2 );
@@ -188,9 +193,12 @@ private:
       hashEngine.Update(*_boss02Y1       );
       hashEngine.Update(*_boss02X2       );
       hashEngine.Update(*_boss02Y2       );
-      hashEngine.Update(*_bossHP      );
+      hashEngine.Update(*_bossHP1      );
+      hashEngine.Update(*_bossHP2      );
       // hashEngine.Update(*_bossTimer);
       hashEngine.Update(*_playerAction);
+
+      hashEngine.Update(_bossDeathTimer);
 
       if (_allowFire == true)
       {
@@ -208,6 +216,8 @@ private:
         hashEngine.Update(*_bullet02Direction02);
         hashEngine.Update(*_bullet01Direction02);
         hashEngine.Update(*_bullet00Direction02);
+
+        hashEngine.Update(&_lowMem[0x0525], 0x004); // Bullets Pos Y
       }
 
       if (*_lagFrame == 1) hashEngine.Update(&_lowMem[0x00A0], 0x040);
@@ -229,6 +239,8 @@ private:
     _boss02PosX = (float)*_boss02X1 * 256.0f + (float)*_boss02X2;
     _boss02PosY = (float)*_boss02Y1 * 256.0f + (float)*_boss02Y2;
 
+    _bossHP = *_bossHP1 + *_bossHP2;
+
     _playerDistanceToBossX = std::abs(_playerPosX - _boss02PosX);
     _playerDistanceToBossY = std::abs(_playerPosY - _boss02PosY);
     _playerDistanceToBoss = sqrt(_playerDistanceToBossX * _playerDistanceToBossX + _playerDistanceToBossY * _playerDistanceToBossY);
@@ -245,6 +257,7 @@ private:
       _allowFire = true;
       _bossPosXMagnet.intensity = 0.0f;
       _bossPosXMagnet.pos = 0.0f;
+      _bossDeathTimerMagnet = 0.0f;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
@@ -259,6 +272,7 @@ private:
      serializer.push(&_currentStep, sizeof(_currentStep));
      serializer.push(&_lastInput, sizeof(_lastInput));
      serializer.push(&_allowFire, sizeof(_allowFire));
+     serializer.push(&_bossDeathTimer, sizeof(_bossDeathTimer));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -266,6 +280,7 @@ private:
      deserializer.pop(&_currentStep, sizeof(_currentStep));
      deserializer.pop(&_lastInput, sizeof(_lastInput));
      deserializer.pop(&_allowFire, sizeof(_allowFire));
+     deserializer.pop(&_bossDeathTimer, sizeof(_bossDeathTimer));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -278,8 +293,10 @@ private:
     reward += -1.0 * _playerPosXMagnet.intensity * _playerDistanceToPointX;
     reward += -1.0 * _playerPosYMagnet.intensity * _playerDistanceToPointY;
 
-    reward += _bossHPMagnet * (float)*_bossHP;
+    reward += _bossHPMagnet * (float)_bossHP;
     reward += -1.0 * _playerDistanceToBossMagnet * _playerDistanceToBoss;
+
+    reward += _bossDeathTimerMagnet * (float)_bossDeathTimer;
 
     // Returning reward
     return reward;
@@ -290,7 +307,7 @@ private:
   {
     switch(*_playerAction)
     {
-      case 0x0000: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_A, _input_B, _input_R, _input_L, _input_BA, _input_AR, _input_AL, _input_DA, _input_DB, _input_UB }); break;
+      case 0x0000: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_A, _input_B, _input_R, _input_L, _input_BA, _input_AR, _input_AL, _input_DA, _input_DB, _input_UB, _input_U }); break;
       case 0x0001: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_A, _input_B, _input_R, _input_L, _input_AR, _input_BR, _input_AL, _input_BL, _input_DB, _input_UB }); break;
       case 0x0002: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_A, _input_B, _input_R, _input_L, _input_AR, _input_BR, _input_AL, _input_BL, _input_DA, _input_DB, _input_UB }); break;
       case 0x0003: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_R, _input_A, _input_L, _input_D, _input_BA, _input_AR, _input_BR, _input_AL, _input_BL, _input_UB, _input_DA }); break;
@@ -298,7 +315,7 @@ private:
       case 0x0005: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_U, _input_D, _input_L, _input_R, _input_A, _input_BR, _input_AR, _input_AL, _input_BL, _input_DA, _input_DB, _input_UB, _input_UD }); break;
       case 0x0006: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_BR, _input_AR, _input_AL, _input_BL, _input_UD, _input_BA, _input_DA, _input_DB, _input_UB }); break;
       case 0x0007: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_BR, _input_AR, _input_AL, _input_BL, _input_UD, _input_BA, _input_DA, _input_DB, _input_UB }); break;
-      case 0x0009: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_R, _input_A, _input_L, _input_U, _input_BA, _input_AR, _input_BR, _input_AL, _input_BL, _input_UB, _input_DA}); break;
+      case 0x0009: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_R, _input_A, _input_L, _input_U, _input_BA, _input_AR, _input_BR, _input_AL, _input_BL, _input_UA, _input_UB, _input_DA}); break;
       case 0x000A: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_BR, _input_AR, _input_AL, _input_BL, _input_UD, _input_BA, _input_DA, _input_DB, _input_UB }); break;
       case 0x0010: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_R, _input_L, _input_BR, _input_BL, _input_DB, _input_AR, _input_AL, _input_UL, _input_UR }); break;
       case 0x0011: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_R, _input_L, _input_AR, _input_AL, _input_UL, _input_UR }); break;
@@ -381,8 +398,9 @@ private:
     jaffarCommon::logger::log("[J+]  + Player Pos X:               %.2f (%02u %02u %02u)\n", _playerPosX, *_playerPosX1, *_playerPosX2, *_playerPosX3);
     jaffarCommon::logger::log("[J+]  + Player Pos Y:               %.2f (%02u %02u %02u)\n", _playerPosY, *_playerPosY1, *_playerPosY2, *_playerPosY3);
     jaffarCommon::logger::log("[J+]  + Boss02 Pos:                 [ %.3f, %.3f ]\n", _boss02PosX, _boss02PosY);
-    jaffarCommon::logger::log("[J+]  + Boss HP:                    %02u\n", *_bossHP);
+    jaffarCommon::logger::log("[J+]  + Boss HP:                    %02u (%02u + %02u)\n", _bossHP, *_bossHP1, *_bossHP2);
     jaffarCommon::logger::log("[J+]  + Boss Timer:                 %03u\n", *_bossTimer);
+    jaffarCommon::logger::log("[J+]  + Boss Death Timer:           %03u\n", _bossDeathTimer);
     jaffarCommon::logger::log("[J+]  + Open Level:                 %03u\n", *_openLevel);
     jaffarCommon::logger::log("[J+]  + Allow Fire:                 %s\n", _allowFire ? "True" : "False");
     jaffarCommon::logger::log("[J+]  + Portal Timer:               %03u\n", *_portalTimer);
@@ -398,7 +416,9 @@ private:
     if (std::abs(_playerPosYMagnet.intensity) > 0.0f)  
        jaffarCommon::logger::log("[J+]  + Player Pos Y Magnet                 Intensity: %.5f, Pos: %.5f, Distance: %.5f\n", _playerPosYMagnet.intensity, _playerPosYMagnet.pos, _playerDistanceToPointY);
     if (std::abs(_bossHPMagnet) > 0.0f)
-       jaffarCommon::logger::log("[J+]  + Boss HP Magnet                    Intensity: %.5f\n", _bossHPMagnet);
+       jaffarCommon::logger::log("[J+]  + Boss HP Magnet                      Intensity: %.5f\n", _bossHPMagnet);
+    if (std::abs(_bossDeathTimerMagnet) > 0.0f)
+       jaffarCommon::logger::log("[J+]  + Boss Death Timer Magnet             Intensity: %.5f\n", _bossDeathTimerMagnet);
   }
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
@@ -446,6 +466,13 @@ private:
       recognizedActionType = true;
     }
 
+    if (actionType == "Set Boss Death Timer Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_bossDeathTimerMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
     if (actionType == "Set Allow Fire")
     {
       auto value = jaffarCommon::json::getBoolean(actionJs, "Value");
@@ -483,6 +510,8 @@ private:
   pointMagnet_t _bossPosXMagnet;
   pointMagnet_t _playerPosXMagnet;
   pointMagnet_t _playerPosYMagnet;
+  
+  float _bossDeathTimerMagnet;
   float _bossHPMagnet;
   float _bossDistanceToPointX;
   float _playerDistanceToPointX;
@@ -553,10 +582,13 @@ private:
   uint8_t* _boss02Y1            ;
   uint8_t* _boss02X2            ;
   uint8_t* _boss02Y2            ;
-  uint8_t* _bossHP           ;
+  uint8_t* _bossHP1           ;
+  uint8_t* _bossHP2           ;
   uint8_t* _bossTimer        ;
   uint8_t* _openLevel        ;
   uint8_t* _portalTimer;
+
+  uint8_t _bossDeathTimer;
 
   float _playerPosX;
   float _playerPosY;
@@ -583,6 +615,8 @@ private:
   uint8_t* _bullet02Direction02;
   uint8_t* _bullet01Direction02;
   uint8_t* _bullet00Direction02;
+
+  uint8_t _bossHP;
 
   bool _allowFire;
 };

@@ -1,0 +1,122 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 1500,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "NUMA Domains Per Group": 2,
+        "Hash Database": {
+            "Enabled": true, 
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 30000
+        },
+        "State Database": {
+            "Max Size (Mb)": 20000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 1024,
+                "Use Zlib Compression": true
+            }
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Excitebike (JU) [!].nes",
+        "Rom File SHA1": "2E9897846E54A4A9865E87DE7517C6710BDEC255",
+        "Initial Sequence File Path": "race01a.initial.sol",
+        "Initial State File Path": "",
+        "Use Flat Code Map": false,
+        "Initial RAM Data File Path": "",
+        "SRAM Block Size": 0,
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+	    "SRAM Block Size": 8192,
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT"
+        ],
+        "Nametable Block Size": 2048
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 1500
+        },
+        "Allowed Input Sets": [
+         {   
+                "Conditions": [
+                     { "Property": "Bike Air Mode", "Op": ">", "Value": 0 }
+                ],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|...R....|",
+                    "|..|..L.....|",
+                    "|..|.D.R....|",
+                    "|..|U..R....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|.......A|",
+                    "|..|......B.|",
+                    "|..|..L...B.|",
+                    "|..|...R..B.|",
+                    "|..|U.....B.|",
+                    "|..|.D....B.|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Excite Bike",
+        "Frame Rate": 600.1,
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1003,
+                "Conditions":
+                [
+                 { "Property": "Bike Pos X", "Op": ">", "Value": 6339.0 }
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                 { "Type": "Trigger Win" }
+                ]
+            }
+        ]
+    }
+}
