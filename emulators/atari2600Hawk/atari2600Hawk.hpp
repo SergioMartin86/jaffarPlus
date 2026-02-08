@@ -35,6 +35,9 @@ public:
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_Atari2600Hawk_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
+    // Getting initial sequence file path
+    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+
     // Creating internal emulator instance
     _Atari2600Hawk = std::make_unique<libA2600Hawk::EmuInstance>(config);
   };
@@ -58,6 +61,24 @@ public:
 
     // Loading rom into emulator
     _Atari2600Hawk->loadROM(_romFilePath);
+
+    // Getting input parser from the internal emulator
+    const auto inputParser = _Atari2600Hawk->getInputParser();
+
+    // Advancing the state using the initial sequence, if provided
+    if (_initialSequenceFilePath != "")
+    {
+      // Load initial sequence
+      std::string initialSequenceFileString;
+      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+      // Getting input sequence
+      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+
+      // Running inputs in the initial sequence
+      for (const auto& inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+    }
   }
 
   // State advancing function
@@ -132,6 +153,8 @@ private:
 
   std::string _romFilePath;
   std::string _romFileSHA1;
+
+  std::string _initialSequenceFilePath;
 
   // Mutex required to avoid crashes during initialization
   std::mutex _mutex;

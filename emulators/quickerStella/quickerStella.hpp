@@ -39,6 +39,9 @@ public:
     const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
     for (const auto& property : disabledStateProperties) _disabledStateProperties.push_back(property);
 
+    // Getting initial sequence file path
+    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+
     // Creating internal emulator instance
     _quickerStella = std::make_unique<stella::EmuInstance>(config);
   };
@@ -62,6 +65,24 @@ public:
 
     // Loading rom into emulator
     _quickerStella->loadROM(_romFilePath);
+
+    // Getting input parser from the internal emulator
+    const auto inputParser = _quickerStella->getInputParser();
+
+    // Advancing the state using the initial sequence, if provided
+    if (_initialSequenceFilePath != "")
+    {
+      // Load initial sequence
+      std::string initialSequenceFileString;
+      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+      // Getting input sequence
+      const auto initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+
+      // Running inputs in the initial sequence
+      for (const auto& inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+    }
   }
 
   // Function to get a reference to the input parser from the base emulator
@@ -131,6 +152,8 @@ private:
 
   // Collection of state blocks to disable during engine run
   std::vector<std::string> _disabledStateProperties;
+
+  std::string _initialSequenceFilePath;
 
   std::string _romFilePath;
   std::string _romFileSHA1;
