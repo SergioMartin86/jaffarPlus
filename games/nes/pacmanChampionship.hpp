@@ -75,6 +75,9 @@ private:
     registerGameProperty("Fruit 1 Status", &_lowMem[0x0481], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Fruit 2 Status", &_lowMem[0x0482], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
+    registerGameProperty("Pellet Multiplier", &_lowMem[0x0454], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Pellet Counter 1", &_lowMem[0x0453], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+
     // Getting some properties' pointers now for quick access later
     _gameMode  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Mode")]->getPointer();
     _score10  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score x10")]->getPointer();
@@ -116,6 +119,9 @@ private:
     _fruit1Status  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Fruit 1 Status")]->getPointer();
     _fruit2Status  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Fruit 2 Status")]->getPointer();
 
+    _pelletMultiplier  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Pellet Multiplier")]->getPointer();
+    _pelletCounter1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Pellet Counter 1")]->getPointer();
+
     registerGameProperty("Score", &_score, Property::datatype_t::dt_uint32, Property::endianness_t::little);
     registerGameProperty("Player Pos X", &_playerPosX, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Player Pos Y", &_playerPosY, Property::datatype_t::dt_uint16, Property::endianness_t::little);
@@ -124,6 +130,8 @@ private:
     registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Prev Ghost Capture Timer 1", &_prevGhostCaptureTimer1, Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Prev Bonus Multiplier", &_prevBonusMultiplier, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Prev Pellet Counter 1", &_prevPelletCounter1, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Pellets Eaten", &_pelletsEaten, Property::datatype_t::dt_uint16, Property::endianness_t::little);
 
     _input_U      = _emulator->registerInput("|..|U.......|");
     _input_D      = _emulator->registerInput("|..|.D......|");
@@ -177,7 +185,9 @@ private:
    _prevFruit2Status = *_fruit2Status;
 
     _currentStep = 0;
+    _pelletsEaten = 0;
     _prevGhostCaptureTimer1 = 0;
+    _fruitActivations = 0;
     _prevBonusMultiplier = *_bonusMultiplier;
   }
 
@@ -185,6 +195,7 @@ private:
   {
     _playerPrevPosX = _playerPosX;
     _playerPrevPosY = _playerPosY;
+    _prevPelletCounter1 = *_pelletCounter1;
     _prevGhostCaptureTimer1 = *_ghostCaptureTimer1;
     _prevScore = _score;
     _prevBonusMultiplier = *_bonusMultiplier;
@@ -197,6 +208,10 @@ private:
 
     // Running emulator
     _emulator->advanceState(input);
+
+    if ((*_fruit1Status > 0 && *_fruit1Status != 255) && (_prevFruit1Status == 0 || _prevFruit1Status == 255)) _fruitActivations++;
+    if ((*_fruit2Status > 0 && *_fruit2Status != 255) && (_prevFruit2Status == 0 || _prevFruit2Status == 255)) _fruitActivations++;
+    if (_prevPelletCounter1 != *_pelletCounter1) _pelletsEaten++;
 
     _currentStep++;
   }
@@ -224,18 +239,18 @@ private:
     hashEngine.Update(*_ghost2State);
     hashEngine.Update(*_ghost3State);
     hashEngine.Update(*_ghost4State);
-    hashEngine.Update(*_ghost1BlockX);
-    hashEngine.Update(*_ghost2BlockX);
-    hashEngine.Update(*_ghost3BlockX);
-    hashEngine.Update(*_ghost4BlockX);
-    hashEngine.Update(*_ghost1BlockY);
-    hashEngine.Update(*_ghost2BlockY);
-    hashEngine.Update(*_ghost3BlockY);
-    hashEngine.Update(*_ghost4BlockY);
-    hashEngine.Update(*_ghost1Direction);
-    hashEngine.Update(*_ghost2Direction);
-    hashEngine.Update(*_ghost3Direction);
-    hashEngine.Update(*_ghost4Direction);
+    // hashEngine.Update(*_ghost1BlockX);
+    // hashEngine.Update(*_ghost2BlockX);
+    // hashEngine.Update(*_ghost3BlockX);
+    // hashEngine.Update(*_ghost4BlockX);
+    // hashEngine.Update(*_ghost1BlockY);
+    // hashEngine.Update(*_ghost2BlockY);
+    // hashEngine.Update(*_ghost3BlockY);
+    // hashEngine.Update(*_ghost4BlockY);
+    // hashEngine.Update(*_ghost1Direction);
+    // hashEngine.Update(*_ghost2Direction);
+    // hashEngine.Update(*_ghost3Direction);
+    // hashEngine.Update(*_ghost4Direction);
     hashEngine.Update(*_playerWallSkid);
 
     // Lag Frame Accounting
@@ -267,14 +282,14 @@ private:
 
     _isKeyFrame = false;
     if (_prevScore != _score) _isKeyFrame = true;
-    // if (_prevGhost1State != *_ghost1State) _isKeyFrame = true;
-    // if (_prevGhost2State != *_ghost2State) _isKeyFrame = true;
-    // if (_prevGhost3State != *_ghost3State) _isKeyFrame = true;
-    // if (_prevGhost4State != *_ghost4State) _isKeyFrame = true;
+    if (_prevGhost1State != *_ghost1State) _isKeyFrame = true;
+    if (_prevGhost2State != *_ghost2State) _isKeyFrame = true;
+    if (_prevGhost3State != *_ghost3State) _isKeyFrame = true;
+    if (_prevGhost4State != *_ghost4State) _isKeyFrame = true;
     if (_prevFruit1Status != *_fruit1Status) _isKeyFrame = true;
     if (_prevFruit2Status != *_fruit2Status) _isKeyFrame = true;
     if (*_ghostCaptureTimer1 == 1) _isKeyFrame = true;
-    if (_currentStep % 32 == 0) _isKeyFrame = true;
+    if (_currentStep % 4 == 0) _isKeyFrame = true;
     if (_playerPrevPosX == _playerPosX && _playerPrevPosY == _playerPosY) _isKeyFrame = true;
 
     _playerPosX = (uint16_t)*_playerPosX1 + (uint16_t)*_playerPosX2;
@@ -346,6 +361,9 @@ private:
     serializer.pushContiguous(&_prevGhost4State, sizeof(_prevGhost4State));
     serializer.pushContiguous(&_prevFruit1Status, sizeof(_prevFruit1Status));
     serializer.pushContiguous(&_prevFruit2Status, sizeof(_prevFruit2Status));
+    serializer.pushContiguous(&_prevPelletCounter1, sizeof(_prevPelletCounter1));
+    serializer.pushContiguous(&_pelletsEaten, sizeof(_pelletsEaten));
+    serializer.pushContiguous(&_fruitActivations, sizeof(_fruitActivations));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -365,6 +383,9 @@ private:
     deserializer.popContiguous(&_prevGhost4State, sizeof(_prevGhost4State));
     deserializer.popContiguous(&_prevFruit1Status, sizeof(_prevFruit1Status));
     deserializer.popContiguous(&_prevFruit2Status, sizeof(_prevFruit2Status));
+    deserializer.popContiguous(&_prevPelletCounter1, sizeof(_prevPelletCounter1));
+    deserializer.popContiguous(&_pelletsEaten, sizeof(_pelletsEaten));
+    deserializer.popContiguous(&_fruitActivations, sizeof(_fruitActivations));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -374,6 +395,15 @@ private:
 
     // Rewarding time passing after capturing a ghost
     reward -= (float)*_ghostCaptureTimer2 * 0.001f;
+
+    // Towards the end, only reward score
+    if (_currentStep > 10500) return reward;
+
+    // Otherwise prioritize pellet eating
+    reward += _pelletsEaten * 200.0f;
+
+    // Also prioritize fruit actvations
+    reward += _fruitActivations * 2000.0f;
 
     // Punishing time remaining for score
     // if (*_bonusMultiplierTimer > 0) 
@@ -399,6 +429,8 @@ private:
     jaffarCommon::logger::log("[J+]  + Prev Ghost States:       [ %02u %02u %02u %02u ]\n", _prevGhost1State, _prevGhost2State, _prevGhost3State, _prevGhost4State);
     jaffarCommon::logger::log("[J+]  + Fruit States:            [ %02u %02u ]\n", *_fruit1Status, *_fruit2Status);
     jaffarCommon::logger::log("[J+]  + Prev Fruit States:       [ %02u %02u ]\n", _prevFruit1Status, _prevFruit2Status);
+    jaffarCommon::logger::log("[J+]  + Fruit Activations:       %02u\n", _fruitActivations);
+    jaffarCommon::logger::log("[J+]  + Pellets Eaten:           %04u [ %02u Prev: %02u Mult: %02u ]\n", _pelletsEaten, *_pelletCounter1, _prevPelletCounter1, *_pelletMultiplier);
     jaffarCommon::logger::log("[J+]  + Player Pos X:            %05u (Prev: %05u)\n", _playerPosX, _playerPrevPosX);
     jaffarCommon::logger::log("[J+]  + Player Pos Y:            %05u (Prev: %05u)\n", _playerPosY, _playerPrevPosY);
 
@@ -435,12 +467,12 @@ private:
         return;
       }
 
-      // // Else just return the same direction  
-      // if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
-      // if (*_playerDirection == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
-      // if (*_playerDirection == 3) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
-      // if (*_playerDirection == 4) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
-      // return;
+      // Else just return the same direction  
+      if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
+      if (*_playerDirection == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
+      if (*_playerDirection == 3) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
+      if (*_playerDirection == 4) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+      return;
 
       // // Gauntlet
       // bool allowU = false;
@@ -577,6 +609,42 @@ private:
       // }
   }
 
+  // Datatype to describe a point magnet
+  bool _isDumpingScore = false;
+  std::string scoreDumpString;
+
+  __INLINE__ void playerPrintCommands() const override
+  {
+    jaffarCommon::logger::log("[J+] t: start/stop score dumping (%s)\n", _isDumpingScore ? "On" : "Off");
+  };
+
+  __INLINE__ bool playerParseCommand(const int command)
+  {
+    // If storing a trace, do it here
+    if (_isDumpingScore == true) scoreDumpString += std::to_string(_score) + std::string("\n");
+
+     if (command == 't')
+     {
+      if (_isDumpingScore == false)
+      {
+        _isDumpingScore = true;
+        scoreDumpString = "";
+        return false;
+      }
+      else
+      {
+        const std::string dumpOutputFile = "jaffar.score";
+        jaffarCommon::logger::log("[J+] Dumping score to file: '%s'", dumpOutputFile.c_str());
+        jaffarCommon::file::saveStringToFile(scoreDumpString, dumpOutputFile);
+        _isDumpingScore = false;
+        return true;
+      }
+     }
+
+     return false;
+  };
+
+
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
@@ -700,6 +768,12 @@ private:
   uint8_t _prevGhost4State;
   uint8_t _prevFruit1Status;
   uint8_t _prevFruit2Status;
+  uint8_t _fruitActivations;
+
+  uint8_t* _pelletCounter1;
+  uint8_t* _pelletMultiplier;
+  uint8_t _prevPelletCounter1;	 
+  uint16_t _pelletsEaten;
 
 };
 
