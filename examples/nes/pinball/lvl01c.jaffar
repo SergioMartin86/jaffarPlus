@@ -1,0 +1,178 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 700,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "NUMA Domains Per Group": 2,
+        "Hash Database": {
+            "Enabled": true, 
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 20000
+        },
+        "State Database": {
+            "Max Size (Mb)": 300000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 1024,
+                "Use Zlib Compression": true
+            }
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Pinball (JU) [!].nes",
+        "Rom File SHA1": "D2F25A027E390A0337BED7E0DC98D2D1D187D230",
+        "Initial Sequence File Path": "lvl01c.initial.sol",
+        "Initial State File Path": "",
+        "Use Flat Code Map": false,
+        "Initial RAM Data File Path": "",
+        "SRAM Block Size": 0,
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT",
+            "CTRL"
+        ],
+        "Nametable Block Size": 2048
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
+        "Hash Step Tolerance": 3,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Enabled": true,
+            "Max Size": 700
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [
+                    { "Property": "Platform 1 State", "Op": "<", "Value": 3 },
+                    { "Property": "Platform 2 State", "Op": "<", "Value": 3 },
+                    { "Property": "Platform 3 State", "Op": "<", "Value": 3 }
+                ],
+                "Inputs": [
+                    "|..|..L.....|",
+                    "|..|...R....|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Conditions": [
+                ],
+                "Inputs": [
+                    "|..|........|"
+                ],
+                "Stop Input Evaluation": true
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+        ]
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Pinball",
+        "Frame Rate": 600.1,
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Print Properties": [
+        ],
+        "Hash Properties": [
+        ],
+        "Rules": [
+            {
+                "Label": 1003,
+                "Conditions":
+                [
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                    { "Type": "Set Ball Pos Y Magnet", "Pos": 147, "Intensity": 1.0 },
+                    { "Type": "Set Ball Pos X Magnet", "Pos": 110, "Intensity": 1.0 }
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions":
+                [
+                    { "Property": "Pauline Pos Y", "Op": ">", "Value": 0}
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                    { "Type": "Add Reward", "Value": 10000.0 },
+                    { "Type": "Set Ball Pos Y Magnet", "Pos": 0, "Intensity": 0.0 },
+                    { "Type": "Set Ball Pos X Magnet", "Pos": 0, "Intensity": 0.0 },
+                    { "Type": "Set Pauline Pos Y Magnet", "Pos": 124, "Intensity": 1.0 },
+                    { "Type": "Set Pauline Pos X Magnet", "Pos": 70, "Intensity": -1.0 }
+                ]
+            },
+            {
+                "Label": 1005,
+                "Conditions":
+                [
+                    { "Property": "Pauline Pos Y", "Op": ">", "Value": 0 },
+                    { "Property": "Pauline Pos X", "Op": ">", "Value": 112}
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                    { "Type": "Trigger Win"}
+                ]
+            },
+            {
+                "Label": 1006,
+                "Conditions":
+                [
+                    { "Property": "Pauline Pos Y", "Op": ">", "Value": 0 },
+                    { "Property": "Pauline Pos X", "Op": "<", "Value": 30}
+                ],
+                
+                "Satisfies": [  ],
+                
+                "Actions":
+                [
+                    { "Type": "Trigger Win"}
+                ]
+            },
+            {
+                "Label": 1004,
+                "Conditions":
+                [
+                 { "Property": "Current Screen", "Op": "!=", "Value": 2 }
+                ],
+                
+                "Satisfies": [ ],
+                
+                "Actions":
+                [
+                 { "Type": "Trigger Fail" }
+                ]
+            }
+        ]
+    }
+}

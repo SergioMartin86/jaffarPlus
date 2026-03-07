@@ -1,0 +1,110 @@
+[J+] --------------------------------------------------------------
+[J+] Job Id:                                      1767552204
+[J+] Script File:                                 'extra.jaffar'
+[J+] Emulator Name:                               'QuickerNES'
+[J+] Game Name:                                   'NES / Pac-Man Championship'
+[J+] Current Step #:                              10992 (Max: 11000)
+[J+] Current Reward (Win / Worst):                392450.000000 / 391250.000000 (Diff: 1200.000000)
+[J+] Engine Information:
+[J+] Thread Count / NUMA Domains / NUMA Groups:      384 / 12 / 1
+[J+] Elapsed Time (Step/Total):                      0.001s (387809.225%) / 791963.576s (91.796%)
+[J+]  + Runner State Avance (Step/Total):            0.000s (  0.369%) / 584324.585s (73.782%)
+[J+]  + Runner State Load (Step/Total):              0.000s (  0.000%) / 16357.500s (2.065%)
+[J+]  + Runner State Save (Step/Total):              0.000s (  0.000%) /  8735.124s (1.103%)
+[J+]  + Hash Calculation (Step/Total):               0.000s (  0.000%) /    22.921s (0.003%)
+[J+]  + Hash Checking (Step/Total):                  0.000s (  0.000%) / 78064.658s (9.857%)
+[J+]  + Rule Checking (Step/Total):                  0.000s (  0.000%) /    29.147s (0.004%)
+[J+]  + Get Free State (Step/Total):                 0.000s (  0.000%) /  4147.943s (0.524%)
+[J+]  + Return Free State (Step/Total):              0.000s (  0.000%) /   337.866s (0.043%)
+[J+]  + Calculate Reward (Step/Total):               0.000s (  0.000%) /     2.908s (0.000%)
+[J+]  + Popping Base State (Step/Total):             0.000s ( 23.985%) /  6614.415s (0.835%)
+[J+]  + Get Allowed Inputs (Step/Total):             0.000s (  0.000%) /     5.176s (0.001%)
+[J+]  + Get Candidate Inputs (Step/Total):           2.102s (387773.985%) / 11410.940s (1.441%)
+[J+]  + Advance Hash Db (Step/Total):                0.000s (  0.000%) /  2685.078s (0.339%)
+[J+]  + Advance State Db (Step/Total):               0.000s ( 10.886%) / 14250.829s (1.799%)
+[J+] Checkpoint (Level/Tolerance/Cutoff):         0 / 0 / 0
+[J+] Base States Processed:                       0.000 Mstates (Total: 1634652.534 Mstates)
+[J+] New States Processed:                        0.000 Mstates (Total: 2440536.588 Mstates)
+[J+] Base States Performance:                     0.022 Mstates/s (Average: 2.064 Mstates/s)
+[J+] New States Performance:                      0.033 Mstates/s (Average: 3.082 Mstates/s)
+[J+] Dropped States (No Storage Available):       231362 (0.000% of New States Processed)
+[J+] Dropped States (Failed Serialization):       0 (0.000% of New States Processed)
+[J+] Dropped States (Checkpoint):                 0 (0.000% of New States Processed)
+[J+] Failed States:                               246282432608 (10.091% of New States Processed)
+[J+] Repeated States:                             457468584473 (18.745% of New States Processed)
+[J+] Normal States:                               1736623616166 (71.157% of New States Processed)
+[J+] Win States:                                  161723127 (0.007% of New States Processed)
+[J+] State Database Information:
+[J+]  + Current State Count:           0 (0.000000 Mstates) /  179550684 (179.550684 Mstates) Max /  0.00% Full
+[J+]  + Current State Size:            0.000 Mb (0.000000 Gb) / 1200000.000 Mb (1171.875000 Gb) Max
+[J+]  + State Size Raw:                6997 bytes
+[J+]  + State Size in DB:              7008 bytes (11 padding bytes to 16)
+[J+]  + NUMA Domain   0                States: 0 (Max: 14962557), Size: 100000.000 Mb (97.656250 Gb)
+[J+]  + NUMA Domain  11                States: 0 (Max: 14962557), Size: 100000.000 Mb (97.656250 Gb)
+[J+] + Database Popping State Rates:
+[J+]  + Numa Locality Success Rate:                     99.081%
+[J+]  + Numa Locality Fail Rate:                        0.918%
+[J+]  + Numa No DB State Found Rate:                    0.000%
+[J+] + Get Free State Rates:
+[J+]  + Numa Locality Success Rate:                     86.401%
+[J+]  + Numa Locality Fail Rate:                        7.728%
+[J+]  + State DB Stealing Rate:                         5.871%
+[J+]  + Numa No Free State Found Rate:                  0.000%
+[J+]  + Average NUMA Distance:                          33864390077997 / 3371437872976 = 10.044
+[J+] Hash Database Information:
+[J+]      + NUMA 0 - Store: 1 / 4 - Id: 1144 - Age: 10980, Entries: 1134.111 M / 1562.500 M, Size: 36291.541 Mb / 50000.000 Mb, Check Count: 5151705440, Collision Count: 409733583 (Rate 7.953%)
+[J+]      + NUMA 0 - Store: 2 / 4 - Id: 1143 - Age: 10971, Entries: 1740.796 M / 1562.500 M, Size: 55705.468 Mb / 50000.000 Mb, Check Count: 7859694889, Collision Count: 580212891 (Rate 7.382%)
+[J+]      + NUMA 0 - Store: 3 / 4 - Id: 1142 - Age: 10963, Entries: 1591.792 M / 1562.500 M, Size: 50937.336 Mb / 50000.000 Mb, Check Count: 7247104751, Collision Count: 589138746 (Rate 8.129%)
+[J+]      + NUMA 0 - Store: 4 / 4 - Id: 1141 - Age: 10954, Entries: 1722.679 M / 1562.500 M, Size: 55125.740 Mb / 50000.000 Mb, Check Count: 7778623198, Collision Count: 566244226 (Rate 7.279%)
+[J+] Manually Saved Solution:
+[J+]   + Path:         ''
+[J+]   + Reward:        -inf
+[J+]   + Last Rule Idx: -1 (Active: -1, Path: '')
+[J+] Candidate Inputs:
+[J+] Runner Information (Best State):
+[J+]  + Input History Enabled: true
+[J+]    + Possible Input Count: 4 (Encoded in 2 bits)
+[J+]    + Input History Size: 11000 steps (2750 Bytes, 22000 Bits)
+[J+]  + Current Input Count: 10987
+[J+]  + Hash: 0xB3F01CCBDB38A633DA95011418F43CD4
+[J+]  + Hash Step Tolerance Stage: 0 / 0
+[J+]  + Allowed Inputs:
+[J+]    + '|..|U.......|'
+[J+]    + -----
+[J+]    + -----
+[J+]    + -----
+[J+] Game Information (Best State):
+[J+]  + Game State Type: Win
+[J+]  + Game State Reward: 392450.000000
+[J+]  + Rule Status: 100
+[J+]  + Game Properties:
+[J+]    + 'Player Direction':    0x01  (001)
+[J+]    + 'Player Pos X':        0x0055  (00085)
+[J+]    + 'Player Pos Y':        0x003F  (00063)
+[J+]    + 'Bonus Multiplier':    0x02  (002)
+[J+]  + Current Step:            0x2AEB
+[J+]  + Score:                   392450 (Prev: 392450)
+[J+]  + Is Key Frame:            True
+[J+]  + Bonus Multiplier:        02 (Timer: 00339)
+[J+]  + Ghost Capture Timer1:    0x009 (Prev: 0x000)
+[J+]  + Ghost Capture Timer2:    0x000
+[J+]  + Ghost States:            [ 01 49 00 03 ]
+[J+]  + Prev Ghost States:       [ 19 49 00 03 ]
+[J+]  + Fruit States:            [ 00 00 ]
+[J+]  + Prev Fruit States:       [ 00 00 ]
+[J+]  + Player Pos X:            00085 (Prev: 00085)
+[J+]  + Player Pos Y:            00063 (Prev: 00063)
+[J+]  + Tile Mem:       0x0109    0x010A    0x010B
+[J+]  + Tile Mem:       0x0138    0x0139    0x013A
+[J+]  + Tile Mem:       0x0167    0x0168    0x0169
+[J+]  + Tile Pos:      (30, 05)     (31, 05)     (32, 05)
+[J+]  + Tile Pos:      (30, 06)     (31, 06)     (32, 06)
+[J+]  + Tile Pos:      (30, 07)     (31, 07)     (32, 07)
+[J+]  + Tile Type:     25    12    12
+[J+]  + Tile Type:     13    07    01
+[J+]  + Tile Type:     13    07    25
+[J+] Emulator Information (Best State):
+[J+]  + Initial Sequence File Path:          'extra.initial.sol'
+[J+]  + Uses Flat Code Map:                  False
+[J+] --------------------------------------------------------------
+[J+] Step 10992 - Exit Reason: Solution found.

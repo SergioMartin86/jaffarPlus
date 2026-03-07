@@ -12,17 +12,25 @@
         }
     },
     "Engine Configuration": {
+        "NUMA Domains Per Group": 2,
         "Hash Database": {
+            "Enabled": true,
             "Max Store Count": 2,
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 1000
+            "Max Size (Mb)": 1000,
+            "Differential Compression":
+            {
+                "Enabled": false, 
+                "Buffer Size": 6000,
+                "Use Zlib Compression": false
+            }
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerStella",
-        "Rom File Path": "../../../extern/jaffarPlus/extern/quickerStella/tests/roms/hellway.a26",
+        "Rom File Path": "hellway.a26",
         "Rom File SHA1": "8C209A10CCF24194CB888D5E750CF303AD050EF7",
         "Initial Sequence File Path": "stage01.stella.initial.sol",
         "Controller 1 Type": "Gamepad",
@@ -31,7 +39,12 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip Rate": 0,
+        "Frameskip":
+        {
+          "Rate": 0,
+          "Use Custom Input": false,
+          "Custom Input": "|..|........|"
+        },
         "Hash Step Tolerance": 4,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
@@ -56,6 +69,7 @@
         "Game Name": "A2600 / Hellway",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
+        "Bypass Emulator State": false,
         "Print Properties": [
             "Score",
             "Car State",
