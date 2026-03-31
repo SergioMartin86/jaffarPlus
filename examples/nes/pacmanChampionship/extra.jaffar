@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": false,
-        "Max Steps": 11000,
+        "Max Steps": 1600,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -16,7 +16,7 @@
         "Hash Database": {
             "Enabled": true,
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 100000
+            "Max Store Size (Mb)": 50000
         },
         "State Database": {
             "Max Size (Mb)": 1200000,
@@ -60,7 +60,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 11000
+            "Max Size": 1600
         },
         "Allowed Input Sets": [ 
             {

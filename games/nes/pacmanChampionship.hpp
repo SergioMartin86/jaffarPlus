@@ -247,10 +247,10 @@ private:
     // hashEngine.Update(*_ghost2BlockY);
     // hashEngine.Update(*_ghost3BlockY);
     // hashEngine.Update(*_ghost4BlockY);
-    // hashEngine.Update(*_ghost1Direction);
-    // hashEngine.Update(*_ghost2Direction);
-    // hashEngine.Update(*_ghost3Direction);
-    // hashEngine.Update(*_ghost4Direction);
+    hashEngine.Update(*_ghost1Direction);
+    hashEngine.Update(*_ghost2Direction);
+    hashEngine.Update(*_ghost3Direction);
+    hashEngine.Update(*_ghost4Direction);
     hashEngine.Update(*_playerWallSkid);
 
     // Lag Frame Accounting
@@ -289,51 +289,51 @@ private:
     if (_prevFruit1Status != *_fruit1Status) _isKeyFrame = true;
     if (_prevFruit2Status != *_fruit2Status) _isKeyFrame = true;
     if (*_ghostCaptureTimer1 == 1) _isKeyFrame = true;
-    if (_currentStep % 4 == 0) _isKeyFrame = true;
+    if (_currentStep % 6 == 0) _isKeyFrame = true;
     if (_playerPrevPosX == _playerPosX && _playerPrevPosY == _playerPosY) _isKeyFrame = true;
 
-    _playerPosX = (uint16_t)*_playerPosX1 + (uint16_t)*_playerPosX2;
-    _playerPosY = (uint16_t)*_playerPosY2;
+    // _playerPosX = (uint16_t)*_playerPosX1 + (uint16_t)*_playerPosX2;
+    // _playerPosY = (uint16_t)*_playerPosY2;
 
-    _mapTileBlockXUC = adjustMapBlockPosX(*_playerBlockX, 16 + 0);
-    _mapTileBlockXDC = adjustMapBlockPosX(*_playerBlockX, 16 + 0);
-    _mapTileBlockXCL = adjustMapBlockPosX(*_playerBlockX, 16 - 1);
-    _mapTileBlockXCR = adjustMapBlockPosX(*_playerBlockX, 16 + 1);
-    _mapTileBlockXCC = adjustMapBlockPosX(*_playerBlockX, 16 + 0);
-    _mapTileBlockXUL = adjustMapBlockPosX(*_playerBlockX, 16 - 1);
-    _mapTileBlockXUR = adjustMapBlockPosX(*_playerBlockX, 16 + 1);
-    _mapTileBlockXDL = adjustMapBlockPosX(*_playerBlockX, 16 - 1);
-    _mapTileBlockXDR = adjustMapBlockPosX(*_playerBlockX, 16 + 1);
+    // _mapTileBlockXUC = adjustMapBlockPosX(*_playerBlockX, 16 + 0);
+    // _mapTileBlockXDC = adjustMapBlockPosX(*_playerBlockX, 16 + 0);
+    // _mapTileBlockXCL = adjustMapBlockPosX(*_playerBlockX, 16 - 1);
+    // _mapTileBlockXCR = adjustMapBlockPosX(*_playerBlockX, 16 + 1);
+    // _mapTileBlockXCC = adjustMapBlockPosX(*_playerBlockX, 16 + 0);
+    // _mapTileBlockXUL = adjustMapBlockPosX(*_playerBlockX, 16 - 1);
+    // _mapTileBlockXUR = adjustMapBlockPosX(*_playerBlockX, 16 + 1);
+    // _mapTileBlockXDL = adjustMapBlockPosX(*_playerBlockX, 16 - 1);
+    // _mapTileBlockXDR = adjustMapBlockPosX(*_playerBlockX, 16 + 1);
 
-    _mapTileBlockYUC = adjustMapBlockPosY(*_playerBlockY, -1);
-    _mapTileBlockYDC = adjustMapBlockPosY(*_playerBlockY, +1);
-    _mapTileBlockYCL = adjustMapBlockPosY(*_playerBlockY, 0);
-    _mapTileBlockYCR = adjustMapBlockPosY(*_playerBlockY, 0);
-    _mapTileBlockYCC = adjustMapBlockPosY(*_playerBlockY, 0);
-    _mapTileBlockYUL = adjustMapBlockPosY(*_playerBlockY, -1);
-    _mapTileBlockYUR = adjustMapBlockPosY(*_playerBlockY, -1);
-    _mapTileBlockYDL = adjustMapBlockPosY(*_playerBlockY, +1);
-    _mapTileBlockYDR = adjustMapBlockPosY(*_playerBlockY, +1);
+    // _mapTileBlockYUC = adjustMapBlockPosY(*_playerBlockY, -1);
+    // _mapTileBlockYDC = adjustMapBlockPosY(*_playerBlockY, +1);
+    // _mapTileBlockYCL = adjustMapBlockPosY(*_playerBlockY, 0);
+    // _mapTileBlockYCR = adjustMapBlockPosY(*_playerBlockY, 0);
+    // _mapTileBlockYCC = adjustMapBlockPosY(*_playerBlockY, 0);
+    // _mapTileBlockYUL = adjustMapBlockPosY(*_playerBlockY, -1);
+    // _mapTileBlockYUR = adjustMapBlockPosY(*_playerBlockY, -1);
+    // _mapTileBlockYDL = adjustMapBlockPosY(*_playerBlockY, +1);
+    // _mapTileBlockYDR = adjustMapBlockPosY(*_playerBlockY, +1);
 
-    _mapTileMemPosUC = getMapMemPos(_mapTileBlockXUC, _mapTileBlockYUC);
-    _mapTileMemPosDC = getMapMemPos(_mapTileBlockXDC, _mapTileBlockYDC);
-    _mapTileMemPosCL = getMapMemPos(_mapTileBlockXCL, _mapTileBlockYCL);
-    _mapTileMemPosCR = getMapMemPos(_mapTileBlockXCR, _mapTileBlockYCR);
-    _mapTileMemPosUL = getMapMemPos(_mapTileBlockXUL, _mapTileBlockYUL);
-    _mapTileMemPosUR = getMapMemPos(_mapTileBlockXUR, _mapTileBlockYUR);
-    _mapTileMemPosDL = getMapMemPos(_mapTileBlockXDL, _mapTileBlockYDL);
-    _mapTileMemPosDR = getMapMemPos(_mapTileBlockXDR, _mapTileBlockYDR);
-    _mapTileMemPosCC = getMapMemPos(_mapTileBlockXCC, _mapTileBlockYCC);
+    // _mapTileMemPosUC = getMapMemPos(_mapTileBlockXUC, _mapTileBlockYUC);
+    // _mapTileMemPosDC = getMapMemPos(_mapTileBlockXDC, _mapTileBlockYDC);
+    // _mapTileMemPosCL = getMapMemPos(_mapTileBlockXCL, _mapTileBlockYCL);
+    // _mapTileMemPosCR = getMapMemPos(_mapTileBlockXCR, _mapTileBlockYCR);
+    // _mapTileMemPosUL = getMapMemPos(_mapTileBlockXUL, _mapTileBlockYUL);
+    // _mapTileMemPosUR = getMapMemPos(_mapTileBlockXUR, _mapTileBlockYUR);
+    // _mapTileMemPosDL = getMapMemPos(_mapTileBlockXDL, _mapTileBlockYDL);
+    // _mapTileMemPosDR = getMapMemPos(_mapTileBlockXDR, _mapTileBlockYDR);
+    // _mapTileMemPosCC = getMapMemPos(_mapTileBlockXCC, _mapTileBlockYCC);
 
-    _mapTileTypeUC = _srmMem[_mapTileMemPosUC];
-    _mapTileTypeDC = _srmMem[_mapTileMemPosDC];
-    _mapTileTypeCL = _srmMem[_mapTileMemPosCL];
-    _mapTileTypeCR = _srmMem[_mapTileMemPosCR];
-    _mapTileTypeUL = _srmMem[_mapTileMemPosUL];
-    _mapTileTypeUR = _srmMem[_mapTileMemPosUR];
-    _mapTileTypeDL = _srmMem[_mapTileMemPosDL];
-    _mapTileTypeDR = _srmMem[_mapTileMemPosDR];
-    _mapTileTypeCC = _srmMem[_mapTileMemPosCC];
+    // _mapTileTypeUC = _srmMem[_mapTileMemPosUC];
+    // _mapTileTypeDC = _srmMem[_mapTileMemPosDC];
+    // _mapTileTypeCL = _srmMem[_mapTileMemPosCL];
+    // _mapTileTypeCR = _srmMem[_mapTileMemPosCR];
+    // _mapTileTypeUL = _srmMem[_mapTileMemPosUL];
+    // _mapTileTypeUR = _srmMem[_mapTileMemPosUR];
+    // _mapTileTypeDL = _srmMem[_mapTileMemPosDL];
+    // _mapTileTypeDR = _srmMem[_mapTileMemPosDR];
+    // _mapTileTypeCC = _srmMem[_mapTileMemPosCC];
    }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -393,24 +393,24 @@ private:
     // Getting rewards from score
     float reward = (float) _score;
 
-    // Rewarding time passing after capturing a ghost
-    reward -= (float)*_ghostCaptureTimer2 * 0.001f;
+    // // Towards the end, only reward score
+    // if (_currentStep > 10500) return reward;
+    
+    // // Rewarding time passing after capturing a ghost
+    // reward -= (float)*_ghostCaptureTimer2 * 0.001f;
 
-    // Towards the end, only reward score
-    if (_currentStep > 10500) return reward;
+    // // Otherwise prioritize pellet eating
+    // reward += _pelletsEaten * 200.0f;
 
-    // Otherwise prioritize pellet eating
-    reward += _pelletsEaten * 200.0f;
-
-    // Also prioritize fruit actvations
-    reward += _fruitActivations * 2000.0f;
+    // // Also prioritize fruit actvations
+    // reward += _fruitActivations * 2000.0f;
 
     // Punishing time remaining for score
     // if (*_bonusMultiplierTimer > 0) 
     // {
-    //   const float multiplier = 50.0f;
+    //   const float multiplier = 300.0f;
     //   const float maxTime = 600.0f;
-    //   reward += multiplier * (float)*_bonusMultiplierTimer;
+    //   reward += multiplier * ( ((float)*_bonusMultiplierTimer / maxTime) + (float)*_bonusMultiplier);
     // }
 
     // Returning reward
@@ -461,7 +461,7 @@ private:
       }
 
       // If current step is a key frame, try everything
-      // if (_isKeyFrame == true) 
+      if (_isKeyFrame == true)  
       {
         allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_D, _input_L, _input_R});
         return;
@@ -553,21 +553,21 @@ private:
 
       /////// Method X
 
-      // // Up
-      // if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_L, _input_R});
-      // if (*_playerDirection == 1 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
+      // Up
+      if (*_playerDirection == 1) allowedInputSet.insert(allowedInputSet.end(), {_input_U, _input_L, _input_R});
+      if (*_playerDirection == 1 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_D});
 
-      // // Down
-      // if (*_playerDirection == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_D, _input_L, _input_R});
-      // if (*_playerDirection == 2 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
+      // Down
+      if (*_playerDirection == 2) allowedInputSet.insert(allowedInputSet.end(), {_input_D, _input_L, _input_R});
+      if (*_playerDirection == 2 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_U});
 
-      // // Left
-      // if (*_playerDirection == 3) allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_U, _input_D});
-      // if (*_playerDirection == 3 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
+      // Left
+      if (*_playerDirection == 3) allowedInputSet.insert(allowedInputSet.end(), {_input_L, _input_U, _input_D});
+      if (*_playerDirection == 3 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_R});
 
-      // // Right
-      // if (*_playerDirection == 4) allowedInputSet.insert(allowedInputSet.end(), {_input_R, _input_U, _input_D});
-      // if (*_playerDirection == 4 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
+      // Right
+      if (*_playerDirection == 4) allowedInputSet.insert(allowedInputSet.end(), {_input_R, _input_U, _input_D});
+      if (*_playerDirection == 4 && _isKeyFrame) allowedInputSet.insert(allowedInputSet.end(), {_input_L});
 
       // return;
 
