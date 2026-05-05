@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": false,
-        "Max Steps": 11000,
+        "Max Steps": 2200,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -34,7 +34,7 @@
         "Rom File Path": "Pac-Man - Championship Edition (USA, Europe) (Namco Museum Archives Vol 1).nes",
         "Rom File SHA1": "90AB4682C1CFBE78D9E32BAFF37600B0114F6E74",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "extra.initial.sol",
+        "Initial Sequence File Path": "normal.pacifist.initial.sol",
         "Initial RAM Data File Path": "",
         "Use Flat Code Map": false,
         "Controller 1 Type": "Joypad",
@@ -60,7 +60,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 11000
+            "Max Size": 2200
         },
         "Allowed Input Sets": [ 
             {
@@ -112,6 +112,43 @@
                 "Actions": [
                     {
                         "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 2,
+                "Conditions": [
+                    {
+                        "Property": "Game Mode",
+                        "Op": "==",
+                        "Value": 4
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 999,
+                "Conditions": [
+                    {
+                        "Property": "Ghost Capture Timer 1",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Game Mode",
+                        "Op": "!=",
+                        "Value": 8
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
                     }
                 ]
             },
