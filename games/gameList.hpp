@@ -57,6 +57,7 @@
 #ifdef __JAFFAR_ENABLE_A2600
 #include "a2600/hellway.hpp"
 #include "a2600/galaxian.hpp"
+#include "a2600/spaceInvaders.hpp"
 #endif
 
 #if defined(__JAFFAR_ENABLE_SMBC) || defined(__JAFFAR_ENABLE_NES)
@@ -173,6 +174,7 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
 #ifdef __JAFFAR_ENABLE_A2600
   DETECT_GAME(a2600::Hellway);
   DETECT_GAME(a2600::Galaxian);
+  DETECT_GAME(a2600::SpaceInvaders);
 #endif
 
 #if defined(__JAFFAR_ENABLE_SMBC) || defined(__JAFFAR_ENABLE_NES)

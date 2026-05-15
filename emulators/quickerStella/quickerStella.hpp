@@ -42,6 +42,9 @@ public:
     // Getting initial sequence file path
     _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
 
+    // Getting initial RAM data
+    _initialRAMDataFilePath =  jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+
     // Creating internal emulator instance
     _quickerStella = std::make_unique<stella::EmuInstance>(config);
   };
@@ -82,6 +85,15 @@ public:
 
       // Running inputs in the initial sequence
       for (const auto& inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+    }
+
+    // Pushing initial ROM data
+    if (_initialRAMDataFilePath != "")
+    {
+      std::string initialRAMDataString;
+      if (jaffarCommon::file::loadStringFromFile(initialRAMDataString, _initialRAMDataFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from RAM data file: %s\n", _initialRAMDataFilePath.c_str());
+      memcpy(_quickerStella->getWorkRamPointer(), initialRAMDataString.data(), initialRAMDataString.size());
     }
   }
 
@@ -154,6 +166,7 @@ private:
   std::vector<std::string> _disabledStateProperties;
 
   std::string _initialSequenceFilePath;
+  std::string _initialRAMDataFilePath;
 
   std::string _romFilePath;
   std::string _romFileSHA1;
