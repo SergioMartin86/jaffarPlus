@@ -8,6 +8,11 @@
 #define ENEMY_ROWS 6
 #define ENEMY_COLS 7
 
+#define DIR_NONE 0
+#define DIR_LEFT 1
+#define DIR_RIGHT 2
+#define DIR_STOP 3
+
 namespace jaffarPlus
 {
 
@@ -44,9 +49,13 @@ private:
     registerGameProperty("Enemy Row 5",    &_lowMem[0x27], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Enemy Row 6",    &_lowMem[0x26], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Flyer Active",   &_lowMem[0x57], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Current Stage",  &_lowMem[0x2F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player State",   &_lowMem[0x32], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Frame Type",     &_lowMem[0x00], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     registerGameProperty("Score",          &_score, Property::datatype_t::dt_float32, Property::endianness_t::little);
     registerGameProperty("Remaining Enemies", &_remainingEnemies, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Direction Chosen", &_directionChosen, Property::datatype_t::dt_uint8, Property::endianness_t::little);
     
 
     // Getting some properties' pointers now for quick access later
@@ -65,13 +74,23 @@ private:
     _enemyRow6    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy Row 6")]->getPointer();
     _flyerActive  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Flyer Active")]->getPointer();
 
+    _directionChosen = DIR_NONE;
     updateEnemyMatrix();
+
+    _inputNone      = _emulator->registerInput("|.....|.....|");
+    _inputLeft      = _emulator->registerInput("|.....|..L..|");
+    _inputRight     = _emulator->registerInput("|.....|...R.|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     // Running emulator
     _emulator->advanceState(input);
+
+    if (*_bulletActive > 0 && _directionChosen == DIR_NONE && input == _inputLeft) _directionChosen = DIR_LEFT;
+    if (*_bulletActive > 0 && _directionChosen == DIR_NONE && input == _inputRight) _directionChosen = DIR_RIGHT;
+    if (*_bulletActive > 0 && _directionChosen != DIR_NONE && input == _inputNone) _directionChosen = DIR_STOP;
+    if (*_bulletActive == 0) _directionChosen = DIR_NONE;
   }
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
@@ -137,7 +156,7 @@ private:
     for (size_t i = 0; i < ENEMY_ROWS; i++)
       for (size_t j = 0; j < ENEMY_COLS; j++)
         if (_enemyMatrix[i][j] == 1) _remainingEnemies++;
-    if (*_flyerActive > 0) _remainingEnemies++;
+    _remainingEnemies += *_flyerActive;
   }
 
   // Updating derivative values after updating the internal state
@@ -159,12 +178,14 @@ private:
   {
     serializer.push(&_enemyMatrix, sizeof(_enemyMatrix));
     serializer.push(&_remainingEnemies, sizeof(_remainingEnemies));
+    serializer.push(&_directionChosen, sizeof(_directionChosen));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
     deserializer.pop(&_enemyMatrix, sizeof(_enemyMatrix));
     deserializer.pop(&_remainingEnemies, sizeof(_remainingEnemies));
+    deserializer.pop(&_directionChosen, sizeof(_directionChosen));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -173,7 +194,7 @@ private:
     float reward = 0.0;
 
     // Distance to point magnet
-    reward += 1.0 * _score;
+    // reward += 1000.0 * _score;
 
     reward -= _remainingEnemies * 1000.0;
      if (*_bulletActive > 0) reward += 200.0;
@@ -193,6 +214,8 @@ private:
 
     jaffarCommon::logger::log("[J+]  + Flyer Active:                     %u\n", *_flyerActive);
     jaffarCommon::logger::log("[J+]  + Remaining Enemies:                %u\n", _remainingEnemies);
+    jaffarCommon::logger::log("[J+]  + Direction Chosen:                 %u\n", _directionChosen);
+    
     for (size_t i = 0; i < ENEMY_ROWS; i++)
     {
       jaffarCommon::logger::log("[J+]  + Row %u:  ", i);
@@ -237,6 +260,11 @@ private:
 
   uint8_t _enemyMatrix[ENEMY_ROWS][ENEMY_COLS];
   uint8_t _remainingEnemies;
+  uint8_t _directionChosen;
+
+  InputSet::inputIndex_t _inputNone;
+  InputSet::inputIndex_t _inputLeft;
+  InputSet::inputIndex_t _inputRight;
 
 };
 
