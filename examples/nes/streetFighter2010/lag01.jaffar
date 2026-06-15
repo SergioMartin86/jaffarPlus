@@ -17,7 +17,7 @@
             "Max Store Size (Mb)": 30000
         },
         "State Database": {
-            "Max Size (Mb)": 300000,
+            "Max Size (Mb)": 500,
             "Differential Compression":
             {
                 "Enabled": false, 
