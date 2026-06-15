@@ -63,6 +63,11 @@ public:
 
     // Reserving storage for timing information
     _threadStepTime.resize(_threadCount);
+
+    // Reserving per-thread accumulators (cache-line aligned to avoid false sharing).
+    // These collect all hot-loop timing/counter increments without atomics, and are
+    // reduced into the shared totals once per step (see runStep).
+    _threadAccumulators.resize(_threadCount);
   };
 
   /**
@@ -190,24 +195,13 @@ public:
     // Computing step time
     const auto tStep = jaffarCommon::timing::now();
 
-    // Clearing step timing
-    _runnerStateAdvanceThreadRawTime = 0;
-    _runnerStateLoadThreadRawTime    = 0;
-    _runnerStateSaveThreadRawTime    = 0;
-    _calculateHashThreadRawTime      = 0;
-    _checkHashThreadRawTime          = 0;
-    _ruleCheckingThreadRawTime       = 0;
-    _getFreeStateThreadRawTime       = 0;
-    _returnFreeStateThreadRawTime    = 0;
-    _calculateRewardThreadRawTime    = 0;
+    // Clearing step timing for the serially-measured stages (the rest are reduced
+    // from the per-thread accumulators after the parallel region)
     _advanceHashDbThreadRawTime      = 0;
-    _getAllowedInputsThreadRawTime   = 0;
     _advanceStateDbThreadRawTime     = 0;
-    _popBaseStateDbThreadRawTime     = 0;
 
-    // Clearing step counters
-    _stepBaseStatesProcessed = 0;
-    _stepNewStatesProcessed  = 0;
+    // Resetting per-thread accumulators for this step
+    for (ssize_t i = 0; i < _threadCount; i++) _threadAccumulators[i].reset();
 
     // Clearing win state reward
     _stepBestWinState.reward = -std::numeric_limits<float>::infinity();
@@ -223,6 +217,49 @@ public:
     // Performing one computation step in parallel
     JAFFAR_PARALLEL
     workerFunction();
+
+    // Reducing per-thread accumulators into the shared totals (serial, ~threadCount adds).
+    // The per-step raw timers and step counters are zeroed here, then summed; the
+    // run-long state-type counters keep accumulating across steps.
+    _runnerStateAdvanceThreadRawTime = 0;
+    _runnerStateLoadThreadRawTime    = 0;
+    _runnerStateSaveThreadRawTime    = 0;
+    _calculateHashThreadRawTime      = 0;
+    _checkHashThreadRawTime          = 0;
+    _ruleCheckingThreadRawTime       = 0;
+    _getFreeStateThreadRawTime       = 0;
+    _returnFreeStateThreadRawTime    = 0;
+    _calculateRewardThreadRawTime    = 0;
+    _getAllowedInputsThreadRawTime   = 0;
+    _getCandidateInputsThreadRawTime = 0;
+    _popBaseStateDbThreadRawTime     = 0;
+    _stepBaseStatesProcessed         = 0;
+    _stepNewStatesProcessed          = 0;
+    for (ssize_t i = 0; i < _threadCount; i++)
+    {
+      const auto& a = _threadAccumulators[i];
+      _runnerStateAdvanceThreadRawTime += a.runnerStateAdvance;
+      _runnerStateLoadThreadRawTime += a.runnerStateLoad;
+      _runnerStateSaveThreadRawTime += a.runnerStateSave;
+      _calculateHashThreadRawTime += a.calculateHash;
+      _checkHashThreadRawTime += a.checkHash;
+      _ruleCheckingThreadRawTime += a.ruleChecking;
+      _getFreeStateThreadRawTime += a.getFreeState;
+      _returnFreeStateThreadRawTime += a.returnFreeState;
+      _calculateRewardThreadRawTime += a.calculateReward;
+      _getAllowedInputsThreadRawTime += a.getAllowedInputs;
+      _getCandidateInputsThreadRawTime += a.getCandidateInputs;
+      _popBaseStateDbThreadRawTime += a.popBaseStateDb;
+      _stepBaseStatesProcessed += a.baseStatesProcessed;
+      _stepNewStatesProcessed += a.newStatesProcessed;
+      _normalStates += a.normalStates;
+      _repeatedStates += a.repeatedStates;
+      _failedStates += a.failedStates;
+      _winStates += a.winStates;
+      _droppedStatesNoStorage += a.droppedStatesNoStorage;
+      _droppedStatesFailedSerialization += a.droppedStatesFailedSerialization;
+      _droppedStatesCheckpoint += a.droppedStatesCheckpoint;
+    }
 
     // Advancing hash database state
     const auto t0 = jaffarCommon::timing::now();
@@ -490,12 +527,55 @@ private:
   };
 
   /**
+   * Per-thread accumulator for timing and counters.
+   *
+   * All hot-loop work writes only into its own thread's instance (plain, non-atomic
+   * adds), and the engine reduces these into the shared totals once per step. This
+   * removes the per-input atomic contention that previously serialized high core counts.
+   *
+   * Aligned (and implicitly sized) to a cache-line multiple so that adjacent threads'
+   * accumulators never share a cache line (no false sharing).
+   */
+  struct alignas(64) threadAccumulator_t
+  {
+    // Timers (microseconds)
+    size_t runnerStateAdvance;
+    size_t runnerStateLoad;
+    size_t runnerStateSave;
+    size_t calculateHash;
+    size_t checkHash;
+    size_t ruleChecking;
+    size_t getFreeState;
+    size_t returnFreeState;
+    size_t calculateReward;
+    size_t getAllowedInputs;
+    size_t getCandidateInputs;
+    size_t popBaseStateDb;
+
+    // Counters
+    size_t baseStatesProcessed;
+    size_t newStatesProcessed;
+    size_t normalStates;
+    size_t repeatedStates;
+    size_t failedStates;
+    size_t winStates;
+    size_t droppedStatesNoStorage;
+    size_t droppedStatesFailedSerialization;
+    size_t droppedStatesCheckpoint;
+
+    __INLINE__ void reset() { *this = threadAccumulator_t{}; }
+  };
+
+  /**
    * The main worker function -- executes entirely in parallel
    */
   void workerFunction()
   {
     // Getting my thread id
     const auto threadId = jaffarCommon::parallel::getThreadId();
+
+    // Getting my thread-local accumulator (no atomics in the hot path)
+    auto& acc = _threadAccumulators[threadId];
 
     // Starting to measure thread-specific step time
     const auto threadTime0 = jaffarCommon::timing::now();
@@ -506,31 +586,31 @@ private:
     // Current base state to process
     const auto t             = jaffarCommon::timing::now();
     void*      baseStateData = _stateDb->popState();
-    _popBaseStateDbThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t);
+    acc.popBaseStateDb += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t);
 
     // While there are still states in the database, keep on grabbing them
     while (baseStateData != nullptr)
     {
       // Increasing base state counter
-      _stepBaseStatesProcessed++;
+      acc.baseStatesProcessed++;
 
       // Load state into runner via the state database
       const auto t0 = jaffarCommon::timing::now();
       _stateDb->loadStateIntoRunner(*r, baseStateData);
-      _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t0);
+      acc.runnerStateLoad += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t0);
 
       // Getting allowed inputs
       const auto t1            = jaffarCommon::timing::now();
       const auto allowedInputs = r->getAllowedInputs();
-      _getAllowedInputsThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t1);
+      acc.getAllowedInputs += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t1);
 
       // Trying out each possible input in the set
-      for (auto inputItr = allowedInputs.begin(); inputItr != allowedInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr);
+      for (auto inputItr = allowedInputs.begin(); inputItr != allowedInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr, acc);
 
       // Getting candidate inputs
       const auto t2              = jaffarCommon::timing::now();
       auto       candidateInputs = r->getCandidateInputs();
-      _getCandidateInputsThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t2);
+      acc.getCandidateInputs += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t2);
 
       // Finding unique candidate inputs
       std::vector<InputSet::inputIndex_t> uniqueCandidateInputs;
@@ -548,7 +628,7 @@ private:
           if (_candidateInputsDetected[stateInputHash].contains(input)) continue;
 
         // Running input
-        const auto result = runNewInput(*r, baseStateData, input);
+        const auto result = runNewInput(*r, baseStateData, input, acc);
 
         // If this is not a repeated state, store it as new candidate input
         if (result != inputResult_t::repeated) _candidateInputsDetected[stateInputHash].insert(input);
@@ -557,39 +637,39 @@ private:
       // Return base state to the free state queue
       const auto t8 = jaffarCommon::timing::now();
       _stateDb->returnFreeState(baseStateData);
-      _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t8);
+      acc.returnFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t8);
 
       // Pulling next state from the database
       const auto t9 = jaffarCommon::timing::now();
       baseStateData = _stateDb->popState();
-      _popBaseStateDbThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t9);
+      acc.popBaseStateDb += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t9);
     }
 
     // Taking final thread-specific time measurement
     _threadStepTime[threadId] = jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), threadTime0);
   }
 
-  __INLINE__ inputResult_t runNewInput(Runner& r, const void* baseStateData, const InputSet::inputIndex_t input)
+  __INLINE__ inputResult_t runNewInput(Runner& r, const void* baseStateData, const InputSet::inputIndex_t input, threadAccumulator_t& acc)
   {
     // Increasing new state counter
-    _stepNewStatesProcessed++;
+    acc.newStatesProcessed++;
 
     // Re-loading base state
     const auto t0 = jaffarCommon::timing::now();
     _stateDb->loadStateIntoRunner(r, baseStateData);
-    _runnerStateLoadThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t0);
+    acc.runnerStateLoad += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t0);
 
     // Running input
-    const auto result = runInput(r, input);
+    const auto result = runInput(r, input, acc);
 
     // Update counters depending on the outcomes
-    if (result == inputResult_t::normal) _normalStates++;
-    if (result == inputResult_t::repeated) _repeatedStates++;
-    if (result == inputResult_t::failed) _failedStates++;
-    if (result == inputResult_t::win) _winStates++;
-    if (result == inputResult_t::droppedNoStorage) _droppedStatesNoStorage++;
-    if (result == inputResult_t::droppedFailedSerialization) _droppedStatesFailedSerialization++;
-    if (result == inputResult_t::droppedCheckpoint) _droppedStatesCheckpoint++;
+    if (result == inputResult_t::normal) acc.normalStates++;
+    if (result == inputResult_t::repeated) acc.repeatedStates++;
+    if (result == inputResult_t::failed) acc.failedStates++;
+    if (result == inputResult_t::win) acc.winStates++;
+    if (result == inputResult_t::droppedNoStorage) acc.droppedStatesNoStorage++;
+    if (result == inputResult_t::droppedFailedSerialization) acc.droppedStatesFailedSerialization++;
+    if (result == inputResult_t::droppedCheckpoint) acc.droppedStatesCheckpoint++;
 
     // Checking whether this state's checkpoint is new
     const auto stateCheckpointLevel     = r.getGame()->getCheckpointLevel();
@@ -605,22 +685,22 @@ private:
     return result;
   }
 
-  __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input)
+  __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input, threadAccumulator_t& acc)
   {
     // Now advancing state with the provided input
     const auto t1 = jaffarCommon::timing::now();
     r.advanceState(input);
-    _runnerStateAdvanceThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t1);
+    acc.runnerStateAdvance += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t1);
 
     // Computing runner hash
     const auto t2   = jaffarCommon::timing::now();
     const auto hash = r.computeHash();
-    _calculateHashThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t2);
+    acc.calculateHash += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t2);
 
     // Checking if hash is repeated (i.e., has been seen before)
     const auto t3         = jaffarCommon::timing::now();
     bool       hashExists = _hashDbEnabled ? _hashDb->checkHashExists(hash) : false;
-    _checkHashThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t3);
+    acc.checkHash += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t3);
 
     // If state is repeated then we are not interested in it, continue
     if (hashExists == true) return inputResult_t::repeated;
@@ -643,7 +723,7 @@ private:
 
     // Getting state type
     const auto stateType = r.getGame()->getStateType();
-    _ruleCheckingThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t4);
+    acc.ruleChecking += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t4);
 
     // Now we have determined the state is not repeated, check if it's not a failed state
     if (stateType == Game::stateType_t::fail) return inputResult_t::failed;
@@ -651,7 +731,7 @@ private:
     // Now that the state is not failed nor repeated, this is effectively a new state to add
     const auto t5           = jaffarCommon::timing::now();
     void*      newStateData = _stateDb->getFreeState();
-    _getFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t5);
+    acc.getFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t5);
 
     // If couldn't get any memory, simply drop the state
     if (newStateData == nullptr) return inputResult_t::droppedNoStorage;
@@ -662,7 +742,7 @@ private:
 
     // Getting state reward
     const auto reward = r.getGame()->getReward();
-    _calculateRewardThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t6);
+    acc.calculateReward += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t6);
 
     // If this is a win state, register it and return
     if (stateType == Game::stateType_t::win)
@@ -681,7 +761,7 @@ private:
       // Freeing up the state data
       const auto t7 = jaffarCommon::timing::now();
       _stateDb->returnFreeState(newStateData);
-      _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t7);
+      acc.returnFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t7);
 
       // Returning a win result
       return inputResult_t::win;
@@ -693,7 +773,7 @@ private:
       // If this is a normal state, push into the state database
       const auto t8      = jaffarCommon::timing::now();
       auto       success = _stateDb->pushState(reward, r, newStateData);
-      _runnerStateSaveThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t8);
+      acc.runnerStateSave += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t8);
 
       // Attempting to serialize state and push it into the database
       // This might fail when using differential serialization due to insufficient space for differentials
@@ -703,7 +783,7 @@ private:
         // Freeing up state memory
         const auto t9 = jaffarCommon::timing::now();
         _stateDb->returnFreeState(newStateData);
-        _returnFreeStateThreadRawTime += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t9);
+        acc.returnFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t9);
 
         // Returning dropped result by failed serialization
         return inputResult_t::droppedFailedSerialization;
@@ -815,6 +895,9 @@ private:
   std::vector<size_t> _threadStepTime;
   size_t              _maxThreadStepTime;
   size_t              _maxThreadStepTimeThreadId;
+
+  // Per-thread accumulators for hot-loop timing/counters, reduced once per step
+  std::vector<threadAccumulator_t> _threadAccumulators;
 
   // Total running time so far
   size_t _totalRunningTime;
