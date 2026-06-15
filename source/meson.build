@@ -20,6 +20,7 @@ jaffarIncludes = include_directories(includeDirs)
 jaffarCPPFlags = [
   '-Wfatal-errors',
   '-Wall',
+  '-D__INLINE__=inline',
   includeFlags
   ]
 
