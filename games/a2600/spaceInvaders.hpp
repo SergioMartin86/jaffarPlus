@@ -53,8 +53,17 @@ private:
   {
     //  hashEngine.Update(_lowMem, 0x80);
      for (size_t i = 0; i < 0x80; i++)
+      if (i != 0x06) // ?
       if (i != 0x6E) // Player Input
+      if (i != 0x4A) // Timer
+      if (i != 0x51) // Enemy Bullet
+      if (i != 0x52) // Enemy Bullet
+      if (i != 0x5A) // Enemy Stuff?
+      if (i != 0x6A) // Enemy Stuff?
+      if (i < 0x2B || i > 0x42) // Brick statuses
        hashEngine.Update(_lowMem[i]);
+
+      // if (i != 0x1C) // Timer ?
   }
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override

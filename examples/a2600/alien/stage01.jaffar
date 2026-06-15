@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 1500,
+        "Max Steps": 1570,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -12,14 +12,14 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 2,
+        "NUMA Domains Per Group": 4,
         "Hash Database": {
             "Enabled": true,
             "Max Store Count": 2,
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 7000,
+            "Max Size (Mb)": 10000,
             "Differential Compression":
             {
                 "Enabled": false, 
@@ -30,10 +30,10 @@
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerStella",
-        "Rom File Path": "Galaxian (USA).a26",
-        "Rom File SHA1": "B081B327AC32D951C36CB4B3FF812BE95685D52F",
+        "Rom File Path": "Alien (USA).a26",
+        "Rom File SHA1": "01D99BF307262825DB58631E8002DD008A42CB1E",
         "Initial Sequence File Path": "stage01.initial.sol",
-        "Initial RAM Data File Path": "Galaxian (1983) (Atari) [!].bin",
+        "Initial RAM Data File Path": "Alien (1982) (20th Century Fox).bin",
         "Controller 1 Type": "Gamepad",
         "Controller 2 Type": "None",
         "Disabled State Properties": []
@@ -46,59 +46,24 @@
           "Use Custom Input": false,
           "Custom Input": "|..|........|"
         },
-        "Hash Step Tolerance": 0,
+        "Hash Step Tolerance": 1,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 1500
+            "Max Size": 1570
         },
         "Allowed Input Sets": [
-            {
-                "Conditions": [
-                    {
-                        "Property": "Bullet Active",
-                        "Op": "==",
-                        "Value": 0
-                    }
-                ],
-                "Inputs": [
-                    "|.....|....B|",
-                    "|.....|...R.|",
-                    "|.....|..L..|"
-                ],
-                "Stop Input Evaluation": true
-            },
-            {
-                "Conditions": [
-                    {
-                        "Property": "Bullet Active",
-                        "Op": "!=",
-                        "Value": 0
-                    }
-                ],
-                "Inputs": [
-                    "|.....|..L..|",
-                    "|.....|...R.|"
-                ],
-                "Stop Input Evaluation": true
-            }
         ],
         "Test Candidate Inputs": false,
         "Candidate Input Sets": []
     },
     "Game Configuration": {
-        "Game Name": "A2600 / Galaxian",
+        "Game Name": "A2600 / Alien",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
         "Bypass Emulator State": false,
         "Print Properties": [
-            "Current Stage",
-            "Score",
-            "Player Pos X",
-            "Bullet Active",
-            "Bullet Pos X",
-            "Bullet Pos Y"
         ],
         "Hash Properties": [
         ],
@@ -107,14 +72,9 @@
                 "Label": 1998,
                 "Conditions": [
                     {
-                        "Property": "Remaining Enemies",
+                        "Property": "Game Status",
                         "Op": "==",
-                        "Value": 0
-                    },
-                    {
-                        "Property": "Current Stage",
-                        "Op": "==",
-                        "Value": 26
+                        "Value": 8
                     }
                 ],
                 "Satisfies": [],
@@ -128,9 +88,9 @@
                 "Label": 9999,
                 "Conditions": [
                     {
-                        "Property": "Player State",
-                        "Op": ">",
-                        "Value": 0
+                        "Property": "Player Alive",
+                        "Op": "==",
+                        "Value": 3
                     }
                 ],
                 "Satisfies": [],

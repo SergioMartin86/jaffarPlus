@@ -55,6 +55,7 @@ private:
     registerGameProperty("Open Level"             ,&_lowMem[0x007D], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Exit Level"             ,&_lowMem[0x0085], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Portal Timer"           ,&_lowMem[0x05E9], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
+    registerGameProperty("Portal Appear 2"        ,&_lowMem[0x00C9], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Bullet 03 State"        ,&_lowMem[0x0661], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Bullet 02 State"        ,&_lowMem[0x0662], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
     registerGameProperty("Bullet 01 State"        ,&_lowMem[0x0663], Property::datatype_t::dt_uint8 , Property::endianness_t::little);
@@ -222,6 +223,10 @@ private:
 
       if (*_lagFrame == 1) hashEngine.Update(&_lowMem[0x00A0], 0x040);
 
+       hashEngine.Update(_lowMem[0x0480]); // Player Animation?
+       hashEngine.Update(_lowMem[0x0486]); // Player Animation?
+       hashEngine.Update(_lowMem[0x0500]); // Player Animation?
+
       // hashEngine.Update(&_lowMem[0x0100], 0x0080);
     //  hashEngine.Update(&_lowMem[0x0260], 0x0090);
     //  hashEngine.Update(&_lowMem[0x0300], 0x0100);
@@ -233,8 +238,10 @@ private:
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
   {
+    float playerPos1Adjusted = *_playerPosY1 == 255 ? -1.0 : (float) *_playerPosY1;
+
     _playerPosX = (float)*_playerPosX1 * 256.0f + (float)*_playerPosX2 + (float)*_playerPosX3 / 256.0;
-    _playerPosY = (float)*_playerPosY1 * 256.0f + (float)*_playerPosY2 + (float)*_playerPosY3 / 256.0;
+    _playerPosY = playerPos1Adjusted * 256.0f + (float)*_playerPosY2 + (float)*_playerPosY3 / 256.0;
 
     _boss02PosX = (float)*_boss02X1 * 256.0f + (float)*_boss02X2;
     _boss02PosY = (float)*_boss02Y1 * 256.0f + (float)*_boss02Y2;
@@ -258,6 +265,7 @@ private:
       _bossPosXMagnet.intensity = 0.0f;
       _bossPosXMagnet.pos = 0.0f;
       _bossDeathTimerMagnet = 0.0f;
+      _portalTimerMagnet = 0.0f;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
@@ -297,6 +305,7 @@ private:
     reward += -1.0 * _playerDistanceToBossMagnet * _playerDistanceToBoss;
 
     reward += _bossDeathTimerMagnet * (float)_bossDeathTimer;
+    reward += _portalTimerMagnet * (float)*_portalTimer;
 
     // Returning reward
     return reward;
@@ -308,7 +317,7 @@ private:
     switch(*_playerAction)
     {
       case 0x0000: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_A, _input_B, _input_R, _input_L, _input_BA, _input_AR, _input_AL, _input_DA, _input_DB, _input_UB, _input_U }); break;
-      case 0x0001: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_A, _input_B, _input_R, _input_L, _input_AR, _input_BR, _input_AL, _input_BL, _input_DB, _input_UB }); break;
+      case 0x0001: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_A, _input_B, _input_R, _input_L, _input_AR, _input_BR, _input_AL, _input_BL, _input_DB, _input_UB, _input_DRA, _input_DLA }); break;
       case 0x0002: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_A, _input_B, _input_R, _input_L, _input_AR, _input_BR, _input_AL, _input_BL, _input_DA, _input_DB, _input_UB }); break;
       case 0x0003: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_R, _input_A, _input_L, _input_D, _input_BA, _input_AR, _input_BR, _input_AL, _input_BL, _input_UB, _input_DA }); break;
       case 0x0004: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_U, _input_D, _input_L, _input_R, _input_A, _input_BR, _input_AR, _input_AL, _input_BL, _input_DA, _input_DB, _input_UB, _input_UD }); break;
@@ -316,8 +325,8 @@ private:
       case 0x0006: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_BR, _input_AR, _input_AL, _input_BL, _input_UD, _input_BA, _input_DA, _input_DB, _input_UB }); break;
       case 0x0007: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_BR, _input_AR, _input_AL, _input_BL, _input_UD, _input_BA, _input_DA, _input_DB, _input_UB }); break;
       case 0x0009: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_R, _input_A, _input_L, _input_U, _input_BA, _input_AR, _input_BR, _input_AL, _input_BL, _input_UA, _input_UB, _input_DA}); break;
-      case 0x000A: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_BR, _input_AR, _input_AL, _input_BL, _input_UD, _input_BA, _input_DA, _input_DB, _input_UB }); break;
-      case 0x0010: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_R, _input_L, _input_BR, _input_BL, _input_DB, _input_AR, _input_AL, _input_UL, _input_UR }); break;
+      case 0x000A: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_U, _input_D, _input_L, _input_A, _input_R, _input_BR, _input_AR, _input_AL, _input_BL, _input_UD, _input_BA, _input_DA, _input_DB, _input_UB, _input_DLA, _input_DRA }); break;
+      case 0x0010: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_R, _input_L, _input_BR, _input_BL, _input_DB, _input_DRB, _input_DLB, _input_AR, _input_AL, _input_UL, _input_UR }); break;
       case 0x0011: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_R, _input_L, _input_AR, _input_AL, _input_UL, _input_UR }); break;
       case 0x0012: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_R, _input_L, _input_AR, _input_AL, _input_UL, _input_UR }); break;
       case 0x0013: allowedInputSet.insert(allowedInputSet.end(), { _nullInputIdx, _input_B, _input_R, _input_L, _input_BR, _input_BL }); break;
@@ -379,6 +388,10 @@ private:
       "|..|.D.R....|",
       "|..|.D.....A|",
       "|..|.D....B.|",
+      "|..|.DL...B.|",
+      "|..|.D.....A|",
+      "|..|.DL....A|",
+      "|..|.D.R..B.|",
       "|..|..L....A|",
       "|..|..L...B.|",
       "|..|...R...A|",
@@ -419,6 +432,8 @@ private:
        jaffarCommon::logger::log("[J+]  + Boss HP Magnet                      Intensity: %.5f\n", _bossHPMagnet);
     if (std::abs(_bossDeathTimerMagnet) > 0.0f)
        jaffarCommon::logger::log("[J+]  + Boss Death Timer Magnet             Intensity: %.5f\n", _bossDeathTimerMagnet);
+    if (std::abs(_portalTimerMagnet) > 0.0f)
+       jaffarCommon::logger::log("[J+]  + Portal Timer Magnet                 Intensity: %.5f\n", _portalTimerMagnet);
   }
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
@@ -473,6 +488,13 @@ private:
       recognizedActionType = true;
     }
 
+      if (actionType == "Set Portal Timer Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_portalTimerMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
     if (actionType == "Set Allow Fire")
     {
       auto value = jaffarCommon::json::getBoolean(actionJs, "Value");
@@ -510,12 +532,15 @@ private:
   pointMagnet_t _bossPosXMagnet;
   pointMagnet_t _playerPosXMagnet;
   pointMagnet_t _playerPosYMagnet;
+  float _portalTimerMagnet;
   
+
   float _bossDeathTimerMagnet;
   float _bossHPMagnet;
   float _bossDistanceToPointX;
   float _playerDistanceToPointX;
   float _playerDistanceToPointY;
+  
 
   uint8_t* _lowMem;
   uint16_t _currentStep;

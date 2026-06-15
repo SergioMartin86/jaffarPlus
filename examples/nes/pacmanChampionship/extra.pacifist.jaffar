@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": false,
-        "Max Steps": 500,
+        "Max Steps": 372,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 5.0,
@@ -19,7 +19,7 @@
             "Max Store Size (Mb)": 10000
         },
         "State Database": {
-            "Max Size (Mb)": 40000,
+            "Max Size (Mb)": 200000,
             "Differential Compression":
             {
                 "Enabled": false, 
@@ -60,7 +60,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 500
+            "Max Size": 372
         },
         "Allowed Input Sets": [ 
             {
@@ -132,22 +132,6 @@
                 ]
             },
             {
-                "Label": 3,
-                "Conditions": [
-                    {
-                        "Property": "Player Wall Skid",
-                        "Op": ">",
-                        "Value": 0
-                    }
-                ],
-                "Satisfies": [  ],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
-                    }
-                ]
-            },
-            {
                 "Label": 999,
                 "Conditions": [
                     {
@@ -159,6 +143,22 @@
                         "Property": "Game Mode",
                         "Op": "!=",
                         "Value": 8
+                    }
+                ],
+                "Satisfies": [  ],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 2,
+                "Conditions": [
+                    {
+                        "Property": "Game Mode",
+                        "Op": "==",
+                        "Value": 4
                     }
                 ],
                 "Satisfies": [  ],
