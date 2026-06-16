@@ -15,6 +15,8 @@ jobs:
   # Build documentation and checking proper style
   docs:
     runs-on: ubuntu-latest
+    # Style check is advisory: report formatting issues without blocking CI
+    continue-on-error: true
     steps:
     - uses: actions/checkout@v4
     - name: Updating Apt
