@@ -43,7 +43,7 @@ public:
     _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
 
     // Getting initial RAM data
-    _initialRAMDataFilePath =  jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+    _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
 
     // Creating internal emulator instance
     _quickerStella = std::make_unique<stella::EmuInstance>(config);

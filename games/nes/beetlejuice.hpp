@@ -29,30 +29,30 @@ private:
 
     // Registering native game properties
 
-    registerGameProperty("Player Frame",  &_lowMem[0x03CE], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Player Pos X1", &_lowMem[0x03BF], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Player Pos X2", &_lowMem[0x03BE], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Player Pos X3", &_lowMem[0x03BD], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Player Vel X1", &_lowMem[0x03C4], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Player Vel X2", &_lowMem[0x03C3], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Player Pos Y1", &_lowMem[0x03C2], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Player Pos Y2", &_lowMem[0x03C1], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Player Pos Y3", &_lowMem[0x03C0], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Screen Pos X",  &_lowMem[0x002C], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Screen Pos Y",  &_lowMem[0x002E], Property::datatype_t::dt_int8, Property::endianness_t::little); 
-    registerGameProperty("Global Timer",  &_lowMem[0x03BB], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("RNG1",          &_lowMem[0x0024], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("RNG2",          &_lowMem[0x0025], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("RNG3",          &_lowMem[0x0026], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("RNG4",          &_lowMem[0x0027], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Beetle1 Type",  &_lowMem[0x042F], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Beetle2 Type",  &_lowMem[0x0430], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Beetle3 Type",  &_lowMem[0x0431], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Money 1",       &_lowMem[0x03D2], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Money 2",       &_lowMem[0x03D1], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Money",         &_money, Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Bug Worth",     &_bugWorth, Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Game State",    &_lowMem[0x0313], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Frame", &_lowMem[0x03CE], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos X1", &_lowMem[0x03BF], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos X2", &_lowMem[0x03BE], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos X3", &_lowMem[0x03BD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Vel X1", &_lowMem[0x03C4], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Vel X2", &_lowMem[0x03C3], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y1", &_lowMem[0x03C2], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y2", &_lowMem[0x03C1], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y3", &_lowMem[0x03C0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Screen Pos X", &_lowMem[0x002C], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Screen Pos Y", &_lowMem[0x002E], Property::datatype_t::dt_int8, Property::endianness_t::little);
+    registerGameProperty("Global Timer", &_lowMem[0x03BB], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("RNG1", &_lowMem[0x0024], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("RNG2", &_lowMem[0x0025], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("RNG3", &_lowMem[0x0026], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("RNG4", &_lowMem[0x0027], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Beetle1 Type", &_lowMem[0x042F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Beetle2 Type", &_lowMem[0x0430], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Beetle3 Type", &_lowMem[0x0431], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Money 1", &_lowMem[0x03D2], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Money 2", &_lowMem[0x03D1], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Money", &_money, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Bug Worth", &_bugWorth, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Game State", &_lowMem[0x0313], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Game Transition Timer", &_lowMem[0x0799], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Exit Switch State", &_lowMem[0x629], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Level Transition 1", &_lowMem[0x01FA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -61,34 +61,34 @@ private:
     registerGameProperty("Prev Level Transition 2", &_prevLevelTransition2, Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Level Transition Timer", &_levelTransitionTimer, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Level Transition State", &_levelTransitionState, Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Pos X",  &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little); 
+    registerGameProperty("Player Pos X", &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
 
-    _playerFrame   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Frame"  )]->getPointer();
-    _playerPosX1   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X1" )]->getPointer();
-    _playerPosX2   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X2" )]->getPointer();
-    _playerPosX3   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X3" )]->getPointer();
-    _playerVelX1   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Vel X1" )]->getPointer();
-    _playerVelX2   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Vel X2" )]->getPointer();
-    _playerPosY1   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y1" )]->getPointer();
-    _playerPosY2   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y2" )]->getPointer();
-    _playerPosY3   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y3" )]->getPointer();
-    _screenPosX    =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X" )]->getPointer();
-    _screenPosY    =  (int8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos Y" )]->getPointer();
-    _globalTimer   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer"  )]->getPointer();
-    _RNG1          =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG1"          )]->getPointer();
-    _RNG2          =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG2"          )]->getPointer();
-    _RNG3          =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG3"          )]->getPointer();
-    _RNG4          =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG4"          )]->getPointer();
-    _beetle1Type   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Beetle1 Type" )]->getPointer();
-    _beetle2Type   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Beetle2 Type" )]->getPointer();
-    _beetle3Type   =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Beetle3 Type" )]->getPointer();
-    _money1        =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Money 1"       )]->getPointer();
-    _money2        =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Money 2"       )]->getPointer();
-    _gameState     =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game State"    )]->getPointer();
-    _gameTransitionTimer  =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Transition Timer"    )]->getPointer();
+    _playerFrame         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Frame")]->getPointer();
+    _playerPosX1         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X1")]->getPointer();
+    _playerPosX2         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X2")]->getPointer();
+    _playerPosX3         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X3")]->getPointer();
+    _playerVelX1         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Vel X1")]->getPointer();
+    _playerVelX2         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Vel X2")]->getPointer();
+    _playerPosY1         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y1")]->getPointer();
+    _playerPosY2         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y2")]->getPointer();
+    _playerPosY3         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y3")]->getPointer();
+    _screenPosX          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X")]->getPointer();
+    _screenPosY          = (int8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos Y")]->getPointer();
+    _globalTimer         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
+    _RNG1                = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG1")]->getPointer();
+    _RNG2                = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG2")]->getPointer();
+    _RNG3                = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG3")]->getPointer();
+    _RNG4                = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG4")]->getPointer();
+    _beetle1Type         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Beetle1 Type")]->getPointer();
+    _beetle2Type         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Beetle2 Type")]->getPointer();
+    _beetle3Type         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Beetle3 Type")]->getPointer();
+    _money1              = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Money 1")]->getPointer();
+    _money2              = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Money 2")]->getPointer();
+    _gameState           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game State")]->getPointer();
+    _gameTransitionTimer = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Transition Timer")]->getPointer();
 
-    _levelTransition1  =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level Transition 1"    )]->getPointer();
-    _levelTransition2  =  (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level Transition 2"    )]->getPointer();
+    _levelTransition1 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level Transition 1")]->getPointer();
+    _levelTransition2 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level Transition 2")]->getPointer();
 
     _prevLevelTransition1 = *_levelTransition1;
     _prevLevelTransition2 = *_levelTransition2;
@@ -124,10 +124,10 @@ private:
     {
       _levelTransitionTimer = 0;
       _levelTransitionState = 0;
-    } 
+    }
 
     if (_levelTransitionState > 0) _levelTransitionTimer++;
-    
+
     // Increasing counter if input is null
     if (input != _nullInputIdx) _lastInputStep = _currentStep;
     _currentStep++;
@@ -149,7 +149,7 @@ private:
     _playerPosX = (float)*_playerPosX1 * 256.0 + (float)*_playerPosX2 * 1.0 + (float)*_playerPosX3 / 256.0;
     _playerPosY = (float)*_playerPosY1 * 256.0 + (float)*_playerPosY2 * 1.0 + (float)*_playerPosY3 / 256.0;
 
-    _money = *_money1 * 256 + *_money2;
+    _money    = *_money1 * 256 + *_money2;
     _bugWorth = 0;
     if (*_beetle1Type == 1) _bugWorth += 25;
     if (*_beetle1Type == 2) _bugWorth += 50;
@@ -162,7 +162,7 @@ private:
     if (*_beetle3Type == 3) _bugWorth += 75;
   }
 
-  __INLINE__ void ruleUpdatePreHook() override 
+  __INLINE__ void ruleUpdatePreHook() override
   {
     // Resetting magnets ahead of rule re-evaluation
     _pointXMagnet.intensity = 0.0;
@@ -174,10 +174,10 @@ private:
     _screenYMagnet.intensity = 0.0;
     _screenYMagnet.pos       = 0.0;
 
-    _moneyMagnet = 0;
-    _bugWorthMagnet = 0;
-    _gameTransitionTimerMagnet = 0;
-    _playerFrameMagnet = 0.0;
+    _moneyMagnet                = 0;
+    _bugWorthMagnet             = 0;
+    _gameTransitionTimerMagnet  = 0;
+    _playerFrameMagnet          = 0.0;
     _levelTransitionTimerMagnet = 0.0;
   }
 
@@ -268,20 +268,16 @@ private:
       jaffarCommon::logger::log("[J+]    + Distance                               %3.3f\n", _screenDistanceToPointY);
     }
 
-    if (std::abs(_moneyMagnet) > 0.0f)
-     jaffarCommon::logger::log("[J+]  + Money Magnet                                Intensity: %.5f\n", _moneyMagnet);
+    if (std::abs(_moneyMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Money Magnet                                Intensity: %.5f\n", _moneyMagnet);
 
-    if (std::abs(_bugWorthMagnet) > 0.0f)
-     jaffarCommon::logger::log("[J+]  + Bug Worth Magnet                            Intensity: %.5f\n", _bugWorthMagnet);
+    if (std::abs(_bugWorthMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Bug Worth Magnet                            Intensity: %.5f\n", _bugWorthMagnet);
 
-    if (std::abs(_playerFrameMagnet) > 0.0f)
-     jaffarCommon::logger::log("[J+]  + Player Frame Magnet                         Intensity: %.5f\n", _playerFrameMagnet);
+    if (std::abs(_playerFrameMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Player Frame Magnet                         Intensity: %.5f\n", _playerFrameMagnet);
 
-    if (std::abs(_gameTransitionTimerMagnet) > 0.0f)
-     jaffarCommon::logger::log("[J+]  + Game Transition Timer Magnet                Intensity: %.5f\n", _gameTransitionTimerMagnet);
+    if (std::abs(_gameTransitionTimerMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Game Transition Timer Magnet                Intensity: %.5f\n", _gameTransitionTimerMagnet);
 
     if (std::abs(_levelTransitionTimerMagnet) > 0.0f)
-     jaffarCommon::logger::log("[J+]  + Level Transition Timer Magnet                Intensity: %.5f\n", _levelTransitionTimerMagnet);
+      jaffarCommon::logger::log("[J+]  + Level Transition Timer Magnet                Intensity: %.5f\n", _levelTransitionTimerMagnet);
   }
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
@@ -314,35 +310,35 @@ private:
 
     if (actionType == "Set Money Magnet")
     {
-      auto intensity   = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       rule.addAction([=, this]() { this->_moneyMagnet = intensity; });
       recognizedActionType = true;
     }
 
     if (actionType == "Set Bug Worth Magnet")
     {
-      auto intensity   = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       rule.addAction([=, this]() { this->_bugWorthMagnet = intensity; });
       recognizedActionType = true;
     }
 
     if (actionType == "Set Game Transition Timer Magnet")
     {
-      auto intensity   = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       rule.addAction([=, this]() { this->_gameTransitionTimerMagnet = intensity; });
       recognizedActionType = true;
     }
 
     if (actionType == "Set Level Transition Timer Magnet")
     {
-      auto intensity   = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       rule.addAction([=, this]() { this->_levelTransitionTimerMagnet = intensity; });
       recognizedActionType = true;
     }
 
     if (actionType == "Set Player Frame Magnet")
     {
-      auto intensity   = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       rule.addAction([=, this]() { this->_playerFrameMagnet = intensity; });
       recognizedActionType = true;
     }
@@ -356,50 +352,50 @@ private:
     return jaffarCommon::hash::hash_t();
   }
 
-    // Datatype to describe a point magnet
-    struct pointMagnet_t
-    {
-      float intensity = 0.0; // How strong the magnet is
-      float pos       = 0.0; // What is the point of attraction
-    };
+  // Datatype to describe a point magnet
+  struct pointMagnet_t
+  {
+    float intensity = 0.0; // How strong the magnet is
+    float pos       = 0.0; // What is the point of attraction
+  };
 
-  pointMagnet_t _pointXMagnet; 
-  pointMagnet_t _pointYMagnet; 
-  pointMagnet_t _screenYMagnet; 
-  float _playerFrameMagnet; 
-  float _moneyMagnet;
-  float _bugWorthMagnet;
-  float _gameTransitionTimerMagnet;
-  float _levelTransitionTimerMagnet;
+  pointMagnet_t _pointXMagnet;
+  pointMagnet_t _pointYMagnet;
+  pointMagnet_t _screenYMagnet;
+  float         _playerFrameMagnet;
+  float         _moneyMagnet;
+  float         _bugWorthMagnet;
+  float         _gameTransitionTimerMagnet;
+  float         _levelTransitionTimerMagnet;
 
   uint8_t* _playerFrame;
-  uint8_t* _playerPosX1 ;
-  uint8_t* _playerPosX2 ;
-  uint8_t* _playerPosX3 ;
-  uint8_t* _playerVelX1 ;
-  uint8_t* _playerVelX2 ;
-  uint8_t* _playerPosY1 ;
-  uint8_t* _playerPosY2 ;
-  uint8_t* _playerPosY3 ;
-  uint8_t* _screenPosX ;
-  int8_t* _screenPosY ;
-  uint8_t* _globalTimer ;
-  uint8_t* _RNG1        ;
-  uint8_t* _RNG2        ;
-  uint8_t* _RNG3        ;
-  uint8_t* _RNG4        ;
+  uint8_t* _playerPosX1;
+  uint8_t* _playerPosX2;
+  uint8_t* _playerPosX3;
+  uint8_t* _playerVelX1;
+  uint8_t* _playerVelX2;
+  uint8_t* _playerPosY1;
+  uint8_t* _playerPosY2;
+  uint8_t* _playerPosY3;
+  uint8_t* _screenPosX;
+  int8_t*  _screenPosY;
+  uint8_t* _globalTimer;
+  uint8_t* _RNG1;
+  uint8_t* _RNG2;
+  uint8_t* _RNG3;
+  uint8_t* _RNG4;
   uint8_t* _beetle1Type;
   uint8_t* _beetle2Type;
   uint8_t* _beetle3Type;
-  uint8_t* _money1      ;
-  uint8_t* _money2      ;
+  uint8_t* _money1;
+  uint8_t* _money2;
 
   // Transition management
-  uint8_t _levelTransitionState;
+  uint8_t  _levelTransitionState;
   uint8_t* _levelTransition1;
   uint8_t* _levelTransition2;
-  uint8_t _prevLevelTransition1;
-  uint8_t _prevLevelTransition2;
+  uint8_t  _prevLevelTransition1;
+  uint8_t  _prevLevelTransition2;
   uint16_t _levelTransitionTimer;
 
   // Remember frame in which the last input was made

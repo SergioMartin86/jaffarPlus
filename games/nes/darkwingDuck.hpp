@@ -33,15 +33,15 @@ public:
       if (status == false && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr) JAFFAR_THROW_LOGIC("Could not find/read trace file: %s\n", _traceFilePath.c_str());
 
       std::istringstream f(traceData);
-      std::string line;
+      std::string        line;
       while (std::getline(f, line))
       {
-        auto coordinates = jaffarCommon::string::split(line, ' ');
-        float x = std::atof(coordinates[0].c_str());
-        float y = std::atof(coordinates[1].c_str());
+        auto  coordinates = jaffarCommon::string::split(line, ' ');
+        float x           = std::atof(coordinates[0].c_str());
+        float y           = std::atof(coordinates[1].c_str());
         _trace.push_back(traceEntry_t{
-          .x = x,
-          .y = y,
+            .x = x,
+            .y = y,
         });
       }
     }
@@ -54,25 +54,25 @@ private:
     _lowMem = _emulator->getProperty("LRAM").pointer;
 
     // Registering native game properties
-    
-    registerGameProperty("Game Mode"             , &_lowMem[0x00F2], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Global Timer"          , &_lowMem[0x0092], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Duck Pos X1"           , &_lowMem[0x006F], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Duck Pos X2"           , &_lowMem[0x006E], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Duck Pos Y1"           , &_lowMem[0x0440], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Duck Frame Cycle"      , &_lowMem[0x0430], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
-    registerGameProperty("Grabbed Weapon"        , &_lowMem[0x0054], Property::datatype_t::dt_uint8, Property::endianness_t::little); 
 
-    _gameMode                        = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Game Mode"       )]->getPointer();
-    _globalTimer                     = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Global Timer"    )]->getPointer();
-    _duckPosX1                       = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Duck Pos X1"     )]->getPointer();
-    _duckPosX2                       = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Duck Pos X2"     )]->getPointer();
-    _duckPosY1                       = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Duck Pos Y1"     )]->getPointer();
-    _duckFrameCycle                  = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Duck Frame Cycle")]->getPointer();
-    _grabbedWeapon                   = (uint8_t*) _propertyMap[jaffarCommon::hash::hashString("Grabbed Weapon"  )]->getPointer();
+    registerGameProperty("Game Mode", &_lowMem[0x00F2], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Global Timer", &_lowMem[0x0092], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Duck Pos X1", &_lowMem[0x006F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Duck Pos X2", &_lowMem[0x006E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Duck Pos Y1", &_lowMem[0x0440], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Duck Frame Cycle", &_lowMem[0x0430], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Grabbed Weapon", &_lowMem[0x0054], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-    registerGameProperty("Duck Pos X"               , &_duckPosX, Property::datatype_t::dt_float32, Property::endianness_t::little); 
-    registerGameProperty("Duck Pos Y"               , &_duckPosY, Property::datatype_t::dt_float32, Property::endianness_t::little); 
+    _gameMode       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Mode")]->getPointer();
+    _globalTimer    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
+    _duckPosX1      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Duck Pos X1")]->getPointer();
+    _duckPosX2      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Duck Pos X2")]->getPointer();
+    _duckPosY1      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Duck Pos Y1")]->getPointer();
+    _duckFrameCycle = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Duck Frame Cycle")]->getPointer();
+    _grabbedWeapon  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Grabbed Weapon")]->getPointer();
+
+    registerGameProperty("Duck Pos X", &_duckPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Duck Pos Y", &_duckPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
 
     stateUpdatePostHook();
 
@@ -126,13 +126,13 @@ private:
     _input_RS  = _emulator->registerInput("|..|...RS...|");
     _input_LS  = _emulator->registerInput("|..|..L.S...|");
 
-    _input_s  = _emulator->registerInput("|..|...s....|");
+    _input_s = _emulator->registerInput("|..|...s....|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     _emulator->advanceState(input);
-    
+
     // Increasing counter if input is null
     if (input != _nullInputIdx) _lastInputStep = _currentStep;
     _currentStep++;
@@ -140,12 +140,12 @@ private:
 
   __INLINE__ void calculateHashValues(MetroHash128& hashEngine) const
   {
-    hashEngine.Update(*_gameMode           );
-    hashEngine.Update(*_duckPosX1          );
-    hashEngine.Update(*_duckPosX2          );
-    hashEngine.Update(*_duckPosY1          );
-    hashEngine.Update(*_duckFrameCycle     );
-    hashEngine.Update(*_grabbedWeapon      );
+    hashEngine.Update(*_gameMode);
+    hashEngine.Update(*_duckPosX1);
+    hashEngine.Update(*_duckPosX2);
+    hashEngine.Update(*_duckPosY1);
+    hashEngine.Update(*_duckFrameCycle);
+    hashEngine.Update(*_grabbedWeapon);
 
     // Duck Stats Array
     hashEngine.Update(&_lowMem[0x0400], 0x140);
@@ -173,19 +173,19 @@ private:
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
   {
-     _duckPosX = (float)*_duckPosX1 * 256.0f + (float)*_duckPosX2;
-     _duckPosY = (float)*_duckPosY1;
+    _duckPosX = (float)*_duckPosX1 * 256.0f + (float)*_duckPosX2;
+    _duckPosY = (float)*_duckPosY1;
   }
 
-  __INLINE__ void ruleUpdatePreHook() override 
+  __INLINE__ void ruleUpdatePreHook() override
   {
-    _pointMagnet.intensity = 0.0; 
-    _pointMagnet.x = 0.0; 
-    _pointMagnet.y = 0.0; 
+    _pointMagnet.intensity = 0.0;
+    _pointMagnet.x         = 0.0;
+    _pointMagnet.y         = 0.0;
 
     _traceMagnet.intensityX = 0.0;
     _traceMagnet.intensityY = 0.0;
-    _traceMagnet.offset = 0;
+    _traceMagnet.offset     = 0;
 
     _lastInputStepReward = 0.0;
   }
@@ -195,12 +195,12 @@ private:
     // Updating distance to user-defined point
     _duckDistanceToPointX = std::abs(_pointMagnet.x - _duckPosX);
     _duckDistanceToPointY = std::abs(_pointMagnet.y - _duckPosY);
-    _duckDistanceToPoint  =  sqrtf(_duckDistanceToPointX * _duckDistanceToPointX + _duckDistanceToPointY * _duckDistanceToPointY);
+    _duckDistanceToPoint  = sqrtf(_duckDistanceToPointX * _duckDistanceToPointX + _duckDistanceToPointY * _duckDistanceToPointY);
 
     // Updating trace stuff
     if (_useTrace == true)
     {
-      _traceStep = (uint16_t) std::max(std::min( (int)_currentStep + _traceMagnet.offset, (int) _trace.size() - 1), 0);
+      _traceStep    = (uint16_t)std::max(std::min((int)_currentStep + _traceMagnet.offset, (int)_trace.size() - 1), 0);
       _traceTargetX = _trace[_traceStep].x;
       _traceTargetY = _trace[_traceStep].y;
 
@@ -229,8 +229,8 @@ private:
     float reward = 0.0;
 
     // If trace is used, compute its magnet's effect
-    if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensityX * _traceDistanceX;
-    if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensityY * _traceDistanceY;
+    if (_useTrace == true) reward += -1.0 * _traceMagnet.intensityX * _traceDistanceX;
+    if (_useTrace == true) reward += -1.0 * _traceMagnet.intensityY * _traceDistanceY;
 
     // Evaluating point magnet
     reward += -1.0 * _pointMagnet.intensity * _duckDistanceToPoint;
@@ -247,7 +247,7 @@ private:
     // reward += _batmanHPMagnet * (float)*_batmanHP;
     // reward += _bossHPMagnet * (float)*_bossHP;
     // reward += _batmanAmmoMagnet * (float)*_batmanAmmo;
-    
+
     // Subtracting reward for having made an input recently (for early termination)
     reward += _lastInputStepReward * _lastInputStep;
 
@@ -257,8 +257,11 @@ private:
 
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
-    if (*_gameMode == 0x0001) allowedInputSet.insert(allowedInputSet.end(), { _input_s, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DA, _input_UL, _input_UR, _input_UA, _input_DL, _input_DR, _input_LR, _input_AL, _input_AR, _input_ULA, _input_URA, _input_LRA });
-    if (*_gameMode == 0x000E) allowedInputSet.insert(allowedInputSet.end(), { _input_s, _input_A,  _input_R, _input_L, _input_D, _input_U, _input_AR, _input_AL, _input_UA, _input_URA, _input_ULA });
+    if (*_gameMode == 0x0001)
+      allowedInputSet.insert(allowedInputSet.end(), {_input_s, _input_R, _input_L, _input_U, _input_A, _input_D, _input_DA, _input_UL, _input_UR, _input_UA, _input_DL, _input_DR,
+                                                     _input_LR, _input_AL, _input_AR, _input_ULA, _input_URA, _input_LRA});
+    if (*_gameMode == 0x000E)
+      allowedInputSet.insert(allowedInputSet.end(), {_input_s, _input_A, _input_R, _input_L, _input_D, _input_U, _input_AR, _input_AL, _input_UA, _input_URA, _input_ULA});
   }
 
   void printInfoImpl() const override
@@ -290,7 +293,8 @@ private:
     {
       if (std::abs(_traceMagnet.intensityX) > 0.0f || std::abs(_traceMagnet.intensityY) > 0.0f)
       {
-        jaffarCommon::logger::log("[J+]  + Trace Magnet                             Intensity: (X: %.5f, Y: %.5f), Step: %u (%+1u), X: %3.3f, Y: %3.3f\n", _traceMagnet.intensityX, _traceMagnet.intensityY, _traceStep, _traceMagnet.offset, _traceTargetX, _traceTargetY);
+        jaffarCommon::logger::log("[J+]  + Trace Magnet                             Intensity: (X: %.5f, Y: %.5f), Step: %u (%+1u), X: %3.3f, Y: %3.3f\n", _traceMagnet.intensityX,
+                                  _traceMagnet.intensityY, _traceStep, _traceMagnet.offset, _traceTargetX, _traceTargetY);
         jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _traceDistanceX);
         jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _traceDistanceY);
         jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _traceDistance);
@@ -307,16 +311,16 @@ private:
       if (_useTrace == false) JAFFAR_THROW_LOGIC("Specified Trace Magnet, but no trace file was provided.");
       auto intensityX = jaffarCommon::json::getNumber<float>(actionJs, "Intensity X");
       auto intensityY = jaffarCommon::json::getNumber<float>(actionJs, "Intensity Y");
-      auto offset    = jaffarCommon::json::getNumber<int>(actionJs, "Offset");
-      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.intensityX = intensityX, .intensityY = intensityY, .offset = offset }; });
+      auto offset     = jaffarCommon::json::getNumber<int>(actionJs, "Offset");
+      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.intensityX = intensityX, .intensityY = intensityY, .offset = offset}; });
       recognizedActionType = true;
     }
 
     if (actionType == "Set Point Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      auto x       = jaffarCommon::json::getNumber<float>(actionJs, "X");
-      auto y       = jaffarCommon::json::getNumber<float>(actionJs, "Y");
+      auto x         = jaffarCommon::json::getNumber<float>(actionJs, "X");
+      auto y         = jaffarCommon::json::getNumber<float>(actionJs, "Y");
       rule.addAction([=, this]() { this->_pointMagnet = pointMagnet_t{.intensity = intensity, .x = x, .y = y}; });
       recognizedActionType = true;
     }
@@ -339,24 +343,21 @@ private:
   }
 
   // Datatype to describe a point magnet
-  bool _isDumpingTrace = false;
+  bool        _isDumpingTrace = false;
   std::string _traceDumpString;
 
-  __INLINE__ void playerPrintCommands() const override
-  {
-    jaffarCommon::logger::log("[J+] t: start/stop trace dumping (%s)\n", _isDumpingTrace ? "On" : "Off");
-  };
+  __INLINE__ void playerPrintCommands() const override { jaffarCommon::logger::log("[J+] t: start/stop trace dumping (%s)\n", _isDumpingTrace ? "On" : "Off"); };
 
   __INLINE__ bool playerParseCommand(const int command)
   {
     // If storing a trace, do it here
     if (_isDumpingTrace == true) _traceDumpString += std::to_string(_duckPosX) + std::string(" ") + std::to_string(_duckPosY) + std::string("\n");
 
-     if (command == 't')
-     {
+    if (command == 't')
+    {
       if (_isDumpingTrace == false)
       {
-        _isDumpingTrace = true;
+        _isDumpingTrace  = true;
         _traceDumpString = "";
         return false;
       }
@@ -368,11 +369,10 @@ private:
         _isDumpingTrace = false;
         return true;
       }
-     }
+    }
 
-     return false;
+    return false;
   };
-
 
   // Datatype to describe a point magnet
   struct pointMagnet_t
@@ -389,9 +389,10 @@ private:
   float _duckDistanceToPoint;
 
   // Datatype to describe a magnet
-  struct weaponMagnet_t {
-    float intensity = 0.0; // How strong the magnet is
-    uint8_t value = 0;  // Specifies the weapon number
+  struct weaponMagnet_t
+  {
+    float   intensity = 0.0; // How strong the magnet is
+    uint8_t value     = 0;   // Specifies the weapon number
   };
 
   // Null input index to remember the last valid input
@@ -401,16 +402,16 @@ private:
 
   float _duckPosX;
   float _duckPosY;
-  
+
   struct traceMagnet_t
   {
     float intensityX = 0.0; // How strong the magnet is on X
     float intensityY = 0.0; // How strong the magnet is on Y
-    int offset      = 0; // Which entry (step) to look at wrt the current emulation step
+    int   offset     = 0;   // Which entry (step) to look at wrt the current emulation step
   };
 
   // Reward for the last time an input was made (for early termination)
-  float _lastInputStepReward;
+  float         _lastInputStepReward;
   traceMagnet_t _traceMagnet;
 
   // Whether we use a trace
@@ -429,31 +430,31 @@ private:
 
   // Current trace target
   uint16_t _traceStep;
-  float _traceTargetX;
-  float _traceTargetY;
-  float _traceDistanceX;
-  float _traceDistanceY;
-  float _traceDistance;
-  
+  float    _traceTargetX;
+  float    _traceTargetY;
+  float    _traceDistanceX;
+  float    _traceDistanceY;
+  float    _traceDistance;
+
   // Possible inputs
-  InputSet::inputIndex_t _input_U  ;
-  InputSet::inputIndex_t _input_D  ;
-  InputSet::inputIndex_t _input_L  ;
-  InputSet::inputIndex_t _input_R  ;
-  InputSet::inputIndex_t _input_A  ;
-  InputSet::inputIndex_t _input_B  ;
-  InputSet::inputIndex_t _input_UL ;
-  InputSet::inputIndex_t _input_UR ;
-  InputSet::inputIndex_t _input_UA ;
-  InputSet::inputIndex_t _input_UB ;
-  InputSet::inputIndex_t _input_DL ;
-  InputSet::inputIndex_t _input_DR ;
-  InputSet::inputIndex_t _input_DA ;
-  InputSet::inputIndex_t _input_DB ;
-  InputSet::inputIndex_t _input_AL ;
-  InputSet::inputIndex_t _input_BL ;
-  InputSet::inputIndex_t _input_AR ;
-  InputSet::inputIndex_t _input_BR ;
+  InputSet::inputIndex_t _input_U;
+  InputSet::inputIndex_t _input_D;
+  InputSet::inputIndex_t _input_L;
+  InputSet::inputIndex_t _input_R;
+  InputSet::inputIndex_t _input_A;
+  InputSet::inputIndex_t _input_B;
+  InputSet::inputIndex_t _input_UL;
+  InputSet::inputIndex_t _input_UR;
+  InputSet::inputIndex_t _input_UA;
+  InputSet::inputIndex_t _input_UB;
+  InputSet::inputIndex_t _input_DL;
+  InputSet::inputIndex_t _input_DR;
+  InputSet::inputIndex_t _input_DA;
+  InputSet::inputIndex_t _input_DB;
+  InputSet::inputIndex_t _input_AL;
+  InputSet::inputIndex_t _input_BL;
+  InputSet::inputIndex_t _input_AR;
+  InputSet::inputIndex_t _input_BR;
   InputSet::inputIndex_t _input_ULA;
   InputSet::inputIndex_t _input_URA;
   InputSet::inputIndex_t _input_UBA;
@@ -472,26 +473,25 @@ private:
   InputSet::inputIndex_t _input_LBA;
   InputSet::inputIndex_t _input_LR;
 
-  InputSet::inputIndex_t _input_ARS ;
-  InputSet::inputIndex_t _input_ALS ;
-  InputSet::inputIndex_t _input_RS  ;
-  InputSet::inputIndex_t _input_LS  ;
+  InputSet::inputIndex_t _input_ARS;
+  InputSet::inputIndex_t _input_ALS;
+  InputSet::inputIndex_t _input_RS;
+  InputSet::inputIndex_t _input_LS;
   InputSet::inputIndex_t _input_s;
 
-  uint8_t* _gameMode         ;
-  uint8_t* _globalTimer      ;
-  uint8_t* _duckPosX1        ;
-  uint8_t* _duckPosX2        ;
-  uint8_t* _duckPosY1         ;
-  uint8_t* _duckFrameCycle   ;
-  uint8_t* _grabbedWeapon    ;
+  uint8_t* _gameMode;
+  uint8_t* _globalTimer;
+  uint8_t* _duckPosX1;
+  uint8_t* _duckPosX2;
+  uint8_t* _duckPosY1;
+  uint8_t* _duckFrameCycle;
+  uint8_t* _grabbedWeapon;
 
   // Game values
 
   uint16_t _currentStep;
   uint16_t _lastInputStep;
 };
-
 
 } // namespace nes
 

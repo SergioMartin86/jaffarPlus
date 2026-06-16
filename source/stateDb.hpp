@@ -3,11 +3,11 @@
 #include "numa.hpp"
 #include <cstdlib>
 #include <jaffarCommon/concurrent.hpp>
+#include <jaffarCommon/deserializers/differential.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/parallel.hpp>
 #include <jaffarCommon/serializers/differential.hpp>
-#include <jaffarCommon/deserializers/differential.hpp>
 #include <memory>
 #include <utmpx.h>
 
@@ -33,9 +33,9 @@ public:
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
 
     // Parsing whether to use differential compression
-    const auto differentialCompressionJs = jaffarCommon::json::getObject(config, "Differential Compression");
-    _differentialCompressionEnabled = jaffarCommon::json::getBoolean(differentialCompressionJs, "Enabled");
-    _differentialCompressionBufferSize = jaffarCommon::json::getNumber<size_t>(differentialCompressionJs, "Buffer Size");
+    const auto differentialCompressionJs       = jaffarCommon::json::getObject(config, "Differential Compression");
+    _differentialCompressionEnabled            = jaffarCommon::json::getBoolean(differentialCompressionJs, "Enabled");
+    _differentialCompressionBufferSize         = jaffarCommon::json::getNumber<size_t>(differentialCompressionJs, "Buffer Size");
     _differentialCompressionUseZlibCompression = jaffarCommon::json::getBoolean(differentialCompressionJs, "Use Zlib Compression");
   }
 
@@ -51,8 +51,8 @@ public:
     _stateSize = _stateSizeRaw;
 
     // Reserving storage for the base data buffer for differential compression, if needed
-    _differentialCompressionEncodeBaseState = (uint8_t*) malloc (_stateSizeRaw);
-    _differentialCompressionDecodeBaseState = (uint8_t*) malloc (_stateSizeRaw);
+    _differentialCompressionEncodeBaseState = (uint8_t*)malloc(_stateSizeRaw);
+    _differentialCompressionDecodeBaseState = (uint8_t*)malloc(_stateSizeRaw);
 
     // If using differential compression
     if (_differentialCompressionEnabled == true)
@@ -62,10 +62,7 @@ public:
 
       // Reserving storage for the temporary output buffer for differential compression, one per thread
       _differentialCompressionBuffer.resize(_threadCount);
-      JAFFAR_PARALLEL
-      {
-       _differentialCompressionBuffer[_myThreadId] = (uint8_t*) calloc (_stateSizeRaw, 1);
-      }
+      JAFFAR_PARALLEL { _differentialCompressionBuffer[_myThreadId] = (uint8_t*)calloc(_stateSizeRaw, 1); }
 
       // Resetting maximum differential bytes used so far
       _differentialCompressionMaxBytesUsed = 0;
@@ -88,7 +85,7 @@ public:
     _numaLocalFreeStateCount    = 0;
     _numaFreeStateNotFoundCount = 0;
     _numaStealingFreeStateCount = 0;
-    _numaDistanceAccumulator = 0;
+    _numaDistanceAccumulator    = 0;
 
     // Splitting state database equally among numa domains
     size_t stateDbSizePerNUMA = std::ceil((_maxSizeMb * 1024 * 1024) / _numaCount);
@@ -130,7 +127,7 @@ public:
       if (_myThreadId == _numaDelegateThreadId[_preferredNumaDomain])
       {
         _numaCurrentStateQueues[_preferredNumaDomain] = new jaffarCommon::concurrent::Deque<void*>();
-        _numaNextStateQueues[_preferredNumaDomain] = new jaffarCommon::concurrent::concurrentMultimap_t<float, void*>();
+        _numaNextStateQueues[_preferredNumaDomain]    = new jaffarCommon::concurrent::concurrentMultimap_t<float, void*>();
       }
     }
 
@@ -161,8 +158,9 @@ public:
     {
       if (_myThreadId == _numaDelegateThreadId[_preferredNumaDomain])
       {
-       _freeStateQueues[_preferredNumaDomain] = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void*>>(_maxStatesPerNuma[_preferredNumaDomain]);
-       for (size_t i = 0; i < _maxStatesPerNuma[_preferredNumaDomain]; i++) _freeStateQueues[_preferredNumaDomain]->try_push((void*)&_internalBuffersStart[_preferredNumaDomain][i * _stateSize]);
+        _freeStateQueues[_preferredNumaDomain] = std::make_unique<jaffarCommon::concurrent::atomicQueue_t<void*>>(_maxStatesPerNuma[_preferredNumaDomain]);
+        for (size_t i = 0; i < _maxStatesPerNuma[_preferredNumaDomain]; i++)
+          _freeStateQueues[_preferredNumaDomain]->try_push((void*)&_internalBuffersStart[_preferredNumaDomain][i * _stateSize]);
       }
     }
   }
@@ -187,7 +185,8 @@ public:
     if (_differentialCompressionEnabled)
     {
       // Creating differential compressor with respect to the base state
-      jaffarCommon::serializer::Differential s(_differentialCompressionBuffer[_myThreadId], _stateSize, _differentialCompressionEncodeBaseState, _stateSizeRaw, _differentialCompressionUseZlibCompression);
+      jaffarCommon::serializer::Differential s(_differentialCompressionBuffer[_myThreadId], _stateSize, _differentialCompressionEncodeBaseState, _stateSizeRaw,
+                                               _differentialCompressionUseZlibCompression);
 
       // Now push the state buffer into the differential buffer output
       s.push(stateBuffer, _stateSizeRaw);
@@ -271,13 +270,15 @@ public:
                               (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
     jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
     jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
-        if (_differentialCompressionEnabled)
-    jaffarCommon::logger::log("[J+]  + Max Differential Bytes:        %lu / %lu bytes (%.2f%%)\n", _differentialCompressionMaxBytesUsed, _stateSize, 100.0 * ((double)_differentialCompressionMaxBytesUsed) / (double)_stateSize); 
+    if (_differentialCompressionEnabled)
+      jaffarCommon::logger::log("[J+]  + Max Differential Bytes:        %lu / %lu bytes (%.2f%%)\n", _differentialCompressionMaxBytesUsed, _stateSize,
+                                100.0 * ((double)_differentialCompressionMaxBytesUsed) / (double)_stateSize);
 
     // Only print the first and the last
-    for (int i = 0; i < _numaCount; i++) if (i == 0 || i == _numaCount - 1)
-      jaffarCommon::logger::log("[J+]  + NUMA Domain %3d                States: %lu (Max: %lu), Size: %.3f Mb (%.6f Gb)\n", i, _currentStatesPerNuma[i], _maxStatesPerNuma[i],
-                                (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
+    for (int i = 0; i < _numaCount; i++)
+      if (i == 0 || i == _numaCount - 1)
+        jaffarCommon::logger::log("[J+]  + NUMA Domain %3d                States: %lu (Max: %lu), Size: %.3f Mb (%.6f Gb)\n", i, _currentStatesPerNuma[i], _maxStatesPerNuma[i],
+                                  (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
 
     size_t totalDatabaseStatesRequested = _numaNonLocalDatabaseStateCount + _numaLocalDatabaseStateCount + _numaDatabaseStateNotFoundCount;
     jaffarCommon::logger::log("[J+] + Database Popping State Rates:\n");
@@ -302,7 +303,6 @@ public:
     size_t NUMAAccessCount = _numaNonLocalDatabaseStateCount + _numaLocalDatabaseStateCount + _numaNonLocalFreeStateCount + _numaLocalFreeStateCount + _numaStealingFreeStateCount;
     jaffarCommon::logger::log("[J+]  + Average NUMA Distance:                          %lu / %lu = %5.3f\n", _numaDistanceAccumulator.load(), NUMAAccessCount,
                               (double)_numaDistanceAccumulator.load() / (double)NUMAAccessCount);
-                              
   }
 
   __INLINE__ void* getFreeState()
@@ -314,14 +314,16 @@ public:
     for (size_t i = 0; i < (size_t)_numaCount; i++)
     {
       const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
-      bool success = _freeStateQueues[numaIdx]->try_pop(stateSpace);
+      bool       success = _freeStateQueues[numaIdx]->try_pop(stateSpace);
 
       // If successful, return the pointer immediately
       if (success == true)
       {
         _numaDistanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
-        if (numaIdx == (size_t)_preferredNumaDomain) _numaLocalFreeStateCount++;
-        else _numaNonLocalFreeStateCount++;
+        if (numaIdx == (size_t)_preferredNumaDomain)
+          _numaLocalFreeStateCount++;
+        else
+          _numaNonLocalFreeStateCount++;
         return stateSpace;
       }
     }
@@ -332,7 +334,7 @@ public:
     for (size_t i = 0; i < (size_t)_numaCount; i++)
     {
       const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
-      bool success = _numaCurrentStateQueues[numaIdx]->pop_back_get(stateSpace);
+      bool       success = _numaCurrentStateQueues[numaIdx]->pop_back_get(stateSpace);
 
       // If successful, return the pointer immediately
       if (success == true)
@@ -457,14 +459,16 @@ public:
     for (size_t i = 0; i < (size_t)_numaCount; i++)
     {
       const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
-      bool success = _numaCurrentStateQueues[numaIdx]->pop_front_get(statePtr);
+      bool       success = _numaCurrentStateQueues[numaIdx]->pop_front_get(statePtr);
 
       // If successful, return the pointer immediately
       if (success == true)
       {
         _numaDistanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
-        if (numaIdx == (size_t)_preferredNumaDomain) _numaLocalDatabaseStateCount++;
-        else _numaNonLocalDatabaseStateCount++;
+        if (numaIdx == (size_t)_preferredNumaDomain)
+          _numaLocalDatabaseStateCount++;
+        else
+          _numaNonLocalDatabaseStateCount++;
         return statePtr;
       }
     }
@@ -491,10 +495,7 @@ public:
   /**
    * Manual setter for base state, to be used for differential compression
    */
-  __INLINE__ void setDifferentialCompressionEncodeBaseState(const void* stateData) 
-  {
-    memcpy(_differentialCompressionEncodeBaseState, stateData, _stateSizeRaw);
-  }
+  __INLINE__ void setDifferentialCompressionEncodeBaseState(const void* stateData) { memcpy(_differentialCompressionEncodeBaseState, stateData, _stateSizeRaw); }
 
   /**
    * This function returns a pointer to the best state found in the current state database
@@ -507,12 +508,11 @@ public:
   __INLINE__ void* getWorstState() const { return _worstState; }
 
   /**
-  * Gets the state sizes, as stored in the database  
-  */
+   * Gets the state sizes, as stored in the database
+   */
   __INLINE__ size_t getStateSizeInDatabase() const { return _stateSize; }
 
 private:
-
   void* _bestState  = nullptr;
   void* _worstState = nullptr;
 
@@ -642,7 +642,7 @@ private:
    * Establishes whether to use diffeerntial compression for state storage.
    * This is a tradeoff between computation load and memory use
    */
-  bool _differentialCompressionEnabled; 
+  bool _differentialCompressionEnabled;
 
   /**
    * Size for the compression buffer

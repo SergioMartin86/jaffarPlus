@@ -1,8 +1,8 @@
 #pragma once
 
+#include <atomic>
 #include <emulator.hpp>
 #include <game.hpp>
-#include <atomic>
 #include <jaffarCommon/json.hpp>
 
 namespace jaffarPlus
@@ -17,12 +17,9 @@ namespace pipeBot
 class PipeBot final : public jaffarPlus::Game
 {
 public:
-
   static __INLINE__ std::string getName() { return "PipeBot / PipeBot"; }
 
-  PipeBot(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) 
-    : jaffarPlus::Game(std::move(emulator), config),
-      _pipeBot((emulator::PipeBot*)_emulator.get())
+  PipeBot(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config), _pipeBot((emulator::PipeBot*)_emulator.get())
   {
     _rowCount = _pipeBot->getRowCount();
     _colCount = _pipeBot->getColCount();
@@ -30,9 +27,9 @@ public:
 
   struct possibleInput_t
   {
-    std::string inputString;
+    std::string            inputString;
     InputSet::inputIndex_t inputIndex;
-    uint8_t pieceType;
+    uint8_t                pieceType;
   };
 
 private:
@@ -41,34 +38,34 @@ private:
     // Getting emulator's low memory pointer
     _grid = _emulator->getProperty("Grid").pointer;
 
-    registerGameProperty("Forward Depth"            ,&_forwardDepth, Property::datatype_t::dt_uint8 , Property::endianness_t::little);
-    registerGameProperty("Score",  &_score, Property::datatype_t::dt_int32 , Property::endianness_t::little);
-    registerGameProperty("End Is Met",  &_endIsMet, Property::datatype_t::dt_bool , Property::endianness_t::little);
+    registerGameProperty("Forward Depth", &_forwardDepth, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Score", &_score, Property::datatype_t::dt_int32, Property::endianness_t::little);
+    registerGameProperty("End Is Met", &_endIsMet, Property::datatype_t::dt_bool, Property::endianness_t::little);
 
     // Getting piece inventory
-    auto nextPiece = _pipeBot->getNextPiece();
+    auto   nextPiece  = _pipeBot->getNextPiece();
     size_t pieceCount = 0;
     while (nextPiece != 0x00 && pieceCount < 120)
     {
-     _pieceInventory[nextPiece]++;
-     nextPiece = _pipeBot->getNextPiece();
-     pieceCount++;
+      _pieceInventory[nextPiece]++;
+      nextPiece = _pipeBot->getNextPiece();
+      pieceCount++;
     }
 
     // Creating list of inputs
     for (const auto& piece : _pieceInventory)
     {
-        const auto pieceType = piece.first;
-        char inputBuffer[256];
-        sprintf(inputBuffer, "|%3u|", pieceType);
-        const std::string inputString(inputBuffer);
-        const auto inputCode = _emulator->registerInput(inputString);
-        const auto newInput = possibleInput_t({inputString, inputCode, pieceType});
-        _possibleInputs.push_back(newInput);
-        _inputMap[inputCode] = newInput;
+      const auto pieceType = piece.first;
+      char       inputBuffer[256];
+      sprintf(inputBuffer, "|%3u|", pieceType);
+      const std::string inputString(inputBuffer);
+      const auto        inputCode = _emulator->registerInput(inputString);
+      const auto        newInput  = possibleInput_t({inputString, inputCode, pieceType});
+      _possibleInputs.push_back(newInput);
+      _inputMap[inputCode] = newInput;
     }
 
-    _score = 0;
+    _score    = 0;
     _endIsMet = false;
   }
 
@@ -79,7 +76,7 @@ private:
     for (const auto& input : _possibleInputs) possibleInputSet.insert(input.inputString);
     return possibleInputSet;
   }
-  
+
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     const auto& possibleInput = _inputMap[input];
@@ -111,41 +108,36 @@ private:
 
     const auto forwardPath = _pipeBot->calculatePipePath();
     for (auto& piece : forwardPath) piecesInPath.insert({piece.pos.row, piece.pos.col});
-    _forwardDepth = forwardPath.size();
+    _forwardDepth       = forwardPath.size();
     _crossingPieceCount = getCrossingPieceCount(forwardPath);
-    _score = (100 * _forwardDepth) + (10000 * _crossingPieceCount);
-    
+    _score              = (100 * _forwardDepth) + (10000 * _crossingPieceCount);
+
     // If the end piece is an end piece, the score is doubled
-    const auto& endPiecePos = forwardPath.rbegin()->pos;
-    const auto endPieceType = _pipeBot->getPiece(endPiecePos);
+    const auto& endPiecePos  = forwardPath.rbegin()->pos;
+    const auto  endPieceType = _pipeBot->getPiece(endPiecePos);
 
     _endIsMet = false;
     if (endPieceType == 0x10 || endPieceType == 0x20 || endPieceType == 0x40 || endPieceType == 0x80) _endIsMet = true;
   }
 
-  __INLINE__ void ruleUpdatePreHook() override
-  {
+  __INLINE__ void ruleUpdatePreHook() override {}
 
-  }
-
-  __INLINE__ void ruleUpdatePostHook() override
-  {
-  }
+  __INLINE__ void ruleUpdatePostHook() override {}
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
-     serializer.push(&_currentStep, sizeof(_currentStep));
-     serializer.push(&_forwardDepth, sizeof(_forwardDepth));
-     serializer.push(&_endIsMet, sizeof(_endIsMet));
-     for (auto& piece : _pieceInventory) serializer.push(&piece.second, sizeof(uint8_t));
+    serializer.push(&_currentStep, sizeof(_currentStep));
+    serializer.push(&_forwardDepth, sizeof(_forwardDepth));
+    serializer.push(&_endIsMet, sizeof(_endIsMet));
+    for (auto& piece : _pieceInventory) serializer.push(&piece.second, sizeof(uint8_t));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
-     deserializer.pop(&_currentStep, sizeof(_currentStep));
-     deserializer.pop(&_forwardDepth, sizeof(_forwardDepth));
-     deserializer.pop(&_endIsMet, sizeof(_endIsMet));
-     for (auto& piece : _pieceInventory) deserializer.pop(&piece.second, sizeof(uint8_t));
+    deserializer.pop(&_currentStep, sizeof(_currentStep));
+    deserializer.pop(&_forwardDepth, sizeof(_forwardDepth));
+    deserializer.pop(&_endIsMet, sizeof(_endIsMet));
+    for (auto& piece : _pieceInventory) deserializer.pop(&piece.second, sizeof(uint8_t));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -168,19 +160,18 @@ private:
     const auto currentDirection = _pipeBot->getCurrentDirection();
 
     for (const auto& input : _possibleInputs)
-     if (_pieceInventory[input.pieceType] > 0)
+      if (_pieceInventory[input.pieceType] > 0)
       {
         const auto type = _pipeBot->getPieceType(input.pieceType);
 
         if (currentDirection == emulator::PipeBot::direction_t::right && type.LInConnectivity == false) continue;
-        if (currentDirection == emulator::PipeBot::direction_t::left  && type.RInConnectivity == false) continue;
-        if (currentDirection == emulator::PipeBot::direction_t::down  && type.UInConnectivity == false) continue;
-        if (currentDirection == emulator::PipeBot::direction_t::up    && type.DInConnectivity == false) continue;
+        if (currentDirection == emulator::PipeBot::direction_t::left && type.RInConnectivity == false) continue;
+        if (currentDirection == emulator::PipeBot::direction_t::down && type.UInConnectivity == false) continue;
+        if (currentDirection == emulator::PipeBot::direction_t::up && type.DInConnectivity == false) continue;
 
         allowedInputSet.push_back(input.inputIndex);
-      } 
+      }
   }
-
 
   void printInfoImpl() const override
   {
@@ -192,8 +183,8 @@ private:
     jaffarCommon::logger::log("[J+]  + Piece Inventory: \n");
     for (const auto& piece : _pieceInventory)
     {
-      const auto pieceType = piece.first;
-      const auto pieceCount = piece.second;
+      const auto  pieceType  = piece.first;
+      const auto  pieceCount = piece.second;
       const auto& pieceShape = _pipeBot->getPieceType(pieceType).shape;
       jaffarCommon::logger::log("[J+]     + %03u - '%s': %u\n", pieceType, pieceShape.c_str(), pieceCount);
     }
@@ -208,7 +199,7 @@ private:
 
   __INLINE__ uint8_t getLastCrossingPiece(const std::vector<emulator::PipeBot::piecePath_t>& piecePath) const
   {
-    uint8_t lastCrossingPiece = 0; 
+    uint8_t lastCrossingPiece = 0;
 
     std::set<std::pair<uint8_t, uint8_t>> visitedPieces;
     for (uint8_t i = 0; i < piecePath.size(); i++)
@@ -223,7 +214,7 @@ private:
 
   __INLINE__ uint8_t getCrossingPieceCount(const std::vector<emulator::PipeBot::piecePath_t>& piecePath) const
   {
-    uint8_t crossingPieceCount = 0; 
+    uint8_t crossingPieceCount = 0;
 
     std::set<std::pair<uint8_t, uint8_t>> visitedPieces;
     for (uint8_t i = 0; i < piecePath.size(); i++)
@@ -243,14 +234,14 @@ private:
   int32_t _score;
 
   emulator::PipeBot* const _pipeBot;
-  uint8_t _rowCount;
-  uint8_t _colCount; 
-  uint8_t* _grid;
-  bool _endIsMet;
+  uint8_t                  _rowCount;
+  uint8_t                  _colCount;
+  uint8_t*                 _grid;
+  bool                     _endIsMet;
 
-  std::vector<possibleInput_t> _possibleInputs;
+  std::vector<possibleInput_t>                      _possibleInputs;
   std::map<InputSet::inputIndex_t, possibleInput_t> _inputMap;
-  std::map<uint8_t, uint8_t> _pieceInventory;
+  std::map<uint8_t, uint8_t>                        _pieceInventory;
 };
 
 } // namespace pipeBot

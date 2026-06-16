@@ -150,19 +150,21 @@ public:
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override
   {
-    if (_serializeOnlyRAM) serializer.pushContiguous(_quickNES->getLowMem(), _quickNES->getLowMemSize());
-    else _quickNES->serializeState(serializer); 
+    if (_serializeOnlyRAM)
+      serializer.pushContiguous(_quickNES->getLowMem(), _quickNES->getLowMemSize());
+    else
+      _quickNES->serializeState(serializer);
   };
 
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override
   {
-    if (_serializeOnlyRAM) deserializer.popContiguous(_quickNES->getLowMem(), _quickNES->getLowMemSize());
-    else _quickNES->deserializeState(deserializer);
+    if (_serializeOnlyRAM)
+      deserializer.popContiguous(_quickNES->getLowMem(), _quickNES->getLowMemSize());
+    else
+      _quickNES->deserializeState(deserializer);
   };
 
-  __INLINE__ void printInfo() const override
-  {
-  }
+  __INLINE__ void printInfo() const override {}
 
   property_t getProperty(const std::string& propertyName) const override
   {
@@ -321,7 +323,7 @@ private:
     jaffarCommon::logger::log("[J+] %s Hash:        %s\n", blockName.c_str(), hash.c_str());
   }
 
-  bool _serializeOnlyRAM;
+  bool                         _serializeOnlyRAM;
   std::unique_ptr<NESInstance> _quickNES;
 
   size_t      _NTABBlockSize;

@@ -70,12 +70,12 @@ public:
       if (status == false && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr) JAFFAR_THROW_LOGIC("Could not find/read trace file: %s\n", _traceFilePath.c_str());
 
       std::istringstream f(traceData);
-      std::string line;
+      std::string        line;
       while (std::getline(f, line))
       {
-        auto coordinates = jaffarCommon::string::split(line, ' ');
-        float x = std::atof(coordinates[0].c_str());
-        float y = std::atof(coordinates[1].c_str());
+        auto  coordinates = jaffarCommon::string::split(line, ' ');
+        float x           = std::atof(coordinates[0].c_str());
+        float y           = std::atof(coordinates[1].c_str());
         _trace.push_back(traceEntry_t{.x = x, .y = y});
       }
     }
@@ -84,10 +84,7 @@ public:
     _nullInputIdx = _emulator->registerInput("||   0,   0,   0,   0,...|");
   }
 
-  ~Doom()
-  {
-    free(_dummyBuffer);
-  }
+  ~Doom() { free(_dummyBuffer); }
 
 private:
   __INLINE__ void registerGameProperties() override
@@ -190,7 +187,7 @@ private:
   __INLINE__ void stateUpdatePostHook() override
   {
     _effectiveStateSize = ((jaffarPlus::emulator::QuickerDSDA*)_emulator.get())->getEffectiveStateSize();
-    
+
     _playerPosX = jaffar::EmuInstance::getFloatFrom1616Fixed(players[0].mo->x);
     _playerPosY = jaffar::EmuInstance::getFloatFrom1616Fixed(players[0].mo->y);
     _playerPosZ = jaffar::EmuInstance::getFloatFrom1616Fixed(players[0].mo->z);
@@ -211,9 +208,9 @@ private:
     _pointMagnet.z         = 0.0;
 
     _traceMagnet.intensity = 0.0;
-    _traceMagnet.offset = 0;
+    _traceMagnet.offset    = 0;
 
-    _momentumMagnet = 0.0;
+    _momentumMagnet  = 0.0;
     _momentumXMagnet = 0.0;
     _momentumYMagnet = 0.0;
   }
@@ -230,7 +227,7 @@ private:
     // Updating trace stuff
     if (_useTrace == true)
     {
-      _traceStep = (uint16_t) std::max(std::min( (int)_currentStep + _traceMagnet.offset, (int) _trace.size() - 1), 0);
+      _traceStep    = (uint16_t)std::max(std::min((int)_currentStep + _traceMagnet.offset, (int)_trace.size() - 1), 0);
       _traceTargetX = _trace[_traceStep].x;
       _traceTargetY = _trace[_traceStep].y;
 
@@ -347,7 +344,7 @@ private:
     if (std::abs(_momentumYMagnet) > 0.0f) reward += _playerMomentumY * _momentumYMagnet;
 
     // If trace is used, compute its magnet's effect
-    if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensity * _traceDistance;
+    if (_useTrace == true) reward += -1.0 * _traceMagnet.intensity * _traceDistance;
 
     // Returning reward
     return reward;
@@ -377,13 +374,14 @@ private:
     //   jaffarCommon::logger::log("[] Line %3d: Flags: %d, Activations: %d\n", lines[i].iLineID, lines[i].flags, lines[i].player_activations);
     // }
 
-    if (std::abs(_momentumMagnet) > 0.0f)  jaffarCommon::logger::log("[J+]  + Momentum Magnet                          Intensity: %.5f\n", _momentumMagnet);
+    if (std::abs(_momentumMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Momentum Magnet                          Intensity: %.5f\n", _momentumMagnet);
     if (std::abs(_momentumXMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Momentum X Magnet                        Intensity: %.5f\n", _momentumXMagnet);
     if (std::abs(_momentumYMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Momentum Y Magnet                        Intensity: %.5f\n", _momentumYMagnet);
 
     if (std::abs(_pointMagnet.intensity) > 0.0f)
     {
-      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Z: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x, _pointMagnet.y, _pointMagnet.z);
+      jaffarCommon::logger::log("[J+]  + Point Magnet                             Intensity: %.5f, X: %3.3f, Y: %3.3f, Z: %3.3f\n", _pointMagnet.intensity, _pointMagnet.x,
+                                _pointMagnet.y, _pointMagnet.z);
       jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _player1DistanceToPointX);
       jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _player1DistanceToPointY);
       jaffarCommon::logger::log("[J+]    + Distance Z                             %3.3f\n", _player1DistanceToPointZ);
@@ -394,7 +392,8 @@ private:
     {
       if (std::abs(_traceMagnet.intensity) > 0.0f)
       {
-        jaffarCommon::logger::log("[J+]  + Trace Magnet                             Intensity: %.5f, Step: %u, X: %3.3f, Y: %3.3f\n", _traceMagnet.intensity, _traceStep, _traceTargetX, _traceTargetY);
+        jaffarCommon::logger::log("[J+]  + Trace Magnet                             Intensity: %.5f, Step: %u, X: %3.3f, Y: %3.3f\n", _traceMagnet.intensity, _traceStep,
+                                  _traceTargetX, _traceTargetY);
         jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _traceDistanceX);
         jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _traceDistanceY);
         jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _traceDistance);
@@ -411,10 +410,9 @@ private:
       if (_useTrace == false) JAFFAR_THROW_LOGIC("Specified Trace Magnet, but no trace file was provided.");
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto offset    = jaffarCommon::json::getNumber<int>(actionJs, "Offset");
-      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.intensity = intensity, .offset = offset }; });
+      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.intensity = intensity, .offset = offset}; });
       recognizedActionType = true;
     }
-
 
     if (actionType == "Set Point Magnet")
     {
@@ -475,33 +473,28 @@ private:
   struct traceMagnet_t
   {
     float intensity = 0.0; // How strong the magnet is
-    int offset      = 0; // Which entry (step) to look at wrt the current emulation step
+    int   offset    = 0;   // Which entry (step) to look at wrt the current emulation step
   };
 
   traceMagnet_t _traceMagnet;
 
-  bool _isDumpingTrace = false;
+  bool        _isDumpingTrace = false;
   std::string _traceDumpString;
 
-  __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
-  {
-  }
-  
-  __INLINE__ void playerPrintCommands() const override
-  {
-    jaffarCommon::logger::log("[J+] t: start/stop trace dumping (%s)\n", _isDumpingTrace ? "On" : "Off");
-  };
+  __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override {}
+
+  __INLINE__ void playerPrintCommands() const override { jaffarCommon::logger::log("[J+] t: start/stop trace dumping (%s)\n", _isDumpingTrace ? "On" : "Off"); };
 
   __INLINE__ bool playerParseCommand(const int command)
   {
     // If storing a trace, do it here
     if (_isDumpingTrace == true) _traceDumpString += std::to_string(_playerPosX) + std::string(" ") + std::to_string(_playerPosY) + std::string("\n");
 
-     if (command == 't')
-     {
+    if (command == 't')
+    {
       if (_isDumpingTrace == false)
       {
-        _isDumpingTrace = true;
+        _isDumpingTrace  = true;
         _traceDumpString = "";
         return false;
       }
@@ -513,9 +506,9 @@ private:
         _isDumpingTrace = false;
         return true;
       }
-     }
+    }
 
-     return false;
+    return false;
   };
 
   // Derivative properties
@@ -541,7 +534,7 @@ private:
 
   size_t _maxStateSize;
 
-  uint16_t _currentStep   = 0;
+  uint16_t _currentStep = 0;
 
   // Whether we use a trace
   bool _useTrace = false;
@@ -554,14 +547,14 @@ private:
 
   // Current trace target
   uint16_t _traceStep;
-  float _traceTargetX;
-  float _traceTargetY;
-  float _traceDistanceX;
-  float _traceDistanceY;
-  float _traceDistance;
+  float    _traceTargetX;
+  float    _traceTargetY;
+  float    _traceDistanceX;
+  float    _traceDistanceY;
+  float    _traceDistance;
 
   // Space for dummy save state buffer for extra hash calculation
-  uint8_t* _dummyBuffer;
+  uint8_t*               _dummyBuffer;
   InputSet::inputIndex_t _nullInputIdx;
   InputSet::inputIndex_t _currentInputIdx;
 };

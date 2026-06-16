@@ -14,7 +14,7 @@ class Rule final
 public:
   typedef size_t label_t;
 
-  Rule(const size_t index, const label_t label) : _index(index), _label(label){};
+  Rule(const size_t index, const label_t label) : _index(index), _label(label) {};
   ~Rule() = default;
 
   // The rule is achieved only if all conditions are met
@@ -66,11 +66,11 @@ private:
   float _reward = 0.0;
 
   // Special condition flags
-  bool   _isWinRule           = false;
-  bool   _isFailRule          = false;
-  bool   _isCheckpointRule    = false;
-  size_t _checkPointTolerance = 0;
-  bool   _isSaveSolutionRule    = false;
+  bool        _isWinRule           = false;
+  bool        _isFailRule          = false;
+  bool        _isCheckpointRule    = false;
+  size_t      _checkPointTolerance = 0;
+  bool        _isSaveSolutionRule  = false;
   std::string _saveSolutionPath;
 
   // Stores rules that also satisfied if this one is
