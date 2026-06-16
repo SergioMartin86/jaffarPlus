@@ -13,12 +13,12 @@
         "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 100000
+            "Max Store Size (Mb)": 100000,
+            "Enabled": true
         },
         "State Database": {
             "Max Size (Mb)": 1000000,
-            "Differential Compression":
-            {
+            "Differential Compression": {
                 "Enabled": true,
                 "Buffer Size": 1536,
                 "Use Zlib Compression": false
@@ -33,10 +33,9 @@
         "Initial State File Path": "",
         "Use Flat Code Map": false,
         "Initial RAM Data File Path": "",
-        "SRAM Block Size": 0,
+        "SRAM Block Size": 8192,
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
-	    "SRAM Block Size": 8192,
         "Disabled State Properties": [
             "SRAM",
             "CHRR",
@@ -48,11 +47,10 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": ""
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
         },
         "Hash Step Tolerance": 2,
         "Show Empty Input Slots": false,
@@ -120,8 +118,7 @@
         "Test Candidate Inputs": false,
         "Candidate Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|",
                     "|..|.D......|",
@@ -185,10 +182,8 @@
         "Bypass Emulator State": true,
         "Last Input Step Reward": 0.0,
         "Trace File Path": "world402a.trace",
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,

@@ -14,14 +14,23 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 100000
-        }
+            "Max Size (Mb)": 100000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 8192,
         "Rom File Path": "Marble Madness (U) [!].nes",
         "Rom File SHA1": "DB009866ECF20CFDCE93DCA861F5BE1F9DFAAF2B",
         "Initial State File Path": "",
@@ -47,7 +56,11 @@
         "Allowed Input Sets": [
             {
                 "Conditions": [
-                    { "Property": "Try New Inputs", "Op": "==", "Value": true }
+                    {
+                        "Property": "Try New Inputs",
+                        "Op": "==",
+                        "Value": true
+                    }
                 ],
                 "Inputs": [
                     "|..|........|",
@@ -73,7 +86,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 2,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Marble Madness",
@@ -89,65 +107,67 @@
             "Marble Pos Z1"
         ],
         "Hash Properties": [
-            "Game Cycle",          
-            "Win Flag",            
-            "Marble State",        
-            "Marble Flags",        
-            "Marble Pos X1",       
-            "Marble Pos X2",       
-            "Marble Pos Y1",       
-            "Marble Pos Y2",       
-            "Marble Pos Z1",       
-            "Marble Airtime",      
+            "Game Cycle",
+            "Win Flag",
+            "Marble State",
+            "Marble Flags",
+            "Marble Pos X1",
+            "Marble Pos X2",
+            "Marble Pos Y1",
+            "Marble Pos Y2",
+            "Marble Pos Z1",
+            "Marble Airtime",
             "Marble Dead Flag",
-            "Marble Pos X3",  
+            "Marble Pos X3",
             "Marble Pos Y3",
             "Marble Surface Angle",
-            "Marble Vel X",        
-            "Marble Vel Y",    
+            "Marble Vel X",
+            "Marble Vel Y",
             "Marble Motion 1"
         ],
-        "Excluded Hash Properties":
-        [   
-
+        "Excluded Hash Properties": [],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Description": "Follow trace from existing TAS, trying to get ahead of it (offset)",
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity": 1.0,
+                        "Offset": 0
+                    }
+                ]
+            },
+            {
+                "Label": 1900,
+                "Description": "Win on reaching goal",
+                "Conditions": [
+                    {
+                        "Property": "Marble Pos X",
+                        "Op": ">",
+                        "Value": 658.0
+                    },
+                    {
+                        "Property": "Marble Pos Z1",
+                        "Op": "==",
+                        "Value": 56
+                    },
+                    {
+                        "Property": "Marble Vel X",
+                        "Op": "<",
+                        "Value": -100
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
         ],
-        "Rules":
-        [
-         {
-          "Label": 1000,
-          "Description": "Follow trace from existing TAS, trying to get ahead of it (offset)",
-          "Conditions":
-          [
-          ],
-      
-          "Satisfies": [ ],
-      
-          "Actions":
-          [
-            { "Type": "Set Trace Magnet", "Intensity": 1.0, "Offset": 0 }
-          ]
-         },
-      
-
-         {
-          "Label": 1900,
-          "Description": "Win on reaching goal",
-          "Conditions":
-          [
-            { "Property": "Marble Pos X", "Op": ">", "Value":  658.0 },
-            { "Property": "Marble Pos Z1", "Op": "==", "Value":  56 },
-            { "Property": "Marble Vel X", "Op": "<", "Value":  -100 }
-          ],
-      
-          "Satisfies": [ ],
-      
-          "Actions":
-          [
-           {
-             "Type": "Trigger Win"
-           }
-          ]
-         }
-        ]
+        "Bypass Emulator State": false
     }
 }

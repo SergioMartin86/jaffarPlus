@@ -14,11 +14,18 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 1000
-        }
+            "Max Size (Mb)": 1000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerRAWGL",
@@ -33,11 +40,10 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": false,
@@ -99,7 +105,6 @@
         ],
         "Hash Properties": [],
         "Rules": [
-
             {
                 "Label": 1999,
                 "Conditions": [

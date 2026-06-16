@@ -14,14 +14,23 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 500
-        }
+            "Max Size (Mb)": 500,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 8192,
         "Rom File Path": "Ninja Gaiden III - The Ancient Ship of Doom (U) [!].nes",
         "Rom File SHA1": "3F2E6DAC76BA14EFC177B5653AB043E53A04D365",
         "Initial State File Path": "",
@@ -47,18 +56,16 @@
             "Enabled": true,
             "Max Size": 120
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|",
                     "|..|U.......|",
@@ -84,8 +91,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Ninja Gaiden 3",
@@ -93,10 +104,8 @@
         "Trace File Path": "",
         "Enable Attack": true,
         "Last Input Step Reward": 0.0,
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,
@@ -111,7 +120,6 @@
                     }
                 ]
             },
-
             {
                 "Label": 1004,
                 "Conditions": [
@@ -128,7 +136,6 @@
                     }
                 ]
             },
-
             {
                 "Label": 1999,
                 "Conditions": [
@@ -150,6 +157,7 @@
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false
     }
 }

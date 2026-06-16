@@ -14,14 +14,23 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 150000
-        }
+            "Max Size (Mb)": 150000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 8192,
         "Rom File Path": "Batman (U) [!].nes",
         "Rom File SHA1": "73B33E67E3C9E1116F9FCB021B10BB1171B8696A",
         "Initial State File Path": "",
@@ -47,18 +56,16 @@
             "Enabled": true,
             "Max Size": 460
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|",
                     "|..|U.......|",
@@ -105,8 +112,7 @@
         "Test Candidate Inputs": false,
         "Candidate Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|",
                     "|..|U.......|",
@@ -149,17 +155,20 @@
                 ],
                 "Stop Input Evaluation": false
             }
-        ]
+        ],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Batman",
         "Frame Rate": 60.1,
         "Trace File Path": "boss.trace",
         "Enable Attack": true,
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,
@@ -178,7 +187,6 @@
                     }
                 ]
             },
-
             {
                 "Label": 1002,
                 "Conditions": [
@@ -206,7 +214,6 @@
                     }
                 ]
             },
-
             {
                 "Label": 1003,
                 "Conditions": [
@@ -223,6 +230,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0
     }
 }

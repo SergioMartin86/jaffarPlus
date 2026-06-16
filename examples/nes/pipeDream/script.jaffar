@@ -13,13 +13,13 @@
         "NUMA Domains Per Group": 1,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
             "Max Size (Mb)": 3000,
-            "Differential Compression":
-            {
-                "Enabled": false, 
+            "Differential Compression": {
+                "Enabled": false,
                 "Buffer Size": 1344,
                 "Use Zlib Compression": true
             }
@@ -33,10 +33,9 @@
         "Initial State File Path": "",
         "Use Flat Code Map": false,
         "Initial RAM Data File Path": "",
-        "SRAM Block Size": 0,
+        "SRAM Block Size": 8192,
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
-	    "SRAM Block Size": 8192,
         "Disabled State Properties": [
             "SRAM",
             "CHRR",
@@ -48,11 +47,10 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip":
-        {
-          "Rate": 1,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 1,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 1,
         "Show Empty Input Slots": false,
@@ -64,8 +62,7 @@
         "Allowed Input Sets": [
             {
                 "Conditions": [],
-                "Inputs": [
-                ],
+                "Inputs": [],
                 "Stop Input Evaluation": true
             },
             {
@@ -82,18 +79,15 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": []
     },
     "Game Configuration": {
         "Game Name": "NES / Pipe Dream",
         "Frame Rate": 60.1,
         "Bypass Emulator State": false,
         "Last Input Step Reward": 0.0,
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,
@@ -147,7 +141,7 @@
                         "Type": "Trigger Fail"
                     }
                 ]
-	        }
+            }
         ]
     }
 }

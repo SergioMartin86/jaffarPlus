@@ -37,7 +37,7 @@ public:
       _useTrace = true;
       std::string traceData;
       bool        status = jaffarCommon::file::loadStringFromFile(traceData, _traceFilePath.c_str());
-      if (status == false) JAFFAR_THROW_LOGIC("Could not find/read trace file: %s\n", _traceFilePath.c_str());
+      if (status == false && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr) JAFFAR_THROW_LOGIC("Could not find/read trace file: %s\n", _traceFilePath.c_str());
 
       std::istringstream f(traceData);
       std::string line;

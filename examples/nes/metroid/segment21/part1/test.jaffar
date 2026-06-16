@@ -14,11 +14,18 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 20000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 10000
-        }
+            "Max Size (Mb)": 10000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
@@ -48,17 +55,14 @@
             "Enabled": true,
             "Max Size": 1200
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
-                "Inputs": [
-                ],
+                "Conditions": [],
+                "Inputs": [],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|",
                     "|..|U.......|........|",
@@ -131,8 +135,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
@@ -140,16 +148,13 @@
         "Allow Fire": false,
         "Allow Pause": false,
         "Trace File Path": "test.trace",
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 998,
-                "Conditions": [
-                ],
-                "Satisfies": [  ],
+                "Conditions": [],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Set Point Magnet",
@@ -159,11 +164,11 @@
                         "Y": -18
                     },
                     {
-                        "Type":  "Set Allow Change Weapon",
+                        "Type": "Set Allow Change Weapon",
                         "Value": false
                     },
                     {
-                        "Type":  "Set Hash Bullet Enabled",
+                        "Type": "Set Hash Bullet Enabled",
                         "Value": false
                     }
                 ]
@@ -177,7 +182,7 @@
                         "Value": 130
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -215,7 +220,7 @@
                         "Value": 1
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -249,7 +254,7 @@
                         "Value": 161
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -265,7 +270,7 @@
                         "Value": 1
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -281,7 +286,7 @@
                         "Value": 153
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -302,7 +307,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -323,7 +328,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -344,7 +349,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -365,7 +370,7 @@
                         "Value": 126
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -386,7 +391,7 @@
                         "Value": 96
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -412,13 +417,15 @@
                         "Value": 100
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0
     }
 }

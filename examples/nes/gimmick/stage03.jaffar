@@ -14,11 +14,18 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 50000
-        }
+            "Max Size (Mb)": 50000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickNES",
@@ -35,7 +42,8 @@
             "CHRR",
             "NTAB",
             "SPRT"
-        ]
+        ],
+        "Serialize Only RAM": false
     },
     "Runner Configuration": {
         "Frameskip Rate": 2,
@@ -49,8 +57,7 @@
         },
         "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|",
                     "|..|...R..B.|",
@@ -85,28 +92,30 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 2,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Gimmick!",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
         "Trace File Path": "",
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Set Point X Magnet",
                         "Intensity": 100.0,
-                        "Pos": 250.000
+                        "Pos": 250.0
                     },
                     {
                         "Type": "Set Point Y Magnet",
@@ -152,7 +161,7 @@
                     }
                 ]
             }
-
-        ]
+        ],
+        "Bypass Emulator State": false
     }
 }

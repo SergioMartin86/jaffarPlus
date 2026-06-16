@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 20000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 300000
-        }
+            "Max Size (Mb)": 300000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,18 +55,16 @@
             "Enabled": true,
             "Max Size": 500
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|........|",
                     "|..|.D......|........|",
@@ -125,8 +131,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
@@ -135,14 +145,14 @@
         "Allow Change Weapon": false,
         "Trace File Path": "test.trace",
         "Print Properties": [
-        "WRAM Value [0x17F9]",
-        "WRAM Value [0x17FA]",
-        "WRAM Value [0x17FB]",
-        "WRAM Value [0x17FC]",
-        "WRAM Value [0x17FD]"
+            "WRAM Value [0x17F9]",
+            "WRAM Value [0x17FA]",
+            "WRAM Value [0x17FB]",
+            "WRAM Value [0x17FC]",
+            "WRAM Value [0x17FD]"
         ],
         "Hash Properties": [
-        "Bullet 1 State"
+            "Bullet 1 State"
         ],
         "Rules": [
             {
@@ -169,15 +179,14 @@
             },
             {
                 "Label": 5500,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Samus Rel Pos X",
                         "Op": "<",
                         "Value": -550.0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -186,15 +195,14 @@
             },
             {
                 "Label": 1001,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Enemy 5 State",
                         "Op": ">",
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -225,11 +233,11 @@
                     },
                     {
                         "Type": "Trigger Checkpoint",
-                                                "Tolerance": 3
+                        "Tolerance": 3
                     },
                     {
                         "Type": "Trigger Save Solution",
-                                                "Path": "checkpoint01.sol"
+                        "Path": "checkpoint01.sol"
                     },
                     {
                         "Type": "Trigger Win"
@@ -238,15 +246,16 @@
             },
             {
                 "Label": 1002,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Enemy 5 State",
                         "Op": "==",
                         "Value": 1
                     }
                 ],
-                "Satisfies": [ 1001 ],
+                "Satisfies": [
+                    1001
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -271,15 +280,16 @@
             },
             {
                 "Label": 1102,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Missile Grab Status",
                         "Op": ">",
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1002 ],
+                "Satisfies": [
+                    1002
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -296,15 +306,16 @@
             },
             {
                 "Label": 1103,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Missile Count",
                         "Op": ">",
                         "Value": 70
                     }
                 ],
-                "Satisfies": [ 1102 ],
+                "Satisfies": [
+                    1102
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -321,15 +332,16 @@
             },
             {
                 "Label": 1003,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Samus Rel Pos X",
                         "Op": "<",
                         "Value": -687
                     }
                 ],
-                "Satisfies": [ 1103 ],
+                "Satisfies": [
+                    1103
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -346,15 +358,16 @@
             },
             {
                 "Label": 1004,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Samus Rel Pos X",
                         "Op": "<",
                         "Value": -810
                     }
                 ],
-                "Satisfies": [ 1003 ],
+                "Satisfies": [
+                    1003
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -371,15 +384,16 @@
             },
             {
                 "Label": 1005,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Samus Rel Pos X",
                         "Op": "<",
                         "Value": -958
                     }
                 ],
-                "Satisfies": [ 1004 ],
+                "Satisfies": [
+                    1004
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -394,7 +408,7 @@
                     }
                 ]
             },
-           {
+            {
                 "Label": 1006,
                 "Conditions": [
                     {
@@ -403,7 +417,9 @@
                         "Value": 3
                     }
                 ],
-                "Satisfies": [ 1005   ],
+                "Satisfies": [
+                    1005
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -420,7 +436,7 @@
                         "Value": 130
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -436,7 +452,7 @@
                         "Value": 153
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -457,7 +473,7 @@
                         "Value": 48
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -478,7 +494,7 @@
                         "Value": 73
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -499,7 +515,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -520,7 +536,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -536,13 +552,16 @@
                         "Value": 43
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Allow Pause": false
     }
 }

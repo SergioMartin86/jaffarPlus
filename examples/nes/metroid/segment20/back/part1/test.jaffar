@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 20000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 20000
-        }
+            "Max Size (Mb)": 20000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,17 +55,14 @@
             "Enabled": true,
             "Max Size": 500
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
-                "Inputs": [
-                ],
+                "Conditions": [],
+                "Inputs": [],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|",
                     "|..|U.......|........|",
@@ -129,8 +134,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
@@ -144,14 +153,13 @@
         "Hash Properties": [
             "Bullet 1 Sprite",
             "Bullet 2 State",
-            "Bullet 3 State" 
+            "Bullet 3 State"
         ],
         "Rules": [
             {
                 "Label": 996,
-                "Conditions": [
-                ],
-                "Satisfies": [   ],
+                "Conditions": [],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Set Point Magnet",
@@ -183,7 +191,9 @@
                         "Value": 130
                     }
                 ],
-                "Satisfies": [ 996  ],
+                "Satisfies": [
+                    996
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -209,7 +219,9 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 997 ],
+                "Satisfies": [
+                    997
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -278,11 +290,11 @@
                     },
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 6
+                        "Tolerance": 6
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint01.sol"
+                        "Path": "checkpoint01.sol"
                     }
                 ]
             },
@@ -295,7 +307,7 @@
                         "Value": 32
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -311,7 +323,7 @@
                         "Value": 153
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -332,7 +344,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -353,7 +365,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -374,7 +386,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -395,7 +407,7 @@
                         "Value": 126
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -416,7 +428,7 @@
                         "Value": 96
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -432,7 +444,7 @@
                         "Value": 40
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -447,19 +459,21 @@
                         "Op": "==",
                         "Value": 5
                     },
-                        {
+                    {
                         "Property": "Missile Count",
                         "Op": "<",
                         "Value": 73
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0
     }
 }

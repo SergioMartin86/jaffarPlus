@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 1000
+            "Max Store Size (Mb)": 1000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 50000
-        }
+            "Max Size (Mb)": 50000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,18 +55,16 @@
             "Enabled": true,
             "Max Size": 530
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|........|",
                     "|..|.D......|........|",
@@ -124,18 +130,21 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
         "Frame Rate": 60.1,
-	    "Allow Fire": false,
+        "Allow Fire": false,
         "Trace File Path": "test.trace",
         "Print Properties": [
             "Door 2 State",
             "Door 2 Timer"
-
         ],
         "Hash Properties": [
             "Door 2 State",
@@ -174,15 +183,14 @@
                         "Value": 2400
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
                     }
-
                 ]
-              },
-                {
+            },
+            {
                 "Label": 1990,
                 "Conditions": [
                     {
@@ -196,7 +204,7 @@
                         "Value": 2400
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -212,12 +220,11 @@
                         "Value": 75
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
-
                 ]
             },
             {
@@ -229,7 +236,7 @@
                         "Value": 153
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -245,13 +252,16 @@
                         "Value": 9.99
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Allow Pause": false
     }
 }

@@ -14,14 +14,23 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 5000
-        }
+            "Max Size (Mb)": 5000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 8192,
         "Rom File Path": "Marble Madness (U) [!].nes",
         "Rom File SHA1": "DB009866ECF20CFDCE93DCA861F5BE1F9DFAAF2B",
         "Initial State File Path": "",
@@ -51,7 +60,11 @@
         "Allowed Input Sets": [
             {
                 "Conditions": [
-                    { "Property": "Current Step", "Op": "==", "Value": 118 }
+                    {
+                        "Property": "Current Step",
+                        "Op": "==",
+                        "Value": 118
+                    }
                 ],
                 "Inputs": [
                     "|..|....S...|"
@@ -60,7 +73,11 @@
             },
             {
                 "Conditions": [
-                    { "Property": "Current Step", "Op": "==", "Value": 75 }
+                    {
+                        "Property": "Current Step",
+                        "Op": "==",
+                        "Value": 75
+                    }
                 ],
                 "Inputs": [
                     "|..|....S...|"
@@ -69,7 +86,11 @@
             },
             {
                 "Conditions": [
-                    { "Property": "Pause State", "Op": "==", "Value": 0 }
+                    {
+                        "Property": "Pause State",
+                        "Op": "==",
+                        "Value": 0
+                    }
                 ],
                 "Inputs": [
                     "|..|........|"
@@ -77,8 +98,7 @@
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|"
                 ],
@@ -86,8 +106,16 @@
             },
             {
                 "Conditions": [
-                    { "Property": "Current Step", "Op": "<", "Value": 181 },
-                    { "Property": "Try New Inputs", "Op": "==", "Value": true }
+                    {
+                        "Property": "Current Step",
+                        "Op": "<",
+                        "Value": 181
+                    },
+                    {
+                        "Property": "Try New Inputs",
+                        "Op": "==",
+                        "Value": true
+                    }
                 ],
                 "Inputs": [
                     "|..|.......A|",
@@ -112,7 +140,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Marble Madness",
@@ -127,95 +160,94 @@
             "Last Input Step"
         ],
         "Hash Properties": [
-            "Game Cycle",          
-            "Win Flag",            
-            "Marble State",        
-            "Marble Flags",        
-            "Marble Pos X1",       
-            "Marble Pos X2",       
-            "Marble Pos Y1",       
-            "Marble Pos Y2",       
-            "Marble Pos Z1",       
-            "Marble Airtime",      
+            "Game Cycle",
+            "Win Flag",
+            "Marble State",
+            "Marble Flags",
+            "Marble Pos X1",
+            "Marble Pos X2",
+            "Marble Pos Y1",
+            "Marble Pos Y2",
+            "Marble Pos Z1",
+            "Marble Airtime",
             "Marble Dead Flag",
-            "Marble Pos X3",  
+            "Marble Pos X3",
             "Marble Pos Y3",
             "Marble Surface Angle",
-            "Marble Vel X",        
+            "Marble Vel X",
             "Marble Vel Y",
             "Marble Motion 1",
             "Pause State",
             "Prev Pause State"
         ],
-        "Rules":
-        [
-         {
-          "Label": 1000,
-          "Description": "Follow trace from existing TAS, trying to get ahead of it (offset)",
-          "Conditions":
-          [
-          ],
-      
-          "Satisfies": [ ],
-      
-          "Actions":
-          [
-            { "Type": "Set Trace Magnet", "Intensity": 1.0, "Offset": 1 }
-          ]
-         },
-
-         {
-            "Label": 2000,
-            "Description": "Fail on falling",
-            "Conditions":
-            [
-              { "Property": "Marble Pos Z", "Op": ">", "Value":  60 }
-            ],
-        
-            "Satisfies": [ ],
-        
-            "Actions":
-            [
-             { "Type": "Trigger Fail" }
-            ]
-           },
-           
-           {
-            "Label": 1900,
-            "Description": "Win on reaching goal",
-            "Conditions":
-            [
-              { "Property": "Win Flag", "Op": "==", "Value":  0 }
-            ],
-        
-            "Satisfies": [ ],
-        
-            "Actions":
-            [
-             {
-               "Type": "Trigger Win"
-             },
-             {
-              "Type": "Add Reward",
-              "Value": 10000
-              },
-              {
-                  "Type": "Set Point Magnet",
-                  "Intensity": 0.0,
-                  "X": 0,
-                  "Y": 0
-              },
-              {
-                  "Type": "Set Last Input Magnet",
-                  "Intensity": -1.0
-              },
-              {
-                   "Type": "Set Trace Magnet",
-                   "Intensity": 0.0,
-                   "Offset": 0
-              }
-            ]
-           }
-        ]
+        "Rules": [
+            {
+                "Label": 1000,
+                "Description": "Follow trace from existing TAS, trying to get ahead of it (offset)",
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity": 1.0,
+                        "Offset": 1
+                    }
+                ]
+            },
+            {
+                "Label": 2000,
+                "Description": "Fail on falling",
+                "Conditions": [
+                    {
+                        "Property": "Marble Pos Z",
+                        "Op": ">",
+                        "Value": 60
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 1900,
+                "Description": "Win on reaching goal",
+                "Conditions": [
+                    {
+                        "Property": "Win Flag",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    },
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "Intensity": 0.0,
+                        "X": 0,
+                        "Y": 0
+                    },
+                    {
+                        "Type": "Set Last Input Magnet",
+                        "Intensity": -1.0
+                    },
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity": 0.0,
+                        "Offset": 0
+                    }
+                ]
+            }
+        ],
+        "Bypass Emulator State": false
     }
 }

@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 20000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 1000
-        }
+            "Max Size (Mb)": 1000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,18 +55,16 @@
             "Enabled": true,
             "Max Size": 530
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|........|",
                     "|..|.D......|........|",
@@ -124,8 +130,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
@@ -155,7 +165,7 @@
                         "Type": "Set Missile Count Magnet",
                         "Intensity": 1.0
                     },
-                        {
+                    {
                         "Type": "Set Missile Grab Status Magnet",
                         "Intensity": 1.0
                     }
@@ -170,7 +180,7 @@
                         "Value": 1
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -192,12 +202,11 @@
                         "Value": 1
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
                     }
-
                 ]
             },
             {
@@ -209,12 +218,11 @@
                         "Value": 74
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
-
                 ]
             },
             {
@@ -226,7 +234,7 @@
                         "Value": 153
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -242,7 +250,7 @@
                         "Value": 1
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -258,13 +266,17 @@
                         "Value": 17.99
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Allow Fire": true,
+        "Allow Pause": false
     }
 }

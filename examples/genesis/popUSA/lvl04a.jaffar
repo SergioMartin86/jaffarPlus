@@ -14,11 +14,18 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 1000
-        }
+            "Max Size (Mb)": 1000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerGPGX",
@@ -379,7 +386,12 @@
                 ],
                 "Stop Input Evaluation": false
             }
-        ]
+        ],
+        "Frameskip": {
+            "Rate": 3,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "Genesis / Prince Of Persia",
@@ -672,6 +684,7 @@
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false
     }
 }

@@ -56,7 +56,11 @@
           { "Row": 2, "Col": 9 },
           { "Row": 5, "Col": 9 }
         ],
-        __REPLACE__
+        "Target Score": 0,
+        "Next Piece Queue": [],
+        "Initial Pieces": [
+          { "Type": 1, "Row": 1, "Col": 1 }
+        ]
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,

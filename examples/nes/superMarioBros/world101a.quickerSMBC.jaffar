@@ -15,10 +15,16 @@
         "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 10000
+            "Max Size (Mb)": 10000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
         }
     },
     "Emulator Configuration": {
@@ -62,16 +68,19 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Super Mario Bros",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,
@@ -102,6 +111,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Trace File Path": ""
     }
 }
