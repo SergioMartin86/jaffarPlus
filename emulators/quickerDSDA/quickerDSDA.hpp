@@ -61,20 +61,11 @@ public:
   // State advancing function
   void advanceStateImpl(const jaffar::input_t& input) override { _quickerDSDA->advanceState(input); }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override
-  {
-     _quickerDSDA->serializeState(serializer);
-  };
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override { _quickerDSDA->serializeState(serializer); };
 
-  __INLINE__ size_t getEffectiveStateSize() const 
-  {
-    return headlessGetEffectiveSaveSize();
-  }
+  __INLINE__ size_t getEffectiveStateSize() const { return headlessGetEffectiveSaveSize(); }
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override
-  {
-    _quickerDSDA->deserializeState(deserializer);
-  };
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override { _quickerDSDA->deserializeState(deserializer); };
 
   __INLINE__ void printInfo() const override {}
 
@@ -124,7 +115,7 @@ private:
   std::string                          _initialSequenceFilePath;
 
   static const size_t _saveBufferSize = 32 * 1024 * 1024;
-  uint8_t _saveBuffer[_saveBufferSize];
+  uint8_t             _saveBuffer[_saveBufferSize];
 };
 
 } // namespace emulator

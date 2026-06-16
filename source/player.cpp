@@ -110,10 +110,10 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
     // If running a command, don't print frame info, and finalize immediately after
     if (runCommand != "")
     {
-      isFinalize = true;
+      isFinalize    = true;
       showFrameInfo = false;
-      isReproduce = false;
-      isUnattended = true;
+      isReproduce   = false;
+      isUnattended  = true;
     }
 
     // Printing data and commands
@@ -153,13 +153,14 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       jaffarCommon::logger::log("[J+] State Repeated Hash Steps:   [ ");
       for (const auto step : repeatedHashSteps) jaffarCommon::logger::log(" %lu ", step);
       jaffarCommon::logger::log(" ] \n");
-      jaffarCommon::logger::log("[J+] Is Input Allowed:            %s\n", isInputAllowed ? "True" : "False" );
+      jaffarCommon::logger::log("[J+] Is Input Allowed:            %s\n", isInputAllowed ? "True" : "False");
       jaffarCommon::logger::log("[J+] State Size:                  %lu\n", stateSize);
       jaffarCommon::logger::log("[J+] Solution File:              '%s'\n", solutionFile.c_str());
       jaffarCommon::logger::log("[J+] Sequence Length:             %lu\n", sequenceLength);
       jaffarCommon::logger::log("[J+] Frame Rate:                  %f (%u)\n", frameRate, inverseFrameRate);
       jaffarCommon::logger::log("[J+] Checkpoint:                  Level: %lu, Tolerance: %lu\n", r.getGame()->getCheckpointLevel(), r.getGame()->getCheckpointTolerance());
-      jaffarCommon::logger::log("[J+] Manual Save Solution:        Active: %s, Path: '%s', Last Rule: (Current: %ld), (Prev: %ld)\n", r.getGame()->isSaveSolution() ? "Yes" : "No", r.getGame()->getSaveSolutionPath().c_str(), r.getGame()->getSaveSolutionCurrentLastRuleIdx(), r.getGame()->getSaveSolutionPrevLastRuleIdx());
+      jaffarCommon::logger::log("[J+] Manual Save Solution:        Active: %s, Path: '%s', Last Rule: (Current: %ld), (Prev: %ld)\n", r.getGame()->isSaveSolution() ? "Yes" : "No",
+                                r.getGame()->getSaveSolutionPath().c_str(), r.getGame()->getSaveSolutionCurrentLastRuleIdx(), r.getGame()->getSaveSolutionPrevLastRuleIdx());
       p.printInfo();
 
       // Print General Commands
@@ -229,16 +230,16 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       }
 
       // Toggles playback from current point
-      case 'p': isReproduce = !isReproduce;  break;
+      case 'p': isReproduce = !isReproduce; break;
 
       // Toggles Auto Reload
-      case 'r': isReload = !isReload;  break;
+      case 'r': isReload = !isReload; break;
 
       // Triggers the exit
-      case 'q': isFinalize = true;  break;
+      case 'q': isFinalize = true; break;
 
       // Handle any game-specific commands. If such command is executed, do not clear output
-      default: showFrameInfo = r.getGame()->playerParseCommand(command)  == false;
+      default: showFrameInfo = r.getGame()->playerParseCommand(command) == false;
     }
 
     // Correct current step if requested more than possible
@@ -256,7 +257,6 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       currentStep = sequenceLength;
       isReproduce = false;
     }
-    
   }
 
   // returning false on exit to trigger the finalization

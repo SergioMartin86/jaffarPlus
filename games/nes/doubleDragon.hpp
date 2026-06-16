@@ -2,10 +2,10 @@
 
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
-#include <jaffarCommon/deserializers/contiguous.hpp>
 
 namespace jaffarPlus
 {
@@ -29,84 +29,84 @@ private:
 
     _lowMem = _emulator->getProperty("LRAM").pointer;
 
-    registerGameProperty("Player Pos X1"       , &_lowMem[0x037E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 1 Pos X1"      , &_lowMem[0x037F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 2 Pos X1"      , &_lowMem[0x0380], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Pos Y1"       , &_lowMem[0x0072], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 1 Pos Y1"      , &_lowMem[0x0073], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 2 Pos Y1"      , &_lowMem[0x0074], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Screen Pos X1"       , &_lowMem[0x0508], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Screen Pos X2"       , &_lowMem[0x0507], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Screen Pos Y1"       , &_lowMem[0x00DD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player HP"           , &_lowMem[0x03B4], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 1 HP1"         , &_lowMem[0x03B5], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 2 HP1"         , &_lowMem[0x03B6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 1 HP2"         , &_lowMem[0x03C5], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 2 HP2"         , &_lowMem[0x03C6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Global Timer"        , &_lowMem[0x0502], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Frame Type"          , &_lowMem[0x0002], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Input 1"      , &_lowMem[0x00F5], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Input 2"      , &_lowMem[0x00F7], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Action"       , &_lowMem[0x03B0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Score 1"             , &_lowMem[0x0044], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Score 2"             , &_lowMem[0x0045], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Score 3"             , &_lowMem[0x0046], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Game State"          , &_lowMem[0x003E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Air State"    , &_lowMem[0x038E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player In Action"    , &_lowMem[0x0416], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Action Timer" , &_lowMem[0x00B2], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 1 Stun State"  , &_lowMem[0x038F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 2 Stun State"  , &_lowMem[0x0390], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos X1", &_lowMem[0x037E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 1 Pos X1", &_lowMem[0x037F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 Pos X1", &_lowMem[0x0380], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y1", &_lowMem[0x0072], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 1 Pos Y1", &_lowMem[0x0073], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 Pos Y1", &_lowMem[0x0074], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Screen Pos X1", &_lowMem[0x0508], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Screen Pos X2", &_lowMem[0x0507], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Screen Pos Y1", &_lowMem[0x00DD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player HP", &_lowMem[0x03B4], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 1 HP1", &_lowMem[0x03B5], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 HP1", &_lowMem[0x03B6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 1 HP2", &_lowMem[0x03C5], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 HP2", &_lowMem[0x03C6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Global Timer", &_lowMem[0x0502], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Frame Type", &_lowMem[0x0002], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Input 1", &_lowMem[0x00F5], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Input 2", &_lowMem[0x00F7], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Action", &_lowMem[0x03B0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Score 1", &_lowMem[0x0044], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Score 2", &_lowMem[0x0045], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Score 3", &_lowMem[0x0046], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Game State", &_lowMem[0x003E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Air State", &_lowMem[0x038E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player In Action", &_lowMem[0x0416], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Action Timer", &_lowMem[0x00B2], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 1 Stun State", &_lowMem[0x038F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 Stun State", &_lowMem[0x0390], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-    registerGameProperty("Enemy 1 HP"        , &_enemy1HP, Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemy 2 HP"        , &_enemy2HP, Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Prev Enemy 1 HP1"        , &_prevEnemy1HP1, Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Prev Enemy 2 HP1"        , &_prevEnemy2HP1, Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Score"          , &_score, Property::datatype_t::dt_float32, Property::endianness_t::little);
-    registerGameProperty("Current Step"   , &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    registerGameProperty("Player Pos X"   , &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
-    registerGameProperty("Player Pos Y"   , &_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
-    registerGameProperty("Screen Pos X"   , &_screenPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
-    registerGameProperty("Screen Pos Y"   , &_screenPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
-    registerGameProperty("Enemies Killed" , &_enemiesKilled, Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Enemies Spawned" , &_enemiesSpawned, Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Prev Enemy 1 Stun State" , &_prevEnemy1StunState, Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Prev Enemy 2 Stun State" , &_prevEnemy2StunState, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 1 HP", &_enemy1HP, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemy 2 HP", &_enemy2HP, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Prev Enemy 1 HP1", &_prevEnemy1HP1, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Prev Enemy 2 HP1", &_prevEnemy2HP1, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Score", &_score, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
+    registerGameProperty("Player Pos X", &_playerPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y", &_playerPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Screen Pos X", &_screenPosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Screen Pos Y", &_screenPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Enemies Killed", &_enemiesKilled, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Enemies Spawned", &_enemiesSpawned, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Prev Enemy 1 Stun State", &_prevEnemy1StunState, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Prev Enemy 2 Stun State", &_prevEnemy2StunState, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting emulator's low memory pointer
 
-    _playerPosX1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X1"   )]->getPointer();
-    _enemy1PosX1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 Pos X1"  )]->getPointer();
-    _enemy2PosX1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 Pos X1"  )]->getPointer();
-    _playerPosY1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y1"   )]->getPointer();
-    _enemy1PosY1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 Pos Y1"  )]->getPointer();
-    _enemy2PosY1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 Pos Y1"  )]->getPointer();
-    _screenPosX1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X1"  )]->getPointer();
-    _screenPosX2  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X2"  )]->getPointer();
-    _screenPosY1  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos Y1"  )]->getPointer();
-    _playerHP     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player HP"      )]->getPointer();
-    _enemy1HP1    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 HP1"     )]->getPointer();
-    _enemy2HP1    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 HP1"     )]->getPointer();
-    _enemy1HP2    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 HP2"     )]->getPointer();
-    _enemy2HP2    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 HP2"     )]->getPointer();
-    _globalTimer  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer"   )]->getPointer();
-    _frameType    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Frame Type"     )]->getPointer();
-    _playerInput1 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Input 1" )]->getPointer();
-    _playerInput2 = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Input 2" )]->getPointer();
-    _playerAction = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Action"  )]->getPointer();
-    _score1       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score 1"        )]->getPointer();
-    _score2       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score 2"        )]->getPointer();
-    _score3       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score 3"        )]->getPointer();
-    _gameState    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game State"     )]->getPointer();
-    _enemy1StunState = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 Stun State"     )]->getPointer();
-    _enemy2StunState = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 Stun State"     )]->getPointer();
+    _playerPosX1     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X1")]->getPointer();
+    _enemy1PosX1     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 Pos X1")]->getPointer();
+    _enemy2PosX1     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 Pos X1")]->getPointer();
+    _playerPosY1     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y1")]->getPointer();
+    _enemy1PosY1     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 Pos Y1")]->getPointer();
+    _enemy2PosY1     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 Pos Y1")]->getPointer();
+    _screenPosX1     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X1")]->getPointer();
+    _screenPosX2     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X2")]->getPointer();
+    _screenPosY1     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos Y1")]->getPointer();
+    _playerHP        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player HP")]->getPointer();
+    _enemy1HP1       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 HP1")]->getPointer();
+    _enemy2HP1       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 HP1")]->getPointer();
+    _enemy1HP2       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 HP2")]->getPointer();
+    _enemy2HP2       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 HP2")]->getPointer();
+    _globalTimer     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
+    _frameType       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Frame Type")]->getPointer();
+    _playerInput1    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Input 1")]->getPointer();
+    _playerInput2    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Input 2")]->getPointer();
+    _playerAction    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Action")]->getPointer();
+    _score1          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score 1")]->getPointer();
+    _score2          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score 2")]->getPointer();
+    _score3          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Score 3")]->getPointer();
+    _gameState       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game State")]->getPointer();
+    _enemy1StunState = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 1 Stun State")]->getPointer();
+    _enemy2StunState = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Enemy 2 Stun State")]->getPointer();
 
     _prevEnemy1StunState = *_enemy1StunState;
     _prevEnemy2StunState = *_enemy2StunState;
-    _prevEnemy1HP1 = *_enemy1HP1;
-    _prevEnemy2HP1 = *_enemy2HP1;
-    _enemiesKilled = 0;
-    _enemiesSpawned = 0;
+    _prevEnemy1HP1       = *_enemy1HP1;
+    _prevEnemy2HP1       = *_enemy2HP1;
+    _enemiesKilled       = 0;
+    _enemiesSpawned      = 0;
 
     _currentStep = 0;
   }
@@ -147,7 +147,7 @@ private:
     _screenPosX = (float)*_screenPosX1 * 256.0f + (float)*_screenPosX2;
     _screenPosY = (float)*_screenPosY1;
 
-    _score = ((float)*_score1 * 10.0 + (float)*_score2 * 1000.0 + (float)*_score3 * 100000.0) * ( 10.0 / 16.0 );
+    _score = ((float)*_score1 * 10.0 + (float)*_score2 * 1000.0 + (float)*_score3 * 100000.0) * (10.0 / 16.0);
 
     _enemy1HP = 0;
     if (*_enemy1HP1 > 0) _enemy1HP = *_enemy1HP1 + 64;
@@ -156,7 +156,6 @@ private:
     _enemy2HP = 0;
     if (*_enemy2HP1 > 0) _enemy2HP = *_enemy2HP1 + 64;
     if (*_enemy2HP1 == 0) _enemy2HP = 32 - *_enemy2HP2;
-
 
     if (*_enemy1HP1 == 0 && *_enemy1StunState == 128 && _prevEnemy1StunState != 128) _enemiesKilled++;
     if (*_enemy2HP1 == 0 && *_enemy2StunState == 128 && _prevEnemy2StunState != 128) _enemiesKilled++;
@@ -181,11 +180,11 @@ private:
     _screenPointMagnet.x         = 0.0;
     _screenPointMagnet.y         = 0.0;
 
-    _enemy1HPMagnet = 0.0;
-    _enemy2HPMagnet = 0.0;
-    _enemiesKilledMagnet = 0.0;
+    _enemy1HPMagnet       = 0.0;
+    _enemy2HPMagnet       = 0.0;
+    _enemiesKilledMagnet  = 0.0;
     _enemiesSpawnedMagnet = 0.0;
-    _scoreMagnet = 0.0;
+    _scoreMagnet          = 0.0;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
@@ -208,7 +207,7 @@ private:
     _playerDistanceToEnemy2 = sqrtf(_playerDistanceToEnemy2X * _playerDistanceToEnemy2X + _playerDistanceToEnemy2Y * _playerDistanceToEnemy2Y);
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override 
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.push(&_enemiesKilled, sizeof(_enemiesKilled));
     serializer.push(&_enemiesSpawned, sizeof(_enemiesSpawned));
@@ -272,7 +271,8 @@ private:
 
     if (std::abs(_playerPointMagnet.intensity) > 0.0f)
     {
-      jaffarCommon::logger::log("[J+]  + Player Point Magnet                      Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _playerPointMagnet.intensity, _playerPointMagnet.x, _playerPointMagnet.y);
+      jaffarCommon::logger::log("[J+]  + Player Point Magnet                      Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _playerPointMagnet.intensity, _playerPointMagnet.x,
+                                _playerPointMagnet.y);
       jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _playerDistanceToPointX);
       jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _playerDistanceToPointY);
       jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _playerDistanceToPoint);
@@ -280,18 +280,18 @@ private:
 
     if (std::abs(_screenPointMagnet.intensity) > 0.0f)
     {
-      jaffarCommon::logger::log("[J+]  + Screen Point Magnet                      Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _screenPointMagnet.intensity, _screenPointMagnet.x, _screenPointMagnet.y);
+      jaffarCommon::logger::log("[J+]  + Screen Point Magnet                      Intensity: %.5f, X: %3.3f, Y: %3.3f\n", _screenPointMagnet.intensity, _screenPointMagnet.x,
+                                _screenPointMagnet.y);
       jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _screenDistanceToPointX);
       jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _screenDistanceToPointY);
       jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _screenDistanceToPoint);
     }
-    
-    if (std::abs(_enemy1HPMagnet) > 0.0f)       jaffarCommon::logger::log("[J+]  + Enemy 1 HP Magnet                      Intensity: %.5f\n", _enemy1HPMagnet);
-    if (std::abs(_enemy2HPMagnet) > 0.0f)       jaffarCommon::logger::log("[J+]  + Enemy 2 HP Magnet                      Intensity: %.5f\n", _enemy2HPMagnet);
-    if (std::abs(_enemiesKilledMagnet) > 0.0f)  jaffarCommon::logger::log("[J+]  + Enemies Killed Magnet                  Intensity: %.5f\n", _enemiesKilledMagnet);
+
+    if (std::abs(_enemy1HPMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Enemy 1 HP Magnet                      Intensity: %.5f\n", _enemy1HPMagnet);
+    if (std::abs(_enemy2HPMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Enemy 2 HP Magnet                      Intensity: %.5f\n", _enemy2HPMagnet);
+    if (std::abs(_enemiesKilledMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Enemies Killed Magnet                  Intensity: %.5f\n", _enemiesKilledMagnet);
     if (std::abs(_enemiesSpawnedMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Enemies Spawned Magnet                 Intensity: %.5f\n", _enemiesSpawnedMagnet);
-    if (std::abs(_scoreMagnet) > 0.0f)          jaffarCommon::logger::log("[J+]  + Score Magnet                           Intensity: %.5f\n", _scoreMagnet);
-    
+    if (std::abs(_scoreMagnet) > 0.0f) jaffarCommon::logger::log("[J+]  + Score Magnet                           Intensity: %.5f\n", _scoreMagnet);
   }
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
@@ -333,38 +333,38 @@ private:
     if (actionType == "Set Score Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]() { this->_scoreMagnet = intensity;  });
+      rule.addAction([=, this]() { this->_scoreMagnet = intensity; });
       recognizedActionType = true;
     }
 
     if (actionType == "Set Enemy 1 HP Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]() { this->_enemy1HPMagnet = intensity;  });
+      rule.addAction([=, this]() { this->_enemy1HPMagnet = intensity; });
       recognizedActionType = true;
     }
 
     if (actionType == "Set Enemy 2 HP Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]() { this->_enemy2HPMagnet = intensity;  });
+      rule.addAction([=, this]() { this->_enemy2HPMagnet = intensity; });
       recognizedActionType = true;
     }
 
     if (actionType == "Set Enemies Killed Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]() { this->_enemiesKilledMagnet = intensity;  });
+      rule.addAction([=, this]() { this->_enemiesKilledMagnet = intensity; });
       recognizedActionType = true;
     }
 
     if (actionType == "Set Enemies Spawned Magnet")
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]() { this->_enemiesSpawnedMagnet = intensity;  });
+      rule.addAction([=, this]() { this->_enemiesSpawnedMagnet = intensity; });
       recognizedActionType = true;
     }
-    
+
     return recognizedActionType;
   }
 
@@ -382,32 +382,32 @@ private:
     float y         = 0.0; // What is the y point of attraction
   };
 
-  float _playerEnemy1Magnet;
-  float _playerEnemy2Magnet;
-  float _enemy1HPMagnet;
-  float _enemy2HPMagnet;
-  float _enemiesKilledMagnet;
-  float _enemiesSpawnedMagnet;
-  float _scoreMagnet;
+  float         _playerEnemy1Magnet;
+  float         _playerEnemy2Magnet;
+  float         _enemy1HPMagnet;
+  float         _enemy2HPMagnet;
+  float         _enemiesKilledMagnet;
+  float         _enemiesSpawnedMagnet;
+  float         _scoreMagnet;
   pointMagnet_t _playerPointMagnet;
   pointMagnet_t _screenPointMagnet;
 
-  uint8_t* _playerPosX1  ;
-  uint8_t* _enemy1PosX1  ;
-  uint8_t* _enemy2PosX1  ;
-  uint8_t* _playerPosY1  ;
-  uint8_t* _enemy1PosY1  ;
-  uint8_t* _enemy2PosY1  ;
-  uint8_t* _screenPosX1 ;
-  uint8_t* _screenPosX2 ;
-  uint8_t* _screenPosY1 ;
-  uint8_t* _playerHP    ;
-  uint8_t* _enemy1HP1    ;
-  uint8_t* _enemy2HP1    ;
-  uint8_t* _enemy1HP2    ;
-  uint8_t* _enemy2HP2    ;
-  uint8_t* _globalTimer ;
-  uint8_t* _frameType   ;
+  uint8_t* _playerPosX1;
+  uint8_t* _enemy1PosX1;
+  uint8_t* _enemy2PosX1;
+  uint8_t* _playerPosY1;
+  uint8_t* _enemy1PosY1;
+  uint8_t* _enemy2PosY1;
+  uint8_t* _screenPosX1;
+  uint8_t* _screenPosX2;
+  uint8_t* _screenPosY1;
+  uint8_t* _playerHP;
+  uint8_t* _enemy1HP1;
+  uint8_t* _enemy2HP1;
+  uint8_t* _enemy1HP2;
+  uint8_t* _enemy2HP2;
+  uint8_t* _globalTimer;
+  uint8_t* _frameType;
   uint8_t* _playerInput1;
   uint8_t* _playerInput2;
   uint8_t* _playerAction;
@@ -454,8 +454,8 @@ private:
   uint8_t _prevEnemy1HP1;
   uint8_t _prevEnemy2HP1;
 
-  uint8_t _enemiesKilled;
-  uint8_t _enemiesSpawned;
+  uint8_t  _enemiesKilled;
+  uint8_t  _enemiesSpawned;
   uint16_t _currentStep;
 
   // Pointer to emulator's low memory storage

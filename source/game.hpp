@@ -332,8 +332,8 @@ public:
         }
 
         // Evaluate save state rule and path if specified -- only if the current rule label is greater than the last rule to activate this
-        if (rule->isSaveSolutionRule() && (ssize_t)ruleIdx > _saveSolutionCurrentLastRuleIdx)   _saveSolutionCurrentLastRuleId = ruleIdx;
-        
+        if (rule->isSaveSolutionRule() && (ssize_t)ruleIdx > _saveSolutionCurrentLastRuleIdx) _saveSolutionCurrentLastRuleId = ruleIdx;
+
         // Winning in the same rule superseeds checkpoint, and failing superseed everything
         if (rule->isWinRule()) _stateType = stateType_t::win;
         if (rule->isFailRule()) _stateType = stateType_t::fail;
@@ -481,11 +481,8 @@ public:
   // Function to get the current last rule idx to set a save solution
   __INLINE__ ssize_t getSaveSolutionCurrentLastRuleIdx() const { return _saveSolutionCurrentLastRuleId; }
 
-    // Function to get the state's path to save state, if set
-  __INLINE__ const std::string getSaveSolutionPath() const
-  {
-     return isSaveSolution() ? _rules[_saveSolutionCurrentLastRuleId]->getSaveSolutionPath() : "";
-  }
+  // Function to get the state's path to save state, if set
+  __INLINE__ const std::string getSaveSolutionPath() const { return isSaveSolution() ? _rules[_saveSolutionCurrentLastRuleId]->getSaveSolutionPath() : ""; }
 
   // Function to get game name in runtime
   __INLINE__ std::string getName() const { return _gameName; }
@@ -503,14 +500,13 @@ public:
   virtual __INLINE__ std::set<std::string> getAllPossibleInputs() { return {}; }
 
   // Player-specific commands
-  virtual void playerPrintCommands() const {}           // If the game has any specific player commands, print them now
+  virtual void playerPrintCommands() const {}                          // If the game has any specific player commands, print them now
   virtual bool playerParseCommand(const int command) { return false; } // If the game has any specific player commands, print them now
 
   // Function to get direct state hash without passing an hashing engine
   virtual jaffarCommon::hash::hash_t getDirectStateHash() const { return jaffarCommon::hash::hash_t(); }
 
 protected:
-
   void* registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)
   {
     // Creating property

@@ -5,7 +5,6 @@
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 
-
 namespace jaffarPlus
 {
 
@@ -30,17 +29,17 @@ private:
 
     // Registering native game properties
     registerGameProperty("Remaining Enemies", &_lowMem[0x11], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Shot 1 Active",     &_lowMem[0x4C], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Shot 1 Pos Y",      &_lowMem[0x4E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Shot 2 Pos Y",      &_lowMem[0x56], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Frame Type",        &_lowMem[0x01], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Shot 1 Active", &_lowMem[0x4C], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Shot 1 Pos Y", &_lowMem[0x4E], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Shot 2 Pos Y", &_lowMem[0x56], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Frame Type", &_lowMem[0x01], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _remainingEnemies   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Remaining Enemies")]->getPointer();
-    _shot1Active         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Shot 1 Active")]->getPointer();
-    _shot1PosY           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Shot 1 Pos Y")]->getPointer();
-    _shot2PosY           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Shot 2 Pos Y")]->getPointer();
-    _frameType           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Frame Type")]->getPointer();
+    _remainingEnemies = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Remaining Enemies")]->getPointer();
+    _shot1Active      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Shot 1 Active")]->getPointer();
+    _shot1PosY        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Shot 1 Pos Y")]->getPointer();
+    _shot2PosY        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Shot 2 Pos Y")]->getPointer();
+    _frameType        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Frame Type")]->getPointer();
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -52,27 +51,23 @@ private:
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
     //  hashEngine.Update(_lowMem, 0x80);
-     for (size_t i = 0; i < 0x80; i++)
-      if (i != 0x06) // ?
-      if (i != 0x6E) // Player Input
-      if (i != 0x4A) // Timer
-      if (i != 0x51) // Enemy Bullet
-      if (i != 0x52) // Enemy Bullet
-      if (i != 0x5A) // Enemy Stuff?
-      if (i != 0x6A) // Enemy Stuff?
-      if (i < 0x2B || i > 0x42) // Brick statuses
-       hashEngine.Update(_lowMem[i]);
+    for (size_t i = 0; i < 0x80; i++)
+      if (i != 0x06)                          // ?
+        if (i != 0x6E)                        // Player Input
+          if (i != 0x4A)                      // Timer
+            if (i != 0x51)                    // Enemy Bullet
+              if (i != 0x52)                  // Enemy Bullet
+                if (i != 0x5A)                // Enemy Stuff?
+                  if (i != 0x6A)              // Enemy Stuff?
+                    if (i < 0x2B || i > 0x42) // Brick statuses
+                      hashEngine.Update(_lowMem[i]);
 
-      // if (i != 0x1C) // Timer ?
+    // if (i != 0x1C) // Timer ?
   }
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
-  {
-  }
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override {}
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
-  {
-  }
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) {}
 
   __INLINE__ float calculateGameSpecificReward() const
   {
@@ -90,7 +85,7 @@ private:
       reward += 100.0;
       reward += (90.0) - (float)*_shot2PosY;
     }
-    
+
     reward -= (float)*_remainingEnemies * 1000.0;
 
     // Returning reward
@@ -119,7 +114,6 @@ private:
     return jaffarCommon::hash::hash_t();
   }
 
-
   // Pointer to emulator's low memory storage
   uint8_t* _lowMem;
 
@@ -128,7 +122,6 @@ private:
   uint8_t* _shot1PosY;
   uint8_t* _shot2PosY;
   uint8_t* _frameType;
-
 };
 
 } // namespace a2600

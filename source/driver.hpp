@@ -197,7 +197,7 @@ public:
     _updateIntermediateResultMutex.lock();
 
     // Saving best solution and state
-    std::string jobSuffix = std::string(".") + std::to_string(_jobId);
+    std::string jobSuffix  = std::string(".") + std::to_string(_jobId);
     std::string stepSuffix = std::string(".") + std::to_string(_currentStep);
 
     // Saving files with standard name

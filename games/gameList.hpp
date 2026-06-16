@@ -4,29 +4,29 @@
 
 #ifdef __JAFFAR_ENABLE_NES
 #include "nes/arkanoid2.hpp"
-#include "nes/iceClimber.hpp"
+#include "nes/batman.hpp"
 #include "nes/beetlejuice.hpp"
+#include "nes/bestOfTheBest.hpp"
+#include "nes/darkwingDuck.hpp"
+#include "nes/donkeyKong.hpp"
+#include "nes/doubleDragon.hpp"
+#include "nes/exciteBike.hpp"
+#include "nes/gimmick.hpp"
+#include "nes/iceClimber.hpp"
 #include "nes/indyHeat.hpp"
+#include "nes/kungFu.hpp"
 #include "nes/lunarBall.hpp"
+#include "nes/marbleMadness.hpp"
+#include "nes/metroid.hpp"
 #include "nes/microMachines.hpp"
+#include "nes/ninjaGaiden3.hpp"
+#include "nes/pacmanChampionship.hpp"
+#include "nes/pinball.hpp"
+#include "nes/pipeDream.hpp"
 #include "nes/saintSeiyaOugonDensetsu.hpp"
 #include "nes/sidePocket.hpp"
 #include "nes/sprilo.hpp"
-#include "nes/marbleMadness.hpp"
-#include "nes/bestOfTheBest.hpp"
-#include "nes/doubleDragon.hpp"
-#include "nes/gimmick.hpp"
-#include "nes/ninjaGaiden3.hpp"
-#include "nes/batman.hpp"
-#include "nes/darkwingDuck.hpp"
-#include "nes/metroid.hpp"
-#include "nes/pacmanChampionship.hpp"
-#include "nes/pipeDream.hpp"
-#include "nes/kungFu.hpp"
 #include "nes/streetFighter2010.hpp"
-#include "nes/exciteBike.hpp"
-#include "nes/donkeyKong.hpp"
-#include "nes/pinball.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_SDLPOP
@@ -35,14 +35,15 @@
 
 #ifdef __JAFFAR_ENABLE_SNES
 #include "snes/arkanoid.hpp"
+#include "snes/bestOfTheBest.hpp"
 #include "snes/christmasCraze.hpp"
 #include "snes/superOffRoad.hpp"
-#include "snes/bestOfTheBest.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_GENESIS
 #include "gamegear/pop.hpp"
 #include "genesis/avuado.hpp"
+#include "genesis/bestOfTheBest.hpp"
 #include "genesis/dinoRunner.hpp"
 #include "genesis/microMachines.hpp"
 #include "genesis/pop.hpp"
@@ -50,14 +51,13 @@
 #include "genesis/segapede.hpp"
 #include "genesis/shoveit.hpp"
 #include "genesis/sonic.hpp"
-#include "genesis/bestOfTheBest.hpp"
 #include "sms/snailMaze.hpp"
 #endif
 
 #ifdef __JAFFAR_ENABLE_A2600
 #include "a2600/alien.hpp"
-#include "a2600/hellway.hpp"
 #include "a2600/galaxian.hpp"
+#include "a2600/hellway.hpp"
 #include "a2600/spaceInvaders.hpp"
 #include "a2600/spiderman.hpp"
 #endif

@@ -76,7 +76,7 @@ private:
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
-    _BInputIdx = _emulator->registerInput("|..|.....B..|");
+    _BInputIdx    = _emulator->registerInput("|..|.....B..|");
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override

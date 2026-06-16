@@ -47,10 +47,10 @@ public:
     _candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
 
     // Getting frame skip configuration
-    const auto frameskipJs = jaffarCommon::json::getObject(config, "Frameskip");
-    _frameskipRate = jaffarCommon::json::getNumber<size_t>(frameskipJs, "Rate");
+    const auto frameskipJs   = jaffarCommon::json::getObject(config, "Frameskip");
+    _frameskipRate           = jaffarCommon::json::getNumber<size_t>(frameskipJs, "Rate");
     _frameskipUseCustomInput = jaffarCommon::json::getBoolean(frameskipJs, "Use Custom Input");
-    _frameskipCustomInput = jaffarCommon::json::getString(frameskipJs, "Custom Input");
+    _frameskipCustomInput    = jaffarCommon::json::getString(frameskipJs, "Custom Input");
 
     // Option to bypass hash calculation via MetroHash and get it straight from the game
     _bypassHashCalculation = jaffarCommon::json::getBoolean(config, "Bypass Hash Calculation");

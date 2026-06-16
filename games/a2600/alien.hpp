@@ -28,31 +28,31 @@ private:
     _lowMem = _emulator->getProperty("RAM").pointer;
 
     // Registering native game properties
-    registerGameProperty("Pellets Eaten",     &_lowMem[0x5B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Game Status",       &_lowMem[0x0D], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Alive",      &_lowMem[0x66], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Direction",  &_lowMem[0x04], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Pos X",      &_lowMem[0x08], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Player Pos Y",      &_lowMem[0x0A], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Pellets Eaten", &_lowMem[0x5B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Game Status", &_lowMem[0x0D], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Alive", &_lowMem[0x66], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Direction", &_lowMem[0x04], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos X", &_lowMem[0x08], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Player Pos Y", &_lowMem[0x0A], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Getting some properties' pointers now for quick access later
-    _pelletsEaten        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Pellets Eaten")]->getPointer();
-    _gameStatus          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Status")]->getPointer();
-    _playerAlive         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Alive")]->getPointer();
-    _playerDirection     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Direction")]->getPointer();
-    _playerPosX          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _playerPosY          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _pelletsEaten    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Pellets Eaten")]->getPointer();
+    _gameStatus      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Status")]->getPointer();
+    _playerAlive     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Alive")]->getPointer();
+    _playerDirection = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Direction")]->getPointer();
+    _playerPosX      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
 
-    _inputL    = _emulator->registerInput("|.....|..L..|");
-    _inputU    = _emulator->registerInput("|.....|U....|");
-    _inputD    = _emulator->registerInput("|.....|.D...|");
-    _inputR    = _emulator->registerInput("|.....|...R.|");
+    _inputL = _emulator->registerInput("|.....|..L..|");
+    _inputU = _emulator->registerInput("|.....|U....|");
+    _inputD = _emulator->registerInput("|.....|.D...|");
+    _inputR = _emulator->registerInput("|.....|...R.|");
 
-    _verticalPassagesPosX.insert(_verticalPassagesPosX.end(), { 2, 14, 22, 34, 46, 50, 66, 70, 82, 94, 102, 114 });
-    _horizontalPassagesPosY.insert(_horizontalPassagesPosY.end(), { 69, 81, 93, 57, 64, 45, 33, 21 });
+    _verticalPassagesPosX.insert(_verticalPassagesPosX.end(), {2, 14, 22, 34, 46, 50, 66, 70, 82, 94, 102, 114});
+    _horizontalPassagesPosY.insert(_horizontalPassagesPosY.end(), {69, 81, 93, 57, 64, 45, 33, 21});
 
     _prevPelletsEaten = 0;
-    _keyFrame = 0;
+    _keyFrame         = 0;
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -74,8 +74,8 @@ private:
     //    hashEngine.Update(_lowMem[i]);
 
     hashEngine.Update(*_pelletsEaten);
-    hashEngine.Update(*_gameStatus); 
-    hashEngine.Update(*_playerAlive); 
+    hashEngine.Update(*_gameStatus);
+    hashEngine.Update(*_playerAlive);
     hashEngine.Update(_lowMem[0x08]); // Player Pos X
     hashEngine.Update(_lowMem[0x34]); // Player Pos X
     hashEngine.Update(_lowMem[0x0A]); // Player Pos Y
@@ -85,24 +85,15 @@ private:
     hashEngine.Update(_lowMem[0x3F]); // Player Direction
 
     // Pellets
-    for (size_t i = 0x50; i <= 0x5B; i++)
-       hashEngine.Update(_lowMem[i]);
-  }
-  
-  __INLINE__ std::set<std::string> getAllPossibleInputs()
-  {
-     return {
-             "|.....|..L..|",
-             "|.....|U....|",
-             "|.....|.D...|",
-             "|.....|...R.|"
-            };
+    for (size_t i = 0x50; i <= 0x5B; i++) hashEngine.Update(_lowMem[i]);
   }
 
-  #define A2600_ALIEN_DIRECTION_LEFT 64
-  #define A2600_ALIEN_DIRECTION_DOWN 32
-  #define A2600_ALIEN_DIRECTION_RIGHT 128
-  #define A2600_ALIEN_DIRECTION_UP 16
+  __INLINE__ std::set<std::string> getAllPossibleInputs() { return {"|.....|..L..|", "|.....|U....|", "|.....|.D...|", "|.....|...R.|"}; }
+
+#define A2600_ALIEN_DIRECTION_LEFT 64
+#define A2600_ALIEN_DIRECTION_DOWN 32
+#define A2600_ALIEN_DIRECTION_RIGHT 128
+#define A2600_ALIEN_DIRECTION_UP 16
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
     if (*_playerDirection == A2600_ALIEN_DIRECTION_RIGHT)
@@ -110,10 +101,10 @@ private:
       // bool tryVertical = false;
       // for (const auto posX : _verticalPassagesPosX)  if (*_playerPosX == posX-1 || *_playerPosX == posX) { tryVertical = true; break; }
 
-      allowedInputSet.insert(allowedInputSet.end(), { _inputR });  
-      // if (tryVertical == true) allowedInputSet.insert(allowedInputSet.end(), { _inputU, _inputD });  
-      allowedInputSet.insert(allowedInputSet.end(), { _inputU, _inputD });  
-      if (_keyFrame == 1) allowedInputSet.insert(allowedInputSet.end(), { _inputL });
+      allowedInputSet.insert(allowedInputSet.end(), {_inputR});
+      // if (tryVertical == true) allowedInputSet.insert(allowedInputSet.end(), { _inputU, _inputD });
+      allowedInputSet.insert(allowedInputSet.end(), {_inputU, _inputD});
+      if (_keyFrame == 1) allowedInputSet.insert(allowedInputSet.end(), {_inputL});
 
       return;
     }
@@ -123,10 +114,10 @@ private:
       // bool tryVertical = false;
       // for (const auto posX : _verticalPassagesPosX)  if (*_playerPosX == posX+1 || *_playerPosX == posX) { tryVertical = true; break; }
 
-      allowedInputSet.insert(allowedInputSet.end(), { _inputL });  
-      // if (tryVertical == true) allowedInputSet.insert(allowedInputSet.end(), { _inputU, _inputD });  
-      allowedInputSet.insert(allowedInputSet.end(), { _inputU, _inputD });  
-      if (_keyFrame == 1) allowedInputSet.insert(allowedInputSet.end(), { _inputR });
+      allowedInputSet.insert(allowedInputSet.end(), {_inputL});
+      // if (tryVertical == true) allowedInputSet.insert(allowedInputSet.end(), { _inputU, _inputD });
+      allowedInputSet.insert(allowedInputSet.end(), {_inputU, _inputD});
+      if (_keyFrame == 1) allowedInputSet.insert(allowedInputSet.end(), {_inputR});
 
       return;
     }
@@ -136,10 +127,10 @@ private:
       // bool tryHorizontal = false;
       // for (const auto posY : _horizontalPassagesPosY)  if (*_playerPosY == posY+1 || *_playerPosY == posY) { tryHorizontal = true; break; }
 
-      allowedInputSet.insert(allowedInputSet.end(), { _inputU });  
-      // if (tryHorizontal == true) allowedInputSet.insert(allowedInputSet.end(), { _inputL, _inputR });  
-      allowedInputSet.insert(allowedInputSet.end(), { _inputL, _inputR });  
-      if (_keyFrame == 1) allowedInputSet.insert(allowedInputSet.end(), { _inputD });
+      allowedInputSet.insert(allowedInputSet.end(), {_inputU});
+      // if (tryHorizontal == true) allowedInputSet.insert(allowedInputSet.end(), { _inputL, _inputR });
+      allowedInputSet.insert(allowedInputSet.end(), {_inputL, _inputR});
+      if (_keyFrame == 1) allowedInputSet.insert(allowedInputSet.end(), {_inputD});
 
       return;
     }
@@ -149,14 +140,14 @@ private:
       // bool tryHorizontal = false;
       // for (const auto posY : _horizontalPassagesPosY)  if (*_playerPosY == posY-1 || *_playerPosY == posY-1) { tryHorizontal = true; break; }
 
-      allowedInputSet.insert(allowedInputSet.end(), { _inputD });  
-      // if (tryHorizontal == true) allowedInputSet.insert(allowedInputSet.end(), { _inputL, _inputR });  
-      allowedInputSet.insert(allowedInputSet.end(), { _inputL, _inputR });  
-      if (_keyFrame == 1) allowedInputSet.insert(allowedInputSet.end(), { _inputU });
+      allowedInputSet.insert(allowedInputSet.end(), {_inputD});
+      // if (tryHorizontal == true) allowedInputSet.insert(allowedInputSet.end(), { _inputL, _inputR });
+      allowedInputSet.insert(allowedInputSet.end(), {_inputL, _inputR});
+      if (_keyFrame == 1) allowedInputSet.insert(allowedInputSet.end(), {_inputU});
       return;
     }
 
-    allowedInputSet.insert(allowedInputSet.end(), { _inputL, _inputU, _inputD, _inputR });
+    allowedInputSet.insert(allowedInputSet.end(), {_inputL, _inputU, _inputD, _inputR});
   }
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
@@ -204,28 +195,26 @@ private:
     return jaffarCommon::hash::hash_t();
   }
 
-
   // Pointer to emulator's low memory storage
   uint8_t* _lowMem;
 
-  uint8_t* _pelletsEaten  ;
-  uint8_t* _gameStatus    ;
-  uint8_t* _playerAlive   ;
-  uint8_t* _playerDirection   ;
-  uint8_t* _playerPosX   ;
-  uint8_t* _playerPosY   ;
+  uint8_t* _pelletsEaten;
+  uint8_t* _gameStatus;
+  uint8_t* _playerAlive;
+  uint8_t* _playerDirection;
+  uint8_t* _playerPosX;
+  uint8_t* _playerPosY;
 
-  uint8_t _prevPelletsEaten  ;
+  uint8_t _prevPelletsEaten;
   uint8_t _keyFrame;
 
-  InputSet::inputIndex_t  _inputL;
-  InputSet::inputIndex_t  _inputU;
-  InputSet::inputIndex_t  _inputD;
-  InputSet::inputIndex_t  _inputR;
+  InputSet::inputIndex_t _inputL;
+  InputSet::inputIndex_t _inputU;
+  InputSet::inputIndex_t _inputD;
+  InputSet::inputIndex_t _inputR;
 
   std::vector<uint8_t> _verticalPassagesPosX;
   std::vector<uint8_t> _horizontalPassagesPosY;
-
 };
 
 } // namespace a2600

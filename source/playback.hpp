@@ -4,9 +4,9 @@
 #include "jaffarCommon/hash.hpp"
 #include "jaffarCommon/serializers/contiguous.hpp"
 #include "runner.hpp"
+#include <algorithm>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 namespace jaffarPlus
 {
@@ -73,10 +73,10 @@ public:
       step.isInputAllowed = false;
       if (isRegisteredInput == true)
       {
-        auto allowedInputs = _runner->getAllowedInputs();
+        auto allowedInputs  = _runner->getAllowedInputs();
         step.isInputAllowed = std::find(allowedInputs.begin(), allowedInputs.end(), step.inputIndex) != allowedInputs.end();
       }
-      
+
       // Getting state hash
       step.stateHash = _runner->computeHash();
 
@@ -137,7 +137,7 @@ public:
   __INLINE__ void*                              getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
   __INLINE__ const std::vector<size_t> getStateRepeatedHashSteps(const size_t currentStep) const { return getStep(currentStep)._repeatedHashSteps; }
   __INLINE__ jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
-  __INLINE__ bool isInputAllowed(const size_t currentStep) const { return getStep(currentStep).isInputAllowed; }
+  __INLINE__ bool                       isInputAllowed(const size_t currentStep) const { return getStep(currentStep).isInputAllowed; }
 
   __INLINE__ void renderFrame(const size_t currentStep)
   {

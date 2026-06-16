@@ -2,9 +2,9 @@
 
 #include "game.hpp"
 #include "hashDb.hpp"
+#include "numa.hpp"
 #include "runner.hpp"
 #include "stateDb.hpp"
-#include "numa.hpp"
 #include <algorithm>
 #include <emulatorList.hpp>
 #include <gameList.hpp>
@@ -61,7 +61,7 @@ public:
 
     // Creating hash database
     const auto hashDbConfig = jaffarCommon::json::getObject(engineConfig, "Hash Database");
-    _hashDbEnabled  = jaffarCommon::json::getBoolean(hashDbConfig, "Enabled");
+    _hashDbEnabled          = jaffarCommon::json::getBoolean(hashDbConfig, "Enabled");
     if (_hashDbEnabled == true) _hashDb = std::make_unique<jaffarPlus::HashDb>(jaffarCommon::json::getObject(engineConfig, "Hash Database"));
 
     // Reserving storage for timing information
@@ -153,9 +153,9 @@ public:
 
     // Getting reward for the initial state
     const auto reward = r.getGame()->getReward();
-    
+
     // Getting initial state data from the runner
-    uint8_t* initialStateData = (uint8_t*) malloc (r.getStateSize());
+    uint8_t*                             initialStateData = (uint8_t*)malloc(r.getStateSize());
     jaffarCommon::serializer::Contiguous s(initialStateData, r.getStateSize());
     r.serializeState(s);
 
@@ -200,8 +200,8 @@ public:
 
     // Clearing step timing for the serially-measured stages (the rest are reduced
     // from the per-thread accumulators after the parallel region)
-    _advanceHashDbThreadRawTime      = 0;
-    _advanceStateDbThreadRawTime     = 0;
+    _advanceHashDbThreadRawTime  = 0;
+    _advanceStateDbThreadRawTime = 0;
 
     // Resetting per-thread accumulators for this step
     for (ssize_t i = 0; i < _threadCount; i++) _threadAccumulators[i].reset();
@@ -209,9 +209,9 @@ public:
     // Clearing win state reward
     _stepBestWinState.reward = -std::numeric_limits<float>::infinity();
 
-    // Clearing manually saved state 
-    _manualSaveSolution.reward = -std::numeric_limits<float>::infinity();
-    _manualSaveSolution.path = "";
+    // Clearing manually saved state
+    _manualSaveSolution.reward      = -std::numeric_limits<float>::infinity();
+    _manualSaveSolution.path        = "";
     _manualSaveSolution.lastRuleIdx = -1;
 
     // (Manual solution storing) Resetting last active rule id flag
@@ -278,8 +278,8 @@ public:
     if (_manualSaveSolutionUpdatedLastRuleId)
     {
       _manualSaveSolutionActiveLastRuleId = _manualSaveSolution.lastRuleIdx;
-      _manualSaveSolutionLastPath = _manualSaveSolution.path;
-    } 
+      _manualSaveSolutionLastPath         = _manualSaveSolution.path;
+    }
 
     // Computing step time
     _currentStepTime = jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), tStep);
@@ -489,7 +489,8 @@ public:
     jaffarCommon::logger::log("[J+] Manually Saved Solution:\n");
     jaffarCommon::logger::log("[J+]   + Path:         '%s'\n", _manualSaveSolution.path.c_str());
     jaffarCommon::logger::log("[J+]   + Reward:        %f\n", _manualSaveSolution.reward);
-    jaffarCommon::logger::log("[J+]   + Last Rule Idx: %ld (Active: %ld, Path: '%s')\n", _manualSaveSolution.lastRuleIdx, _manualSaveSolutionActiveLastRuleId, _manualSaveSolutionLastPath.c_str());
+    jaffarCommon::logger::log("[J+]   + Last Rule Idx: %ld (Active: %ld, Path: '%s')\n", _manualSaveSolution.lastRuleIdx, _manualSaveSolutionActiveLastRuleId,
+                              _manualSaveSolutionLastPath.c_str());
 
     // Printing candidate inpts
     jaffarCommon::logger::log("[J+] Candidate Inputs:\n");
@@ -503,7 +504,6 @@ public:
   __INLINE__ size_t getStateSizeInDatabase() const { return _stateSizeInDatabase; }
 
 private:
-
   enum inputResult_t
   {
     repeated,
@@ -524,9 +524,9 @@ private:
   struct manualSaveSolution_t
   {
     std::string path;
-    float reward;
-    void* stateData;
-    ssize_t lastRuleIdx;
+    float       reward;
+    void*       stateData;
+    ssize_t     lastRuleIdx;
   };
 
   /**
@@ -805,9 +805,9 @@ private:
       {
         // Store path, data, and reward
         _stateDb->saveStateFromRunner(r, _manualSaveSolution.stateData);
-        _manualSaveSolution.path = r.getGame()->getSaveSolutionPath();
-        _manualSaveSolution.reward = reward;
-        _manualSaveSolution.lastRuleIdx = currentLastRuleIdx;
+        _manualSaveSolution.path             = r.getGame()->getSaveSolutionPath();
+        _manualSaveSolution.reward           = reward;
+        _manualSaveSolution.lastRuleIdx      = currentLastRuleIdx;
         _manualSaveSolutionUpdatedLastRuleId = true;
       }
 
@@ -832,7 +832,7 @@ private:
   std::unique_ptr<jaffarPlus::StateDb> _stateDb;
 
   // Whether to use hashing. Some games cannot incur loops so using a HashDB is a waste of memory and computation
-  bool  _hashDbEnabled;
+  bool _hashDbEnabled;
 
   // The thread-safe hash database to check for repeated states
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
@@ -841,17 +841,17 @@ private:
   size_t _stateSizeInDatabase;
 
   // Set of win states found
-  std::mutex _stepBestWinStateLock;
-  stateInfo_t   _stepBestWinState;
+  std::mutex  _stepBestWinStateLock;
+  stateInfo_t _stepBestWinState;
 
   // Storage for manually triggered save solutionm
 
   // Storage for manually triggered save solution state
-  std::mutex  _manualSaveSolutionLock;
+  std::mutex           _manualSaveSolutionLock;
   manualSaveSolution_t _manualSaveSolution;
-  bool _manualSaveSolutionUpdatedLastRuleId;
-  ssize_t _manualSaveSolutionActiveLastRuleId;
-  std::string _manualSaveSolutionLastPath = "";
+  bool                 _manualSaveSolutionUpdatedLastRuleId;
+  ssize_t              _manualSaveSolutionActiveLastRuleId;
+  std::string          _manualSaveSolutionLastPath = "";
 
   // Checkpoint information
   size_t _checkpointLevel;

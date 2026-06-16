@@ -2,9 +2,9 @@
 
 #include <emulator.hpp>
 #include <game.hpp>
+#include <jaffarCommon/file.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/string.hpp>
-#include <jaffarCommon/file.hpp>
 
 namespace jaffarPlus
 {
@@ -40,19 +40,18 @@ public:
       if (status == false && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr) JAFFAR_THROW_LOGIC("Could not find/read trace file: %s\n", _traceFilePath.c_str());
 
       std::istringstream f(traceData);
-      std::string line;
+      std::string        line;
       while (std::getline(f, line))
       {
-        auto coordinates = jaffarCommon::string::split(line, ' ');
-        float x = std::atof(coordinates[0].c_str());
-        float y = std::atof(coordinates[1].c_str());
+        auto  coordinates = jaffarCommon::string::split(line, ' ');
+        float x           = std::atof(coordinates[0].c_str());
+        float y           = std::atof(coordinates[1].c_str());
         _trace.push_back(traceEntry_t{.x = x, .y = y});
       }
     }
   }
 
 private:
-
   struct traceEntry_t
   {
     float x;
@@ -65,62 +64,62 @@ private:
     _lowMem = _emulator->getProperty("LRAM").pointer;
 
     // Registering native game properties
-    registerGameProperty("Game Timer",           &_lowMem[0x000A], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Game Cycle",           &_lowMem[0x07DD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Win Flag",             &_lowMem[0x008B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble State",         &_lowMem[0x0019], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Flags",         &_lowMem[0x0408], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Pos X1",        &_lowMem[0x0398], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Pos X2",        &_lowMem[0x0390], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Pos X3",        &_lowMem[0x0388], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Pos Y1",        &_lowMem[0x03B0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Pos Y2",        &_lowMem[0x03A8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Pos Y3",        &_lowMem[0x03A0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Pos Z1",        &_lowMem[0x03C0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Airtime",       &_lowMem[0x03C8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Vel X",         &_lowMem[0x03D0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Vel Y",         &_lowMem[0x03E0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Dead Flag",     &_lowMem[0x0400], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble Motion 1",      &_lowMem[0x0410], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Game Timer", &_lowMem[0x000A], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Game Cycle", &_lowMem[0x07DD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Win Flag", &_lowMem[0x008B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble State", &_lowMem[0x0019], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Flags", &_lowMem[0x0408], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Pos X1", &_lowMem[0x0398], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Pos X2", &_lowMem[0x0390], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Pos X3", &_lowMem[0x0388], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Pos Y1", &_lowMem[0x03B0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Pos Y2", &_lowMem[0x03A8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Pos Y3", &_lowMem[0x03A0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Pos Z1", &_lowMem[0x03C0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Airtime", &_lowMem[0x03C8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Vel X", &_lowMem[0x03D0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Vel Y", &_lowMem[0x03E0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Dead Flag", &_lowMem[0x0400], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Motion 1", &_lowMem[0x0410], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Surface Angle", &_lowMem[0x0428], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Pause State",          &_lowMem[0x05CA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
-    registerGameProperty("Marble In Catapult",   &_lowMem[0x0420], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Pause State", &_lowMem[0x05CA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble In Catapult", &_lowMem[0x0420], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
-    registerGameProperty("Marble Pos X",        &_marblePosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
-    registerGameProperty("Marble Pos Y",        &_marblePosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
-    registerGameProperty("Marble Pos Z",        &_marblePosZ, Property::datatype_t::dt_float32, Property::endianness_t::little);
-    registerGameProperty("Try New Inputs",      &_tryNewInputs, Property::datatype_t::dt_bool, Property::endianness_t::little);
-    registerGameProperty("Prev Pause State",    &_prevPauseState, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Pos X", &_marblePosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Marble Pos Y", &_marblePosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Marble Pos Z", &_marblePosZ, Property::datatype_t::dt_float32, Property::endianness_t::little);
+    registerGameProperty("Try New Inputs", &_tryNewInputs, Property::datatype_t::dt_bool, Property::endianness_t::little);
+    registerGameProperty("Prev Pause State", &_prevPauseState, Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     registerGameProperty("Current Step", &_currentStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
     registerGameProperty("Last Input Step", &_lastInputStep, Property::datatype_t::dt_uint16, Property::endianness_t::little);
-    _gameTimer             = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Timer"           )]->getPointer();
-    _gameCycle             = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Cycle"           )]->getPointer();
-    _winFlag               = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Win Flag"             )]->getPointer();
-    _marbleState           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble State"         )]->getPointer();
-    _marbleFlags           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Flags"         )]->getPointer();
-    _marblePosX1           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos X1"        )]->getPointer();
-    _marblePosX2           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos X2"        )]->getPointer();
-    _marblePosX3           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos X3"        )]->getPointer();
-    _marblePosY1           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos Y1"        )]->getPointer();
-    _marblePosY2           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos Y2"        )]->getPointer();
-    _marblePosY3           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos Y3"        )]->getPointer();
-    _marblePosZ1           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos Z1"        )]->getPointer();
-    _marbleAirtime         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Airtime"       )]->getPointer();
-    _marbleVelX            = (int8_t*) _propertyMap[jaffarCommon::hash::hashString("Marble Vel X"         )]->getPointer();
-    _marbleVelY            = (int8_t*) _propertyMap[jaffarCommon::hash::hashString("Marble Vel Y"         )]->getPointer();
-    _marbleDeadFlag        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Dead Flag"     )]->getPointer();
-    _marbleSurfaceAngle    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Surface Angle" )]->getPointer();
-    _pauseState            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Pause State"          )]->getPointer();
+    _gameTimer          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Timer")]->getPointer();
+    _gameCycle          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game Cycle")]->getPointer();
+    _winFlag            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Win Flag")]->getPointer();
+    _marbleState        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble State")]->getPointer();
+    _marbleFlags        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Flags")]->getPointer();
+    _marblePosX1        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos X1")]->getPointer();
+    _marblePosX2        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos X2")]->getPointer();
+    _marblePosX3        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos X3")]->getPointer();
+    _marblePosY1        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos Y1")]->getPointer();
+    _marblePosY2        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos Y2")]->getPointer();
+    _marblePosY3        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos Y3")]->getPointer();
+    _marblePosZ1        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Pos Z1")]->getPointer();
+    _marbleAirtime      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Airtime")]->getPointer();
+    _marbleVelX         = (int8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Vel X")]->getPointer();
+    _marbleVelY         = (int8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Vel Y")]->getPointer();
+    _marbleDeadFlag     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Dead Flag")]->getPointer();
+    _marbleSurfaceAngle = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Surface Angle")]->getPointer();
+    _pauseState         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Pause State")]->getPointer();
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
 
     // Initializing prev input values
-    _prevInputIdx = _nullInputIdx;
+    _prevInputIdx           = _nullInputIdx;
     _prevInputRepeatedTimes = 0;
-    _tryNewInputs = true;
-    _prevPauseState = *_pauseState;
+    _tryNewInputs           = true;
+    _prevPauseState         = *_pauseState;
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -132,12 +131,16 @@ private:
     if (input != _nullInputIdx) _lastInputStep = _currentStep;
 
     // Checking input repetition
-    if (_prevInputIdx == input) _prevInputRepeatedTimes++;
-    else _prevInputRepeatedTimes = 0;
+    if (_prevInputIdx == input)
+      _prevInputRepeatedTimes++;
+    else
+      _prevInputRepeatedTimes = 0;
 
     // Checking if next time we need to try new inputs
-    if (_prevInputRepeatedTimes >= _repeatPrevInputCount) _tryNewInputs = true;
-    else _tryNewInputs = false;
+    if (_prevInputRepeatedTimes >= _repeatPrevInputCount)
+      _tryNewInputs = true;
+    else
+      _tryNewInputs = false;
 
     // Remembering input
     _prevInputIdx = input;
@@ -162,15 +165,44 @@ private:
     _marblePosX = (float)*_marblePosX1 * 256.0f + (float)*_marblePosX2 + (float)*_marblePosX3 / 256.0f;
     _marblePosY = (float)*_marblePosY1 * 256.0f + (float)*_marblePosY2 + (float)*_marblePosY3 / 256.0f;
     _marblePosZ = (float)*_marblePosZ1;
-   
-    _surfaceAngleX = 1.0; _surfaceAngleY = 1.0;
-    if (*_marbleSurfaceAngle == 3) { _surfaceAngleX = 1.0; _surfaceAngleY = 1.0; }
-    if (*_marbleSurfaceAngle == 0) { _surfaceAngleX = 0.5; _surfaceAngleY = 0.5; }
-    if (*_marbleSurfaceAngle == 1) { _surfaceAngleX = 0.5; _surfaceAngleY = 1.0; }
-    if (*_marbleSurfaceAngle == 4) { _surfaceAngleX = 0.75; _surfaceAngleY = 1.0; }
-    if (*_marbleSurfaceAngle == 2) { _surfaceAngleX = 1.0; _surfaceAngleY = 0.5; }
-    if (*_marbleSurfaceAngle == 255) { _surfaceAngleX = -5.0; _surfaceAngleY = -5.0; }
-    if (*_marbleSurfaceAngle == 128) { _surfaceAngleX = -5.0; _surfaceAngleY = -5.0; }
+
+    _surfaceAngleX = 1.0;
+    _surfaceAngleY = 1.0;
+    if (*_marbleSurfaceAngle == 3)
+    {
+      _surfaceAngleX = 1.0;
+      _surfaceAngleY = 1.0;
+    }
+    if (*_marbleSurfaceAngle == 0)
+    {
+      _surfaceAngleX = 0.5;
+      _surfaceAngleY = 0.5;
+    }
+    if (*_marbleSurfaceAngle == 1)
+    {
+      _surfaceAngleX = 0.5;
+      _surfaceAngleY = 1.0;
+    }
+    if (*_marbleSurfaceAngle == 4)
+    {
+      _surfaceAngleX = 0.75;
+      _surfaceAngleY = 1.0;
+    }
+    if (*_marbleSurfaceAngle == 2)
+    {
+      _surfaceAngleX = 1.0;
+      _surfaceAngleY = 0.5;
+    }
+    if (*_marbleSurfaceAngle == 255)
+    {
+      _surfaceAngleX = -5.0;
+      _surfaceAngleY = -5.0;
+    }
+    if (*_marbleSurfaceAngle == 128)
+    {
+      _surfaceAngleX = -5.0;
+      _surfaceAngleY = -5.0;
+    }
   }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -182,9 +214,9 @@ private:
     _stopProcessingReward  = false;
 
     _traceMagnet.intensity = 0.0;
-    _traceMagnet.offset = 0;
+    _traceMagnet.offset    = 0;
 
-    _lastInputMagnet    = 0.0;
+    _lastInputMagnet = 0.0;
   }
 
   __INLINE__ void ruleUpdatePostHook() override
@@ -197,7 +229,7 @@ private:
     // Updating trace stuff
     if (_useTrace == true)
     {
-      _traceStep = (uint16_t) std::max(std::min( (int)_currentStep + _traceMagnet.offset, (int) _trace.size() - 1), 0);
+      _traceStep    = (uint16_t)std::max(std::min((int)_currentStep + _traceMagnet.offset, (int)_trace.size() - 1), 0);
       _traceTargetX = _trace[_traceStep].x;
       _traceTargetY = _trace[_traceStep].y;
 
@@ -241,7 +273,7 @@ private:
     reward += -1.0 * _pointMagnet.intensity * _marbleDistanceToPoint;
 
     // If trace is used, compute its magnet's effect
-    if (_useTrace == true)  reward += -1.0 * _traceMagnet.intensity * _traceDistance;
+    if (_useTrace == true) reward += -1.0 * _traceMagnet.intensity * _traceDistance;
 
     // Returning reward
     return reward;
@@ -260,9 +292,9 @@ private:
     jaffarCommon::logger::log("[Jaffar]  + Marble Vel Y:           %02d\n", *_marbleVelY);
     jaffarCommon::logger::log("[Jaffar]  + Marble Airtime:         %02u\n", *_marbleAirtime);
     jaffarCommon::logger::log("[Jaffar]  + Marble Surface Angle:   %02u\n", *_marbleSurfaceAngle);
-    
+
     jaffarCommon::logger::log("[Jaffar]  + Prev Input:             %02u\n", _prevInputIdx);
-    jaffarCommon::logger::log("[Jaffar]  + Prev Input Repetitions: %02u / %02u (Try new: %s)\n", _prevInputRepeatedTimes, _repeatPrevInputCount, _tryNewInputs ? "Yes" : "No" );
+    jaffarCommon::logger::log("[Jaffar]  + Prev Input Repetitions: %02u / %02u (Try new: %s)\n", _prevInputRepeatedTimes, _repeatPrevInputCount, _tryNewInputs ? "Yes" : "No");
 
     if (std::abs(_pointMagnet.intensity) > 0.0f)
     {
@@ -276,7 +308,8 @@ private:
     {
       if (std::abs(_traceMagnet.intensity) > 0.0f)
       {
-        jaffarCommon::logger::log("[J+]  + Trace Magnet                             Intensity: %.5f, Step: %u, X: %3.3f, Y: %3.3f\n", _traceMagnet.intensity, _traceStep, _traceTargetX, _traceTargetY);
+        jaffarCommon::logger::log("[J+]  + Trace Magnet                             Intensity: %.5f, Step: %u, X: %3.3f, Y: %3.3f\n", _traceMagnet.intensity, _traceStep,
+                                  _traceTargetX, _traceTargetY);
         jaffarCommon::logger::log("[J+]    + Distance X                             %3.3f\n", _traceDistanceX);
         jaffarCommon::logger::log("[J+]    + Distance Y                             %3.3f\n", _traceDistanceY);
         jaffarCommon::logger::log("[J+]    + Total Distance                         %3.3f\n", _traceDistance);
@@ -304,7 +337,7 @@ private:
       if (_useTrace == false) JAFFAR_THROW_LOGIC("Specified Trace Magnet, but no trace file was provided.");
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto offset    = jaffarCommon::json::getNumber<int>(actionJs, "Offset");
-      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.intensity = intensity, .offset = offset }; });
+      rule.addAction([=, this]() { this->_traceMagnet = traceMagnet_t{.intensity = intensity, .offset = offset}; });
       recognizedActionType = true;
     }
 
@@ -335,7 +368,7 @@ private:
   struct traceMagnet_t
   {
     float intensity = 0.0; // How strong the magnet is
-    int offset      = 0; // Which entry (step) to look at wrt the current emulation step
+    int   offset    = 0;   // Which entry (step) to look at wrt the current emulation step
   };
 
   traceMagnet_t _traceMagnet;
@@ -348,30 +381,26 @@ private:
     float y         = 0.0; // What is the y point of attraction
   };
 
-
-  bool _isDumpingTrace = false;
+  bool        _isDumpingTrace = false;
   std::string _traceDumpString;
 
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
     if (_tryNewInputs == false) allowedInputSet.push_back(_prevInputIdx);
   }
-  
-  __INLINE__ void playerPrintCommands() const override
-  {
-    jaffarCommon::logger::log("[J+] t: start/stop trace dumping (%s)\n", _isDumpingTrace ? "On" : "Off");
-  };
+
+  __INLINE__ void playerPrintCommands() const override { jaffarCommon::logger::log("[J+] t: start/stop trace dumping (%s)\n", _isDumpingTrace ? "On" : "Off"); };
 
   __INLINE__ bool playerParseCommand(const int command)
   {
     // If storing a trace, do it here
     if (_isDumpingTrace == true) _traceDumpString += std::to_string(_marblePosX) + std::string(" ") + std::to_string(_marblePosY) + std::string("\n");
 
-     if (command == 't')
-     {
+    if (command == 't')
+    {
       if (_isDumpingTrace == false)
       {
-        _isDumpingTrace = true;
+        _isDumpingTrace  = true;
         _traceDumpString = "";
         return false;
       }
@@ -383,45 +412,45 @@ private:
         _isDumpingTrace = false;
         return true;
       }
-     }
+    }
 
-     return false;
+    return false;
   };
 
   // Magnets (used to determine state reward and have Jaffar favor a direction or action)
   pointMagnet_t _pointMagnet;
-  float         _lastInputMagnet         = 0.0;
+  float         _lastInputMagnet = 0.0;
 
   // Container for game-specific values
-  uint8_t*  _gameTimer;
-  uint8_t*  _gameCycle;
-  uint8_t*  _winFlag;
-  uint8_t*  _marbleState;
-  uint8_t*  _marbleFlags;
-  uint8_t*  _marblePosX1;
-  uint8_t*  _marblePosX2;
-  uint8_t*  _marblePosX3;
-  uint8_t*  _marblePosY1;
-  uint8_t*  _marblePosY2;
-  uint8_t*  _marblePosY3;
-  uint8_t*  _marblePosZ1;
-  uint8_t*  _marbleAirtime;
-  int8_t*   _marbleVelX;
-  int8_t*   _marbleVelY;
-  uint8_t*  _marbleDeadFlag;
-  uint8_t*  _marbleSurfaceAngle;
-  uint8_t*  _pauseState;
+  uint8_t* _gameTimer;
+  uint8_t* _gameCycle;
+  uint8_t* _winFlag;
+  uint8_t* _marbleState;
+  uint8_t* _marbleFlags;
+  uint8_t* _marblePosX1;
+  uint8_t* _marblePosX2;
+  uint8_t* _marblePosX3;
+  uint8_t* _marblePosY1;
+  uint8_t* _marblePosY2;
+  uint8_t* _marblePosY3;
+  uint8_t* _marblePosZ1;
+  uint8_t* _marbleAirtime;
+  int8_t*  _marbleVelX;
+  int8_t*  _marbleVelY;
+  uint8_t* _marbleDeadFlag;
+  uint8_t* _marbleSurfaceAngle;
+  uint8_t* _pauseState;
 
-  float  _marbleDistanceToPointX;
-  float  _marbleDistanceToPointY;
-  float _marbleDistanceToPoint;
+  float   _marbleDistanceToPointX;
+  float   _marbleDistanceToPointY;
+  float   _marbleDistanceToPoint;
   uint8_t _prevPauseState;
 
-  float  _marblePosX;
-  float  _marblePosY;
-  float  _marblePosZ;
-  float  _surfaceAngleX;
-  float  _surfaceAngleY;
+  float _marblePosX;
+  float _marblePosY;
+  float _marblePosZ;
+  float _surfaceAngleX;
+  float _surfaceAngleY;
 
   // Pointer to emulator's low memory storage
   uint8_t* _lowMem;
@@ -450,15 +479,15 @@ private:
 
   // Current trace target
   uint16_t _traceStep;
-  float _traceTargetX;
-  float _traceTargetY;
-  float _traceDistanceX;
-  float _traceDistanceY;
-  float _traceDistance;
+  float    _traceTargetX;
+  float    _traceTargetY;
+  float    _traceDistanceX;
+  float    _traceDistanceY;
+  float    _traceDistance;
 
   // What was the prev input
   InputSet::inputIndex_t _prevInputIdx;
-  
+
   // How many times the prev input is repeated
   uint16_t _prevInputRepeatedTimes;
 
@@ -467,7 +496,6 @@ private:
 
   // Flag that indicates whether the engine should try all possible inputs
   bool _tryNewInputs;
-
 };
 
 } // namespace nes

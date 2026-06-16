@@ -284,7 +284,6 @@ private:
     // // Recovering emulator state
     // jaffarCommon::deserializer::Contiguous d(_tempStorage, _tempStorageSize);
     // _emulator->deserializeState(d);
-
   }
 
   // Updating derivative values after updating the internal state
@@ -537,7 +536,6 @@ private:
   __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override { return {0, _gameState->Kid.frame}; }
 
 private:
-
   quicker::sdlPopState_t* _gameState;
 
   // Values artificially added to the state
