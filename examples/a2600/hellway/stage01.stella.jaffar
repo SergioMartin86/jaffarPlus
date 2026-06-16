@@ -20,9 +20,8 @@
         },
         "State Database": {
             "Max Size (Mb)": 1000,
-            "Differential Compression":
-            {
-                "Enabled": false, 
+            "Differential Compression": {
+                "Enabled": false,
                 "Buffer Size": 6000,
                 "Use Zlib Compression": false
             }
@@ -35,15 +34,15 @@
         "Initial Sequence File Path": "stage01.stella.initial.sol",
         "Controller 1 Type": "Gamepad",
         "Controller 2 Type": "None",
-        "Disabled State Properties": []
+        "Disabled State Properties": [],
+        "Initial RAM Data File Path": ""
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 4,
         "Show Empty Input Slots": true,

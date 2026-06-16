@@ -94,12 +94,6 @@ jaffarCPPFlags += '-D__JAFFAR_ENABLE_DOOM'
 subdir('quickerDSDA')
 endif
 
-if emulator == 'QuickerBan'
-jaffarCPPFlags += '-D__JAFFAR_USE_QUICKERBAN'
-jaffarCPPFlags += '-D__JAFFAR_ENABLE_SOKOBAN'
-subdir('quickerBan')
-endif
-
 if emulator == 'PipeBot'
 jaffarCPPFlags += '-D__JAFFAR_USE_PIPEBOT'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_PIPEBOT'

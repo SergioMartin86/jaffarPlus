@@ -14,14 +14,23 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 200000
-        }
+            "Max Size (Mb)": 200000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 8192,
         "Rom File Path": "Double Dragon (U) [!].nes",
         "Rom File SHA1": "84698B12F4E56A37C67BB47359758124C9B012BB",
         "Initial State File Path": "",
@@ -49,8 +58,7 @@
         },
         "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|"
                 ],
@@ -110,7 +118,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Double Dragon",
@@ -122,14 +135,14 @@
             "Enemy 2 Pos X1",
             "Enemy 1 Pos Y1",
             "Enemy 2 Pos Y1",
-            "Player HP"     ,
-            "Enemy 1 HP"    ,
-            "Enemy 2 HP"    ,
-            "Enemy 1 HP1"   ,
-            "Prev Enemy 1 HP1"   ,
-            "Enemy 2 HP1"   ,
-            "Prev Enemy 2 HP1"   ,
-            "Frame Type"    ,
+            "Player HP",
+            "Enemy 1 HP",
+            "Enemy 2 HP",
+            "Enemy 1 HP1",
+            "Prev Enemy 1 HP1",
+            "Enemy 2 HP1",
+            "Prev Enemy 2 HP1",
+            "Frame Type",
             "Player Action",
             "Score",
             "Game State",
@@ -148,21 +161,21 @@
             "Prev Enemy 2 Stun State"
         ],
         "Hash Properties": [
-            "Player Pos X1" ,
+            "Player Pos X1",
             "Enemy 1 Pos X1",
             "Enemy 2 Pos X1",
-            "Player Pos Y1" ,
+            "Player Pos Y1",
             "Enemy 1 Pos Y1",
             "Enemy 2 Pos Y1",
-            "Screen Pos X1" ,
-            "Screen Pos X2" ,
-            "Screen Pos Y1" ,
-            "Player HP"     ,
-            "Enemy 1 HP"    ,
-            "Prev Enemy 1 HP1"   ,
-            "Enemy 2 HP"    ,
-            "Prev Enemy 2 HP1"   ,
-            "Frame Type"    ,
+            "Screen Pos X1",
+            "Screen Pos X2",
+            "Screen Pos Y1",
+            "Player HP",
+            "Enemy 1 HP",
+            "Prev Enemy 1 HP1",
+            "Enemy 2 HP",
+            "Prev Enemy 2 HP1",
+            "Frame Type",
             "Player Input 1",
             "Player Input 2",
             "Player Action",
@@ -213,7 +226,7 @@
                     {
                         "Type": "Set Player Point Magnet",
                         "Intensity": 0.0001,
-                        "X": 255.0, 
+                        "X": 255.0,
                         "Y": 80.0
                     }
                 ]
@@ -227,15 +240,14 @@
                         "Value": 3
                     }
                 ],
-                "Satisfies": [
-                    
-                ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false
     }
 }

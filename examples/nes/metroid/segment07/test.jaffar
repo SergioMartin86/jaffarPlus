@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 20000
-        }
+            "Max Size (Mb)": 20000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,18 +55,16 @@
             "Enabled": true,
             "Max Size": 200
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|........|",
                     "|..|.D......|........|",
@@ -125,13 +131,17 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
         "Frame Rate": 60.1,
-	    "Allow Fire": true,
+        "Allow Fire": true,
         "Trace File Path": "test.trace",
         "Print Properties": [
             "Door 1 State",
@@ -153,9 +163,8 @@
         "Rules": [
             {
                 "Label": 1017,
-                "Conditions": [
-                ],
-                "Satisfies": [  ],
+                "Conditions": [],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Set Trace Magnet",
@@ -192,7 +201,9 @@
                         "Value": 70
                     }
                 ],
-                "Satisfies": [ 1017 ],
+                "Satisfies": [
+                    1017
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -200,7 +211,7 @@
                     },
                     {
                         "Type": "Set Missile Grab Status Magnet",
-                        "Intensity": 0.00
+                        "Intensity": 0.0
                     },
                     {
                         "Type": "Set Missile Count Magnet",
@@ -231,7 +242,9 @@
                         "Value": 70
                     }
                 ],
-                "Satisfies": [ 1018 ],
+                "Satisfies": [
+                    1018
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -245,10 +258,9 @@
                         "Property": "Missile Count",
                         "Op": "<",
                         "Value": 70
-                        
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -269,7 +281,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -290,7 +302,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -311,7 +323,7 @@
                         "Value": 132
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -332,13 +344,16 @@
                         "Value": 50
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Allow Pause": false
     }
 }

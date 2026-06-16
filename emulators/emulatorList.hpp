@@ -58,10 +58,6 @@
 #include "quickerDSDA/quickerDSDA.hpp"
 #endif
 
-#ifdef __JAFFAR_USE_QUICKERBAN
-#include "quickerBan/quickerBan.hpp"
-#endif
-
 #ifdef __JAFFAR_USE_PIPEBOT
 #include "pipeBot/pipeBot.hpp"
 #endif
@@ -142,10 +138,6 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json& emulatorCo
 
 #ifdef __JAFFAR_USE_QUICKERDSDA
   DETECT_EMULATOR(emulator::QuickerDSDA);
-#endif
-
-#ifdef __JAFFAR_USE_QUICKERBAN
-  DETECT_EMULATOR(emulator::QuickerBan);
 #endif
 
 #ifdef __JAFFAR_USE_PIPEBOT

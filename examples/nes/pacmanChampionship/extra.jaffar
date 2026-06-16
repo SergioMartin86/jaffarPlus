@@ -20,14 +20,12 @@
         },
         "State Database": {
             "Max Size (Mb)": 100000,
-            "Differential Compression":
-            {
-                "Enabled": false, 
+            "Differential Compression": {
+                "Enabled": false,
                 "Buffer Size": 6000,
                 "Use Zlib Compression": false
             }
         }
-        
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
@@ -48,11 +46,10 @@
         ]
     },
     "Runner Configuration": {
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
@@ -62,17 +59,14 @@
             "Enabled": true,
             "Max Size": 11000
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-            "Conditions": [
-                ],
-                "Inputs": [
-                ],
+                "Conditions": [],
+                "Inputs": [],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|",
                     "|..|.D......|",
@@ -83,8 +77,7 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": []
     },
     "Game Configuration": {
         "Game Name": "NES / Pac-Man Championship",
@@ -96,8 +89,7 @@
             "Player Pos Y",
             "Bonus Multiplier"
         ],
-        "Hash Properties": [
-        ],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1,
@@ -108,7 +100,7 @@
                         "Value": 8
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -124,7 +116,7 @@
                         "Value": 4
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -140,13 +132,14 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Last Input Step Reward": 0.0
     }
 }

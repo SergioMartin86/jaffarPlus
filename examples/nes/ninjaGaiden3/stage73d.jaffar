@@ -14,11 +14,18 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 10000
-        }
+            "Max Size (Mb)": 10000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
@@ -40,11 +47,10 @@
         ]
     },
     "Runner Configuration": {
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": false,
@@ -54,18 +60,16 @@
             "Enabled": true,
             "Max Size": 900
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|",
                     "|..|U.......|",
@@ -99,8 +103,7 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": []
     },
     "Game Configuration": {
         "Game Name": "NES / Ninja Gaiden 3",
@@ -113,8 +116,7 @@
             "Level Exit Flag 1",
             "Level Exit Flag 2"
         ],
-        "Hash Properties": [
-        ],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,
@@ -129,7 +131,6 @@
                     }
                 ]
             },
-
             {
                 "Label": 1002,
                 "Conditions": [

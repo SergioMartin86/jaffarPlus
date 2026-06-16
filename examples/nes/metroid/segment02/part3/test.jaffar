@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 20000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 1000
-        }
+            "Max Size (Mb)": 1000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,18 +55,16 @@
             "Enabled": true,
             "Max Size": 500
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|........|",
                     "|..|.D......|........|",
@@ -124,17 +130,19 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
         "Frame Rate": 60.1,
         "Trace File Path": "test.trace",
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1,
@@ -176,15 +184,15 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 5
+                        "Tolerance": 5
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint10.sol"
+                        "Path": "checkpoint10.sol"
                     }
                 ]
             },
@@ -212,15 +220,15 @@
                         "Value": 73
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 5
+                        "Tolerance": 5
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint11.sol"
+                        "Path": "checkpoint11.sol"
                     }
                 ]
             },
@@ -243,15 +251,15 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 5
+                        "Tolerance": 5
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint12.sol"
+                        "Path": "checkpoint12.sol"
                     }
                 ]
             },
@@ -274,15 +282,15 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 5
+                        "Tolerance": 5
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint13.sol"
+                        "Path": "checkpoint13.sol"
                     }
                 ]
             },
@@ -305,15 +313,15 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 5
+                        "Tolerance": 5
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint14.sol"
+                        "Path": "checkpoint14.sol"
                     }
                 ]
             },
@@ -341,7 +349,7 @@
                         "Value": 72
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -357,7 +365,7 @@
                         "Value": 129
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -373,13 +381,17 @@
                         "Value": 72
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Allow Fire": true,
+        "Allow Pause": false
     }
 }

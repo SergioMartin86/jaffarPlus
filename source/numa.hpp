@@ -83,7 +83,15 @@ __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
     }
     
     // Checking that NUMA grouping is correct
-    if (_numaCount % _numaDomainsPerGroup > 0) JAFFAR_THROW_RUNTIME("Hash DB grouping (%lu) does not divide the NUMA domain count exactly (%lu)\n", _numaDomainsPerGroup, _numaCount);
+    if (_numaCount % _numaDomainsPerGroup > 0)
+    {
+      // During dry-run config validation the engine is never actually run, and "NUMA Domains Per Group"
+      // is only a host-specific performance tuning. Tolerate a grouping that doesn't match this host's
+      // topology (e.g. a config tuned for 12 groups being validated on a 1- or 4-domain machine, such as CI)
+      // by falling back to one domain per group instead of aborting.
+      if (std::getenv("JAFFAR_IS_DRY_RUN") != nullptr) { _numaDomainsPerGroup = 1; }
+      else JAFFAR_THROW_RUNTIME("Hash DB grouping (%lu) does not divide the NUMA domain count exactly (%lu)\n", _numaDomainsPerGroup, _numaCount);
+    }
 
     // Checking whether the numa library calls are available
     const auto numaAvailable = numa_available();

@@ -14,14 +14,23 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 1000
-        }
+            "Max Size (Mb)": 1000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 8192,
         "Rom File Path": "Best of the Best - Championship Karate (U) [!].nes",
         "Rom File SHA1": "8F9FF1E1A22BC921287E90EF618DE7BA3CB2FB7C",
         "Initial State File Path": "",
@@ -50,14 +59,12 @@
         },
         "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|"
                 ],
                 "Stop Input Evaluation": false
             },
-
             {
                 "Conditions": [
                     {
@@ -92,34 +99,39 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Best Of The Best",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
         "Print Properties": [
-            "Global Timer",  
-            "Player 1 HP",           
-            "Player 2 HP",           
+            "Global Timer",
+            "Player 1 HP",
+            "Player 2 HP",
             "Player Input (Buttons)",
-            "Player Inputs (Pad)",   
-            "Key Frame",             
+            "Player Inputs (Pad)",
+            "Key Frame",
             "Next Key Frame",
-            "Player 1 Action 1",     
-            "Player 1 Action 2",     
+            "Player 1 Action 1",
+            "Player 1 Action 2",
             "Player 1 Action Frame",
-            "Player 1 Pos X"        
+            "Player 1 Pos X"
         ],
         "Hash Properties": [
-            "Player 1 HP",           
-            "Player 2 HP",           
-            "Key Frame",             
+            "Player 1 HP",
+            "Player 2 HP",
+            "Key Frame",
             "Next Key Frame",
-            "Player 1 Action 1",     
-            "Player 1 Action 2",     
+            "Player 1 Action 1",
+            "Player 1 Action 2",
             "Player 1 Action Frame",
-            "Player 1 Pos X"     
+            "Player 1 Pos X"
         ],
         "Rules": [
             {
@@ -142,9 +154,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [
-                    
-                ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -167,6 +177,7 @@
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false
     }
 }

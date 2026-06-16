@@ -14,14 +14,23 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 400000
-        }
+            "Max Size (Mb)": 400000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 8192,
         "Rom File Path": "Marble Madness (U) [!].nes",
         "Rom File SHA1": "DB009866ECF20CFDCE93DCA861F5BE1F9DFAAF2B",
         "Initial State File Path": "",
@@ -47,7 +56,11 @@
         "Allowed Input Sets": [
             {
                 "Conditions": [
-                    { "Property": "Try New Inputs", "Op": "==", "Value": true }
+                    {
+                        "Property": "Try New Inputs",
+                        "Op": "==",
+                        "Value": true
+                    }
                 ],
                 "Inputs": [
                     "|..|........|",
@@ -73,7 +86,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 6,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Marble Madness",
@@ -88,59 +106,58 @@
             "Marble In Catapult"
         ],
         "Hash Properties": [
-            "Game Cycle",          
-            "Win Flag",            
-            "Marble State",        
-            "Marble Flags",        
-            "Marble Pos X1",       
-            "Marble Pos X2",       
-            "Marble Pos Y1",       
-            "Marble Pos Y2",       
-            "Marble Pos Z1",       
-            "Marble Airtime",      
+            "Game Cycle",
+            "Win Flag",
+            "Marble State",
+            "Marble Flags",
+            "Marble Pos X1",
+            "Marble Pos X2",
+            "Marble Pos Y1",
+            "Marble Pos Y2",
+            "Marble Pos Z1",
+            "Marble Airtime",
             "Marble Dead Flag",
-            "Marble Pos X3",  
+            "Marble Pos X3",
             "Marble Pos Y3",
             "Marble Surface Angle",
             "Marble In Catapult"
         ],
-        "Excluded Hash Properties":
-        [   
-            "Marble Vel X",        
-            "Marble Vel Y"    
+        "Excluded Hash Properties": [
+            "Marble Vel X",
+            "Marble Vel Y"
         ],
-        "Rules":
-        [
-         {
-          "Label": 1000,
-          "Description": "Follow trace from existing TAS, trying to get ahead of it (offset)",
-          "Conditions":
-          [
-          ],
-      
-          "Satisfies": [ ],
-      
-          "Actions":
-          [
-            { "Type": "Set Trace Magnet", "Intensity": 1.0, "Offset": 12 }
-          ]
-         },
-      
-         {
-          "Label": 1900,
-          "Description": "Win on reaching lift",
-          "Conditions":
-          [
-            { "Property": "Marble In Catapult", "Op": "==", "Value": 1 }
-          ],
-      
-          "Satisfies": [ ],
-      
-          "Actions":
-          [
-           { "Type": "Trigger Win" }
-          ]
-         }
-        ]
+        "Rules": [
+            {
+                "Label": 1000,
+                "Description": "Follow trace from existing TAS, trying to get ahead of it (offset)",
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity": 1.0,
+                        "Offset": 12
+                    }
+                ]
+            },
+            {
+                "Label": 1900,
+                "Description": "Win on reaching lift",
+                "Conditions": [
+                    {
+                        "Property": "Marble In Catapult",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ],
+        "Bypass Emulator State": false
     }
 }

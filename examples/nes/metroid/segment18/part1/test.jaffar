@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 20000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 10000
-        }
+            "Max Size (Mb)": 10000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,18 +55,16 @@
             "Enabled": true,
             "Max Size": 1200
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|........|",
                     "|..|.D......|........|",
@@ -125,8 +131,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
@@ -135,19 +145,19 @@
         "Allow Change Weapon": false,
         "Trace File Path": "test.trace",
         "Print Properties": [
-        "WRAM Value [0x17FA]",
-        "WRAM Value [0x17FB]",
-        "WRAM Value [0x17FC]",
-        "WRAM Value [0x17FD]"
+            "WRAM Value [0x17FA]",
+            "WRAM Value [0x17FB]",
+            "WRAM Value [0x17FC]",
+            "WRAM Value [0x17FD]"
         ],
         "Hash Properties": [
-        "Door 2 Timer",
-        "Door 2 State",
-        "Bullet 1 State",
-        "WRAM Value [0x17FA]",
-        "WRAM Value [0x17FB]",
-        "WRAM Value [0x17FC]",
-        "WRAM Value [0x17FD]"
+            "Door 2 Timer",
+            "Door 2 State",
+            "Bullet 1 State",
+            "WRAM Value [0x17FA]",
+            "WRAM Value [0x17FB]",
+            "WRAM Value [0x17FC]",
+            "WRAM Value [0x17FD]"
         ],
         "Rules": [
             {
@@ -172,7 +182,7 @@
                         "Value": 980
                     }
                 ],
-                "Satisfies": [   ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -200,7 +210,9 @@
                         "Value": 3
                     }
                 ],
-                "Satisfies": [  1000 ],
+                "Satisfies": [
+                    1000
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -226,7 +238,7 @@
                         "Value": 48
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -242,7 +254,7 @@
                         "Value": 153
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -263,7 +275,7 @@
                         "Value": 53
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -279,13 +291,16 @@
                         "Value": 10
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Allow Pause": false
     }
 }

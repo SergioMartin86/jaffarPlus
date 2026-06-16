@@ -1,5 +1,6 @@
 #include "driver.hpp"
 #include <argparse/argparse.hpp>
+#include <cstdlib>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/string.hpp>
@@ -27,6 +28,11 @@ int main(int argc, char* argv[])
 
   // Getting dry run option
   const bool isDryRun = program.get<bool>("--dryRun");
+
+  // In dry-run mode we only validate the configuration. Signal this to the construction path (via the
+  // same env var the test harness uses) so host-specific side effects -- the NUMA topology check and
+  // trace-file loading -- are skipped: config validation must not depend on the host or on data files.
+  if (isDryRun) setenv("JAFFAR_IS_DRY_RUN", "1", 1);
 
   // Reporting script file
   jaffarCommon::logger::log("[J+] Loading script file: '%s'\n", configFile.c_str());

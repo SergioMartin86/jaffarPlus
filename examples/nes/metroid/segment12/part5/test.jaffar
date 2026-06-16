@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 20000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 200000
-        }
+            "Max Size (Mb)": 200000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,18 +55,16 @@
             "Enabled": true,
             "Max Size": 800
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|........|",
                     "|..|.D......|........|",
@@ -125,18 +131,20 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
         "Frame Rate": 60.1,
         "Allow Fire": true,
         "Trace File Path": "test.trace",
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1,
@@ -158,7 +166,7 @@
                     },
                     {
                         "Type": "Set Missile Count Magnet",
-                        "Intensity": 0.50
+                        "Intensity": 0.5
                     },
                     {
                         "Type": "Set Samus HP Magnet",
@@ -175,7 +183,7 @@
                         "Value": 1
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -196,19 +204,19 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint25.sol"
+                        "Path": "checkpoint25.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -226,19 +234,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1024 ],
+                "Satisfies": [
+                    1024
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint26.sol"
+                        "Path": "checkpoint26.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -256,19 +266,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1025 ],
+                "Satisfies": [
+                    1025
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint27.sol"
+                        "Path": "checkpoint27.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -286,19 +298,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1026 ],
+                "Satisfies": [
+                    1026
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint28.sol"
+                        "Path": "checkpoint28.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -316,19 +330,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1027 ],
+                "Satisfies": [
+                    1027
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint29.sol"
+                        "Path": "checkpoint29.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -346,19 +362,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1028 ],
+                "Satisfies": [
+                    1028
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint30.sol"
+                        "Path": "checkpoint30.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -376,19 +394,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1029 ],
+                "Satisfies": [
+                    1029
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint31.sol"
+                        "Path": "checkpoint31.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -406,19 +426,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1030 ],
+                "Satisfies": [
+                    1030
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint32.sol"
+                        "Path": "checkpoint32.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -436,19 +458,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1031 ],
+                "Satisfies": [
+                    1031
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint33.sol"
+                        "Path": "checkpoint33.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -466,19 +490,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1032 ],
+                "Satisfies": [
+                    1032
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint34.sol"
+                        "Path": "checkpoint34.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -511,11 +537,11 @@
                         "Value": 1371
                     }
                 ],
-                "Satisfies": [ ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
-						"Value": 1
+                        "Value": 1
                     }
                 ]
             },
@@ -528,11 +554,13 @@
                         "Value": 3
                     }
                 ],
-                "Satisfies": [ 1133 ],
+                "Satisfies": [
+                    1133
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
-						"Value": 1
+                        "Value": 1
                     }
                 ]
             },
@@ -550,19 +578,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1033 ],
+                "Satisfies": [
+                    1033
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint35.sol"
+                        "Path": "checkpoint35.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -580,19 +610,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1034 ],
+                "Satisfies": [
+                    1034
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint36.sol"
+                        "Path": "checkpoint36.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -610,19 +642,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1035 ],
+                "Satisfies": [
+                    1035
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint37.sol"
+                        "Path": "checkpoint37.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -640,19 +674,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1036 ],
+                "Satisfies": [
+                    1036
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint38.sol"
+                        "Path": "checkpoint38.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -670,19 +706,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1037 ],
+                "Satisfies": [
+                    1037
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint39.sol"
+                        "Path": "checkpoint39.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -700,19 +738,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1038 ],
+                "Satisfies": [
+                    1038
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint40.sol"
+                        "Path": "checkpoint40.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -730,19 +770,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1039 ],
+                "Satisfies": [
+                    1039
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint41.sol"
+                        "Path": "checkpoint41.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -760,19 +802,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1040 ],
+                "Satisfies": [
+                    1040
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint42.sol"
+                        "Path": "checkpoint42.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -790,19 +834,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1041 ],
+                "Satisfies": [
+                    1041
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint43.sol"
+                        "Path": "checkpoint43.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -820,19 +866,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1042 ],
+                "Satisfies": [
+                    1042
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint44.sol"
+                        "Path": "checkpoint44.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -850,19 +898,21 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1043 ],
+                "Satisfies": [
+                    1043
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Checkpoint",
-						"Tolerance": 4
+                        "Tolerance": 4
                     },
                     {
                         "Type": "Trigger Save Solution",
-						"Path": "checkpoint45.sol"
+                        "Path": "checkpoint45.sol"
                     },
                     {
                         "Type": "Add Reward",
-						"Value": 50
+                        "Value": 50
                     }
                 ]
             },
@@ -880,7 +930,7 @@
                         "Value": 2
                     }
                 ],
-                "Satisfies": [   ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -902,7 +952,7 @@
                         "Value": 2
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -918,13 +968,16 @@
                         "Value": 71
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Allow Pause": false
     }
 }

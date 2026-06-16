@@ -15,10 +15,16 @@
         "NUMA Domains Per Group": 12,
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 50000
+            "Max Size (Mb)": 50000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
         }
     },
     "Emulator Configuration": {
@@ -91,8 +97,7 @@
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|",
                     "|..|..L.....|",
@@ -110,28 +115,30 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Gimmick!",
         "Frame Rate": 60.1,
         "Last Input Step Reward": 0.0,
         "Trace File Path": "sand00a.trace",
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Set Point X Magnet",
                         "Intensity": 0.0,
-                        "Pos": 124.000
+                        "Pos": 124.0
                     },
                     {
                         "Type": "Set Point Y Magnet",
@@ -146,7 +153,7 @@
                         "Type": "Set Trace Magnet",
                         "Player Intensity": 1.0,
                         "Star Intensity": 1.0,
-                        "Offset": 1.000
+                        "Offset": 1.0
                     }
                 ]
             },
@@ -159,7 +166,9 @@
                         "Value": 121
                     }
                 ],
-                "Satisfies": [ 1000 ],
+                "Satisfies": [
+                    1000
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -168,7 +177,7 @@
                     {
                         "Type": "Set Point X Magnet",
                         "Intensity": 0.0,
-                        "Pos": 125.000
+                        "Pos": 125.0
                     },
                     {
                         "Type": "Set Point Y Magnet",
@@ -197,6 +206,7 @@
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false
     }
 }

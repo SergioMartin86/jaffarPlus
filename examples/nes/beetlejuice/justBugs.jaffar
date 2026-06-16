@@ -14,14 +14,23 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 20000
+            "Max Store Size (Mb)": 20000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 200000
-        }
+            "Max Size (Mb)": 200000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
+        "SRAM Block Size": 8192,
         "Rom File Path": "Beetlejuice (U) [!].nes",
         "Rom File SHA1": "CD3C92B7C27940C53DA8ED11B905048AF439942A",
         "Initial State File Path": "",
@@ -109,7 +118,12 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 1,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Beetlejuice",
@@ -127,11 +141,11 @@
             "Player Pos Y2",
             "Screen Pos X",
             "Screen Pos Y",
-            "Global Timer", 
-            "RNG1",         
-            "RNG2",         
-            "RNG3",         
-            "RNG4",         
+            "Global Timer",
+            "RNG1",
+            "RNG2",
+            "RNG3",
+            "RNG4",
             "Beetle1 Type",
             "Beetle2 Type",
             "Beetle3 Type",
@@ -159,10 +173,10 @@
             "Player Pos Y2",
             "Screen Pos X",
             "Screen Pos Y",
-            "RNG1",         
-            "RNG2",         
-            "RNG3",         
-            "RNG4",         
+            "RNG1",
+            "RNG2",
+            "RNG3",
+            "RNG4",
             "Beetle1 Type",
             "Beetle2 Type",
             "Beetle3 Type",
@@ -181,8 +195,7 @@
         "Rules": [
             {
                 "Label": 988,
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Satisfies": [],
                 "Actions": [
                     {
@@ -286,7 +299,9 @@
                         "Value": 31
                     }
                 ],
-                "Satisfies": [ 990 ],
+                "Satisfies": [
+                    990
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -324,7 +339,9 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 991 ],
+                "Satisfies": [
+                    991
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -365,7 +382,9 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 992],
+                "Satisfies": [
+                    992
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -401,7 +420,9 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1000 ],
+                "Satisfies": [
+                    1000
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -449,6 +470,7 @@
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false
     }
 }

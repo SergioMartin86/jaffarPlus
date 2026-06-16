@@ -14,11 +14,18 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 1000
-        }
+            "Max Size (Mb)": 1000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerDSDA",
@@ -44,7 +51,8 @@
         "Player 3 Present": false,
         "Player 4 Present": false,
         "Prevent Level Exit": true,
-        "Prevent Game End": false
+        "Prevent Game End": false,
+        "Player Point of View": 0
     },
     "Runner Configuration": {
         "Frameskip Rate": 0,
@@ -53,7 +61,8 @@
         "Show Allowed Inputs": true,
         "Store Input History": {
             "Enabled": true,
-            "Max Size": 1000
+            "Max Size": 1000,
+            "Repeat": false
         },
         "Allowed Input Sets": [
             {
@@ -67,7 +76,13 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": []
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        },
+        "Bypass Hash Calculation": false
     },
     "Game Configuration": {
         "Game Name": "Doom",
@@ -110,6 +125,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Trace File Path": ""
     }
 }

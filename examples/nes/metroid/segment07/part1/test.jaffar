@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 10000
+            "Max Store Size (Mb)": 10000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 200000
-        }
+            "Max Size (Mb)": 200000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,18 +55,16 @@
             "Enabled": true,
             "Max Size": 1400
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|........|",
                     "|..|.D......|........|",
@@ -125,13 +131,17 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
         "Frame Rate": 60.1,
-	    "Allow Fire": true,
+        "Allow Fire": true,
         "Trace File Path": "test.trace",
         "Print Properties": [
             "Door 1 State",
@@ -187,7 +197,7 @@
                         "Value": 2400
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -209,7 +219,9 @@
                         "Value": 2400
                     }
                 ],
-                "Satisfies": [ 1014  ],
+                "Satisfies": [
+                    1014
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -223,8 +235,7 @@
             },
             {
                 "Label": 1115,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Samus Door State",
                         "Op": "==",
@@ -241,7 +252,7 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -251,8 +262,7 @@
             },
             {
                 "Label": 1016,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Samus Door State",
                         "Op": "==",
@@ -264,7 +274,9 @@
                         "Value": 21
                     }
                 ],
-                "Satisfies": [ 1015 ],
+                "Satisfies": [
+                    1015
+                ],
                 "Actions": [
                     {
                         "Type": "Set Trace Magnet",
@@ -310,7 +322,9 @@
                         "Value": 74
                     }
                 ],
-                "Satisfies": [ 1016 ],
+                "Satisfies": [
+                    1016
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -341,7 +355,9 @@
                         "Value": 0
                     }
                 ],
-                "Satisfies": [ 1016 ],
+                "Satisfies": [
+                    1016
+                ],
                 "Actions": [
                     {
                         "Type": "Set Trace Magnet",
@@ -355,7 +371,7 @@
                     },
                     {
                         "Type": "Set Missile Grab Status Magnet",
-                        "Intensity": 1.00
+                        "Intensity": 1.0
                     },
                     {
                         "Type": "Set Missile Count Magnet",
@@ -386,7 +402,9 @@
                         "Value": 70
                     }
                 ],
-                "Satisfies": [ 1017 ],
+                "Satisfies": [
+                    1017
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -394,7 +412,7 @@
                     },
                     {
                         "Type": "Set Missile Grab Status Magnet",
-                        "Intensity": 0.00
+                        "Intensity": 0.0
                     },
                     {
                         "Type": "Set Missile Count Magnet",
@@ -425,7 +443,9 @@
                         "Value": 70
                     }
                 ],
-                "Satisfies": [ 1018 ],
+                "Satisfies": [
+                    1018
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -462,7 +482,9 @@
                         "Value": 30
                     }
                 ],
-                "Satisfies": [ 1020 ],
+                "Satisfies": [
+                    1020
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -496,7 +518,9 @@
                         "Value": 186
                     }
                 ],
-                "Satisfies": [ 1021 ],
+                "Satisfies": [
+                    1021
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -525,7 +549,9 @@
                         "Value": 7
                     }
                 ],
-                "Satisfies": [ 1022  ],
+                "Satisfies": [
+                    1022
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -542,7 +568,9 @@
                         "Value": 144
                     }
                 ],
-                "Satisfies": [ 1023  ],
+                "Satisfies": [
+                    1023
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -570,7 +598,9 @@
                         "Value": 9
                     }
                 ],
-                "Satisfies": [ 1024 ],
+                "Satisfies": [
+                    1024
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -592,7 +622,7 @@
                         "Value": 3
                     }
                 ],
-                "Satisfies": [   ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -608,12 +638,11 @@
                         "Value": 200
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
-
                 ]
             },
             {
@@ -625,7 +654,7 @@
                         "Value": 73
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -639,10 +668,9 @@
                         "Property": "Missile Count",
                         "Op": "<",
                         "Value": 70
-                        
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -663,7 +691,7 @@
                         "Value": 22
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -684,7 +712,7 @@
                         "Value": 22
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -700,7 +728,7 @@
                         "Value": 1
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -731,13 +759,18 @@
                         "Value": 75
                     }
                 ],
-                "Satisfies": [ 1016 ],
+                "Satisfies": [
+                    1016
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Allow Pause": false
     }
 }

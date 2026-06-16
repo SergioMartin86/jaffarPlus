@@ -14,14 +14,22 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 1000
+            "Max Store Size (Mb)": 1000,
+            "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 20000
-        }
+            "Max Size (Mb)": 20000,
+            "Differential Compression": {
+                "Enabled": false,
+                "Buffer Size": 1024,
+                "Use Zlib Compression": false
+            }
+        },
+        "NUMA Domains Per Group": 1
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
+        "Use Flat Code Map": false,
         "Rom File Path": "../Metroid (U) (PRG0) [!].nes",
         "Rom File SHA1": "ECF39EC5A33E6A6F832F03E8FFC61C5D53F4F90B",
         "Initial State File Path": "",
@@ -47,18 +55,16 @@
             "Enabled": true,
             "Max Size": 530
         },
-        "Allowed Input Sets": [ 
+        "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|........|"
                 ],
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|U.......|........|",
                     "|..|.D......|........|",
@@ -124,18 +130,21 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
     },
     "Game Configuration": {
         "Game Name": "NES / Metroid",
         "Frame Rate": 60.1,
-	    "Allow Fire": false,
+        "Allow Fire": false,
         "Trace File Path": "test.trace",
         "Print Properties": [
             "Door 2 State",
             "Door 2 Timer"
-
         ],
         "Hash Properties": [
             "Door 2 State",
@@ -169,15 +178,16 @@
             },
             {
                 "Label": 2,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Screen Pos Y1",
                         "Op": "==",
                         "Value": 8
                     }
-		        ],
-                "Satisfies": [ 1 ],
+                ],
+                "Satisfies": [
+                    1
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -191,11 +201,10 @@
                         "Intensity Y": 0.2
                     }
                 ]
-	        },
+            },
             {
                 "Label": 102,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Screen Pos Y1",
                         "Op": "==",
@@ -206,8 +215,10 @@
                         "Op": ">",
                         "Value": 5764
                     }
-		        ],
-                "Satisfies": [ 2 ],
+                ],
+                "Satisfies": [
+                    2
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -221,11 +232,10 @@
                         "Intensity Y": 0.2
                     }
                 ]
-	        },
+            },
             {
                 "Label": 3,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Screen Pos Y1",
                         "Op": "==",
@@ -236,8 +246,10 @@
                         "Op": ">",
                         "Value": 120
                     }
-	        	],
-                "Satisfies": [ 102 ],
+                ],
+                "Satisfies": [
+                    102
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -251,77 +263,78 @@
                         "Intensity Y": 0.2
                     }
                 ]
-                },
-                {
-                    "Label": 4,
-                    "Conditions":
-                    [
-                        {
-                            "Property": "Screen Pos Y1",
-                            "Op": "==",
-                            "Value": 7
-                        },
-                        {
-                            "Property": "Screen Pos Y2",
-                            "Op": ">",
-                            "Value": 95
-                        },
-                        {
-                            "Property": "Screen Pos Y2",
-                            "Op": "<",
-                            "Value": 110
-                        },
-                        {
-                            "Property": "Samus Pos Y1",
-                            "Op": ">",
-                            "Value": 95
-                        },
-                        {
-                            "Property": "Samus Pos Y1",
-                            "Op": "<",
-                            "Value": 110
-                        }
-                    ],
-                    "Satisfies": [ 3 ],
-                    "Actions": [
-                        {
-                            "Type": "Add Reward",
-                            "Value": 1000.0
-                        }
-                     ]
-                },
-                {
-                    "Label": 5,
-                    "Conditions":
-                    [
-                        {
-                            "Property": "Screen Pos Y1",
-                            "Op": "==",
-                            "Value": 6
-                        },
-                        {
-                            "Property": "Screen Pos Y2",
-                            "Op": ">",
-                            "Value": 250
-                        },
-                        {
-                            "Property": "Samus Pos Y1",
-                            "Op": "<",
-                            "Value": -10
-                        }
-                    ],
-                    "Satisfies": [ 4 ],
-                    "Actions": [
-                        {
-                            "Type": "Add Reward",
-                            "Value": 1000.0
-                        }
-                     ]
-                },
-              {
+            },
+            {
+                "Label": 4,
+                "Conditions": [
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Screen Pos Y2",
+                        "Op": ">",
+                        "Value": 95
+                    },
+                    {
+                        "Property": "Screen Pos Y2",
+                        "Op": "<",
+                        "Value": 110
+                    },
+                    {
+                        "Property": "Samus Pos Y1",
+                        "Op": ">",
+                        "Value": 95
+                    },
+                    {
+                        "Property": "Samus Pos Y1",
+                        "Op": "<",
+                        "Value": 110
+                    }
+                ],
+                "Satisfies": [
+                    3
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    }
+                ]
+            },
+            {
+                "Label": 5,
+                "Conditions": [
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 6
+                    },
+                    {
+                        "Property": "Screen Pos Y2",
+                        "Op": ">",
+                        "Value": 250
+                    },
+                    {
+                        "Property": "Samus Pos Y1",
+                        "Op": "<",
+                        "Value": -10
+                    }
+                ],
+                "Satisfies": [
+                    4
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    }
+                ]
+            },
+            {
                 "Label": 6,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Screen Pos Y1",
                         "Op": "==",
@@ -338,7 +351,9 @@
                         "Value": -10
                     }
                 ],
-                "Satisfies": [ 4 ],
+                "Satisfies": [
+                    4
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -352,46 +367,46 @@
                         "Intensity Y": 0.2
                     }
                 ]
-                },
-                {
-                    "Label": 7,
-                    "Conditions":
-                    [
-                        {
-                            "Property": "Screen Pos Y1",
-                            "Op": "==",
-                            "Value": 8
-                        },
-                        {
-                            "Property": "Screen Pos Y2",
-                            "Op": ">",
-                            "Value": 250
-                        },
-                        {
-                            "Property": "Samus Pos Y1",
-                            "Op": "<",
-                            "Value": -10
-                        }
-                    ],
-                    "Satisfies": [ 6 ],
-                    "Actions": [
-                        {
-                            "Type": "Add Reward",
-                            "Value": 1000.0
-                        },
-                        {
-                            "Type": "Set Point Magnet",
-                            "X": 5704.0,
-                            "Y": 2414.0,
-                            "Intensity X": 0.1,
-                            "Intensity Y": 0.2
-                        }
-                     ]
-                },
+            },
+            {
+                "Label": 7,
+                "Conditions": [
+                    {
+                        "Property": "Screen Pos Y1",
+                        "Op": "==",
+                        "Value": 8
+                    },
+                    {
+                        "Property": "Screen Pos Y2",
+                        "Op": ">",
+                        "Value": 250
+                    },
+                    {
+                        "Property": "Samus Pos Y1",
+                        "Op": "<",
+                        "Value": -10
+                    }
+                ],
+                "Satisfies": [
+                    6
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 1000.0
+                    },
+                    {
+                        "Type": "Set Point Magnet",
+                        "X": 5704.0,
+                        "Y": 2414.0,
+                        "Intensity X": 0.1,
+                        "Intensity Y": 0.2
+                    }
+                ]
+            },
             {
                 "Label": 8,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Screen Pos Y1",
                         "Op": "==",
@@ -408,7 +423,9 @@
                         "Value": -110
                     }
                 ],
-                "Satisfies": [ 7 ],
+                "Satisfies": [
+                    7
+                ],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -425,15 +442,16 @@
             },
             {
                 "Label": 9,
-                "Conditions":
-                [
+                "Conditions": [
                     {
                         "Property": "Screen Pos Y1",
                         "Op": "==",
                         "Value": 9
                     }
                 ],
-                "Satisfies": [ 8 ],
+                "Satisfies": [
+                    8
+                ],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
@@ -465,15 +483,14 @@
                         "Value": 2400
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Win"
                     }
-
                 ]
-              },
-                {
+            },
+            {
                 "Label": 1990,
                 "Conditions": [
                     {
@@ -487,7 +504,7 @@
                         "Value": 2400
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -503,12 +520,11 @@
                         "Value": 75
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
-
                 ]
             },
             {
@@ -520,7 +536,7 @@
                         "Value": 153
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
@@ -536,13 +552,16 @@
                         "Value": 9.99
                     }
                 ],
-                "Satisfies": [  ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Trigger Fail"
                     }
                 ]
             }
-        ]
+        ],
+        "Bypass Emulator State": false,
+        "Last Input Step Reward": 0.0,
+        "Allow Pause": false
     }
 }
