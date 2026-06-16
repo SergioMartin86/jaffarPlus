@@ -45,8 +45,11 @@ public:
       // Creating runner from the configuration
       auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
 
-      // Storing runner
-      _runners[_myThreadId] = std::move(r);
+      // Storing runner. Index by the (dense) OpenMP thread id, NOT sched_getcpu(): the latter is only
+      // equal to the thread id when threads are pinned 1:1 (OMP_PROC_BIND), and otherwise leaves
+      // _runners[0] null -> the *_runners[0] use below (and workerFunction, which already uses the
+      // thread id) would dereference a null runner. This bites CI runners that don't pin threads.
+      _runners[jaffarCommon::parallel::getThreadId()] = std::move(r);
     }
 
     // Grabbing a runner to do continue build the state databases
@@ -120,8 +123,8 @@ public:
     // Initializing runners, one per thread
     JAFFAR_PARALLEL
     {
-      // Creating thread's own runner
-      auto& r = _runners[_myThreadId];
+      // Creating thread's own runner (index by OpenMP thread id, consistent with construction/workerFunction)
+      auto& r = _runners[jaffarCommon::parallel::getThreadId()];
 
       // Initializing runner
       r->initialize();
