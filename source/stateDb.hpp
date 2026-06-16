@@ -480,7 +480,11 @@ public:
   __INLINE__ size_t getStateCount() const
   {
     size_t stateCount = 0;
-    for (int i = 0; i < _numaCount; i++) stateCount += _numaCurrentStateQueues[i]->wasSize();
+    // Per-NUMA current-state queues are only allocated for domains that have a delegate thread.
+    // Skip any unallocated (null) queue so this (informational) count can't dereference a null
+    // pointer when threads don't cover every NUMA domain.
+    for (int i = 0; i < _numaCount; i++)
+      if (_numaCurrentStateQueues[i] != nullptr) stateCount += _numaCurrentStateQueues[i]->wasSize();
     return stateCount;
   }
 
