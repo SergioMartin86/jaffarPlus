@@ -10,6 +10,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# JaffarPlus' NUMA/threading model assumes threads are pinned 1:1 to cores (it reads each
+# thread's CPU via sched_getcpu and indexes per-thread/per-NUMA structures by it). Without
+# pinning, those indices drift and the multi-threaded engine run can crash. Pin threads in CI
+# the same way the engine is meant to run.
+env:
+  OMP_PROC_BIND: "true"
+  OMP_PLACES: cores
+
 jobs:
 
   # Build documentation and checking proper style
