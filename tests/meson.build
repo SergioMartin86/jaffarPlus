@@ -108,6 +108,62 @@ test('gridWalker_hash_database',
       args : [ 'checkHashDb.sh', jaffar.full_path() ],
       suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
 
+# Frameskip (repeat-last): rate 1 holds each decided input for one extra frame, so the optimal
+# 4-decision route to (4,4) records 8 inputs. The held frames must be recorded and reproduce to Win.
+test('gridWalker_frameskip',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkReproduce.sh', jaffar.full_path(), jaffarPlayer.full_path(), 'gridWalker.frameskip.jaffar', '/tmp/jaffar.gw.frameskip.best.sol', '8', 'frameskip rate=1 repeat-last' ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+# Frameskip (custom input): rate 1 with a custom "|.|" (no-op) held frame, so each of the 8 decided
+# moves records a move + a no-op (16 inputs). Exercises the custom-input frameskip branch.
+test('gridWalker_frameskip_custom',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkReproduce.sh', jaffar.full_path(), jaffarPlayer.full_path(), 'gridWalker.frameskip_custom.jaffar', '/tmp/jaffar.gw.frameskip_custom.best.sol', '16', 'frameskip rate=1 custom |.|' ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+# Bypass Hash Calculation: the runner takes the game's getDirectStateHash() verbatim instead of its
+# MetroHash pass. Dedup must still be correct, so the optimal solution is still 8 and reproduces.
+test('gridWalker_bypasshash',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkReproduce.sh', jaffar.full_path(), jaffarPlayer.full_path(), 'gridWalker.bypasshash.jaffar', '/tmp/jaffar.gw.bypasshash.best.sol', '8', 'bypass hash calculation' ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+# Hash Step Tolerance: a non-zero tolerance folds the step-phase into the state hash (so a cell may
+# be revisited at different phases). Optimality must be preserved: the solution is still 8.
+test('gridWalker_tolerance',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkReproduce.sh', jaffar.full_path(), jaffarPlayer.full_path(), 'gridWalker.tolerance.jaffar', '/tmp/jaffar.gw.tolerance.best.sol', '8', 'hash step tolerance=3' ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+# End On First Win State = false: two wins exist -- a shallow low-reward win at (4,0) (depth 4) and a
+# deeper high-reward win at (4,4) (depth 8). Not stopping at the first win, the search must keep the
+# higher-reward 8-move solution. (Stopping on first win would instead yield the 4-move one.)
+test('gridWalker_searchall',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkReproduce.sh', jaffar.full_path(), jaffarPlayer.full_path(), 'gridWalker.searchall.jaffar', '/tmp/jaffar.gw.searchall.best.sol', '8', 'end-on-first-win=false' ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+# Store Input History smaller than the solution: Max Size 4 with an 8-move optimum. The search is
+# unaffected (it keys on state hashes, not the history), but the recorded solution is silently
+# clamped to 4 inputs. Asserts graceful, memory-safe truncation (ASAN/UBSan job catches any OOB).
+test('gridWalker_truncated_history',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'runPuzzle.sh', jaffar.full_path(), 'gridWalker.truncated.jaffar', '/tmp/jaffar.gw.truncated.best.sol', 'win', '4' ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
 endif
 
 ## NES / Sprilo
