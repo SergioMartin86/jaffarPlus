@@ -99,6 +99,15 @@ test('gridWalker_candidate_inputs',
       args : [ 'checkCandidate.sh', jaffar.full_path() ],
       suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
 
+# Hash database: correct with deduplication disabled, and correct while its sliding window rolls
+# (older hash stores aged out) under a deliberately tiny store size.
+test('gridWalker_hash_database',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkHashDb.sh', jaffar.full_path() ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
 endif
 
 ## NES / Sprilo
