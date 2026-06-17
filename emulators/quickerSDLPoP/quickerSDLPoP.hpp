@@ -7,6 +7,7 @@
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
 #include <memory>
+#include <sstream>
 #include <sdlpopInstance.hpp>
 
 namespace jaffarPlus
@@ -27,6 +28,9 @@ public:
 
     // Getting initial state file path
     _stateFilePath = jaffarCommon::json::getString(config, "Initial State File");
+
+    // Optional fixed input sequence to replay after loading the initial state (default: none)
+    _initialSequenceFilePath = config.contains("Initial Sequence File Path") ? config["Initial Sequence File Path"].get<std::string>() : std::string("");
 
     // RNG overriding configuration
     _overrideRNGEnabled            = jaffarCommon::json::getBoolean(config, "Override RNG Enabled");
@@ -56,6 +60,24 @@ public:
 
     // Check if copy protection needs initializing
     if (_initializeCopyProtection) _QuickerSDLPoP->initializeCopyProtection();
+
+    // If a fixed initial sequence is provided, replay it now (advances the state past the prefix)
+    if (_initialSequenceFilePath != "")
+    {
+      std::string seqData;
+      if (jaffarCommon::file::loadStringFromFile(seqData, _initialSequenceFilePath) == false) JAFFAR_THROW_LOGIC("Could not load initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+      std::istringstream iss(seqData);
+      std::string        line;
+      while (std::getline(iss, line))
+      {
+        // Trim trailing carriage-return / whitespace
+        while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\n')) line.pop_back();
+        if (line.empty()) continue;
+        auto inputData = getInputParser()->parseInputString(line);
+        _QuickerSDLPoP->advanceState(inputData);
+      }
+    }
 
     // Resetting global step counter
     _QuickerSDLPoP->getGameState()->globalStepCount = 0;
@@ -129,6 +151,7 @@ private:
 
   // initial state file path
   std::string _stateFilePath;
+  std::string _initialSequenceFilePath;
 
   // RNG overriding configuration
   bool     _overrideRNGEnabled;
