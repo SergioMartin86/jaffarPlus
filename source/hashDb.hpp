@@ -30,8 +30,9 @@ public:
 
   __INLINE__ void initialize()
   {
-    // Calculating the maximum store size in entries
-    _maxStoreEntries = std::floor((_maxStoreSizeMb / _bytesPerEntry) * 1024.0 * 1024.0);
+    // Converting the configured store budget to bytes. Rolling is driven by the set's actual
+    // measured memory (see getStoreSizeBytes), not by an entries-to-bytes estimate.
+    _maxStoreSizeBytes = (size_t)(_maxStoreSizeMb * 1024.0 * 1024.0);
 
     // Initializing hash store vector
     for (ssize_t i = 0; i < _numaGroupCount; i++) _numaGroups.push_back(new NUMAStore_t);
@@ -64,11 +65,11 @@ public:
         const size_t queryCount     = itr == _numaGroups[i]->_hashStores.rbegin() ? _numaGroups[i]->getQueryCount() : itr->queryCount;
         const size_t collisionCount = itr == _numaGroups[i]->_hashStores.rbegin() ? _numaGroups[i]->getCollisionCount() : itr->collisionCount;
 
-        jaffarCommon::logger::log("[J+]      + NUMA %lu - Store: %lu / %lu - Id: %lu - Age: %lu, Entries: %.3f M / %.3f M, Size: %.3f Mb / %.3f Mb, Check Count: %lu, Collision "
+        jaffarCommon::logger::log("[J+]      + NUMA %lu - Store: %lu / %lu - Id: %lu - Age: %lu, Entries: %.3f M, Size: %.3f Mb / %.3f Mb, Check Count: %lu, Collision "
                                   "Count: %lu (Rate %.3f%%)\n",
                                   i, curHashStoreIdx + 1, _maxStoreCount, itr->id, itr->age, (double)itr->hashSet.size() / (1024.0 * 1024.0),
-                                  (double)_maxStoreEntries / (1024.0 * 1024.0), (_bytesPerEntry * (double)itr->hashSet.size()) / (1024.0 * 1024.0), _maxStoreSizeMb, queryCount,
-                                  collisionCount, queryCount == 0 ? 0.0 : 100.0 * (double)collisionCount / (double)queryCount);
+                                  (double)getStoreSizeBytes(*itr) / (1024.0 * 1024.0), _maxStoreSizeMb, queryCount, collisionCount,
+                                  queryCount == 0 ? 0.0 : 100.0 * (double)collisionCount / (double)queryCount);
         itr++;
         curHashStoreIdx++;
       }
@@ -137,7 +138,7 @@ public:
   /**
    * This function serves to indicate a new step has started.
    * The current age is increased, and if the current database exceeds its maximum
-   * entries, it is send to the past db collection and a new one is created
+   * size, it is sent to the past db collection and a new one is created
    */
   __INLINE__ void advanceStep()
   {
@@ -147,8 +148,8 @@ public:
       // The current hash store is the latest to be entered
       auto& currentHashStore = *_numaGroups[i]->_hashStores.rbegin();
 
-      // If the current hash store exceeds the entry limit, push put a new one in
-      if (currentHashStore.hashSet.size() > _maxStoreEntries)
+      // If the current hash store's measured memory exceeds the budget, push a new one in
+      if (getStoreSizeBytes(currentHashStore) >= _maxStoreSizeBytes)
       {
         // First, if we already reached the maximum hash stores, then discard the oldest one first
         if (_numaGroups[i]->_hashStores.size() == _maxStoreCount) _numaGroups[i]->_hashStores.pop_front();
@@ -258,15 +259,30 @@ private:
   };
 
   /**
+   * Computes the actual resident memory of a hash store from the underlying set's measured
+   * allocated capacity (number of slots), rather than from an entries-to-bytes estimate. This
+   * tracks phmap's real footprint -- which varies with load factor and per-submap power-of-two
+   * rounding -- so the configured store budget is respected instead of being over- or under-shot.
+   */
+  __INLINE__ size_t getStoreSizeBytes(const hashStore_t& store) const { return store.hashSet.capacity() * _bytesPerSlot + _hashStoreFixedOverhead; }
+
+  /**
    * Number of NUMA domains per group
    */
   size_t _numaDomainsPerGroup;
 
   /**
-   * Calculated empirically, by filling a hash set with a huge number of distinct hashes
-   * and measuring the maximum resident (memory) set size after execution.
+   * Per-slot memory cost of the underlying phmap flat hash set: each element is stored inline
+   * (one slot = sizeof(value)) plus one control byte per slot. Capacity is measured directly from
+   * the set, so this no longer needs to absorb load-factor or power-of-two-rounding variance.
    */
-  const double _bytesPerEntry = 32.0;
+  static constexpr size_t _bytesPerSlot = sizeof(jaffarCommon::hash::hash_t) + sizeof(uint8_t);
+
+  /**
+   * Fixed overhead of a hash store: the parallel set holds 256 (2^N) submaps, each with its own
+   * table bookkeeping and mutex, allocated even when empty. Independent of the number of entries.
+   */
+  static constexpr size_t _hashStoreFixedOverhead = sizeof(jaffarCommon::concurrent::HashSet_t<jaffarCommon::hash::hash_t>);
 
   /**
    * Maximum number of stores to keep at any time
@@ -279,9 +295,9 @@ private:
   double _maxStoreSizeMb;
 
   /**
-   * Maximum store entries
+   * Maximum store size, in bytes (derived from _maxStoreSizeMb)
    */
-  size_t _maxStoreEntries;
+  size_t _maxStoreSizeBytes;
 
   /**
    * Set of hash databases stores, one per numa domain
