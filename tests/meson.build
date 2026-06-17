@@ -185,6 +185,15 @@ test('player_reports',
       args : [ 'checkPlayerReports.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
       suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
 
+# Interactive frame advance/go-back controls: drives the real interactive loop via piped keystrokes
+# and verifies step arithmetic, boundary clamping, hash consistency, and absolute loaded state.
+test('player_navigation',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkPlayerNavigation.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
+      suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
+
 # Negative path: a missing config file must make the player fail cleanly.
 test('player_missing_config',
       jaffarPlayer,
