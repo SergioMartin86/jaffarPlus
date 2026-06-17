@@ -184,11 +184,14 @@ public:
     // If using differential compression, compress now into the passed state pointer
     if (_differentialCompressionEnabled)
     {
-      // Creating differential compressor with respect to the base state
-      jaffarCommon::serializer::Differential s(_differentialCompressionBuffer[_myThreadId], _stateSize, _differentialCompressionEncodeBaseState, _stateSizeRaw,
-                                               _differentialCompressionUseZlibCompression);
+      // Differentially compress the raw state directly into the destination slot. The slot is
+      // _stateSize bytes; the raw state lives in the separate per-thread scratch buffer, so input
+      // and output do not alias. (Encoding into the scratch buffer and copying out, as was done
+      // before, both aliased the input and required the scratch buffer to be _stateSize bytes --
+      // it is only _stateSizeRaw, overflowing whenever the buffer size exceeds the raw state size.)
+      jaffarCommon::serializer::Differential s(statePtr, _stateSize, _differentialCompressionEncodeBaseState, _stateSizeRaw, _differentialCompressionUseZlibCompression);
 
-      // Now push the state buffer into the differential buffer output
+      // Now push the raw state buffer into the differential output
       s.push(stateBuffer, _stateSizeRaw);
 
       // Getting number of differential bytes used
@@ -196,9 +199,6 @@ public:
 
       // Keeping track of the most bytes used
       if (diffBytesCount > _differentialCompressionMaxBytesUsed) _differentialCompressionMaxBytesUsed = diffBytesCount;
-
-      // Copy the differential output buffer into the passed state pointer
-      memcpy(statePtr, _differentialCompressionBuffer[_myThreadId], _stateSize);
     }
 
     return serializedSize;
@@ -445,9 +445,24 @@ public:
       }
     }
 
-    // If using differential compression, set the best state as encoding base state and transfer the current encoding base state to the decoder
-    memcpy(_differentialCompressionDecodeBaseState, _differentialCompressionEncodeBaseState, _stateSizeRaw);
-    memcpy(_differentialCompressionEncodeBaseState, _bestState, _stateSizeRaw);
+    // Rotate the differential-compression base states for the next step.
+    if (_differentialCompressionEnabled)
+    {
+      // The states just moved into the current queues were all encoded against the current encode
+      // base, so the next step must decode them against that very same base.
+      memcpy(_differentialCompressionDecodeBaseState, _differentialCompressionEncodeBaseState, _stateSizeRaw);
+
+      // The next step encodes its new states against this step's best state. _bestState points into
+      // the state database, where states are stored *differentially compressed*, so it must be
+      // decoded (against the base it was encoded with -- now the decode base) into the raw encode
+      // base buffer. Copying its bytes verbatim would set the encode base to compressed data and
+      // corrupt every subsequently produced state.
+      if (_bestState != nullptr)
+      {
+        jaffarCommon::deserializer::Differential d(_bestState, _stateSize, _differentialCompressionDecodeBaseState, _stateSizeRaw, _differentialCompressionUseZlibCompression);
+        d.pop(_differentialCompressionEncodeBaseState, _stateSizeRaw);
+      }
+    }
   }
 
   __INLINE__ void* popState()
