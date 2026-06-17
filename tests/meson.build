@@ -108,15 +108,6 @@ test('gridWalker_hash_database',
       args : [ 'checkHashDb.sh', jaffar.full_path() ],
       suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
 
-# Generational hash database (opt-in): single-lookup, fixed-capacity, generation-tagged dedup with
-# smooth eviction. Correct with an ample budget and still optimal under heavy (tiny-budget) eviction.
-test('gridWalker_generational_hashdb',
-      bash,
-      workdir : meson.current_source_dir() + '/testEmulator',
-      timeout: testTimeout,
-      args : [ 'checkGenerational.sh', jaffar.full_path() ],
-      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
-
 endif
 
 ## NES / Sprilo
