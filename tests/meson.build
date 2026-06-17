@@ -176,6 +176,15 @@ test('player_reproduction',
       args : [ 'checkPlayer.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
       suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
 
+# Correctness of the player's diagnostic reports: not-allowed-input detection and repeated-state
+# (duplicate-hash) detection, each checked against crafted solutions with an exact expected answer.
+test('player_reports',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkPlayerReports.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
+      suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
+
 # Negative path: a missing config file must make the player fail cleanly.
 test('player_missing_config',
       jaffarPlayer,

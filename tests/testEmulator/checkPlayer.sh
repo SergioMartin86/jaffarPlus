@@ -66,10 +66,12 @@ hashP="$(finalHash "$outP")"
 [[ "$hashP" != "$hash1" ]] || fail "partial solution produced the same final hash as the full solution"
 
 # 4. A solution with a not-allowed input ("|.|" is parseable but not in the allowed input set) must be
-#    detected and reported by the player.
+#    detected and counted by the player. Prepending one such input to an all-allowed winning solution
+#    must yield a non-zero not-allowed count.
+naCount() { printf '%s\n' "$1" | sed -n 's/.*Not Allowed Input Count: *//p' | tr -d '[:space:]'; }
 { echo "|.|"; cat "$SOL"; } > "$NOTALLOWED"
 outNA="$("$PLAYER" "$CONFIG" "$NOTALLOWED" "${PLAY_FLAGS[@]}" 2>&1)"
-[[ "$outNA" =~ Not\ Allowed\ Input\ Steps:[[:space:]]*\[[^]]*[0-9][^]]*\] ]] || { printf '%s\n' "$outNA" | grep -i "not allowed" | head; fail "not-allowed input was not reported"; }
+[[ "$(naCount "$outNA")" -ge 1 ]] || { printf '%s\n' "$outNA" | grep -i "not allowed" | head; fail "not-allowed input was not reported"; }
 
 # 5. --runCommand q must exit cleanly (return code 0).
 if ! "$PLAYER" "$CONFIG" "$SOL" --disableRender --unattended --runCommand q >/dev/null 2>&1; then
