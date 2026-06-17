@@ -100,29 +100,21 @@ public:
     const double budgetBytesPerGroup = _maxStoreSizeMb * 1024.0 * 1024.0 * (double)_maxStoreCount;
     const size_t totalSlots          = (size_t)(budgetBytesPerGroup / (double)_bytesPerSlot); // capacity (slots) for the budget
 
-    // phmap capacities are 2^k-1, so reserving every shard to the same size would round the aggregate
-    // to a coarse power-of-two multiple (over- or under-shooting the budget by up to 2x). Instead,
-    // reserve most shards to the lower valid capacity and bump a few to the next tier, so the total
-    // capacity tracks the budget closely without exceeding it.
-    const size_t avgPerShard = totalSlots / SHARD_COUNT;
-    const size_t baseCap     = validCapacityFloor(avgPerShard); // largest (2^k - 1) <= avgPerShard
-    size_t       highShards  = 0;
-    if (baseCap > 0)
-    {
-      const size_t remaining = totalSlots - baseCap * SHARD_COUNT;
-      highShards             = std::min(SHARD_COUNT, remaining / (baseCap + 1)); // each bumped shard adds (baseCap+1) slots
-    }
+    // Reserve EVERY shard to the same capacity: the largest valid phmap capacity (2^k - 1) not
+    // exceeding the per-shard share of the budget. Uniform sizing is essential -- hashes distribute
+    // evenly across shards, so unequal shard capacities would make the smaller shards overflow (and
+    // grow, which permanently breaks the memory bound since phmap never shrinks) long before the
+    // larger ones fill. This rounds the total capacity DOWN to a power-of-two multiple (<= budget),
+    // trading a little utilisation for a guaranteed memory ceiling.
+    const size_t capPerShard = validCapacityFloor(totalSlots / SHARD_COUNT);
 
     for (ssize_t i = 0; i < _numaGroupCount; i++)
     {
       auto* g = new genGroup_t();
       g->threadQueryCount.resize(_threadCount);
       g->threadCollisionCount.resize(_threadCount);
-      for (size_t s = 0; s < SHARD_COUNT; s++)
-      {
-        const size_t cap = (s < highShards) ? (2 * baseCap + 1) : baseCap;
-        if (cap > 0) g->shards[s].reserve(cap - cap / 8); // CapacityToGrowth(cap): reserve to fill exactly `cap` slots
-      }
+      if (capPerShard > 0)
+        for (size_t s = 0; s < SHARD_COUNT; s++) g->shards[s].reserve(capPerShard - capPerShard / 8); // CapacityToGrowth(capPerShard)
       _groups.push_back(g);
     }
 
