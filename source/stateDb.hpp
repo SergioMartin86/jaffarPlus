@@ -60,9 +60,12 @@ public:
       // Set the state size to the maximum compression buffer size
       _stateSize = _differentialCompressionBufferSize;
 
-      // Reserving storage for the temporary output buffer for differential compression, one per thread
+      // Reserving storage for the temporary output buffer for differential compression, one per thread.
+      // Indexed by the OpenMP thread number (0.._threadCount-1), NOT _myThreadId: the latter is a
+      // physical CPU id (sched_getcpu) that can exceed the thread count on multi-core/NUMA machines,
+      // which would index this per-thread buffer out of bounds.
       _differentialCompressionBuffer.resize(_threadCount);
-      JAFFAR_PARALLEL { _differentialCompressionBuffer[_myThreadId] = (uint8_t*)calloc(_stateSizeRaw, 1); }
+      JAFFAR_PARALLEL { _differentialCompressionBuffer[jaffarCommon::parallel::getThreadId()] = (uint8_t*)calloc(_stateSizeRaw, 1); }
 
       // Resetting maximum differential bytes used so far
       _differentialCompressionMaxBytesUsed = 0;
@@ -171,7 +174,7 @@ public:
   __INLINE__ size_t saveStateFromRunner(Runner& r, void* statePtr)
   {
     // If using differential compression, the output pointer is the intermediate buffer. Otherwise, just use the passed pointer
-    uint8_t* stateBuffer = _differentialCompressionEnabled ? _differentialCompressionBuffer[_myThreadId] : (uint8_t*)statePtr;
+    uint8_t* stateBuffer = _differentialCompressionEnabled ? _differentialCompressionBuffer[jaffarCommon::parallel::getThreadId()] : (uint8_t*)statePtr;
 
     // Storage for the state size after deserialization
     size_t serializedSize = 0;
@@ -241,7 +244,7 @@ public:
   __INLINE__ void loadStateIntoRunner(Runner& r, const void* statePtr)
   {
     // If using differential compression, the input pointer is the intermediate buffer. Otherwise, just use the passed pointer
-    uint8_t* stateBuffer = _differentialCompressionEnabled ? _differentialCompressionBuffer[_myThreadId] : (uint8_t*)statePtr;
+    uint8_t* stateBuffer = _differentialCompressionEnabled ? _differentialCompressionBuffer[jaffarCommon::parallel::getThreadId()] : (uint8_t*)statePtr;
 
     // If using differential compression, now do the decompressing
     if (_differentialCompressionEnabled == true)
@@ -250,7 +253,7 @@ public:
       jaffarCommon::deserializer::Differential d(statePtr, _stateSize, _differentialCompressionDecodeBaseState, _stateSizeRaw, _differentialCompressionUseZlibCompression);
 
       // Extracting state into input buffer
-      d.pop(_differentialCompressionBuffer[_myThreadId], _stateSizeRaw);
+      d.pop(_differentialCompressionBuffer[jaffarCommon::parallel::getThreadId()], _stateSizeRaw);
     }
 
     // Now contiguously decompressing into the runner
