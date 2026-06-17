@@ -164,6 +164,54 @@ test('gridWalker_truncated_history',
       args : [ 'runPuzzle.sh', jaffar.full_path(), 'gridWalker.truncated.jaffar', '/tmp/jaffar.gw.truncated.best.sol', 'win', '4' ],
       suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
 
+## jaffar-player (reproduction tool) -- thorough headless exercise of its batch paths and the
+## machine-checkable --printFinalState oracle, plus negative paths that must fail cleanly.
+
+# Positive paths: deterministic reproduction to Win, partial (non-win) solution, not-allowed-input
+# reporting, and the --runCommand quit/quicksave commands.
+test('player_reproduction',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkPlayer.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
+      suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
+
+# Negative path: a missing config file must make the player fail cleanly.
+test('player_missing_config',
+      jaffarPlayer,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'does_not_exist.jaffar', 'unused.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
+      should_fail : true,
+      suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
+
+# Negative path: a missing solution file must make the player fail cleanly.
+test('player_missing_solution',
+      jaffarPlayer,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'gridWalker.jaffar', 'does_not_exist.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
+      should_fail : true,
+      suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
+
+# Negative path: a malformed (invalid JSON) config must make the player fail cleanly.
+test('player_malformed_config',
+      jaffarPlayer,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'malformed.jaffar', 'unused.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
+      should_fail : true,
+      suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
+
+# Negative path: a non-numeric --frameskip must make the player fail cleanly.
+test('player_bad_frameskip',
+      jaffarPlayer,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'gridWalker.jaffar', 'unused.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended', '--frameskip', 'abc' ],
+      should_fail : true,
+      suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
+
 endif
 
 ## NES / Sprilo
