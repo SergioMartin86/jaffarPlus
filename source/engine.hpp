@@ -16,6 +16,21 @@
 #include <jaffarCommon/serializers/base.hpp>
 #include <jaffarCommon/timing.hpp>
 
+// Fine-grained per-operation timing for the engine hot loop. Each timed region costs two
+// clock_gettime calls; multiplied across millions of states processed per step this is a real
+// overhead for a light emulator (~25% with QuickerSDLPoP), while being negligible under a heavy one
+// (QuickerNES is ~92% emulation). It is therefore compiled out unless built with
+// -DdetailedProfiling=true. When disabled, JAFFAR_PROF_DECL declares no variable and JAFFAR_PROF_ACC
+// is a no-op, so there is neither timing overhead nor an unused-variable warning. The coarse
+// per-step timers (step wall time, throughput, serial DB-advance stages) are always kept.
+#ifdef JAFFARPLUS_DETAILED_PROFILING
+#define JAFFAR_PROF_DECL(var) const auto var = jaffarCommon::timing::now()
+#define JAFFAR_PROF_ACC(field, var) field += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), var)
+#else
+#define JAFFAR_PROF_DECL(var) ((void)0)
+#define JAFFAR_PROF_ACC(field, var) ((void)0)
+#endif
+
 namespace jaffarPlus
 {
 
@@ -388,6 +403,7 @@ public:
   {
     // Printing information
     jaffarCommon::logger::log("[J+] Thread Count / NUMA Domains / NUMA Groups:      %3d / %d / %d\n", _threadCount, _numaCount, _numaGroupCount);
+#ifdef JAFFARPLUS_DETAILED_PROFILING
     jaffarCommon::logger::log("[J+] Elapsed Time (Step/Total):                  %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_currentStepTime),
                               100.0 * ((double)(_subTotalAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_totalRunningTime),
                               100.0 * ((double)_subTotalAverageCumulativeTime) / (double)(_totalRunningTime));
@@ -439,6 +455,13 @@ public:
     jaffarCommon::logger::log("[J+]  + Get Candidate Inputs (Step/Total):       %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_getCandidateInputsAverageTime),
                               100.0 * ((double)(_getCandidateInputsAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_getCandidateInputsAverageCumulativeTime),
                               100.0 * ((double)_getCandidateInputsAverageCumulativeTime) / (double)(_totalRunningTime));
+#else
+    // Detailed per-operation profiling is compiled out (default). Only the coarse step wall time and
+    // the serially-measured DB-advance stages below are available; build -DdetailedProfiling=true for
+    // the full per-operation breakdown.
+    jaffarCommon::logger::log("[J+] Elapsed Time (Step/Total):                  %9.3fs / %9.3fs   (per-operation breakdown disabled; build -DdetailedProfiling=true)\n",
+                              1.0e-6 * (double)(_currentStepTime), 1.0e-6 * (double)(_totalRunningTime));
+#endif
 
     jaffarCommon::logger::log("[J+]  + Advance Hash Db (Step/Total):            %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_advanceHashDbAverageTime),
                               100.0 * ((double)(_advanceHashDbAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_advanceHashDbAverageCumulativeTime),
@@ -587,9 +610,9 @@ private:
     auto& r = _runners[threadId];
 
     // Current base state to process
-    const auto t             = jaffarCommon::timing::now();
-    void*      baseStateData = _stateDb->popState();
-    acc.popBaseStateDb += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t);
+    JAFFAR_PROF_DECL(t);
+    void* baseStateData = _stateDb->popState();
+    JAFFAR_PROF_ACC(acc.popBaseStateDb, t);
 
     // While there are still states in the database, keep on grabbing them
     while (baseStateData != nullptr)
@@ -598,20 +621,20 @@ private:
       acc.baseStatesProcessed++;
 
       // Load state into runner via the state database
-      const auto t0 = jaffarCommon::timing::now();
+      JAFFAR_PROF_DECL(t0);
       _stateDb->loadStateIntoRunner(*r, baseStateData);
-      acc.runnerStateLoad += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t0);
+      JAFFAR_PROF_ACC(acc.runnerStateLoad, t0);
 
       // Getting allowed inputs
-      const auto t1            = jaffarCommon::timing::now();
+      JAFFAR_PROF_DECL(t1);
       const auto allowedInputs = r->getAllowedInputs();
-      acc.getAllowedInputs += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t1);
+      JAFFAR_PROF_ACC(acc.getAllowedInputs, t1);
 
       // Getting candidate inputs (those not already covered by the allowed set). Computed here,
       // before the allowed inputs are tried, while the runner still holds the unperturbed base state.
-      const auto t2              = jaffarCommon::timing::now();
-      auto       candidateInputs = r->getCandidateInputs();
-      acc.getCandidateInputs += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t2);
+      JAFFAR_PROF_DECL(t2);
+      auto candidateInputs = r->getCandidateInputs();
+      JAFFAR_PROF_ACC(acc.getCandidateInputs, t2);
 
       // Finding unique candidate inputs
       std::vector<InputSet::inputIndex_t> uniqueCandidateInputs;
@@ -642,14 +665,14 @@ private:
       }
 
       // Return base state to the free state queue
-      const auto t8 = jaffarCommon::timing::now();
+      JAFFAR_PROF_DECL(t8);
       _stateDb->returnFreeState(baseStateData);
-      acc.returnFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t8);
+      JAFFAR_PROF_ACC(acc.returnFreeState, t8);
 
       // Pulling next state from the database
-      const auto t9 = jaffarCommon::timing::now();
+      JAFFAR_PROF_DECL(t9);
       baseStateData = _stateDb->popState();
-      acc.popBaseStateDb += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t9);
+      JAFFAR_PROF_ACC(acc.popBaseStateDb, t9);
     }
 
     // Taking final thread-specific time measurement
@@ -662,9 +685,9 @@ private:
     acc.newStatesProcessed++;
 
     // Re-loading base state
-    const auto t0 = jaffarCommon::timing::now();
+    JAFFAR_PROF_DECL(t0);
     _stateDb->loadStateIntoRunner(r, baseStateData);
-    acc.runnerStateLoad += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t0);
+    JAFFAR_PROF_ACC(acc.runnerStateLoad, t0);
 
     // Running input
     const auto result = runInput(r, input, acc);
@@ -695,25 +718,25 @@ private:
   __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input, threadAccumulator_t& acc)
   {
     // Now advancing state with the provided input
-    const auto t1 = jaffarCommon::timing::now();
+    JAFFAR_PROF_DECL(t1);
     r.advanceState(input);
-    acc.runnerStateAdvance += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t1);
+    JAFFAR_PROF_ACC(acc.runnerStateAdvance, t1);
 
     // Computing runner hash
-    const auto t2   = jaffarCommon::timing::now();
+    JAFFAR_PROF_DECL(t2);
     const auto hash = r.computeHash();
-    acc.calculateHash += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t2);
+    JAFFAR_PROF_ACC(acc.calculateHash, t2);
 
     // Checking if hash is repeated (i.e., has been seen before)
-    const auto t3         = jaffarCommon::timing::now();
-    bool       hashExists = _hashDbEnabled ? _hashDb->checkHashExists(hash) : false;
-    acc.checkHash += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t3);
+    JAFFAR_PROF_DECL(t3);
+    bool hashExists = _hashDbEnabled ? _hashDb->checkHashExists(hash) : false;
+    JAFFAR_PROF_ACC(acc.checkHash, t3);
 
     // If state is repeated then we are not interested in it, continue
     if (hashExists == true) return inputResult_t::repeated;
 
     // Evaluating game rules based on the new state
-    const auto t4 = jaffarCommon::timing::now();
+    JAFFAR_PROF_DECL(t4);
     r.getGame()->evaluateRules();
 
     // Checking whether this state meets checkpoint
@@ -730,26 +753,26 @@ private:
 
     // Getting state type
     const auto stateType = r.getGame()->getStateType();
-    acc.ruleChecking += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t4);
+    JAFFAR_PROF_ACC(acc.ruleChecking, t4);
 
     // Now we have determined the state is not repeated, check if it's not a failed state
     if (stateType == Game::stateType_t::fail) return inputResult_t::failed;
 
     // Now that the state is not failed nor repeated, this is effectively a new state to add
-    const auto t5           = jaffarCommon::timing::now();
-    void*      newStateData = _stateDb->getFreeState();
-    acc.getFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t5);
+    JAFFAR_PROF_DECL(t5);
+    void* newStateData = _stateDb->getFreeState();
+    JAFFAR_PROF_ACC(acc.getFreeState, t5);
 
     // If couldn't get any memory, simply drop the state
     if (newStateData == nullptr) return inputResult_t::droppedNoStorage;
 
     // Updating state reward
-    const auto t6 = jaffarCommon::timing::now();
+    JAFFAR_PROF_DECL(t6);
     r.getGame()->updateReward();
 
     // Getting state reward
     const auto reward = r.getGame()->getReward();
-    acc.calculateReward += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t6);
+    JAFFAR_PROF_ACC(acc.calculateReward, t6);
 
     // If this is a win state, register it and return
     if (stateType == Game::stateType_t::win)
@@ -766,9 +789,9 @@ private:
       _stepBestWinStateLock.unlock();
 
       // Freeing up the state data
-      const auto t7 = jaffarCommon::timing::now();
+      JAFFAR_PROF_DECL(t7);
       _stateDb->returnFreeState(newStateData);
-      acc.returnFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t7);
+      JAFFAR_PROF_ACC(acc.returnFreeState, t7);
 
       // Returning a win result
       return inputResult_t::win;
@@ -778,9 +801,9 @@ private:
     if (stateType == Game::stateType_t::normal)
     {
       // If this is a normal state, push into the state database
-      const auto t8      = jaffarCommon::timing::now();
-      auto       success = _stateDb->pushState(reward, r, newStateData);
-      acc.runnerStateSave += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t8);
+      JAFFAR_PROF_DECL(t8);
+      auto success = _stateDb->pushState(reward, r, newStateData);
+      JAFFAR_PROF_ACC(acc.runnerStateSave, t8);
 
       // Attempting to serialize state and push it into the database
       // This might fail when using differential serialization due to insufficient space for differentials
@@ -788,9 +811,9 @@ private:
       if (success == false)
       {
         // Freeing up state memory
-        const auto t9 = jaffarCommon::timing::now();
+        JAFFAR_PROF_DECL(t9);
         _stateDb->returnFreeState(newStateData);
-        acc.returnFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t9);
+        JAFFAR_PROF_ACC(acc.returnFreeState, t9);
 
         // Returning dropped result by failed serialization
         return inputResult_t::droppedFailedSerialization;
