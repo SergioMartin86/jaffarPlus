@@ -28,6 +28,10 @@ size_t frameskip;
 // Command to run initially and then exit
 std::string runCommand;
 
+// When set, prints a stable, machine-readable summary of the final state on exit (for headless
+// verification of a reproduction: determinism checks and golden-hash comparisons).
+bool printFinalState;
+
 bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disableRender)
 {
   // If sequence file defined, load it and play it
@@ -259,6 +263,19 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
     }
   }
 
+  // If requested, print a stable summary of the final (end-of-sequence) state. This is the
+  // machine-checkable oracle for headless reproduction tests: the hash is deterministic, so the
+  // same config+solution must always produce the same value here.
+  if (printFinalState)
+  {
+    const auto        finalHash       = p.getStateHash(sequenceLength);
+    const auto        stateType       = r.getGame()->getStateType();
+    const std::string stateTypeString = stateType == jaffarPlus::Game::stateType_t::win ? "Win" : (stateType == jaffarPlus::Game::stateType_t::fail ? "Fail" : "Normal");
+    jaffarCommon::logger::log("[J+] Final Step:                  %ld\n", sequenceLength);
+    jaffarCommon::logger::log("[J+] Final State Type:            %s\n", stateTypeString.c_str());
+    jaffarCommon::logger::log("[J+] Final State Hash:            0x%lX%lX\n", finalHash.first, finalHash.second);
+  }
+
   // returning false on exit to trigger the finalization
   if (isFinalize) return false;
 
@@ -281,6 +298,10 @@ int main(int argc, char* argv[])
   program.add_argument("--frameskip").help("How many frames to skip between renderings.").default_value(std::string("1")).required();
   program.add_argument("--initialSequence").help("Overrides the solution file to use as initial sequence to play before starting.").default_value(std::string("")).required();
   program.add_argument("--runCommand").help("Specifies a command to run and then exit").default_value(std::string(""));
+  program.add_argument("--printFinalState")
+      .help("Prints a stable summary (step, state type, state hash) of the final state on exit, for headless verification.")
+      .default_value(false)
+      .implicit_value(true);
 
   // Try to parse arguments
   try
@@ -321,6 +342,9 @@ int main(int argc, char* argv[])
 
   // Getting command to run (if any)
   runCommand = program.get<std::string>("--runCommand");
+
+  // Getting the print-final-state flag
+  printFinalState = program.get<bool>("--printFinalState");
 
   // Initializing terminal
   jaffarCommon::logger::initializeTerminal();
