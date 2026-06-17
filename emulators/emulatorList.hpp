@@ -62,6 +62,10 @@
 #include "pipeBot/pipeBot.hpp"
 #endif
 
+#ifdef __JAFFAR_USE_TESTEMULATOR
+#include "testEmulator/testEmulator.hpp"
+#endif
+
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
@@ -141,6 +145,10 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json& emulatorCo
 
 #ifdef __JAFFAR_USE_PIPEBOT
   DETECT_EMULATOR(emulator::PipeBot);
+#endif
+
+#ifdef __JAFFAR_USE_TESTEMULATOR
+  DETECT_EMULATOR(emulator::TestEmulator);
 #endif
 
   // Check if recognized

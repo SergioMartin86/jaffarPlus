@@ -47,6 +47,32 @@ jobs:
             extern/jaffarCommon/.build-tools/check-style.sh check games
             extern/jaffarCommon/.build-tools/check-style.sh check emulators
 
+  # Build (TestEmulator) + engine correctness tests.
+  # The test emulator/game are in-repo (no ROM, no emulator submodule), so this is a fast,
+  # deterministic correctness gate exercising the engine's main execution path.
+  build-TestEmulator:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Checkout jaffarCommon
+      run: |
+            git submodule init extern/jaffarCommon
+            git submodule update extern/jaffarCommon
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=TestEmulator
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+
   # Build (QuickerNES) + Coverage Tests
   build-QuickerNES:
     runs-on: ubuntu-latest
