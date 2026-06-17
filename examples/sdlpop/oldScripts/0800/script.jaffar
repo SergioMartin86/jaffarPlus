@@ -909,32 +909,6 @@
         ]
       },
       {
-        "Label": 8999,
-        "Conditions": [
-          {
-            "Property": "Kid Room",
-            "Op": "==",
-            "Value": 4
-          },
-          {
-            "Property": "Kid Pos Y",
-            "Op": "<=",
-            "Value": 55
-          },
-          {
-            "Property": "Exit Room Timer",
-            "Op": ">",
-            "Value": 1
-          }
-        ],
-        "Satisfies": [],
-        "Actions": [
-          {
-            "Type": "Trigger Fail"
-          }
-        ]
-      },
-      {
         "Label": 8998,
         "Conditions": [
           {
