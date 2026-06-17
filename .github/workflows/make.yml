@@ -30,7 +30,13 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install clang-format doxygen graphviz
+      run: sudo apt install doxygen graphviz
+    # Pin clang-format to an exact version (via pip) so CI output matches the
+    # version run locally. clang-format reformats slightly differently between
+    # patch releases, so without pinning the style check fails on harmless drift
+    # (e.g. apt's 18.1.3 vs. a developer's 18.1.8) rather than real violations.
+    - name: Installing pinned clang-format
+      run: python3 -m pip install 'clang-format==18.1.8'
     - name: Checking proper code styling
       run:  |
             git submodule init extern/jaffarCommon
