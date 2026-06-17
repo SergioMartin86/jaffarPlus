@@ -49,11 +49,44 @@ test('ValidateExamples',
 
 if emulator == 'TestEmulator'
 
+# Core correctness: optimality + save-solution + reproduction + determinism + differential equivalence
 test('gridWalker_optimal',
       bash,
       workdir : meson.current_source_dir() + '/testEmulator',
       timeout: testTimeout,
       args : [ 'checkOptimal.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+# Fail-rule pruning forces a detour around a trapped column: optimal solution is 6 moves
+test('gridWalker_detour',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'runPuzzle.sh', jaffar.full_path(), 'gridWalker.detour.jaffar', '/tmp/jaffar.gw.detour.best.sol', 'win', '6' ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+# Goal walled off by fail rules: the search must exhaust the space without a win
+test('gridWalker_unreachable',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'runPuzzle.sh', jaffar.full_path(), 'gridWalker.unreachable.jaffar', '/tmp/jaffar.gw.unreachable.best.sol', 'nowin' ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+# Max Steps set below the optimal depth: the engine must stop without finding a win
+test('gridWalker_maxsteps',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'runPuzzle.sh', jaffar.full_path(), 'gridWalker.maxsteps.jaffar', '/tmp/jaffar.gw.maxsteps.best.sol', 'nowin' ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+# Bypass Emulator State: the game serializes its own state instead of the emulator; optimal is still 8
+test('gridWalker_bypass',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'runPuzzle.sh', jaffar.full_path(), 'gridWalker.bypass.jaffar', '/tmp/jaffar.gw.bypass.best.sol', 'win', '8' ],
       suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
 
 endif

@@ -65,9 +65,29 @@ private:
   // routes that reach the same cell collapse to one state and BFS yields a shortest path.
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override {}
 
-  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override { serializer.push(&_steps, sizeof(_steps)); }
+  __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
+  {
+    serializer.push(&_steps, sizeof(_steps));
 
-  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) override { deserializer.pop(&_steps, sizeof(_steps)); }
+    // When the emulator's own state serialization is bypassed, the game must persist the cursor
+    // position itself (it lives in emulator memory, reached through _posX/_posY).
+    if (_bypassEmulatorState)
+    {
+      serializer.push(_posX, sizeof(uint8_t));
+      serializer.push(_posY, sizeof(uint8_t));
+    }
+  }
+
+  __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) override
+  {
+    deserializer.pop(&_steps, sizeof(_steps));
+
+    if (_bypassEmulatorState)
+    {
+      deserializer.pop(_posX, sizeof(uint8_t));
+      deserializer.pop(_posY, sizeof(uint8_t));
+    }
+  }
 
   __INLINE__ float calculateGameSpecificReward() const override
   {

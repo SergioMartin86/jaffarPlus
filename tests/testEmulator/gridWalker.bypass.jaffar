@@ -5,10 +5,10 @@
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
-            "Best Solution Path": "/tmp/jaffar.gridWalker.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.gridWalker.worst.sol",
-            "Best State Path": "/tmp/jaffar.gridWalker.best.state",
-            "Worst State Path": "/tmp/jaffar.gridWalker.worst.state"
+            "Best Solution Path": "/tmp/jaffar.gw.bypass.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.gw.bypass.worst.sol",
+            "Best State Path": "/tmp/jaffar.gw.bypass.best.state",
+            "Worst State Path": "/tmp/jaffar.gw.bypass.worst.state"
         }
     },
     "Engine Configuration": {
@@ -103,31 +103,6 @@
                 ]
             },
             {
-                "Label": 200,
-                "Conditions": [
-                    {
-                        "Property": "Pos X",
-                        "Op": "==",
-                        "Value": 4
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 100.0
-                    },
-                    {
-                        "Type": "Trigger Checkpoint",
-                        "Tolerance": 8
-                    },
-                    {
-                        "Type": "Trigger Save Solution",
-                        "Path": "/tmp/jaffar.gridWalker.win.sol"
-                    }
-                ]
-            },
-            {
                 "Label": 300,
                 "Conditions": [
                     {
@@ -141,9 +116,7 @@
                         "Value": 4
                     }
                 ],
-                "Satisfies": [
-                    200
-                ],
+                "Satisfies": [],
                 "Actions": [
                     {
                         "Type": "Add Reward",
@@ -155,6 +128,6 @@
                 ]
             }
         ],
-        "Bypass Emulator State": false
+        "Bypass Emulator State": true
     }
 }
