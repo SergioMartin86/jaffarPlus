@@ -34,3 +34,8 @@ NCursesCPPFlags = [ ]
 if get_option('useNCurses') == true
   NCursesCPPFlags = [ '-DNCURSES' ]
 endif
+
+# Fine-grained hot-loop profiling (off by default; adds clock_gettime overhead per timed region)
+if get_option('detailedProfiling') == true
+  jaffarCPPFlags += '-DJAFFARPLUS_DETAILED_PROFILING'
+endif

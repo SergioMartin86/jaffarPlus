@@ -41,3 +41,10 @@ option('useNCurses',
   description : 'Enable NCurses for console output',
   yield: true
 )
+
+option('detailedProfiling',
+  type : 'boolean',
+  value : false,
+  description : 'Enable fine-grained per-operation timing in the engine hot loop. Adds two clock_gettime calls per timed region (a real cost for light emulators, negligible for heavy ones), so it is off by default; per-step throughput and the coarse step timers remain available either way.',
+  yield: true
+)
