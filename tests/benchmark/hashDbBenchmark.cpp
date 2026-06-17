@@ -1,11 +1,11 @@
-// Micro-benchmark comparing the windowed vs generational hash-database implementations directly,
-// without the engine, by driving them with a synthetic stream of distinct 128-bit hashes that mimics
-// the engine's access pattern: each "generation" performs a batch of concurrent checkHashExists()
-// calls (256 threads) followed by a single advanceStep(). It runs well past the point where the DB
-// fills so the cost of eviction (windowed: free store discard; generational: parallel scan) is
-// measured directly, alongside lookup throughput and resident memory.
+// Micro-benchmark for the hash database, driving it directly (without the engine) with a synthetic
+// stream of distinct 128-bit hashes that mimics the engine's access pattern: each "generation"
+// performs a batch of concurrent checkHashExists() calls (all worker threads) followed by a single
+// advanceStep(). It runs well past the point where the DB fills, so per-generation lookup throughput,
+// eviction (advanceStep) cost, and resident memory can be measured at scale.
 //
-// Usage: hashDbBenchmark <window|generational> <budgetGB> <insertsPerGen> <generations>
+// Usage: hashDbBenchmark <label> <budgetGB> <insertsPerGen> <generations>
+//   <label> is free-form (e.g. a config description); it only annotates the output.
 
 // Standard / jaffarCommon headers the engine headers depend on transitively (must precede them here).
 #include <algorithm>
@@ -57,14 +57,13 @@ int main(int argc, char** argv)
 {
   if (argc != 5)
   {
-    fprintf(stderr, "Usage: %s <window|generational> <budgetGB> <insertsPerGen> <generations>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <label> <budgetGB> <insertsPerGen> <generations>\n", argv[0]);
     return 1;
   }
-  const std::string mode         = argv[1];
-  const double      budgetGB     = atof(argv[2]);
+  const std::string mode          = argv[1];
+  const double      budgetGB      = atof(argv[2]);
   const uint64_t    insertsPerGen = strtoull(argv[3], nullptr, 10);
-  const size_t      generations  = strtoull(argv[4], nullptr, 10);
-  const bool        generational = (mode == "generational");
+  const size_t      generations   = strtoull(argv[4], nullptr, 10);
 
   // Single NUMA group, so the whole budget lives in one hash database driven by all threads.
   const int numaCount = numa_max_node() + 1;
@@ -73,10 +72,9 @@ int main(int argc, char** argv)
   // Build the hash-DB config. Total budget = Max Store Count * Max Store Size; use 2 stores so the
   // windowed scheme has its usual 50%-floor behaviour.
   nlohmann::json cfg;
-  cfg["Max Store Count"]   = 2;
+  cfg["Max Store Count"]     = 2;
   cfg["Max Store Size (Mb)"] = (budgetGB * 1024.0) / 2.0;
-  cfg["Enabled"]           = true;
-  if (generational) cfg["Use Generational Eviction"] = true;
+  cfg["Enabled"]             = true;
 
   jaffarPlus::HashDb db(cfg);
   db.initialize();
