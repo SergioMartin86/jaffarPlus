@@ -317,7 +317,9 @@ public:
     for (size_t i = 0; i < (size_t)_numaCount; i++)
     {
       const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
-      bool       success = _freeStateQueues[numaIdx]->try_pop(stateSpace);
+      // Skip NUMA domains with no worker thread: their queues are never allocated (see initialize()).
+      if (_freeStateQueues[numaIdx] == nullptr) continue;
+      bool success = _freeStateQueues[numaIdx]->try_pop(stateSpace);
 
       // If successful, return the pointer immediately
       if (success == true)
@@ -337,7 +339,8 @@ public:
     for (size_t i = 0; i < (size_t)_numaCount; i++)
     {
       const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
-      bool       success = _numaCurrentStateQueues[numaIdx]->pop_back_get(stateSpace);
+      if (_numaCurrentStateQueues[numaIdx] == nullptr) continue;
+      bool success = _numaCurrentStateQueues[numaIdx]->pop_back_get(stateSpace);
 
       // If successful, return the pointer immediately
       if (success == true)
@@ -477,7 +480,9 @@ public:
     for (size_t i = 0; i < (size_t)_numaCount; i++)
     {
       const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
-      bool       success = _numaCurrentStateQueues[numaIdx]->pop_front_get(statePtr);
+      // Skip NUMA domains with no worker thread: their queues are never allocated (see initialize()).
+      if (_numaCurrentStateQueues[numaIdx] == nullptr) continue;
+      bool success = _numaCurrentStateQueues[numaIdx]->pop_front_get(statePtr);
 
       // If successful, return the pointer immediately
       if (success == true)

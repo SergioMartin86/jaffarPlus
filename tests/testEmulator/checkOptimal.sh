@@ -42,23 +42,11 @@ echo "$repro" | grep -q "Game State Type: Win" || { echo "$repro" | tail -n 20; 
 
 # 4. Determinism: a multi-threaded search must also find an optimal (length-8) solution. Different
 #    thread counts may surface a different shortest path, but BFS guarantees the same optimal depth.
-#    JaffarPlus's NUMA worker model requires threads to cover all NUMA domains, so a multi-threaded
-#    run is only valid on a single-NUMA host. CI runners are single-NUMA; on a multi-NUMA developer
-#    machine this part is skipped (the rest of the test still runs single-threaded).
-numaNodes=1
-if command -v numactl >/dev/null 2>&1; then
-  numaNodes="$(numactl --hardware 2>/dev/null | grep -cE '^node [0-9]+ cpus:')"
-  [[ "$numaNodes" -ge 1 ]] || numaNodes=1
-fi
-if [[ "$numaNodes" -le 1 ]]; then
-  rm -f "$SOL_ON"
-  outN="$(OMP_NUM_THREADS="${DET_THREADS:-4}" "$JAFFAR" "$CONFIG_ON" 2>&1)"
-  echo "$outN" | grep -q "Solution found" || { echo "$outN" | tail -n 20; fail "multi-threaded run found no solution"; }
-  [[ "$(solLen "$SOL_ON")" -eq 8 ]] || fail "multi-threaded solution length $(solLen "$SOL_ON") != optimal 8"
-  echo "  determinism: multi-threaded run also found an optimal 8-move solution"
-else
-  echo "  determinism: skipped multi-threaded check on multi-NUMA host ($numaNodes nodes); CI is single-NUMA"
-fi
+#    The engine handles threads covering any subset of NUMA domains, so this runs on any host.
+rm -f "$SOL_ON"
+outN="$(OMP_NUM_THREADS="${DET_THREADS:-4}" "$JAFFAR" "$CONFIG_ON" 2>&1)"
+echo "$outN" | grep -q "Solution found" || { echo "$outN" | tail -n 20; fail "multi-threaded run found no solution"; }
+[[ "$(solLen "$SOL_ON")" -eq 8 ]] || fail "multi-threaded solution length $(solLen "$SOL_ON") != optimal 8"
 
 # 5. Equivalence: differential-off search (single thread, deterministic) must find the identical
 #    solution to differential-on, proving compression does not alter the search result.
