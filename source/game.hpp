@@ -688,8 +688,9 @@ protected:
   virtual __INLINE__ void ruleUpdatePreHook() {};
   virtual __INLINE__ void ruleUpdatePostHook() {};
 
-  // Current game state type
-  stateType_t _stateType;
+  // Current game state type. Initialized to normal because it is read (printInfo) and serialized
+  // for the initial state before updateGameStateType() first assigns it.
+  stateType_t _stateType = stateType_t::normal;
 
   // Current game state reward
   float _reward = 0.0;
