@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Correctness of jaffar-player's two diagnostic reports, checked against crafted solutions with a
-# known, exactly-predictable answer:
+# Correctness of jaffar-player's diagnostic reports, checked against crafted solutions with a known,
+# exactly-predictable answer:
 #   - "Not Allowed Input Steps": inputs in the solution the engine would NOT consider at that frame
 #     (not in the allowed input set for that state).
 #   - "Repeated Hash Steps":     states whose hash already appeared earlier, i.e. the duplicates the
 #     engine would have pruned on encountering them.
-# Both the per-step list (frame info) and the aggregate counts (--printFinalState) are verified, and a
-# clean optimal solution is used as a negative control (both must be zero).
+#   - "First Win/Fail Step":     the number of inputs at which the solution first reaches a win/fail
+#     state (or "none"), surfaced in the --printFinalState summary.
+# Both the per-step lists (frame info) and the aggregate counts/steps (--printFinalState) are verified,
+# and a clean optimal solution is used as a negative control (both reports empty).
 set -uo pipefail
 
 JAFFAR="${1:?usage: checkPlayerReports.sh <jaffar binary> <player binary>}"
@@ -18,9 +20,11 @@ PLAYER="${2:?usage: checkPlayerReports.sh <jaffar binary> <player binary>}"
 # races the other tests that run `jaffar gridWalker.player.jaffar` concurrently.
 CONFIG="$PWD/gridWalker.player.jaffar"
 CONFIG_RIGHT="$PWD/gridWalker.rightonly.jaffar"
+CONFIG_DETOUR="$PWD/gridWalker.detour.jaffar"   # has a fail rule (only the config is read here)
 REP_SOL="/tmp/jaffar.gw.reports.repeated.sol"
 NA_SOL="/tmp/jaffar.gw.reports.notallowed.sol"
 CLEAN_SOL="/tmp/jaffar.gw.reports.clean.sol"
+FAIL_SOL="/tmp/jaffar.gw.reports.fail.sol"
 
 export JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB="${JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB:-10}"
 export JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB="${JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB:-100}"
@@ -46,6 +50,8 @@ outR="$("$PLAYER" "$CONFIG" "$REP_SOL" "${PLAY_FLAGS[@]}" 2>&1)"
 [[ "$(countOf 'Repeated State Count' "$outR")" == "3" ]] || fail "repeated-state count != 3 (got '$(countOf 'Repeated State Count' "$outR")')"
 [[ "$(stepsOf 'Repeated Hash Steps' "$outR")" == "2 3 4" ]] || fail "repeated-hash steps != '2 3 4' (got '$(stepsOf 'Repeated Hash Steps' "$outR")')"
 [[ "$(countOf 'Not Allowed Input Count' "$outR")" == "0" ]] || fail "repeated-state case should have 0 not-allowed inputs"
+# This wandering solution never wins or fails.
+[[ "$(countOf 'First Win Step' "$outR")" == "none" ]] || fail "non-winning solution reported a win step (got '$(countOf 'First Win Step' "$outR")')"
 
 # --- Case 2: not-allowed inputs. With a right-only allowed set, "|D|" is parseable and moves the
 #     cursor (so no spurious repeat) but is not allowed. The solution R,D,R,D moves strictly into new
@@ -63,6 +69,17 @@ outW="$("$PLAYER" "$CONFIG" "$CLEAN_SOL" "${PLAY_FLAGS[@]}" 2>&1)"
 [[ "$(finalTypeOf "$outW")" == "Win" ]] || fail "clean solution did not reach Win (got '$(finalTypeOf "$outW")')"
 [[ "$(countOf 'Not Allowed Input Count' "$outW")" == "0" ]] || fail "clean solution reported not-allowed inputs"
 [[ "$(countOf 'Repeated State Count' "$outW")" == "0" ]] || fail "clean solution reported repeated states"
+# The win happens exactly at the last (8th) input, and the solution never fails.
+[[ "$(countOf 'First Win Step' "$outW")" == "8" ]] || fail "first-win step != 8 (got '$(countOf 'First Win Step' "$outW")')"
+[[ "$(countOf 'First Fail Step' "$outW")" == "none" ]] || fail "clean winning solution reported a fail step"
 
-echo "PASS: report correctness -- repeated states [2 3 4]/count 3; not-allowed [1 3]/count 2; optimal clean"
+# --- First-fail step: on the detour config (which has a fail rule at column 0, rows 1-3), a single
+#     "|D|" from the start moves to (0,1) -- a fail -- after exactly 1 input. ---
+printf '|D|\n' > "$FAIL_SOL"
+outF="$("$PLAYER" "$CONFIG_DETOUR" "$FAIL_SOL" "${PLAY_FLAGS[@]}" 2>&1)"
+[[ "$(finalTypeOf "$outF")" == "Fail" ]] || fail "detour |D| did not reach Fail (got '$(finalTypeOf "$outF")')"
+[[ "$(countOf 'First Fail Step' "$outF")" == "1" ]] || fail "first-fail step != 1 (got '$(countOf 'First Fail Step' "$outF")')"
+[[ "$(countOf 'First Win Step' "$outF")" == "none" ]] || fail "failing solution reported a win step"
+
+echo "PASS: report correctness -- repeated [2 3 4]; not-allowed [1 3]; win step 8 / fail step 1 / none cases"
 exit 0
