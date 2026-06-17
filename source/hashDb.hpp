@@ -36,9 +36,13 @@ public:
     // Initializing hash store vector
     for (ssize_t i = 0; i < _numaGroupCount; i++) _numaGroups.push_back(new NUMAStore_t);
 
-    // Creating first hash db store
+    // Creating first hash db store, and per-thread statistics counters
     for (size_t i = 0; i < _numaGroups.size(); i++)
+    {
       _numaGroups[i]->_hashStores.push_back(hashStore_t({.id = _numaGroups[i]->_currentHashStoreId++, .age = _numaGroups[i]->_currentAge, .queryCount = 0, .collisionCount = 0}));
+      _numaGroups[i]->_threadQueryCount.resize(_threadCount);
+      _numaGroups[i]->_threadCollisionCount.resize(_threadCount);
+    }
   }
 
   // Function to print relevant information
@@ -57,8 +61,8 @@ public:
       size_t curHashStoreIdx = 0;
       while (itr != _numaGroups[i]->_hashStores.rend())
       {
-        const size_t queryCount     = itr == _numaGroups[i]->_hashStores.rbegin() ? _numaGroups[i]->_currentQueryCount.load() : itr->queryCount;
-        const size_t collisionCount = itr == _numaGroups[i]->_hashStores.rbegin() ? _numaGroups[i]->_currentCollisionCount.load() : itr->collisionCount;
+        const size_t queryCount     = itr == _numaGroups[i]->_hashStores.rbegin() ? _numaGroups[i]->getQueryCount() : itr->queryCount;
+        const size_t collisionCount = itr == _numaGroups[i]->_hashStores.rbegin() ? _numaGroups[i]->getCollisionCount() : itr->collisionCount;
 
         jaffarCommon::logger::log("[J+]      + NUMA %lu - Store: %lu / %lu - Id: %lu - Age: %lu, Entries: %.3f M / %.3f M, Size: %.3f Mb / %.3f Mb, Check Count: %lu, Collision "
                                   "Count: %lu (Rate %.3f%%)\n",
@@ -76,16 +80,19 @@ public:
    */
   __INLINE__ bool checkHashExists(const jaffarCommon::hash::hash_t hash)
   {
+    auto* const numaGroup = _numaGroups[_preferredNumaGroup];
+    const auto  threadId  = jaffarCommon::parallel::getThreadId();
+
+    // Counting one query per state checked (into this thread's own slot, contention-free)
+    numaGroup->_threadQueryCount[threadId].value++;
+
     // The current hash store is the latest to be entered
-    auto   itr             = _numaGroups[_preferredNumaGroup]->_hashStores.rbegin();
+    auto   itr             = numaGroup->_hashStores.rbegin();
     size_t curHashStoreIdx = 0;
 
     // Checking for the rest of the hash stores in reverse order, to increase chances of early collision detection
-    while (itr != _numaGroups[_preferredNumaGroup]->_hashStores.rend())
+    while (itr != numaGroup->_hashStores.rend())
     {
-      // Increasing query count for this hash store position
-      _numaGroups[_preferredNumaGroup]->_currentQueryCount++;
-
       // Flag to indicate whether a collision has been found
       bool collisionFound = false;
 
@@ -99,7 +106,7 @@ public:
       if (collisionFound == true)
       {
         // Increasing counter for collisions
-        _numaGroups[_preferredNumaGroup]->_currentCollisionCount++;
+        numaGroup->_threadCollisionCount[threadId].value++;
 
         // True means a collision was found
         return true;
@@ -146,13 +153,10 @@ public:
         // First, if we already reached the maximum hash stores, then discard the oldest one first
         if (_numaGroups[i]->_hashStores.size() == _maxStoreCount) _numaGroups[i]->_hashStores.pop_front();
 
-        // Updating counters for the current hash db
-        currentHashStore.queryCount     = _numaGroups[i]->_currentQueryCount;
-        currentHashStore.collisionCount = _numaGroups[i]->_currentCollisionCount;
-
-        // Resetting counters
-        _numaGroups[i]->_currentQueryCount     = 0;
-        _numaGroups[i]->_currentCollisionCount = 0;
+        // Snapshotting the (summed per-thread) counters into the store being retired, then resetting
+        currentHashStore.queryCount     = _numaGroups[i]->getQueryCount();
+        currentHashStore.collisionCount = _numaGroups[i]->getCollisionCount();
+        _numaGroups[i]->resetCounts();
 
         // Now create the new one, by pushing it from the back
         _numaGroups[i]->_hashStores.push_back(
@@ -188,6 +192,18 @@ private:
     jaffarCommon::concurrent::HashSet_t<jaffarCommon::hash::hash_t> hashSet = {};
   };
 
+  /**
+   * A query/collision counter padded to a full cache line. The hot-path hash check is the most
+   * frequent operation in the engine, so these statistics are accumulated per-thread (each thread
+   * touches only its own slot) instead of through a single shared atomic, whose cache line would
+   * otherwise bounce between all worker cores on every check. The padding prevents two threads'
+   * slots from landing on the same cache line (false sharing).
+   */
+  struct alignas(64) paddedCounter_t
+  {
+    size_t value = 0;
+  };
+
   struct NUMAStore_t
   {
     /**
@@ -212,14 +228,33 @@ private:
     std::deque<hashStore_t> _hashStores;
 
     /**
-     * Query count for the current hash db
+     * Per-thread query counts for the current hash store, indexed by OpenMP thread id.
      */
-    std::atomic<size_t> _currentQueryCount = 0;
+    std::vector<paddedCounter_t> _threadQueryCount;
 
     /**
-     * Collision count for the current hash db
+     * Per-thread collision counts for the current hash store, indexed by OpenMP thread id.
      */
-    std::atomic<size_t> _currentCollisionCount = 0;
+    std::vector<paddedCounter_t> _threadCollisionCount;
+
+    // Aggregating helpers (called only at reporting / store-rollover time, never in the hot path)
+    __INLINE__ size_t getQueryCount() const
+    {
+      size_t total = 0;
+      for (const auto& c : _threadQueryCount) total += c.value;
+      return total;
+    }
+    __INLINE__ size_t getCollisionCount() const
+    {
+      size_t total = 0;
+      for (const auto& c : _threadCollisionCount) total += c.value;
+      return total;
+    }
+    __INLINE__ void resetCounts()
+    {
+      for (auto& c : _threadQueryCount) c.value = 0;
+      for (auto& c : _threadCollisionCount) c.value = 0;
+    }
   };
 
   /**
