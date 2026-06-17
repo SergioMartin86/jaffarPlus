@@ -172,13 +172,15 @@ public:
       // If the current hash store's measured memory exceeds the budget, push a new one in
       if (getStoreSizeBytes(currentHashStore) >= _maxStoreSizeBytes)
       {
-        // First, if we already reached the maximum hash stores, then discard the oldest one first
-        if (_numaGroups[i]->_hashStores.size() == _maxStoreCount) _numaGroups[i]->_hashStores.pop_front();
-
-        // Snapshotting the (summed per-thread) counters into the store being retired, then resetting
+        // Snapshot the (summed per-thread) counters into the current store before any structural
+        // change, then reset. This must precede pop_front(): when maxStoreCount == 1 the front store
+        // IS the current (back) store, so popping it first would leave currentHashStore dangling.
         currentHashStore.queryCount     = _numaGroups[i]->getQueryCount();
         currentHashStore.collisionCount = _numaGroups[i]->getCollisionCount();
         _numaGroups[i]->resetCounts();
+
+        // If we already reached the maximum hash stores, discard the oldest one
+        if (_numaGroups[i]->_hashStores.size() == _maxStoreCount) _numaGroups[i]->_hashStores.pop_front();
 
         // Now create the new one, by pushing it from the back
         _numaGroups[i]->_hashStores.push_back(

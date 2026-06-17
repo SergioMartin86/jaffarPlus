@@ -35,5 +35,15 @@ outEvict="$("$JAFFAR" "$CONFIG" 2>&1)"
 [[ "$outEvict" == *"Solution found"* ]] || { printf '%s\n' "$outEvict" | tail -n 20; fail "generational (tiny budget): no solution under heavy eviction"; }
 [[ "$(solLen "$SOL")" -eq 8 ]] || fail "generational (tiny budget): solution length $(solLen "$SOL") != optimal 8"
 
-echo "PASS: generational hash DB dedups correctly and stays optimal under heavy eviction"
+# 3. Larger maze (50x50, optimal = 98 moves) with a budget small enough that genuine reserved-shard
+#    eviction occurs mid-search (target well below the ~2500 reachable cells). The optimal solution
+#    must still be found, i.e. evicted cells are correctly re-explored.
+BIG_SOL="/tmp/jaffar.gw.biggrid.best.sol"
+unset JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB
+rm -f "$BIG_SOL"
+outBig="$("$JAFFAR" gridWalker.biggrid.jaffar 2>&1)"
+[[ "$outBig" == *"Solution found"* ]] || { printf '%s\n' "$outBig" | tail -n 20; fail "generational (50x50): no solution"; }
+[[ "$(solLen "$BIG_SOL")" -eq 98 ]] || fail "generational (50x50): solution length $(solLen "$BIG_SOL") != optimal 98"
+
+echo "PASS: generational hash DB dedups correctly, stays optimal under heavy eviction, and solves the 50x50 maze optimally under reserved-shard eviction"
 exit 0
