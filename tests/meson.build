@@ -18,6 +18,16 @@ test('propertyAndCondition',
       unitPropertyCondition,
       suite : [ 'unit' ])
 
+unitRuleInputSet = executable('unit-ruleAndInputSet',
+      'unit/ruleAndInputSet.cpp',
+      cpp_args : testCommonCppArgs + jaffarCPPFlags,
+      include_directories : jaffarIncludes,
+      dependencies : [ jaffarCommonDependency, gtestDependency ])
+
+test('ruleAndInputSet',
+      unitRuleInputSet,
+      suite : [ 'unit' ])
+
 ###### Adding example validator test
 
 bash = find_program('bash')
@@ -54,6 +64,15 @@ test('race04_short_reproduce',
       workdir : meson.current_source_dir() + '/nes/sprilo',
       timeout: testTimeout,
       args : [ 'race04_short.jaffar', 'race04_short.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
+      suite : [ 'reproductions', 'quickerNES', 'sprilo' ])
+
+# Negative path: a missing solution file must make the player fail cleanly
+test('race04_short_missing_solution',
+      jaffarPlayer,
+      workdir : meson.current_source_dir() + '/nes/sprilo',
+      timeout: testTimeout,
+      args : [ 'race04_short.jaffar', 'does_not_exist.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
+      should_fail : true,
       suite : [ 'reproductions', 'quickerNES', 'sprilo' ])
 
 endif
