@@ -740,14 +740,8 @@ private:
     void*      newStateData = _stateDb->getFreeState();
     acc.getFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t5);
 
-    // If couldn't get any memory, simply drop the state. Roll back the speculative hash insert done
-    // by checkHashExists so this state is not permanently marked as visited and can be reconsidered
-    // if it is generated again once storage frees up.
-    if (newStateData == nullptr)
-    {
-      if (_hashDbEnabled == true) _hashDb->removeHash(hash);
-      return inputResult_t::droppedNoStorage;
-    }
+    // If couldn't get any memory, simply drop the state
+    if (newStateData == nullptr) return inputResult_t::droppedNoStorage;
 
     // Updating state reward
     const auto t6 = jaffarCommon::timing::now();
@@ -797,9 +791,6 @@ private:
         const auto t9 = jaffarCommon::timing::now();
         _stateDb->returnFreeState(newStateData);
         acc.returnFreeState += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t9);
-
-        // Roll back the speculative hash insert so this dropped state can be reconsidered later
-        if (_hashDbEnabled == true) _hashDb->removeHash(hash);
 
         // Returning dropped result by failed serialization
         return inputResult_t::droppedFailedSerialization;
