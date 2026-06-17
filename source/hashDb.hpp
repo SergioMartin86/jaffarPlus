@@ -135,6 +135,17 @@ public:
   }
 
   /**
+   * Removes a hash from the current (newest) hash store. This rolls back the speculative insert
+   * performed by checkHashExists() when the corresponding state ends up being dropped (e.g. because
+   * the state database is full), so that the state is not permanently marked as visited and can be
+   * reconsidered if it is generated again later. Only the thread that originally inserted the hash
+   * reaches this path (concurrent generators of the same hash are reported as collisions), and
+   * advanceStep() never rolls the window during the worker phase, so the hash is guaranteed to be
+   * in the current store.
+   */
+  __INLINE__ void removeHash(const jaffarCommon::hash::hash_t hash) { _numaGroups[_preferredNumaGroup]->_hashStores.rbegin()->hashSet.erase(hash); }
+
+  /**
    * This function serves to indicate a new step has started.
    * The current age is increased, and if the current database exceeds its maximum
    * entries, it is send to the past db collection and a new one is created
