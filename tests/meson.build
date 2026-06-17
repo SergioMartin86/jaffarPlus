@@ -2,6 +2,22 @@ testCommonCppArgs = [ '-Wfatal-errors', '-Wall', '-Werror' ]
 testCommonLinkArgs = [ '-lgtest_main', '-lgtest' ]
 testTimeout = 120
 
+###### Unit tests (pure logic, emulator-independent)
+
+# Uses the system gtest (libgtest-dev) when present, falling back to the
+# bundled wrap (extern/gtest.wrap) otherwise. 'main: true' links gtest_main.
+gtestDependency = dependency('gtest', main: true, fallback: [ 'gtest', 'gtest_main_dep' ])
+
+unitPropertyCondition = executable('unit-propertyAndCondition',
+      'unit/propertyAndCondition.cpp',
+      cpp_args : testCommonCppArgs + jaffarCPPFlags,
+      include_directories : jaffarIncludes,
+      dependencies : [ jaffarCommonDependency, gtestDependency ])
+
+test('propertyAndCondition',
+      unitPropertyCondition,
+      suite : [ 'unit' ])
+
 ###### Adding example validator test
 
 bash = find_program('bash')

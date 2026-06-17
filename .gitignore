@@ -27,6 +27,9 @@ subprojects/SDL2*
 subprojects/json-*
 subprojects/abseil-cpp*
 subprojects/packagecache
+# meson wrap downloads (subproject_dir is 'extern'); keep the .wrap files, ignore fetched sources
+extern/packagecache
+extern/googletest-*
 build
 tools/llvm/
 tools/run-clang-format/
