@@ -20,7 +20,7 @@
         "State Database": {
             "Max Size (Mb)": 100,
             "Differential Compression": {
-                "Enabled": false,
+                "Enabled": true,
                 "Buffer Size": 1024,
                 "Use Zlib Compression": false
             }
