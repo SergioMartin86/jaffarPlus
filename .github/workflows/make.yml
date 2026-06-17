@@ -102,6 +102,45 @@ jobs:
         ASAN_OPTIONS: detect_leaks=0
         UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
 
+  # Detailed-profiling build (-DdetailedProfiling=true). Fine-grained hot-loop timing is compiled out
+  # by default, so this job keeps that code path from bitrotting: it builds with the option on, runs
+  # the full correctness suite, and smoke-checks that the per-operation breakdown is actually emitted.
+  profiling-TestEmulator:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Checkout jaffarCommon
+      run: |
+            git submodule init extern/jaffarCommon
+            git submodule update extern/jaffarCommon
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=TestEmulator -DdetailedProfiling=true
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+    - name: Verifying the per-operation breakdown is emitted
+      run: |
+            cd tests/testEmulator
+            out=$(JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10 JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100 OMP_NUM_THREADS=1 ../../build/jaffar gridWalker.jaffar 2>&1)
+            # Substring test via bash builtin (not `grep -q`): under pipefail, grep -q closing the pipe
+            # would SIGPIPE the writer and spuriously fail the step.
+            if [[ "$out" == *"Runner State Avance"* ]]; then
+              echo "OK: detailed per-operation breakdown is emitted"
+            else
+              echo "FAIL: detailed profiling enabled but the per-operation breakdown was not found"
+              printf '%s\n' "$out" | tail -n 30
+              exit 1
+            fi
+
   # Code coverage over the engine, measured on the TestEmulator/GridWalker suite. That harness is
   # ROM-less and aimed squarely at JaffarPlus's own main execution path, so coverage here reflects
   # engine code (search, state/hash DBs, serialization, rules, reproduction) rather than being
