@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include <jaffarCommon/exceptions.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <string>
 
