@@ -42,7 +42,7 @@ private:
   std::unordered_set<inputIndex_t> _inputIndexes;
 
   // If this flag is true, then the other input sets after this will not be evaluated
-  bool _stopInputEvaluation;
+  bool _stopInputEvaluation = false;
 };
 
 } // namespace jaffarPlus
