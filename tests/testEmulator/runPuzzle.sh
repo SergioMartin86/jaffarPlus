@@ -19,8 +19,10 @@ export JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB="${JAFFAR_ENGINE_OVERRIDE_MAX_H
 rm -f "$SOL"
 out="$("$JAFFAR" "$CONFIG" 2>&1)"
 
+# Substring matching via bash builtin, not `... | grep -q`: under `set -o pipefail` grep -q closing
+# the pipe on first match makes the upstream writer fail with SIGPIPE, spuriously failing the test.
 if [[ "$EXPECT" == "win" ]]; then
-  echo "$out" | grep -q "Solution found" || { echo "$out" | tail -n 20; echo "FAIL: $CONFIG expected a solution"; exit 1; }
+  [[ "$out" == *"Solution found"* ]] || { printf '%s\n' "$out" | tail -n 20; echo "FAIL: $CONFIG expected a solution"; exit 1; }
   if [[ -n "$EXPLEN" ]]; then
     len="$(tr '\0' '\n' < "$SOL" | grep -c .)"
     if [[ "$len" -ne "$EXPLEN" ]]; then
@@ -31,8 +33,8 @@ if [[ "$EXPECT" == "win" ]]; then
   fi
   echo "PASS: $CONFIG found a solution (length ${EXPLEN:-any})"
 else
-  if echo "$out" | grep -q "Solution found"; then
-    echo "$out" | tail -n 20
+  if [[ "$out" == *"Solution found"* ]]; then
+    printf '%s\n' "$out" | tail -n 20
     echo "FAIL: $CONFIG unexpectedly found a solution"
     exit 1
   fi

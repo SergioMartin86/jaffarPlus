@@ -25,9 +25,12 @@ solLen() { tr '\0' '\n' < "$1" | grep -c .; }
 fail()   { echo "FAIL: $1"; exit 1; }
 
 # 1-3. Optimality + save-solution + reproduction (differential compression on, single thread)
+# String checks use bash builtins, not `... | grep -q`: under `set -o pipefail`, grep -q closing
+# the pipe on first match makes the upstream writer fail with SIGPIPE, which pipefail then reports
+# as a spurious failure on large output.
 rm -f "$SOL_ON" "$WIN_SOL"
 out="$(OMP_NUM_THREADS=1 "$JAFFAR" "$CONFIG_ON" 2>&1)"
-echo "$out" | grep -q "Solution found" || { echo "$out" | tail -n 20; fail "engine did not report a solution (diff on)"; }
+[[ "$out" == *"Solution found"* ]] || { printf '%s\n' "$out" | tail -n 20; fail "engine did not report a solution (diff on)"; }
 [[ -f "$SOL_ON" ]] || fail "best solution file not produced"
 [[ "$(solLen "$SOL_ON")" -eq 8 ]] || fail "best solution length $(solLen "$SOL_ON") != optimal 8"
 cp "$SOL_ON" /tmp/gw.sol.on1
@@ -38,21 +41,21 @@ cp "$SOL_ON" /tmp/gw.sol.on1
 [[ "$(solLen "$WIN_SOL")" -ge 1 ]] || fail "saved checkpoint solution file is empty"
 
 repro="$(OMP_NUM_THREADS=1 "$PLAYER" "$CONFIG_ON" "$SOL_ON" --reproduce --disableRender --exitOnEnd --unattended 2>&1)"
-echo "$repro" | grep -q "Game State Type: Win" || { echo "$repro" | tail -n 20; fail "replaying the solution did not reach a Win state"; }
+[[ "$repro" == *"Game State Type: Win"* ]] || { printf '%s\n' "$repro" | tail -n 20; fail "replaying the solution did not reach a Win state"; }
 
 # 4. Determinism: a multi-threaded search must also find an optimal (length-8) solution. Different
 #    thread counts may surface a different shortest path, but BFS guarantees the same optimal depth.
 #    The engine handles threads covering any subset of NUMA domains, so this runs on any host.
 rm -f "$SOL_ON"
 outN="$(OMP_NUM_THREADS="${DET_THREADS:-4}" "$JAFFAR" "$CONFIG_ON" 2>&1)"
-echo "$outN" | grep -q "Solution found" || { echo "$outN" | tail -n 20; fail "multi-threaded run found no solution"; }
+[[ "$outN" == *"Solution found"* ]] || { printf '%s\n' "$outN" | tail -n 20; fail "multi-threaded run found no solution"; }
 [[ "$(solLen "$SOL_ON")" -eq 8 ]] || fail "multi-threaded solution length $(solLen "$SOL_ON") != optimal 8"
 
 # 5. Equivalence: differential-off search (single thread, deterministic) must find the identical
 #    solution to differential-on, proving compression does not alter the search result.
 rm -f "$SOL_OFF"
 outOff="$(OMP_NUM_THREADS=1 "$JAFFAR" "$CONFIG_OFF" 2>&1)"
-echo "$outOff" | grep -q "Solution found" || { echo "$outOff" | tail -n 20; fail "engine did not report a solution (diff off)"; }
+[[ "$outOff" == *"Solution found"* ]] || { printf '%s\n' "$outOff" | tail -n 20; fail "engine did not report a solution (diff off)"; }
 [[ "$(solLen "$SOL_OFF")" -eq 8 ]] || fail "diff-off solution length $(solLen "$SOL_OFF") != optimal 8"
 if ! cmp -s /tmp/gw.sol.on1 "$SOL_OFF"; then
   echo "on : $(tr '\0' ' ' < /tmp/gw.sol.on1)"

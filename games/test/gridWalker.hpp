@@ -65,6 +65,14 @@ private:
   // routes that reach the same cell collapse to one state and BFS yields a shortest path.
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override {}
 
+  // Discriminating hash for candidate-input testing: keyed on the cursor position so each
+  // candidate input is probed once per cell rather than once for the whole search.
+  __INLINE__ jaffarCommon::hash::hash_t getStateInputHash() override
+  {
+    const uint8_t pos[2] = {*_posX, *_posY};
+    return jaffarCommon::hash::calculateMetroHash(pos, sizeof(pos));
+  }
+
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.push(&_steps, sizeof(_steps));

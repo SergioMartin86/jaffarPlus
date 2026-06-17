@@ -89,6 +89,16 @@ test('gridWalker_bypass',
       args : [ 'runPuzzle.sh', jaffar.full_path(), 'gridWalker.bypass.jaffar', '/tmp/jaffar.gw.bypass.best.sol', 'win', '8' ],
       suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
 
+# Candidate Input Sets: a right-only allowed set cannot solve the maze, but the |D| candidate
+# input (probed per-cell) completes it -- proving candidate inputs are tested, reported, and gated
+# by "Test Candidate Inputs".
+test('gridWalker_candidate_inputs',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkCandidate.sh', jaffar.full_path() ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
 endif
 
 ## NES / Sprilo
