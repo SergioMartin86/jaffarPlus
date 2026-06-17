@@ -91,6 +91,10 @@
 #include "pipeBot/pipeBot.hpp"
 #endif
 
+#ifdef __JAFFAR_ENABLE_TESTGAME
+#include "test/gridWalker.hpp"
+#endif
+
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
@@ -208,6 +212,10 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
 
 #ifdef __JAFFAR_ENABLE_PIPEBOT
   DETECT_GAME(pipeBot::PipeBot);
+#endif
+
+#ifdef __JAFFAR_ENABLE_TESTGAME
+  DETECT_GAME(test::GridWalker);
 #endif
 
   // Check if game was recognized

@@ -44,6 +44,20 @@ test('ValidateExamples',
 
 # Setting env variables
 
+## Test Emulator / GridWalker -- a designed puzzle with a known optimal solution,
+## used to test the engine's main execution path end-to-end (search + reproduce).
+
+if emulator == 'TestEmulator'
+
+test('gridWalker_optimal',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkOptimal.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
+endif
+
 ## NES / Sprilo
 
 if emulator == 'QuickerNES'
