@@ -6,6 +6,7 @@
 #include "runner.hpp"
 #include <algorithm>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace jaffarPlus
@@ -80,12 +81,14 @@ public:
       // Getting state hash
       step.stateHash = _runner->computeHash();
 
-      // Checking for repeats
-      for (size_t stepIdx = 0; stepIdx < i; stepIdx++)
-        if (_hashMap[stepIdx] == step.stateHash) step._repeatedHashSteps.push_back(stepIdx);
-
-      // Entering state hash into the map to check for repeated inputs
-      _hashMap[i] = step.stateHash;
+      // Recording duplicate states: any earlier steps already filed under this step's hash are
+      // exactly the repeated states the engine would have pruned on encountering them. Looking them
+      // up in a hash map is O(1) amortized, versus the previous O(n^2) scan over every prior step,
+      // so this scales to long movies. The earlier steps are stored in ascending order, matching the
+      // previous behaviour.
+      auto& sameHashSteps     = _hashOccurrences[step.stateHash];
+      step._repeatedHashSteps = sameHashSteps;
+      sameHashSteps.push_back(i);
 
       // Allocating space for the game state data
       step.gameStateData = malloc(_gameStateSize);
@@ -173,6 +176,13 @@ private:
     return _sequence.at(stepId);
   }
 
+  // Hash functor for 128-bit state hashes (std::pair<uint64_t, uint64_t>), so they can key an
+  // unordered_map for O(1) duplicate-state lookup.
+  struct hashHasher_t
+  {
+    size_t operator()(const jaffarCommon::hash::hash_t& h) const noexcept { return h.first ^ (h.second + 0x9E3779B97F4A7C15ULL + (h.first << 6) + (h.first >> 2)); }
+  };
+
   // Pointer to runner
   Runner* _runner;
 
@@ -185,8 +195,9 @@ private:
   // Storage for the sequence data
   std::vector<step_t> _sequence;
 
-  // Hash database to check whether there are repeated hashes in the solution
-  std::map<size_t, jaffarCommon::hash::hash_t> _hashMap;
+  // Maps each state hash to the steps (ascending) at which it occurred, used to detect the repeated
+  // states the engine would have deduplicated.
+  std::unordered_map<jaffarCommon::hash::hash_t, std::vector<size_t>, hashHasher_t> _hashOccurrences;
 };
 
 } // namespace jaffarPlus

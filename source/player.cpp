@@ -131,7 +131,7 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       jaffarCommon::logger::log("[J+] Input:                       %s (0x%X)\n", inputString.c_str(), inputIndex);
       jaffarCommon::logger::log("[J+] On Finish:                   %s\n", isReload ? "Auto Reload" : "Stop");
 
-      jaffarCommon::logger::log("[J+] Repeated Hash Steps:         [ ");
+      jaffarCommon::logger::log("[J+] Repeated Hash Steps:         %lu total [ ", repeatedHashStates.size());
       if (repeatedHashStates.size() < 5)
         for (const auto step : repeatedHashStates) jaffarCommon::logger::log(" %ld ", step);
       else
@@ -141,7 +141,7 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       }
       jaffarCommon::logger::log(" ] \n");
 
-      jaffarCommon::logger::log("[J+] Not Allowed Input Steps:     [ ");
+      jaffarCommon::logger::log("[J+] Not Allowed Input Steps:     %lu total [ ", notAllowedInputStates.size());
       if (notAllowedInputStates.size() < 5)
         for (const auto step : notAllowedInputStates) jaffarCommon::logger::log(" %ld ", step);
       else
@@ -274,6 +274,10 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
     jaffarCommon::logger::log("[J+] Final Step:                  %ld\n", sequenceLength);
     jaffarCommon::logger::log("[J+] Final State Type:            %s\n", stateTypeString.c_str());
     jaffarCommon::logger::log("[J+] Final State Hash:            0x%lX%lX\n", finalHash.first, finalHash.second);
+    // Solution-quality counts: inputs the engine would not have considered at their frame, and
+    // states the engine would have pruned as duplicates. Both are 0 for a clean engine-found path.
+    jaffarCommon::logger::log("[J+] Not Allowed Input Count:     %lu\n", notAllowedInputStates.size());
+    jaffarCommon::logger::log("[J+] Repeated State Count:        %lu\n", repeatedHashStates.size());
   }
 
   // returning false on exit to trigger the finalization
