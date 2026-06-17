@@ -117,6 +117,16 @@ public:
       // Determining new game state type
       _runner->getGame()->updateGameStateType();
 
+      // Recording the first step at which the solution reaches a win/fail state. Only real applied
+      // inputs are considered (i < size); the i == size iteration re-applies the last input as a
+      // sentinel. The count is "inputs applied" (i + 1), matching the player's step convention.
+      if (i < inputSequence.size())
+      {
+        const auto stateType = _runner->getGame()->getStateType();
+        if (stateType == Game::stateType_t::win && _firstWinStep < 0) _firstWinStep = (ssize_t)i + 1;
+        if (stateType == Game::stateType_t::fail && _firstFailStep < 0) _firstFailStep = (ssize_t)i + 1;
+      }
+
       // Updating game reward
       _runner->getGame()->updateReward();
 
@@ -141,6 +151,11 @@ public:
   __INLINE__ const std::vector<size_t> getStateRepeatedHashSteps(const size_t currentStep) const { return getStep(currentStep)._repeatedHashSteps; }
   __INLINE__ jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
   __INLINE__ bool                       isInputAllowed(const size_t currentStep) const { return getStep(currentStep).isInputAllowed; }
+
+  // First step (number of inputs applied) at which the solution reaches a win / fail state, or -1 if
+  // it never does. Computed once during initialize().
+  __INLINE__ ssize_t getFirstWinStep() const { return _firstWinStep; }
+  __INLINE__ ssize_t getFirstFailStep() const { return _firstFailStep; }
 
   __INLINE__ void renderFrame(const size_t currentStep)
   {
@@ -198,6 +213,10 @@ private:
   // Maps each state hash to the steps (ascending) at which it occurred, used to detect the repeated
   // states the engine would have deduplicated.
   std::unordered_map<jaffarCommon::hash::hash_t, std::vector<size_t>, hashHasher_t> _hashOccurrences;
+
+  // First step (inputs applied) reaching a win / fail state; -1 until/unless one is seen.
+  ssize_t _firstWinStep  = -1;
+  ssize_t _firstFailStep = -1;
 };
 
 } // namespace jaffarPlus

@@ -273,6 +273,14 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
     const std::string stateTypeString = stateType == jaffarPlus::Game::stateType_t::win ? "Win" : (stateType == jaffarPlus::Game::stateType_t::fail ? "Fail" : "Normal");
     jaffarCommon::logger::log("[J+] Final Step:                  %ld\n", sequenceLength);
     jaffarCommon::logger::log("[J+] Final State Type:            %s\n", stateTypeString.c_str());
+    // First step (inputs applied) at which the solution reaches a win / fail state. Useful to spot a
+    // movie that wins before its end (wasted trailing inputs) or fails midway. "none" if it never does.
+    const auto        firstWinStep        = p.getFirstWinStep();
+    const auto        firstFailStep       = p.getFirstFailStep();
+    const std::string firstWinStepString  = firstWinStep < 0 ? "none" : std::to_string(firstWinStep);
+    const std::string firstFailStepString = firstFailStep < 0 ? "none" : std::to_string(firstFailStep);
+    jaffarCommon::logger::log("[J+] First Win Step:              %s\n", firstWinStepString.c_str());
+    jaffarCommon::logger::log("[J+] First Fail Step:             %s\n", firstFailStepString.c_str());
     jaffarCommon::logger::log("[J+] Final State Hash:            0x%lX%lX\n", finalHash.first, finalHash.second);
     // Solution-quality counts: inputs the engine would not have considered at their frame, and
     // states the engine would have pruned as duplicates. Both are 0 for a clean engine-found path.
