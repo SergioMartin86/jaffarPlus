@@ -102,15 +102,18 @@ jobs:
         ASAN_OPTIONS: detect_leaks=0
         UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
 
-  # Build (QuickerNES) + Coverage Tests
-  build-QuickerNES:
+  # Code coverage over the engine, measured on the TestEmulator/GridWalker suite. That harness is
+  # ROM-less and aimed squarely at JaffarPlus's own main execution path, so coverage here reflects
+  # engine code (search, state/hash DBs, serialization, rules, reproduction) rather than being
+  # diluted by emulator-core code as a real-emulator build would be.
+  coverage-TestEmulator:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Checkout QuickerNES
-      run: | 
-            git submodule init extern/quickerNES
-            git submodule update --recursive extern/quickerNES
+    - name: Checkout jaffarCommon
+      run: |
+            git submodule init extern/jaffarCommon
+            git submodule update extern/jaffarCommon
     - name: Create build directory
       run: mkdir build
     - name: Installing meson and ninja
@@ -120,7 +123,7 @@ jobs:
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Run meson configuration
-      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulator=QuickerNES
+      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulator=TestEmulator
     - name: Building project
       run: ninja -C build
     - name: Running tests
@@ -134,6 +137,36 @@ jobs:
         slug: SergioMartin86/jaffarPlus
         fail_ci_if_error: true
         files: build/meson-logs/coverage.xml
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: meson-logs-coverage-TestEmulator
+        path: build/meson-logs/
+
+  # Build (QuickerNES) + tests. Validates the engine against a real emulator core/ROM; coverage is
+  # measured separately on the TestEmulator harness (see coverage-TestEmulator).
+  build-QuickerNES:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Checkout QuickerNES
+      run: |
+            git submodule init extern/quickerNES
+            git submodule update --recursive extern/quickerNES
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerNES
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
     - uses: actions/upload-artifact@v4
       if: always()
       with:
