@@ -73,6 +73,16 @@ private:
     return jaffarCommon::hash::calculateMetroHash(pos, sizeof(pos));
   }
 
+  // Direct state hash used when "Bypass Hash Calculation" is enabled: the runner takes this value
+  // verbatim instead of running its MetroHash pass over the registered Hash Properties. It must be a
+  // faithful dedup key, so -- like the normal hash -- it is keyed on the cursor position; otherwise
+  // distinct cells would collapse into one state and BFS would not return a shortest path.
+  __INLINE__ jaffarCommon::hash::hash_t getDirectStateHash() const override
+  {
+    const uint8_t pos[2] = {*_posX, *_posY};
+    return jaffarCommon::hash::calculateMetroHash(pos, sizeof(pos));
+  }
+
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
     serializer.push(&_steps, sizeof(_steps));

@@ -2,6 +2,7 @@
 
 #include "game.hpp"
 #include "inputSet.hpp"
+#include <atomic>
 #include <cstdint>
 #include <gameList.hpp>
 #include <jaffarCommon/bitwise.hpp>
@@ -226,8 +227,19 @@ public:
 
   __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx)
   {
-    // If storing input history, do it now. Unless we've reached the maximum
-    if (_inputHistoryEnabled == true && _currentInputCount < _inputHistoryMaxSize) setInput(_currentInputCount, inputIdx);
+    if (_inputHistoryEnabled == true)
+    {
+      // Store the input, unless we've reached the configured history capacity
+      if (_currentInputCount < _inputHistoryMaxSize) { setInput(_currentInputCount, inputIdx); }
+
+      // Past capacity, further inputs are counted but not recorded: any solution longer than
+      // "Store Input History / Max Size" is silently truncated and will not reproduce in full.
+      // Warn once (across all threads) so this is not mistaken for a complete solution.
+      else if (_inputHistoryTruncationWarned.exchange(true) == false)
+        jaffarCommon::logger::log("[J+] Warning: input history exceeded its maximum size (%u). Solutions longer than this are truncated; increase 'Store "
+                                  "Input History / Max Size' to record them in full.\n",
+                                  _inputHistoryMaxSize);
+    }
 
     // Advancing step counter
     _currentInputCount++;
@@ -434,6 +446,9 @@ private:
 
   // Specifies whether to store the input history
   bool _inputHistoryEnabled;
+
+  // Warn-once guard (shared across all runner instances/threads) for input-history truncation
+  static inline std::atomic<bool> _inputHistoryTruncationWarned = false;
 
   // Maximum size of input index in bits
   size_t _inputIndexSizeBits;
