@@ -607,10 +607,8 @@ private:
       const auto allowedInputs = r->getAllowedInputs();
       acc.getAllowedInputs += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t1);
 
-      // Trying out each possible input in the set
-      for (auto inputItr = allowedInputs.begin(); inputItr != allowedInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr, acc);
-
-      // Getting candidate inputs
+      // Getting candidate inputs (those not already covered by the allowed set). Computed here,
+      // before the allowed inputs are tried, while the runner still holds the unperturbed base state.
       const auto t2              = jaffarCommon::timing::now();
       auto       candidateInputs = r->getCandidateInputs();
       acc.getCandidateInputs += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), t2);
@@ -620,21 +618,27 @@ private:
       for (const auto& input : candidateInputs)
         if (std::find(allowedInputs.begin(), allowedInputs.end(), input) == allowedInputs.end()) uniqueCandidateInputs.push_back(input);
 
-      // Run each candidate input
+      // Discriminating hash of the *base* state (the situation being expanded), used to dedup
+      // candidate-input probing across like states. It must be taken from the base state, so it is
+      // captured now -- before the allowed/candidate inputs below advance the runner away from it.
+      jaffarCommon::hash::hash_t baseStateInputHash{};
+      if (uniqueCandidateInputs.empty() == false) baseStateInputHash = r->getGame()->getStateInputHash();
+
+      // Trying out each possible input in the set
+      for (auto inputItr = allowedInputs.begin(); inputItr != allowedInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr, acc);
+
+      // Run each candidate input, keyed by the base state's discriminating hash
       for (const auto input : uniqueCandidateInputs)
       {
-        // Getting discriminating hash key to identify this type of states
-        auto stateInputHash = r->getGame()->getStateInputHash();
-
-        // Making sure we don't try the input if it was already detected
-        if (_candidateInputsDetected.contains(stateInputHash))
-          if (_candidateInputsDetected[stateInputHash].contains(input)) continue;
+        // Making sure we don't try the input if it was already detected for this type of state
+        if (_candidateInputsDetected.contains(baseStateInputHash))
+          if (_candidateInputsDetected[baseStateInputHash].contains(input)) continue;
 
         // Running input
         const auto result = runNewInput(*r, baseStateData, input, acc);
 
         // If this is not a repeated state, store it as new candidate input
-        if (result != inputResult_t::repeated) _candidateInputsDetected[stateInputHash].insert(input);
+        if (result != inputResult_t::repeated) _candidateInputsDetected[baseStateInputHash].insert(input);
       }
 
       // Return base state to the free state queue
