@@ -1,11 +1,13 @@
 #pragma once
 
+#include "generationalHashDb.hpp"
 #include "numa.hpp"
 #include <atomic>
 #include <jaffarCommon/concurrent.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/parallel.hpp>
+#include <memory>
 
 namespace jaffarPlus
 {
@@ -20,6 +22,11 @@ public:
 
     // For testing purposes, the maximum size can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB")) _maxStoreSizeMb = std::stoul(value);
+
+    // Optional (default off): use the generational, fixed-capacity hash DB instead of the windowed
+    // multi-store scheme. Single lookup per state and smooth (no-sawtooth) eviction; see header.
+    _useGenerationalEviction = config.contains("Use Generational Eviction") ? jaffarCommon::json::getBoolean(config, "Use Generational Eviction") : false;
+    if (_useGenerationalEviction) _genHashDb = std::make_unique<GenerationalHashDb>(_maxStoreCount, _maxStoreSizeMb);
   }
 
   ~HashDb()
@@ -30,6 +37,12 @@ public:
 
   __INLINE__ void initialize()
   {
+    if (_useGenerationalEviction)
+    {
+      _genHashDb->initialize();
+      return;
+    }
+
     // Converting the configured store budget to bytes. Rolling is driven by the set's actual
     // measured memory (see getStoreSizeBytes), not by an entries-to-bytes estimate.
     _maxStoreSizeBytes = (size_t)(_maxStoreSizeMb * 1024.0 * 1024.0);
@@ -49,6 +62,8 @@ public:
   // Function to print relevant information
   void printInfo() const
   {
+    if (_useGenerationalEviction) return _genHashDb->printInfo();
+
     // jaffarCommon::logger::log("[J+]  + Max Store Count:               %lu\n", _maxStoreCount);
     // jaffarCommon::logger::log("[J+]  + Max Store Size:                %f Mb (%.2f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
     // jaffarCommon::logger::log("[J+]  + Max Store Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
@@ -81,6 +96,8 @@ public:
    */
   __INLINE__ bool checkHashExists(const jaffarCommon::hash::hash_t hash)
   {
+    if (_useGenerationalEviction) return _genHashDb->checkHashExists(hash);
+
     auto* const numaGroup = _numaGroups[_preferredNumaGroup];
     const auto  threadId  = jaffarCommon::parallel::getThreadId();
 
@@ -127,6 +144,8 @@ public:
    */
   __INLINE__ void insertHash(const jaffarCommon::hash::hash_t hash)
   {
+    if (_useGenerationalEviction) return _genHashDb->insertHash(hash);
+
     // The current hash store is the latest to be entered
     auto  itr              = _numaGroups[_preferredNumaGroup]->_hashStores.rbegin();
     auto& currentHashStore = *itr;
@@ -142,6 +161,8 @@ public:
    */
   __INLINE__ void advanceStep()
   {
+    if (_useGenerationalEviction) return _genHashDb->advanceStep();
+
     // For each NUMA store, advance the step of its current hash store
     for (size_t i = 0; i < _numaGroups.size(); i++)
     {
@@ -298,6 +319,13 @@ private:
    * Maximum store size, in bytes (derived from _maxStoreSizeMb)
    */
   size_t _maxStoreSizeBytes;
+
+  /**
+   * If set, deduplication is delegated to the generational fixed-capacity hash DB instead of the
+   * windowed multi-store scheme (single lookup per state, smooth eviction). Opt-in via config.
+   */
+  bool                                _useGenerationalEviction = false;
+  std::unique_ptr<GenerationalHashDb> _genHashDb;
 
   /**
    * Set of hash databases stores, one per numa domain
