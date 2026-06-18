@@ -23,6 +23,16 @@ public:
 
   PrinceOfPersia(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
+    // Opt-in: fold the RNG seed into the state hash, but ONLY on frames where a guard is actively
+    // fighting the kid (can_guard_see_kid != 0 && guard alive). Rationale: the shared random_seed is
+    // advanced every frame by COSMETIC consumers (each on-screen torch flame, twinkling stars), so
+    // hashing it unconditionally would make a motionless kid look like an endless stream of distinct
+    // states (torch noise) and destroy dedup. The guard only draws RNG "in the middle of a fight"
+    // (guard_advance/block/strike), so gating on can_guard_see_kid captures exactly the frames where
+    // the seed changes guard BEHAVIOR, while staying silent (and dedup-tight) everywhere else. Default
+    // off: the engine's normal behavior excludes the seed from the hash.
+    _hashGuardCombatRNG = config.contains("Hash Guard Combat RNG") && config["Hash Guard Combat RNG"].get<bool>();
+
     // // Getting watch mobs indexes
     // auto watchMobsIndexesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Watch Moving Object Indexes");
     // for (const auto& mobJs : watchMobsIndexesJs)
@@ -231,6 +241,16 @@ private:
     hashEngine.Update(_gameState->Guard);
     hashEngine.Update(_gameState->Char);
     hashEngine.Update(_gameState->Opp);
+    // Opt-in guard-combat RNG awareness (see constructor). Fold the seed into the hash only while a
+    // guard is actively fighting (can_guard_see_kid != 0 && alive). The guard draws RNG once per such
+    // frame AFTER the torches have drawn (play_frame order: process_trobs -> play_guard_frame), so the
+    // end-of-frame seed is the post-guard-draw value, which is what determines the guard's next move.
+    // On non-fighting frames the seed is pure torch/cosmetic churn and is left out, so an idle kid
+    // still dedups. (Residual: a guard that *sees* the kid but is stuck/refractory in a torch-lit room
+    // can still churn the seed while the kid idles; bounded by Max Steps. Revisit with a per-draw
+    // fingerprint if that explodes in practice.)
+    if (_hashGuardCombatRNG && _gameState->Guard.alive < 0 && _gameState->can_guard_see_kid != 0)
+      hashEngine.Update(_gameState->random_seed);
     hashEngine.Update(_gameState->guardhp_curr);
     hashEngine.Update(_gameState->guardhp_max);
     hashEngine.Update(_gameState->demo_index);
@@ -341,12 +361,17 @@ private:
     // Container for bounded value and difference with center
     float diff = 0.0;
 
-    // Evaluating kid magnet's reward on position X
-    diff = -255.0f + std::abs(_kidPosXMagnet.position - (float)_gameState->Kid.x);
+    // Evaluating kid magnet's reward on position X.
+    // Use the interpolated _kidPosX/_kidPosY (computed in stateUpdatePostHook) rather than the raw
+    // Kid.x/Kid.y. During climbs (and other vertical animations) the raw Y is a step function that
+    // only jumps once at the very end of the sequence, so a Y-magnet over raw Y gives no gradient
+    // and the search won't prioritize climbing. The interpolated value advances smoothly frame by
+    // frame (e.g. climb-up: 148->...->125->118), giving the magnet a continuous progress signal.
+    diff = -255.0f + std::abs(_kidPosXMagnet.position - _kidPosX);
     reward += _kidPosXMagnet.intensity * -diff;
 
-    // Evaluating kid magnet's reward on position Y
-    diff = -255.0f + std::abs(_kidPosYMagnet.position - (float)_gameState->Kid.y);
+    // Evaluating kid magnet's reward on position Y (interpolated; see note above)
+    diff = -255.0f + std::abs(_kidPosYMagnet.position - _kidPosY);
     reward += _kidPosYMagnet.intensity * -diff;
 
     // Evaluating guard magnet's reward on position X
@@ -537,6 +562,9 @@ private:
 
 private:
   quicker::sdlPopState_t* _gameState;
+
+  // Opt-in: include the RNG seed in the state hash only during active guard combat (see constructor)
+  bool _hashGuardCombatRNG = false;
 
   // Values artificially added to the state
   uint8_t _kidPreviousFrame;
