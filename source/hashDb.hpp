@@ -50,11 +50,14 @@ public:
 
     if (_numaCount > 1)
     {
-      // Multi-domain: split the budget in half -- the global authoritative L2 gets one half, and the
-      // per-domain L1 caches share the other half (so L2 + all L1 == the configured budget). L2 holds
-      // the complete dedup set; the L1s are local caches that absorb within-domain repeats.
-      _maxStoreSizeBytes   = totalBudgetBytes / 2;
-      _l1MaxStoreSizeBytes = (totalBudgetBytes / 2) / (size_t)_numaCount;
+      // Multi-domain: split the budget so L2 + all L1 == the configured budget. The global L2 gets 3/4
+      // and the per-domain L1 caches share the remaining 1/4. L2 holds the complete dedup set, which
+      // benefits directly from more capacity (fewer rolled-out / re-explored states). The L1s only
+      // absorb within-domain repeats, whose working set is strongly biased toward spatiotemporally
+      // close states -- so a smaller cache still captures most of the local hit rate. Hence the 3:1
+      // weighting toward L2.
+      _maxStoreSizeBytes   = (totalBudgetBytes * 3) / 4;
+      _l1MaxStoreSizeBytes = (totalBudgetBytes / 4) / (size_t)_numaCount;
       _l1.resize(_numaCount);
       for (int i = 0; i < _numaCount; i++) _l1[i] = makeStore();
     }
