@@ -24,8 +24,7 @@
                 "Buffer Size": 1024,
                 "Use Zlib Compression": true
             }
-        },
-        "NUMA Domains Per Group": 12
+        }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerNES",
