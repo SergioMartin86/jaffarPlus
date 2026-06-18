@@ -16,13 +16,7 @@
             "Max Store Size (Mb)": 50000
         },
         "State Database": {
-            "Max Size (Mb)": 200000,
-            "Differential Compression":
-            {
-                "Enabled": false, 
-                "Buffer Size": 1024,
-                "Use Zlib Compression": true
-            }
+            "Max Size (Mb)": 200000
         }
     },
     "Emulator Configuration": {
