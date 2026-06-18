@@ -42,24 +42,30 @@ public:
 
   __INLINE__ void initialize()
   {
-    // Converting the configured (global L2) store budget to bytes. Rolling is driven by the set's
-    // actual measured memory (see getStoreSizeBytes), not by an entries-to-bytes estimate.
-    _maxStoreSizeBytes = (size_t)(_maxStoreSizeMb * 1024.0 * 1024.0);
+    // The configured "Max Store Size" is the ABSOLUTE per-generation budget for the whole hash DB:
+    // the global L2 plus all per-domain L1 caches combined never exceed it (so the total footprint is
+    // Max Store Size x Max Store Count, independent of NUMA layout -- the tiering does not inflate it).
+    // Rolling is driven by each store's actual measured memory (see getStoreSizeBytes).
+    const size_t totalBudgetBytes = (size_t)(_maxStoreSizeMb * 1024.0 * 1024.0);
 
-    // The single global authoritative store (holds the complete dedup set)
-    _l2 = makeStore();
-
-    // On a multi-domain host, add a NUMA-local L1 cache per domain. Each L1 is budgeted at the global
-    // budget divided by the domain count, so the L1 caches together add roughly one extra L2's worth
-    // of memory: total hash footprint ~2x the configured budget -- matching the previous default of
-    // two NUMA groups -- while L2 alone still holds the full global set. On a single-domain run there
-    // is no remote memory to avoid, so the L1 tier is skipped entirely.
     if (_numaCount > 1)
     {
-      _l1MaxStoreSizeBytes = _maxStoreSizeBytes / (size_t)_numaCount;
+      // Multi-domain: split the budget in half -- the global authoritative L2 gets one half, and the
+      // per-domain L1 caches share the other half (so L2 + all L1 == the configured budget). L2 holds
+      // the complete dedup set; the L1s are local caches that absorb within-domain repeats.
+      _maxStoreSizeBytes   = totalBudgetBytes / 2;
+      _l1MaxStoreSizeBytes = (totalBudgetBytes / 2) / (size_t)_numaCount;
       _l1.resize(_numaCount);
       for (int i = 0; i < _numaCount; i++) _l1[i] = makeStore();
     }
+    else
+    {
+      // Single domain: no L1 tier, so the one global store gets the whole budget.
+      _maxStoreSizeBytes = totalBudgetBytes;
+    }
+
+    // The single global authoritative store (holds the complete dedup set)
+    _l2 = makeStore();
   }
 
   // Function to print relevant information
