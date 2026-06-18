@@ -82,6 +82,17 @@ __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
     _numaCount = numa_max_node() + 1;
   }
 
+  // Optional: force the engine to treat the host as a single NUMA domain (for NUMA-isolation
+  // benchmarking). Combine with `numactl --cpunodebind=N --membind=N` and OMP_NUM_THREADS=<domain
+  // core count> to run entirely within one domain: all per-domain structures collapse to one, and
+  // every thread is assigned domain 0, so the whole state DB, hash DB, and all accesses stay local.
+  const bool forceSingleNuma = std::getenv("JAFFAR_ENGINE_FORCE_SINGLE_NUMA") != nullptr;
+  if (forceSingleNuma)
+  {
+    _numaCount           = 1;
+    _numaDomainsPerGroup = 1;
+  }
+
   // Checking that NUMA grouping is correct
   if (_numaCount % _numaDomainsPerGroup > 0)
   {
@@ -159,9 +170,10 @@ __INLINE__ void initializeNUMA(const int numaDomainsPerGroup = 1)
   std::mutex workMutex;
   JAFFAR_PARALLEL
   {
-    // Getting thread information from the system
+    // Getting thread information from the system. When forcing a single domain every thread is
+    // assigned domain 0 (it is the only one), regardless of which physical node it happens to run on.
     _myThreadId          = sched_getcpu();
-    _preferredNumaDomain = numa_node_of_cpu(_myThreadId);
+    _preferredNumaDomain = forceSingleNuma ? 0 : numa_node_of_cpu(_myThreadId);
     _preferredNumaGroup  = _preferredNumaDomain / _numaDomainsPerGroup;
 
     // Setting myself as numa delegate, if I'm the lowest cpu id in the numa domain
