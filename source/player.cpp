@@ -2,6 +2,7 @@
 #include "game.hpp"
 #include "playback.hpp"
 #include "runner.hpp"
+#include <SDL2/SDL.h>
 #include <argparse/argparse.hpp>
 #include <chrono>
 #include <emulatorList.hpp>
@@ -9,6 +10,7 @@
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/string.hpp>
+#include <set>
 
 // Prevents the interactive player to stall for a keystroke
 bool isUnattended;
@@ -31,6 +33,16 @@ std::string runCommand;
 // When set, prints a stable, machine-readable summary of the final state on exit (for headless
 // verification of a reproduction: determinism checks and golden-hash comparisons).
 bool printFinalState;
+
+// Directory to write per-frame screenshots (BMP) into; empty disables screenshotting. Only the
+// listed steps are captured (or all rendered steps if the set is empty but a dir is given).
+std::string      screenshotDir;
+std::set<size_t> screenshotSteps;
+
+// SDLPoP's final rendered software surface (defined in the emulator core and linked into the
+// player). It is populated by renderFrame regardless of whether a real display exists, so it can
+// be captured headlessly (SDL_VIDEODRIVER=dummy/offscreen) via SDL_SaveBMP.
+extern "C" SDL_Surface* get_final_surface();
 
 bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disableRender)
 {
@@ -91,7 +103,25 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
   {
     // Updating display
     if (disableRender == false)
-      if (currentStep % frameskip == 0) p.renderFrame(currentStep);
+      if (currentStep % frameskip == 0)
+      {
+        p.renderFrame(currentStep);
+
+        // Capture this frame to a BMP if requested (whole list, or every rendered frame if no list)
+        if (screenshotDir.empty() == false && (screenshotSteps.empty() || screenshotSteps.count((size_t)currentStep) > 0))
+        {
+          SDL_Surface* surface = get_final_surface();
+          if (surface != nullptr)
+          {
+            char path[1024];
+            snprintf(path, sizeof(path), "%s/step_%06ld.bmp", screenshotDir.c_str(), currentStep);
+            if (SDL_SaveBMP(surface, path) == 0)
+              jaffarCommon::logger::log("[J+] Saved screenshot: %s\n", path);
+            else
+              jaffarCommon::logger::log("[J+] Screenshot failed (%s): %s\n", path, SDL_GetError());
+          }
+        }
+      }
 
     // Loading step data
     p.loadStepData(currentStep);
@@ -310,6 +340,8 @@ int main(int argc, char* argv[])
   program.add_argument("--frameskip").help("How many frames to skip between renderings.").default_value(std::string("1")).required();
   program.add_argument("--initialSequence").help("Overrides the solution file to use as initial sequence to play before starting.").default_value(std::string("")).required();
   program.add_argument("--runCommand").help("Specifies a command to run and then exit").default_value(std::string(""));
+  program.add_argument("--screenshotDir").help("Directory to write per-frame screenshots (BMP) into (requires rendering enabled).").default_value(std::string(""));
+  program.add_argument("--screenshotSteps").help("Comma-separated list of steps to screenshot (empty = every rendered frame).").default_value(std::string(""));
   program.add_argument("--printFinalState")
       .help("Prints a stable summary (step, state type, state hash) of the final state on exit, for headless verification.")
       .default_value(false)
@@ -339,6 +371,15 @@ int main(int argc, char* argv[])
 
   // Getting disablerender flag
   bool disableRender = program.get<bool>("--disableRender");
+
+  // Getting screenshot options
+  screenshotDir = program.get<std::string>("--screenshotDir");
+  {
+    const auto stepsStr = program.get<std::string>("--screenshotSteps");
+    if (stepsStr.empty() == false)
+      for (const auto& tok : jaffarCommon::string::split(stepsStr, ','))
+        if (tok.empty() == false) screenshotSteps.insert((size_t)std::stoul(tok));
+  }
 
   // Getting exitOnEnd flag
   bool exitOnEnd = program.get<bool>("--exitOnEnd");
