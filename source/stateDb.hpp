@@ -78,17 +78,14 @@ public:
     // Padding is the difference between the aligned state size and the raw one
     _stateSizePadding = _stateSize - baseStateSize;
 
-    // Setting counters for database state popping
-    _numaNonLocalDatabaseStateCount = 0;
-    _numaLocalDatabaseStateCount    = 0;
-    _numaDatabaseStateNotFoundCount = 0;
+    // Allocating/zeroing the per-thread statistics counters. These were previously global atomics
+    // bumped on every pop/get-free; at high thread count that single-cache-line ping-pong cost more
+    // than the work it measured. They are now plain per-thread counters (indexed by the dense OpenMP
+    // thread id) reduced only when printInfo() is called.
+    _statCounters.assign(_threadCount, statCounters_t{});
 
-    // Setting counters for free state getting
-    _numaNonLocalFreeStateCount = 0;
-    _numaLocalFreeStateCount    = 0;
-    _numaFreeStateNotFoundCount = 0;
-    _numaStealingFreeStateCount = 0;
-    _numaDistanceAccumulator    = 0;
+    // Allocating/zeroing the per-thread free-slot caches (empty at start)
+    _freeStateCache.assign(_threadCount, freeStateCache_t{});
 
     // Splitting state database equally among numa domains
     size_t stateDbSizePerNUMA = std::ceil((_maxSizeMb * 1024 * 1024) / _numaCount);
@@ -125,11 +122,21 @@ public:
     // Allocating state databases in the correponding NUMA domains
     _numaCurrentStateQueues.resize(_numaCount);
     _numaNextStateQueues.resize(_numaCount);
+    // The current-state queue is a DrainBuffer: it is filled single-threaded in advanceStep() and
+    // then drained concurrently from both ends by the workers, never both at once (the step barrier
+    // separates the phases). Its capacity is the NUMA domain's full state count -- it can never hold
+    // more current states than that. The claim counters are 32-bit, so guard the capacity.
+    for (int i = 0; i < _numaCount; i++)
+      if (_maxStatesPerNuma[i] > (size_t)UINT32_MAX)
+        JAFFAR_THROW_RUNTIME("State count per NUMA domain (%lu) exceeds the DrainBuffer capacity limit (%u)\n", _maxStatesPerNuma[i], UINT32_MAX);
+
     JAFFAR_PARALLEL
     {
       if (_myThreadId == _numaDelegateThreadId[_preferredNumaDomain])
       {
-        _numaCurrentStateQueues[_preferredNumaDomain] = new jaffarCommon::concurrent::Deque<void*>();
+        auto* currentQueue = new jaffarCommon::concurrent::DrainBuffer<void*>();
+        currentQueue->reserve(_maxStatesPerNuma[_preferredNumaDomain]);
+        _numaCurrentStateQueues[_preferredNumaDomain] = currentQueue;
         _numaNextStateQueues[_preferredNumaDomain]    = new jaffarCommon::concurrent::concurrentMultimap_t<float, void*>();
       }
     }
@@ -283,33 +290,69 @@ public:
         jaffarCommon::logger::log("[J+]  + NUMA Domain %3d                States: %lu (Max: %lu), Size: %.3f Mb (%.6f Gb)\n", i, _currentStatesPerNuma[i], _maxStatesPerNuma[i],
                                   (double)_maxSizePerNuma[i] / (1024.0 * 1024.0), (double)_maxSizePerNuma[i] / (1024.0 * 1024.0 * 1024.0));
 
-    size_t totalDatabaseStatesRequested = _numaNonLocalDatabaseStateCount + _numaLocalDatabaseStateCount + _numaDatabaseStateNotFoundCount;
+    // Reducing the per-thread statistics counters into totals (off the hot path, only when printing)
+    size_t localDatabaseState = 0, nonLocalDatabaseState = 0, databaseStateNotFound = 0;
+    size_t localFreeState = 0, nonLocalFreeState = 0, stealingFreeState = 0, freeStateNotFound = 0;
+    size_t distanceAccumulator = 0;
+    size_t freeStateCacheHit = 0, freeStateCacheReturn = 0;
+    for (const auto& sc : _statCounters)
+    {
+      localDatabaseState += sc.localDatabaseState;
+      nonLocalDatabaseState += sc.nonLocalDatabaseState;
+      databaseStateNotFound += sc.databaseStateNotFound;
+      localFreeState += sc.localFreeState;
+      nonLocalFreeState += sc.nonLocalFreeState;
+      stealingFreeState += sc.stealingFreeState;
+      freeStateNotFound += sc.freeStateNotFound;
+      distanceAccumulator += sc.distanceAccumulator;
+      freeStateCacheHit += sc.freeStateCacheHit;
+      freeStateCacheReturn += sc.freeStateCacheReturn;
+    }
+
+    size_t totalDatabaseStatesRequested = nonLocalDatabaseState + localDatabaseState + databaseStateNotFound;
     jaffarCommon::logger::log("[J+] + Database Popping State Rates:\n");
-    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:                     %5.3f%%\n",
-                              100.0 * (double)_numaLocalDatabaseStateCount.load() / (double)totalDatabaseStatesRequested);
-    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                        %5.3f%%\n",
-                              100.0 * (double)_numaNonLocalDatabaseStateCount.load() / (double)totalDatabaseStatesRequested);
-    jaffarCommon::logger::log("[J+]  + Numa No DB State Found Rate:                    %5.3f%%\n",
-                              100.0 * (double)_numaDatabaseStateNotFoundCount.load() / (double)totalDatabaseStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:                     %5.3f%%\n", 100.0 * (double)localDatabaseState / (double)totalDatabaseStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                        %5.3f%%\n", 100.0 * (double)nonLocalDatabaseState / (double)totalDatabaseStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa No DB State Found Rate:                    %5.3f%%\n", 100.0 * (double)databaseStateNotFound / (double)totalDatabaseStatesRequested);
 
-    size_t totalFreeStatesRequested = _numaNonLocalFreeStateCount + _numaLocalFreeStateCount + _numaFreeStateNotFoundCount + _numaStealingFreeStateCount;
-    jaffarCommon::logger::log("[J+] + Get Free State Rates:\n");
-    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:                     %5.3f%%\n",
-                              100.0 * (double)_numaLocalFreeStateCount.load() / (double)totalFreeStatesRequested);
-    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                        %5.3f%%\n",
-                              100.0 * (double)_numaNonLocalFreeStateCount.load() / (double)totalFreeStatesRequested);
-    jaffarCommon::logger::log("[J+]  + State DB Stealing Rate:                         %5.3f%%\n",
-                              100.0 * (double)_numaStealingFreeStateCount.load() / (double)totalFreeStatesRequested);
-    jaffarCommon::logger::log("[J+]  + Numa No Free State Found Rate:                  %5.3f%%\n",
-                              100.0 * (double)_numaFreeStateNotFoundCount.load() / (double)totalFreeStatesRequested);
+    // Thread-local free-slot cache effectiveness: fraction of all getFreeState / returnFreeState
+    // calls served locally (and thus kept off the shared free-state queue).
+    const size_t totalGets    = freeStateCacheHit + nonLocalFreeState + localFreeState + stealingFreeState + freeStateNotFound;
+    const size_t totalReturns = freeStateCacheReturn + /* shared-queue spills are not separately counted */ 0;
+    jaffarCommon::logger::log("[J+] + Free-Slot Cache:\n");
+    jaffarCommon::logger::log("[J+]  + Get Cache Hit Rate:                             %5.3f%% (%lu hits)\n",
+                              totalGets == 0 ? 0.0 : 100.0 * (double)freeStateCacheHit / (double)totalGets, freeStateCacheHit);
+    jaffarCommon::logger::log("[J+]  + Return Cache Absorb Count:                      %lu\n", freeStateCacheReturn);
+    (void)totalReturns;
 
-    size_t NUMAAccessCount = _numaNonLocalDatabaseStateCount + _numaLocalDatabaseStateCount + _numaNonLocalFreeStateCount + _numaLocalFreeStateCount + _numaStealingFreeStateCount;
-    jaffarCommon::logger::log("[J+]  + Average NUMA Distance:                          %lu / %lu = %5.3f\n", _numaDistanceAccumulator.load(), NUMAAccessCount,
-                              (double)_numaDistanceAccumulator.load() / (double)NUMAAccessCount);
+    size_t totalFreeStatesRequested = nonLocalFreeState + localFreeState + freeStateNotFound + stealingFreeState;
+    jaffarCommon::logger::log("[J+] + Get Free State Rates (shared-queue only):\n");
+    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:                     %5.3f%%\n", 100.0 * (double)localFreeState / (double)totalFreeStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                        %5.3f%%\n", 100.0 * (double)nonLocalFreeState / (double)totalFreeStatesRequested);
+    jaffarCommon::logger::log("[J+]  + State DB Stealing Rate:                         %5.3f%%\n", 100.0 * (double)stealingFreeState / (double)totalFreeStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa No Free State Found Rate:                  %5.3f%%\n", 100.0 * (double)freeStateNotFound / (double)totalFreeStatesRequested);
+
+    size_t NUMAAccessCount = nonLocalDatabaseState + localDatabaseState + nonLocalFreeState + localFreeState + stealingFreeState;
+    jaffarCommon::logger::log("[J+]  + Average NUMA Distance:                          %lu / %lu = %5.3f\n", distanceAccumulator, NUMAAccessCount,
+                              (double)distanceAccumulator / (double)NUMAAccessCount);
   }
 
-  __INLINE__ void* getFreeState()
+  __INLINE__ void* getFreeState(const size_t threadId)
   {
+    auto& sc = _statCounters[threadId];
+
+    // First, try this thread's own free-slot cache (a "magazine"). A slot this worker freed earlier
+    // is served straight back to it with no shared-queue atomic and no NUMA lookup -- and it is the
+    // hottest, most NUMA-local memory available (LIFO). This recycling is where the win comes from:
+    // a worker frees ~1 slot and requests several per base state, so each free typically satisfies a
+    // subsequent request locally, removing it from both the get and the return shared-queue traffic.
+    auto& cache = _freeStateCache[threadId];
+    if (cache.count > 0)
+    {
+      sc.freeStateCacheHit++;
+      return cache.slots[--cache.count];
+    }
+
     // Storage for the new free state space
     void* stateSpace;
 
@@ -324,11 +367,11 @@ public:
       // If successful, return the pointer immediately
       if (success == true)
       {
-        _numaDistanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
+        sc.distanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
         if (numaIdx == (size_t)_preferredNumaDomain)
-          _numaLocalFreeStateCount++;
+          sc.localFreeState++;
         else
-          _numaNonLocalFreeStateCount++;
+          sc.nonLocalFreeState++;
         return stateSpace;
       }
     }
@@ -345,14 +388,14 @@ public:
       // If successful, return the pointer immediately
       if (success == true)
       {
-        _numaDistanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
-        _numaStealingFreeStateCount++;
+        sc.distanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
+        sc.stealingFreeState++;
         return stateSpace;
       }
     }
 
     // Otherwise, return a null pointer. The state will be discarded
-    _numaFreeStateNotFoundCount++;
+    sc.freeStateNotFound++;
     return nullptr;
   }
 
@@ -370,9 +413,21 @@ public:
     return statePtr >= _internalBuffersStart[numaDomainId] && statePtr <= _internalBuffersEnd[numaDomainId];
   }
 
-  __INLINE__ void returnFreeState(void* const statePtr)
+  __INLINE__ void returnFreeState(void* const statePtr, const size_t threadId)
   {
-    // Finding out to which database this state pointer belongs to
+    // Return the slot to this thread's own free-slot cache when there is room, so the next
+    // getFreeState() on this thread can reuse it without touching the shared queue (no atomic, no
+    // NUMA scan). The cache is bounded so a worker can never hoard more than a negligible number of
+    // slots from the shared pool (FREE_STATE_CACHE_CAPACITY * threadCount total).
+    auto& cache = _freeStateCache[threadId];
+    if (cache.count < FREE_STATE_CACHE_CAPACITY)
+    {
+      _statCounters[threadId].freeStateCacheReturn++;
+      cache.slots[cache.count++] = statePtr;
+      return;
+    }
+
+    // Cache full: spill to the shared free-state queue of the slot's owning NUMA domain
     const auto numaIdx = getStateNumaDomain(statePtr);
 
     // Pushing the state in the corresponding queue
@@ -400,51 +455,52 @@ public:
       // Only process if I am the delegate
       if (_myThreadId == _numaDelegateThreadId[_preferredNumaDomain])
       {
+        auto& nextMap     = *_numaNextStateQueues[_preferredNumaDomain];
+        auto* currentBuf  = _numaCurrentStateQueues[_preferredNumaDomain];
+
         // Updating state count per numa
-        _currentStatesPerNuma[_preferredNumaDomain] = _numaNextStateQueues[_preferredNumaDomain]->size();
+        _currentStatesPerNuma[_preferredNumaDomain] = nextMap.size();
 
-        // Logic for best/worst state
-        float stateReward = 0.0f;
-        void* statePtr    = nullptr;
+        // Resetting the current-state buffer for this step's fill (it was drained by the workers in
+        // the previous step; the step barrier guarantees no drain is in flight here)
+        currentBuf->clear();
 
-        // Establishing best state (the first of this numa queue is a candidate)
-        if (_numaNextStateQueues[_preferredNumaDomain]->begin() != _numaNextStateQueues[_preferredNumaDomain]->end())
+        // Drain the (reward-ordered) next-state map into the current buffer in a single forward
+        // traversal, then free the whole map at once. This replaces the previous N-iteration loop of
+        // begin()+unsafe_extract (each of which unlinks and frees one node): a plain traversal is
+        // cheaper per element, and a single bulk clear() deallocates all nodes without the per-node
+        // extract bookkeeping. The map iterates in descending-reward order (std::greater), so the
+        // first element seen is the best and the last is the worst -- same ordering as before.
+        float firstReward = 0.0f, lastReward = 0.0f;
+        void* firstPtr = nullptr, * lastPtr = nullptr;
+        for (const auto& entry : nextMap)
         {
-          const auto& stateItr = _numaNextStateQueues[_preferredNumaDomain]->begin();
-          stateReward          = stateItr->first;
-          statePtr             = stateItr->second;
-
-          _workMutex.lock();
-          if (stateReward > bestStateReward)
+          if (firstPtr == nullptr)
           {
-            bestStateReward = stateReward;
-            _bestState      = statePtr;
+            firstReward = entry.first;
+            firstPtr    = entry.second;
           }
-          _workMutex.unlock();
+          currentBuf->push_back_no_lock(entry.second);
+          lastReward = entry.first;
+          lastPtr    = entry.second;
         }
 
-        // Now dumping states from next state queue to the current one
-        while (_numaNextStateQueues[_preferredNumaDomain]->begin() != _numaNextStateQueues[_preferredNumaDomain]->end())
-        {
-          const auto& stateItr = _numaNextStateQueues[_preferredNumaDomain]->begin();
-          stateReward          = stateItr->first;
-          statePtr             = stateItr->second;
+        // Releasing all next-map nodes in one go
+        nextMap.clear();
 
-          // Extracting next state
-          _numaNextStateQueues[_preferredNumaDomain]->unsafe_extract(stateItr);
-
-          // Pushing state in the correct numa domain queue
-          _numaCurrentStateQueues[_preferredNumaDomain]->push_back_no_lock(statePtr);
-        }
-
-        // Now establishing worst state (the last of this numa queue is a candidate)
-        if (statePtr != nullptr)
+        // Updating the cross-NUMA best/worst states (shared, hence locked) once per domain
+        if (firstPtr != nullptr)
         {
           _workMutex.lock();
-          if (stateReward < worstStateReward)
+          if (firstReward > bestStateReward)
           {
-            worstStateReward = stateReward;
-            _worstState      = statePtr;
+            bestStateReward = firstReward;
+            _bestState      = firstPtr;
+          }
+          if (lastReward < worstStateReward)
+          {
+            worstStateReward = lastReward;
+            _worstState      = lastPtr;
           }
           _workMutex.unlock();
         }
@@ -473,6 +529,8 @@ public:
 
   __INLINE__ void* popState()
   {
+    auto& sc = _statCounters[jaffarCommon::parallel::getThreadId()];
+
     // Pointer to return
     void* statePtr;
 
@@ -487,18 +545,58 @@ public:
       // If successful, return the pointer immediately
       if (success == true)
       {
-        _numaDistanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
+        sc.distanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx];
         if (numaIdx == (size_t)_preferredNumaDomain)
-          _numaLocalDatabaseStateCount++;
+          sc.localDatabaseState++;
         else
-          _numaNonLocalDatabaseStateCount++;
+          sc.nonLocalDatabaseState++;
         return statePtr;
       }
     }
 
     // If no success at all, just return a nullptr
-    _numaDatabaseStateNotFoundCount++;
+    sc.databaseStateNotFound++;
     return nullptr;
+  }
+
+  /**
+   * Pops a batch of base states from the current state database into the provided buffer,
+   * preferring NUMA-local domains. Returns the number of states actually retrieved.
+   *
+   * This is the batched counterpart of popState(): it grabs a whole run of states under a single
+   * Deque-lock acquisition (per NUMA domain) instead of locking once per state. On a light
+   * emulator with dozens of worker threads per NUMA domain, the single-state lock/unlock is the
+   * dominant cost ("Popping Base State" ~37% of wall time); batching amortizes it ~maxCount-fold.
+   * Statistics counters are accumulated once per batch rather than once per state.
+   */
+  __INLINE__ size_t popStates(void** elements, const size_t maxCount, const size_t threadId)
+  {
+    auto& sc = _statCounters[threadId];
+
+    // Trying the NUMA domains in preference order; take the whole batch from the first non-empty one
+    for (size_t i = 0; i < (size_t)_numaCount; i++)
+    {
+      const auto numaIdx = _numaPreferenceMatrix[_preferredNumaDomain][i];
+      // Skip NUMA domains with no worker thread: their queues are never allocated (see initialize()).
+      if (_numaCurrentStateQueues[numaIdx] == nullptr) continue;
+
+      const size_t count = _numaCurrentStateQueues[numaIdx]->pop_front_get_batch(elements, maxCount);
+
+      // If we got anything, account for it once for the whole batch and return
+      if (count > 0)
+      {
+        sc.distanceAccumulator += _numaDistanceMatrix[_preferredNumaDomain][numaIdx] * count;
+        if (numaIdx == (size_t)_preferredNumaDomain)
+          sc.localDatabaseState += count;
+        else
+          sc.nonLocalDatabaseState += count;
+        return count;
+      }
+    }
+
+    // If no success at all, the databases are drained for this step
+    sc.databaseStateNotFound++;
+    return 0;
   }
 
   /**
@@ -567,44 +665,47 @@ private:
   size_t _maxStates;
 
   /**
-   * Count of local database states retrieved
+   * Per-thread statistics counters for state-DB popping / free-state acquisition.
+   *
+   * These were global atomics incremented on every single pop/get-free; at high thread count the
+   * shared cache line ping-ponged across all cores and cost more than the operation it measured.
+   * They are now plain per-thread counters, cache-line aligned to avoid false sharing between
+   * adjacent threads, and reduced into totals only when printInfo() runs (off the hot path).
    */
-  std::atomic<size_t> _numaLocalDatabaseStateCount;
+  struct alignas(64) statCounters_t
+  {
+    size_t localDatabaseState    = 0;
+    size_t nonLocalDatabaseState = 0;
+    size_t databaseStateNotFound = 0;
+    size_t localFreeState        = 0;
+    size_t nonLocalFreeState     = 0;
+    size_t stealingFreeState     = 0;
+    size_t freeStateNotFound     = 0;
+    size_t distanceAccumulator   = 0;
+    size_t freeStateCacheHit     = 0; // getFreeState served from the thread-local cache
+    size_t freeStateCacheReturn  = 0; // returnFreeState absorbed by the thread-local cache
+  };
+  std::vector<statCounters_t> _statCounters;
 
   /**
-   * Count of non-local database states retrieved
+   * Capacity of each worker's thread-local free-slot cache ("magazine"). Small: it only needs to
+   * bridge a worker's own returns to its own subsequent getFreeState() requests within a step, so a
+   * handful of slots captures essentially all of the recycling. Kept tiny so the total number of
+   * slots parked in caches (this * threadCount) stays a negligible fraction of the state DB, and so
+   * memory pressure / drop behaviour is effectively unchanged.
    */
-  std::atomic<size_t> _numaNonLocalDatabaseStateCount;
+  static constexpr size_t FREE_STATE_CACHE_CAPACITY = 32;
 
   /**
-   * Count of non-local database states retrieved
+   * Per-thread (OpenMP-thread-indexed) cache of free state slots, fronting the shared free-state
+   * queues. Cache-line aligned so adjacent threads' caches never share a line (no false sharing).
    */
-  std::atomic<size_t> _numaDatabaseStateNotFoundCount;
-
-  /**
-   * Count of local free states retrieved
-   */
-  std::atomic<size_t> _numaLocalFreeStateCount;
-
-  /**
-   * Count of non-local free states retrieved
-   */
-  std::atomic<size_t> _numaNonLocalFreeStateCount;
-
-  /**
-   * Count of free states stolen from the back of the state databse
-   */
-  std::atomic<size_t> _numaStealingFreeStateCount;
-
-  /**
-   * Count of free states failed to be retrieved
-   */
-  std::atomic<size_t> _numaFreeStateNotFoundCount;
-
-  /**
-   * Accumulator for NUMA distance
-   */
-  std::atomic<size_t> _numaDistanceAccumulator;
+  struct alignas(64) freeStateCache_t
+  {
+    size_t count = 0;
+    void*  slots[FREE_STATE_CACHE_CAPACITY];
+  };
+  std::vector<freeStateCache_t> _freeStateCache;
 
   /**
    * User-provided maximum megabytes to use for the state database
@@ -634,7 +735,7 @@ private:
   /**
    * Numa state queues allow the thread to search for a current state that belongs to it through the current state database
    */
-  std::vector<jaffarCommon::concurrent::Deque<void*>*> _numaCurrentStateQueues;
+  std::vector<jaffarCommon::concurrent::DrainBuffer<void*>*> _numaCurrentStateQueues;
 
   /**
    * Numa state queues for the next step's states
