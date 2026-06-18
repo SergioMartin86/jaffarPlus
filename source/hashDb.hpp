@@ -11,6 +11,18 @@
 namespace jaffarPlus
 {
 
+/**
+ * The hash database deduplicates states across the whole search. On a multi-NUMA host it uses a
+ * two-tier layout: a NUMA-local L1 store per domain in front of a single global authoritative L2
+ * store. A worker first probes its own domain's L1 (local, fast); only on an L1 miss does it consult
+ * L2 (which may be remote / contended). Every globally-new hash is registered in L2 exactly once, so
+ * dedup stays COMPLETE -- identical to a single global table -- while the frequent within-domain
+ * repeats are served locally. On a single-domain run (one NUMA node, e.g. via
+ * JAFFAR_ENGINE_FORCE_SINGLE_NUMA) the L1 tier is skipped and a single local store is used, since
+ * everything is local anyway.
+ *
+ * This is automatic; there is no script-level configuration for it.
+ */
 class HashDb final
 {
 public:
@@ -25,103 +37,103 @@ public:
 
   ~HashDb()
   {
-    // Deleting remaining numa stores
-    for (size_t i = 0; i < _numaGroups.size(); i++) delete _numaGroups[i];
+    for (auto* s : _l1) delete s;
+    if (_l2 != nullptr) delete _l2;
   }
 
   __INLINE__ void initialize()
   {
-    // Converting the configured store budget to bytes. Rolling is driven by the set's actual
-    // measured memory (see getStoreSizeBytes), not by an entries-to-bytes estimate.
+    // Converting the configured (global L2) store budget to bytes. Rolling is driven by the set's
+    // actual measured memory (see getStoreSizeBytes), not by an entries-to-bytes estimate.
     _maxStoreSizeBytes = (size_t)(_maxStoreSizeMb * 1024.0 * 1024.0);
 
-    // Initializing hash store vector
-    for (ssize_t i = 0; i < _numaGroupCount; i++) _numaGroups.push_back(new NUMAStore_t);
+    // The single global authoritative store (holds the complete dedup set)
+    _l2 = makeStore();
 
-    // Creating first hash db store, and per-thread statistics counters
-    for (size_t i = 0; i < _numaGroups.size(); i++)
+    // On a multi-domain host, add a NUMA-local L1 cache per domain. Each L1 is budgeted at the global
+    // budget divided by the domain count, so the L1 caches together add roughly one extra L2's worth
+    // of memory: total hash footprint ~2x the configured budget -- matching the previous default of
+    // two NUMA groups -- while L2 alone still holds the full global set. On a single-domain run there
+    // is no remote memory to avoid, so the L1 tier is skipped entirely.
+    if (_numaCount > 1)
     {
-      _numaGroups[i]->_hashStores.push_back(hashStore_t({.id = _numaGroups[i]->_currentHashStoreId++, .age = _numaGroups[i]->_currentAge, .queryCount = 0, .collisionCount = 0}));
-      _numaGroups[i]->_threadQueryCount.resize(_threadCount);
-      _numaGroups[i]->_threadCollisionCount.resize(_threadCount);
+      _l1MaxStoreSizeBytes = _maxStoreSizeBytes / (size_t)_numaCount;
+      _l1.resize(_numaCount);
+      for (int i = 0; i < _numaCount; i++) _l1[i] = makeStore();
     }
   }
 
   // Function to print relevant information
   void printInfo() const
   {
-
-    // jaffarCommon::logger::log("[J+]  + Max Store Count:               %lu\n", _maxStoreCount);
-    // jaffarCommon::logger::log("[J+]  + Max Store Size:                %f Mb (%.2f Gb)\n", _maxStoreSizeMb, _maxStoreSizeMb / 1024.0);
-    // jaffarCommon::logger::log("[J+]  + Max Store Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries, (double)_maxStoreEntries / (1024.0 * 1024.0));
-    // jaffarCommon::logger::log("[J+]  + Total Max Entries:             %lu (%.2f Mentries)\n", _maxStoreEntries * _maxStoreCount,
-    // ((double)_maxStoreEntries * _maxStoreCount) / (1024.0 * 1024.0));
-
-    // Printing hash store information
-    for (size_t i = 0; i < _numaGroups.size(); i++)
+    // Single-domain (no L1 tier): report L2 as a single store
+    if (_l1.empty())
     {
-      auto   itr             = _numaGroups[i]->_hashStores.rbegin();
-      size_t curHashStoreIdx = 0;
-      while (itr != _numaGroups[i]->_hashStores.rend())
-      {
-        const size_t queryCount     = itr == _numaGroups[i]->_hashStores.rbegin() ? _numaGroups[i]->getQueryCount() : itr->queryCount;
-        const size_t collisionCount = itr == _numaGroups[i]->_hashStores.rbegin() ? _numaGroups[i]->getCollisionCount() : itr->collisionCount;
-
-        jaffarCommon::logger::log("[J+]      + NUMA %lu - Store: %lu / %lu - Id: %lu - Age: %lu, Entries: %.3f M, Size: %.3f Mb / %.3f Mb, Check Count: %lu, Collision "
-                                  "Count: %lu (Rate %.3f%%)\n",
-                                  i, curHashStoreIdx + 1, _maxStoreCount, itr->id, itr->age, (double)itr->hashSet.size() / (1024.0 * 1024.0),
-                                  (double)getStoreSizeBytes(*itr) / (1024.0 * 1024.0), _maxStoreSizeMb, queryCount, collisionCount,
-                                  queryCount == 0 ? 0.0 : 100.0 * (double)collisionCount / (double)queryCount);
-        itr++;
-        curHashStoreIdx++;
-      }
+      const size_t q = _l2->getQueryCount(), c = _l2->getCollisionCount();
+      size_t       entries = 0;
+      for (const auto& s : _l2->_hashStores) entries += s.hashSet.size();
+      jaffarCommon::logger::log("[J+]      + Single store: Checks: %lu, Collisions: %lu (%.3f%%), Entries: %.3f M\n", q, c, q == 0 ? 0.0 : 100.0 * (double)c / (double)q,
+                                (double)entries / (1024.0 * 1024.0));
+      return;
     }
+
+    // Two-tier: aggregate L1 across domains + the global L2
+    size_t l1q = 0, l1c = 0, l1entries = 0;
+    for (auto* const g : _l1)
+    {
+      l1q += g->getQueryCount();
+      l1c += g->getCollisionCount();
+      for (const auto& s : g->_hashStores) l1entries += s.hashSet.size();
+    }
+    const size_t l2q = _l2->getQueryCount();
+    const size_t l2c = _l2->getCollisionCount();
+    size_t       l2entries = 0;
+    for (const auto& s : _l2->_hashStores) l2entries += s.hashSet.size();
+
+    jaffarCommon::logger::log("[J+]   Two-Tier Dedup (NUMA-local L1 + global L2):\n");
+    jaffarCommon::logger::log("[J+]      + L1 (local): Checks: %lu, Local Hits: %lu (%.3f%%), Entries: %.3f M\n", l1q, l1c,
+                              l1q == 0 ? 0.0 : 100.0 * (double)l1c / (double)l1q, (double)l1entries / (1024.0 * 1024.0));
+    jaffarCommon::logger::log("[J+]      + L2 (global): Checks (L1 misses): %lu (%.3f%% of all), Cross-Domain Hits: %lu, Entries: %.3f M\n", l2q,
+                              l1q == 0 ? 0.0 : 100.0 * (double)l2q / (double)l1q, l2c, (double)l2entries / (1024.0 * 1024.0));
+    jaffarCommon::logger::log("[J+]      + Served locally (no L2 access): %.3f%% | Total dup rate: %.3f%%\n", l1q == 0 ? 0.0 : 100.0 * (double)l1c / (double)l1q,
+                              l1q == 0 ? 0.0 : 100.0 * (double)(l1c + l2c) / (double)l1q);
   }
 
   /**
-   * Function to check whether the provided hash is already present in any of the hash stores
+   * Function to check whether the provided hash is already present in the database
    */
   __INLINE__ bool checkHashExists(const jaffarCommon::hash::hash_t hash)
   {
-    auto* const numaGroup = _numaGroups[_preferredNumaGroup];
-    const auto  threadId  = jaffarCommon::parallel::getThreadId();
+    const auto threadId = jaffarCommon::parallel::getThreadId();
 
-    // Counting one query per state checked (into this thread's own slot, contention-free)
-    numaGroup->_threadQueryCount[threadId].value++;
-
-    // The current hash store is the latest to be entered
-    auto   itr             = numaGroup->_hashStores.rbegin();
-    size_t curHashStoreIdx = 0;
-
-    // Checking for the rest of the hash stores in reverse order, to increase chances of early collision detection
-    while (itr != numaGroup->_hashStores.rend())
+    // Single-domain: just the one local store
+    if (_l1.empty())
     {
-      // Flag to indicate whether a collision has been found
-      bool collisionFound = false;
-
-      // If it is the first hash db, check at the same time as we insert
-      if (curHashStoreIdx == 0) collisionFound = itr->hashSet.insert(hash).second == false;
-
-      // Otherwise, we simply check (no inserts)
-      if (curHashStoreIdx > 0) collisionFound = itr->hashSet.contains(hash);
-
-      // If collision is found, register it and return
-      if (collisionFound == true)
-      {
-        // Increasing counter for collisions
-        numaGroup->_threadCollisionCount[threadId].value++;
-
-        // True means a collision was found
-        return true;
-      }
-
-      // Increasing indexing
-      itr++;
-      curHashStoreIdx++;
+      _l2->_threadQueryCount[threadId].value++;
+      const bool collision = probeStore(_l2, hash);
+      if (collision) _l2->_threadCollisionCount[threadId].value++;
+      return collision;
     }
 
-    // If no hits, then it's not collided
-    return false;
+    // L1: this domain's local store. By construction every hash in any L1 was also inserted into L2,
+    // so an L1 hit is a genuine duplicate -- answered locally, with no L2 (possibly remote) access.
+    // probeStore() also inserts the hash into L1's current store (caching it locally).
+    auto* const l1 = _l1[_preferredNumaDomain];
+    l1->_threadQueryCount[threadId].value++;
+    if (probeStore(l1, hash))
+    {
+      l1->_threadCollisionCount[threadId].value++;
+      return true;
+    }
+
+    // L1 miss -> consult the authoritative global L2. probeStore() inserts the hash into L2's current
+    // store, making it globally visible (so other domains detect it as a duplicate). This is what
+    // preserves complete, global dedup: every globally-new hash is registered in L2 exactly once, by
+    // whichever domain first encounters it.
+    _l2->_threadQueryCount[threadId].value++;
+    const bool collision = probeStore(_l2, hash);
+    if (collision) _l2->_threadCollisionCount[threadId].value++;
+    return collision;
   }
 
   /**
@@ -129,48 +141,18 @@ public:
    */
   __INLINE__ void insertHash(const jaffarCommon::hash::hash_t hash)
   {
-    // The current hash store is the latest to be entered
-    auto  itr              = _numaGroups[_preferredNumaGroup]->_hashStores.rbegin();
-    auto& currentHashStore = *itr;
-
-    // Inserting hash
-    currentHashStore.hashSet.insert(hash);
+    if (_l1.empty() == false) _l1[_preferredNumaDomain]->_hashStores.rbegin()->hashSet.insert(hash);
+    _l2->_hashStores.rbegin()->hashSet.insert(hash);
   }
 
   /**
    * This function serves to indicate a new step has started.
-   * The current age is increased, and if the current database exceeds its maximum
-   * size, it is sent to the past db collection and a new one is created
+   * The current age is increased, and if a store exceeds its maximum size, it is rolled.
    */
   __INLINE__ void advanceStep()
   {
-    // For each NUMA store, advance the step of its current hash store
-    for (size_t i = 0; i < _numaGroups.size(); i++)
-    {
-      // The current hash store is the latest to be entered
-      auto& currentHashStore = *_numaGroups[i]->_hashStores.rbegin();
-
-      // If the current hash store's measured memory exceeds the budget, push a new one in
-      if (getStoreSizeBytes(currentHashStore) >= _maxStoreSizeBytes)
-      {
-        // Snapshot the (summed per-thread) counters into the current store before any structural
-        // change, then reset. This must precede pop_front(): when maxStoreCount == 1 the front store
-        // IS the current (back) store, so popping it first would leave currentHashStore dangling.
-        currentHashStore.queryCount     = _numaGroups[i]->getQueryCount();
-        currentHashStore.collisionCount = _numaGroups[i]->getCollisionCount();
-        _numaGroups[i]->resetCounts();
-
-        // If we already reached the maximum hash stores, discard the oldest one
-        if (_numaGroups[i]->_hashStores.size() == _maxStoreCount) _numaGroups[i]->_hashStores.pop_front();
-
-        // Now create the new one, by pushing it from the back
-        _numaGroups[i]->_hashStores.push_back(
-            hashStore_t({.id = _numaGroups[i]->_currentHashStoreId++, .age = _numaGroups[_preferredNumaGroup]->_currentAge, .queryCount = 0, .collisionCount = 0}));
-      }
-
-      // Increasing age
-      _numaGroups[i]->_currentAge++;
-    }
+    for (auto* const g : _l1) rollStore(g, _l1MaxStoreSizeBytes);
+    rollStore(_l2, _maxStoreSizeBytes);
   }
 
 private:
@@ -263,17 +245,74 @@ private:
   };
 
   /**
+   * Creates a fresh store with a single (empty) hash set and per-thread counters.
+   */
+  __INLINE__ NUMAStore_t* makeStore()
+  {
+    auto* s = new NUMAStore_t;
+    s->_hashStores.push_back(hashStore_t({.id = s->_currentHashStoreId++, .age = s->_currentAge, .queryCount = 0, .collisionCount = 0}));
+    s->_threadQueryCount.resize(_threadCount);
+    s->_threadCollisionCount.resize(_threadCount);
+    return s;
+  }
+
+  /**
+   * Reverse-scans a store's hash sets (newest first), inserting the hash into the current (newest)
+   * set and checking-only the archived sets. Returns true if the hash was already present anywhere
+   * (a collision). Inserting-while-checking on the newest set means a single probe both registers
+   * the hash and detects a same-step duplicate.
+   */
+  __INLINE__ bool probeStore(NUMAStore_t* const store, const jaffarCommon::hash::hash_t hash)
+  {
+    auto   itr             = store->_hashStores.rbegin();
+    size_t curHashStoreIdx = 0;
+    while (itr != store->_hashStores.rend())
+    {
+      bool collisionFound = false;
+      if (curHashStoreIdx == 0) collisionFound = itr->hashSet.insert(hash).second == false;
+      else collisionFound = itr->hashSet.contains(hash);
+      if (collisionFound == true) return true;
+      itr++;
+      curHashStoreIdx++;
+    }
+    return false;
+  }
+
+  /**
+   * Rolls a single store: if its current (newest) set's measured memory exceeds the budget, snapshot
+   * its counters, discard the oldest set if at capacity, and push a fresh current set. Then age it.
+   */
+  __INLINE__ void rollStore(NUMAStore_t* const g, const size_t maxBytes)
+  {
+    auto& currentHashStore = *g->_hashStores.rbegin();
+
+    if (getStoreSizeBytes(currentHashStore) >= maxBytes)
+    {
+      // Snapshot the (summed per-thread) counters into the current store before any structural
+      // change, then reset. This must precede pop_front(): when maxStoreCount == 1 the front store
+      // IS the current (back) store, so popping it first would leave currentHashStore dangling.
+      currentHashStore.queryCount     = g->getQueryCount();
+      currentHashStore.collisionCount = g->getCollisionCount();
+      g->resetCounts();
+
+      // If we already reached the maximum hash stores, discard the oldest one
+      if (g->_hashStores.size() == _maxStoreCount) g->_hashStores.pop_front();
+
+      // Now create the new one, by pushing it from the back
+      g->_hashStores.push_back(hashStore_t({.id = g->_currentHashStoreId++, .age = g->_currentAge, .queryCount = 0, .collisionCount = 0}));
+    }
+
+    // Increasing age
+    g->_currentAge++;
+  }
+
+  /**
    * Computes the actual resident memory of a hash store from the underlying set's measured
    * allocated capacity (number of slots), rather than from an entries-to-bytes estimate. This
    * tracks phmap's real footprint -- which varies with load factor and per-submap power-of-two
    * rounding -- so the configured store budget is respected instead of being over- or under-shot.
    */
   __INLINE__ size_t getStoreSizeBytes(const hashStore_t& store) const { return store.hashSet.capacity() * _bytesPerSlot + _hashStoreFixedOverhead; }
-
-  /**
-   * Number of NUMA domains per group
-   */
-  size_t _numaDomainsPerGroup;
 
   /**
    * Per-slot memory cost of the underlying phmap flat hash set: each element is stored inline
@@ -294,19 +333,29 @@ private:
   size_t _maxStoreCount;
 
   /**
-   * Maximum store size (in megabytes)
+   * Maximum (global L2) store size (in megabytes)
    */
   double _maxStoreSizeMb;
 
   /**
-   * Maximum store size, in bytes (derived from _maxStoreSizeMb)
+   * Maximum global L2 store size, in bytes (derived from _maxStoreSizeMb)
    */
   size_t _maxStoreSizeBytes;
 
   /**
-   * Set of hash databases stores, one per numa domain
+   * Per-domain L1 store budget, in bytes (derived: global budget / number of NUMA domains)
    */
-  std::vector<NUMAStore_t*> _numaGroups;
+  size_t _l1MaxStoreSizeBytes = 0;
+
+  /**
+   * Per-domain NUMA-local L1 caches. Empty on a single-domain run.
+   */
+  std::vector<NUMAStore_t*> _l1;
+
+  /**
+   * The single global authoritative store (holds the complete dedup set).
+   */
+  NUMAStore_t* _l2 = nullptr;
 };
 
 } // namespace jaffarPlus
