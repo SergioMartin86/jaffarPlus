@@ -1,0 +1,120 @@
+======================================================================
+LEVEL 1  start_room=1 start_pos=0 dir=-1  rooms_mapped=21  guards_in_rooms=[3, 21]
+   22  16  23  17  21*  5   1>  .   . 
+   15  12  20   7   8   6   2   3*  9 
+   10  19   4  14  11   .   .   .   . 
+    room 3: guard skill=0 tile=17
+    room 21: guard skill=0 tile=6
+======================================================================
+LEVEL 2  start_room=5 start_pos=13 dir=-1  rooms_mapped=24  guards_in_rooms=[4, 7, 11, 15, 24]
+    9  23  24* 20  12   8   .   .   .   .   .   .   . 
+    2  21  19  16  15* 13   7* 18  11* 22   3   .   . 
+    .  14   .   .  17   .   .   .   .   1   6   4*  5>
+    .   .   .   .   .   .   .   .   .   .   .  10   . 
+    room 4: guard skill=1 tile=10
+    room 7: guard skill=2 tile=11
+    room 11: guard skill=1 tile=13
+    room 15: guard skill=1 tile=10
+    room 24: guard skill=3 tile=10
+======================================================================
+LEVEL 3  start_room=9 start_pos=24 dir=0  rooms_mapped=22  guards_in_rooms=[]
+    .   .   .   .   .   .   .  15  16 
+    5   1   2   7  10  11  14  18   . 
+    6   3   4  22   9> 12  13  17   . 
+    .  20  21   .   .   .   .   .   . 
+    .   8  19   .   .   .   .   .   . 
+======================================================================
+LEVEL 4  start_room=1 start_pos=16 dir=0  rooms_mapped=24  guards_in_rooms=[2, 18, 22, 24]
+   23  16   9   8   1>  2*  5   6  24*  7   4  11 
+    .  17  18* 10   3  22* 21   .  15  14  12  13 
+    .  19   .   .   .   .   .   .   .   .   .  20 
+    room 2: guard skill=4 tile=14
+    room 18: guard skill=3 tile=5
+    room 22: guard skill=3 tile=8
+    room 24: guard skill=4 tile=15
+======================================================================
+LEVEL 5  start_room=7 start_pos=24 dir=-1  rooms_mapped=19  guards_in_rooms=[8, 9, 12, 16]
+    .   .   .   .   .   .  14   .   .   . 
+    .   .   .   .   .   .  13  10  11  24 
+   23  18  15  16*  2  12*  8*  7>  9*  . 
+    .   .  17  20   4   .   .   .  21   . 
+    .   .   .  22   .   .   .   .   .   . 
+    room 8: guard skill=3 tile=5
+    room 9: guard skill=3 tile=15
+    room 12: guard skill=4 tile=12
+    room 16: guard skill=4 tile=12
+======================================================================
+LEVEL 6  start_room=24 start_pos=12 dir=0  rooms_mapped=14  guards_in_rooms=[6]
+    5   1  18   6* 15   2  24> 10 
+    .   3   9   7  23   .   .  12 
+    .   .   .  11   .   .   .   . 
+    room 6: guard skill=5 tile=12
+======================================================================
+LEVEL 7  start_room=17 start_pos=22 dir=-1  rooms_mapped=24  guards_in_rooms=[2, 10, 22]
+    .  17>  .   .  23  22* 24   .   . 
+   16   1   2*  7   9  10* 12  19  14 
+    .   3   4   6   8  11  13  20  15 
+    .   .   .   .   5  18   .   .  21 
+    room 2: guard skill=1 tile=4
+    room 10: guard skill=3 tile=2
+    room 22: guard skill=2 tile=26
+======================================================================
+LEVEL 8  start_room=1 start_pos=18 dir=-1  rooms_mapped=21  guards_in_rooms=[5, 12, 22, 24]
+    7   5*  1>  2   .   .  14  21  20   .  17 
+    8   6   3   4  16  12* 13  22* 23  24* 18 
+    .   .   .   .   .   .   .   .   .   .   9 
+    .   .   .   .   .   .   .   .   .   .  10 
+    room 5: guard skill=7 tile=5
+    room 12: guard skill=2 tile=1
+    room 22: guard skill=3 tile=27
+    room 24: guard skill=3 tile=6
+======================================================================
+LEVEL 9  start_room=11 start_pos=16 dir=-1  rooms_mapped=24  guards_in_rooms=[2, 13, 17, 20]
+    6  10  22  19  17* 18   .   . 
+    7  24  21   3   8  12  16  20*
+    .   1  23   2*  5  13* 15   . 
+    .   .   .   4   9  11> 14   . 
+    room 2: guard skill=3 tile=7
+    room 13: guard skill=1 tile=27
+    room 17: guard skill=3 tile=10
+    room 20: guard skill=1 tile=3
+======================================================================
+LEVEL 10  start_room=1 start_pos=14 dir=-1  rooms_mapped=19  guards_in_rooms=[2, 5, 7, 8, 14]
+    .  12  11   .  13  18  19  16  17 
+    9   8*  5*  1>  2*  7* 10  14* 15 
+    .   .   .   3   4  20   .   .   . 
+    room 2: guard skill=3 tile=24
+    room 5: guard skill=4 tile=2
+    room 7: guard skill=3 tile=6
+    room 8: guard skill=4 tile=22
+    room 14: guard skill=3 tile=7
+======================================================================
+LEVEL 11  start_room=6 start_pos=16 dir=0  rooms_mapped=23  guards_in_rooms=[15, 16, 22]
+   12   9   8  14   7   .  20   .   .   . 
+   17   6>  1  15*  2  19  22* 24  16* 13 
+    .  10   3   .   4  21   .   5  11   . 
+    .   .  23   .   .   .   .   .   .   . 
+    room 15: guard skill=4 tile=7
+    room 16: guard skill=3 tile=7
+    room 22: guard skill=4 tile=8
+======================================================================
+LEVEL 12  start_room=3 start_pos=24 dir=0  rooms_mapped=24  guards_in_rooms=[]
+    .  16  10  22   5   . 
+   23  13   2  15  20   . 
+    .  11  21  18  19   . 
+    .  17   .   6  12  14 
+    .   .   .   7   8  24 
+    .   .   .   1   9   . 
+    .   .   .   3>  4   . 
+======================================================================
+LEVEL 13  start_room=23 start_pos=19 dir=0  rooms_mapped=11  guards_in_rooms=[1]
+    .   3   1* 17  10 
+   24   4  16  23> 13 
+    .   .  11   .   2 
+    room 1: guard skill=9 tile=7
+======================================================================
+LEVEL 14  start_room=4 start_pos=14 dir=-1  rooms_mapped=6  guards_in_rooms=[11, 15, 24]
+    5   1   2   3   4>  6 
+    room 11: guard skill=1 tile=13
+    room 15: guard skill=1 tile=10
+    room 24: guard skill=3 tile=10
