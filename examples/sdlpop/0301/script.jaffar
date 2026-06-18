@@ -32,7 +32,8 @@
     "Override RNG Value": 2543872016,
     "Override Loose Tile Sound Enabled": true,
     "Override Loose Tile Sound Value": 21,
-    "Initialize Copy Protection": false
+    "Initialize Copy Protection": false,
+    "Disable Non-Gameplay RNG": true
   },
   "Runner Configuration": {
     "Frameskip Rate": 0,
@@ -403,10 +404,8 @@
       "Background Element[9][14]"
     ],
     "Hash Properties": [
-      "Foreground Element[1][27]",
-      "Background Element[1][27]",
-      "Foreground Element[9][14]",
-      "Background Element[9][14]"
+      "Foreground Element[3][13]",
+      "Background Element[3][13]"
     ],
     "Rules": [
       {
@@ -555,6 +554,7 @@
         ]
       }
     ],
-    "Bypass Emulator State": false
+    "Bypass Emulator State": false,
+    "Hash Guard Combat RNG": true
   }
 }
