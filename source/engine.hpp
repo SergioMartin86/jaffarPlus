@@ -40,10 +40,8 @@ public:
   // Base constructor
   Engine(const nlohmann::json& emulatorConfig, const nlohmann::json& gameConfig, const nlohmann::json& runnerConfig, const nlohmann::json& engineConfig)
   {
-    const int numaDomainsPerGroup = jaffarCommon::json::getNumber<size_t>(engineConfig, "NUMA Domains Per Group");
-
     // Initializing NUMA and threading subsystems
-    initializeNUMA(numaDomainsPerGroup);
+    initializeNUMA();
 
     // Sanity check
     if (_threadCount == 0) JAFFAR_THROW_LOGIC("The number of worker threads must be at least one. Provided: %lu\n", _threadCount);
@@ -402,7 +400,7 @@ public:
   void printInfo()
   {
     // Printing information
-    jaffarCommon::logger::log("[J+] Thread Count / NUMA Domains / NUMA Groups:      %3d / %d / %d\n", _threadCount, _numaCount, _numaGroupCount);
+    jaffarCommon::logger::log("[J+] Thread Count / NUMA Domains:                      %3d / %d\n", _threadCount, _numaCount);
 #ifdef JAFFARPLUS_DETAILED_PROFILING
     jaffarCommon::logger::log("[J+] Elapsed Time (Step/Total):                  %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_currentStepTime),
                               100.0 * ((double)(_subTotalAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_totalRunningTime),

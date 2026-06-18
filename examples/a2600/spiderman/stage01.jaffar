@@ -12,7 +12,6 @@
         }
     },
     "Engine Configuration": {
-        "NUMA Domains Per Group": 4,
         "Hash Database": {
             "Enabled": true,
             "Max Store Count": 2,

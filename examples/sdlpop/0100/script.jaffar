@@ -24,8 +24,7 @@
       "Max Store Count": 2,
       "Max Store Size (Mb)": 10000,
       "Enabled": true
-    },
-    "NUMA Domains Per Group": 1
+    }
   },
   "Emulator Configuration": {
     "Emulator Name": "QuickerSDLPoP",

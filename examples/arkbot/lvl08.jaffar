@@ -24,8 +24,7 @@
                 "Buffer Size": 1024,
                 "Use Zlib Compression": false
             }
-        },
-        "NUMA Domains Per Group": 1
+        }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerArkBot",
