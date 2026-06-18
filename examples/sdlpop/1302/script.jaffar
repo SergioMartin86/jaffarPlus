@@ -30,7 +30,7 @@
     "Emulator Name": "QuickerSDLPoP",
     "Initial State File": "state",
     "Disabled State Properties": [],
-    "SDLPoP Root Path": "../../../../extern/quickerSDLPoP/SDLPoPData/",
+    "SDLPoP Root Path": "../../../extern/quickerSDLPoP/SDLPoPData/",
     "Levels File Path": "",
     "Game Version": "1.4",
     "Override RNG Enabled": true,
