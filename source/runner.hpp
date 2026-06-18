@@ -7,12 +7,10 @@
 #include <gameList.hpp>
 #include <jaffarCommon/bitwise.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
-#include <jaffarCommon/deserializers/differential.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
-#include <jaffarCommon/serializers/differential.hpp>
 #include <memory>
 #include <unordered_set>
 #include <vector>
@@ -289,21 +287,12 @@ public:
     deserializer.popContiguous(&_currentInputCount, sizeof(_currentInputCount));
   }
 
-  // Getting the maximum differntial state size
+  // Getting the (contiguous) state size
   __INLINE__ size_t getStateSize() const
   {
     jaffarCommon::serializer::Contiguous s;
     this->serializeState(s);
     return s.getOutputSize();
-  }
-
-  // Getting the maximum differntial state size
-  __INLINE__ size_t getDifferentialStateSize(const size_t maxDifferences) const
-  {
-    jaffarCommon::serializer::Differential s;
-    this->serializeState(s);
-    size_t contiguousSize = s.getOutputSize();
-    return contiguousSize + maxDifferences;
   }
 
   // This function computes the hash for the current runner state

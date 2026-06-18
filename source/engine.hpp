@@ -167,17 +167,6 @@ public:
     // Getting reward for the initial state
     const auto reward = r.getGame()->getReward();
 
-    // Getting initial state data from the runner
-    uint8_t*                             initialStateData = (uint8_t*)malloc(r.getStateSize());
-    jaffarCommon::serializer::Contiguous s(initialStateData, r.getStateSize());
-    r.serializeState(s);
-
-    // Manually setting the initial base state for differential compression, if needed
-    _stateDb->setDifferentialCompressionEncodeBaseState(initialStateData);
-
-    // Freeing temporary buffer
-    free(initialStateData);
-
     // Getting a free state data pointer to store the state into (serial init path -> thread 0)
     auto stateData = _stateDb->getFreeState(0);
 
@@ -830,9 +819,7 @@ private:
       auto success = _stateDb->pushState(reward, r, newStateData);
       JAFFAR_PROF_ACC(acc.runnerStateSave, t8);
 
-      // Attempting to serialize state and push it into the database
-      // This might fail when using differential serialization due to insufficient space for differentials
-      // In that, case we just drop the state and continue, while keeping a counter
+      // If pushing the state failed (e.g. serialization error), drop it and continue, keeping a counter
       if (success == false)
       {
         // Freeing up state memory
@@ -915,7 +902,7 @@ private:
   // Counter for dropped states due to lack of free states
   std::atomic<size_t> _droppedStatesNoStorage;
 
-  // Counter for dropped states due to failed (differential) serialization
+  // Counter for dropped states due to failed serialization
   std::atomic<size_t> _droppedStatesFailedSerialization;
 
   // Counter for dropped states due to not meeting checkpoint
