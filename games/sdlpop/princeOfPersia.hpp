@@ -46,6 +46,12 @@ public:
     if (config.contains("Hash Gate Tiles"))
       for (const auto& t : config["Hash Gate Tiles"]) _hashGateTiles.push_back({t[0].get<int>() - 1, t[1].get<int>() - 1});
 
+    // Chomper tiles to fold into the hash. A chomper's modifier low 7 bits are its chomp phase
+    // (cycles 1..chomper_speed; closed/lethal at 2); the high bit (0x80) is cosmetic blood. We hash
+    // only the phase (& 0x7F). Same 1-based [room, tilepos] convention.
+    if (config.contains("Hash Chomper Tiles"))
+      for (const auto& t : config["Hash Chomper Tiles"]) _hashChomperTiles.push_back({t[0].get<int>() - 1, t[1].get<int>() - 1});
+
     // // Getting watch mobs indexes
     // auto watchMobsIndexesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Watch Moving Object Indexes");
     // for (const auto& mobJs : watchMobsIndexesJs)
@@ -277,6 +283,8 @@ private:
       const uint8_t coarse = (m >= 188) ? (uint8_t)47 : (uint8_t)(m >> 2); // 47 == 188>>2: one "open" bucket
       hashEngine.Update(coarse);
     }
+    // Chomper phase (low 7 bits; high bit is cosmetic blood). See constructor.
+    for (const auto& t : _hashChomperTiles) hashEngine.Update((uint8_t)(_gameState->level.bg[t.first][t.second] & 0x7F));
     hashEngine.Update(_gameState->guardhp_curr);
     hashEngine.Update(_gameState->guardhp_max);
     hashEngine.Update(_gameState->demo_index);
@@ -594,6 +602,7 @@ private:
 
   // Gate/door tiles (0-based room,tilepos) whose openness is hashed at >>2 granularity (see constructor)
   std::vector<std::pair<int, int>> _hashGateTiles;
+  std::vector<std::pair<int, int>> _hashChomperTiles;
 
   // Values artificially added to the state
   uint8_t _kidPreviousFrame;
