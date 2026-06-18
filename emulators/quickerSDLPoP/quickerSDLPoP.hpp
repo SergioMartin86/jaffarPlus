@@ -38,11 +38,19 @@ public:
     _overrideLooseTileSoundEnabled = jaffarCommon::json::getBoolean(config, "Override Loose Tile Sound Enabled");
     _overrideLooseTileSoundValue   = jaffarCommon::json::getNumber<uint32_t>(config, "Override Loose Tile Sound Value");
     _initializeCopyProtection      = jaffarCommon::json::getBoolean(config, "Initialize Copy Protection");
+
+    // Exploration-only: when true, cosmetic torch/potion animations stop consuming the shared RNG, so
+    // random_seed advances only on gameplay (mainly guard combat). Lets the search hash the seed soundly
+    // without torch noise. Solutions found this way do NOT transcribe to the real game. Default false.
+    _disableNonGameplayRNG = config.contains("Disable Non-Gameplay RNG") ? config["Disable Non-Gameplay RNG"].get<bool>() : false;
   };
 
   void initializeImpl() override
   {
     _QuickerSDLPoP->initialize();
+
+    // Apply the cosmetic-RNG toggle before any frames are stepped (incl. the initial sequence replay)
+    _QuickerSDLPoP->setDisableNonGameplayRNG(_disableNonGameplayRNG);
 
     // If an initial state is provided, load it now
     if (_stateFilePath != "")
@@ -159,6 +167,7 @@ private:
   bool     _overrideLooseTileSoundEnabled;
   uint32_t _overrideLooseTileSoundValue;
   bool     _initializeCopyProtection;
+  bool     _disableNonGameplayRNG;
 
   // Internal render state variables
   size_t          _renderStepIdx;
