@@ -17,9 +17,8 @@ namespace jaffarPlus
  * store. A worker first probes its own domain's L1 (local, fast); only on an L1 miss does it consult
  * L2 (which may be remote / contended). Every globally-new hash is registered in L2 exactly once, so
  * dedup stays COMPLETE -- identical to a single global table -- while the frequent within-domain
- * repeats are served locally. On a single-domain run (one NUMA node, e.g. via
- * JAFFAR_ENGINE_FORCE_SINGLE_NUMA) the L1 tier is skipped and a single local store is used, since
- * everything is local anyway.
+ * repeats are served locally. On a single-NUMA host (one domain) the L1 tier is skipped and a single
+ * local store is used, since everything is local anyway.
  *
  * This is automatic; there is no script-level configuration for it.
  */
