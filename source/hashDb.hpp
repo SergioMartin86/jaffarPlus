@@ -83,15 +83,28 @@ public:
       return (double)bytes * toMb;
     };
 
-    // Single-domain (no L1 tier): report L2 as a single store
+    // Print the per-generation breakdown of a rolling store (newest first). Exposes each store's Id
+    // and Age, so window rolling is observable (an Id > 0 means a new store was created), plus its
+    // entries, size, and check/collision counts (current store from the live per-thread counters,
+    // archived stores from their snapshot taken at roll time).
+    auto printStores = [this, toMb, &storeSizeMb](const NUMAStore_t* s, const char* label) {
+      size_t idx = 0;
+      for (auto it = s->_hashStores.rbegin(); it != s->_hashStores.rend(); ++it, ++idx)
+      {
+        const bool   cur = (it == s->_hashStores.rbegin());
+        const size_t q   = cur ? s->getQueryCount() : it->queryCount;
+        const size_t c   = cur ? s->getCollisionCount() : it->collisionCount;
+        jaffarCommon::logger::log("[J+]      + %sStore %lu/%lu - Id: %lu - Age: %lu, Entries: %.3f M, Size: %.1f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
+                                  label, idx + 1, _maxStoreCount, it->id, it->age, (double)it->hashSet.size() * toMb, (double)getStoreSizeBytes(*it) * toMb, q, c,
+                                  q == 0 ? 0.0 : 100.0 * (double)c / (double)q);
+      }
+    };
+
+    // Single-domain (no L1 tier): report L2 as a single store, with its rolling-window breakdown
     if (_l1.empty())
     {
-      const size_t q = _l2->getQueryCount(), c = _l2->getCollisionCount();
-      size_t       entries = 0;
-      for (const auto& s : _l2->_hashStores) entries += s.hashSet.size();
-      jaffarCommon::logger::log("[J+]   Single-Store Dedup (single NUMA domain):\n");
-      jaffarCommon::logger::log("[J+]      + Checks: %lu, Collisions: %lu (%.3f%%), Entries: %.3f M, Size: %.1f / %.1f Mb\n", q, c, q == 0 ? 0.0 : 100.0 * (double)c / (double)q,
-                                (double)entries * toMb, storeSizeMb(_l2), (double)(_maxStoreSizeBytes * _maxStoreCount) * toMb);
+      jaffarCommon::logger::log("[J+]   Single-Store Dedup (single NUMA domain), budget %.1f Mb:\n", (double)(_maxStoreSizeBytes * _maxStoreCount) * toMb);
+      printStores(_l2, "");
       return;
     }
 
@@ -123,6 +136,8 @@ public:
                               l1q == 0 ? 0.0 : 100.0 * (double)l2q / (double)l1q, l2c, (double)l2entries * toMb, storeSizeMb(_l2), l2BudgetMb);
     jaffarCommon::logger::log("[J+]      + Served locally (no L2 access): %.3f%% | Total dup rate: %.3f%%\n", l1q == 0 ? 0.0 : 100.0 * (double)l1c / (double)l1q,
                               l1q == 0 ? 0.0 : 100.0 * (double)(l1c + l2c) / (double)l1q);
+    // L2 rolling-window breakdown (Id/Age make window rolling observable)
+    printStores(_l2, "L2 ");
   }
 
   /**
