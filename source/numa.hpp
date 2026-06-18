@@ -1,5 +1,10 @@
 #pragma once
 
+#include <cstdlib>
+#include <map>
+#include <mutex>
+#include <vector>
+#include <jaffarCommon/exceptions.hpp>
 #include <jaffarCommon/parallel.hpp>
 #include <numa.h>
 

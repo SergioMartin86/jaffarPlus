@@ -28,6 +28,18 @@ test('ruleAndInputSet',
       unitRuleInputSet,
       suite : [ 'unit' ])
 
+# Two-tier hash DB correctness. hashDb.hpp pulls in numa.hpp (libnuma) and the
+# OpenMP-based thread id, so this target links those explicitly.
+unitHashDb = executable('unit-hashDb',
+      'unit/hashDb.cpp',
+      cpp_args : testCommonCppArgs + jaffarCPPFlags,
+      include_directories : jaffarIncludes,
+      dependencies : [ jaffarCommonDependency, gtestDependency, dependency('numa'), dependency('openmp') ])
+
+test('hashDb',
+      unitHashDb,
+      suite : [ 'unit' ])
+
 ###### Adding example validator test
 
 bash = find_program('bash')
