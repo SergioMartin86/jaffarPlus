@@ -2,12 +2,14 @@
 """Render a JaffarPlus/SDLPoP solution to an animated GIF for visual analysis.
 
 Drives jaffar-player headlessly (SDL offscreen driver) to dump the rendered frames as
-BMPs, then assembles them into a GIF with PIL. No ffmpeg/imagemagick needed -- PoP's
-limited palette suits GIF well. Use it on a full solution or a short [--start,--end]
-window where a trick is being attempted.
+BMPs, then assembles them into a video. The output extension picks the encoder:
+  .gif                -> animated GIF via PIL (no extra deps; static-only in some mobile apps)
+  .mp4/.mov/.m4v      -> H.264 (yuv420p) -- plays inline on phones; needs `pip install
+  .webm               -> VP9                imageio imageio-ffmpeg` (bundles a static ffmpeg)
+Use it on a full solution or a short [--start,--end] window where a trick is attempted.
 
 Example:
-  make_video.py 0300/script.jaffar 0300/solution.sol /tmp/climb.gif --start 840 --end 920 --scale 3
+  make_video.py 0300/script.jaffar 0300/solution.sol /tmp/climb.mp4 --start 840 --end 920 --scale 3
 """
 import argparse, subprocess, os, glob, tempfile, shutil, sys
 from PIL import Image
@@ -55,10 +57,23 @@ def main():
                 im = im.resize((im.width * args.scale, im.height * args.scale), Image.NEAREST)
             frames.append(im)
 
-        dur = max(20, int(round(1000.0 / args.fps)))
-        frames[0].save(args.output, save_all=True, append_images=frames[1:], duration=dur, loop=0,
-                       optimize=True, disposal=2)
-        print(f"[make_video] wrote {args.output}: {len(frames)} frames, {frames[0].size[0]}x{frames[0].size[1]}, {dur}ms/frame")
+        ext = os.path.splitext(args.output)[1].lower()
+        if ext in (".mp4", ".mov", ".m4v", ".webm"):
+            # Real video -- plays inline on mobile clients (unlike GIF). H.264 + yuv420p is the most
+            # widely compatible; .webm uses VP9. Needs even dimensions (the integer scale guarantees it).
+            import numpy as np, imageio.v2 as imageio
+            webm = ext == ".webm"
+            writer = imageio.get_writer(args.output, fps=args.fps, codec="libvpx-vp9" if webm else "libx264",
+                                        macro_block_size=None,
+                                        output_params=[] if webm else ["-pix_fmt", "yuv420p", "-crf", "18"])
+            for im in frames: writer.append_data(np.asarray(im))
+            writer.close()
+            print(f"[make_video] wrote {args.output}: {len(frames)} frames, {frames[0].size[0]}x{frames[0].size[1]}, {args.fps} fps")
+        else:
+            dur = max(20, int(round(1000.0 / args.fps)))
+            frames[0].save(args.output, save_all=True, append_images=frames[1:], duration=dur, loop=0,
+                           optimize=True, disposal=2)
+            print(f"[make_video] wrote {args.output}: {len(frames)} frames, {frames[0].size[0]}x{frames[0].size[1]}, {dur}ms/frame")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
