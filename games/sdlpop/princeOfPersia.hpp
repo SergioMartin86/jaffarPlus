@@ -264,9 +264,19 @@ private:
     // fingerprint if that explodes in practice.)
     if (_hashGuardCombatRNG && _gameState->Guard.alive < 0 && _gameState->can_guard_see_kid != 0)
       hashEngine.Update(_gameState->random_seed);
-    // Gate/door openness, quantized to the game's own collision granularity (see constructor): hash
-    // the modifier >> 2, which is lossless for gate passability while taming the idle-cycle explosion.
-    for (const auto& t : _hashGateTiles) hashEngine.Update((uint8_t)(_gameState->level.bg[t.first][t.second] >> 2));
+    // Gate/door openness, coarsened (see constructor). A gate's modifier is 0 (closed); rising values
+    // while opening/closing; and 188..255 while held OPEN -- where it counts *down* every frame on a
+    // close timer (trigger_gate sets 238 = "keep open a while"). Hashing that timer is the real
+    // explosion (a kid idling by an open gate generates a new state every frame), so collapse the
+    // whole open-hold band (>=188) to a single value. Below 188 we keep the game's own >>2 passability
+    // granularity (can_bump_into_gate tests (modif>>2)+6 < char_height), so opening/closing heights
+    // the kid can actually interact with stay distinct. Net: passability-exact, timer-free.
+    for (const auto& t : _hashGateTiles)
+    {
+      const uint8_t m      = _gameState->level.bg[t.first][t.second];
+      const uint8_t coarse = (m >= 188) ? (uint8_t)47 : (uint8_t)(m >> 2); // 47 == 188>>2: one "open" bucket
+      hashEngine.Update(coarse);
+    }
     hashEngine.Update(_gameState->guardhp_curr);
     hashEngine.Update(_gameState->guardhp_max);
     hashEngine.Update(_gameState->demo_index);
