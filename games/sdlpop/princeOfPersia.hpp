@@ -33,6 +33,19 @@ public:
     // off: the engine's normal behavior excludes the seed from the hash.
     _hashGuardCombatRNG = config.contains("Hash Guard Combat RNG") && config["Hash Guard Combat RNG"].get<bool>();
 
+    // Gate/door tiles whose openness should be folded into the state hash, quantized to SDLPoP's own
+    // collision granularity (modifier >> 2). A gate's modifier cycles through many openness values
+    // (opening, holding, closing), so hashing it raw explodes the state space -- a kid standing still
+    // while a gate animates would look like a stream of distinct states. But the game makes EVERY gate
+    // decision on (modifier >> 2): can_bump_into_gate() tests ((modif>>2)+6 < char_height), and the
+    // other gate test (modif < 112) is exactly (modif>>2) < 28 since 112 = 28*4. So the low 2 bits
+    // never change gate behavior. Hashing (bg >> 2) is thus lossless for what the kid can actually do
+    // with the gate, while merging the 4 idle-cycle sub-states the engine already treats identically
+    // -- a 4x reduction with no open/closed aliasing (unlike a plain modulo). Tiles given as 1-based
+    // [room, tilepos] to match the "Element[room][tilepos]" naming used in rules.
+    if (config.contains("Hash Gate Tiles"))
+      for (const auto& t : config["Hash Gate Tiles"]) _hashGateTiles.push_back({t[0].get<int>() - 1, t[1].get<int>() - 1});
+
     // // Getting watch mobs indexes
     // auto watchMobsIndexesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Watch Moving Object Indexes");
     // for (const auto& mobJs : watchMobsIndexesJs)
@@ -251,6 +264,9 @@ private:
     // fingerprint if that explodes in practice.)
     if (_hashGuardCombatRNG && _gameState->Guard.alive < 0 && _gameState->can_guard_see_kid != 0)
       hashEngine.Update(_gameState->random_seed);
+    // Gate/door openness, quantized to the game's own collision granularity (see constructor): hash
+    // the modifier >> 2, which is lossless for gate passability while taming the idle-cycle explosion.
+    for (const auto& t : _hashGateTiles) hashEngine.Update((uint8_t)(_gameState->level.bg[t.first][t.second] >> 2));
     hashEngine.Update(_gameState->guardhp_curr);
     hashEngine.Update(_gameState->guardhp_max);
     hashEngine.Update(_gameState->demo_index);
@@ -565,6 +581,9 @@ private:
 
   // Opt-in: include the RNG seed in the state hash only during active guard combat (see constructor)
   bool _hashGuardCombatRNG = false;
+
+  // Gate/door tiles (0-based room,tilepos) whose openness is hashed at >>2 granularity (see constructor)
+  std::vector<std::pair<int, int>> _hashGateTiles;
 
   // Values artificially added to the state
   uint8_t _kidPreviousFrame;
