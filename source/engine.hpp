@@ -180,8 +180,8 @@ public:
     // Freeing temporary buffer
     free(initialStateData);
 
-    // Getting a free state data pointer to store the state into
-    auto stateData = _stateDb->getFreeState();
+    // Getting a free state data pointer to store the state into (serial init path -> thread 0)
+    auto stateData = _stateDb->getFreeState(0);
 
     // Pushing initial state to the next state database
     _stateDb->pushState(reward, r, stateData);
@@ -527,6 +527,21 @@ public:
   __INLINE__ size_t getStateSizeInDatabase() const { return _stateSizeInDatabase; }
 
 private:
+  // Number of base states a worker pulls from the shared per-NUMA state-DB queue per lock
+  // acquisition (into a thread-local buffer), instead of locking once per state. On a light
+  // emulator with dozens of worker threads per NUMA domain, that single-state lock/unlock was the
+  // dominant cost ("Popping Base State" ~37% of wall time); batching collapses it to <0.5%.
+  //
+  // The value is empirically tuned (EPYC 9755, 256 threads, SDLPoP lvl01): throughput is flat-
+  // optimal across 4-16 and falls off above it (32 ~ -4%, 64 ~ -10%, 512 ~ -9%). The reason is that
+  // once the lock contention is gone, the dominant effect is intra-step load balancing across 256
+  // threads -- a larger batch lets one straggler hold many states while others see the queue drain
+  // and go idle. 16 sits at the top of the flat region while keeping enough amortization headroom to
+  // stay robust for workloads with cheaper per-state work or higher thread counts. (A page-sized
+  // batch of 512 pointers was tried, on the theory the buffer would be cache/TLB friendly, but the
+  // buffer is tiny and L1-resident at any of these sizes, so the load-imbalance cost dominated.)
+  static constexpr size_t BASE_STATE_BATCH = 16;
+
   enum inputResult_t
   {
     repeated,
@@ -609,14 +624,22 @@ private:
     // Getting my runner
     auto& r = _runners[threadId];
 
-    // Current base state to process
+    // Base states are pulled from the database in batches into this thread-local buffer, so the
+    // shared per-NUMA queue lock is acquired once per BASE_STATE_BATCH states instead of once per
+    // state. With many worker threads per NUMA domain and cheap per-state work, the single-state
+    // lock/unlock dominates wall time ("Popping Base State"); batching amortizes it away.
+    void*        baseStateBatch[BASE_STATE_BATCH];
     JAFFAR_PROF_DECL(t);
-    void* baseStateData = _stateDb->popState();
+    size_t batchCount = _stateDb->popStates(baseStateBatch, BASE_STATE_BATCH, threadId);
     JAFFAR_PROF_ACC(acc.popBaseStateDb, t);
+    size_t batchIdx = 0;
 
     // While there are still states in the database, keep on grabbing them
-    while (baseStateData != nullptr)
+    while (batchIdx < batchCount)
     {
+      // Taking the next base state from the local batch
+      void* baseStateData = baseStateBatch[batchIdx++];
+
       // Increasing base state counter
       acc.baseStatesProcessed++;
 
@@ -648,7 +671,7 @@ private:
       if (uniqueCandidateInputs.empty() == false) baseStateInputHash = r->getGame()->getStateInputHash();
 
       // Trying out each possible input in the set
-      for (auto inputItr = allowedInputs.begin(); inputItr != allowedInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr, acc);
+      for (auto inputItr = allowedInputs.begin(); inputItr != allowedInputs.end(); inputItr++) runNewInput(*r, baseStateData, *inputItr, acc, threadId);
 
       // Run each candidate input, keyed by the base state's discriminating hash
       for (const auto input : uniqueCandidateInputs)
@@ -658,7 +681,7 @@ private:
           if (_candidateInputsDetected[baseStateInputHash].contains(input)) continue;
 
         // Running input
-        const auto result = runNewInput(*r, baseStateData, input, acc);
+        const auto result = runNewInput(*r, baseStateData, input, acc, threadId);
 
         // If this is not a repeated state, store it as new candidate input
         if (result != inputResult_t::repeated) _candidateInputsDetected[baseStateInputHash].insert(input);
@@ -666,20 +689,24 @@ private:
 
       // Return base state to the free state queue
       JAFFAR_PROF_DECL(t8);
-      _stateDb->returnFreeState(baseStateData);
+      _stateDb->returnFreeState(baseStateData, threadId);
       JAFFAR_PROF_ACC(acc.returnFreeState, t8);
 
-      // Pulling next state from the database
-      JAFFAR_PROF_DECL(t9);
-      baseStateData = _stateDb->popState();
-      JAFFAR_PROF_ACC(acc.popBaseStateDb, t9);
+      // When the local batch is exhausted, pull the next batch from the database
+      if (batchIdx >= batchCount)
+      {
+        JAFFAR_PROF_DECL(t9);
+        batchCount = _stateDb->popStates(baseStateBatch, BASE_STATE_BATCH, threadId);
+        JAFFAR_PROF_ACC(acc.popBaseStateDb, t9);
+        batchIdx = 0;
+      }
     }
 
     // Taking final thread-specific time measurement
     _threadStepTime[threadId] = jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), threadTime0);
   }
 
-  __INLINE__ inputResult_t runNewInput(Runner& r, const void* baseStateData, const InputSet::inputIndex_t input, threadAccumulator_t& acc)
+  __INLINE__ inputResult_t runNewInput(Runner& r, const void* baseStateData, const InputSet::inputIndex_t input, threadAccumulator_t& acc, const size_t threadId)
   {
     // Increasing new state counter
     acc.newStatesProcessed++;
@@ -690,7 +717,7 @@ private:
     JAFFAR_PROF_ACC(acc.runnerStateLoad, t0);
 
     // Running input
-    const auto result = runInput(r, input, acc);
+    const auto result = runInput(r, input, acc, threadId);
 
     // Update counters depending on the outcomes
     if (result == inputResult_t::normal) acc.normalStates++;
@@ -715,7 +742,7 @@ private:
     return result;
   }
 
-  __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input, threadAccumulator_t& acc)
+  __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input, threadAccumulator_t& acc, const size_t threadId)
   {
     // Now advancing state with the provided input
     JAFFAR_PROF_DECL(t1);
@@ -760,7 +787,7 @@ private:
 
     // Now that the state is not failed nor repeated, this is effectively a new state to add
     JAFFAR_PROF_DECL(t5);
-    void* newStateData = _stateDb->getFreeState();
+    void* newStateData = _stateDb->getFreeState(threadId);
     JAFFAR_PROF_ACC(acc.getFreeState, t5);
 
     // If couldn't get any memory, simply drop the state
@@ -790,7 +817,7 @@ private:
 
       // Freeing up the state data
       JAFFAR_PROF_DECL(t7);
-      _stateDb->returnFreeState(newStateData);
+      _stateDb->returnFreeState(newStateData, threadId);
       JAFFAR_PROF_ACC(acc.returnFreeState, t7);
 
       // Returning a win result
@@ -812,7 +839,7 @@ private:
       {
         // Freeing up state memory
         JAFFAR_PROF_DECL(t9);
-        _stateDb->returnFreeState(newStateData);
+        _stateDb->returnFreeState(newStateData, threadId);
         JAFFAR_PROF_ACC(acc.returnFreeState, t9);
 
         // Returning dropped result by failed serialization
