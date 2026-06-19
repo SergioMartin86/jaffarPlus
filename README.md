@@ -11,6 +11,13 @@ JaffarPlus is a high-performance general-purpose breadth-first search optimizer.
 * Multi-Platform: Supports games from multiple consoles/game emulators
 * Extensible: Any new emulators or games that support load/save and advance step functions can be added to JaffarPlus via a common API
 
+# Documentation
+
+A full user & developer manual lives in [`docs/`](docs/README.md). It covers building and running a
+search, the complete `.jaffar` configuration reference, the rules/rewards system, search tuning, and
+how to add a new game. New users should start with [Getting Started](docs/01-getting-started.md),
+which runs a complete search with no ROM required.
+
 # Built-in Emulator Support
 
 ## Consoles
