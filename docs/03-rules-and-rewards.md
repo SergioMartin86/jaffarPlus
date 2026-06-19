@@ -5,8 +5,9 @@ engine always expands the most promising state first; **you** define what "promi
 a *reward*, and what counts as winning, failing, or worth checkpointing through *rules*. Get this
 right and a search that would never terminate becomes one that finds an optimal solution in seconds.
 
-> Illustrations in this chapter (rendered Prince of Persia frames showing the effect of each lever)
-> are added in a later pass; the mechanics below are complete without them.
+> The figures in this chapter are real frames captured from a JaffarPlus solution with
+> `jaffar-player` (see [Tooling](06-tooling.md#headless-screenshots)), so they show the actual
+> effect of the configuration described.
 
 - [The mental model](#the-mental-model)
 - [Properties: naming game memory](#properties-naming-game-memory)
@@ -122,6 +123,15 @@ example *(source: `games/sdlpop/princeOfPersia.hpp`)*:
 The reward contribution is `Intensity × −|current − Position|` — i.e. the closer the property is to
 the target, the higher the reward. So a positive-intensity Kid-X magnet at `Position: 180` makes the
 engine prefer states where the kid is nearer column 180 of that room.
+
+![A four-frame filmstrip of Prince of Persia level 1: the Kid starts at the far left, climbs and moves right, and by the final frame stands at the open exit gate.](images/sdlpop-magnet-filmstrip.png)
+
+*The magnet at work, captured from the level-1 solution in [`examples/sdlpop/0100`](../examples/sdlpop/0100).
+That configuration declares a series of `Set Kid Pos X Magnet` actions, each gated by a condition on
+the Kid's current room, so as the Kid enters each new room the magnet re-targets the next room's exit
+(`Position` 170, then 230, …). The continuous reward gradient pulls the frontier steadily rightward
+across the level — from the starting ledge (step 1) to the open exit gate (step 240) — instead of
+exploring every room uniformly.*
 
 **Scalar magnets** multiply a single property by an intensity, e.g. `Set Level Door Open Magnet` or
 `Set Guard HP Magnet` — reward goes up as the door opens or as the guard loses HP. These take only
