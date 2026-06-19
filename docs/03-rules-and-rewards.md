@@ -124,6 +124,14 @@ The reward contribution is `Intensity × −|current − Position|` — i.e. the
 the target, the higher the reward. So a positive-intensity Kid-X magnet at `Position: 180` makes the
 engine prefer states where the kid is nearer column 180 of that room.
 
+![A Prince of Persia level-1 room with the Kid on the left and the exit gate to the right; a red arrow points from the Kid toward the gate, labelled "higher reward → toward the exit".](images/sdlpop-magnet-gradient.png)
+
+*The gradient on a single frame: with a positive-intensity `Set Kid Pos X Magnet` whose `Position`
+is toward the exit, reward rises as the Kid's `Pos X` approaches it — so between two otherwise-equal
+states, the engine expands the one further along toward the gate first.*
+
+Across a whole level this gradient compounds into directed motion:
+
 ![A four-frame filmstrip of Prince of Persia level 1: the Kid starts at the far left, climbs and moves right, and by the final frame stands at the open exit gate.](images/sdlpop-magnet-filmstrip.png)
 
 *The magnet at work, captured from the level-1 solution in [`examples/sdlpop/0100`](../examples/sdlpop/0100).
