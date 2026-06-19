@@ -1,53 +1,66 @@
 # 3. Rules, Conditions & Rewards
 
 This is the chapter that turns JaffarPlus from "explores states" into "solves *your* problem". The
-engine always expands the most promising state first; **you** define what "promising" means through
-a *reward*, and what counts as winning, failing, or worth checkpointing through *rules*. Get this
-right and a search that would never terminate becomes one that finds an optimal solution in seconds.
+engine keeps a frontier of states and expands the most promising ones first; **you** define what
+"promising" means through a *reward*, and what counts as winning, failing, or worth checkpointing
+through *rules*. Get this right and a search that would never terminate becomes one that finds an
+optimal solution in seconds.
 
-> The figures in this chapter are real frames captured from a JaffarPlus solution with
-> `jaffar-player` (see [Tooling](06-tooling.md#headless-screenshots)), so they show the actual
-> effect of the configuration described.
+> The figures in this chapter are schematic diagrams of the bundled **GridWalker** puzzle
+> ([`docs/examples/gridwalker.jaffar`](examples/gridwalker.jaffar)): a cursor that moves Up/Down/
+> Left/Right on a 5×5 grid, starting at the top-left `(0,0)` and trying to reach the bottom-right
+> `(4,4)`. It runs on the ROM-free test core, so every rule and reward shown here is something you
+> can run and reproduce yourself (see [Getting Started](01-getting-started.md)).
 
 - [The mental model](#the-mental-model)
 - [Properties: naming game memory](#properties-naming-game-memory)
 - [Conditions](#conditions)
 - [Rules](#rules)
 - [Core actions](#core-actions)
-- [Reward magnets](#reward-magnets)
+- [The GridWalker rule set](#the-gridwalker-rule-set)
+- [Reward shaping (and magnets)](#reward-shaping-and-magnets)
 - [Checkpoints and tolerance](#checkpoints-and-tolerance)
-- [Worked example: GridWalker](#worked-example-gridwalker)
+- [Frame-skip](#frame-skip)
 - [Design recipes](#design-recipes)
 
 ## The mental model
 
-Every state the engine reaches has a single **reward** value (a `float`). Best-first search keeps a
-frontier of states and always expands the one with the highest reward next. So:
+Every state the engine reaches has a single **reward** value (a `float`). The search keeps a frontier
+of states and expands the highest-reward ones first. So:
 
 - **Reward is a compass, not a score.** Its absolute value is irrelevant; only the *ordering* it
   induces matters. A state with higher reward gets explored sooner.
-- **Reward has two sources.** Discrete bumps from rule **actions** (`Add Reward`), and continuous
-  gradients from **magnets** (game-specific actions that reward being close to a target). The two
-  are summed.
+- **Reward has two sources.** Discrete bumps from rule **actions** (`Add Reward`), and any continuous
+  gradient the game computes (for GridWalker, "closer to the goal is better"). The two are summed.
 - **Rules also gate the search.** A rule can mark a state as a **win** (a solution), a **fail**
-  (pruned, never expanded), or a **checkpoint** (a milestone that resets deduplication tolerance).
+  (pruned, never expanded), or a **checkpoint** (a milestone).
 
 A search succeeds when a state triggers a `Trigger Win`. It is your reward design that makes the
 engine *walk toward* that win instead of wandering the entire state space.
 
 ## Properties: naming game memory
 
-A **property** is a named, typed view into the game's memory — `Pos X`, `Kid HP`, `Guard Pos Y`,
-and so on. Properties are registered by each game's C++ code (not in the config); the config refers
-to them by name in three places:
+A **property** is a named, typed view into the game's memory. GridWalker exposes five
+*(source: [`games/test/gridWalker.hpp`](../games/test/gridWalker.hpp))*:
 
-- `Game Configuration` > `Hash Properties` — which properties define a state's *identity*.
+| Property | Meaning |
+|----------|---------|
+| `Pos X`, `Pos Y` | The cursor's column and row — the only things that distinguish one state from another. |
+| `Distance` | Manhattan distance from the cursor to the goal (a derived value). |
+| `Steps` | How many moves have been made. |
+| `Goal Reached` | Whether the cursor is on the goal cell. |
+
+Properties are registered by the game's C++ code (not the config); the config refers to them by name
+in three places:
+
+- `Game Configuration` > `Hash Properties` — which properties define a state's *identity*. GridWalker
+  hashes `Pos X` and `Pos Y`, so two routes that reach the same cell are treated as the same state.
 - `Game Configuration` > `Print Properties` — which to show in status output.
-- Inside **conditions** and **magnets** — to test or target a value.
+- Inside **conditions** — to test a value.
 
-To list a game's available properties, read its header under `games/` or see
-[Adding a Game](05-adding-a-game.md). Property datatypes (`UINT8`…`FLOAT64`, `BOOL`) and endianness
-are covered in the [Configuration Reference](02-config-reference.md#property-datatypes).
+To list a game's properties, read its header under `games/` or see
+[Adding a Game](05-adding-a-game.md). Datatypes (`UINT8`…`FLOAT64`, `BOOL`) and endianness are in the
+[Configuration Reference](02-config-reference.md#property-datatypes).
 
 ## Conditions
 
@@ -62,7 +75,7 @@ A condition is a single comparison: a property, an operator, and a value.
   - `%0` / `%N`: property modulo `Value` is zero / non-zero.
   - `BitTrue` / `BitFalse`: the bit at index `Value` is set / clear.
 - `Value` — the right operand. A **number** or **boolean** is an immediate value; a **string** is
-  treated as *another property name*, so you can compare two properties (e.g. kid vs. guard X).
+  treated as *another property name*, so you can compare two properties (e.g. `Pos X` against `Pos Y`).
 
 Conditions appear in two contexts, with identical grammar: inside a **rule** (when does this rule
 fire?) and inside an **input set** (when is this input legal?). Within a single list, **all**
@@ -86,8 +99,8 @@ A rule couples a set of conditions to a set of actions.
 - `Conditions` — when all hold, the rule **fires**. An empty list means "always".
 - `Actions` — what firing does (see below).
 - `Satisfies` — labels of *other* rules to also mark as satisfied when this one fires. Use it to
-  build hierarchies: satisfying a "level complete" rule can auto-satisfy the per-checkpoint rules
-  leading up to it.
+  build hierarchies: satisfying a "level complete" rule can auto-satisfy the checkpoints leading up
+  to it.
 
 ## Core actions
 
@@ -97,76 +110,18 @@ These five action `Type`s are available to every game *(source: `source/game.hpp
 |--------|-----------|--------|
 | `Add Reward` | `Value` (number) | Add `Value` to the state's reward. Negative values penalize. |
 | `Trigger Win` | — | This state is a solution; the search can stop (per `End On First Win State`). |
-| `Trigger Fail` | — | Prune this state; it is never expanded. Use it to kill dead ends (death, out-of-bounds, wrong room). |
+| `Trigger Fail` | — | Prune this state; it is never expanded. Use it to kill dead ends (death, out-of-bounds, a wrong room). |
 | `Trigger Checkpoint` | `Tolerance` (number) | Record a milestone (see [below](#checkpoints-and-tolerance)). |
-| `Trigger Save Solution` | `Path` (string) | Write the current solution to `Path`. Handy for capturing the path to a checkpoint mid-run. |
+| `Trigger Save Solution` | `Path` (string) | Write the current solution to `Path` when the rule fires. Handy for capturing the route to a milestone mid-run. |
 
-## Reward magnets
+A game may register **additional** action types (most notably *reward magnets* — see
+[below](#reward-shaping-and-magnets)), but GridWalker uses only these five, which is enough to
+demonstrate every kind of rule.
 
-A magnet is a **continuous** reward gradient toward a target — the workhorse for steering long
-searches. Magnets are *game-specific* actions (each game registers its own in `parseRuleActionImpl`),
-but they follow one of two shapes.
+## The GridWalker rule set
 
-**Point magnets** pull a positional property toward a target value. In Prince of Persia, for
-example *(source: `games/sdlpop/princeOfPersia.hpp`)*:
-
-```json
-{ "Type": "Set Kid Pos X Magnet", "Intensity": 1.0, "Position": 180, "Room": 5 }
-```
-
-- `Intensity` — strength (and sign). Positive pulls *toward* `Position`; negative pushes away.
-- `Position` — the target value of the property.
-- `Room` — the magnet is only active while the actor is in this room; elsewhere its intensity is
-  treated as `0`. (This room-gating is specific to actors that move between rooms, like the Kid and
-  the Guard.)
-
-The reward contribution is `Intensity × −|current − Position|` — i.e. the closer the property is to
-the target, the higher the reward. So a positive-intensity Kid-X magnet at `Position: 180` makes the
-engine prefer states where the kid is nearer column 180 of that room.
-
-![A Prince of Persia level-1 room with the Kid on the left and the exit gate to the right; a red arrow points from the Kid toward the gate, labelled "higher reward → toward the exit".](images/sdlpop-magnet-gradient.png)
-
-*The gradient on a single frame: with a positive-intensity `Set Kid Pos X Magnet` whose `Position`
-is toward the exit, reward rises as the Kid's `Pos X` approaches it — so between two otherwise-equal
-states, the engine expands the one further along toward the gate first.*
-
-Across a whole level this gradient compounds into directed motion:
-
-![A four-frame filmstrip of Prince of Persia level 1: the Kid starts at the far left, climbs and moves right, and by the final frame stands at the open exit gate.](images/sdlpop-magnet-filmstrip.png)
-
-*The magnet at work, captured from the level-1 solution in [`examples/sdlpop/0100`](../examples/sdlpop/0100).
-That configuration declares a series of `Set Kid Pos X Magnet` actions, each gated by a condition on
-the Kid's current room, so as the Kid enters each new room the magnet re-targets the next room's exit
-(`Position` 170, then 230, …). The continuous reward gradient pulls the frontier steadily rightward
-across the level — from the starting ledge (step 1) to the open exit gate (step 240) — instead of
-exploring every room uniformly.*
-
-**Scalar magnets** multiply a single property by an intensity, e.g. `Set Level Door Open Magnet` or
-`Set Guard HP Magnet` — reward goes up as the door opens or as the guard loses HP. These take only
-`Intensity`.
-
-> **Discovering a game's magnets.** The full set is game-specific; read the game's
-> `parseRuleActionImpl` (it is a chain of `if (actionType == "Set … Magnet")` blocks) to see every
-> magnet it supports and which keys each takes. The naming is consistent: `Set <Thing> Magnet`.
-
-The typical pattern is: keep a *standing* magnet pulling the player toward the level exit, and use
-rules with `Add Reward` to give discrete bonuses at key milestones, and `Trigger Fail` to prune
-death/dead-end states.
-
-## Checkpoints and tolerance
-
-`Trigger Checkpoint` records progress and carries a `Tolerance`. Tolerance interacts with
-deduplication: normally two states with the same `Hash Properties` are merged, but right after a
-checkpoint the engine tolerates a number of additional steps before re-merging, so it does not
-immediately discard the slightly-different states that branch off a milestone. Larger tolerance =
-more states kept around a checkpoint = broader local search at the cost of memory. The related
-global knob is `Runner Configuration` > `Hash Step Tolerance`
-(see [Search Concepts & Tuning](04-search-concepts.md#hash-step-tolerance)).
-
-## Worked example: GridWalker
-
-[`docs/examples/gridwalker.jaffar`](examples/gridwalker.jaffar) is a complete, ROM-free illustration. The
-"game" is a cursor on a 5×5 grid starting at `(0,0)`; the goal is `(4,4)`. Its three rules:
+[`docs/examples/gridwalker.jaffar`](examples/gridwalker.jaffar) defines three rules that, between
+them, exercise win, fail, checkpoint, save-solution, reward, and rule-chaining:
 
 ```json
 "Rules": [
@@ -187,32 +142,97 @@ global knob is `Runner Configuration` > `Hash Step Tolerance`
 ]
 ```
 
-Reading it as a search strategy:
+Mapped onto the grid, here is where each rule fires:
 
-- **Rule 100** prunes the center `(2,2)` — a hard "do not go here" via `Trigger Fail`.
-- **Rule 200** rewards reaching the right-hand column (`Pos X == 4`) with `+100`, marks a
-  checkpoint, and saves the partial solution. This is the *intermediate compass* pulling the search
-  rightward.
-- **Rule 300** is the win at `(4,4)`, worth a huge `+100000` so it dominates the ordering, and it
-  `Satisfies: [200]` so reaching the corner also counts the column-4 milestone as met.
+![A 5x5 grid: the right-hand column (Pos X == 4) is shaded yellow as the checkpoint, the centre cell (2,2) is a red FAIL cell with an X, and the bottom-right cell (4,4) is a green WIN cell; START is at the top-left. A legend labels each colour.](images/gridwalker-rules.png)
 
-Because the hash properties are `Pos X` and `Pos Y`, the engine treats each grid cell as one state
-and finds the shortest (8-move) path. Note there are no magnets here — on a 5×5 grid the discrete
-rewards suffice. On a real game with thousands of positions, you would add a magnet toward the exit
-instead of (or in addition to) discrete per-column rewards.
+- **Rule 100 — `Trigger Fail` (red).** When the cursor is at the centre `(2,2)`, the state is pruned:
+  the engine discards it and never explores any route continuing through it. This is how you forbid
+  death, out-of-bounds, or known dead ends.
+- **Rule 200 — checkpoint + reward + save (yellow column).** Reaching *any* cell in column `Pos X == 4`
+  adds `+100` to the reward, records a `Trigger Checkpoint`, and writes the current route to disk with
+  `Trigger Save Solution`. This is an intermediate milestone — a partial goal worth steering toward
+  and worth capturing.
+- **Rule 300 — `Trigger Win` (green).** Reaching the corner `(4,4)` adds a dominating `+100000` and
+  marks the state a win. Its `Satisfies: [200]` also marks rule 200 as met, so arriving at the corner
+  counts the column-4 milestone as achieved even if the win is reached first.
+
+Because `Pos X` and `Pos Y` are the hash properties, the engine treats each grid cell as a single
+state and returns the shortest (8-move) route — see
+[Search Concepts](04-search-concepts.md#a-concrete-picture) for the depth/pruning/dedup view of the
+very same puzzle.
+
+## Reward shaping (and magnets)
+
+Rules give *discrete* reward at specific cells (the `+100` in column 4, the `+100000` at the goal).
+On top of that, GridWalker adds a *continuous* gradient: its reward decreases with distance to the
+goal, so every step that gets closer is preferred. Shaded by reward, the grid looks like this:
+
+![A 5x5 grid shaded green, lighter at the top-left (reward -8) and darker toward the bottom-right goal (reward 0), with a green arrow pointing from start to goal labelled "reward increases".](images/gridwalker-reward.png)
+
+This gradient is what makes the search *walk* toward the goal instead of expanding the grid
+uniformly: between two equally-deep states, the one nearer the goal has higher reward and is expanded
+first.
+
+**Where do magnets come in?** GridWalker's gradient is hard-coded in its C++
+(`calculateGameSpecificReward` returns `-Distance`). Richer games make the same idea *configurable*
+by exposing **reward magnets** — game-specific actions that let you place such a gradient from the
+`.jaffar` file, no recompiling. They take one of two shapes:
+
+- **Point magnet** — pulls a positional property toward a target, e.g. Prince of Persia's
+  `{"Type": "Set Kid Pos X Magnet", "Intensity": 1.0, "Position": 180}`. The contribution is
+  `Intensity × −|current − Position|`: positive intensity pulls toward `Position`, negative pushes
+  away. (This is exactly GridWalker's distance gradient, but tunable per state.)
+- **Scalar magnet** — multiplies a single property by an intensity, e.g. `Set Level Door Open Magnet`
+  (reward rises as a door opens). Takes only `Intensity`.
+
+Magnets are *not* part of the engine core — each game registers its own in `parseRuleActionImpl`. To
+see which a game supports, read that method (a chain of `if (actionType == "Set … Magnet")` blocks);
+the naming is consistently `Set <Thing> Magnet`. GridWalker registers none, because its single fixed
+gradient is all a 5×5 grid needs.
+
+## Checkpoints and tolerance
+
+`Trigger Checkpoint` records progress and carries a `Tolerance` (GridWalker uses `8`). Tolerance
+interacts with deduplication: normally two states with the same `Hash Properties` are merged, but
+right after a checkpoint the engine tolerates a number of additional steps before re-merging, so it
+does not immediately discard the slightly-different states that branch off a milestone. Larger
+tolerance = more states kept around a checkpoint = broader local search at the cost of memory. The
+related global knob is `Runner Configuration` > `Hash Step Tolerance`
+(see [Search Concepts & Tuning](04-search-concepts.md#hash-step-tolerance)).
+
+## Frame-skip
+
+A *decision* the search makes does not have to be a single emulator frame. With
+`Runner Configuration` > `Frameskip` > `Rate > 0`, each chosen input is held for extra frames before
+the next decision, so the search tree is shallower (fewer decisions) while the recorded solution
+still contains every played frame:
+
+![Two rows of boxes. Top: four "Decided inputs" R, R, D, D. Bottom: eight "Frames played" boxes, each decided input followed by a held copy. A caption explains 4 decisions x (1+1) = 8 recorded inputs.](images/gridwalker-frameskip.png)
+
+On GridWalker with `Rate: 1` (repeat-last), each decision advances the cursor twice, so the corner is
+reached in **4 decisions** but the saved solution records **8 inputs** — the move plus one held copy
+each. With `Use Custom Input`, the held frames play a fixed `Custom Input` (e.g. a no-op) instead of
+repeating the decision. Frame-skip trades search precision for depth and is most useful on long
+traversals where single-frame timing does not matter; the keys are detailed in the
+[Configuration Reference](02-config-reference.md#runner-configuration--frameskip) and the trade-off
+in [Search Concepts](04-search-concepts.md#tuning-checklist).
 
 ## Design recipes
 
 - **Make the win dominate.** Give `Trigger Win` (or the rule leading to it) a reward far larger than
-  any intermediate bonus, so a winning path always sorts to the front.
-- **Prune aggressively.** Every `Trigger Fail` you add removes a whole subtree from the search.
-  Death, wrong room, lost HP you can't recover — fail them early.
-- **Steer with one standing magnet, reward milestones discretely.** A single exit-ward magnet gives
-  a smooth gradient; `Add Reward` rules give sharp bumps at gates/keys/checkpoints.
-- **Watch the state explosion.** Rewarding noisy properties (timers, RNG, cosmetic counters) makes
-  near-identical states look different and floods the database. Keep `Hash Properties` minimal and,
-  for Prince of Persia specifically, set `Disable Non-Gameplay RNG` (see
-  [tuning](04-search-concepts.md) and the configuration reference).
+  any intermediate bonus, so a winning route always sorts to the front — GridWalker's `+100000`
+  versus the `+100` checkpoint is exactly this.
+- **Prune aggressively.** Every `Trigger Fail` removes a whole subtree from the search. Death, a
+  wrong room, unrecoverable HP loss — fail them early.
+- **Shape, then bump.** Let a continuous gradient (a built-in distance reward, or a standing magnet)
+  pull the search toward the goal, and use `Add Reward` rules for sharp bonuses at milestones
+  (gates, keys, checkpoints).
+- **Watch the state explosion.** Hashing noisy properties (timers, RNG, cosmetic counters) makes
+  near-identical states look different and floods the database. Keep `Hash Properties` minimal —
+  GridWalker hashes only `Pos X`/`Pos Y`. (For games with cosmetic RNG, such as Prince of Persia,
+  there is usually an emulator option to suppress it; see the
+  [Configuration Reference](02-config-reference.md#emulator-configuration).)
 
-The next chapter explains *why* these choices affect performance — how hashing, deduplication, and
-the state database actually work.
+The next chapter explains *why* these choices affect performance — how the search, hashing,
+deduplication, and the state database actually work.
