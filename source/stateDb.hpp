@@ -3,11 +3,11 @@
 #include "numa.hpp"
 #include <cstdlib>
 #include <jaffarCommon/concurrent.hpp>
+#include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/parallel.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
-#include <jaffarCommon/deserializers/contiguous.hpp>
 #include <memory>
 #include <utmpx.h>
 
@@ -390,8 +390,8 @@ public:
       // Only process if I am the delegate
       if (_myThreadId == _numaDelegateThreadId[_preferredNumaDomain])
       {
-        auto& nextMap     = *_numaNextStateQueues[_preferredNumaDomain];
-        auto* currentBuf  = _numaCurrentStateQueues[_preferredNumaDomain];
+        auto& nextMap    = *_numaNextStateQueues[_preferredNumaDomain];
+        auto* currentBuf = _numaCurrentStateQueues[_preferredNumaDomain];
 
         // Updating state count per numa
         _currentStatesPerNuma[_preferredNumaDomain] = nextMap.size();
@@ -407,7 +407,7 @@ public:
         // extract bookkeeping. The map iterates in descending-reward order (std::greater), so the
         // first element seen is the best and the last is the worst -- same ordering as before.
         float firstReward = 0.0f, lastReward = 0.0f;
-        void* firstPtr = nullptr, * lastPtr = nullptr;
+        void *firstPtr = nullptr, *lastPtr = nullptr;
         for (const auto& entry : nextMap)
         {
           if (firstPtr == nullptr)

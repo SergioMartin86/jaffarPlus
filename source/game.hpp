@@ -661,7 +661,8 @@ protected:
 
     // If not recognized at all, then fail
     if (recognizedActionType == false)
-      JAFFAR_THROW_LOGIC("[ERROR] Unrecognized action '%s' in rule %lu. Valid actions are: Add Reward, Trigger Fail, Trigger Win, Trigger Checkpoint, Trigger Save Solution (plus any game-specific actions)\n",
+      JAFFAR_THROW_LOGIC("[ERROR] Unrecognized action '%s' in rule %lu. Valid actions are: Add Reward, Trigger Fail, Trigger Win, Trigger Checkpoint, Trigger Save Solution (plus "
+                         "any game-specific actions)\n",
                          actionType.c_str(), rule.getLabel());
   }
 

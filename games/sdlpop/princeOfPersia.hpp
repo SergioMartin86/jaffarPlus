@@ -268,8 +268,7 @@ private:
     // still dedups. (Residual: a guard that *sees* the kid but is stuck/refractory in a torch-lit room
     // can still churn the seed while the kid idles; bounded by Max Steps. Revisit with a per-draw
     // fingerprint if that explodes in practice.)
-    if (_hashGuardCombatRNG && _gameState->Guard.alive < 0 && _gameState->can_guard_see_kid != 0)
-      hashEngine.Update(_gameState->random_seed);
+    if (_hashGuardCombatRNG && _gameState->Guard.alive < 0 && _gameState->can_guard_see_kid != 0) hashEngine.Update(_gameState->random_seed);
     // Gate/door openness, coarsened (see constructor). A gate's modifier is 0 (closed); rising values
     // while opening/closing; and 188..255 while held OPEN -- where it counts *down* every frame on a
     // close timer (trigger_gate sets 238 = "keep open a while"). Hashing that timer is the real

@@ -44,12 +44,13 @@ static size_t parseUInt(const std::string& value, const std::string& flag)
 {
   try
   {
-    size_t consumed = 0;
-    const size_t result = std::stoul(value, &consumed);
+    size_t       consumed = 0;
+    const size_t result   = std::stoul(value, &consumed);
     if (consumed == value.size()) return result;
   }
   catch (const std::exception&)
-  {}
+  {
+  }
   JAFFAR_THROW_LOGIC("Invalid value '%s' for %s (expected a non-negative integer)\n", value.c_str(), flag.c_str());
   return 0;
 }
