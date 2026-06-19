@@ -69,3 +69,7 @@ jaffar.worst.sol
 *.exe
 *.out
 *.app
+
+# Auto-generated game lists (games/genGameList.py)
+games/gameIncludes.gen.hpp
+games/gameDetect.gen.hpp
