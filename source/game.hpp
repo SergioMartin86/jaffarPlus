@@ -52,6 +52,15 @@ public:
     _rulesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Rules");
   };
 
+  // Returns a comma-separated list of the property names registered for this game, for use in error
+  // messages when a configured property name is not found.
+  std::string getRegisteredPropertyNames() const
+  {
+    std::string names;
+    for (const auto& entry : _propertyMap) names += (names.empty() ? "" : ", ") + entry.second->getName();
+    return names;
+  }
+
   void initialize()
   {
     if (_isInitialized == true) JAFFAR_THROW_LOGIC("This game instance was already initialized");
@@ -69,7 +78,8 @@ public:
       const auto propertyHash = jaffarCommon::hash::hashString(property);
 
       // Checking the property is registered
-      if (_propertyMap.contains(propertyHash) == false) JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game", property.c_str());
+      if (_propertyMap.contains(propertyHash) == false)
+        JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game. Registered properties: %s\n", property.c_str(), getRegisteredPropertyNames().c_str());
 
       // If so, add its pointer to the print property vector
       _propertyPrintVector.push_back(_propertyMap.at(propertyHash).get());
@@ -82,7 +92,8 @@ public:
       const auto propertyHash = jaffarCommon::hash::hashString(property);
 
       // Checking the property is registered
-      if (_propertyMap.contains(propertyHash) == false) JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game", property.c_str());
+      if (_propertyMap.contains(propertyHash) == false)
+        JAFFAR_THROW_LOGIC("Property '%s' is not registered in this game. Registered properties: %s\n", property.c_str(), getRegisteredPropertyNames().c_str());
 
       // If so, add its pointer to the print property vector
       _propertyHashVector.push_back(_propertyMap.at(propertyHash).get());
@@ -649,7 +660,9 @@ protected:
     if (recognizedActionType == false) recognizedActionType = parseRuleActionImpl(rule, actionType, actionJs);
 
     // If not recognized at all, then fail
-    if (recognizedActionType == false) JAFFAR_THROW_LOGIC("[ERROR] Unrecognized action '%s' in rule %lu\n", actionType.c_str(), rule.getLabel());
+    if (recognizedActionType == false)
+      JAFFAR_THROW_LOGIC("[ERROR] Unrecognized action '%s' in rule %lu. Valid actions are: Add Reward, Trigger Fail, Trigger Win, Trigger Checkpoint, Trigger Save Solution (plus any game-specific actions)\n",
+                         actionType.c_str(), rule.getLabel());
   }
 
   // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules

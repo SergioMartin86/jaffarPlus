@@ -14,6 +14,7 @@
 namespace jaffarPlus
 {
 #define DETECT_GAME(GAME)                                                                                                                                                          \
+  validGameNames += (validGameNames.empty() ? "" : ", ") + games::GAME::getName();                                                                                                 \
   if (gameName == games::GAME::getName())                                                                                                                                          \
   {                                                                                                                                                                                \
     g            = std::make_unique<games::GAME>(std::move(e), gameConfig);                                                                                                        \
@@ -34,11 +35,14 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   // Getting game name
   const auto& gameName = jaffarCommon::json::getString(gameConfig, "Game Name");
 
+  // Collected (while detecting) so an unrecognized name can report the games this build supports
+  std::string validGameNames;
+
   // AUTO-GENERATED detection list (one guarded DETECT_GAME per discovered game; see genRegistry.py)
 #include <gameDetect.gen.hpp>
 
   // Check if game was recognized
-  if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized\n", gameName.c_str());
+  if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized. Games available in this build: %s\n", gameName.c_str(), validGameNames.c_str());
 
   // Returning game pointer
   return g;

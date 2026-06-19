@@ -10,6 +10,7 @@
 namespace jaffarPlus
 {
 #define DETECT_EMULATOR(EMULATOR)                                                                                                                                                  \
+  validEmulatorNames += (validEmulatorNames.empty() ? "" : ", ") + EMULATOR::getName();                                                                                            \
   if (emulatorName == EMULATOR::getName())                                                                                                                                         \
   {                                                                                                                                                                                \
     e            = std::make_unique<EMULATOR>(emulatorConfig);                                                                                                                     \
@@ -27,11 +28,14 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json& emulatorCo
   // Getting emulator name
   const auto& emulatorName = jaffarCommon::json::getString(emulatorConfig, "Emulator Name");
 
+  // Collected (while detecting) so an unrecognized name can report the emulator this build supports
+  std::string validEmulatorNames;
+
   // AUTO-GENERATED detection list (one guarded DETECT_EMULATOR per discovered emulator)
 #include <emulatorDetect.gen.hpp>
 
   // Check if recognized
-  if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized\n", emulatorName.c_str());
+  if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized. Emulator(s) available in this build: %s\n", emulatorName.c_str(), validEmulatorNames.c_str());
 
   // Returning emulator pointer
   return e;
