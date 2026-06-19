@@ -70,6 +70,5 @@ jaffar.worst.sol
 *.out
 *.app
 
-# Auto-generated game lists (games/genGameList.py)
-games/gameIncludes.gen.hpp
-games/gameDetect.gen.hpp
+# Auto-generated registry lists (genRegistry.py writes these into the build dir)
+*.gen.hpp

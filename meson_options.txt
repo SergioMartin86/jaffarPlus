@@ -28,6 +28,12 @@ option('gamesFolder',
   description : 'Allows setting a custom games folder',
 )
 
+option('game',
+  type : 'string',
+  value : '',
+  description : 'Compile only a single game (by header stem, e.g. -Dgame=sprilo) instead of all games of the selected emulator. Empty = all games.',
+)
+
 option('buildTests',
   type : 'boolean',
   value : true,

@@ -13,17 +13,23 @@ else # Oterwise, add it manually
   includeFlags += '-I' + gamesFolder
 endif
 
-# Auto-generate the game include + detection lists by scanning the games folder, so adding a new
-# game header requires no manual wiring in gameList.hpp -- just re-run `meson setup`. The generated
-# headers (gameIncludes.gen.hpp / gameDetect.gen.hpp) live in the games folder (already on the
-# include path) and are git-ignored.
-gamesPath = gamesFolder == '' ? meson.current_source_dir() / '..' / 'games' : gamesFolder
-run_command(find_program('python3'),
-            gamesPath / 'genGameList.py',
-            gamesPath,
-            gamesPath / 'gameIncludes.gen.hpp',
-            gamesPath / 'gameDetect.gen.hpp',
+# Auto-generate the include + detection lists for games and emulators by scanning their folders, so
+# adding a new game/emulator header needs no manual wiring in gameList.hpp / emulatorList.hpp -- just
+# re-run `meson setup`. The generated *.gen.hpp headers are written into THIS build directory (not
+# the source tree), so each build dir gets its own -- which lets -Dgame=<header stem> compile only
+# that single game (e.g. -Demulator=QuickerNES -Dgame=sprilo) without affecting other build dirs.
+genRegistry   = meson.project_source_root() / 'genRegistry.py'
+python3bin    = find_program('python3')
+gamesPath     = gamesFolder == '' ? meson.current_source_dir() / '..' / 'games' : gamesFolder
+emulatorsPath = meson.current_source_dir() / '..' / 'emulators'
+genDir        = meson.current_build_dir()
+run_command(python3bin, genRegistry, 'games', gamesPath,
+            genDir / 'gameIncludes.gen.hpp', genDir / 'gameDetect.gen.hpp',
+            get_option('game'), check: true)
+run_command(python3bin, genRegistry, 'emulators', emulatorsPath,
+            genDir / 'emulatorIncludes.gen.hpp', genDir / 'emulatorDetect.gen.hpp',
             check: true)
+includeFlags += '-I' + genDir
 
 # Creating include directories
 jaffarIncludes = include_directories(includeDirs)
