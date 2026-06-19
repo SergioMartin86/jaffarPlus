@@ -76,6 +76,12 @@ Author
   + The authors of DSDA
   + The authors of the third party libraries used.
 
-- JaffarPlus is distributed freely under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) for any purpose and use, as long as:
+- JaffarPlus's own source code is distributed freely under the [MIT License](LICENSE) for any purpose and use, as long as:
   + The license and proper credits to its author are preserved
   + If you publish a TAS or any public work using this software, I'd appreciate you mention it and linking this repository in your description
+
+- A note on the emulator cores: JaffarPlus builds against emulation cores that are included as
+  separate git submodules and are licensed under the GPL (v2 or v3, depending on the core). The MIT
+  license above covers only the source code in this repository. A binary you build links one of
+  those cores and is therefore a derivative work under that core's GPL — so if you choose to
+  distribute such a binary, it must be distributed under the corresponding GPL terms.
