@@ -1,5 +1,12 @@
 #pragma once
 
+/**
+ * @file numa.hpp
+ * @brief NUMA topology detection: distance/preference matrices and per-domain delegate-thread
+ *        selection, identifying threads by OpenMP thread id and using sched_getcpu only for the
+ *        NUMA domain lookup.
+ */
+
 #include <cstdlib>
 #include <jaffarCommon/exceptions.hpp>
 #include <jaffarCommon/parallel.hpp>
@@ -11,43 +18,28 @@
 namespace jaffarPlus
 {
 
-/**
- * Number of NUMA domains detected
- */
-static int _numaCount;
+static int _numaCount; ///< Number of NUMA domains detected.
+
+static int _threadCount; ///< Number of threads to use.
+
+static std::vector<std::vector<size_t>> _numaDistanceMatrix; ///< NUMA distance matrix; entry [i][j] is the reported distance from domain i to domain j.
+
+static std::vector<std::vector<size_t>>
+    _numaPreferenceMatrix; ///< NUMA preference matrix; row i lists domains ordered by ascending distance from domain i (ties rotated per source domain).
+
+static std::vector<ssize_t> _numaDelegateThreadId; ///< Delegate thread (OpenMP thread id) per NUMA domain, or -1 if none assigned.
+
+static thread_local int _preferredNumaDomain; ///< Thread-local preferred NUMA domain (the NUMA node of the CPU the thread currently runs on).
+
+static thread_local int _myThreadId; ///< Thread-local dense OpenMP thread id of the current thread.
 
 /**
- * Number of threads to use
- */
-static int _threadCount;
-
-/**
- * NUMA Distance Matrix
- */
-static std::vector<std::vector<size_t>> _numaDistanceMatrix;
-
-/**
- * NUMA Preference Matrix
- */
-static std::vector<std::vector<size_t>> _numaPreferenceMatrix;
-
-/**
- * Delegate thread per numa domain
- */
-static std::vector<ssize_t> _numaDelegateThreadId;
-
-/**
- * Thread local storage of preferred NUMA domain
- */
-static thread_local int _preferredNumaDomain;
-
-/**
- * Thread local storage of my cpu id
- */
-static thread_local int _myThreadId;
-
-/*
- * Function to initialize NUMA / core affinity aspects
+ * @brief Initializes NUMA / core-affinity state.
+ * @details Detects the thread count and NUMA domain count, optionally overrides the thread count from
+ * the JAFFAR_ENGINE_OVERRIDE_MAX_THREAD_COUNT environment variable, builds the NUMA distance and
+ * preference matrices, and selects one delegate thread per NUMA domain. Each worker identifies itself
+ * by its OpenMP thread id and derives its preferred NUMA domain from sched_getcpu.
+ * @throws A runtime error if the system does not provide NUMA detection support.
  */
 __INLINE__ void initializeNUMA()
 {

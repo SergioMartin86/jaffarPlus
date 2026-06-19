@@ -1,5 +1,12 @@
 #pragma once
 
+/**
+ * @file engine.hpp
+ * @brief Parallel breadth-first search engine that expands game states step by step, deduplicating
+ *        via a hash database and storing survivors in a state database while tracking win states,
+ *        checkpoints, and per-operation timing statistics.
+ */
+
 #include "game.hpp"
 #include "hashDb.hpp"
 #include "numa.hpp"
@@ -24,7 +31,9 @@
 // is a no-op, so there is neither timing overhead nor an unused-variable warning. The coarse
 // per-step timers (step wall time, throughput, serial DB-advance stages) are always kept.
 #ifdef JAFFARPLUS_DETAILED_PROFILING
+/// @brief Declares a timestamp variable @p var holding the current time (detailed-profiling build).
 #define JAFFAR_PROF_DECL(var) const auto var = jaffarCommon::timing::now()
+/// @brief Accumulates the microseconds elapsed since timestamp @p var into @p field.
 #define JAFFAR_PROF_ACC(field, var) field += jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), var)
 #else
 #define JAFFAR_PROF_DECL(var) ((void)0)
@@ -34,10 +43,27 @@
 namespace jaffarPlus
 {
 
+/**
+ * @brief Parallel state-space search engine.
+ *
+ * @details Owns one @ref Runner per worker thread, a @ref StateDb holding the current and next
+ * step's states, and an optional @ref HashDb for detecting repeated states. Each call to
+ * @ref runStep expands every base state in the current database by trying its allowed and candidate
+ * inputs, evaluating game rules on the resulting states, and pushing the surviving normal states
+ * into the next database while recording win states, checkpoints, drop counts, and per-operation
+ * timing.
+ */
 class Engine final
 {
 public:
-  // Base constructor
+  /**
+   * @brief Constructs the engine, building one runner per worker thread and the state/hash databases.
+   * @param emulatorConfig Configuration object passed to each runner's emulator.
+   * @param gameConfig     Configuration object passed to each runner's game.
+   * @param runnerConfig   Configuration object passed to each runner.
+   * @param engineConfig   Engine configuration containing the "State Database" and "Hash Database" objects.
+   * @throws A logic error if the configured worker thread count is zero.
+   */
   Engine(const nlohmann::json& emulatorConfig, const nlohmann::json& gameConfig, const nlohmann::json& runnerConfig, const nlohmann::json& engineConfig)
   {
     // Initializing NUMA and threading subsystems
@@ -87,7 +113,12 @@ public:
   };
 
   /**
-   * Resets execution back to step zero and clears all databases and counters
+   * @brief Resets execution back to step zero and clears all databases and counters.
+   *
+   * @details Re-initializes all runners, the state database, and (when enabled) the hash database;
+   * evaluates rules, determines the state type, and computes the reward for the initial state; pushes
+   * that initial state into the database; allocates the best-win and manual-save state buffers; and
+   * inserts the initial state's hash into the hash database.
    */
   void initialize()
   {
@@ -193,7 +224,12 @@ public:
   }
 
   /**
-   * Runs a single step of the Jaffar Engine
+   * @brief Runs a single search step: expands all current base states in parallel and advances the databases.
+   *
+   * @details Resets the per-thread accumulators and step-best/manual-save state, runs @ref workerFunction
+   * across all threads, reduces the per-thread timers and counters into the shared totals, advances the hash
+   * and state databases, updates the manual-save last-rule-id tracking, and recomputes per-step and cumulative
+   * timing, throughput, and state-count statistics before incrementing the current step.
    */
   void runStep()
   {
@@ -373,6 +409,9 @@ public:
     _currentStep++;
   }
 
+  /**
+   * @brief Frees the best-win and manual-save state buffers allocated in @ref initialize.
+   */
   ~Engine()
   {
     // Free the state buffers allocated in initialize() (raw malloc; see _stateSizeInDatabase use above)
@@ -382,14 +421,19 @@ public:
 
   // Relevant data for the driver
 
+  /** @brief Returns a reference to the owned state database. */
   auto& getStateDb() const { return _stateDb; }
-  auto  getStepBestWinState() const { return _stepBestWinState; }
-  auto  getManualSaveSolution() const { return _manualSaveSolution; }
-  auto  getWinStatesFound() const { return _winStates.load(); }
-  auto  getStateCount() const { return _stateDb->getStateCount(); }
+  /** @brief Returns a copy of the best win state recorded in the current step. */
+  auto getStepBestWinState() const { return _stepBestWinState; }
+  /** @brief Returns a copy of the most recent manually saved solution. */
+  auto getManualSaveSolution() const { return _manualSaveSolution; }
+  /** @brief Returns the cumulative number of win states found so far. */
+  auto getWinStatesFound() const { return _winStates.load(); }
+  /** @brief Returns the number of states currently held in the state database. */
+  auto getStateCount() const { return _stateDb->getStateCount(); }
 
   /**
-   * Information printing function
+   * @brief Logs engine status: timing breakdown, throughput, state counts, checkpoints, databases, and detected candidate inputs.
    */
   void printInfo()
   {
@@ -516,9 +560,11 @@ public:
     }
   }
 
+  /** @brief Returns the size, in bytes, of a single state as stored in the database. */
   __INLINE__ size_t getStateSizeInDatabase() const { return _stateSizeInDatabase; }
 
 private:
+  /// @brief Number of base states a worker pulls from the state-DB queue per lock acquisition (batch size).
   // Number of base states a worker pulls from the shared per-NUMA state-DB queue per lock
   // acquisition (into a thread-local buffer), instead of locking once per state. On a light
   // emulator with dozens of worker threads per NUMA domain, that single-state lock/unlock was the
@@ -534,35 +580,38 @@ private:
   // buffer is tiny and L1-resident at any of these sizes, so the load-imbalance cost dominated.)
   static constexpr size_t BASE_STATE_BATCH = 16;
 
+  /// @brief Outcome of running a single input on a base state.
   enum inputResult_t
   {
-    repeated,
-    droppedNoStorage,
-    droppedFailedSerialization,
-    droppedCheckpoint,
-    failed,
-    normal,
-    win
+    repeated,                   ///< Resulting state's hash was already seen.
+    droppedNoStorage,           ///< No free state slot was available to store the new state.
+    droppedFailedSerialization, ///< Pushing the state into the database failed (e.g. serialization error).
+    droppedCheckpoint,          ///< State did not meet the current checkpoint level past the cutoff step.
+    failed,                     ///< Resulting state was classified as a loss.
+    normal,                     ///< Resulting state was a normal state and was stored.
+    win                         ///< Resulting state was a win state.
   };
 
+  /// @brief A reward value paired with a serialized state buffer.
   struct stateInfo_t
   {
-    float reward;
-    void* stateData = nullptr;
+    float reward;              ///< Reward associated with the stored state.
+    void* stateData = nullptr; ///< Raw buffer holding the serialized state, or nullptr if unset.
   };
 
+  /// @brief A manually saved solution: its input path, reward, serialized state, and triggering rule index.
   struct manualSaveSolution_t
   {
-    std::string path;
-    float       reward;
-    void*       stateData = nullptr;
-    ssize_t     lastRuleIdx;
+    std::string path;                ///< Input sequence (solution path) that reached the saved state.
+    float       reward;              ///< Reward of the saved state.
+    void*       stateData = nullptr; ///< Raw buffer holding the serialized saved state, or nullptr if unset.
+    ssize_t     lastRuleIdx;         ///< Index of the last rule active when the state was saved.
   };
 
   /**
-   * Per-thread accumulator for timing and counters.
+   * @brief Per-thread accumulator for timing and counters.
    *
-   * All hot-loop work writes only into its own thread's instance (plain, non-atomic
+   * @details All hot-loop work writes only into its own thread's instance (plain, non-atomic
    * adds), and the engine reduces these into the shared totals once per step. This
    * removes the per-input atomic contention that previously serialized high core counts.
    *
@@ -572,35 +621,41 @@ private:
   struct alignas(64) threadAccumulator_t
   {
     // Timers (microseconds)
-    size_t runnerStateAdvance;
-    size_t runnerStateLoad;
-    size_t runnerStateSave;
-    size_t calculateHash;
-    size_t checkHash;
-    size_t ruleChecking;
-    size_t getFreeState;
-    size_t returnFreeState;
-    size_t calculateReward;
-    size_t getAllowedInputs;
-    size_t getCandidateInputs;
-    size_t popBaseStateDb;
+    size_t runnerStateAdvance; ///< Time spent advancing the runner state with an input.
+    size_t runnerStateLoad;    ///< Time spent loading states into the runner.
+    size_t runnerStateSave;    ///< Time spent saving runner states into the state database.
+    size_t calculateHash;      ///< Time spent computing state hashes.
+    size_t checkHash;          ///< Time spent checking hashes against the hash database.
+    size_t ruleChecking;       ///< Time spent evaluating rules and determining state type.
+    size_t getFreeState;       ///< Time spent acquiring free state slots.
+    size_t returnFreeState;    ///< Time spent returning state slots to the free queue.
+    size_t calculateReward;    ///< Time spent computing state rewards.
+    size_t getAllowedInputs;   ///< Time spent querying the runner's allowed inputs.
+    size_t getCandidateInputs; ///< Time spent querying the runner's candidate inputs.
+    size_t popBaseStateDb;     ///< Time spent popping base-state batches from the state database.
 
     // Counters
-    size_t baseStatesProcessed;
-    size_t newStatesProcessed;
-    size_t normalStates;
-    size_t repeatedStates;
-    size_t failedStates;
-    size_t winStates;
-    size_t droppedStatesNoStorage;
-    size_t droppedStatesFailedSerialization;
-    size_t droppedStatesCheckpoint;
+    size_t baseStatesProcessed;              ///< Number of base states this thread expanded.
+    size_t newStatesProcessed;               ///< Number of new states this thread produced via inputs.
+    size_t normalStates;                     ///< Number of normal states produced.
+    size_t repeatedStates;                   ///< Number of states dropped as repeated.
+    size_t failedStates;                     ///< Number of states classified as failures.
+    size_t winStates;                        ///< Number of win states produced.
+    size_t droppedStatesNoStorage;           ///< Number of states dropped for lack of free storage.
+    size_t droppedStatesFailedSerialization; ///< Number of states dropped due to failed serialization.
+    size_t droppedStatesCheckpoint;          ///< Number of states dropped for not meeting the checkpoint.
 
+    /// @brief Resets all timers and counters to zero.
     __INLINE__ void reset() { *this = threadAccumulator_t{}; }
   };
 
   /**
-   * The main worker function -- executes entirely in parallel
+   * @brief Worker body executed in parallel by every thread during a step.
+   *
+   * @details Repeatedly pops batches of base states from the state database, loads each into the
+   * thread's runner, gathers its allowed and candidate inputs, runs each input via @ref runNewInput,
+   * deduplicating candidate inputs per base-state input hash, and returns processed base states to
+   * the free queue. Records the thread's total step time into @ref _threadStepTime.
    */
   void workerFunction()
   {
@@ -698,6 +753,15 @@ private:
     _threadStepTime[threadId] = jaffarCommon::timing::timeDeltaMicroseconds(jaffarCommon::timing::now(), threadTime0);
   }
 
+  /**
+   * @brief Re-loads the base state, runs a single input, updates per-outcome counters and checkpoint tracking.
+   * @param r             The runner to load the base state into and advance.
+   * @param baseStateData Serialized base state to reload before running the input.
+   * @param input         Index of the input to run.
+   * @param acc           This thread's accumulator to update with the outcome counter.
+   * @param threadId      Calling thread's id, used for state-database free/allocation operations.
+   * @return The @ref inputResult_t describing the outcome of running the input.
+   */
   __INLINE__ inputResult_t runNewInput(Runner& r, const void* baseStateData, const InputSet::inputIndex_t input, threadAccumulator_t& acc, const size_t threadId)
   {
     // Increasing new state counter
@@ -734,6 +798,20 @@ private:
     return result;
   }
 
+  /**
+   * @brief Advances the runner by one input and classifies/stores the resulting state.
+   *
+   * @details Advances the runner with @p input, computes and (when enabled) checks the resulting
+   * hash for repeats, evaluates rules, applies the checkpoint cutoff, and determines the state type.
+   * Win states update @ref _stepBestWinState when their reward is higher; normal states are pushed
+   * into the state database; failed/repeated/dropped states return the corresponding result. Also
+   * updates the manual-save solution when the game requests it and the reward improves.
+   * @param r        The runner holding the base state, advanced by this call.
+   * @param input    Index of the input to apply.
+   * @param acc      This thread's accumulator, updated with timing measurements.
+   * @param threadId Calling thread's id, used for state-database free/allocation operations.
+   * @return The @ref inputResult_t describing the outcome.
+   */
   __INLINE__ inputResult_t runInput(Runner& r, const InputSet::inputIndex_t input, threadAccumulator_t& acc, const size_t threadId)
   {
     // Now advancing state with the provided input
@@ -863,165 +941,159 @@ private:
     return inputResult_t::normal;
   }
 
-  // Set of candidate inputs
+  /// @brief Per-base-state-input-hash set of candidate inputs already detected, used to dedup candidate-input probing.
   jaffarCommon::concurrent::HashMap_t<jaffarCommon::hash::hash_t, jaffarCommon::concurrent::HashSet_t<InputSet::inputIndex_t>> _candidateInputsDetected;
 
-  // Counter for the current step
+  /// @brief Counter for the current step.
   size_t _currentStep = 0;
 
-  // Collection of runners for the workers to use
+  /// @brief Collection of runners for the workers to use (one per thread).
   std::vector<std::unique_ptr<Runner>> _runners;
 
-  // The thread-safe state database that contains current and next step's states.
+  /// @brief Thread-safe state database holding the current and next step's states.
   std::unique_ptr<jaffarPlus::StateDb> _stateDb;
 
-  // Whether to use hashing. Some games cannot incur loops so using a HashDB is a waste of memory and computation
+  /// @brief Whether hashing is enabled. Games that cannot loop skip the hash DB to save memory and computation.
   bool _hashDbEnabled;
 
-  // The thread-safe hash database to check for repeated states
+  /// @brief Thread-safe hash database used to detect repeated states.
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
 
-  // State size, as stored in the database
+  /// @brief Size of a single state as stored in the database, in bytes.
   size_t _stateSizeInDatabase;
 
-  // Set of win states found
-  std::mutex  _stepBestWinStateLock;
-  stateInfo_t _stepBestWinState;
+  std::mutex  _stepBestWinStateLock; ///< Guards updates to @ref _stepBestWinState.
+  stateInfo_t _stepBestWinState;     ///< Best win state (by reward) found during the current step.
 
   // Storage for manually triggered save solutionm
 
-  // Storage for manually triggered save solution state
-  std::mutex           _manualSaveSolutionLock;
-  manualSaveSolution_t _manualSaveSolution;
-  bool                 _manualSaveSolutionUpdatedLastRuleId;
-  ssize_t              _manualSaveSolutionActiveLastRuleId;
-  std::string          _manualSaveSolutionLastPath = "";
+  std::mutex           _manualSaveSolutionLock;              ///< Guards updates to @ref _manualSaveSolution.
+  manualSaveSolution_t _manualSaveSolution;                  ///< Best manually saved solution for the current step.
+  bool                 _manualSaveSolutionUpdatedLastRuleId; ///< Whether the manual-save last-rule id changed this step.
+  ssize_t              _manualSaveSolutionActiveLastRuleId;  ///< Currently active manual-save last-rule id across steps.
+  std::string          _manualSaveSolutionLastPath = "";     ///< Path of the most recently activated manual-save solution.
 
   // Checkpoint information
-  size_t _checkpointLevel;
-  size_t _checkpointTolerance;
-  size_t _checkpointCutoff;
+  size_t _checkpointLevel;     ///< Highest checkpoint level reached so far.
+  size_t _checkpointTolerance; ///< Tolerance (in steps) associated with the current checkpoint level.
+  size_t _checkpointCutoff;    ///< Step index after which states below @ref _checkpointLevel are dropped.
 
   //////////////// Statistics
 
-  // Counter for dropped states due to lack of free states
+  /// @brief Counter for states dropped due to lack of free states.
   std::atomic<size_t> _droppedStatesNoStorage;
 
-  // Counter for dropped states due to failed serialization
+  /// @brief Counter for states dropped due to failed serialization.
   std::atomic<size_t> _droppedStatesFailedSerialization;
 
-  // Counter for dropped states due to not meeting checkpoint
+  /// @brief Counter for states dropped due to not meeting the checkpoint.
   std::atomic<size_t> _droppedStatesCheckpoint;
 
-  // Counter for repeated states (detected via hash collision)
+  /// @brief Counter for repeated states (detected via hash collision).
   std::atomic<size_t> _repeatedStates;
 
-  // Counter for failed states (reached a point in the game that is considered a loss)
+  /// @brief Counter for failed states (reached a point in the game considered a loss).
   std::atomic<size_t> _failedStates;
 
-  // Counter for win states
+  /// @brief Counter for win states.
   std::atomic<size_t> _winStates;
 
-  // Counter for normal states
+  /// @brief Counter for normal states.
   std::atomic<size_t> _normalStates;
 
-  // Counter for the number of base states processed
-  std::atomic<size_t> _stepBaseStatesProcessed;
-  std::atomic<size_t> _totalBaseStatesProcessed;
+  std::atomic<size_t> _stepBaseStatesProcessed;  ///< Base states processed during the current step.
+  std::atomic<size_t> _totalBaseStatesProcessed; ///< Base states processed across all steps so far.
 
-  // Counter for the number of new states processed
-  std::atomic<size_t> _stepNewStatesProcessed;
-  std::atomic<size_t> _totalNewStatesProcessed;
+  std::atomic<size_t> _stepNewStatesProcessed;  ///< New states processed during the current step.
+  std::atomic<size_t> _totalNewStatesProcessed; ///< New states processed across all steps so far.
 
   //////////////// Timing
 
-  // Overall running time of current step
+  /// @brief Overall running time of the current step, in microseconds.
   size_t _currentStepTime;
 
-  // Thread-specific running time of current step
-  std::vector<size_t> _threadStepTime;
-  size_t              _maxThreadStepTime;
-  size_t              _maxThreadStepTimeThreadId;
+  std::vector<size_t> _threadStepTime;            ///< Per-thread running time of the current step, in microseconds.
+  size_t              _maxThreadStepTime;         ///< Maximum per-thread step time for the current step.
+  size_t              _maxThreadStepTimeThreadId; ///< Id of the thread with the maximum step time.
 
-  // Per-thread accumulators for hot-loop timing/counters, reduced once per step
+  /// @brief Per-thread accumulators for hot-loop timing/counters, reduced once per step.
   std::vector<threadAccumulator_t> _threadAccumulators;
 
-  // Total running time so far
+  /// @brief Total running time so far, in microseconds.
   size_t _totalRunningTime;
 
   // Time spent advancing runner state per step
-  std::atomic<size_t> _runnerStateAdvanceThreadRawTime;
-  std::atomic<size_t> _runnerStateAdvanceAverageTime;
-  std::atomic<size_t> _runnerStateAdvanceAverageCumulativeTime;
+  std::atomic<size_t> _runnerStateAdvanceThreadRawTime;         ///< Summed per-thread runner-advance time for the step.
+  std::atomic<size_t> _runnerStateAdvanceAverageTime;           ///< Per-thread-average runner-advance time for the step.
+  std::atomic<size_t> _runnerStateAdvanceAverageCumulativeTime; ///< Cumulative per-thread-average runner-advance time.
 
   // Time spent loading states into the runner
-  std::atomic<size_t> _runnerStateLoadThreadRawTime;
-  std::atomic<size_t> _runnerStateLoadAverageTime;
-  std::atomic<size_t> _runnerStateLoadAverageCumulativeTime;
+  std::atomic<size_t> _runnerStateLoadThreadRawTime;         ///< Summed per-thread state-load time for the step.
+  std::atomic<size_t> _runnerStateLoadAverageTime;           ///< Per-thread-average state-load time for the step.
+  std::atomic<size_t> _runnerStateLoadAverageCumulativeTime; ///< Cumulative per-thread-average state-load time.
 
   // Time spent saving runner states into the state db
-  std::atomic<size_t> _runnerStateSaveThreadRawTime;
-  std::atomic<size_t> _runnerStateSaveAverageTime;
-  std::atomic<size_t> _runnerStateSaveAverageCumulativeTime;
+  std::atomic<size_t> _runnerStateSaveThreadRawTime;         ///< Summed per-thread state-save time for the step.
+  std::atomic<size_t> _runnerStateSaveAverageTime;           ///< Per-thread-average state-save time for the step.
+  std::atomic<size_t> _runnerStateSaveAverageCumulativeTime; ///< Cumulative per-thread-average state-save time.
 
   // Time spent calculating hash
-  std::atomic<size_t> _calculateHashThreadRawTime;
-  std::atomic<size_t> _calculateHashAverageTime;
-  std::atomic<size_t> _calculateHashAverageCumulativeTime;
+  std::atomic<size_t> _calculateHashThreadRawTime;         ///< Summed per-thread hash-calculation time for the step.
+  std::atomic<size_t> _calculateHashAverageTime;           ///< Per-thread-average hash-calculation time for the step.
+  std::atomic<size_t> _calculateHashAverageCumulativeTime; ///< Cumulative per-thread-average hash-calculation time.
 
   // Time spent checking hash
-  std::atomic<size_t> _checkHashThreadRawTime;
-  std::atomic<size_t> _checkHashAverageTime;
-  std::atomic<size_t> _checkHashAverageCumulativeTime;
+  std::atomic<size_t> _checkHashThreadRawTime;         ///< Summed per-thread hash-checking time for the step.
+  std::atomic<size_t> _checkHashAverageTime;           ///< Per-thread-average hash-checking time for the step.
+  std::atomic<size_t> _checkHashAverageCumulativeTime; ///< Cumulative per-thread-average hash-checking time.
 
   // Rule checking time
-  std::atomic<size_t> _ruleCheckingThreadRawTime;
-  std::atomic<size_t> _ruleCheckingAverageTime;
-  std::atomic<size_t> _ruleCheckingAverageCumulativeTime;
+  std::atomic<size_t> _ruleCheckingThreadRawTime;         ///< Summed per-thread rule-checking time for the step.
+  std::atomic<size_t> _ruleCheckingAverageTime;           ///< Per-thread-average rule-checking time for the step.
+  std::atomic<size_t> _ruleCheckingAverageCumulativeTime; ///< Cumulative per-thread-average rule-checking time.
 
   // Get free state time
-  std::atomic<size_t> _getFreeStateThreadRawTime;
-  std::atomic<size_t> _getFreeStateAverageTime;
-  std::atomic<size_t> _getFreeStateAverageCumulativeTime;
+  std::atomic<size_t> _getFreeStateThreadRawTime;         ///< Summed per-thread get-free-state time for the step.
+  std::atomic<size_t> _getFreeStateAverageTime;           ///< Per-thread-average get-free-state time for the step.
+  std::atomic<size_t> _getFreeStateAverageCumulativeTime; ///< Cumulative per-thread-average get-free-state time.
 
   // Return free state time
-  std::atomic<size_t> _returnFreeStateThreadRawTime;
-  std::atomic<size_t> _returnFreeStateAverageTime;
-  std::atomic<size_t> _returnFreeStateAverageCumulativeTime;
+  std::atomic<size_t> _returnFreeStateThreadRawTime;         ///< Summed per-thread return-free-state time for the step.
+  std::atomic<size_t> _returnFreeStateAverageTime;           ///< Per-thread-average return-free-state time for the step.
+  std::atomic<size_t> _returnFreeStateAverageCumulativeTime; ///< Cumulative per-thread-average return-free-state time.
 
   // Reward calculation time
-  std::atomic<size_t> _calculateRewardThreadRawTime;
-  std::atomic<size_t> _calculateRewardAverageTime;
-  std::atomic<size_t> _calculateRewardAverageCumulativeTime;
+  std::atomic<size_t> _calculateRewardThreadRawTime;         ///< Summed per-thread reward-calculation time for the step.
+  std::atomic<size_t> _calculateRewardAverageTime;           ///< Per-thread-average reward-calculation time for the step.
+  std::atomic<size_t> _calculateRewardAverageCumulativeTime; ///< Cumulative per-thread-average reward-calculation time.
+
+  // Get allowed inputs time
+  std::atomic<size_t> _getAllowedInputsThreadRawTime;         ///< Summed per-thread get-allowed-inputs time for the step.
+  std::atomic<size_t> _getAllowedInputsAverageTime;           ///< Per-thread-average get-allowed-inputs time for the step.
+  std::atomic<size_t> _getAllowedInputsAverageCumulativeTime; ///< Cumulative per-thread-average get-allowed-inputs time.
 
   // Get candidate inputs time
-  std::atomic<size_t> _getAllowedInputsThreadRawTime;
-  std::atomic<size_t> _getAllowedInputsAverageTime;
-  std::atomic<size_t> _getAllowedInputsAverageCumulativeTime;
-
-  // Get candidate inputs time
-  std::atomic<size_t> _getCandidateInputsThreadRawTime;
-  std::atomic<size_t> _getCandidateInputsAverageTime;
-  std::atomic<size_t> _getCandidateInputsAverageCumulativeTime;
+  std::atomic<size_t> _getCandidateInputsThreadRawTime;         ///< Summed per-thread get-candidate-inputs time for the step.
+  std::atomic<size_t> _getCandidateInputsAverageTime;           ///< Per-thread-average get-candidate-inputs time for the step.
+  std::atomic<size_t> _getCandidateInputsAverageCumulativeTime; ///< Cumulative per-thread-average get-candidate-inputs time.
 
   // Advance Hash DB time
-  std::atomic<size_t> _advanceHashDbThreadRawTime;
-  std::atomic<size_t> _advanceHashDbAverageTime;
-  std::atomic<size_t> _advanceHashDbAverageCumulativeTime;
+  std::atomic<size_t> _advanceHashDbThreadRawTime;         ///< Serially-measured hash-DB advance time for the step.
+  std::atomic<size_t> _advanceHashDbAverageTime;           ///< Hash-DB advance time reported for the step.
+  std::atomic<size_t> _advanceHashDbAverageCumulativeTime; ///< Cumulative hash-DB advance time.
 
   // Advance State DB time
-  std::atomic<size_t> _advanceStateDbThreadRawTime;
-  std::atomic<size_t> _advanceStateDbAverageTime;
-  std::atomic<size_t> _advanceStateDbAverageCumulativeTime;
+  std::atomic<size_t> _advanceStateDbThreadRawTime;         ///< Serially-measured state-DB advance time for the step.
+  std::atomic<size_t> _advanceStateDbAverageTime;           ///< State-DB advance time reported for the step.
+  std::atomic<size_t> _advanceStateDbAverageCumulativeTime; ///< Cumulative state-DB advance time.
 
   // Popping states from the State DB time
-  std::atomic<size_t> _popBaseStateDbThreadRawTime;
-  std::atomic<size_t> _popBaseStateDbAverageTime;
-  std::atomic<size_t> _popBaseStateDbAverageCumulativeTime;
+  std::atomic<size_t> _popBaseStateDbThreadRawTime;         ///< Summed per-thread base-state pop time for the step.
+  std::atomic<size_t> _popBaseStateDbAverageTime;           ///< Per-thread-average base-state pop time for the step.
+  std::atomic<size_t> _popBaseStateDbAverageCumulativeTime; ///< Cumulative per-thread-average base-state pop time.
 
-  // Sub-total calculation
-  size_t _subTotalAverageTime;
-  size_t _subTotalAverageCumulativeTime;
+  size_t _subTotalAverageTime;           ///< Sum of all per-operation average times for the current step.
+  size_t _subTotalAverageCumulativeTime; ///< Sum of all per-operation cumulative average times.
 };
 
 } // namespace jaffarPlus

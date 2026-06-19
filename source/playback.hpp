@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * @file playback.hpp
+ * @brief Solution playback used by the player tool: replays an input sequence through a Runner,
+ *        caching per-step game/renderer state, hashes, and win/fail markers for navigation.
+ */
+
 #include "jaffarCommon/deserializers/contiguous.hpp"
 #include "jaffarCommon/hash.hpp"
 #include "jaffarCommon/serializers/contiguous.hpp"
@@ -12,33 +18,48 @@
 namespace jaffarPlus
 {
 
+/**
+ * @brief Replays a solution's input sequence and caches per-step state for navigation.
+ *
+ * @details Built from a @ref Runner, @ref initialize applies each input in order, recording for every
+ * step its input, allowance, serialized game and renderer state, state hash, and any earlier steps
+ * sharing that hash, as well as the first win/fail step. Cached steps can then be queried and
+ * re-loaded/rendered out of order by the player tool.
+ */
 class Playback final
 {
 public:
+  /**
+   * @brief A single recorded playback step.
+   */
   struct step_t
   {
-    // Storage for the step's input string
+    /// @brief The step's input string.
     std::string inputString;
 
-    // Storage for the step's input index
+    /// @brief The step's input index.
     jaffarPlus::InputSet::inputIndex_t inputIndex;
 
-    // Stores whether the move is allowed by the current move set
+    /// @brief Whether the move is allowed by the current move set.
     bool isInputAllowed;
 
-    // Storage for the step's game state data
+    /// @brief The step's serialized game state data.
     void* gameStateData;
 
-    // Storage for the step's renderer state data
+    /// @brief The step's serialized renderer state data.
     void* rendererStateData;
 
-    // Storage for the step's hash
+    /// @brief The step's state hash.
     jaffarCommon::hash::hash_t stateHash;
 
-    // Stores which other steps had the same repeated hashes
+    /// @brief Earlier steps (ascending) that shared this step's hash.
     std::vector<size_t> _repeatedHashSteps;
   };
 
+  /**
+   * @brief Constructs the playback over a runner and caches state sizes.
+   * @param runner The runner used to advance and serialize the solution.
+   */
   Playback(Runner& runner) : _runner(&runner)
   {
     // Getting game state size
@@ -48,6 +69,15 @@ public:
     _rendererStateSize = _runner->getGame()->getEmulator()->getRendererStateSize();
   };
 
+  /**
+   * @brief Replays the input sequence, recording one cached step per input (plus a trailing
+   *        end-of-sequence step).
+   * @details For each step, registers/looks up the input, computes its allowance and state hash,
+   * records earlier steps sharing that hash, serializes the game and renderer state, advances the
+   * runner, evaluates rules, updates the game state type and reward, and records the first win/fail
+   * step.
+   * @param inputSequence The ordered list of input strings to replay.
+   */
   void initialize(const std::vector<std::string>& inputSequence)
   {
     // For each input in the sequence, store the game's state
@@ -135,6 +165,9 @@ public:
     }
   }
 
+  /**
+   * @brief Frees the game and renderer state memory allocated during initialization.
+   */
   ~Playback()
   {
     // Freeing up memory reserved during initialization
@@ -145,18 +178,36 @@ public:
     }
   }
 
+  /** @brief Returns the input string of the given step. */
   __INLINE__ std::string getStateInputString(const size_t currentStep) const { return getStep(currentStep).inputString; }
+  /** @brief Returns the input index of the given step. */
   __INLINE__ jaffarPlus::InputSet::inputIndex_t getStateInputIndex(const size_t currentStep) const { return getStep(currentStep).inputIndex; }
-  __INLINE__ void*                              getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
+  /** @brief Returns the serialized game state data of the given step. */
+  __INLINE__ void* getStateData(const size_t currentStep) const { return getStep(currentStep).gameStateData; }
+  /** @brief Returns the earlier steps (ascending) sharing the given step's hash. */
   __INLINE__ const std::vector<size_t> getStateRepeatedHashSteps(const size_t currentStep) const { return getStep(currentStep)._repeatedHashSteps; }
+  /** @brief Returns the state hash of the given step. */
   __INLINE__ jaffarCommon::hash::hash_t getStateHash(const size_t currentStep) const { return getStep(currentStep).stateHash; }
-  __INLINE__ bool                       isInputAllowed(const size_t currentStep) const { return getStep(currentStep).isInputAllowed; }
+  /** @brief Returns whether the input of the given step is allowed by the current move set. */
+  __INLINE__ bool isInputAllowed(const size_t currentStep) const { return getStep(currentStep).isInputAllowed; }
 
-  // First step (number of inputs applied) at which the solution reaches a win / fail state, or -1 if
-  // it never does. Computed once during initialize().
+  /**
+   * @brief Returns the first step (number of inputs applied) at which the solution reaches a win
+   *        state, or -1 if it never does.
+   * @details Computed once during @ref initialize.
+   */
   __INLINE__ ssize_t getFirstWinStep() const { return _firstWinStep; }
+  /**
+   * @brief Returns the first step (number of inputs applied) at which the solution reaches a fail
+   *        state, or -1 if it never does.
+   * @details Computed once during @ref initialize.
+   */
   __INLINE__ ssize_t getFirstFailStep() const { return _firstFailStep; }
 
+  /**
+   * @brief Renders the cached frame for the given step into the emulator window.
+   * @param currentStep The step whose renderer state to display.
+   */
   __INLINE__ void renderFrame(const size_t currentStep)
   {
     const auto&                            step = getStep(currentStep);
@@ -165,6 +216,10 @@ public:
     _runner->getGame()->getEmulator()->showRender();
   }
 
+  /**
+   * @brief Loads the cached game state of the given step back into the runner.
+   * @param stepId The step whose game state to deserialize.
+   */
   void loadStepData(const size_t stepId)
   {
     // Deserializing appropriate state
@@ -172,6 +227,9 @@ public:
     _runner->deserializeState(d);
   }
 
+  /**
+   * @brief Prints runner, game, and emulator information.
+   */
   void printInfo() const
   {
     // Now printing information
@@ -184,39 +242,49 @@ public:
   }
 
 private:
-  // Step getter
+  /**
+   * @brief Returns the cached step with the given id.
+   * @param stepId The index of the step to retrieve.
+   * @return A copy of the cached step.
+   * @throws A runtime error if @p stepId exceeds the recorded sequence size.
+   */
   step_t getStep(const size_t stepId) const
   {
     if (stepId >= _sequence.size()) JAFFAR_THROW_RUNTIME("Requested step %lu which exceeds sequence size %lu", stepId, _sequence.size());
     return _sequence.at(stepId);
   }
 
-  // Hash functor for 128-bit state hashes (std::pair<uint64_t, uint64_t>), so they can key an
-  // unordered_map for O(1) duplicate-state lookup.
+  /**
+   * @brief Hash functor for 128-bit state hashes (std::pair<uint64_t, uint64_t>).
+   * @details Lets a state hash key an unordered_map for O(1) duplicate-state lookup.
+   */
   struct hashHasher_t
   {
+    /**
+     * @brief Combines the two 64-bit halves of a state hash into a size_t.
+     * @param h The 128-bit state hash to reduce.
+     * @return The combined hash value.
+     */
     size_t operator()(const jaffarCommon::hash::hash_t& h) const noexcept { return h.first ^ (h.second + 0x9E3779B97F4A7C15ULL + (h.first << 6) + (h.first >> 2)); }
   };
 
-  // Pointer to runner
+  /// @brief Pointer to the runner used for playback.
   Runner* _runner;
 
-  // Storage for game state size
+  /// @brief Size, in bytes, of a serialized game state.
   size_t _gameStateSize;
 
-  // Storage for renderer state size
+  /// @brief Size, in bytes, of a serialized renderer state.
   size_t _rendererStateSize;
 
-  // Storage for the sequence data
+  /// @brief The recorded sequence of playback steps.
   std::vector<step_t> _sequence;
 
-  // Maps each state hash to the steps (ascending) at which it occurred, used to detect the repeated
-  // states the engine would have deduplicated.
+  /// @brief Maps each state hash to the steps (ascending) at which it occurred, used to detect the repeated states the engine would have deduplicated.
   std::unordered_map<jaffarCommon::hash::hash_t, std::vector<size_t>, hashHasher_t> _hashOccurrences;
 
-  // First step (inputs applied) reaching a win / fail state; -1 until/unless one is seen.
-  ssize_t _firstWinStep  = -1;
-  ssize_t _firstFailStep = -1;
+  ssize_t _firstWinStep  = -1; ///< First step (inputs applied) reaching a win state; -1 until/unless one is seen.
+  ssize_t _firstFailStep = -1; ///< First step (inputs applied) reaching a fail state; -1 until/unless one is seen.
 };
 
 } // namespace jaffarPlus

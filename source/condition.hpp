@@ -1,33 +1,61 @@
 #pragma once
 
+/**
+ * @file condition.hpp
+ * @brief Boolean comparisons between game properties (or immediate values) used by rules and input
+ *        sets to decide when they apply.
+ */
+
 #include "property.hpp"
 #include <jaffarCommon/bitwise.hpp>
 
 namespace jaffarPlus
 {
 
+/**
+ * @brief Abstract base for a single boolean comparison.
+ *
+ * A condition compares two operands (each either a game @ref Property or an immediate value) with a
+ * relational/bitwise/modulo operator. Rules and input sets hold lists of conditions that must all
+ * evaluate to true (logical AND). The concrete, type-specialized implementation is @ref _vCondition.
+ */
 class Condition
 {
 public:
+  /// @brief The comparison operator applied between the condition's two operands.
   enum operator_t
   {
-    op_equal,
-    op_not_equal,
-    op_greater,
-    op_greater_or_equal,
-    op_less,
-    op_less_or_equal,
-    op_bit_true,
-    op_bit_false,
-    op_modulo_zero,
-    op_modulo_non_zero
+    op_equal,            ///< operand1 == operand2 (config operator "==")
+    op_not_equal,        ///< operand1 != operand2 (config operator "!=")
+    op_greater,          ///< operand1 >  operand2 (config operator ">")
+    op_greater_or_equal, ///< operand1 >= operand2 (config operator ">=")
+    op_less,             ///< operand1 <  operand2 (config operator "<")
+    op_less_or_equal,    ///< operand1 <= operand2 (config operator "<=")
+    op_bit_true,         ///< the bit of operand1 at index operand2 is set (config operator "BitTrue")
+    op_bit_false,        ///< the bit of operand1 at index operand2 is clear (config operator "BitFalse")
+    op_modulo_zero,      ///< operand1 % operand2 == 0 (config operator "%0")
+    op_modulo_non_zero   ///< operand1 % operand2 != 0 (config operator "%N")
   };
 
+  /**
+   * @brief Constructs a condition with the given operator.
+   * @param opType The comparison operator to apply when the condition is evaluated.
+   */
   Condition(const operator_t opType) : _opType(opType) {}
 
+  /**
+   * @brief Evaluates the condition against the current values of its operands.
+   * @return true if the comparison holds, false otherwise.
+   */
   virtual __INLINE__ bool evaluate() const = 0;
   virtual ~Condition()                     = default;
 
+  /**
+   * @brief Maps a configuration operator string to its @ref operator_t value.
+   * @param operation The operator token from the config (e.g. "==", ">=", "BitTrue", "%0").
+   * @return The matching operator enum value.
+   * @throws A logic error if the token is not a recognized operator.
+   */
   static __INLINE__ operator_t getOperatorType(const std::string& operation)
   {
     if (operation == "==") return op_equal;
@@ -47,13 +75,31 @@ public:
   }
 
 protected:
+  /// @brief The comparison operator selected for this condition.
   const operator_t _opType;
 };
 
+/**
+ * @brief Concrete, type-specialized condition over operands of type @p T.
+ *
+ * Each operand is either a @ref Property (read live on every evaluation) or a fixed immediate value.
+ * When a property pointer is non-null it overrides the corresponding immediate. The operator is
+ * resolved once at construction to a function pointer to keep @ref evaluate branch-free.
+ *
+ * @tparam T The numeric type the operands are compared as.
+ */
 template <typename T>
 class _vCondition : public Condition
 {
 public:
+  /**
+   * @brief Builds a typed condition from its operands.
+   * @param opType     The comparison operator to apply.
+   * @param property1  First operand as a property, or nullptr to use @p immediate1.
+   * @param property2  Second operand as a property, or nullptr to use @p immediate2.
+   * @param immediate1 First operand's immediate value, used when @p property1 is nullptr.
+   * @param immediate2 Second operand's immediate value, used when @p property2 is nullptr.
+   */
   _vCondition(const operator_t opType, Property* property1, Property* property2, T immediate1, T immediate2)
       : Condition(opType), _property1(property1), _property2(property2), _immediate1(immediate1), _immediate2(immediate2)
   {
@@ -73,6 +119,13 @@ public:
     }
   }
 
+  /**
+   * @brief Evaluates the comparison using the operands' current values.
+   *
+   * For each operand, the live property value is used when a property was supplied; otherwise the
+   * immediate value is used.
+   * @return The result of applying the resolved operator to the two operands.
+   */
   __INLINE__ bool evaluate() const
   {
     T immediate1 = _immediate1;
@@ -83,23 +136,34 @@ public:
   }
 
 private:
+  /// @brief Returns a == b.
   static __INLINE__ bool _opEqual(const T a, const T b) { return a == b; }
+  /// @brief Returns a != b.
   static __INLINE__ bool _opNotEqual(const T a, const T b) { return a != b; }
+  /// @brief Returns a > b.
   static __INLINE__ bool _opGreater(const T a, const T b) { return a > b; }
+  /// @brief Returns a >= b.
   static __INLINE__ bool _opGreaterOrEqual(const T a, const T b) { return a >= b; }
+  /// @brief Returns a < b.
   static __INLINE__ bool _opLess(const T a, const T b) { return a < b; }
+  /// @brief Returns a <= b.
   static __INLINE__ bool _opLessOrEqual(const T a, const T b) { return a <= b; }
+  /// @brief Returns true if the bit of @p a at index @p b is set.
   static __INLINE__ bool _opBitTrue(const T a, const T b) { return jaffarCommon::bitwise::getBitFlag(a, b); }
+  /// @brief Returns true if the bit of @p a at index @p b is clear.
   static __INLINE__ bool _opBitFalse(const T a, const T b) { return !jaffarCommon::bitwise::getBitFlag(a, b); }
+  /// @brief Returns true if a % b == 0.
   static __INLINE__ bool _opModuloZero(const T a, const T b) { return (uint64_t)a % (uint64_t)b == 0; }
+  /// @brief Returns true if a % b != 0.
   static __INLINE__ bool _opModuloNonZero(const T a, const T b) { return (uint64_t)a % (uint64_t)b > 0; }
 
+  /// @brief Resolved operator implementation, selected once at construction from @ref _opType.
   bool (*_opFcPtr)(const T, const T);
 
-  Property* const _property1;
-  Property* const _property2;
-  const T         _immediate1;
-  const T         _immediate2;
+  Property* const _property1;  ///< First operand as a property, or nullptr to use @ref _immediate1.
+  Property* const _property2;  ///< Second operand as a property, or nullptr to use @ref _immediate2.
+  const T         _immediate1; ///< First operand's immediate value (used when @ref _property1 is null).
+  const T         _immediate2; ///< Second operand's immediate value (used when @ref _property2 is null).
 };
 
 } // namespace jaffarPlus

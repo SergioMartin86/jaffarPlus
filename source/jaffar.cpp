@@ -1,3 +1,14 @@
+/**
+ * @file jaffar.cpp
+ * @brief The jaffar executable: parses a configuration script and either validates it (@c --dryRun)
+ *        or builds and runs the search engine via a @ref jaffarPlus::Driver.
+ *
+ * @details Reads the JSON config file named on the command line. In dry-run mode it only constructs
+ * the driver to validate the configuration (signalling the construction path via the
+ * @c JAFFAR_IS_DRY_RUN environment variable so host-specific side effects are skipped) and exits.
+ * Otherwise it initializes and runs the driver, then reports the exit reason and final step.
+ */
+
 #include "driver.hpp"
 #include <argparse/argparse.hpp>
 #include <cstdlib>
@@ -5,6 +16,20 @@
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/string.hpp>
 
+/**
+ * @brief Entry point for the jaffar engine executable.
+ *
+ * @details Parses the command line (required @c configFile and the @c --dryRun flag), loads and
+ * parses the JSON config, and constructs a @ref jaffarPlus::Driver from it. In dry-run mode it sets
+ * the @c JAFFAR_IS_DRY_RUN environment variable before constructing the driver (so host-specific side
+ * effects -- the NUMA topology check and trace-file loading -- are skipped) and returns after
+ * successful validation. Otherwise it initializes and runs the driver, maps the resulting
+ * @ref jaffarPlus::Driver::exitReason_t to a message, and prints the final step and exit reason.
+ *
+ * @param argc Argument count.
+ * @param argv Argument vector.
+ * @return The driver's exit reason value (in non-dry-run mode), or 0 after a successful dry run.
+ */
 int main(int argc, char* argv[])
 {
   // Parsing command line arguments

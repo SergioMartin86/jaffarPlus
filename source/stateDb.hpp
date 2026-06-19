@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * @file stateDb.hpp
+ * @brief Per-NUMA-domain database of serialized game states, with reward-ordered queues that feed
+ *        the search one step at a time and a free-slot pool the workers draw from.
+ */
+
 #include "numa.hpp"
 #include <cstdlib>
 #include <jaffarCommon/concurrent.hpp>
@@ -11,14 +17,37 @@
 #include <memory>
 #include <utmpx.h>
 
+/// @brief Alignment boundary (in bytes) each stored state is padded up to, for vectorized access and false-sharing avoidance.
 #define _JAFFAR_STATE_PADDING_BYTES 16
 
 namespace jaffarPlus
 {
 
+/**
+ * @brief Stores serialized game states across the machine's NUMA domains and serves them to the
+ *        search engine in reward-ordered, per-step batches.
+ *
+ * @details Each NUMA domain owns a contiguous slab of state slots (allocated on that node), a
+ * free-slot queue of unused slots, a reward-ordered "next" queue that collects states produced
+ * during a step, and a "current" queue that the workers drain during the following step. The queue
+ * lifecycle is: workers @ref pushState into the next queue; @ref advanceStep moves the next queue's
+ * pointers (best-reward first) into the current queue and clears the next queue; workers then
+ * @ref popState / @ref popStates the current queue. Slots are obtained with @ref getFreeState and
+ * recycled with @ref returnFreeState, both fronted by a per-thread free-slot cache. The per-domain
+ * queues are only allocated for NUMA domains that own a delegate worker thread; other domains hold
+ * null queue pointers, which the access paths skip.
+ */
 class StateDb
 {
 public:
+  /**
+   * @brief Constructs the state database and reads its maximum size from configuration.
+   * @param r      The runner whose states will be serialized into and deserialized out of the database.
+   * @param config Configuration object; the "Max Size (Mb)" field sets the database's maximum size.
+   *
+   * @details Reads "Max Size (Mb)" from @p config. If the environment variable
+   * `JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB` is set, its value overrides that maximum.
+   */
   StateDb(Runner& r, const nlohmann::json& config) : _runner(&r)
   {
     // Initialization message
@@ -33,6 +62,12 @@ public:
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
   }
 
+  /**
+   * @brief Frees the per-NUMA current- and next-state queues allocated in @ref initialize().
+   *
+   * @details Iterates over both queue vectors and deletes each entry. Only delegate domains hold a
+   * non-null queue; the remaining entries are nullptr, which delete ignores.
+   */
   ~StateDb()
   {
     // Free the per-NUMA queues allocated with `new` in initialize() (one per delegate domain; the
@@ -41,6 +76,21 @@ public:
     for (auto* queue : _numaNextStateQueues) delete queue;
   }
 
+  /**
+   * @brief Allocates and initializes the per-NUMA state slabs, queues, and per-thread caches.
+   *
+   * @details Queries the runner's state size and pads it up to @ref _JAFFAR_STATE_PADDING_BYTES.
+   * Allocates per-thread statistics counters and free-slot caches. Splits the configured maximum
+   * size evenly across NUMA domains, verifies each domain has enough free memory (throwing
+   * otherwise), and derives the per-domain maximum state counts. For each NUMA domain that owns a
+   * delegate thread it creates the current-state DrainBuffer (reserved to the domain's state count)
+   * and the next-state reward-ordered multimap. It then allocates the per-domain contiguous state
+   * slab on that node, touches one byte per page to fault it in, and fills the domain's free-state
+   * queue with pointers to every slot.
+   * @throws A runtime error if a domain's requested memory exceeds its free space, if a domain's
+   *         state count exceeds the DrainBuffer's 32-bit capacity limit, or if a NUMA slab
+   *         allocation fails.
+   */
   __INLINE__ void initialize()
   {
     // Getting game state size
@@ -155,7 +205,10 @@ public:
   }
 
   /**
-   * Saves the runner state into the provided state data pointer
+   * @brief Serializes the runner's state (raw, uncompressed) into the given slot.
+   * @param r        The runner whose state is serialized.
+   * @param statePtr Destination slot the state is written into.
+   * @return The number of bytes written.
    */
   __INLINE__ size_t saveStateFromRunner(Runner& r, void* statePtr)
   {
@@ -166,7 +219,15 @@ public:
   }
 
   /**
-   * Serializes the runner state and pushes it into the state database
+   * @brief Serializes the runner's state into the given slot and inserts it into the next-state queue.
+   * @param reward   The reward used to order the state within its NUMA domain's next-state queue.
+   * @param r        The runner whose state is serialized.
+   * @param statePtr The slot to serialize into and insert; determines the target NUMA domain.
+   * @return true if the state was serialized and inserted; false if serialization threw a runtime error.
+   * @throws A runtime error if @p statePtr is null (interpreted as having run out of free states).
+   *
+   * @details Determines the slot's owning NUMA domain via @ref getStateNumaDomain and inserts the
+   * {reward, statePtr} pair into that domain's next-state queue.
    */
   __INLINE__ bool pushState(const float reward, Runner& r, void* statePtr)
   {
@@ -197,7 +258,9 @@ public:
   }
 
   /**
-   * Loads the state into the runner
+   * @brief Deserializes a stored state (raw, uncompressed) from a slot into the runner.
+   * @param r        The runner the state is loaded into.
+   * @param statePtr The slot the state is read from.
    */
   __INLINE__ void loadStateIntoRunner(Runner& r, const void* statePtr)
   {
@@ -206,6 +269,14 @@ public:
     r.deserializeState(d);
   }
 
+  /**
+   * @brief Logs database occupancy, sizing, per-NUMA-domain figures, and reduced statistics counters.
+   *
+   * @details Logs current vs. maximum state counts and sizes, raw and padded per-state sizes, and the
+   * first and last NUMA domains' state counts and sizes. Reduces the per-thread statistics counters
+   * into totals and logs database-pop NUMA locality rates, free-slot cache hit/absorb counts, free-state
+   * acquisition rates (including state stealing), and the average NUMA distance per access.
+   */
   // Function to print relevant information
   __INLINE__ void printInfo() const
   {
@@ -272,6 +343,17 @@ public:
                               (double)distanceAccumulator / (double)NUMAAccessCount);
   }
 
+  /**
+   * @brief Obtains a free state slot for the calling thread to write a new state into.
+   * @param threadId The calling thread's dense OpenMP id, used to index its cache and statistics counters.
+   * @return A pointer to a free slot, or nullptr if none could be obtained (the state is then discarded).
+   *
+   * @details First serves from this thread's free-slot cache (LIFO) when non-empty. Otherwise it
+   * scans NUMA domains in this thread's preference order and tries to pop from each domain's
+   * free-state queue. If all free-state queues are empty, it scans again and steals a slot from the
+   * back (worst state) of each domain's current-state queue. Updates the thread's NUMA-distance and
+   * locality/stealing statistics on success.
+   */
   __INLINE__ void* getFreeState(const size_t threadId)
   {
     auto& sc = _statCounters[threadId];
@@ -334,6 +416,12 @@ public:
     return nullptr;
   }
 
+  /**
+   * @brief Finds the NUMA domain whose slab contains the given state slot.
+   * @param statePtr The state slot to locate.
+   * @return The index of the owning NUMA domain.
+   * @throws A runtime error if the pointer does not fall within any domain's slab.
+   */
   __INLINE__ int getStateNumaDomain(void* const statePtr)
   {
     for (int i = 0; i < _numaCount; i++)
@@ -343,11 +431,27 @@ public:
     JAFFAR_THROW_RUNTIME("Did not find the corresponding numa domain for the provided state pointer. This must be a bug in Jaffar\n");
   }
 
+  /**
+   * @brief Tests whether a state slot lies within a given NUMA domain's slab.
+   * @param statePtr     The state slot to test.
+   * @param numaDomainId The NUMA domain whose slab is checked.
+   * @return true if the pointer falls within the domain's [start, end] slab range, false otherwise.
+   */
   __INLINE__ bool isStateInNumaDomain(void* const statePtr, const int numaDomainId)
   {
     return statePtr >= _internalBuffersStart[numaDomainId] && statePtr <= _internalBuffersEnd[numaDomainId];
   }
 
+  /**
+   * @brief Returns a state slot to the free pool for later reuse.
+   * @param statePtr The slot being freed.
+   * @param threadId The calling thread's dense OpenMP id, used to index its cache and statistics counters.
+   * @throws A runtime error if the slot fails to push onto its owning domain's free-state queue.
+   *
+   * @details Stores the slot in this thread's free-slot cache when it has room (capped at
+   * @ref FREE_STATE_CACHE_CAPACITY). When the cache is full, it spills the slot to the shared
+   * free-state queue of the slot's owning NUMA domain (found via @ref getStateNumaDomain).
+   */
   __INLINE__ void returnFreeState(void* const statePtr, const size_t threadId)
   {
     // Return the slot to this thread's own free-slot cache when there is room, so the next
@@ -373,7 +477,15 @@ public:
   }
 
   /**
-   * Copies the pointers from the next state database into the current one, starting with the largest rewards, and clears it.
+   * @brief Moves each NUMA domain's next-state queue into its current-state queue, best reward first,
+   *        and clears the next-state queue.
+   *
+   * @details Runs in parallel; in each domain only the delegate thread acts. It records the domain's
+   * next-state count, clears the current-state buffer (drained during the previous step), then
+   * traverses the reward-ordered next-state map in descending-reward order, appending each pointer to
+   * the current-state buffer. After draining it clears (frees) the whole next-state map at once. It
+   * then updates the cross-NUMA best and worst state pointers under @ref _workMutex from the first
+   * (best) and last (worst) entries seen.
    */
   __INLINE__ void advanceStep()
   {
@@ -443,6 +555,14 @@ public:
     }
   }
 
+  /**
+   * @brief Pops a single base state from the current-state database, preferring NUMA-local domains.
+   * @return A pointer to a base state, or nullptr if every domain's current-state queue is drained.
+   *
+   * @details Scans NUMA domains in the calling thread's preference order (skipping unallocated null
+   * queues) and pops from the front of the first non-empty current-state queue. Updates the calling
+   * thread's NUMA-distance and locality statistics on success.
+   */
   __INLINE__ void* popState()
   {
     auto& sc = _statCounters[jaffarCommon::parallel::getThreadId()];
@@ -476,14 +596,16 @@ public:
   }
 
   /**
-   * Pops a batch of base states from the current state database into the provided buffer,
-   * preferring NUMA-local domains. Returns the number of states actually retrieved.
+   * @brief Pops a batch of base states from the current-state database, preferring NUMA-local domains.
+   * @param elements Output buffer the popped state pointers are written into.
+   * @param maxCount Maximum number of states to retrieve.
+   * @param threadId The calling thread's dense OpenMP id, used to index its statistics counters.
+   * @return The number of states actually retrieved (0 if every domain's current-state queue is drained).
    *
-   * This is the batched counterpart of popState(): it grabs a whole run of states under a single
-   * Deque-lock acquisition (per NUMA domain) instead of locking once per state. On a light
-   * emulator with dozens of worker threads per NUMA domain, the single-state lock/unlock is the
-   * dominant cost ("Popping Base State" ~37% of wall time); batching amortizes it ~maxCount-fold.
-   * Statistics counters are accumulated once per batch rather than once per state.
+   * @details Batched counterpart of @ref popState that scans NUMA domains in the calling thread's
+   * preference order (skipping unallocated null queues) and takes the whole batch from the first
+   * non-empty current-state queue under a single lock acquisition. Accumulates NUMA-distance and
+   * locality statistics once per batch.
    */
   __INLINE__ size_t popStates(void** elements, const size_t maxCount, const size_t threadId)
   {
@@ -516,7 +638,11 @@ public:
   }
 
   /**
-   * Gets the current number of states in the current state database
+   * @brief Returns the total number of states currently held in the current-state database.
+   * @return The sum of the sizes of all allocated per-NUMA current-state queues.
+   *
+   * @details Skips unallocated (null) per-domain queues so the count is safe when threads do not
+   * cover every NUMA domain.
    */
   __INLINE__ size_t getStateCount() const
   {
@@ -529,148 +655,108 @@ public:
     return stateCount;
   }
 
-  /**
-   * This function returns a pointer to the best state found in the current state database
-   */
+  /** @brief Returns a pointer to the highest-reward state recorded by the last @ref advanceStep. */
   __INLINE__ void* getBestState() const { return _bestState; }
 
-  /**
-   * This function returns a pointer to the worst state found in the current state database
-   */
+  /** @brief Returns a pointer to the lowest-reward state recorded by the last @ref advanceStep. */
   __INLINE__ void* getWorstState() const { return _worstState; }
 
-  /**
-   * Gets the state sizes, as stored in the database
-   */
+  /** @brief Returns the per-state size (including padding) as stored in the database. */
   __INLINE__ size_t getStateSizeInDatabase() const { return _stateSize; }
 
 private:
-  void* _bestState  = nullptr;
-  void* _worstState = nullptr;
+  void* _bestState  = nullptr; ///< Pointer to the best (highest-reward) state from the last advanceStep().
+  void* _worstState = nullptr; ///< Pointer to the worst (lowest-reward) state from the last advanceStep().
 
-  Runner* const _runner;
+  Runner* const _runner; ///< The runner used to serialize states into and deserialize states out of the database.
 
-  /**
-   * Stores the size occupied by each state (with padding)
-   */
+  /// @brief Size occupied by each stored state, including alignment padding.
   size_t _stateSize;
 
-  /**
-   * Stores the size occupied by each state
-   */
+  /// @brief Raw (unpadded) serialized size of a single state.
   size_t _stateSizeRaw;
 
-  /**
-   * Stores the size actually occupied by each state, after adding padding
-   */
+  /// @brief Number of padding bytes added to the raw size to reach @ref _stateSize.
   size_t _stateSizePadding;
 
-  /**
-   * Maximum size (bytes) for the state database to grow
-   */
+  /// @brief Total maximum size (bytes) the state database may grow to across all NUMA domains.
   size_t _maxSize;
 
-  /**
-   * Number of maximum states in execution
-   */
+  /// @brief Total maximum number of states the database can hold across all NUMA domains.
   size_t _maxStates;
 
   /**
-   * Per-thread statistics counters for state-DB popping / free-state acquisition.
+   * @brief Per-thread statistics counters for state-DB popping and free-state acquisition.
    *
-   * These were global atomics incremented on every single pop/get-free; at high thread count the
-   * shared cache line ping-ponged across all cores and cost more than the operation it measured.
-   * They are now plain per-thread counters, cache-line aligned to avoid false sharing between
-   * adjacent threads, and reduced into totals only when printInfo() runs (off the hot path).
+   * @details Cache-line aligned to avoid false sharing between adjacent threads' counters; reduced
+   * into totals only when @ref printInfo runs (off the hot path).
    */
   struct alignas(64) statCounters_t
   {
-    size_t localDatabaseState    = 0;
-    size_t nonLocalDatabaseState = 0;
-    size_t databaseStateNotFound = 0;
-    size_t localFreeState        = 0;
-    size_t nonLocalFreeState     = 0;
-    size_t stealingFreeState     = 0;
-    size_t freeStateNotFound     = 0;
-    size_t distanceAccumulator   = 0;
-    size_t freeStateCacheHit     = 0; // getFreeState served from the thread-local cache
-    size_t freeStateCacheReturn  = 0; // returnFreeState absorbed by the thread-local cache
+    size_t localDatabaseState    = 0; ///< Base states popped from the thread's own (preferred) NUMA domain.
+    size_t nonLocalDatabaseState = 0; ///< Base states popped from a non-preferred NUMA domain.
+    size_t databaseStateNotFound = 0; ///< Pop attempts that found every current-state queue drained.
+    size_t localFreeState        = 0; ///< Free slots obtained from the preferred NUMA domain's free queue.
+    size_t nonLocalFreeState     = 0; ///< Free slots obtained from a non-preferred domain's free queue.
+    size_t stealingFreeState     = 0; ///< Free slots stolen from the back of a current-state queue.
+    size_t freeStateNotFound     = 0; ///< getFreeState attempts that found no slot anywhere.
+    size_t distanceAccumulator   = 0; ///< Sum of NUMA distances over all accesses, for the average-distance metric.
+    size_t freeStateCacheHit     = 0; ///< getFreeState requests served from the thread-local free-slot cache.
+    size_t freeStateCacheReturn  = 0; ///< returnFreeState calls absorbed by the thread-local free-slot cache.
   };
-  std::vector<statCounters_t> _statCounters;
+  std::vector<statCounters_t> _statCounters; ///< Per-thread (OpenMP-thread-indexed) statistics counters.
 
   /**
-   * Capacity of each worker's thread-local free-slot cache ("magazine"). Small: it only needs to
-   * bridge a worker's own returns to its own subsequent getFreeState() requests within a step, so a
-   * handful of slots captures essentially all of the recycling. Kept tiny so the total number of
-   * slots parked in caches (this * threadCount) stays a negligible fraction of the state DB, and so
-   * memory pressure / drop behaviour is effectively unchanged.
+   * @brief Capacity of each worker's thread-local free-slot cache ("magazine").
+   *
+   * @details Kept small so the total number of slots parked in caches (this * threadCount) stays a
+   * negligible fraction of the state database.
    */
   static constexpr size_t FREE_STATE_CACHE_CAPACITY = 32;
 
   /**
-   * Per-thread (OpenMP-thread-indexed) cache of free state slots, fronting the shared free-state
-   * queues. Cache-line aligned so adjacent threads' caches never share a line (no false sharing).
+   * @brief Per-thread (OpenMP-thread-indexed) cache of free state slots fronting the shared free-state queues.
+   *
+   * @details Cache-line aligned so adjacent threads' caches never share a line (no false sharing).
    */
   struct alignas(64) freeStateCache_t
   {
-    size_t count = 0;
-    void*  slots[FREE_STATE_CACHE_CAPACITY];
+    size_t count = 0;                        ///< Number of slots currently held in @ref slots.
+    void*  slots[FREE_STATE_CACHE_CAPACITY]; ///< Cached free-slot pointers (used as a LIFO stack).
   };
-  std::vector<freeStateCache_t> _freeStateCache;
+  std::vector<freeStateCache_t> _freeStateCache; ///< Per-thread free-slot caches, indexed by OpenMP thread id.
 
-  /**
-   * User-provided maximum megabytes to use for the state database
-   */
+  /// @brief User-provided maximum megabytes to use for the entire state database.
   size_t _maxSizeMb;
 
-  /**
-   * State database per numa domain
-   */
+  /// @brief Maximum size (bytes) of the state database in each NUMA domain.
   std::vector<size_t> _maxSizePerNuma;
 
-  /**
-   * Calculated maximum states to use for the state database per numa domain
-   */
+  /// @brief Calculated maximum number of states the state database can hold in each NUMA domain.
   std::vector<size_t> _maxStatesPerNuma;
 
-  /**
-   * Current states in each numa domain
-   */
+  /// @brief Number of current states held in each NUMA domain (updated each advanceStep()).
   std::vector<size_t> _currentStatesPerNuma;
 
-  /**
-   * Mutex to set delegate thread id and finding best/worst states
-   */
+  /// @brief Mutex guarding the cross-NUMA best/worst-state updates in advanceStep().
   std::mutex _workMutex;
 
-  /**
-   * Numa state queues allow the thread to search for a current state that belongs to it through the current state database
-   */
+  /// @brief Per-NUMA-domain current-state queues drained by the workers during a step (null for non-delegate domains).
   std::vector<jaffarCommon::concurrent::DrainBuffer<void*>*> _numaCurrentStateQueues;
 
-  /**
-   * Numa state queues for the next step's states
-   */
+  /// @brief Per-NUMA-domain reward-ordered queues collecting the next step's states (null for non-delegate domains).
   std::vector<jaffarCommon::concurrent::concurrentMultimap_t<float, void*>*> _numaNextStateQueues;
 
-  /**
-   * This queue will hold pointers to all the free state storage
-   */
+  /// @brief Per-NUMA-domain queues holding pointers to all currently free state slots.
   std::vector<std::unique_ptr<jaffarCommon::concurrent::atomicQueue_t<void*>>> _freeStateQueues;
 
-  /**
-   * Start pointer for the internal buffers for the state database
-   */
+  /// @brief Start pointer of each NUMA domain's contiguous state slab.
   std::vector<uint8_t*> _internalBuffersStart;
 
-  /**
-   * End pointer for each of the internal buffers
-   */
+  /// @brief End pointer of each NUMA domain's contiguous state slab.
   std::vector<uint8_t*> _internalBuffersEnd;
 
-  /**
-   * Number of bytes to allocate per NUMA domain
-   */
+  /// @brief Number of bytes allocated for the state slab in each NUMA domain.
   std::vector<size_t> _allocableBytesPerNuma;
 };
 

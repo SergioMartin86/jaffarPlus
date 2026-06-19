@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * @file driver.hpp
+ * @brief Top-level orchestration of a Jaffar search run: drives the engine's step loop, tracks the
+ *        best/worst states and win states, and periodically saves intermediate solutions.
+ */
+
 #include "engine.hpp"
 #include "game.hpp"
 #include "runner.hpp"
@@ -10,23 +16,39 @@
 namespace jaffarPlus
 {
 
+/**
+ * @brief Owns and runs the engine's step loop and reports how the run ended.
+ *
+ * @details The driver reads its configuration sections (Driver/Emulator/Game/Runner/Engine),
+ * constructs a @ref Runner and an @ref Engine, and repeatedly advances the engine one step at a time
+ * until a termination condition is reached (a win state, exhaustion of states, or the maximum step
+ * count). On each step it refreshes the tracked best and worst states, optionally stores a manually
+ * requested solution, and prints status. A separate thread periodically saves the best and worst
+ * solutions to file when intermediate result saving is enabled.
+ */
 class Driver final
 
 {
 public:
+  /// @brief Reason the run loop terminated, returned by @ref run.
   enum exitReason_t
   {
-    /// Found a win state
-    winStateFound = 0,
+    winStateFound = 0, ///< Found a win state
 
-    /// Engine ran out of states
-    outOfStates = 1,
+    outOfStates = 1, ///< Engine ran out of states
 
-    /// Maximum step reached
-    maximumStepReached = 2
+    maximumStepReached = 2 ///< Maximum step reached
   };
 
-  // Base constructor
+  /**
+   * @brief Constructs the driver and its engine/runner from the parsed configuration.
+   *
+   * Reads the "Driver Configuration" section (end-on-first-win flag, max steps, intermediate result
+   * settings), derives a job identifier from the current system time, and builds the @ref Runner and
+   * @ref Engine from their respective configuration sections.
+   * @param configFilePath Path to the config file, kept for reference and reporting.
+   * @param config         Parsed configuration object containing all component sections.
+   */
   Driver(const std::string& configFilePath, const nlohmann::json& config) : _configFilePath(configFilePath)
   {
     // Getting job identifier from the system timer
@@ -65,9 +87,15 @@ public:
     _engine = std::make_unique<Engine>(emulatorConfig, gameConfig, runnerConfig, engineConfig);
   }
 
+  /// @brief Destroys the driver.
   ~Driver() {}
 
-  // Resets the execution back to the starting point
+  /**
+   * @brief Resets the execution back to the starting point.
+   *
+   * Clears the step and win-state counters, resets the best/worst reward trackers, initializes the
+   * runner and engine, and allocates storage for the current best and worst states.
+   */
   void initialize()
   {
     // Resetting step counter
@@ -95,7 +123,16 @@ public:
     _worstStateStorage.resize(_stateSize);
   }
 
-  // Start running engine loop
+  /**
+   * @brief Runs the engine's step loop until a termination condition is met.
+   *
+   * Optionally launches the intermediate result saver thread, then advances the engine one step per
+   * iteration, updating the tracked best/worst states, storing any manually requested solution, and
+   * printing status each step. The loop ends on the first win state (when so configured), when the
+   * engine runs out of states, or when the maximum step count is reached. On exit it joins the saver
+   * thread, saves the best state information, and prints a final report.
+   * @return The @ref exitReason_t describing why the loop stopped.
+   */
   int run()
   {
     // Internal flag to indicate we are still running
@@ -176,6 +213,12 @@ public:
     return exitReason;
   }
 
+  /**
+   * @brief Saves a solution explicitly requested by the engine, if any.
+   *
+   * Queries the engine for a manual-save request; when one has a non-empty path, it loads that state
+   * into the runner and writes the runner's input history to the requested file.
+   */
   void storeManualSaveSolution()
   {
     auto manualSaveSolution = _engine->getManualSaveSolution();
@@ -191,6 +234,12 @@ public:
     }
   }
 
+  /**
+   * @brief Writes the current best solution to file, under the mutex.
+   *
+   * When a best solution path is configured, saves the best solution both under the plain configured
+   * name and under a copy suffixed with the job id and current step number.
+   */
   void saveBestStateInformation()
   {
     // Making sure the main thread is not currently writing
@@ -210,6 +259,12 @@ public:
     _updateIntermediateResultMutex.unlock();
   }
 
+  /**
+   * @brief Writes the current worst solution to file, under the mutex.
+   *
+   * When a worst solution path is configured, saves the worst solution both under the plain
+   * configured name and under a copy suffixed with the job id.
+   */
   void saveWorstStateInformation()
   {
     // Making sure the main thread is not currently writing
@@ -228,6 +283,13 @@ public:
     _updateIntermediateResultMutex.unlock();
   }
 
+  /**
+   * @brief Background loop that periodically saves best and worst solutions to file.
+   *
+   * Runs while the driver has not finished, waking every 100 ms; once the configured frequency has
+   * elapsed since the last save (and at least one step has been performed), it saves the best and
+   * worst state information and resets the timer.
+   */
   void intermediateResultSaveLoop()
   {
     // Timer for saving to file
@@ -256,6 +318,13 @@ public:
     }
   }
 
+  /**
+   * @brief Refreshes the tracked worst state, its solution, and its reward.
+   *
+   * Does nothing when the state database is empty. Otherwise, under the mutex, copies the engine's
+   * worst state into local storage, loads it into the runner, records the runner's input history as
+   * the worst solution, and updates the worst-state reward.
+   */
   void updateWorstState()
   {
     // If no states in database, there is nothing to update
@@ -283,6 +352,15 @@ public:
     _updateIntermediateResultMutex.unlock();
   }
 
+  /**
+   * @brief Refreshes the tracked best state, its solution, and its reward.
+   *
+   * Does nothing when the state database is empty and no win states have been found. Otherwise, under
+   * the mutex: if no win state has been found yet it uses the engine's current best state; if a win
+   * state was found this step and improves on the best win reward so far, it adopts that win state.
+   * It then loads the best state into the runner, updates the best-state reward, and records the
+   * runner's input history as the best solution.
+   */
   void updateBestState()
   {
     // If no states in database and no win states, there is nothing to update
@@ -331,7 +409,13 @@ public:
     _updateIntermediateResultMutex.unlock();
   }
 
-  // Function to show current state of execution
+  /**
+   * @brief Prints the current state of execution to the logger.
+   *
+   * Logs the job id, script file, emulator and game names, current/max step, and the best/worst (or
+   * win/worst) reward summary, followed by the engine's information and, after loading the best state
+   * into the runner, the runner/game/emulator information for that best state.
+   */
   void printInfo()
   {
     // If using ncurses, clear terminal before printing the information for this step
@@ -376,7 +460,12 @@ public:
     jaffarCommon::logger::refreshTerminal();
   }
 
-  // Function to obtain driver based on configuration
+  /**
+   * @brief Factory that constructs a driver from configuration.
+   * @param configFilePath Path to the config file, kept for reference and reporting.
+   * @param config         Parsed configuration object containing all component sections.
+   * @return A unique pointer to the newly constructed @ref Driver.
+   */
   static std::unique_ptr<Driver> getDriver(const std::string& configFilePath, const nlohmann::json& config)
   {
     // Creating new engine
@@ -386,77 +475,55 @@ public:
     return d;
   }
 
-  // Function to get the last step
+  /** @brief Returns the current step counter. */
   size_t getCurrentStep() { return _currentStep; }
 
 private:
-  // Remember path to config file for reference
-  const std::string _configFilePath;
+  const std::string _configFilePath; ///< Path to the config file, kept for reference.
 
-  // Pointer to the internal Jaffar engine
-  std::unique_ptr<Engine> _engine;
+  std::unique_ptr<Engine> _engine; ///< Pointer to the internal Jaffar engine.
 
-  // Pointer to runner to use for printing information and saving partial results
-  std::unique_ptr<Runner> _runner;
+  std::unique_ptr<Runner> _runner; ///< Runner used for printing information and saving partial results.
 
-  // Job identifier -- to have a way for distinguishing intermediate values between different jobs
-  size_t _jobId;
+  size_t _jobId; ///< Job identifier (derived from system time) distinguishing intermediate values between jobs.
 
-  // Getting maximum number of steps (zero = not established)
-  size_t _maxSteps;
+  size_t _maxSteps; ///< Maximum number of steps (zero = not established).
 
-  // Counter for the number of steps performed. The initialization with the first state counts as step zero
-  size_t _currentStep;
+  size_t _currentStep; ///< Counter for the number of steps performed; the initial state counts as step zero.
 
-  // Flag to decide whether to end Jaffar on the first win state found
-  bool _endOnFirstWinState;
+  bool _endOnFirstWinState; ///< Whether to end the run on the first win state found.
 
-  // The total number of win states found so far
-  size_t _winStatesFound;
+  size_t _winStatesFound; ///< Total number of win states found so far.
 
-  // Reward for the best (win) state found to far
-  float _bestWinStateReward;
+  float _bestWinStateReward; ///< Reward for the best win state found so far.
 
-  // Reward for the best (win or otherwise) state found to far
-  float _bestStateReward;
+  float _bestStateReward; ///< Reward for the best (win or otherwise) state found so far.
 
-  // Reward for the best (win or otherwise) state found to far
-  float _worstStateReward;
+  float _worstStateReward; ///< Reward for the worst state found so far.
 
-  // Storage for the current best (win or otherwise) state
-  std::string _bestStateStorage;
+  std::string _bestStateStorage; ///< Storage for the current best (win or otherwise) state.
 
-  // Storage for the current worst (win or otherwise) state
-  std::string _worstStateStorage;
+  std::string _worstStateStorage; ///< Storage for the current worst (win or otherwise) state.
 
-  // Storage for the current best (win or otherwise) state
-  std::string _bestSolutionStorage;
+  std::string _bestSolutionStorage; ///< Storage for the current best solution's input history.
 
-  // Storage for the current worst (win or otherwise) state
-  std::string _worstSolutionStorage;
+  std::string _worstSolutionStorage; ///< Storage for the current worst solution's input history.
 
-  // Storage size of a runner state
-  size_t _stateSize;
+  size_t _stateSize; ///< Storage size of a runner state.
 
-  // Internal flag to indicate the driver has finished
-  __volatile__ bool _hasFinished;
+  __volatile__ bool _hasFinished; ///< Internal flag indicating the driver has finished.
 
   /////////////// Intermediate Result Storage
 
-  // Whether to store intermediate results at all
-  bool _saveIntermediateResultsEnabled;
+  bool _saveIntermediateResultsEnabled; ///< Whether to store intermediate results at all.
 
-  // Maximum frequency by which to save intermediate results
-  float _saveIntermediateFrequency;
+  float _saveIntermediateFrequency; ///< Minimum interval, in seconds, between intermediate result saves.
 
-  // Path to store the best solution found so far
-  std::string _saveIntermediateBestSolutionPath;
+  std::string _saveIntermediateBestSolutionPath; ///< Path to store the best solution found so far.
 
-  // Path to store the worst solution found so far
-  std::string _saveIntermediateWorstSolutionPath;
+  std::string _saveIntermediateWorstSolutionPath; ///< Path to store the worst solution found so far.
 
-  // Update intermediate result mutex
-  std::mutex _updateIntermediateResultMutex;
+  std::mutex _updateIntermediateResultMutex; ///< Guards intermediate result storage between the main and saver threads.
 };
 
 } // namespace jaffarPlus
