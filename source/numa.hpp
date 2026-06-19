@@ -122,11 +122,16 @@ __INLINE__ void initializeNUMA()
   std::mutex workMutex;
   JAFFAR_PARALLEL
   {
-    // Getting thread information from the system
-    _myThreadId          = sched_getcpu();
-    _preferredNumaDomain = numa_node_of_cpu(_myThreadId);
+    // Identify this worker by its dense OpenMP thread id (unique 0..N-1), NOT sched_getcpu(): the CPU
+    // id collides whenever threads share a core -- under oversubscription, or simply unpinned
+    // scheduling on CI runners that don't set OMP_PROC_BIND. A colliding id corrupts the per-NUMA
+    // delegate selection below (and StateDb's delegate-gated queue allocation), leaving a domain with
+    // no queues so the search immediately "runs out of states". The preferred NUMA domain still comes
+    // from the actual CPU the thread is currently on.
+    _myThreadId          = jaffarCommon::parallel::getThreadId();
+    _preferredNumaDomain = numa_node_of_cpu(sched_getcpu());
 
-    // Setting myself as numa delegate, if I'm the lowest cpu id in the numa domain
+    // Setting myself as numa delegate, if I'm the first thread seen in this numa domain
     workMutex.lock();
     if (_numaDelegateThreadId[_preferredNumaDomain] == -1) _numaDelegateThreadId[_preferredNumaDomain] = _myThreadId;
     workMutex.unlock();
