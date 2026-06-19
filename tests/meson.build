@@ -2,6 +2,14 @@ testCommonCppArgs = [ '-Wfatal-errors', '-Wall', '-Werror' ]
 testCommonLinkArgs = [ '-lgtest_main', '-lgtest' ]
 testTimeout = 120
 
+# Default test setup: point LeakSanitizer at our suppressions so the asan/LSan job doesn't flake on
+# libnuma's internal (unfreeable) per-thread cpumask leak (see testEmulator/lsan.supp). Applies to
+# every test (`ninja test` uses the default setup); harmless for non-sanitizer builds, which ignore
+# LSAN_OPTIONS.
+add_test_setup('default',
+  is_default: true,
+  env: [ 'LSAN_OPTIONS=suppressions=' + meson.current_source_dir() + '/testEmulator/lsan.supp:print_suppressions=0' ])
+
 ###### Unit tests (pure logic, emulator-independent)
 
 # Uses the system gtest (libgtest-dev) when present, falling back to the

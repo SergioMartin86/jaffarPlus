@@ -33,7 +33,13 @@ public:
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
   }
 
-  ~StateDb() = default;
+  ~StateDb()
+  {
+    // Free the per-NUMA queues allocated with `new` in initialize() (one per delegate domain; the
+    // other entries are nullptr, which delete safely ignores).
+    for (auto* queue : _numaCurrentStateQueues) delete queue;
+    for (auto* queue : _numaNextStateQueues) delete queue;
+  }
 
   __INLINE__ void initialize()
   {
