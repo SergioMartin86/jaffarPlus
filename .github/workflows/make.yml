@@ -51,6 +51,9 @@ jobs:
     # is installed above so class diagrams render.
     - name: Building API reference (Doxygen)
       run:  |
+            # Doxygen does not create nested parent directories for OUTPUT_DIRECTORY, and this job
+            # never runs `meson setup`, so create the output path first.
+            mkdir -p build/doxygen
             doxygen Doxyfile
             echo "----- Doxygen warnings (should be empty) -----"
             cat build/doxygen/doxygen-warnings.log || true

@@ -1,0 +1,11 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto # Uses the baseline coverage as target, or specify a number like 80%
+        threshold: 0.5 # Allows coverage to drop by up to 0.5% without failing the build
+    patch:
+      default:
+        target: 80% # Coverage for the new code itself
+        threshold: 1% # Allows a minor 1% drop in new code coverage before failing
+
