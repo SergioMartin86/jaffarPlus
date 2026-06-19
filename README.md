@@ -5,18 +5,64 @@
 
 ![](jaffar.png)
 
-JaffarPlus is a high-performance general-purpose breadth-first search optimizer. This project is specially tailored for the production of tool-assisted speedruns (TAS). Its features are:
+**JaffarPlus is a high-performance, parallel search engine for producing tool-assisted speedruns (TAS).**
 
-* High-Performance: Tailored for multi-core CPUs, especially for high core counts.
-* Multi-Platform: Supports games from multiple consoles/game emulators
-* Extensible: Any new emulators or games that support load/save and advance step functions can be added to JaffarPlus via a common API
+You point it at a game (through an emulation core), describe which inputs are legal and what "better"
+means (a *reward*), and it explores the reachable game states across all of your CPU cores to find
+the best input sequence it can — for a TAS, usually the fastest route to a win. It is a
+*reward-guided breadth-first search*: it explores by increasing solution length, so the first
+solution it finds is a shortest one, while always expanding the most promising states first.
+
+## Highlights
+
+* **Fast and parallel** — built for many-core CPUs, with NUMA-aware memory and hash-based
+  deduplication of already-seen states so it scales to large search spaces.
+* **Multi-platform** — one engine drives 15+ emulation cores: NES, SNES, Sega Genesis / Master
+  System / Game Gear, Game Boy / Color / Advance, Atari 2600, Doom, Prince of Persia, and more.
+* **Reward-guided** — you steer the search declaratively with rules, conditions, and *reward
+  magnets* in a JSON config; no recompilation needed to retune a search.
+* **Extensible** — adding a new game is dropping one header into `games/`; registration is fully
+  automatic. Any emulator exposing save/load state + advance-frame can be wrapped behind a common API.
+* **Reproducible** — every solution replays deterministically and can be rendered to frames or video
+  for analysis.
+
+## Quick start (no ROM required)
+
+JaffarPlus ships a self-contained puzzle on its in-repo test core, so you can build and run a real
+search on any machine:
+
+```bash
+# Build with the ROM-free test core
+meson setup build -Demulator=TestEmulator
+ninja -C build
+
+# Validate the configuration, then run the search (finds the optimal 8-move path on a 5x5 grid)
+./build/jaffar docs/examples/gridwalker.jaffar --dryRun
+./build/jaffar docs/examples/gridwalker.jaffar
+
+# Replay the solution it found
+./build/jaffar-player docs/examples/gridwalker.jaffar /tmp/jaffar.gridwalker.best.sol \
+    --reproduce --unattended --exitOnEnd
+```
+
+See **[Getting Started](docs/01-getting-started.md)** for the full walkthrough, including how to
+build for a specific console core and game.
 
 # Documentation
 
-A full user & developer manual lives in [`docs/`](docs/README.md). It covers building and running a
-search, the complete `.jaffar` configuration reference, the rules/rewards system, search tuning, and
-how to add a new game. New users should start with [Getting Started](docs/01-getting-started.md),
-which runs a complete search with no ROM required.
+A complete user & developer manual lives in **[`docs/`](docs/README.md)**:
+
+| Chapter | What it covers |
+| ------- | -------------- |
+| [1. Getting Started](docs/01-getting-started.md) | Build JaffarPlus, run your first search (no ROM), read the output, replay a solution. |
+| [2. Configuration Reference](docs/02-config-reference.md) | Every section and key of a `.jaffar` file: type, default, and meaning. |
+| [3. Rules, Conditions & Rewards](docs/03-rules-and-rewards.md) | Steering the search: properties, conditions, reward actions, and magnets (illustrated). |
+| [4. Search Concepts & Tuning](docs/04-search-concepts.md) | How the search, state hashing, and NUMA/threading work — and which knobs to turn. |
+| [5. Adding a Game or Emulator](docs/05-adding-a-game.md) | Register a new game or emulator and expose its properties and actions. |
+| [6. Tooling Reference](docs/06-tooling.md) | `jaffar`, `jaffar-player`, headless screenshots, video rendering, environment overrides. |
+
+A C++ **API reference** for the engine internals is generated from the source with Doxygen
+(`doxygen Doxyfile` → `build/doxygen/html/`; also published as a CI artifact).
 
 # Built-in Emulator Support
 
@@ -37,15 +83,15 @@ which runs a complete search with no ROM required.
 
 ## Game-Specific
 
-| Game                                | Core(s)                                                           |   Target      |  Notes   |
-| --------                            | -------                                                           | ------        | ------   |
-| Prince of Persia                    | [QuickerSDLPoP](https://github.com/SergioMartin86/quickerSDLPoP)  | LibTAS+PCem   |  Many PoP ports use this same (AppleII / DOS) game logic |
-| Another World                       | [QuickerNEORAW](https://github.com/SergioMartin86/QuickerNEORAW)  | DOS           |  This AW interpreter only works with DOS files |
-| Another World                       | [QuickerRAWGL](https://github.com/SergioMartin86/QuickerRAWGL)    | Multiple      |  This AW interpreter works with most AW ports |
-| Super Mario Bros (NES)              | [QuickerSMBC](https://github.com/SergioMartin86/quickerSMBC)      | Bizhawk 2.9.2 |  Inaccurate in transitions, but good for solving levels |
-| Arkanoid (NES)                      | [QuickerArkbot](https://github.com/SergioMartin86/quickerArkBot)  | Bizhawk 2.9.2 (NesHawk Core) |          |
-| Doom                 | [QuickerDSDA](https://github.com/SergioMartin86/quickerDSDA)  |  Doom / Doom II |
-| Sokoban              | [QuickerBan](https://github.com/SergioMartin86/quickerBan)  | Sokoban (all) |
+| Game                   | Core(s)                                                          | Target                       | Notes |
+| ---------------------- | ---------------------------------------------------------------- | ---------------------------- | ----- |
+| Prince of Persia       | [QuickerSDLPoP](https://github.com/SergioMartin86/quickerSDLPoP) | LibTAS+PCem                  | Many PoP ports share this same (Apple II / DOS) game logic |
+| Another World          | [QuickerNEORAW](https://github.com/SergioMartin86/QuickerNEORAW) | DOS                          | This AW interpreter only works with DOS files |
+| Another World          | [QuickerRAWGL](https://github.com/SergioMartin86/QuickerRAWGL)   | Multiple                     | This AW interpreter works with most AW ports |
+| Super Mario Bros (NES) | [QuickerSMBC](https://github.com/SergioMartin86/quickerSMBC)     | Bizhawk 2.9.2                | Inaccurate in transitions, but good for solving levels |
+| Arkanoid (NES)         | [QuickerArkbot](https://github.com/SergioMartin86/quickerArkBot) | Bizhawk 2.9.2 (NesHawk Core) | |
+| Doom                   | [QuickerDSDA](https://github.com/SergioMartin86/quickerDSDA)     | Doom / Doom II               | |
+| Sokoban                | [QuickerBan](https://github.com/SergioMartin86/quickerBan)       | Sokoban (all)                | |
 
 Author
 =============

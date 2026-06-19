@@ -22,11 +22,11 @@ engine or add new games).
 | 2 | [Configuration Reference](02-config-reference.md) | User | Every section and key of a `.jaffar` file: type, default, meaning. |
 | 3 | [Rules, Conditions & Rewards](03-rules-and-rewards.md) | User | How to steer the search: properties, conditions, reward actions and magnets. |
 | 4 | [Search Concepts & Tuning](04-search-concepts.md) | User / Contributor | How best-first search, state hashing, and the NUMA/threading model work — and which knobs to turn. |
-| 5 | [Adding a Game](05-adding-a-game.md) | Contributor | Register a new game or emulator (now fully automatic) and expose its properties and actions. |
+| 5 | [Adding a Game or Emulator](05-adding-a-game.md) | Contributor | Register a new game or emulator (now fully automatic) and expose its properties and actions. |
 | 6 | [Tooling Reference](06-tooling.md) | User / Contributor | `jaffar`, `jaffar-player`, headless screenshots, video rendering, and environment overrides. |
 
 An auto-generated **C++ API reference** (Doxygen) covers the engine internals in `source/`; see
-[Adding a Game](05-adding-a-game.md) for the entry points.
+[Adding a Game or Emulator](05-adding-a-game.md) for the entry points.
 
 ## The 60-second tour
 
