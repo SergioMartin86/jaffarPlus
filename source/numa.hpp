@@ -1,12 +1,12 @@
 #pragma once
 
 #include <cstdlib>
-#include <map>
-#include <mutex>
-#include <vector>
 #include <jaffarCommon/exceptions.hpp>
 #include <jaffarCommon/parallel.hpp>
+#include <map>
+#include <mutex>
 #include <numa.h>
+#include <vector>
 
 namespace jaffarPlus
 {

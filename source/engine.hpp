@@ -620,7 +620,7 @@ private:
     // shared per-NUMA queue lock is acquired once per BASE_STATE_BATCH states instead of once per
     // state. With many worker threads per NUMA domain and cheap per-state work, the single-state
     // lock/unlock dominates wall time ("Popping Base State"); batching amortizes it away.
-    void*        baseStateBatch[BASE_STATE_BATCH];
+    void* baseStateBatch[BASE_STATE_BATCH];
     JAFFAR_PROF_DECL(t);
     size_t batchCount = _stateDb->popStates(baseStateBatch, BASE_STATE_BATCH, threadId);
     JAFFAR_PROF_ACC(acc.popBaseStateDb, t);

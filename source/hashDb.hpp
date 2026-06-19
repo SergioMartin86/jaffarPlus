@@ -77,7 +77,8 @@ public:
     constexpr double toMb = 1.0 / (1024.0 * 1024.0);
 
     // Sum a store's measured resident memory across its rolling generations
-    auto storeSizeMb = [this](const NUMAStore_t* s) {
+    auto storeSizeMb = [this](const NUMAStore_t* s)
+    {
       size_t bytes = 0;
       for (const auto& h : s->_hashStores) bytes += getStoreSizeBytes(h);
       return (double)bytes * toMb;
@@ -87,15 +88,16 @@ public:
     // and Age, so window rolling is observable (an Id > 0 means a new store was created), plus its
     // entries, size, and check/collision counts (current store from the live per-thread counters,
     // archived stores from their snapshot taken at roll time).
-    auto printStores = [this, toMb, &storeSizeMb](const NUMAStore_t* s, const char* label) {
+    auto printStores = [this, toMb, &storeSizeMb](const NUMAStore_t* s, const char* label)
+    {
       size_t idx = 0;
       for (auto it = s->_hashStores.rbegin(); it != s->_hashStores.rend(); ++it, ++idx)
       {
         const bool   cur = (it == s->_hashStores.rbegin());
         const size_t q   = cur ? s->getQueryCount() : it->queryCount;
         const size_t c   = cur ? s->getCollisionCount() : it->collisionCount;
-        jaffarCommon::logger::log("[J+]      + %sStore %lu/%lu - Id: %lu - Age: %lu, Entries: %.3f M, Size: %.1f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n",
-                                  label, idx + 1, _maxStoreCount, it->id, it->age, (double)it->hashSet.size() * toMb, (double)getStoreSizeBytes(*it) * toMb, q, c,
+        jaffarCommon::logger::log("[J+]      + %sStore %lu/%lu - Id: %lu - Age: %lu, Entries: %.3f M, Size: %.1f Mb, Check Count: %lu, Collision Count: %lu (Rate %.3f%%)\n", label,
+                                  idx + 1, _maxStoreCount, it->id, it->age, (double)it->hashSet.size() * toMb, (double)getStoreSizeBytes(*it) * toMb, q, c,
                                   q == 0 ? 0.0 : 100.0 * (double)c / (double)q);
       }
     };
@@ -118,8 +120,8 @@ public:
       for (const auto& s : g->_hashStores) l1entries += s.hashSet.size();
       l1SizeMb += storeSizeMb(g);
     }
-    const size_t l2q = _l2->getQueryCount();
-    const size_t l2c = _l2->getCollisionCount();
+    const size_t l2q       = _l2->getQueryCount();
+    const size_t l2c       = _l2->getCollisionCount();
     size_t       l2entries = 0;
     for (const auto& s : _l2->_hashStores) l2entries += s.hashSet.size();
 
@@ -310,8 +312,10 @@ private:
     while (itr != store->_hashStores.rend())
     {
       bool collisionFound = false;
-      if (curHashStoreIdx == 0) collisionFound = itr->hashSet.insert(hash).second == false;
-      else collisionFound = itr->hashSet.contains(hash);
+      if (curHashStoreIdx == 0)
+        collisionFound = itr->hashSet.insert(hash).second == false;
+      else
+        collisionFound = itr->hashSet.contains(hash);
       if (collisionFound == true) return true;
       itr++;
       curHashStoreIdx++;

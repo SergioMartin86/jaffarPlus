@@ -7,8 +7,8 @@
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
 #include <memory>
-#include <sstream>
 #include <sdlpopInstance.hpp>
+#include <sstream>
 
 // SDLPoP's final rendered software surface (defined in the linked SDLPoP core), used for screenshots.
 extern "C" SDL_Surface* get_final_surface();
@@ -76,7 +76,8 @@ public:
     if (_initialSequenceFilePath != "")
     {
       std::string seqData;
-      if (jaffarCommon::file::loadStringFromFile(seqData, _initialSequenceFilePath) == false) JAFFAR_THROW_LOGIC("Could not load initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+      if (jaffarCommon::file::loadStringFromFile(seqData, _initialSequenceFilePath) == false)
+        JAFFAR_THROW_LOGIC("Could not load initial sequence file: %s\n", _initialSequenceFilePath.c_str());
 
       std::istringstream iss(seqData);
       std::string        line;
