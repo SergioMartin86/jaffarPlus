@@ -1,0 +1,55 @@
+site_name: JaffarPlus
+site_description: High-performance best-first search optimizer for tool-assisted speedruns (TAS)
+site_url: https://sergiomartin86.github.io/jaffarPlus/
+repo_url: https://github.com/SergioMartin86/jaffarPlus
+repo_name: SergioMartin86/jaffarPlus
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - toc:
+      permalink: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+# Keep tooling/scripts and the Doxygen-only mainpage out of the published manual.
+exclude_docs: |
+  tools/
+  *.dox
+
+nav:
+  - Home: README.md
+  - Getting Started: 01-getting-started.md
+  - Configuration Reference: 02-config-reference.md
+  - Rules, Conditions & Rewards: 03-rules-and-rewards.md
+  - Search Concepts & Tuning: 04-search-concepts.md
+  - Adding a Game or Emulator: 05-adding-a-game.md
+  - Tooling Reference: 06-tooling.md
+  - API Reference (C++) ↗: https://sergiomartin86.github.io/jaffarPlus/api/

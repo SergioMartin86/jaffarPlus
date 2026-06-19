@@ -9,7 +9,8 @@
  * adding games and emulators. If you are looking for how to *use* JaffarPlus — building it, writing
  * a `.jaffar` configuration, tuning a search — read the prose manual instead:
  *
- *   - User & Developer Manual: `docs/` (start at `docs/README.md`)
+ *   - User &amp; Developer Manual: <a href="../">the JaffarPlus manual</a> (this API reference is
+ *     served under <tt>/api</tt> of the same site)
  *
  * @section api_entrypoints Key entry points
  *
