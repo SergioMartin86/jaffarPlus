@@ -10,6 +10,9 @@
 #include <sstream>
 #include <sdlpopInstance.hpp>
 
+// SDLPoP's final rendered software surface (defined in the linked SDLPoP core), used for screenshots.
+extern "C" SDL_Surface* get_final_surface();
+
 namespace jaffarPlus
 {
 
@@ -153,6 +156,18 @@ public:
   __INLINE__ size_t getRendererStateSize() const override { return getStateSize() + sizeof(_renderStepIdx) + sizeof(_renderInput); }
 
   __INLINE__ void showRender() override { _QuickerSDLPoP->updateRenderer(_renderStepIdx, _renderInput); }
+
+  // Saves the last rendered frame (SDLPoP's final software surface) as a BMP. Works headlessly under
+  // SDL_VIDEODRIVER=offscreen/dummy since the surface is drawn in memory regardless of a real display.
+  __INLINE__ void saveScreenshot(const std::string& path) override
+  {
+    SDL_Surface* surface = get_final_surface();
+    if (surface == nullptr) return;
+    if (SDL_SaveBMP(surface, path.c_str()) == 0)
+      jaffarCommon::logger::log("[J+] Saved screenshot: %s\n", path.c_str());
+    else
+      jaffarCommon::logger::log("[J+] Screenshot failed (%s): %s\n", path.c_str(), SDL_GetError());
+  }
 
 private:
   std::unique_ptr<SDLPoPInstance> _QuickerSDLPoP;

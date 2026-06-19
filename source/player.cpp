@@ -2,7 +2,6 @@
 #include "game.hpp"
 #include "playback.hpp"
 #include "runner.hpp"
-#include <SDL2/SDL.h>
 #include <argparse/argparse.hpp>
 #include <chrono>
 #include <emulatorList.hpp>
@@ -38,11 +37,6 @@ bool printFinalState;
 // listed steps are captured (or all rendered steps if the set is empty but a dir is given).
 std::string      screenshotDir;
 std::set<size_t> screenshotSteps;
-
-// SDLPoP's final rendered software surface (defined in the emulator core and linked into the
-// player). It is populated by renderFrame regardless of whether a real display exists, so it can
-// be captured headlessly (SDL_VIDEODRIVER=dummy/offscreen) via SDL_SaveBMP.
-extern "C" SDL_Surface* get_final_surface();
 
 bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disableRender)
 {
@@ -107,19 +101,14 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       {
         p.renderFrame(currentStep);
 
-        // Capture this frame to a BMP if requested (whole list, or every rendered frame if no list)
+        // Capture this frame if requested (whole list, or every rendered frame if no list). The
+        // actual save is emulator-specific (no-op for emulators without a screenshot backend), so
+        // the player stays emulator-agnostic and links without SDL/SDLPoP symbols.
         if (screenshotDir.empty() == false && (screenshotSteps.empty() || screenshotSteps.count((size_t)currentStep) > 0))
         {
-          SDL_Surface* surface = get_final_surface();
-          if (surface != nullptr)
-          {
-            char path[1024];
-            snprintf(path, sizeof(path), "%s/step_%06ld.bmp", screenshotDir.c_str(), currentStep);
-            if (SDL_SaveBMP(surface, path) == 0)
-              jaffarCommon::logger::log("[J+] Saved screenshot: %s\n", path);
-            else
-              jaffarCommon::logger::log("[J+] Screenshot failed (%s): %s\n", path, SDL_GetError());
-          }
+          char path[1024];
+          snprintf(path, sizeof(path), "%s/step_%06ld.bmp", screenshotDir.c_str(), currentStep);
+          r.getGame()->getEmulator()->saveScreenshot(path);
         }
       }
 
