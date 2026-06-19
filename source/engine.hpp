@@ -373,7 +373,12 @@ public:
     _currentStep++;
   }
 
-  ~Engine() = default;
+  ~Engine()
+  {
+    // Free the state buffers allocated in initialize() (raw malloc; see _stateSizeInDatabase use above)
+    free(_stepBestWinState.stateData);
+    free(_manualSaveSolution.stateData);
+  }
 
   // Relevant data for the driver
 
@@ -543,14 +548,14 @@ private:
   struct stateInfo_t
   {
     float reward;
-    void* stateData;
+    void* stateData = nullptr;
   };
 
   struct manualSaveSolution_t
   {
     std::string path;
     float       reward;
-    void*       stateData;
+    void*       stateData = nullptr;
     ssize_t     lastRuleIdx;
   };
 

@@ -1,0 +1,9 @@
+# LeakSanitizer suppressions for the JaffarPlus test suite.
+#
+# libnuma's numa_node_of_cpu() (called per worker thread in initializeNUMA) caches a cpumask in
+# library-internal thread state that it never frees. This is a 3rd-party allocation, not a JaffarPlus
+# leak, and there is no libnuma API to release it -- so suppress it rather than letting it flake the
+# multi-threaded asan tests (the count varies with thread scheduling).
+leak:numa_node_of_cpu
+leak:initializeNUMA
+leak:libnuma

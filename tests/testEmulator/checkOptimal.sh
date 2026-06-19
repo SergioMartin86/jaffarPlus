@@ -41,9 +41,12 @@ repro="$(OMP_NUM_THREADS=1 "$PLAYER" "$CONFIG" "$SOL" --reproduce --disableRende
 
 # 4. Determinism: a multi-threaded search must also find an optimal (length-8) solution. Different
 #    thread counts may surface a different shortest path, but BFS guarantees the same optimal depth.
-#    The engine handles threads covering any subset of NUMA domains, so this runs on any host.
+#    Use up to 4 threads, but never more than the available cores: oversubscribing (e.g. 4 threads
+#    on a 2-core CI runner) starves the per-NUMA delegate/queue setup and the search finds nothing.
 rm -f "$SOL"
-outN="$(OMP_NUM_THREADS="${DET_THREADS:-4}" "$JAFFAR" "$CONFIG" 2>&1)"
+detThreads="${DET_THREADS:-$(nproc)}"
+[ "$detThreads" -gt 4 ] && detThreads=4
+outN="$(OMP_NUM_THREADS="$detThreads" "$JAFFAR" "$CONFIG" 2>&1)"
 [[ "$outN" == *"Solution found"* ]] || { printf '%s\n' "$outN" | tail -n 20; fail "multi-threaded run found no solution"; }
 [[ "$(solLen "$SOL")" -eq 8 ]] || fail "multi-threaded solution length $(solLen "$SOL") != optimal 8"
 
