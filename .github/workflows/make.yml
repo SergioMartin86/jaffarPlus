@@ -632,7 +632,7 @@ jobs:
       run: |
             sudo apt-get update
             sudo apt-get install -y doxygen graphviz
-            python3 -m pip install --user --break-system-packages mkdocs-material
+            python3 -m pip install --user --break-system-packages 'mkdocs-material==9.7.6'
     - name: Building manual + API reference
       run: |
             python3 -m mkdocs build --strict --site-dir site
