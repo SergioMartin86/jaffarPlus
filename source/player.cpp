@@ -383,7 +383,7 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
 int main(int argc, char* argv[])
 {
   // Parsing command line arguments
-  argparse::ArgumentParser program("jaffar-tester", "1.0");
+  argparse::ArgumentParser program("jaffar-tester", "2.0.0");
 
   program.add_argument("configFile").help("path to the Jaffar configuration script (.jaffar) file to run.").required();
   program.add_argument("solutionFile").help("path to the solution sequence file (.sol) to reproduce.").required();

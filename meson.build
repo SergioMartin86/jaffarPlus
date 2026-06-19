@@ -1,5 +1,5 @@
 project('jaffarPlus','c','cpp',
-  version: '3.0.0',
+  version: '2.0.0',
   license: 'MIT',
   default_options : ['cpp_std=c++20', 'default_library=shared', 'buildtype=release'],
   subproject_dir: 'extern'
