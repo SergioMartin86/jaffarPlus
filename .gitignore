@@ -72,3 +72,4 @@ jaffar.worst.sol
 
 # Auto-generated registry lists (genRegistry.py writes these into the build dir)
 *.gen.hpp
+site/

@@ -609,3 +609,39 @@ jobs:
       with:
         name: meson-logs-QuickerDSDA
         path: build/meson-logs/
+
+  # Publish the manual (mkdocs-material) + the Doxygen C++ API reference (served under /api) to
+  # GitHub Pages. Runs only on master. Requires a one-time repo setting: Settings -> Pages ->
+  # Build and deployment -> Source = "GitHub Actions".
+  deploy-docs:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Installing tooling
+      run: |
+            sudo apt-get update
+            sudo apt-get install -y doxygen graphviz
+            python3 -m pip install --user --break-system-packages mkdocs-material
+    - name: Building manual + API reference
+      run: |
+            python3 -m mkdocs build --strict --site-dir site
+            mkdir -p build/doxygen site/api
+            doxygen Doxyfile
+            cp -r build/doxygen/html/. site/api/
+    - uses: actions/configure-pages@v5
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: site
+    - id: deployment
+      uses: actions/deploy-pages@v4

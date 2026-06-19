@@ -200,7 +200,7 @@ games) are: *(Source: `source/game.hpp`.)*
 Games may register **additional** action types — most notably *reward magnets*, which continuously
 pull the search toward a target value of some property (e.g. `Set Kid Pos X Magnet`). These are
 game-specific and documented per game; the pattern is described in
-[Rules, Conditions & Rewards](03-rules-and-rewards.md#reward-magnets).
+[Rules, Conditions & Rewards](03-rules-and-rewards.md#reward-shaping-and-magnets).
 
 ### Property datatypes
 

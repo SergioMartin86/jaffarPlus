@@ -6,8 +6,8 @@ core), a description of which inputs are allowed, and a reward function that say
 means; it searches the reachable game states in parallel and returns the best input sequence it
 can find (for a TAS: usually the fastest path to a win).
 
-This manual is the missing piece between the [project README](../README.md) (what JaffarPlus is
-and which cores it supports) and the 700+ example configurations under [`examples/`](../examples):
+This manual is the missing piece between the [project README](https://github.com/SergioMartin86/jaffarPlus/blob/master/README.md) (what JaffarPlus is
+and which cores it supports) and the 700+ example configurations under [`examples/`](https://github.com/SergioMartin86/jaffarPlus/tree/master/examples):
 it explains *how* to drive the tool and *why* it behaves the way it does.
 
 ## How this manual is organized
@@ -25,8 +25,9 @@ engine or add new games).
 | 5 | [Adding a Game or Emulator](05-adding-a-game.md) | Contributor | Register a new game or emulator (now fully automatic) and expose its properties and actions. |
 | 6 | [Tooling Reference](06-tooling.md) | User / Contributor | `jaffar`, `jaffar-player`, headless screenshots, video rendering, and environment overrides. |
 
-An auto-generated **C++ API reference** (Doxygen) covers the engine internals in `source/`; see
-[Adding a Game or Emulator](05-adding-a-game.md) for the entry points.
+An auto-generated **[C++ API reference](https://sergiomartin86.github.io/jaffarPlus/api/)** (Doxygen)
+covers the engine internals in `source/`; see [Adding a Game or Emulator](05-adding-a-game.md) for
+the entry points.
 
 ## The 60-second tour
 

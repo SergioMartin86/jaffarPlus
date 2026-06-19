@@ -50,6 +50,10 @@ build for a specific console core and game.
 
 # Documentation
 
+📖 **Browse it online:** the manual is published at
+**https://sergiomartin86.github.io/jaffarPlus/**, with the C++ engine API reference at
+**https://sergiomartin86.github.io/jaffarPlus/api/**.
+
 A complete user & developer manual lives in **[`docs/`](docs/README.md)**:
 
 | Chapter | What it covers |
