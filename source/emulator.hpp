@@ -135,6 +135,10 @@ public:
   // Shows the contents of the emulator's renderer into the window
   virtual void showRender() = 0;
 
+  // Saves the currently-rendered frame to an image file. Default: no-op (emulators without a
+  // screenshot backend simply ignore it), so the player can request it emulator-agnostically.
+  virtual void saveScreenshot(const std::string& /*path*/) {}
+
 protected:
   // Function to advance state
   virtual void advanceStateImpl(const jaffar::input_t& input) = 0;
