@@ -1,0 +1,273 @@
+# 2. Configuration Reference
+
+A `.jaffar` file is a single JSON object with five top-level sections. This chapter documents every
+key the engine reads in each section. The reward/rule system (the `Game Configuration` > `Rules`
+array) is large enough to have its own chapter — see [Rules, Conditions & Rewards](03-rules-and-rewards.md) —
+but the structural keys are listed here for completeness.
+
+```json
+{
+  "Driver Configuration":   { ... },
+  "Engine Configuration":   { ... },
+  "Emulator Configuration": { ... },
+  "Game Configuration":     { ... },
+  "Runner Configuration":   { ... }
+}
+```
+
+All five sections are required. Throughout this chapter, **key names are case- and
+space-sensitive** and must match exactly (including parentheses, e.g. `Max Size (Mb)`).
+
+> **Unknown keys are ignored.** The parser reads keys by name; any key it does not recognize is
+> silently skipped. There is no "unknown key" error, so a typo or a stale key simply has no effect.
+> When in doubt, validate with `jaffar --dryRun` and cross-check spelling here.
+
+- [Driver Configuration](#driver-configuration)
+- [Engine Configuration](#engine-configuration)
+- [Emulator Configuration](#emulator-configuration)
+- [Game Configuration](#game-configuration)
+- [Runner Configuration](#runner-configuration)
+
+---
+
+## Driver Configuration
+
+The driver owns the top-level run loop: when to stop and what to checkpoint to disk.
+*(Source: `source/driver.hpp`.)*
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `End On First Win State` | boolean | yes | If `true`, the run stops as soon as the first win state is found. If `false`, the search keeps running (up to `Max Steps`) to look for better solutions. |
+| `Max Steps` | number (uint32) | yes | Maximum search depth (steps) to execute. Use a generous bound; `0` means no step limit. Can be overridden for testing via the `JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP` environment variable. |
+| `Save Intermediate Results` | object | yes | Periodic checkpointing of the best/worst solutions found so far (see below). |
+
+### Driver Configuration → Save Intermediate Results
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Enabled` | boolean | yes | Whether to periodically write the best/worst solutions to disk during the search. |
+| `Frequency (s)` | number (float) | yes | How often (in seconds) to write the intermediate files. Only used when `Enabled` is `true`. |
+| `Best Solution Path` | string | yes | File path for the best (highest-reward) solution found so far. |
+| `Worst Solution Path` | string | yes | File path for the worst solution found so far. |
+
+> Some older example configs also contain `Best State Path` / `Worst State Path` here. **These are
+> not read by the engine** and have no effect — they are a good illustration of the
+> "unknown keys are ignored" rule above.
+
+---
+
+## Engine Configuration
+
+Sizing of the two in-memory databases that drive the search: the **state database** (the frontier
+of states to expand) and the **hash database** (visited-state deduplication). The mechanics are
+explained in [Search Concepts & Tuning](04-search-concepts.md); the keys are:
+*(Source: `source/engine.hpp`, `source/stateDb.hpp`, `source/hashDb.hpp`.)*
+
+### Engine Configuration → State Database
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Max Size (Mb)` | number | yes | Memory budget (in MB) for the state database, across all NUMA domains. When full, the search can no longer hold new states. Override for testing via `JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB`. |
+
+### Engine Configuration → Hash Database
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Enabled` | boolean | yes | Whether to deduplicate already-visited states by hash. Almost always `true`; disabling it makes the search re-explore states. |
+| `Max Store Count` | number | yes* | Number of rolling hash-store generations to keep. Read only when `Enabled` is `true`. |
+| `Max Store Size (Mb)` | number | yes* | Memory budget (in MB) for the hash database. Read only when `Enabled` is `true`. Override via `JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB`. |
+
+\* Required when `Hash Database` > `Enabled` is `true`.
+
+---
+
+## Emulator Configuration
+
+This section selects the emulation core and tells it where to find the game data and the initial
+state. Exactly one key is common to *all* cores; the rest are **core-specific**.
+*(Source: `source/emulator.hpp` for the common key; each emulator's header under `emulators/` for
+the rest.)*
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Emulator Name` | string | yes | Which core to instantiate. Must match a core compiled into this build (see `-Demulator=`). The error message on a mismatch lists the cores available in the current build. |
+
+The remaining keys depend on `Emulator Name`. Below are the in-repo `TestEmulator` (used throughout
+this manual) and the common pattern shared by the ROM-based cores.
+
+### TestEmulator (`"Emulator Name": "TestEmulator"`)
+
+A ROM-free emulator: a cursor on a rectangular grid. Used by the test suite and the examples here.
+*(Source: `emulators/testEmulator/testEmulator.hpp`.)*
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Grid Width` | number | yes | Width of the grid. |
+| `Grid Height` | number | yes | Height of the grid. |
+| `Start X` | number | yes | Initial cursor column (must be `< Grid Width`). |
+| `Start Y` | number | yes | Initial cursor row (must be `< Grid Height`). |
+
+Its inputs are single pipe-delimited characters: `|U|`, `|D|`, `|L|`, `|R|`, and `|.|` (no-op).
+
+### ROM-based cores (common pattern)
+
+The console cores (QuickerNES, QuickerSnes9x, QuickerGPGX, QuickerStella, QuickerGambatte, …) share
+a similar set of keys. The exact set varies per core — consult the core's header under `emulators/`
+— but the recurring keys are:
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `Rom File Path` | string | Path to the game ROM/image. |
+| `Rom File SHA1` | string | Expected SHA1 of the ROM, validated on load. |
+| `Initial State File Path` | string | Emulator save-state to start the search from. |
+| `Initial Sequence File Path` | string | An input sequence to replay before the search begins (sets up the starting position). Often optional/empty. |
+| `Initial RAM Data File Path` | string | Raw RAM image to load at start (core-dependent size). |
+| `Disabled State Properties` | array of strings | Names of save-state memory blocks to *exclude* from the searched/serialized state (shrinks state size — see [tuning](04-search-concepts.md#making-states-smaller)). |
+
+### QuickerSDLPoP (Prince of Persia)
+
+The Prince of Persia core has its own keys for the game files and for controlling
+randomness/determinism. *(Source: `emulators/quickerSDLPoP/quickerSDLPoP.hpp` and
+`extern/quickerSDLPoP/source/sdlpopInstanceBase.hpp`.)*
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `SDLPoP Root Path` | string | yes | Directory containing the SDLPoP game files. |
+| `Levels File Path` | string | yes | Path to the levels data file (`LEVELS.DAT`-style); may point to a custom level. |
+| `Game Version` | string | yes | `"1.0"` or `"1.4"`. |
+| `Initial State File` | string | yes | Save-state to start from. |
+| `Initial Sequence File Path` | string | no (default empty) | Input sequence to replay before search. |
+| `Override RNG Enabled` | boolean | yes | Force a fixed RNG seed. |
+| `Override RNG Value` | number | yes | The RNG seed used when the override is enabled. |
+| `Override Loose Tile Sound Enabled` | boolean | yes | Force the loose-tile sound state. |
+| `Override Loose Tile Sound Value` | number | yes | Value used when the above is enabled. |
+| `Initialize Copy Protection` | boolean | yes | Whether to run the copy-protection setup. |
+| `Disable Non-Gameplay RNG` | boolean | no (default false) | Stop cosmetic animations (torch flicker, etc.) from consuming RNG. Recommended for exploration: it keeps the searched state stable so combat/RNG hashing does not explode. |
+
+---
+
+## Game Configuration
+
+The game layer interprets emulator memory as named **properties**, decides what counts as a win or
+fail through **rules**, and assigns **rewards** that steer the search. This section's structural
+keys are below; the rule/condition/reward grammar is detailed in
+[Rules, Conditions & Rewards](03-rules-and-rewards.md). *(Source: `source/game.hpp`,
+`source/rule.hpp`, `source/condition.hpp`, `source/property.hpp`.)*
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Game Name` | string | yes | Which game class to instantiate (must be compiled into this build). |
+| `Frame Rate` | number (float) | yes | The game's playback frame rate (used by tooling/playback). |
+| `Bypass Emulator State` | boolean | yes | If `true`, the game manages its own state instead of using the emulator's save-state. Normally `false`. |
+| `Print Properties` | array of strings | yes | Property names to display in status output. Each must be a registered property of the game. |
+| `Hash Properties` | array of strings | yes | Property names that define a state's identity for deduplication. Two states with identical hash-property values are treated as the same state. Choosing these well is the single most important tuning lever — see [tuning](04-search-concepts.md#choosing-hash-properties). |
+| `Rules` | array of objects | yes | The win/fail/checkpoint/reward logic. See below and [chapter 3](03-rules-and-rewards.md). |
+
+### Game Configuration → Rules → (rule object)
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Label` | number | yes | Unique numeric id for the rule, referenced by other rules' `Satisfies`. |
+| `Conditions` | array of objects | yes (may be empty) | All conditions must hold (logical AND) for the rule to fire. |
+| `Actions` | array of objects | yes (may be empty) | What happens when the rule fires. |
+| `Satisfies` | array of numbers | yes (may be empty) | Labels of other rules to also mark satisfied when this rule fires (rule chaining). |
+
+### Game Configuration → … → Conditions → (condition object)
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Property` | string | yes | Name of a registered property (left operand). |
+| `Op` | string | yes | Comparison operator (see list below). |
+| `Value` | number, string, or boolean | yes | Right operand. A **number**/**boolean** is an immediate value; a **string** names another property to compare against. |
+
+Valid `Op` values (case-sensitive): `==`, `!=`, `>`, `>=`, `<`, `<=`, `%0` (property modulo Value
+equals zero), `%N` (modulo is non-zero), `BitTrue` (the bit at position Value is set), `BitFalse`
+(that bit is clear). *(Source: `source/condition.hpp`.)*
+
+### Game Configuration → … → Actions → (action object)
+
+Every action has a `Type`; some types take extra keys. The **core** action types (available to all
+games) are: *(Source: `source/game.hpp`.)*
+
+| `Type` | Extra keys | Effect |
+|--------|-----------|--------|
+| `Add Reward` | `Value` (number) | Adds `Value` to the state's reward. |
+| `Trigger Win` | — | Marks the state as a win (a solution). |
+| `Trigger Fail` | — | Marks the state as failed (pruned). |
+| `Trigger Checkpoint` | `Tolerance` (number) | Marks a checkpoint with the given tolerance (see [chapter 3](03-rules-and-rewards.md)). |
+| `Trigger Save Solution` | `Path` (string) | Writes the current solution to `Path` when the rule fires. |
+
+Games may register **additional** action types — most notably *reward magnets*, which continuously
+pull the search toward a target value of some property (e.g. `Set Kid Pos X Magnet`). These are
+game-specific and documented per game; the pattern is described in
+[Rules, Conditions & Rewards](03-rules-and-rewards.md#reward-magnets).
+
+### Property datatypes
+
+Properties are registered by each game's C++ code (not in the config), but conditions and magnets
+refer to them by name. A property's datatype is one of: `UINT8`, `UINT16`, `UINT32`, `UINT64`,
+`INT8`, `INT16`, `INT32`, `INT64`, `BOOL`, `FLOAT32`, `FLOAT64`, with `Little` or `Big` endianness.
+*(Source: `source/property.hpp`.)* To discover a game's property names, see
+[Adding a Game](05-adding-a-game.md) or read the game's header under `games/`.
+
+---
+
+## Runner Configuration
+
+The runner sits between the engine and the emulator: it defines which inputs are legal in a given
+state, how state hashing behaves, and frame-skipping. *(Source: `source/runner.hpp`,
+`source/inputSet.hpp`.)*
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Allowed Input Sets` | array of objects | yes | The legal inputs, possibly gated by conditions (see below). This is what defines the branching factor of the search. |
+| `Test Candidate Inputs` | boolean | yes | Whether to also evaluate the `Candidate Input Sets` (used to probe additional inputs). |
+| `Candidate Input Sets` | array of objects | yes (may be empty) | Same structure as `Allowed Input Sets`; only used when `Test Candidate Inputs` is `true`. |
+| `Hash Step Tolerance` | number | yes | How many consecutive steps a state may persist before re-hashing for deduplication. `0` hashes every step (most precise, most states); higher values collapse near-identical frames (fewer states). See [tuning](04-search-concepts.md#hash-step-tolerance). |
+| `Bypass Hash Calculation` | boolean | yes | If `true`, take the state hash from the game directly instead of computing it. Advanced; normally `false`. |
+| `Store Input History` | object | yes | Whether/how many inputs to record per state (needed to reconstruct solutions). |
+| `Frameskip` | object | yes | Frame-skipping behavior. |
+| `Show Allowed Inputs` | boolean | yes | Debug: print the set of allowed inputs each frame. |
+| `Show Empty Input Slots` | boolean | yes | Debug: print placeholder lines for unavailable inputs. |
+
+### Runner Configuration → Store Input History
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Enabled` | boolean | yes | Whether to record input history (required to emit a `.sol` solution). |
+| `Max Size` | number | yes | Maximum number of inputs to record per state. |
+
+### Runner Configuration → Frameskip
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Rate` | number | yes | Frames to advance per input step in addition to the input frame (`0` = no skipping). Larger values search coarser but faster. |
+| `Use Custom Input` | boolean | yes | If `true`, play `Custom Input` on the skipped frames; if `false`, repeat the last input. |
+| `Custom Input` | string | yes | The input to apply on skipped frames when `Use Custom Input` is `true`. Validated at startup. |
+
+> Note: the frame-skip settings live **inside** the `Frameskip` object. A top-level
+> `Frameskip Rate` key (as seen in some examples) is *not* read.
+
+### Runner Configuration → Allowed Input Sets / Candidate Input Sets → (input-set object)
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Conditions` | array of objects | yes (may be empty) | Conditions (same grammar as rule conditions) that must all hold for these inputs to be offered. An empty array means "always available". |
+| `Inputs` | array of strings | yes | The inputs offered when the conditions hold. Each string is an emulator-specific input encoding (e.g. `\|U\|` for the TestEmulator, `U.L.F` or `\|..\|........\|` for console cores). |
+| `Stop Input Evaluation` | boolean | yes | If `true`, no later input set is considered once this one matches (short-circuit). |
+
+Input sets let you restrict the search to sensible moves in each situation — the foundation of
+making a search tractable. See [Rules, Conditions & Rewards](03-rules-and-rewards.md) for how
+conditions are written and [Search Concepts & Tuning](04-search-concepts.md) for why a tight input
+set matters.
+
+---
+
+## A complete annotated example
+
+[`docs/examples/gridwalker.jaffar`](examples/gridwalker.jaffar) is a minimal but complete configuration that
+exercises every section above with no ROM. It is worth reading top to bottom alongside this
+reference: it defines a 5×5 grid (`TestEmulator`), offers the four movement inputs unconditionally
+(`Allowed Input Sets`), hashes the cursor position (`Hash Properties`), fails at the center `(2,2)`,
+rewards reaching column `4`, and wins at `(4,4)` — chaining the column-4 reward via `Satisfies`. The
+next chapter walks through how those rules actually steer the search.

@@ -60,6 +60,19 @@ test('ValidateExamples',
       args : [ validateExamplesScript, emulator ],
       suite : [ 'ScriptValidation' ])
 
+###### Documentation anti-drift checks
+#
+# Backward check: every .jaffar config key the engine core (source/*.hpp) reads must be documented
+# in docs/02-config-reference.md (and no documented core key may have vanished from the code). This
+# is emulator-independent -- it only reads source and the markdown -- so it runs in every build.
+python3prog = find_program('python3')
+
+test('DocsConfigReference',
+      python3prog,
+      timeout: testTimeout,
+      args : [ meson.current_source_dir() + '/../docs/tools/checkConfigDocs.py', meson.project_source_root() ],
+      suite : [ 'docs' ])
+
 ######## Full run tests
 
 # Setting env variables
@@ -68,6 +81,15 @@ test('ValidateExamples',
 ## used to test the engine's main execution path end-to-end (search + reproduce).
 
 if emulator == 'TestEmulator'
+
+# Forward check: every example configuration shipped under docs/examples/ must pass --dryRun, so a
+# renamed/removed engine key turns silent doc rot into a CI failure. ROM-free (TestEmulator).
+test('DocsExamples',
+      bash,
+      workdir : meson.current_source_dir(),
+      timeout: testTimeout,
+      args : [ 'checkDocsExamples.sh', jaffar.full_path() ],
+      suite : [ 'docs', 'TestEmulator' ])
 
 # Core correctness: optimality + save-solution + reproduction + determinism + differential equivalence
 test('gridWalker_optimal',
