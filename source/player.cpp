@@ -38,6 +38,22 @@ bool printFinalState;
 std::string      screenshotDir;
 std::set<size_t> screenshotSteps;
 
+// Parses a non-negative integer from a CLI argument, reporting a clear error (instead of a raw
+// std::stoul exception) when the value is malformed.
+static size_t parseUInt(const std::string& value, const std::string& flag)
+{
+  try
+  {
+    size_t consumed = 0;
+    const size_t result = std::stoul(value, &consumed);
+    if (consumed == value.size()) return result;
+  }
+  catch (const std::exception&)
+  {}
+  JAFFAR_THROW_LOGIC("Invalid value '%s' for %s (expected a non-negative integer)\n", value.c_str(), flag.c_str());
+  return 0;
+}
+
 bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disableRender)
 {
   // If sequence file defined, load it and play it
@@ -326,8 +342,8 @@ int main(int argc, char* argv[])
   program.add_argument("--exitOnEnd").help("Exits the program upon reaching the last step").default_value(false).implicit_value(true);
   program.add_argument("--unattended").help("Indicates the player not to print the interactive prompt nor wait for inputs").default_value(false).implicit_value(true);
   program.add_argument("--disableRender").help("Do not render game window.").default_value(false).implicit_value(true);
-  program.add_argument("--frameskip").help("How many frames to skip between renderings.").default_value(std::string("1")).required();
-  program.add_argument("--initialSequence").help("Overrides the solution file to use as initial sequence to play before starting.").default_value(std::string("")).required();
+  program.add_argument("--frameskip").help("How many frames to skip between renderings.").default_value(std::string("1"));
+  program.add_argument("--initialSequence").help("Overrides the solution file to use as initial sequence to play before starting.").default_value(std::string(""));
   program.add_argument("--runCommand").help("Specifies a command to run and then exit").default_value(std::string(""));
   program.add_argument("--screenshotDir").help("Directory to write per-frame screenshots (BMP) into (requires rendering enabled).").default_value(std::string(""));
   program.add_argument("--screenshotSteps").help("Comma-separated list of steps to screenshot (empty = every rendered frame).").default_value(std::string(""));
@@ -367,7 +383,7 @@ int main(int argc, char* argv[])
     const auto stepsStr = program.get<std::string>("--screenshotSteps");
     if (stepsStr.empty() == false)
       for (const auto& tok : jaffarCommon::string::split(stepsStr, ','))
-        if (tok.empty() == false) screenshotSteps.insert((size_t)std::stoul(tok));
+        if (tok.empty() == false) screenshotSteps.insert(parseUInt(tok, "--screenshotSteps"));
   }
 
   // Getting exitOnEnd flag
@@ -377,7 +393,7 @@ int main(int argc, char* argv[])
   bool unattended = program.get<bool>("--unattended");
 
   // Getting frameskip
-  frameskip = std::stoul(program.get<std::string>("--frameskip"));
+  frameskip = parseUInt(program.get<std::string>("--frameskip"), "--frameskip");
 
   // Getting frameskip
   const std::string initialSequence = program.get<std::string>("--initialSequence");

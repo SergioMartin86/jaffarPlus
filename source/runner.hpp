@@ -72,6 +72,11 @@ public:
     // Parsing inputs declared directly by the game's code
     for (const auto& input : _game->getAllPossibleInputs()) registerInput(input);
 
+    // Resolve the custom frameskip input index once (it is constant), so advanceState() can reuse it
+    // instead of re-hashing + re-looking-it-up every skipped frame. Also validates it early -- a bad
+    // "Custom Input" now fails here at init rather than crashing deep in the simulation loop.
+    if (_frameskipUseCustomInput) _frameskipCustomInputIdx = getInputIndex(_frameskipCustomInput);
+
     // If storing input history, allocate input history storage
     if (_inputHistoryEnabled == true)
     {
@@ -217,7 +222,7 @@ public:
     for (size_t i = 0; i < _frameskipRate; i++)
     {
       InputSet::inputIndex_t frameskipInputIdx = inputIdx;
-      if (_frameskipUseCustomInput) frameskipInputIdx = getInputIndex(_frameskipCustomInput);
+      if (_frameskipUseCustomInput) frameskipInputIdx = _frameskipCustomInputIdx;
       _game->advanceState(frameskipInputIdx);
       pushInput(frameskipInputIdx);
     }
@@ -473,6 +478,10 @@ private:
 
   // The custom input to use if not repeating the last
   std::string _frameskipCustomInput;
+
+  // Resolved index of the custom frameskip input, computed once at initialize() so advanceState()
+  // does not re-hash + re-look-up the input string on every skipped frame
+  InputSet::inputIndex_t _frameskipCustomInputIdx{};
 
   ///////////////////////////////////////////
   // Allowed and candidate input sets

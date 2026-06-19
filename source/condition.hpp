@@ -41,7 +41,7 @@ public:
     if (operation == "BitTrue") return op_bit_true;
     if (operation == "BitFalse") return op_bit_false;
 
-    JAFFAR_THROW_LOGIC("[Error] Unrecognized operator: %s\n", operation.c_str());
+    JAFFAR_THROW_LOGIC("[Error] Unrecognized operator: '%s'. Valid operators are: ==, !=, >, >=, <, <=, %%0, %%N, BitTrue, BitFalse\n", operation.c_str());
 
     return op_equal;
   }
