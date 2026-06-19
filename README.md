@@ -45,7 +45,7 @@ ninja -C build
     --reproduce --unattended --exitOnEnd
 ```
 
-See **[Getting Started](docs/01-getting-started.md)** for the full walkthrough, including how to
+See **[Getting Started](https://sergiomartin86.github.io/jaffarPlus/01-getting-started/)** for the full walkthrough, including how to
 build for a specific console core and game.
 
 # Documentation
@@ -54,19 +54,20 @@ build for a specific console core and game.
 **https://sergiomartin86.github.io/jaffarPlus/**, with the C++ engine API reference at
 **https://sergiomartin86.github.io/jaffarPlus/api/**.
 
-A complete user & developer manual lives in **[`docs/`](docs/README.md)**:
+A complete user & developer manual lives in **[`docs/`](https://sergiomartin86.github.io/jaffarPlus/)**:
 
 | Chapter | What it covers |
 | ------- | -------------- |
-| [1. Getting Started](docs/01-getting-started.md) | Build JaffarPlus, run your first search (no ROM), read the output, replay a solution. |
-| [2. Configuration Reference](docs/02-config-reference.md) | Every section and key of a `.jaffar` file: type, default, and meaning. |
-| [3. Rules, Conditions & Rewards](docs/03-rules-and-rewards.md) | Steering the search: properties, conditions, reward actions, and magnets (illustrated). |
-| [4. Search Concepts & Tuning](docs/04-search-concepts.md) | How the search, state hashing, and NUMA/threading work — and which knobs to turn. |
-| [5. Adding a Game or Emulator](docs/05-adding-a-game.md) | Register a new game or emulator and expose its properties and actions. |
-| [6. Tooling Reference](docs/06-tooling.md) | `jaffar`, `jaffar-player`, headless screenshots, video rendering, environment overrides. |
+| [1. Getting Started](https://sergiomartin86.github.io/jaffarPlus/01-getting-started/) | Build JaffarPlus, run your first search (no ROM), read the output, replay a solution. |
+| [2. Configuration Reference](https://sergiomartin86.github.io/jaffarPlus/02-config-reference/) | Every section and key of a `.jaffar` file: type, default, and meaning. |
+| [3. Rules, Conditions & Rewards](https://sergiomartin86.github.io/jaffarPlus/03-rules-and-rewards/) | Steering the search: properties, conditions, reward actions, and magnets (illustrated). |
+| [4. Search Concepts & Tuning](https://sergiomartin86.github.io/jaffarPlus/04-search-concepts/) | How the search, state hashing, and NUMA/threading work — and which knobs to turn. |
+| [5. Adding a Game or Emulator](https://sergiomartin86.github.io/jaffarPlus/05-adding-a-game/) | Register a new game or emulator and expose its properties and actions. |
+| [6. Tooling Reference](https://sergiomartin86.github.io/jaffarPlus/06-tooling/) | `jaffar`, `jaffar-player`, headless screenshots, video rendering, environment overrides. |
 
-A C++ **API reference** for the engine internals is generated from the source with Doxygen
-(`doxygen Doxyfile` → `build/doxygen/html/`; also published as a CI artifact).
+A C++ **API reference** for the engine internals is generated from the source with Doxygen — browse
+it [online](https://sergiomartin86.github.io/jaffarPlus/api/), or build it locally with
+`doxygen Doxyfile` (output in `build/doxygen/html/`).
 
 # Built-in Emulator Support
 
