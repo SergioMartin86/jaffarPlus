@@ -1,0 +1,88 @@
+# Doxygen configuration for the JaffarPlus engine API reference.
+#
+# Generates HTML documentation from the engine headers in source/. Only the settings that differ
+# from Doxygen's defaults are listed; run `doxygen Doxyfile` from the repository root.
+#
+#   doxygen Doxyfile           # -> build/doxygen/html/index.html
+#
+# The build is also wired into CI (the `docs` job), which publishes the HTML as an artifact.
+
+#---------------------------------------------------------------------------
+# Project
+#---------------------------------------------------------------------------
+PROJECT_NAME           = "JaffarPlus"
+PROJECT_BRIEF          = "High-performance best-first search optimizer for tool-assisted speedruns"
+PROJECT_LOGO           = jaffar.png
+OUTPUT_DIRECTORY       = build/doxygen
+CREATE_SUBDIRS         = NO
+FULL_PATH_NAMES        = NO
+
+#---------------------------------------------------------------------------
+# Input
+#---------------------------------------------------------------------------
+# The engine API lives in source/. The prose manual (docs/*.md) is intentionally NOT fed to Doxygen:
+# it is authored for GitHub rendering (relative .md links and #section anchors that Doxygen resolves
+# under a different scheme), and is a separate deliverable. The API reference links out to it via the
+# main page (docs/doxygen-mainpage.dox).
+INPUT                  = source \
+                         docs/doxygen-mainpage.dox
+FILE_PATTERNS          = *.hpp *.cpp *.dox
+RECURSIVE              = YES
+
+#---------------------------------------------------------------------------
+# Extraction -- document everything, and warn about anything left undocumented so the build doubles
+# as a completeness gate (drive WARN_IF_UNDOCUMENTED warnings to zero).
+#---------------------------------------------------------------------------
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+INLINE_INHERITED_MEMB  = YES
+
+#---------------------------------------------------------------------------
+# Preprocessing -- expand the project's ubiquitous inlining/macro markers so signatures parse.
+#---------------------------------------------------------------------------
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = __INLINE__= \
+                         __JAFFAR_COMMON_INLINE__= \
+                         _JAFFAR_PLAYER \
+                         JAFFARPLUS_DETAILED_PROFILING
+
+#---------------------------------------------------------------------------
+# Warnings (completeness signal)
+#---------------------------------------------------------------------------
+QUIET                  = YES
+WARNINGS               = YES
+# WARN_IF_UNDOCUMENTED is the real completeness gate: it fires for any class/function/member with no
+# documentation at all. WARN_NO_PARAMDOC (warn when a documented function omits @param/@return) is
+# left off: the engine has many one-line accessors and operator helpers whose @brief already states
+# what they take/return, and requiring an explicit tag on each adds noise without adding information.
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = NO
+WARN_AS_ERROR          = NO
+WARN_LOGFILE           = build/doxygen/doxygen-warnings.log
+
+#---------------------------------------------------------------------------
+# Output
+#---------------------------------------------------------------------------
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+GENERATE_TREEVIEW      = YES
+SOURCE_BROWSER         = YES
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+
+#---------------------------------------------------------------------------
+# Diagrams (requires Graphviz `dot`)
+#---------------------------------------------------------------------------
+HAVE_DOT               = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = NO
+INCLUDE_GRAPH          = NO
+INCLUDED_BY_GRAPH      = NO
+DOT_IMAGE_FORMAT       = svg

@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * @file emulator.hpp
+ * @brief Abstract emulator interface that concrete emulation cores implement, exposing state
+ *        load/save, step advancement, named memory properties, and optional rendering/screenshots.
+ */
+
 #include <SDL2/SDL.h>
 #include <inputParser.hpp>
 #include <inputSet.hpp>
@@ -12,27 +18,43 @@
 namespace jaffarPlus
 {
 
-// A property is a contiguous segment of memory with size, identifiable by name
+/**
+ * @brief A property: a contiguous segment of memory with a size, identifiable by name.
+ */
 struct property_t
 {
-  uint8_t* pointer;
-  size_t   size;
+  uint8_t* pointer; ///< Pointer to the start of the property's memory segment.
+  size_t   size;    ///< Size of the property's memory segment, in bytes.
 };
 
+/**
+ * @brief Abstract base for an emulation core.
+ *
+ * @details Defines the interface JaffarPlus uses to drive a guest system: initializing the core,
+ * registering and advancing inputs, serializing/deserializing emulator state, exposing guest memory
+ * as named @ref property_t segments, and (optionally) rendering frames and saving screenshots.
+ * Concrete cores implement the pure-virtual `*Impl` and rendering hooks; @ref getEmulator constructs
+ * the appropriate core from configuration.
+ */
 class Emulator
 {
 public:
-  // Struct that holds the string of an input together with its emulator-specific input data
+  /**
+   * @brief Pairs an input's string form with its decoded, emulator-specific input data.
+   */
   struct inputEntry_t
   {
-    // Input string
+    /// @brief Input string.
     std::string inputString;
 
-    // Emulator-specific input data
+    /// @brief Emulator-specific input data.
     jaffar::input_t inputData;
   };
 
-  // Constructor must only do configuration parsing to perform dry runs
+  /**
+   * @brief Constructs the emulator, performing only configuration parsing (for dry runs).
+   * @param config Emulator configuration object; must contain the "Emulator Name" field.
+   */
   Emulator(const nlohmann::json& config)
   {
     // Getting emulator name (for runtime use)
@@ -41,7 +63,11 @@ public:
 
   virtual ~Emulator() = default;
 
-  // Initialization function
+  /**
+   * @brief Initializes the emulator instance.
+   * @details Calls the core-specific @ref initializeImpl and marks the instance as initialized.
+   * @throws A logic error if the instance was already initialized.
+   */
   __INLINE__ void initialize()
   {
     if (_isInitialized == true) JAFFAR_THROW_LOGIC("This emulator instance was already initialized");
@@ -53,8 +79,13 @@ public:
     _isInitialized = true;
   }
 
-  // Function to register inputs, to prevent the emulator from having to decode string inputs every time
-  // If the entry is already registered, the registration function will simply return the previously registered id
+  /**
+   * @brief Registers an input string, avoiding repeated decoding of the same input.
+   * @details If the input is already registered, returns its existing id; otherwise decodes it via
+   * the input parser and stores a new entry. Registration is linear O(n) to keep read access O(1).
+   * @param inputString The input string to register.
+   * @return The index of the registered input entry.
+   */
   __INLINE__ InputSet::inputIndex_t registerInput(const std::string inputString)
   {
     // Registration is done only at the beginning with linear complexity O(n) to optimize for read access O(1)
@@ -71,13 +102,23 @@ public:
     return _inputMap.size() - 1;
   }
 
-  // Function to return the information about a previously registered input
+  /**
+   * @brief Returns the information about a previously registered input.
+   * @param inputIdx The index of the registered input.
+   * @return A reference to the registered input entry.
+   */
   __INLINE__ const inputEntry_t& getRegisteredInput(const InputSet::inputIndex_t inputIdx) const { return _inputMap[(size_t)inputIdx]; }
 
-  // State advancing function
+  /**
+   * @brief Advances the emulator state by applying a registered input.
+   * @param input The index of the registered input to apply.
+   */
   void advanceState(const InputSet::inputIndex_t input) { advanceStateImpl(_inputMap[input].inputData); };
 
-  // State serialization / deserialization functions
+  /**
+   * @brief Computes the serialized size of the emulator state.
+   * @return The size, in bytes, of the serialized emulator state.
+   */
   size_t getStateSize() const
   {
     jaffarCommon::serializer::Contiguous s;
@@ -85,72 +126,114 @@ public:
     return s.getOutputSize();
   }
 
+  /** @brief Returns whether the emulator instance has been initialized. */
   __INLINE__ bool isInitialized() const { return _isInitialized; }
 
+  /** @brief Returns the emulator's configured name. */
   __INLINE__ std::string getName() const { return _emulatorName; }
 
+  /** @brief Core-specific initialization, invoked by @ref initialize. */
   virtual void initializeImpl() = 0;
 
+  /**
+   * @brief Serializes the emulator state into the given serializer.
+   * @param serializer The serializer to write the emulator state into.
+   */
   virtual void serializeState(jaffarCommon::serializer::Base& serializer) const = 0;
+  /**
+   * @brief Deserializes the emulator state from the given deserializer.
+   * @param deserializer The deserializer to read the emulator state from.
+   */
   virtual void deserializeState(jaffarCommon::deserializer::Base& deserializer) = 0;
 
-  // Function to get a reference to the input parser from the base emulator
+  /**
+   * @brief Returns a reference to the emulator's input parser.
+   * @return Pointer to the input parser owned by the core.
+   */
   virtual jaffar::InputParser* getInputParser() const = 0;
 
-  // Function to print debug information, whatever it might be
+  /** @brief Prints core-specific debug information. */
   virtual void printInfo() const = 0;
 
-  // Get a property by name
+  /**
+   * @brief Returns a memory property by name.
+   * @param propertyName The name of the property to look up.
+   * @return The property's memory pointer and size.
+   */
   virtual property_t getProperty(const std::string& propertyName) const = 0;
 
-  // Function to obtain emulator based on name
+  /**
+   * @brief Constructs the emulator core selected by the configuration.
+   * @param emulatorConfig Emulator configuration object.
+   * @return An owning pointer to the constructed emulator.
+   */
   static std::unique_ptr<Emulator> getEmulator(const nlohmann::json& emulatorConfig);
 
   /////// Render-related functions
 
-  // This function opens the video output (e.g., window)
+  /** @brief Opens the video output (e.g., window). */
   virtual void initializeVideoOutput() = 0;
 
-  // This function closes the video output (e.g., window)
+  /** @brief Closes the video output (e.g., window). */
   virtual void finalizeVideoOutput() = 0;
 
-  // This function enables rendering within the emulation core (does not output it to screen though)
+  /** @brief Enables rendering within the emulation core (does not output it to screen). */
   virtual void enableRendering() = 0;
 
-  // This function disables rendering within the emulation core (typically enables faster emulation)
+  /** @brief Disables rendering within the emulation core (typically enables faster emulation). */
   virtual void disableRendering() = 0;
 
-  // Updates the internal state of the renderer with the current game state
+  /**
+   * @brief Updates the internal state of the renderer with the current game state.
+   * @param stepIdx The index of the step/frame being rendered.
+   * @param input The input string associated with the step/frame.
+   */
   virtual void updateRendererState(const size_t stepIdx, const std::string input) = 0;
 
-  // This function gathers the necessary data for output rendering of a given state/frame
+  /**
+   * @brief Gathers the data needed to render a given state/frame into the serializer.
+   * @param serializer The serializer to write the renderer state into.
+   */
   virtual void serializeRendererState(jaffarCommon::serializer::Base& serializer) const = 0;
 
-  // This function pushes the necessary data for output rendering of a given state/frame
+  /**
+   * @brief Loads the renderer state for a given state/frame from the deserializer.
+   * @param deserializer The deserializer to read the renderer state from.
+   */
   virtual void deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) = 0;
 
-  // This function returns the size of the renderer state
+  /**
+   * @brief Returns the size of the renderer state.
+   * @return The size, in bytes, of the serialized renderer state.
+   */
   virtual size_t getRendererStateSize() const = 0;
 
-  // Shows the contents of the emulator's renderer into the window
+  /** @brief Shows the contents of the emulator's renderer in the window. */
   virtual void showRender() = 0;
 
-  // Saves the currently-rendered frame to an image file. Default: no-op (emulators without a
-  // screenshot backend simply ignore it), so the player can request it emulator-agnostically.
+  /**
+   * @brief Saves the currently-rendered frame to an image file at the given destination path.
+   * @details Default: no-op (emulators without a screenshot backend simply ignore the request), so
+   * the player can request a screenshot emulator-agnostically. Overrides take the destination file
+   * path as their sole argument.
+   */
   virtual void saveScreenshot(const std::string& /*path*/) {}
 
 protected:
-  // Function to advance state
+  /**
+   * @brief Core-specific state advancement, invoked by @ref advanceState.
+   * @param input The decoded, emulator-specific input data to apply.
+   */
   virtual void advanceStateImpl(const jaffar::input_t& input) = 0;
 
-  // Emulator name (for runtime use)
+  /// @brief Emulator name (for runtime use).
   std::string _emulatorName;
 
-  // Stores whether the emulator has been initialized
+  /// @brief Whether the emulator has been initialized.
   bool _isInitialized = false;
 
 private:
-  // Storage that maps an input id to its input data
+  /// @brief Maps an input id to its input data.
   std::vector<inputEntry_t> _inputMap;
 };
 

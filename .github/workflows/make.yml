@@ -46,6 +46,19 @@ jobs:
             extern/jaffarCommon/.build-tools/check-style.sh check source
             extern/jaffarCommon/.build-tools/check-style.sh check games
             extern/jaffarCommon/.build-tools/check-style.sh check emulators
+    # Build the engine API reference (HTML) from source/ via Doxygen. WARN_IF_UNDOCUMENTED is on, so
+    # the warning log doubles as a completeness signal; it is printed for visibility. Graphviz (dot)
+    # is installed above so class diagrams render.
+    - name: Building API reference (Doxygen)
+      run:  |
+            doxygen Doxyfile
+            echo "----- Doxygen warnings (should be empty) -----"
+            cat build/doxygen/doxygen-warnings.log || true
+    - name: Uploading API reference
+      uses: actions/upload-artifact@v4
+      with:
+        name: api-reference
+        path: build/doxygen/html
 
   # Build (TestEmulator) + engine correctness tests.
   # The test emulator/game are in-repo (no ROM, no emulator submodule), so this is a fast,

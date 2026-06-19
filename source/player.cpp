@@ -1,3 +1,15 @@
+/**
+ * @file player.cpp
+ * @brief The jaffar-player (jaffar-tester) executable: loads a config and a solution sequence and
+ *        plays it back through a @ref jaffarPlus::Runner.
+ *
+ * @details Supports interactive stepping/playback in a terminal, headless/unattended replay,
+ * per-frame BMP screenshot capture, single-command runs (@c --runCommand), and a machine-readable
+ * final-state summary (@c --printFinalState) used as an oracle for headless reproduction tests
+ * (determinism / golden-hash comparisons). Behavior is driven by the command-line flags parsed in
+ * @ref main and the file-scope switches below.
+ */
+
 #include "emulator.hpp"
 #include "game.hpp"
 #include "playback.hpp"
@@ -11,35 +23,35 @@
 #include <jaffarCommon/string.hpp>
 #include <set>
 
-// Prevents the interactive player to stall for a keystroke
-bool isUnattended;
+bool isUnattended; ///< Prevents the interactive player from stalling for a keystroke.
 
-// Determines that the reproduction must end on reaching the last step
-bool isExitOnEnd;
+bool isExitOnEnd; ///< Determines that the reproduction must end on reaching the last step.
 
-// Switch to toggle whether to reload the movie on reaching the end of the sequence
-bool isReload;
+bool isReload; ///< Switch to toggle whether to reload the movie on reaching the end of the sequence.
 
-// Switch to toggle whether to reproduce the movie
-bool isReproduce;
+bool isReproduce; ///< Switch to toggle whether to reproduce (auto-advance) the movie.
 
-// Number of frames to skip between renderings
-size_t frameskip;
+size_t frameskip; ///< Number of frames to skip between renderings.
 
-// Command to run initially and then exit
-std::string runCommand;
+std::string runCommand; ///< Command to run initially and then exit.
 
-// When set, prints a stable, machine-readable summary of the final state on exit (for headless
-// verification of a reproduction: determinism checks and golden-hash comparisons).
+/// @brief When set, prints a stable, machine-readable summary of the final state on exit (for
+///        headless verification of a reproduction: determinism checks and golden-hash comparisons).
 bool printFinalState;
 
-// Directory to write per-frame screenshots (BMP) into; empty disables screenshotting. Only the
-// listed steps are captured (or all rendered steps if the set is empty but a dir is given).
-std::string      screenshotDir;
+/// @brief Directory to write per-frame screenshots (BMP) into; empty disables screenshotting.
+std::string screenshotDir;
+/// @brief Steps to capture as screenshots; empty captures all rendered steps when a dir is given.
 std::set<size_t> screenshotSteps;
 
-// Parses a non-negative integer from a CLI argument, reporting a clear error (instead of a raw
-// std::stoul exception) when the value is malformed.
+/**
+ * @brief Parses a non-negative integer from a CLI argument value.
+ * @details Reports a clear logic error (instead of a raw std::stoul exception) when the value is
+ * malformed or contains trailing characters.
+ * @param value The string value to parse.
+ * @param flag  The name of the CLI flag the value came from, used in the error message.
+ * @return The parsed non-negative integer.
+ */
 static size_t parseUInt(const std::string& value, const std::string& flag)
 {
   try
@@ -55,6 +67,26 @@ static size_t parseUInt(const std::string& value, const std::string& flag)
   return 0;
 }
 
+/**
+ * @brief Runs one full pass over a solution sequence, optionally interactive, and reports state info.
+ *
+ * @details Loads the solution sequence file, builds a @ref jaffarPlus::Playback over the runner, and
+ * enters a loop that (unless rendering is disabled) renders the current frame, optionally saves a BMP
+ * screenshot for the current step, prints per-step information (step index, input, hashes, allowed
+ * inputs, game/emulator names, checkpoint and save-solution status, plus game-specific info), and
+ * handles navigation/playback commands. Commands move the current step (n/m +/-1, h/j +/-10, y/u
+ * +/-100, k/i +/-1000), quicksave the emulator state to "quicksave.state" (s), toggle playback (p),
+ * toggle auto-reload (r), quit (q), or are forwarded to the game's player command parser. In
+ * unattended or reproduce mode, key input is non-blocking; @c runCommand forces a single command then
+ * finalizes. On reaching the end it reloads, exits, or stops depending on the reload/exit-on-end
+ * flags. When @c printFinalState is set, prints a stable end-of-sequence summary (final step, state
+ * type, first win/fail steps, final state hash, not-allowed-input count, repeated-state count).
+ *
+ * @param r             The runner to play the solution back on.
+ * @param solutionFile  Path to the solution sequence file to load and reproduce.
+ * @param disableRender Whether to skip frame rendering (and screenshot capture).
+ * @return false when the cycle finalized (quit requested), true to keep looping (e.g. for reload).
+ */
 bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disableRender)
 {
   // If sequence file defined, load it and play it
@@ -331,6 +363,23 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
   return true;
 }
 
+/**
+ * @brief Entry point for the jaffar-player (jaffar-tester) executable.
+ *
+ * @details Parses the command-line arguments (required @c configFile and @c solutionFile, plus the
+ * @c --reproduce, @c --reload, @c --exitOnEnd, @c --unattended, @c --disableRender, @c --frameskip,
+ * @c --initialSequence, @c --runCommand, @c --screenshotDir, @c --screenshotSteps and
+ * @c --printFinalState flags), seeding the file-scope playback switches from them. Loads and parses
+ * the JSON config, optionally overrides the emulator's "Initial Sequence File Path", forces the
+ * runner's frameskip rate to 0, then builds and initializes a @ref jaffarPlus::Runner. If rendering
+ * is enabled it initializes video output and rendering. Serializes the runner's initial state, then
+ * repeatedly invokes @ref mainCycle; when a cycle requests another pass it sleeps briefly and
+ * restores the saved initial state. Finalizes video output and the terminal on exit.
+ *
+ * @param argc Argument count.
+ * @param argv Argument vector.
+ * @return 0 on normal exit (implicit).
+ */
 int main(int argc, char* argv[])
 {
   // Parsing command line arguments

@@ -1,0 +1,31 @@
+/**
+ * @mainpage JaffarPlus Engine API Reference
+ *
+ * This is the C++ API reference for the JaffarPlus engine — the classes under `source/` that
+ * implement the best-first search, state/hash databases, the game and emulator interfaces, and the
+ * rule/condition/reward system.
+ *
+ * It is generated from the engine headers and is aimed at **contributors** extending the engine or
+ * adding games and emulators. If you are looking for how to *use* JaffarPlus — building it, writing
+ * a `.jaffar` configuration, tuning a search — read the prose manual instead:
+ *
+ *   - User & Developer Manual: `docs/` (start at `docs/README.md`)
+ *
+ * @section api_entrypoints Key entry points
+ *
+ * - jaffarPlus::Driver   — owns the top-level run loop and outcome reporting.
+ * - jaffarPlus::Engine   — the best-first search itself (state expansion, hashing, parallelism).
+ * - jaffarPlus::Runner   — legal inputs, frame-skip, and state hashing per step.
+ * - jaffarPlus::Game     — the interface a game implements (properties, reward, rules, serialization).
+ * - jaffarPlus::Emulator — the interface an emulation core implements (load/save state, advance step).
+ * - jaffarPlus::StateDb  — the per-NUMA-domain database of states to expand.
+ * - jaffarPlus::HashDb   — the two-tier visited-state hash database used for deduplication.
+ * - jaffarPlus::Rule / jaffarPlus::Condition / jaffarPlus::Property — the rule and reward grammar.
+ *
+ * @section api_adding Adding a game or emulator
+ *
+ * A new game is a header-only class `final : public jaffarPlus::Game` placed under `games/<platform>/`;
+ * a new emulator is `final : public jaffarPlus::Emulator` under `emulators/`. Registration is
+ * automatic. See the manual's "Adding a Game" chapter and the pure-virtual methods documented on
+ * jaffarPlus::Game and jaffarPlus::Emulator.
+ */

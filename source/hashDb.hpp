@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * @file hashDb.hpp
+ * @brief Two-tier (per-domain L1 + shared global L2) hash database used to deduplicate visited search
+ *        states, with a rolling set of hash stores bounded by count and measured memory size.
+ */
+
 #include "numa.hpp"
 #include <atomic>
 #include <jaffarCommon/concurrent.hpp>
@@ -12,19 +18,26 @@ namespace jaffarPlus
 {
 
 /**
- * The hash database deduplicates states across the whole search. On a multi-NUMA host it uses a
- * two-tier layout: a NUMA-local L1 store per domain in front of a single global authoritative L2
- * store. A worker first probes its own domain's L1 (local, fast); only on an L1 miss does it consult
- * L2 (which may be remote / contended). Every globally-new hash is registered in L2 exactly once, so
- * dedup stays COMPLETE -- identical to a single global table -- while the frequent within-domain
- * repeats are served locally. On a single-NUMA host (one domain) the L1 tier is skipped and a single
- * local store is used, since everything is local anyway.
+ * @brief Two-tier hash database that deduplicates visited states across the whole search.
+ *
+ * @details On a multi-NUMA host it uses a two-tier layout: a NUMA-local L1 store per domain in front
+ * of a single global authoritative L2 store. A worker first probes its own domain's L1 (local, fast);
+ * only on an L1 miss does it consult L2 (which may be remote / contended). Every globally-new hash is
+ * registered in L2 exactly once, so dedup stays COMPLETE -- identical to a single global table --
+ * while the frequent within-domain repeats are served locally. On a single-NUMA host (one domain) the
+ * L1 tier is skipped and a single local store is used, since everything is local anyway.
  *
  * This is automatic; there is no script-level configuration for it.
  */
 class HashDb final
 {
 public:
+  /**
+   * @brief Constructs the hash database from its configuration block.
+   * @param config JSON configuration providing "Max Store Count" and "Max Store Size (Mb)". The
+   *               environment variable JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB, when set, overrides
+   *               the configured maximum store size (in Mb) for testing.
+   */
   HashDb(const nlohmann::json& config)
   {
     _maxStoreCount  = jaffarCommon::json::getNumber<size_t>(config, "Max Store Count");
@@ -34,12 +47,21 @@ public:
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB")) _maxStoreSizeMb = std::stoul(value);
   }
 
+  /// @brief Destroys the database, deleting all per-domain L1 stores and the global L2 store.
   ~HashDb()
   {
     for (auto* s : _l1) delete s;
     if (_l2 != nullptr) delete _l2;
   }
 
+  /**
+   * @brief Allocates the hash stores and splits the configured budget across the L1 and L2 tiers.
+   *
+   * @details The configured "Max Store Size" is the absolute per-generation budget for the whole hash
+   * DB. On a multi-domain run the global L2 receives 3/4 of the budget and the per-domain L1 caches
+   * share the remaining 1/4 (split evenly across domains); on a single-domain run the lone global
+   * store receives the entire budget and no L1 tier is created.
+   */
   __INLINE__ void initialize()
   {
     // The configured "Max Store Size" is the ABSOLUTE per-generation budget for the whole hash DB:
@@ -71,7 +93,15 @@ public:
     _l2 = makeStore();
   }
 
-  // Function to print relevant information
+  /**
+   * @brief Logs the database's current state, including per-generation breakdowns of the rolling
+   *        stores and aggregated check / collision statistics.
+   *
+   * @details On a single-domain run it reports L2 as a single store with its rolling-window
+   * breakdown. On a two-tier run it aggregates the L1 caches across domains, reports the global L2,
+   * and prints the L2 rolling-window breakdown. Each store line exposes its Id and Age so window
+   * rolling is observable.
+   */
   void printInfo() const
   {
     constexpr double toMb = 1.0 / (1024.0 * 1024.0);
@@ -143,7 +173,14 @@ public:
   }
 
   /**
-   * Function to check whether the provided hash is already present in the database
+   * @brief Checks whether the given hash is already present in the database, inserting it if new.
+   *
+   * @details On a single-domain run it probes the lone global store. On a two-tier run it first
+   * probes (and caches into) the calling thread's domain-local L1 store; on an L1 hit it returns true
+   * without touching L2. On an L1 miss it probes (and inserts into) the global L2, which makes the
+   * hash globally visible. Per-thread query and collision counters are updated on each probe.
+   * @param hash The state hash to look up.
+   * @return true if the hash was already present (a duplicate state), false if it was newly inserted.
    */
   __INLINE__ bool checkHashExists(const jaffarCommon::hash::hash_t hash)
   {
@@ -180,7 +217,11 @@ public:
   }
 
   /**
-   * This function simply inserts a hash without checking for collisions
+   * @brief Inserts a hash into the current (newest) store(s) without checking for collisions.
+   *
+   * @details On a two-tier run the hash is inserted into the calling thread's domain-local L1 current
+   * store; in all cases it is inserted into the global L2 current store.
+   * @param hash The state hash to insert.
    */
   __INLINE__ void insertHash(const jaffarCommon::hash::hash_t hash)
   {
@@ -189,8 +230,11 @@ public:
   }
 
   /**
-   * This function serves to indicate a new step has started.
-   * The current age is increased, and if a store exceeds its maximum size, it is rolled.
+   * @brief Signals that a new search step has started, rolling and ageing every store.
+   *
+   * @details Each per-domain L1 store is rolled at the per-domain L1 budget and the global L2 store
+   * is rolled at the L2 budget; rolling creates a fresh current store (and discards the oldest) only
+   * when a store's measured memory exceeds its budget. Every store's age is advanced.
    */
   __INLINE__ void advanceStep()
   {
@@ -200,86 +244,87 @@ public:
 
 private:
   /**
-   * A hash store represents a hash set, containing hashes of previously found states
-   * It also contains an age, indicating how long ago it was created. The older
-   * hash stores are discarded first.
+   * @brief One generation of a rolling store: a hash set of previously found states plus its
+   *        identity, age and snapshotted statistics.
+   *
+   * @details A store holds a window of these generations; the oldest are discarded first when the
+   * window is at capacity.
    */
   struct hashStore_t
   {
-    // The store id
-    const size_t id;
+    const size_t id; ///< The store id.
 
-    // The store age
-    const size_t age;
+    const size_t age; ///< The store age (number of steps elapsed since it was created).
 
-    // How many queries were made
-    size_t queryCount;
+    size_t queryCount; ///< How many queries were made (snapshot of summed per-thread counts at roll time).
 
-    // How many collisions were detected
-    size_t collisionCount;
+    size_t collisionCount; ///< How many collisions were detected (snapshot of summed per-thread counts at roll time).
 
-    // The internal set for the hash store
-    jaffarCommon::concurrent::HashSet_t<jaffarCommon::hash::hash_t> hashSet = {};
+    jaffarCommon::concurrent::HashSet_t<jaffarCommon::hash::hash_t> hashSet = {}; ///< The internal set of hashes for this store generation.
   };
 
   /**
-   * A query/collision counter padded to a full cache line. The hot-path hash check is the most
-   * frequent operation in the engine, so these statistics are accumulated per-thread (each thread
-   * touches only its own slot) instead of through a single shared atomic, whose cache line would
-   * otherwise bounce between all worker cores on every check. The padding prevents two threads'
-   * slots from landing on the same cache line (false sharing).
+   * @brief A query/collision counter padded to a full cache line to avoid false sharing.
+   *
+   * @details The hot-path hash check is the most frequent operation in the engine, so these
+   * statistics are accumulated per-thread (each thread touches only its own slot) instead of through
+   * a single shared atomic, whose cache line would otherwise bounce between all worker cores on every
+   * check. The padding prevents two threads' slots from landing on the same cache line.
    */
   struct alignas(64) paddedCounter_t
   {
-    size_t value = 0;
+    size_t value = 0; ///< The counter's accumulated value.
   };
 
+  /**
+   * @brief A single (L1 or L2) hash store: a rolling window of @ref hashStore_t generations together
+   *        with its rolling state and per-thread statistics counters.
+   */
   struct NUMAStore_t
   {
-    /**
-     * Identifier count for hash db stores
-     */
-    size_t _currentHashStoreId = 0;
+    size_t _currentHashStoreId = 0; ///< Next id to assign to a newly created hash store generation.
 
     /**
-     * Age is a way to define how many steps have elapsed since the hash set was created.
-     *
-     * In other words, what is the last step to be considered for hash collisions
+     * @brief Number of steps elapsed since this store began, assigned as the age of newly created
+     *        generations.
      */
     size_t _currentAge = 0;
 
     /**
-     * The current hash store (latest entry) is R/W. That is, it can be used to check whether the hash collides
-     * but in doing that it is also added into the store
+     * @brief The rolling window of hash store generations (oldest at front, current/newest at back).
      *
-     * The past hash stores are read only. They are only used to check whether the hash collides
-     * but are not updated in the process.
+     * @details The current (newest) generation is read/write: probing it both checks for a collision
+     * and inserts the hash. The older generations are read-only and are only consulted for collisions.
      */
     std::deque<hashStore_t> _hashStores;
 
-    /**
-     * Per-thread query counts for the current hash store, indexed by OpenMP thread id.
-     */
-    std::vector<paddedCounter_t> _threadQueryCount;
+    std::vector<paddedCounter_t> _threadQueryCount; ///< Per-thread query counts for the current store, indexed by thread id.
 
-    /**
-     * Per-thread collision counts for the current hash store, indexed by OpenMP thread id.
-     */
-    std::vector<paddedCounter_t> _threadCollisionCount;
+    std::vector<paddedCounter_t> _threadCollisionCount; ///< Per-thread collision counts for the current store, indexed by thread id.
 
     // Aggregating helpers (called only at reporting / store-rollover time, never in the hot path)
+
+    /**
+     * @brief Sums the per-thread query counts.
+     * @return The total number of queries accumulated across all threads.
+     */
     __INLINE__ size_t getQueryCount() const
     {
       size_t total = 0;
       for (const auto& c : _threadQueryCount) total += c.value;
       return total;
     }
+    /**
+     * @brief Sums the per-thread collision counts.
+     * @return The total number of collisions accumulated across all threads.
+     */
     __INLINE__ size_t getCollisionCount() const
     {
       size_t total = 0;
       for (const auto& c : _threadCollisionCount) total += c.value;
       return total;
     }
+    /// @brief Resets all per-thread query and collision counters to zero.
     __INLINE__ void resetCounts()
     {
       for (auto& c : _threadQueryCount) c.value = 0;
@@ -288,7 +333,8 @@ private:
   };
 
   /**
-   * Creates a fresh store with a single (empty) hash set and per-thread counters.
+   * @brief Creates a fresh store with a single (empty) hash set generation and per-thread counters.
+   * @return A pointer to the newly allocated store (owned by the caller).
    */
   __INLINE__ NUMAStore_t* makeStore()
   {
@@ -300,10 +346,14 @@ private:
   }
 
   /**
-   * Reverse-scans a store's hash sets (newest first), inserting the hash into the current (newest)
-   * set and checking-only the archived sets. Returns true if the hash was already present anywhere
-   * (a collision). Inserting-while-checking on the newest set means a single probe both registers
-   * the hash and detects a same-step duplicate.
+   * @brief Reverse-scans a store's hash sets (newest first), inserting into the current set and
+   *        checking-only the archived sets.
+   *
+   * @details Inserting-while-checking on the newest set means a single probe both registers the hash
+   * and detects a same-step duplicate.
+   * @param store The store to probe and insert into.
+   * @param hash  The hash to look up / insert.
+   * @return true if the hash was already present in any of the store's generations (a collision).
    */
   __INLINE__ bool probeStore(NUMAStore_t* const store, const jaffarCommon::hash::hash_t hash)
   {
@@ -324,8 +374,14 @@ private:
   }
 
   /**
-   * Rolls a single store: if its current (newest) set's measured memory exceeds the budget, snapshot
-   * its counters, discard the oldest set if at capacity, and push a fresh current set. Then age it.
+   * @brief Rolls a single store and advances its age.
+   *
+   * @details If the current (newest) set's measured memory reaches @p maxBytes, the per-thread
+   * counters are snapshotted into the current generation and reset, the oldest generation is
+   * discarded if the window is already at @ref _maxStoreCount, and a fresh current generation is
+   * pushed. The store's age is then advanced in all cases.
+   * @param g        The store to roll.
+   * @param maxBytes The per-generation memory budget that triggers a roll.
    */
   __INLINE__ void rollStore(NUMAStore_t* const g, const size_t maxBytes)
   {
@@ -352,55 +408,43 @@ private:
   }
 
   /**
-   * Computes the actual resident memory of a hash store from the underlying set's measured
-   * allocated capacity (number of slots), rather than from an entries-to-bytes estimate. This
-   * tracks phmap's real footprint -- which varies with load factor and per-submap power-of-two
-   * rounding -- so the configured store budget is respected instead of being over- or under-shot.
+   * @brief Computes the actual resident memory of a hash store generation from the underlying set's
+   *        measured allocated capacity (number of slots) plus the fixed overhead.
+   *
+   * @details Measuring from capacity tracks phmap's real footprint -- which varies with load factor
+   * and per-submap power-of-two rounding -- so the configured store budget is respected instead of
+   * being over- or under-shot.
+   * @param store The hash store generation to measure.
+   * @return The estimated resident memory of the store, in bytes.
    */
   __INLINE__ size_t getStoreSizeBytes(const hashStore_t& store) const { return store.hashSet.capacity() * _bytesPerSlot + _hashStoreFixedOverhead; }
 
   /**
-   * Per-slot memory cost of the underlying phmap flat hash set: each element is stored inline
-   * (one slot = sizeof(value)) plus one control byte per slot. Capacity is measured directly from
-   * the set, so this no longer needs to absorb load-factor or power-of-two-rounding variance.
+   * @brief Per-slot memory cost of the underlying phmap flat hash set.
+   *
+   * @details Each element is stored inline (one slot = sizeof(value)) plus one control byte per slot.
    */
   static constexpr size_t _bytesPerSlot = sizeof(jaffarCommon::hash::hash_t) + sizeof(uint8_t);
 
   /**
-   * Fixed overhead of a hash store: the parallel set holds 256 (2^N) submaps, each with its own
-   * table bookkeeping and mutex, allocated even when empty. Independent of the number of entries.
+   * @brief Fixed overhead of a hash store, independent of the number of entries.
+   *
+   * @details The parallel set holds 256 (2^N) submaps, each with its own table bookkeeping and mutex,
+   * allocated even when empty.
    */
   static constexpr size_t _hashStoreFixedOverhead = sizeof(jaffarCommon::concurrent::HashSet_t<jaffarCommon::hash::hash_t>);
 
-  /**
-   * Maximum number of stores to keep at any time
-   */
-  size_t _maxStoreCount;
+  size_t _maxStoreCount; ///< Maximum number of store generations to keep at any time.
 
-  /**
-   * Maximum (global L2) store size (in megabytes)
-   */
-  double _maxStoreSizeMb;
+  double _maxStoreSizeMb; ///< Maximum (global L2) store size, in megabytes.
 
-  /**
-   * Maximum global L2 store size, in bytes (derived from _maxStoreSizeMb)
-   */
-  size_t _maxStoreSizeBytes;
+  size_t _maxStoreSizeBytes; ///< Maximum global L2 store size, in bytes (derived from @ref _maxStoreSizeMb).
 
-  /**
-   * Per-domain L1 store budget, in bytes (derived: global budget / number of NUMA domains)
-   */
-  size_t _l1MaxStoreSizeBytes = 0;
+  size_t _l1MaxStoreSizeBytes = 0; ///< Per-domain L1 store budget, in bytes (derived: global budget / number of NUMA domains).
 
-  /**
-   * Per-domain NUMA-local L1 caches. Empty on a single-domain run.
-   */
-  std::vector<NUMAStore_t*> _l1;
+  std::vector<NUMAStore_t*> _l1; ///< Per-domain NUMA-local L1 caches. Empty on a single-domain run.
 
-  /**
-   * The single global authoritative store (holds the complete dedup set).
-   */
-  NUMAStore_t* _l2 = nullptr;
+  NUMAStore_t* _l2 = nullptr; ///< The single global authoritative store (holds the complete dedup set).
 };
 
 } // namespace jaffarPlus

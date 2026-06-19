@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * @file runner.hpp
+ * @brief Drives a Game forward one input at a time, managing the allowed/candidate input sets,
+ *        frameskip, input-history recording and state hashing/serialization.
+ */
+
 #include "game.hpp"
 #include "inputSet.hpp"
 #include <atomic>
@@ -18,10 +24,27 @@
 namespace jaffarPlus
 {
 
+/**
+ * @brief Owns a @ref Game instance and advances it according to configured inputs.
+ *
+ * @details The runner parses allowed and candidate input sets from the configuration, registers
+ * every input string to a numeric index, and on each step advances the game by one input (plus any
+ * configured frameskip frames). It can record the sequence of applied inputs as a bit-packed input
+ * history, serialize/deserialize its state together with the game's, and compute a hash of the
+ * current state.
+ */
 class Runner final
 {
 public:
-  // Base constructor
+  /**
+   * @brief Constructs a runner that takes ownership of @p game and reads its settings from @p config.
+   * @param game   The game instance to drive; ownership is moved into the runner.
+   * @param config Runner configuration object, supplying the keys "Hash Step Tolerance",
+   *               "Store Input History" (with "Enabled" and "Max Size"), "Allowed Input Sets",
+   *               "Show Allowed Inputs", "Show Empty Input Slots", "Test Candidate Inputs",
+   *               "Candidate Input Sets", "Frameskip" (with "Rate", "Use Custom Input",
+   *               "Custom Input") and "Bypass Hash Calculation".
+   */
   Runner(std::unique_ptr<Game>& game, const nlohmann::json& config) : _game(std::move(game))
   {
     _hashStepTolerance = jaffarCommon::json::getNumber<uint32_t>(config, "Hash Step Tolerance");
@@ -55,6 +78,15 @@ public:
     _bypassHashCalculation = jaffarCommon::json::getBoolean(config, "Bypass Hash Calculation");
   }
 
+  /**
+   * @brief Initializes the runner: initializes the game, parses input sets, and registers inputs.
+   *
+   * @details Initializes the game if needed, parses the allowed input sets (and candidate input sets
+   * when "Test Candidate Inputs" is enabled), registers the inputs declared by the game's code,
+   * resolves the custom frameskip input index, and allocates the bit-packed input-history storage
+   * when input history is enabled.
+   * @throws A logic error if the runner was already initialized.
+   */
   void initialize()
   {
     if (_isInitialized == true) JAFFAR_THROW_LOGIC("This runner instance was already initialized");
@@ -100,6 +132,16 @@ public:
     }
   }
 
+  /**
+   * @brief Builds an @ref InputSet from its JSON description.
+   *
+   * @details Parses the set's "Conditions" (via the game's condition parser) and "Inputs" (each
+   * registered via @ref registerInput), updates @ref _largestInputSetSize, and applies the
+   * "Stop Input Evaluation" flag.
+   * @param inputSetJs JSON object describing the input set ("Conditions", "Inputs",
+   *                   "Stop Input Evaluation").
+   * @return The newly created input set.
+   */
   std::unique_ptr<InputSet> parseInputSet(const nlohmann::json& inputSetJs)
   {
     // Creating new input set to add
@@ -127,6 +169,14 @@ public:
     return inputSet;
   }
 
+  /**
+   * @brief Registers an input string and returns its numeric index.
+   *
+   * @details Obtains the index from the emulator, records the hash->index and index->string mappings,
+   * and updates @ref _maxInputIndex. Registering an already-registered input returns its prior index.
+   * @param input The input string to register.
+   * @return The index assigned to the input.
+   */
   InputSet::inputIndex_t registerInput(const std::string& input)
   {
     // Getting input hash
@@ -148,6 +198,15 @@ public:
     return inputIdx;
   }
 
+  /**
+   * @brief Collects the input indexes of every input set whose conditions currently evaluate to true.
+   *
+   * @details Iterates the given input sets in order; for each set that evaluates to true, its input
+   * indexes are appended to the result. If a satisfied set has its stop-evaluation flag set,
+   * iteration stops after that set.
+   * @param inputSets The input sets to evaluate.
+   * @return The concatenated input indexes of the satisfied input sets.
+   */
   std::vector<InputSet::inputIndex_t> getInputsFromInputSets(const std::vector<std::unique_ptr<InputSet>>& inputSets) const
   {
     // Storage for the possible input set
@@ -170,6 +229,13 @@ public:
     return possibleInputs;
   }
 
+  /**
+   * @brief Returns the inputs currently allowed for the game's state.
+   *
+   * @details Collects the inputs from the allowed input sets and appends any additional inputs
+   * supplied by the game via @ref Game::getAdditionalAllowedInputs.
+   * @return The allowed input indexes.
+   */
   __INLINE__ const auto getAllowedInputs() const
   {
     // Getting possible inputs based on the configuration file
@@ -181,9 +247,18 @@ public:
     return allowedInputs;
   }
 
+  /**
+   * @brief Returns the inputs currently allowed by the candidate input sets.
+   * @return The candidate input indexes whose input sets evaluate to true.
+   */
   __INLINE__ const auto getCandidateInputs() const { return getInputsFromInputSets(_candidateInputSets); }
 
-  // Function to get the input index of a given input
+  /**
+   * @brief Looks up the index registered for an input string.
+   * @param input The input string to look up.
+   * @return The index registered for the input.
+   * @throws A logic error if the input was not previously registered.
+   */
   __INLINE__ jaffarPlus::InputSet::inputIndex_t getInputIndex(const std::string& input) const
   {
     // Getting input hash
@@ -197,6 +272,11 @@ public:
     return inputIndex;
   }
 
+  /**
+   * @brief Reports whether an input string has been registered.
+   * @param inputString The input string to test.
+   * @return true if the input is registered, false otherwise.
+   */
   bool isInputRegistered(const std::string& inputString)
   {
     // Getting input hash
@@ -206,7 +286,14 @@ public:
     return _inputHashMap.contains(inputHash);
   }
 
-  // Function to advance state.
+  /**
+   * @brief Advances the game by one input, then by the configured number of frameskip frames.
+   *
+   * @details Applies @p inputIdx to the game and records it in the input history. Then, for each of
+   * the @ref _frameskipRate skipped frames, advances the game with either the custom frameskip input
+   * (when "Use Custom Input" is set) or the same @p inputIdx, recording each in the input history.
+   * @param inputIdx The index of the input to apply for this step.
+   */
   __INLINE__ void advanceState(const InputSet::inputIndex_t inputIdx)
   {
     // Safety check -- Disabled, for performance
@@ -228,6 +315,14 @@ public:
     }
   }
 
+  /**
+   * @brief Records an applied input into the input history and advances the input counter.
+   *
+   * @details When input history is enabled, stores @p inputIdx at the current step unless capacity
+   * (@ref _inputHistoryMaxSize) has been reached, in which case the input is counted but not recorded
+   * and a one-time warning is emitted. The input counter is always advanced.
+   * @param inputIdx The index of the input that was applied.
+   */
   __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx)
   {
     if (_inputHistoryEnabled == true)
@@ -248,12 +343,22 @@ public:
     _currentInputCount++;
   }
 
+  /**
+   * @brief Writes an input index into the bit-packed input history at a given step.
+   * @param stepId   The step (history slot) to write to.
+   * @param inputIdx The input index to store.
+   */
   __INLINE__ void setInput(const size_t stepId, const InputSet::inputIndex_t inputIdx)
   {
     // Using bit-encoded copy to store the new input
     jaffarCommon::bitwise::bitcopy(_inputHistory.data(), _inputHistory.size(), stepId, &inputIdx, sizeof(InputSet::inputIndex_t), 0, 1, _inputIndexSizeBits);
   }
 
+  /**
+   * @brief Reads the input index stored in the bit-packed input history at a given step.
+   * @param stepId The step (history slot) to read from.
+   * @return The input index stored at @p stepId.
+   */
   __INLINE__ InputSet::inputIndex_t getInput(const size_t stepId) const
   {
     // Temporary storage for the new input
@@ -266,7 +371,10 @@ public:
     return inputIdx;
   }
 
-  // Serialization routine
+  /**
+   * @brief Serializes the runner state: the game state, the input history, and the input counter.
+   * @param serializer The serializer to write the state into.
+   */
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const
   {
     // Performing serialization of the internal game instance
@@ -279,7 +387,10 @@ public:
     serializer.pushContiguous(&_currentInputCount, sizeof(_currentInputCount));
   }
 
-  // Deeserialization routine
+  /**
+   * @brief Restores the runner state: the game state, the input history, and the input counter.
+   * @param deserializer The deserializer to read the state from.
+   */
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer)
   {
     // Performing serialization of the internal game instance
@@ -292,7 +403,10 @@ public:
     deserializer.popContiguous(&_currentInputCount, sizeof(_currentInputCount));
   }
 
-  // Getting the (contiguous) state size
+  /**
+   * @brief Computes the size in bytes of the serialized runner state.
+   * @return The contiguous serialized state size in bytes.
+   */
   __INLINE__ size_t getStateSize() const
   {
     jaffarCommon::serializer::Contiguous s;
@@ -300,7 +414,14 @@ public:
     return s.getOutputSize();
   }
 
-  // This function computes the hash for the current runner state
+  /**
+   * @brief Computes a hash of the current runner state.
+   *
+   * @details When "Bypass Hash Calculation" is enabled, returns the game's direct state hash.
+   * Otherwise, hashes the current hash-step-tolerance stage together with the game's hash
+   * contribution using MetroHash128.
+   * @return The computed state hash.
+   */
   __INLINE__ jaffarCommon::hash::hash_t computeHash() const
   {
     // If normal hash calculation is to be bypassed, get it straight from the game
@@ -323,7 +444,14 @@ public:
     return result;
   }
 
-  // Function to dump current inputs to a file
+  /**
+   * @brief Builds a newline-separated string of the recorded input history.
+   *
+   * @details Returns an empty string when input history is disabled. Otherwise concatenates the
+   * input string for each recorded step up to the current input count or the history capacity.
+   * @return The recorded inputs, one per line.
+   * @throws A runtime error if a recorded input index has no registered string.
+   */
   std::string getInputHistoryString() const
   {
     // Fail if input history is not enabled
@@ -352,9 +480,20 @@ public:
     return inputHistoryString;
   }
 
+  /**
+   * @brief Returns the input string registered for an input index.
+   * @param input The input index to resolve.
+   * @return The registered input string for @p input.
+   */
   std::string getInputStringFromIndex(const InputSet::inputIndex_t input) { return _inputStringMap[input]; }
 
-  // Function to print relevant information
+  /**
+   * @brief Logs runner state information.
+   *
+   * @details Logs input-history configuration, the current input count, the state hash, the
+   * hash-step-tolerance stage and the frameskip rate. When "Show Allowed Inputs" is set, also logs
+   * the currently allowed inputs (with empty-slot placeholders when "Show Empty Input Slots" is set).
+   */
   void printInfo() const
   {
     // Getting state hash
@@ -401,13 +540,25 @@ public:
     }
   }
 
+  /** @brief Returns the current hash-step-tolerance stage (current input count modulo tolerance + 1). */
   __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentInputCount % (_hashStepTolerance + 1); }
-  __INLINE__ Game*    getGame() const { return _game.get(); }
+  /** @brief Returns a pointer to the owned game instance. */
+  __INLINE__ Game* getGame() const { return _game.get(); }
 
-  __INLINE__ bool   getInputHistoryEnabled() const { return _inputHistoryEnabled; }
+  /** @brief Returns whether input-history recording is enabled. */
+  __INLINE__ bool getInputHistoryEnabled() const { return _inputHistoryEnabled; }
+  /** @brief Returns the maximum number of input-history steps that can be recorded. */
   __INLINE__ size_t getInputHistoryMaximumStep() const { return _inputHistoryMaxSize; }
 
-  // Function to obtain runner based on game and emulator choice
+  /**
+   * @brief Creates a runner from the emulator, game and runner configurations.
+   *
+   * @details Builds the game via @ref Game::getGame and wraps it in a new runner.
+   * @param emulatorConfig Configuration for the emulator.
+   * @param gameConfig     Configuration for the game.
+   * @param runnerConfig   Configuration for the runner.
+   * @return The newly created runner.
+   */
   static std::unique_ptr<Runner> getRunner(const nlohmann::json& emulatorConfig, const nlohmann::json& gameConfig, const nlohmann::json& runnerConfig)
   {
     // Getting Game
@@ -420,96 +571,74 @@ public:
     return r;
   }
 
+  /** @brief Returns whether the runner has been initialized. */
   __INLINE__ bool isInitialized() const { return _isInitialized; }
 
 private:
-  // Stores whether the game has been initialized
-  bool _isInitialized = false;
+  bool _isInitialized = false; ///< Whether the runner has been initialized.
 
-  // Pointer to the game instance
-  std::unique_ptr<Game> _game;
+  std::unique_ptr<Game> _game; ///< The owned game instance driven by the runner.
 
-  // Maximum step (max input history)
-  uint32_t _inputHistoryMaxSize;
+  uint32_t _inputHistoryMaxSize; ///< Maximum number of steps that can be recorded in the input history.
 
-  // Storage for the current step of the runner
-  uint32_t _currentInputCount = 0;
+  uint32_t _currentInputCount = 0; ///< Number of inputs applied so far (the current step counter).
 
-  // Storage for the hash step tolerance
-  uint32_t _hashStepTolerance;
+  uint32_t _hashStepTolerance; ///< Hash step tolerance, used to derive the hash-step-tolerance stage.
 
-  // Specifies whether to store the input history
-  bool _inputHistoryEnabled;
+  bool _inputHistoryEnabled; ///< Whether the input history is recorded.
 
-  // Warn-once guard (shared across all runner instances/threads) for input-history truncation
+  /// @brief Warn-once guard (shared across all runner instances/threads) for input-history truncation.
   static inline std::atomic<bool> _inputHistoryTruncationWarned = false;
 
-  // Maximum size of input index in bits
-  size_t _inputIndexSizeBits;
+  size_t _inputIndexSizeBits; ///< Number of bits used to encode each input index in the history.
 
-  // Storage for the input history
-  std::vector<uint8_t> _inputHistory;
+  std::vector<uint8_t> _inputHistory; ///< Bit-packed storage for the recorded input history.
 
-  // Option to bypass hash calculation
-  bool _bypassHashCalculation;
+  bool _bypassHashCalculation; ///< Whether @ref computeHash returns the game's direct hash instead of hashing via MetroHash128.
 
   ///////////////////////////////
   // Input processing variables
   //////////////////////////////
 
-  // Storage for the maximum index to use to register a new input
-  InputSet::inputIndex_t _maxInputIndex = 0;
+  InputSet::inputIndex_t _maxInputIndex = 0; ///< One past the highest registered input index; determines the input-history encoding width.
 
-  // Hash map for input indexing
-  std::map<jaffarCommon::hash::hash_t, InputSet::inputIndex_t> _inputHashMap;
+  std::map<jaffarCommon::hash::hash_t, InputSet::inputIndex_t> _inputHashMap; ///< Maps an input string's hash to its index.
 
-  // Map for getting the allowed input from index
-  std::map<InputSet::inputIndex_t, std::string> _inputStringMap;
+  std::map<InputSet::inputIndex_t, std::string> _inputStringMap; ///< Maps an input index back to its input string.
 
   ///////////////////////////////
   //  Frameskip. These are frames that are simply skipped over, but they inputs registered nevertheless
   //////////////////////////////
 
-  // How many frames to skip
-  size_t _frameskipRate;
+  size_t _frameskipRate; ///< Number of frames to skip after each applied input.
 
-  // Whether to use a custom input. False will repeat the last input
-  bool _frameskipUseCustomInput;
+  bool _frameskipUseCustomInput; ///< Whether skipped frames use the custom input; false repeats the applied input.
 
-  // The custom input to use if not repeating the last
-  std::string _frameskipCustomInput;
+  std::string _frameskipCustomInput; ///< The custom input string to apply on skipped frames.
 
-  // Resolved index of the custom frameskip input, computed once at initialize() so advanceState()
-  // does not re-hash + re-look-up the input string on every skipped frame
+  /// @brief Resolved index of the custom frameskip input, computed once at initialize() so advanceState()
+  /// does not re-hash + re-look-up the input string on every skipped frame.
   InputSet::inputIndex_t _frameskipCustomInputIdx{};
 
   ///////////////////////////////////////////
   // Allowed and candidate input sets
   //////////////////////////////////////////
 
-  // Allowed input configuration
-  std::vector<nlohmann::json> _allowedInputSetsJs;
+  std::vector<nlohmann::json> _allowedInputSetsJs; ///< JSON descriptions of the allowed input sets (parsed at initialization).
 
-  // Candidate input configuration
-  std::vector<nlohmann::json> _candidateInputSetsJs;
+  std::vector<nlohmann::json> _candidateInputSetsJs; ///< JSON descriptions of the candidate input sets (parsed at initialization).
 
-  // Set of candidate input sets
-  std::vector<std::unique_ptr<InputSet>> _candidateInputSets;
+  std::vector<std::unique_ptr<InputSet>> _candidateInputSets; ///< Parsed candidate input sets.
 
-  // Vector of allowed input sets
-  std::vector<std::unique_ptr<InputSet>> _allowedInputSets;
+  std::vector<std::unique_ptr<InputSet>> _allowedInputSets; ///< Parsed allowed input sets.
 
-  // Largest input set sizedetected
-  size_t _largestInputSetSize = 0;
+  size_t _largestInputSetSize = 0; ///< Largest input set size detected (used for output formatting).
 
-  // Whether to test for candidate inputs
-  bool _testCandidateInputs;
+  bool _testCandidateInputs; ///< Whether candidate input sets are parsed and tested.
 
-  // Show a placeholder for inputs not supported in this frame
-  bool _showEmptyInputSlots;
+  bool _showEmptyInputSlots; ///< Whether placeholders are printed for unused input slots.
 
-  // Show allowed inputs enable/disable
-  bool _showAllowedInputs;
+  bool _showAllowedInputs; ///< Whether allowed inputs are printed in @ref printInfo.
 };
 
 } // namespace jaffarPlus

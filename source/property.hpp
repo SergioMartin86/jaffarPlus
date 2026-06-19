@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * @file property.hpp
+ * @brief A named, typed view into a region of game memory, with datatype and endianness handling and
+ *        a templated accessor for reading the pointed-to value.
+ */
+
 #include <cstring>
 #include <jaffarCommon/exceptions.hpp>
 #include <jaffarCommon/hash.hpp>
@@ -8,38 +14,66 @@
 namespace jaffarPlus
 {
 
+/**
+ * @brief A named, typed reference to a value stored at a memory address.
+ *
+ * A property pairs a name with a raw pointer into game memory, a datatype describing how the bytes
+ * at that address are interpreted, and an endianness describing their byte order. Conditions and
+ * other engine components read the live value through @ref getValue.
+ */
 class Property
 {
 public:
+  /// @brief The interpretation of the bytes at the property's memory address.
   enum datatype_t
   {
-    dt_uint8, // Integer Little Endian
-    dt_uint16,
-    dt_uint32,
-    dt_uint64,
-    dt_int8,
-    dt_int16,
-    dt_int32,
-    dt_int64,
-    dt_bool,    // Boolean
-    dt_float32, // Single Precision Float (32-bit)
-    dt_float64  // Double Precision Float (64-bit)
+    dt_uint8,   ///< Unsigned 8-bit integer (config datatype "UINT8").
+    dt_uint16,  ///< Unsigned 16-bit integer (config datatype "UINT16").
+    dt_uint32,  ///< Unsigned 32-bit integer (config datatype "UINT32").
+    dt_uint64,  ///< Unsigned 64-bit integer (config datatype "UINT64").
+    dt_int8,    ///< Signed 8-bit integer (config datatype "INT8").
+    dt_int16,   ///< Signed 16-bit integer (config datatype "INT16").
+    dt_int32,   ///< Signed 32-bit integer (config datatype "INT32").
+    dt_int64,   ///< Signed 64-bit integer (config datatype "INT64").
+    dt_bool,    ///< Boolean stored in a single byte (config datatype "BOOL").
+    dt_float32, ///< Single precision float, 32-bit (config datatype "FLOAT32").
+    dt_float64  ///< Double precision float, 64-bit (config datatype "FLOAT64").
   };
 
+  /// @brief The byte order of the value stored at the property's memory address.
   enum endianness_t
   {
-    little,
-    big
+    little, ///< Little endian byte order (config endianness "Little").
+    big     ///< Big endian byte order (config endianness "Big").
   };
 
+  /// @brief Default construction is disabled; a property requires a name, pointer, datatype and endianness.
   Property() = delete;
+
+  /**
+   * @brief Constructs a property describing a value in memory.
+   * @param name       Identifying name for the property; also hashed for fast lookup.
+   * @param pointer    Pointer to the bytes in game memory this property refers to.
+   * @param datatype   How the bytes at @p pointer are interpreted.
+   * @param endianness Byte order of the value at @p pointer.
+   */
   Property(const std::string& name, void* const pointer, const datatype_t datatype, endianness_t endianness)
       : _name(name), _pointer(pointer), _datatype(datatype), _endianness(endianness), _nameHash(jaffarCommon::hash::hashString(name))
   {
   }
 
+  /**
+   * @brief Returns the size in bytes of the property's value.
+   * @return The byte size of the property's datatype.
+   */
   __INLINE__ size_t getSize() const { return getDatatypeSize(_datatype); }
 
+  /**
+   * @brief Maps a configuration endianness string to its @ref endianness_t value.
+   * @param endiannessName The endianness token from the config ("Little" or "Big").
+   * @return The matching endianness enum value.
+   * @throws A logic error if the token is not recognized.
+   */
   static __INLINE__ endianness_t parseEndiannessName(const std::string& endiannessName)
   {
     if (endiannessName == "Little") return endianness_t::little;
@@ -48,6 +82,12 @@ public:
     JAFFAR_THROW_LOGIC("Endianness '%s' not recognized.", endiannessName.c_str());
   }
 
+  /**
+   * @brief Maps a configuration datatype string to its @ref datatype_t value.
+   * @param datatypeName The datatype token from the config (e.g. "UINT8", "INT32", "BOOL", "FLOAT64").
+   * @return The matching datatype enum value.
+   * @throws A logic error if the token is not recognized.
+   */
   static __INLINE__ datatype_t parseDatatypeName(const std::string& datatypeName)
   {
     if (datatypeName == "UINT8") return datatype_t::dt_uint8;
@@ -65,6 +105,12 @@ public:
     JAFFAR_THROW_LOGIC("Data type '%s' not recognized.", datatypeName.c_str());
   }
 
+  /**
+   * @brief Returns the size in bytes of a given datatype.
+   * @param datatype The datatype to measure.
+   * @return The byte size of @p datatype.
+   * @throws A logic error if the datatype is not recognized.
+   */
   static __INLINE__ size_t getDatatypeSize(const datatype_t datatype)
   {
     switch (datatype)
@@ -85,6 +131,15 @@ public:
     JAFFAR_THROW_LOGIC("Unidentified datatype %d\n", datatype);
   }
 
+  /**
+   * @brief Reads the property's value at its memory address as type @p T, applying endianness conversion.
+   *
+   * When the property is little endian the bytes are returned as-is. When it is big endian the bytes
+   * are reversed into the returned value.
+   * @tparam T The type to read the value as; its size must match the property's datatype size.
+   * @return The value at the property's pointer, interpreted as @p T.
+   * @throws A logic error if sizeof(T) does not match the property's datatype size.
+   */
   template <typename T>
   __INLINE__ T getValue() const
   {
@@ -127,17 +182,21 @@ public:
     return value;
   }
 
-  datatype_t                 getDatatype() const { return _datatype; }
-  std::string                getName() const { return _name; }
+  /** @brief Returns the property's datatype. */
+  datatype_t getDatatype() const { return _datatype; }
+  /** @brief Returns the property's name. */
+  std::string getName() const { return _name; }
+  /** @brief Returns the hash of the property's name. */
   jaffarCommon::hash::hash_t getNameHash() const { return _nameHash; }
-  void*                      getPointer() const { return _pointer; }
+  /** @brief Returns the raw pointer to the property's value in memory. */
+  void* getPointer() const { return _pointer; }
 
 private:
-  const std::string                _name;
-  void* const                      _pointer;
-  const datatype_t                 _datatype;
-  const endianness_t               _endianness;
-  const jaffarCommon::hash::hash_t _nameHash;
+  const std::string                _name;       ///< Identifying name of the property.
+  void* const                      _pointer;    ///< Pointer to the property's value in game memory.
+  const datatype_t                 _datatype;   ///< How the bytes at @ref _pointer are interpreted.
+  const endianness_t               _endianness; ///< Byte order of the value at @ref _pointer.
+  const jaffarCommon::hash::hash_t _nameHash;   ///< Precomputed hash of @ref _name for fast lookup.
 };
 
 } // namespace jaffarPlus

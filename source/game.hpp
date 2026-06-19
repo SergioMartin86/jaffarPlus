@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * @file game.hpp
+ * @brief Abstract base for a JaffarPlus game: wraps an emulator, registers game properties, drives
+ *        state advancement/serialization, and parses and evaluates the rule/condition/action set.
+ */
+
 #include "emulator.hpp"
 #include "rule.hpp"
 #include <jaffarCommon/bitwise.hpp>
@@ -18,17 +24,34 @@
 namespace jaffarPlus
 {
 
+/**
+ * @brief Abstract base class for a JaffarPlus game.
+ *
+ * @details A game wraps an @ref Emulator and exposes the search-facing interface: it advances and
+ * (de)serializes state, computes state hashes, evaluates a configured rule set, and tracks the
+ * derived state type, reward, checkpoint level and save-solution information. Concrete games
+ * subclass it and implement the pure-virtual hooks (e.g. @ref registerGameProperties,
+ * @ref advanceStateImpl, @ref serializeStateImpl, @ref deserializeStateImpl,
+ * @ref calculateGameSpecificReward, @ref computeAdditionalHashing, @ref printInfoImpl and
+ * @ref parseRuleActionImpl).
+ */
 class Game
 {
 public:
+  /// @brief Classification of the current game state, derived from the satisfied rules.
   enum stateType_t
   {
-    normal = 0,
-    win    = 1,
-    fail   = 2
+    normal = 0, ///< No win or fail rule is currently satisfied.
+    win    = 1, ///< A win rule is currently satisfied.
+    fail   = 2  ///< A fail rule is currently satisfied.
   };
 
-  // Constructor that takes an already created emulator
+  /**
+   * @brief Constructs a game from an already created emulator and a configuration object.
+   * @param emulator The emulator instance this game takes ownership of.
+   * @param config   Game configuration JSON, providing "Game Name", "Frame Rate",
+   *                 "Bypass Emulator State", "Print Properties", "Hash Properties" and "Rules".
+   */
   Game(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : _emulator(std::move(emulator))
   {
     // Getting emulator name (for runtime use)
@@ -52,8 +75,11 @@ public:
     _rulesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Rules");
   };
 
-  // Returns a comma-separated list of the property names registered for this game, for use in error
-  // messages when a configured property name is not found.
+  /**
+   * @brief Returns a comma-separated list of the property names registered for this game.
+   * @details Intended for use in error messages when a configured property name is not found.
+   * @return The registered property names joined by ", ".
+   */
   std::string getRegisteredPropertyNames() const
   {
     std::string names;
@@ -61,6 +87,15 @@ public:
     return names;
   }
 
+  /**
+   * @brief Initializes the game: emulator, properties, rules and the first state update.
+   *
+   * @details Initializes the emulator if needed, calls @ref registerGameProperties, resolves the
+   * configured printable and hashable property names to property pointers, parses the rules, runs
+   * the pre-/post-update hooks around @ref initializeImpl, and marks the game as initialized.
+   * @throws A logic error if the game was already initialized, or if a configured printable or
+   *         hashable property name is not registered.
+   */
   void initialize()
   {
     if (_isInitialized == true) JAFFAR_THROW_LOGIC("This game instance was already initialized");
@@ -115,10 +150,16 @@ public:
     _isInitialized = true;
   }
 
-  Game()          = delete;
+  Game()          = delete; ///< Default construction is disabled; a game requires an emulator and config.
   virtual ~Game() = default;
 
-  // Function to advance state.
+  /**
+   * @brief Advances the game state by applying a single input.
+   *
+   * @details Runs the pre-update hook, snapshots the previous save-solution rule id, calls
+   * @ref advanceStateImpl with the input, then runs the post-update hook.
+   * @param input The input index to apply for this step.
+   */
   __INLINE__ void advanceState(const InputSet::inputIndex_t input)
   {
     // Calling the pre-update hook
@@ -134,7 +175,14 @@ public:
     stateUpdatePostHook();
   }
 
-  // Serialization routine
+  /**
+   * @brief Serializes the full game state.
+   *
+   * @details Serializes the emulator state (unless emulator state is bypassed), then game-specific
+   * data via @ref serializeStateImpl, followed by the reward, checkpoint level, save-solution rule
+   * ids, state type and rule status vector.
+   * @param serializer The serializer to push state into.
+   */
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const
   {
     // Serializing internal emulator state
@@ -162,7 +210,16 @@ public:
     serializer.push(_rulesStatus.data(), _rulesStatus.size());
   }
 
-  // Deserialization routine
+  /**
+   * @brief Restores the full game state previously written by @ref serializeState.
+   *
+   * @details Runs the pre-update hook, restores the emulator state (unless bypassed) and
+   * game-specific data via @ref deserializeStateImpl, runs the post-update hook, then pops the
+   * reward, checkpoint level, save-solution rule ids and state type. Finally runs the pre-rule
+   * hook, restores the rule status vector, re-runs game-specific rule actions and runs the post-rule
+   * hook.
+   * @param deserializer The deserializer to pop state from.
+   */
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer)
   {
     // Calling the pre-update hook
@@ -205,7 +262,13 @@ public:
     ruleUpdatePostHook();
   }
 
-  // This function computes the hash for the current state
+  /**
+   * @brief Updates a hash engine with the current state's distinguishing data.
+   *
+   * @details Feeds each hashable property's bytes into the engine, then calls
+   * @ref computeAdditionalHashing for any game-specific contribution.
+   * @param hashEngine The hash engine to update.
+   */
   __INLINE__ void computeHash(MetroHash128& hashEngine) const
   {
     // Processing hashable game properties
@@ -215,7 +278,12 @@ public:
     computeAdditionalHashing(hashEngine);
   }
 
-  // Function to print
+  /**
+   * @brief Prints the current game state to the logger.
+   *
+   * @details Logs the state type, reward, per-rule satisfaction bits, and each printable property's
+   * value (formatted by datatype), then calls @ref printInfoImpl for game-specific output.
+   */
   void printInfo() const
   {
     // Getting maximum printable property name, for formatting purposes
@@ -272,7 +340,13 @@ public:
     printInfoImpl();
   }
 
-  // Evaluates the rule set on a given frame. Returns true if it is a fail.
+  /**
+   * @brief Evaluates the rule set against the current state.
+   *
+   * @details Runs the pre-rule hook, then for each not-yet-satisfied rule evaluates its conditions
+   * and, if met, marks it satisfied via @ref satisfyRule. Afterwards runs game-specific rule actions
+   * and the post-rule hook.
+   */
   __INLINE__ void evaluateRules()
   {
     // Calling the pre-update hook
@@ -302,6 +376,9 @@ public:
     ruleUpdatePostHook();
   }
 
+  /**
+   * @brief Runs the registered actions of every currently satisfied rule.
+   */
   __INLINE__ void runGameSpecificRuleActions()
   {
     // First, checking if the rules have been satisfied
@@ -316,6 +393,14 @@ public:
     }
   }
 
+  /**
+   * @brief Recomputes the state type and checkpoint level from the satisfied rules.
+   *
+   * @details Resets the state type to normal and the checkpoint level to zero, then iterates the
+   * satisfied rules: checkpoint rules increment the checkpoint level and record their tolerance,
+   * save-solution rules update the current save-solution rule id when their index exceeds the
+   * previous one, win rules set the state type to win, and fail rules set it to fail.
+   */
   __INLINE__ void updateGameStateType()
   {
     // Clearing game state type before we evaluate satisfied rules
@@ -352,6 +437,12 @@ public:
     }
   }
 
+  /**
+   * @brief Recomputes the current state's reward from the satisfied rules.
+   *
+   * @details Resets the reward to zero, sums the reward of every satisfied rule, and adds the
+   * game-specific reward from @ref calculateGameSpecificReward.
+   */
   __INLINE__ void updateReward()
   {
     // First, we resetting reward to zero
@@ -378,6 +469,18 @@ public:
     _reward += calculateGameSpecificReward();
   }
 
+  /**
+   * @brief Parses a single rule condition from JSON into a typed @ref Condition.
+   *
+   * @details Resolves the "Op" operator and the "Property" first operand (which must be registered),
+   * then interprets "Value": a number or boolean becomes an immediate second operand, while a string
+   * is treated as the name of a second registered property. The condition is instantiated as a
+   * @ref _vCondition specialized to the first property's datatype.
+   * @param conditionJs The condition JSON object, expected to contain "Op", "Property" and "Value".
+   * @return An owning pointer to the constructed condition.
+   * @throws A logic error if the operator is unknown, a referenced property is not declared, the
+   *         "Value" key is missing, or its format/type is invalid.
+   */
   std::unique_ptr<Condition> parseCondition(const nlohmann::json& conditionJs)
   {
     // Parsing operator name
@@ -462,62 +565,102 @@ public:
     JAFFAR_THROW_LOGIC("[ERROR] Rule contains an invalid 'Value' key.\n", conditionJs["Value"].dump().c_str());
   }
 
-  // Returns pointer to the internal emulator
+  /** @brief Returns a pointer to the internal emulator. */
   __INLINE__ Emulator* getEmulator() const { return _emulator.get(); }
 
-  // Function to obtain emulator based on name
+  /**
+   * @brief Factory that constructs the concrete game matching the given configuration.
+   * @param emulatorConfig The emulator configuration JSON.
+   * @param gameConfig     The game configuration JSON.
+   * @return An owning pointer to the constructed game.
+   */
   static std::unique_ptr<Game> getGame(const nlohmann::json& emulatorConfig, const nlohmann::json& gameConfig);
 
-  // Function to get the frame rate
+  /** @brief Returns the configured frame rate. */
   __INLINE__ float getFrameRate() const { return _frameRate; }
 
-  // Function to get the reward
+  /** @brief Returns the current state's reward. */
   __INLINE__ float getReward() const { return _reward; }
 
-  // Function to get the state type
+  /** @brief Returns the current state type (normal, win or fail). */
   __INLINE__ stateType_t getStateType() const { return _stateType; }
 
-  // Function to get the state's checkpoint level
+  /** @brief Returns the current state's checkpoint level. */
   __INLINE__ size_t getCheckpointLevel() const { return _checkpointLevel; }
 
-  // Function to get the state's checkpoint level
+  /** @brief Returns the current state's checkpoint tolerance. */
   __INLINE__ size_t getCheckpointTolerance() const { return _checkpointTolerance; }
 
-  // Function to get the state's path to save state, if set
+  /**
+   * @brief Indicates whether the current state should trigger a save solution.
+   * @return true if the current save-solution rule id is greater than the previous one.
+   */
   __INLINE__ bool isSaveSolution() const { return _saveSolutionCurrentLastRuleId > _saveSolutionCurrentLastRuleIdx; }
 
-  // Function to get the previous last rule idx to set a save solution
+  /** @brief Returns the previous last rule index that set a save solution. */
   __INLINE__ ssize_t getSaveSolutionPrevLastRuleIdx() const { return _saveSolutionCurrentLastRuleIdx; }
 
-  // Function to get the current last rule idx to set a save solution
+  /** @brief Returns the current last rule index that set a save solution. */
   __INLINE__ ssize_t getSaveSolutionCurrentLastRuleIdx() const { return _saveSolutionCurrentLastRuleId; }
 
-  // Function to get the state's path to save state, if set
+  /**
+   * @brief Returns the save path of the rule that activated the current save solution.
+   * @return The save-solution path, or an empty string if the state is not a save solution.
+   */
   __INLINE__ const std::string getSaveSolutionPath() const { return isSaveSolution() ? _rules[_saveSolutionCurrentLastRuleId]->getSaveSolutionPath() : ""; }
 
-  // Function to get game name in runtime
+  /** @brief Returns the game name used at runtime. */
   __INLINE__ std::string getName() const { return _gameName; }
 
-  // Returns whether the game was initialized
+  /** @brief Returns whether the game has been initialized. */
   __INLINE__ bool isInitialized() const { return _isInitialized; }
 
-  // Function for new input discovery
+  /**
+   * @brief Returns a hash identifying the current state for new-input discovery.
+   * @details Base implementation returns a default (empty) hash; games may override it.
+   * @return The state input hash.
+   */
   virtual jaffarCommon::hash::hash_t getStateInputHash() { return jaffarCommon::hash::hash_t(); };
 
-  // Function to enable a game code to provide additional allowed inputs based on complex decisions
+  /**
+   * @brief Lets a game contribute additional allowed inputs based on game-specific decisions.
+   * @details Base implementation does nothing; games may override it to append inputs.
+   * @param allowedInputSet The set of allowed input indices to extend.
+   */
   virtual __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) {}
 
-  // Function to report what all the possible input that the game might require
+  /**
+   * @brief Reports all possible inputs the game might require.
+   * @details Base implementation returns an empty set; games may override it.
+   * @return The set of possible input names.
+   */
   virtual __INLINE__ std::set<std::string> getAllPossibleInputs() { return {}; }
 
-  // Player-specific commands
-  virtual void playerPrintCommands() const {}                          // If the game has any specific player commands, print them now
-  virtual bool playerParseCommand(const int command) { return false; } // If the game has any specific player commands, print them now
+  /** @brief Prints the game's player-specific commands, if any. Base implementation does nothing. */
+  virtual void playerPrintCommands() const {}
+  /**
+   * @brief Handles a game-specific player command.
+   * @param command The command code to handle.
+   * @return true if the command was recognized and handled; base implementation returns false.
+   */
+  virtual bool playerParseCommand(const int command) { return false; }
 
-  // Function to get direct state hash without passing an hashing engine
+  /**
+   * @brief Returns the state hash directly, without going through a hashing engine.
+   * @details Base implementation returns a default (empty) hash; games may override it.
+   * @return The direct state hash.
+   */
   virtual jaffarCommon::hash::hash_t getDirectStateHash() const { return jaffarCommon::hash::hash_t(); }
 
 protected:
+  /**
+   * @brief Registers a game property so it can be referenced by name in rules and printing/hashing.
+   * @param name       The property name (used to compute the indexing hash).
+   * @param pointer    Pointer to the underlying memory the property reads/writes.
+   * @param dataType   The property's datatype.
+   * @param endianness The property's byte endianness.
+   * @return The same @p pointer that was passed in (returned as a convenience).
+   */
   void* registerGameProperty(const std::string& name, void* const pointer, const Property::datatype_t dataType, const Property::endianness_t endianness)
   {
     // Creating property
@@ -533,7 +676,16 @@ protected:
     return pointer;
   }
 
-  // Parsing game rules
+  /**
+   * @brief Parses the full rule array, builds the rule objects and resolves cross-references.
+   *
+   * @details Clears any existing rules, then for each JSON entry creates a @ref Rule with its label
+   * and parses it via @ref parseRule. Afterwards it resolves each rule's "Satisfies" labels into
+   * pointers to the referenced rules, and sizes/clears the rule status bit vector.
+   * @param rulesJson The array of rule JSON objects.
+   * @throws A logic error if a rule entry is not an object, or if a referenced "Satisfies" label
+   *         does not exist.
+   */
   void parseRules(const nlohmann::json& rulesJson)
   {
     // Reset the rules container
@@ -583,7 +735,16 @@ protected:
     for (size_t i = 0; i < _rules.size(); i++) jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), i, false);
   }
 
-  // Individual rule parser
+  /**
+   * @brief Parses a single rule's conditions, actions and "Satisfies" labels into a @ref Rule.
+   *
+   * @details Reads the "Conditions", "Actions" and "Satisfies" arrays: each condition is parsed via
+   * @ref parseCondition and added to the rule, each action via @ref parseRuleAction, and each
+   * satisfies entry (which must be a number) is added as a satisfy-rule label.
+   * @param rule   The rule to populate.
+   * @param ruleJs The rule JSON object.
+   * @throws A logic error if a "Satisfies" entry is not a number (and from the called parsers).
+   */
   void parseRule(Rule& rule, const nlohmann::json& ruleJs)
   {
     // Getting rule condition array
@@ -612,6 +773,17 @@ protected:
     }
   }
 
+  /**
+   * @brief Parses a single rule action from JSON and applies it to the rule.
+   *
+   * @details Recognizes the built-in action types "Add Reward", "Trigger Fail", "Trigger Win",
+   * "Trigger Checkpoint" (with "Tolerance") and "Trigger Save Solution" (with "Path"). Any other
+   * action type is delegated to the game-specific @ref parseRuleActionImpl.
+   * @param rule     The rule to apply the action to.
+   * @param actionJs The action JSON object, expected to contain "Type".
+   * @throws A logic error if the action type is not recognized by either the built-ins or the
+   *         game-specific parser.
+   */
   void parseRuleAction(Rule& rule, const nlohmann::json& actionJs)
   {
     // Getting action type
@@ -666,7 +838,13 @@ protected:
                          actionType.c_str(), rule.getLabel());
   }
 
-  // Marks the given rule as satisfied, executes its actions, and recursively runs on its sub-satisfied rules
+  /**
+   * @brief Marks a rule as satisfied, recursively satisfying the rules it satisfies first.
+   *
+   * @details For each sub-rule in this rule's satisfy list that is not yet satisfied, recurses into
+   * @ref satisfyRule, then sets this rule's status bit to satisfied.
+   * @param rule The rule to mark as satisfied.
+   */
   __INLINE__ void satisfyRule(Rule& rule)
   {
     // Recursively run actions for the yet unsatisfied rules that are satisfied by this one and mark them as satisfied
@@ -686,79 +864,111 @@ protected:
     jaffarCommon::bitwise::setBitValue(_rulesStatus.data(), ruleIdx, true);
   }
 
-  virtual void  initializeImpl() {};
-  virtual void  registerGameProperties()                                                                       = 0;
-  virtual void  serializeStateImpl(jaffarCommon::serializer::Base& serializer) const                           = 0;
-  virtual void  deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)                           = 0;
-  virtual float calculateGameSpecificReward() const                                                            = 0;
-  virtual void  computeAdditionalHashing(MetroHash128& hashEngine) const                                       = 0;
-  virtual void  printInfoImpl() const                                                                          = 0;
-  virtual void  advanceStateImpl(const InputSet::inputIndex_t input)                                           = 0;
-  virtual bool  parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) = 0;
+  /**
+   * @brief Game-specific initialization hook, called during @ref initialize.
+   * @details Base implementation does nothing; games may override it.
+   */
+  virtual void initializeImpl() {};
 
-  // Optional hooks
+  /**
+   * @brief Registers the game's properties (via @ref registerGameProperty). Must be implemented.
+   */
+  virtual void registerGameProperties() = 0;
+
+  /**
+   * @brief Serializes game-specific state. Must be implemented.
+   * @param serializer The serializer to push game-specific state into.
+   */
+  virtual void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const = 0;
+
+  /**
+   * @brief Restores game-specific state previously written by @ref serializeStateImpl. Must be implemented.
+   * @param deserializer The deserializer to pop game-specific state from.
+   */
+  virtual void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) = 0;
+
+  /**
+   * @brief Computes the game-specific contribution to the state reward. Must be implemented.
+   * @return The game-specific reward to add to the rule-based reward.
+   */
+  virtual float calculateGameSpecificReward() const = 0;
+
+  /**
+   * @brief Adds game-specific data into the hash engine. Must be implemented.
+   * @param hashEngine The hash engine to update with game-specific data.
+   */
+  virtual void computeAdditionalHashing(MetroHash128& hashEngine) const = 0;
+
+  /**
+   * @brief Prints game-specific state information to the logger. Must be implemented.
+   */
+  virtual void printInfoImpl() const = 0;
+
+  /**
+   * @brief Advances the game state by applying the given input. Must be implemented.
+   * @param input The input index to apply for this step.
+   */
+  virtual void advanceStateImpl(const InputSet::inputIndex_t input) = 0;
+
+  /**
+   * @brief Parses and applies a game-specific rule action. Must be implemented.
+   * @param rule       The rule to apply the action to.
+   * @param actionType The action type string that was not matched by the built-in actions.
+   * @param actionJs   The action JSON object.
+   * @return true if the action type was recognized and applied; false otherwise.
+   */
+  virtual bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) = 0;
+
+  /// @brief Optional hook run before a state update (advance/deserialize). Base does nothing.
   virtual __INLINE__ void stateUpdatePreHook() {};
+  /// @brief Optional hook run after a state update (advance/deserialize). Base does nothing.
   virtual __INLINE__ void stateUpdatePostHook() {};
+  /// @brief Optional hook run before rule evaluation/restoration. Base does nothing.
   virtual __INLINE__ void ruleUpdatePreHook() {};
+  /// @brief Optional hook run after rule evaluation/restoration. Base does nothing.
   virtual __INLINE__ void ruleUpdatePostHook() {};
 
-  // Current game state type. Initialized to normal because it is read (printInfo) and serialized
-  // for the initial state before updateGameStateType() first assigns it.
+  /// @brief Current game state type. Initialized to normal because it is read (printInfo) and serialized for the initial state before updateGameStateType() first assigns it.
   stateType_t _stateType = stateType_t::normal;
 
-  // Current game state reward
-  float _reward = 0.0;
+  float _reward = 0.0; ///< Current game state reward.
 
-  // Represents the current state's checkpoint level
-  size_t _checkpointLevel = 0;
+  size_t _checkpointLevel = 0; ///< Current state's checkpoint level.
 
-  // For game states that represent checkpoints, store their tolerance here
-  size_t _checkpointTolerance = 0;
+  size_t _checkpointTolerance = 0; ///< Tolerance recorded for checkpoint states.
 
-  // Save state will only activate if the rule id is bigger than the last rule id that activated it (Previous to preserve the state where it changes)
+  /// @brief Previous last rule index that activated a save solution (preserved to mark the state where it changes); save state activates only when a rule id exceeds it. -1 when
+  /// none.
   ssize_t _saveSolutionCurrentLastRuleIdx = -1;
 
-  // Save state will only activate if the rule id is bigger than the last rule id that activated it
+  /// @brief Current last rule index that activated a save solution; save state activates only when a rule id is bigger than the previous one. -1 when none.
   ssize_t _saveSolutionCurrentLastRuleId = -1;
 
-  // Underlying emulator instance
-  const std::unique_ptr<Emulator> _emulator;
+  const std::unique_ptr<Emulator> _emulator; ///< Underlying emulator instance.
 
-  // Game script rules. Using vector to preserve their ordering
-  std::vector<std::unique_ptr<Rule>> _rules;
+  std::vector<std::unique_ptr<Rule>> _rules; ///< Game script rules, kept in a vector to preserve ordering.
 
-  // Storage for status vector indicating whether the rules have been satisfied
-  std::vector<uint8_t> _rulesStatus;
+  std::vector<uint8_t> _rulesStatus; ///< Bit vector indicating whether each rule has been satisfied.
 
-  // Storage for the parse property names that are meant to be printed
-  std::vector<std::string> _printablePropertyNames;
+  std::vector<std::string> _printablePropertyNames; ///< Parsed property names configured to be printed.
 
-  // Storage for the parse property names that are meant to be hased
-  std::vector<std::string> _hashablePropertyNames;
+  std::vector<std::string> _hashablePropertyNames; ///< Parsed property names configured to be hashed.
 
-  // Property hash set to quickly distinguish states from each other. Its a vector to keep the ordering
-  std::vector<const Property*> _propertyHashVector;
+  std::vector<const Property*> _propertyHashVector; ///< Properties used to hash/distinguish states, ordered.
 
-  // Property print vector for printing game information to screen. Its a vector to keep the ordering
-  std::vector<const Property*> _propertyPrintVector;
+  std::vector<const Property*> _propertyPrintVector; ///< Properties printed for game information, ordered.
 
-  // Property map to store all registered properties for future reference, indexed by their name hash
-  std::map<jaffarCommon::hash::hash_t, std::unique_ptr<Property>> _propertyMap;
+  std::map<jaffarCommon::hash::hash_t, std::unique_ptr<Property>> _propertyMap; ///< All registered properties, indexed by name hash.
 
-  // Inverse frame rate to play the game with, required for correct playback
-  float _frameRate;
+  float _frameRate; ///< Frame rate to play the game with, required for correct playback.
 
-  // Flag to bypass emulator saving to allow the game take care of it entirely
-  bool _bypassEmulatorState;
+  bool _bypassEmulatorState; ///< When true, the game handles state save/load entirely, bypassing the emulator.
 
-  // Game name (for runtime use)
-  std::string _gameName;
+  std::string _gameName; ///< Game name (for runtime use).
 
-  // Temporal storage of the rules json for delayed parsing
-  nlohmann::json _rulesJs;
+  nlohmann::json _rulesJs; ///< Temporary storage of the rules JSON for delayed parsing.
 
-  // Stores whether the game has been initialized
-  bool _isInitialized = false;
+  bool _isInitialized = false; ///< Whether the game has been initialized.
 };
 
 } // namespace jaffarPlus
