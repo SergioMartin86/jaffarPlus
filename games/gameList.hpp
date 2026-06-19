@@ -3,9 +3,9 @@
 #include <emulatorList.hpp>
 
 // AUTO-GENERATED game #include list (one guarded #include per game header found under games/).
-// Produced at configure time by games/genGameList.py -- adding a game header requires no edits
-// here, just re-running `meson setup`. See gameDetect.gen.hpp for the matching detection list.
-#include "gameIncludes.gen.hpp"
+// Produced at configure time by genRegistry.py into the build dir -- adding a game header requires
+// no edits here, just re-running `meson setup`. See gameDetect.gen.hpp for the matching detection.
+#include <gameIncludes.gen.hpp>
 
 #include <emulator.hpp>
 #include <game.hpp>
@@ -34,8 +34,8 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   // Getting game name
   const auto& gameName = jaffarCommon::json::getString(gameConfig, "Game Name");
 
-  // AUTO-GENERATED detection list (one guarded DETECT_GAME per discovered game; see genGameList.py)
-#include "gameDetect.gen.hpp"
+  // AUTO-GENERATED detection list (one guarded DETECT_GAME per discovered game; see genRegistry.py)
+#include <gameDetect.gen.hpp>
 
   // Check if game was recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized\n", gameName.c_str());
