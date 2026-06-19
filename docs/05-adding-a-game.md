@@ -1,8 +1,8 @@
-# 5. Adding a Game
+# 5. Adding a Game or Emulator
 
-This chapter is for contributors. It shows how to add a new game (and, briefly, a new emulator core)
-to JaffarPlus. Thanks to automatic registration, adding a game is just **writing one header** —
-there are no lists to edit and nothing to wire up by hand.
+This chapter is for contributors. It shows how to add a new **game** (just writing one header — no
+lists to edit) and a new **emulator core** (a header plus two short build wirings). Both rely on the
+same automatic class registration.
 
 - [How registration works](#how-registration-works)
 - [Anatomy of a game class](#anatomy-of-a-game-class)
@@ -11,6 +11,10 @@ there are no lists to edit and nothing to wire up by hand.
 - [Reward and custom actions (magnets)](#reward-and-custom-actions-magnets)
 - [Building and running your game](#building-and-running-your-game)
 - [Adding a new emulator core](#adding-a-new-emulator-core)
+  - [Wiring the build](#wiring-the-build)
+  - [The emulator interface](#the-emulator-interface)
+  - [Input handling](#input-handling)
+  - [Building and running your core](#building-and-running-your-core)
 
 ## How registration works
 
@@ -158,11 +162,105 @@ at configure time).
 
 ## Adding a new emulator core
 
-The same model applies to emulators: a class `final : public Emulator` in
-`namespace jaffarPlus::emulator`, in a directory under `emulators/`, behind a `__JAFFAR_USE_<DIR>`
-guard (with a few overrides — see the top of [`genRegistry.py`](../genRegistry.py)). Register it as
-a `-Demulator=` choice in [`meson_options.txt`](../meson_options.txt) and wire its compile guard in
-`emulators/meson.build`. Implement the emulator interface in `source/emulator.hpp` (load/save state,
-advance step, expose memory as properties, and — optionally — `saveScreenshot` for the rendering
-tooling). The in-repo [`emulators/testEmulator`](../emulators/testEmulator) is the minimal reference
-implementation.
+An emulator core wraps a console/game engine behind JaffarPlus's `Emulator` interface so the search
+can save/load state, advance a frame, and read memory. It uses the same automatic-registration model
+as a game — a class `final : public Emulator` in `namespace jaffarPlus::emulator`, under
+`emulators/<core>/` — plus two short build wirings, because each build compiles exactly one core
+(selected by `-Demulator=`).
+
+The minimal, ROM-free reference implementation is
+[`emulators/testEmulator/testEmulator.hpp`](../emulators/testEmulator/testEmulator.hpp) — read it
+alongside this section.
+
+### Wiring the build
+
+Two edits register a new core (say `MyCore`, in `emulators/myCore/`):
+
+1. **Add it as a build option** — append `'MyCore'` to the `emulator` combo's `choices` in
+   [`meson_options.txt`](../meson_options.txt), so `-Demulator=MyCore` is accepted.
+
+2. **Wire its compile guards** in [`emulators/meson.build`](../emulators/meson.build):
+
+   ```meson
+   if emulator == 'MyCore'
+   jaffarCPPFlags += '-D__JAFFAR_USE_MYCORE'          # registers the emulator class
+   jaffarCPPFlags += '-D__JAFFAR_ENABLE_MYPLATFORM'   # enables games written for this platform
+   subdir('myCore')
+   endif
+   ```
+
+   - `__JAFFAR_USE_<CORE>` is the **registration guard**. [`genRegistry.py`](../genRegistry.py)
+     derives it from the directory name, uppercased — `emulators/myCore/` → `__JAFFAR_USE_MYCORE`.
+     (A few legacy names have overrides at the top of `genRegistry.py`, e.g. `quickerArkBot` →
+     `__JAFFAR_USE_ARKBOT`; new cores should just follow the default convention.)
+   - `__JAFFAR_ENABLE_<PLATFORM>` is the guard that **games** are compiled behind (see
+     [How registration works](#how-registration-works)), so it decides which games build for this
+     core. Reuse an existing platform if your core runs the same games as another (e.g. both NES
+     cores define `__JAFFAR_ENABLE_NES`), or introduce a new one and tag your games' directory with
+     it in `genRegistry.py`'s `GAME_DIR_GUARD`.
+
+That is the only manual wiring. Once `__JAFFAR_USE_MYCORE` is defined and you re-run `meson setup`,
+the class is detected and registered automatically — no list to edit.
+
+### The emulator interface
+
+The core is a class in `namespace jaffarPlus::emulator` whose **constructor only parses
+configuration** (so `--dryRun` validates without loading a ROM), with a `static getName()` returning
+the exact string users put in `Emulator Configuration` > `Emulator Name`:
+
+```cpp
+namespace jaffarPlus { namespace emulator {
+
+class MyCore final : public Emulator
+{
+public:
+  static std::string getName() { return "MyCore"; }
+
+  MyCore(const nlohmann::json& config) : Emulator(config)
+  {
+    // Parse config keys only (ROM path, initial state, etc.). No heavy init here.
+  }
+
+private:
+  // ... the overrides below ...
+};
+
+}} // namespace
+```
+
+It implements the pure-virtual `Emulator` interface *(source: `source/emulator.hpp`)*:
+
+| Method | Purpose |
+|--------|---------|
+| `initializeImpl()` | Load the ROM/game data and bring the core to its initial state. Called after construction; skipped on dry runs. |
+| `advanceStateImpl(input)` | Advance the emulation by one frame, applying the decoded `input`. |
+| `serializeState(serializer)` / `deserializeState(deserializer)` | Save / restore the searched emulator state — this is what defines a "state" (and its size). |
+| `getProperty(name)` | Expose a region of emulator memory as a named, typed property (pointer + datatype) so games and configs can read it. |
+| `getInputParser()` | Return the core's `jaffar::InputParser`, which decodes the input strings from `Allowed Input Sets`. |
+| `printInfo()` | Print core-specific information in the status banner. |
+
+Cores that render also implement the video hooks (`initializeVideoOutput` / `finalizeVideoOutput`,
+`enableRendering` / `disableRendering`, `updateRendererState`, `serializeRendererState` /
+`deserializeRendererState`, `getRendererStateSize`, `showRender`) and may override `saveScreenshot`
+to support the screenshot/video tooling ([chapter 6](06-tooling.md#headless-screenshots)). A
+headless-only core can stub these minimally — see how `testEmulator` does it.
+
+### Input handling
+
+Inputs in a `.jaffar` config are strings (e.g. `|U|`, or `U.L.F` for a console pad). The core's
+`InputParser` — returned by `getInputParser()` — defines that string format and decodes each string
+into the core's native input type. The `testEmulator`'s `inputParser.hpp` is the minimal example: it
+maps single pipe-delimited characters to grid moves.
+
+### Building and running your core
+
+```bash
+meson setup build-mycore -Demulator=MyCore
+ninja -C build-mycore
+./build-mycore/jaffar myConfig.jaffar --dryRun   # validate before a full run
+```
+
+If the core isn't recognized at runtime, the "not recognized" error lists every core compiled into
+the build — confirm `__JAFFAR_USE_MYCORE` is defined (step 2) and that you re-ran `meson setup` (the
+registry is regenerated at configure time). Remember to document your core's `Emulator
+Configuration` keys in the [Configuration Reference](02-config-reference.md).

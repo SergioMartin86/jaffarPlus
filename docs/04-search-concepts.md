@@ -15,21 +15,59 @@ is useful to users tuning a search and to contributors working on the engine.
 
 ## The search loop
 
-JaffarPlus performs a **best-first breadth search**. Conceptually, each step:
+JaffarPlus performs a **best-first breadth search**. The *breadth* part: it advances one **step**
+(one unit of depth) at a time, expanding the entire current frontier of states before moving on to
+the next depth. The *best-first* part: within that, it orders states by reward so the most promising
+ones are expanded and kept first. One step does this:
 
-1. Takes the current frontier of states.
-2. For each state, applies every legal input (from the `Allowed Input Sets`), advancing the
-   emulator one step (plus any frame-skip) to produce successor states.
-3. Computes each successor's reward (rules + magnets) and its hash.
-4. Discards successors whose hash was already seen (deduplication), and discards `Trigger Fail`
-   states.
-5. Keeps the survivors as the next frontier, ordered so the most rewarding states are expanded
-   first.
+1. **Take the frontier** — every state discovered at the current depth.
+2. **Branch** — for each state, apply every legal input (from `Allowed Input Sets`), advancing the
+   emulator one frame (plus any frame-skip) to produce one successor state per input.
+3. **Score & hash** — compute each successor's reward (rules + magnets) and a hash of its
+   `Hash Properties`.
+4. **Prune** — discard successors marked `Trigger Fail`, and discard any whose hash was already
+   seen ([deduplication](#hashing-and-deduplication)).
+5. **Advance** — the survivors become the next frontier, reward-ordered. Repeat from step 1.
 
-Because it expands states in order of increasing depth, the first win it reaches is reached by a
-*shortest* input sequence — which for a TAS is the fastest path. This is why the GridWalker test
-asserts an exactly-8-move solution regardless of thread count: different runs may find *a* different
-8-move path, but never a shorter or longer optimal.
+```mermaid
+flowchart LR
+  F["Frontier<br/>states at depth k"] --> B["Branch<br/>apply each legal input"]
+  B --> S["Score + hash<br/>each successor"]
+  S --> P{Prune?}
+  P -->|"Trigger Fail"| X["discard"]
+  P -->|"hash already seen"| X
+  P -->|survives| N["Next frontier<br/>depth k+1, reward-ordered"]
+  N -->|"contains a win?"| W["Solution"]
+  N -->|otherwise| F
+```
+
+Because every state at depth *k* is expanded before any at depth *k+1*, **the first win reached is
+reached by a shortest input sequence** — the fastest route, which is the whole point of a TAS.
+Reward changes the *order and priority* of exploration (and which state is reported as best), not
+the depth at which a solution is first found. This is why the GridWalker test asserts an
+exactly-8-move solution regardless of thread count: different runs may surface a *different* 8-move
+path, but never a shorter or longer optimum.
+
+### A concrete picture
+
+The bundled GridWalker puzzle makes this tangible. A cursor starts at the top-left `(0,0)` of a 5×5
+grid and must reach `(4,4)`; the only thing that distinguishes one state from another (its
+`Hash Properties`) is the cursor's `(Pos X, Pos Y)`. Each cell below is labelled with its **depth**
+— the fewest moves needed to reach it — and shaded darker as depth grows, so each diagonal band is
+one frontier the search expands in turn:
+
+![A 5x5 grid with cells shaded by search depth from START at (0,0) to GOAL at (4,4); the centre cell (2,2) is a red FAIL cell with an X; a green arrowed path runs along the top edge then down the right edge; cell (1,1) is outlined.](images/gridwalker-search.png)
+
+- **Depth ordering → shortest path.** The goal sits at depth 8 (`4 + 4`), so the optimal solution is
+  8 moves. Since the search only reaches depth 8 after exhausting depths 0–7, the first win it finds
+  *is* one of those 8-move paths (green).
+- **Pruning.** A rule fails the centre cell `(2,2)` (`Trigger Fail`, red ✕); the search discards it
+  immediately and never explores anything beyond it.
+- **Deduplication.** The outlined cell `(1,1)` is reachable two ways — right-then-down or
+  down-then-right — but both produce the *same* `(Pos X, Pos Y)`, hash identically, and collapse to
+  one state. Without this, the number of input *paths* grows exponentially with depth; with it, the
+  search is bounded by the number of distinct *states* (here, at most 25 cells). This collapse is
+  what makes the search tractable, and it is the subject of the next section.
 
 ## States and the state database
 
@@ -60,7 +98,19 @@ Smaller states mean more of them fit and each is processed faster. Two levers:
 ## Hashing and deduplication
 
 To avoid exploring the same situation twice, the engine hashes each state and skips any hash it has
-already seen. The **hash database** (`Engine Configuration` > `Hash Database`) stores those hashes:
+already seen. Concretely, the two ways of reaching `(1,1)` in the grid above converge to a single
+state:
+
+```mermaid
+flowchart LR
+  S["(0,0)"] -->|Right| A["(1,0)"]
+  S -->|Down| B["(0,1)"]
+  A -->|Down| C["(1,1)"]
+  B -->|Right| C
+  C --> M["same Hash Properties<br/>→ same hash → kept once"]
+```
+
+The **hash database** (`Engine Configuration` > `Hash Database`) stores those hashes:
 
 - `Enabled` — turn deduplication on (almost always yes).
 - `Max Store Size (Mb)` — memory budget for stored hashes.
