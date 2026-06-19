@@ -13,6 +13,18 @@ else # Oterwise, add it manually
   includeFlags += '-I' + gamesFolder
 endif
 
+# Auto-generate the game include + detection lists by scanning the games folder, so adding a new
+# game header requires no manual wiring in gameList.hpp -- just re-run `meson setup`. The generated
+# headers (gameIncludes.gen.hpp / gameDetect.gen.hpp) live in the games folder (already on the
+# include path) and are git-ignored.
+gamesPath = gamesFolder == '' ? meson.current_source_dir() / '..' / 'games' : gamesFolder
+run_command(find_program('python3'),
+            gamesPath / 'genGameList.py',
+            gamesPath,
+            gamesPath / 'gameIncludes.gen.hpp',
+            gamesPath / 'gameDetect.gen.hpp',
+            check: true)
+
 # Creating include directories
 jaffarIncludes = include_directories(includeDirs)
 
