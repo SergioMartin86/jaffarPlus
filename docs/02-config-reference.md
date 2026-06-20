@@ -18,9 +18,9 @@ but the structural keys are listed here for completeness.
 All five sections are required. Throughout this chapter, **key names are case- and
 space-sensitive** and must match exactly (including parentheses, e.g. `Max Size (Mb)`).
 
-> **Unknown keys are ignored.** The parser reads keys by name; any key it does not recognize is
-> silently skipped. There is no "unknown key" error, so a typo or a stale key simply has no effect.
-> When in doubt, validate with `jaffar --dryRun` and cross-check spelling here.
+> **Unknown keys are rejected.** The parser reads keys by name and throws on any key it does not
+> recognize, in every section: `[Error] Unrecognized key(s) in <section>: '...'`. A typo or a stale
+> key is a hard error, not a silent no-op. Validate with `jaffar --dryRun`, which runs this check.
 
 - [Driver Configuration](#driver-configuration)
 - [Engine Configuration](#engine-configuration)
@@ -50,9 +50,9 @@ The driver owns the top-level run loop: when to stop and what to checkpoint to d
 | `Best Solution Path` | string | yes | File path for the best (highest-reward) solution found so far. |
 | `Worst Solution Path` | string | yes | File path for the worst solution found so far. |
 
-> Some older example configs also contain `Best State Path` / `Worst State Path` here. **These are
-> not read by the engine** and have no effect — they are a good illustration of the
-> "unknown keys are ignored" rule above.
+> Older example configs used to carry `Best State Path` / `Worst State Path` here. The engine never
+> read them, and they are now **rejected** as unrecognized keys — they have been removed from the
+> shipped examples.
 
 ---
 
