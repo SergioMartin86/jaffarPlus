@@ -23,13 +23,13 @@ public:
   MarbleMadness(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // Parsing configuration
-    _lastInputStepReward = jaffarCommon::json::getNumber<float>(config, "Last Input Step Reward");
+    _lastInputStepReward = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Last Input Step Reward");
 
     // Getting setting for the repetition of the previous input
-    _repeatPrevInputCount = jaffarCommon::json::getNumber<uint16_t>(config, "Repeat Prev Input Times");
+    _repeatPrevInputCount = jaffarCommon::json::popNumber<uint16_t>(_gameConfigRemaining, "Repeat Prev Input Times");
 
     // Getting emulator name (for runtime use)
-    _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
+    _traceFilePath = jaffarCommon::json::popString(_gameConfigRemaining, "Trace File Path");
 
     // Loading trace
     if (_traceFilePath != "")
@@ -49,6 +49,8 @@ public:
         _trace.push_back(traceEntry_t{.x = x, .y = y});
       }
     }
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
 private:

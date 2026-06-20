@@ -21,7 +21,10 @@ class Arkanoid2 final : public jaffarPlus::Game
 public:
   static __INLINE__ std::string getName() { return "NES / Arkanoid2"; }
 
-  Arkanoid2(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
+  Arkanoid2(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
+  {
+    // No game-specific configuration keys; reject any leftover (unrecognized) key.
+  }
 
 private:
   __INLINE__ void registerGameProperties() override

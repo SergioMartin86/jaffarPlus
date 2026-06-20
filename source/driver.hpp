@@ -55,30 +55,39 @@ public:
     auto currentTime = std::chrono::system_clock::now();
     _jobId           = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch()).count();
 
+    // Mutable working copy of the root config; each recognized key is consumed (popped) below, so any
+    // leftover key at the end is unrecognized (a typo or unsupported option) and is reported by name.
+    auto configRemaining = config;
+
     // Getting driver configuration
-    const auto driverConfig = jaffarCommon::json::getObject(config, "Driver Configuration");
+    auto driverConfig = jaffarCommon::json::popObject(configRemaining, "Driver Configuration");
 
     // Getting end win delay config
-    _endOnFirstWinState = jaffarCommon::json::getBoolean(driverConfig, "End On First Win State");
+    _endOnFirstWinState = jaffarCommon::json::popBoolean(driverConfig, "End On First Win State");
 
     // Getting maximum number of steps (zero is not established)
-    _maxSteps = jaffarCommon::json::getNumber<uint32_t>(driverConfig, "Max Steps");
+    _maxSteps = jaffarCommon::json::popNumber<uint32_t>(driverConfig, "Max Steps");
 
     // For testing purposes, the maximum number of steps can be overriden via environment variables
     if (auto* value = std::getenv("JAFFAR_DRIVER_OVERRIDE_DRIVER_MAX_STEP")) _maxSteps = std::stoul(value);
 
     // Getting intermediate result configuration
-    const auto saveIntermediateResultsJs = jaffarCommon::json::getObject(driverConfig, "Save Intermediate Results");
-    _saveIntermediateResultsEnabled      = jaffarCommon::json::getBoolean(saveIntermediateResultsJs, "Enabled");
-    _saveIntermediateFrequency           = jaffarCommon::json::getNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
-    _saveIntermediateBestSolutionPath    = jaffarCommon::json::getString(saveIntermediateResultsJs, "Best Solution Path");
-    _saveIntermediateWorstSolutionPath   = jaffarCommon::json::getString(saveIntermediateResultsJs, "Worst Solution Path");
+    auto saveIntermediateResultsJs     = jaffarCommon::json::popObject(driverConfig, "Save Intermediate Results");
+    _saveIntermediateResultsEnabled    = jaffarCommon::json::popBoolean(saveIntermediateResultsJs, "Enabled");
+    _saveIntermediateFrequency         = jaffarCommon::json::popNumber<float>(saveIntermediateResultsJs, "Frequency (s)");
+    _saveIntermediateBestSolutionPath  = jaffarCommon::json::popString(saveIntermediateResultsJs, "Best Solution Path");
+    _saveIntermediateWorstSolutionPath = jaffarCommon::json::popString(saveIntermediateResultsJs, "Worst Solution Path");
+    jaffarCommon::json::checkEmpty(saveIntermediateResultsJs, "Driver Configuration > Save Intermediate Results");
+    jaffarCommon::json::checkEmpty(driverConfig, "Driver Configuration");
 
-    // Getting component configurations
-    auto emulatorConfig = jaffarCommon::json::getObject(config, "Emulator Configuration");
-    auto gameConfig     = jaffarCommon::json::getObject(config, "Game Configuration");
-    auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
-    auto engineConfig   = jaffarCommon::json::getObject(config, "Engine Configuration");
+    // Getting component configurations (consumed from the root so the root check below can flag strays)
+    auto emulatorConfig = jaffarCommon::json::popObject(configRemaining, "Emulator Configuration");
+    auto gameConfig     = jaffarCommon::json::popObject(configRemaining, "Game Configuration");
+    auto runnerConfig   = jaffarCommon::json::popObject(configRemaining, "Runner Configuration");
+    auto engineConfig   = jaffarCommon::json::popObject(configRemaining, "Engine Configuration");
+
+    // Any remaining top-level key is unrecognized
+    jaffarCommon::json::checkEmpty(configRemaining, "configuration root");
 
     // Creating runner from the configuration
     _runner = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);

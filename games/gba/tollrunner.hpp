@@ -19,7 +19,11 @@ class TollRunner final : public jaffarPlus::Game
 public:
   static __INLINE__ std::string getName() { return "GBA / Toll Runner"; }
 
-  TollRunner(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
+  TollRunner(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
+  {
+    // This game reads no game-specific configuration keys; the base ctor already consumed the common
+    // ones. Reject any leftover (unrecognized) key in the game configuration.
+  }
 
 private:
   __INLINE__ void registerGameProperties() override

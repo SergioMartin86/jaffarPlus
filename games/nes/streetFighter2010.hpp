@@ -19,7 +19,10 @@ class StreetFighter2010 final : public jaffarPlus::Game
 public:
   static __INLINE__ std::string getName() { return "NES / Street Fighter 2010"; }
 
-  StreetFighter2010(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
+  StreetFighter2010(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
+  {
+    // No game-specific configuration keys; reject any leftover (unrecognized) key in the game configuration.
+  }
 
 private:
   __INLINE__ void registerGameProperties() override

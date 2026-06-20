@@ -6,9 +6,7 @@
       "Enabled": true,
       "Frequency (s)": 1.0,
       "Best Solution Path": "/tmp/jaffar.best.sol",
-      "Worst Solution Path": "/tmp/jaffar.worst.sol",
-      "Best State Path": "/tmp/jaffar.best.state",
-      "Worst State Path": "/tmp/jaffar.worst.state"
+      "Worst Solution Path": "/tmp/jaffar.worst.sol"
     }
   },
   "Engine Configuration": {
@@ -24,7 +22,6 @@
   "Emulator Configuration": {
     "Emulator Name": "QuickerSDLPoP",
     "Initial State File": "state",
-    "Disabled State Properties": [],
     "SDLPoP Root Path": "../../../extern/quickerSDLPoP/SDLPoPData/",
     "Levels File Path": "",
     "Game Version": "1.4",
@@ -35,7 +32,6 @@
     "Initialize Copy Protection": false
   },
   "Runner Configuration": {
-    "Frameskip Rate": 0,
     "Hash Step Tolerance": 6,
     "Show Empty Input Slots": true,
     "Show Allowed Inputs": true,
@@ -70,7 +66,7 @@
         "Description": "For level 1, if kid touches ground and music plays, try restarting level",
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "==",
             "Value": 109
           },
@@ -94,7 +90,7 @@
             "Value": 3
           },
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 2
           }
@@ -108,7 +104,7 @@
         "Description": "If bumped, there's nothing to do really",
         "Conditions": [
           {
-            "Property": "Kid Action",
+            "Property": "Player Action",
             "Op": "==",
             "Value": 5
           }
@@ -122,7 +118,7 @@
         "Description": "If in mid air, try to grab onto something",
         "Conditions": [
           {
-            "Property": "Kid Action",
+            "Property": "Player Action",
             "Op": "==",
             "Value": 3
           }
@@ -137,7 +133,7 @@
         "Description": "If in free fall, hope to grab onto something",
         "Conditions": [
           {
-            "Property": "Kid Action",
+            "Property": "Player Action",
             "Op": "==",
             "Value": 4
           }
@@ -152,7 +148,7 @@
         "Description": "If on guarde, only try attacking commands",
         "Conditions": [
           {
-            "Property": "Kid Sword",
+            "Property": "Player Sword",
             "Op": "==",
             "Value": 2
           }
@@ -172,7 +168,7 @@
         "Description": "If standing, try all possible movements",
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "==",
             "Value": 15
           }
@@ -198,12 +194,12 @@
         "Description": "If finishing turning, try all possible movements",
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": ">=",
             "Value": 50
           },
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "<",
             "Value": 53
           }
@@ -229,7 +225,7 @@
         "Description": "If turning frame, try most possible movements",
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "==",
             "Value": 48
           }
@@ -253,7 +249,7 @@
         "Description": "If turning frame, try most possible movements",
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "<",
             "Value": 4
           }
@@ -274,12 +270,12 @@
         "Description": "Starting jump up, check directions, jump and grab",
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": ">=",
             "Value": 67
           },
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "<",
             "Value": 70
           }
@@ -300,7 +296,7 @@
         "Description": "Running, all movement without shift",
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "<",
             "Value": 15
           }
@@ -321,12 +317,12 @@
         "Description": "Hanging, up and shift are the only options",
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": ">=",
             "Value": 87
           },
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "<",
             "Value": 100
           }
@@ -342,7 +338,7 @@
         "Description": "Crouched, can only stand, drink, or bunny hop",
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "==",
             "Value": 109
           }
@@ -413,7 +409,7 @@
         "Label": 8000,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 1
           }
@@ -421,13 +417,13 @@
         "Satisfies": [],
         "Actions": [
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 1,
             "Intensity": 1.0,
             "Position": 150
           },
           {
-            "Type": "Set Kid Pos Y Magnet",
+            "Type": "Set Player Pos Y Magnet",
             "Room": 1,
             "Intensity": 1.0,
             "Position": 0
@@ -438,12 +434,12 @@
         "Label": 8999,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 3
           },
           {
-            "Property": "Kid Pos Y",
+            "Property": "Player Pos Y",
             "Op": "<",
             "Value": 50
           }
@@ -459,12 +455,12 @@
         "Label": 8100,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 1
           },
           {
-            "Property": "Kid Pos Y",
+            "Property": "Player Pos Y",
             "Op": "==",
             "Value": 55
           }
@@ -483,7 +479,7 @@
         "Label": 8001,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 5
           }
@@ -497,7 +493,7 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 5,
             "Intensity": 1.0,
             "Position": 255
@@ -514,7 +510,7 @@
         "Label": 8002,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 1
           },
@@ -533,7 +529,7 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 1,
             "Intensity": 1.0,
             "Position": 255
@@ -550,7 +546,7 @@
         "Label": 8003,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 2
           },
@@ -569,13 +565,13 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos Y Magnet",
+            "Type": "Set Player Pos Y Magnet",
             "Room": 2,
             "Intensity": 1.0,
             "Position": 255
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 2,
             "Intensity": 1.0,
             "Position": 155
@@ -592,7 +588,7 @@
         "Label": 8004,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 4
           }
@@ -606,13 +602,13 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 4,
             "Intensity": 1.0,
             "Position": 0
           },
           {
-            "Type": "Set Kid Direction Magnet",
+            "Type": "Set Player Direction Magnet",
             "Room": 4,
             "Intensity": -5.0
           }
@@ -622,17 +618,17 @@
         "Label": 8005,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 3
           },
           {
-            "Property": "Kid Pos Y",
+            "Property": "Player Pos Y",
             "Op": "<=",
             "Value": 55
           },
           {
-            "Property": "Kid Pos X",
+            "Property": "Player Pos X",
             "Op": ">",
             "Value": 180
           }
@@ -646,7 +642,7 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 3,
             "Intensity": 1.0,
             "Position": 0
@@ -657,7 +653,7 @@
         "Label": 8006,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 3
           },
@@ -676,7 +672,7 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 4,
             "Intensity": 1.0,
             "Position": 255
@@ -687,7 +683,7 @@
         "Label": 8007,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 4
           },
@@ -706,7 +702,7 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 4,
             "Intensity": 1.0,
             "Position": 255
@@ -717,7 +713,7 @@
         "Label": 8008,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 16
           },
@@ -739,13 +735,13 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 16,
             "Intensity": 1.0,
             "Position": 118
           },
           {
-            "Type": "Set Kid Pos Y Magnet",
+            "Type": "Set Player Pos Y Magnet",
             "Room": 16,
             "Intensity": 1.0,
             "Position": 255
@@ -761,17 +757,17 @@
         "Label": 8009,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 16
           },
           {
-            "Property": "Kid Pos Y",
+            "Property": "Player Pos Y",
             "Op": "==",
             "Value": 181
           },
           {
-            "Property": "Kid Direction",
+            "Property": "Player Direction",
             "Op": "==",
             "Value": -1
           },
@@ -790,7 +786,7 @@
             "Value": 100000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 16,
             "Intensity": 1.0,
             "Position": 0
@@ -801,12 +797,12 @@
         "Label": 8010,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 4
           },
           {
-            "Property": "Kid Pos Y",
+            "Property": "Player Pos Y",
             "Op": ">",
             "Value": 90
           },
@@ -825,7 +821,7 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 4,
             "Intensity": 1.0,
             "Position": 0
@@ -836,12 +832,12 @@
         "Label": 8011,
         "Conditions": [
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 3
           },
           {
-            "Property": "Kid Pos Y",
+            "Property": "Player Pos Y",
             "Op": ">",
             "Value": 90
           },
@@ -860,7 +856,7 @@
             "Value": 10000
           },
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Room": 3,
             "Intensity": 1.0,
             "Position": 0
@@ -871,7 +867,7 @@
         "Label": 8012,
         "Conditions": [
           {
-            "Property": "Kid Frame",
+            "Property": "Player Frame",
             "Op": "==",
             "Value": 217
           }
@@ -906,7 +902,7 @@
         "Label": 8998,
         "Conditions": [
           {
-            "Property": "Kid Current HP",
+            "Property": "Player Current HP",
             "Op": "==",
             "Value": 0
           }

@@ -23,36 +23,43 @@ public:
   // Constructor must only do configuration parsing
   QuickerSnes9x(const nlohmann::json& config) : Emulator(config)
   {
-    // Creating emulator
+    // Creating emulator (still constructed from the original config object)
     _quickerSnes9x = std::make_unique<snes9x::EmuInstance>(config);
 
+    // Keys consumed by the underlying emulator instance's input parser (jaffar::InputParser): popped here
+    // too so the strict-key check below accounts for them. The instance was constructed from the original config.
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Controller 1 Type");
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Controller 2 Type");
+
     // Getting initial state file from the configuration
-    _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
+    _initialStateFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path");
 
     // For testing purposes, the initial state file can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERSNES9X_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
     // Getting initial sequence file path
-    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+    _initialSequenceFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path");
 
     // Parsing rom file path
-    _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
+    _romFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File Path");
 
     // For testing purposes, the rom file path can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERSNES9X_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
 
     // Parsing rom file SHA1
-    _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
+    _romFileSHA1 = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File SHA1");
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERSNES9X_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
     // Getting disabled state properties
-    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    const auto disabledStateProperties = jaffarCommon::json::popArray<std::string>(_emulatorConfigRemaining, "Disabled State Properties");
     for (const auto& property : disabledStateProperties) _disabledStateProperties.push_back(property);
 
     // Getting work ram serialization size
-    _workRamSerializationSize = jaffarCommon::json::getNumber<size_t>(config, "Work RAM Serialization Size");
+    _workRamSerializationSize = jaffarCommon::json::popNumber<size_t>(_emulatorConfigRemaining, "Work RAM Serialization Size");
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   void initializeImpl() override

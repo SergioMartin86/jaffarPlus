@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -38,7 +36,6 @@
         "Nametable Block Size": 2048
     },
     "Runner Configuration": {
-        "Frameskip Rate": 2,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
@@ -119,7 +116,6 @@
             "Marble Vel Y",
             "Marble Motion 1"
         ],
-        "Excluded Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,

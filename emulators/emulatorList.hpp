@@ -37,6 +37,10 @@ std::unique_ptr<Emulator> Emulator::getEmulator(const nlohmann::json& emulatorCo
   // Check if recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Emulator '%s' not recognized. Emulator(s) available in this build: %s\n", emulatorName.c_str(), validEmulatorNames.c_str());
 
+  // Now that the base and the derived emulator have consumed every key they recognize, reject any
+  // leftover (unrecognized) Emulator Configuration key. Centralized here so no per-emulator call is needed.
+  e->finalizeEmulatorConfig();
+
   // Returning emulator pointer
   return e;
 }

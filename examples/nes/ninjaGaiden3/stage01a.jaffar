@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 5.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -41,7 +39,6 @@
         ]
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
@@ -105,7 +102,6 @@
         "Frame Rate": 60.1,
         "Trace File Path": "stage01a.trace",
         "Enable Attack": true,
-        "Last Input Step Reward": 0.0,
         "Print Properties": [],
         "Hash Properties": [],
         "Rules": [

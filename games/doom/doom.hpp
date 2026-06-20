@@ -59,7 +59,7 @@ public:
     _currentStep = 0;
 
     // Getting emulator name (for runtime use)
-    _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
+    _traceFilePath = jaffarCommon::json::popString(_gameConfigRemaining, "Trace File Path");
 
     // Loading trace
     if (_traceFilePath != "")
@@ -82,6 +82,8 @@ public:
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("||   0,   0,   0,   0,...|");
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
   ~Doom() { free(_dummyBuffer); }

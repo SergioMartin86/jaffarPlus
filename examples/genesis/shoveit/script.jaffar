@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -36,11 +34,9 @@
         "Disabled State Properties": [
             "VRAM",
             "SATM"
-        ],
-        "Work RAM Serialization Size": 65536
+        ]
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
         "Hash Step Tolerance": 2,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
@@ -73,9 +69,6 @@
     "Game Configuration": {
         "Game Name": "Genesis / Shove It!",
         "Frame Rate": 60.1,
-        "Last Input Step Reward": 0.0,
-        "Hash Level Properties": true,
-        "Hash Guard Properties": true,
         "Print Properties": [
             "Move Timer"
         ],

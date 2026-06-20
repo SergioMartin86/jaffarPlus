@@ -24,29 +24,36 @@ public:
   QuickerStella(const nlohmann::json& config) : Emulator(config)
   {
     // Parsing rom file path
-    _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
+    _romFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File Path");
 
     // For testing purposes, the rom file path can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERSTELLA_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
 
     // Parsing rom file SHA1
-    _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
+    _romFileSHA1 = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File SHA1");
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERSTELLA_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
     // Getting disabled state properties
-    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    const auto disabledStateProperties = jaffarCommon::json::popArray<std::string>(_emulatorConfigRemaining, "Disabled State Properties");
     for (const auto& property : disabledStateProperties) _disabledStateProperties.push_back(property);
 
     // Getting initial sequence file path
-    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+    _initialSequenceFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path");
 
     // Getting initial RAM data
-    _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+    _initialRAMDataFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial RAM Data File Path");
 
-    // Creating internal emulator instance
+    // Creating internal emulator instance (constructed from the original config)
     _quickerStella = std::make_unique<stella::EmuInstance>(config);
+
+    // Keys consumed by the underlying EmuInstance's InputParser (built from the same config): popped here
+    // too so the strict-key check below accounts for them. The instance was constructed from the original config above.
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Controller 1 Type");
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Controller 2 Type");
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   void initializeImpl() override

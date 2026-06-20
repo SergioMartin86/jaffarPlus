@@ -21,9 +21,9 @@ public:
 
   Metroid(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
-    _allowFire     = jaffarCommon::json::getBoolean(config, "Allow Fire");
-    _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
-    _allowPause    = jaffarCommon::json::getBoolean(config, "Allow Pause");
+    _allowFire     = jaffarCommon::json::popBoolean(_gameConfigRemaining, "Allow Fire");
+    _traceFilePath = jaffarCommon::json::popString(_gameConfigRemaining, "Trace File Path");
+    _allowPause    = jaffarCommon::json::popBoolean(_gameConfigRemaining, "Allow Pause");
 
     // Loading trace
     if (_traceFilePath != "")
@@ -46,6 +46,8 @@ public:
         });
       }
     }
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
 private:

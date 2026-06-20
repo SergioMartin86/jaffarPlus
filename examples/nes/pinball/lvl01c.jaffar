@@ -11,7 +11,7 @@
     },
     "Engine Configuration": {
         "Hash Database": {
-            "Enabled": true, 
+            "Enabled": true,
             "Max Store Count": 2,
             "Max Store Size (Mb)": 20000
         },
@@ -41,11 +41,10 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 3,
         "Show Empty Input Slots": true,
@@ -57,9 +56,21 @@
         "Allowed Input Sets": [
             {
                 "Conditions": [
-                    { "Property": "Platform 1 State", "Op": "<", "Value": 3 },
-                    { "Property": "Platform 2 State", "Op": "<", "Value": 3 },
-                    { "Property": "Platform 3 State", "Op": "<", "Value": 3 }
+                    {
+                        "Property": "Platform 1 State",
+                        "Op": "<",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Platform 2 State",
+                        "Op": "<",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Platform 3 State",
+                        "Op": "<",
+                        "Value": 3
+                    }
                 ],
                 "Inputs": [
                     "|..|..L.....|",
@@ -68,8 +79,7 @@
                 "Stop Input Evaluation": true
             },
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|"
                 ],
@@ -77,93 +87,125 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": []
     },
     "Game Configuration": {
         "Game Name": "NES / Pinball",
         "Frame Rate": 600.1,
         "Bypass Emulator State": false,
-        "Last Input Step Reward": 0.0,
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1003,
-                "Conditions":
-                [
-                ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                    { "Type": "Set Ball Pos Y Magnet", "Pos": 147, "Intensity": 1.0 },
-                    { "Type": "Set Ball Pos X Magnet", "Pos": 110, "Intensity": 1.0 }
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Ball Pos Y Magnet",
+                        "Pos": 147,
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Set Ball Pos X Magnet",
+                        "Pos": 110,
+                        "Intensity": 1.0
+                    }
                 ]
             },
             {
                 "Label": 1004,
-                "Conditions":
-                [
-                    { "Property": "Pauline Pos Y", "Op": ">", "Value": 0}
+                "Conditions": [
+                    {
+                        "Property": "Pauline Pos Y",
+                        "Op": ">",
+                        "Value": 0
+                    }
                 ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                    { "Type": "Add Reward", "Value": 10000.0 },
-                    { "Type": "Set Ball Pos Y Magnet", "Pos": 0, "Intensity": 0.0 },
-                    { "Type": "Set Ball Pos X Magnet", "Pos": 0, "Intensity": 0.0 },
-                    { "Type": "Set Pauline Pos Y Magnet", "Pos": 124, "Intensity": 1.0 },
-                    { "Type": "Set Pauline Pos X Magnet", "Pos": 70, "Intensity": -1.0 }
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Ball Pos Y Magnet",
+                        "Pos": 0,
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Ball Pos X Magnet",
+                        "Pos": 0,
+                        "Intensity": 0.0
+                    },
+                    {
+                        "Type": "Set Pauline Pos Y Magnet",
+                        "Pos": 124,
+                        "Intensity": 1.0
+                    },
+                    {
+                        "Type": "Set Pauline Pos X Magnet",
+                        "Pos": 70,
+                        "Intensity": -1.0
+                    }
                 ]
             },
             {
                 "Label": 1005,
-                "Conditions":
-                [
-                    { "Property": "Pauline Pos Y", "Op": ">", "Value": 0 },
-                    { "Property": "Pauline Pos X", "Op": ">", "Value": 112}
+                "Conditions": [
+                    {
+                        "Property": "Pauline Pos Y",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Pauline Pos X",
+                        "Op": ">",
+                        "Value": 112
+                    }
                 ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                    { "Type": "Trigger Win"}
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
                 ]
             },
             {
                 "Label": 1006,
-                "Conditions":
-                [
-                    { "Property": "Pauline Pos Y", "Op": ">", "Value": 0 },
-                    { "Property": "Pauline Pos X", "Op": "<", "Value": 30}
+                "Conditions": [
+                    {
+                        "Property": "Pauline Pos Y",
+                        "Op": ">",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Pauline Pos X",
+                        "Op": "<",
+                        "Value": 30
+                    }
                 ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                    { "Type": "Trigger Win"}
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
                 ]
             },
             {
                 "Label": 1004,
-                "Conditions":
-                [
-                 { "Property": "Current Screen", "Op": "!=", "Value": 2 }
+                "Conditions": [
+                    {
+                        "Property": "Current Screen",
+                        "Op": "!=",
+                        "Value": 2
+                    }
                 ],
-                
-                "Satisfies": [ ],
-                
-                "Actions":
-                [
-                 { "Type": "Trigger Fail" }
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
                 ]
             }
         ]

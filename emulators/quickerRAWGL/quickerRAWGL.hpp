@@ -24,16 +24,18 @@ public:
   QuickerRAWGL(const nlohmann::json& config) : Emulator(config)
   {
     // Parsing rom file path
-    _gameDataPath = jaffarCommon::json::getString(config, "Game Data Path");
+    _gameDataPath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Game Data Path");
 
     // Parsing initial RAM Data file
-    _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+    _initialRAMDataFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial RAM Data File Path");
 
     // Getting initial sequence file path
-    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+    _initialSequenceFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path");
 
-    // Instantiating emulator
+    // Instantiating emulator (the underlying EmuInstance and its InputParser consume no further config keys)
     _quickerRAWGL = std::make_unique<rawspace::EmuInstance>(config);
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   void initializeImpl() override

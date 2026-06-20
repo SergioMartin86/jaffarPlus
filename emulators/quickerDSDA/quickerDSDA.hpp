@@ -24,10 +24,33 @@ public:
   QuickerDSDA(const nlohmann::json& config) : Emulator(config)
   {
     // Getting initial sequence file path
-    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+    _initialSequenceFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path");
 
-    // Creating internal emulator instance
+    // Creating internal emulator instance (constructed from the original config)
     _quickerDSDA = std::make_unique<jaffar::EmuInstance>(config);
+
+    // Keys consumed by the underlying EmuInstance (EmuInstanceBase): popped here too so the strict-key
+    // check below accounts for them. The instance was constructed from the original config above.
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "IWAD File Path");
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Expected IWAD SHA1");
+    jaffarCommon::json::popNumber<size_t>(_emulatorConfigRemaining, "State Size");
+    jaffarCommon::json::popNumber<unsigned int>(_emulatorConfigRemaining, "Skill Level");
+    jaffarCommon::json::popNumber<unsigned int>(_emulatorConfigRemaining, "Episode");
+    jaffarCommon::json::popNumber<unsigned int>(_emulatorConfigRemaining, "Map");
+    jaffarCommon::json::popNumber<unsigned int>(_emulatorConfigRemaining, "Compatibility Level");
+    jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Fast Monsters");
+    jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Monsters Respawn");
+    jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "No Monsters");
+    jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Prevent Level Exit");
+    jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Prevent Game End");
+    jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Player 1 Present");
+    jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Player 2 Present");
+    jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Player 3 Present");
+    jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Player 4 Present");
+    jaffarCommon::json::popNumber<uint8_t>(_emulatorConfigRemaining, "Player Point of View");
+    jaffarCommon::json::popArray<nlohmann::json>(_emulatorConfigRemaining, "PWADS");
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   void initializeImpl() override

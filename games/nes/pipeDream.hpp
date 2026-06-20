@@ -378,6 +378,8 @@ public:
              direction_t::none,
          }},
     };
+
+    // No game-specific configuration keys; reject any leftover (unrecognized) key in the game configuration.
   }
 
 private:

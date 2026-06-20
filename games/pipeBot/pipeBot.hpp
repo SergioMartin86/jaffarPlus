@@ -23,6 +23,8 @@ public:
   {
     _rowCount = _pipeBot->getRowCount();
     _colCount = _pipeBot->getColCount();
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
   struct possibleInput_t

@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 5.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -133,7 +131,6 @@
                     }
                 ]
             }
-        ],
-        "Last Input Step Reward": 0.0
+        ]
     }
 }

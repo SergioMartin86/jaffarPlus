@@ -19,7 +19,10 @@ class BestOfTheBest final : public jaffarPlus::Game
 public:
   static __INLINE__ std::string getName() { return "SNES / Best Of The Best"; }
 
-  BestOfTheBest(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
+  BestOfTheBest(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
+  {
+    // No game-specific configuration keys; reject any leftover (unrecognized) key.
+  }
 
 private:
   __INLINE__ void registerGameProperties() override

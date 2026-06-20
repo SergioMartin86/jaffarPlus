@@ -11,7 +11,7 @@
     },
     "Engine Configuration": {
         "Hash Database": {
-            "Enabled": true, 
+            "Enabled": true,
             "Max Store Count": 2,
             "Max Store Size (Mb)": 30000
         },
@@ -27,10 +27,9 @@
         "Initial State File Path": "",
         "Use Flat Code Map": false,
         "Initial RAM Data File Path": "",
-        "SRAM Block Size": 0,
+        "SRAM Block Size": 8192,
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
-	    "SRAM Block Size": 8192,
         "Disabled State Properties": [
             "SRAM",
             "CHRR",
@@ -41,11 +40,10 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
@@ -55,9 +53,13 @@
             "Max Size": 1500
         },
         "Allowed Input Sets": [
-         {   
+            {
                 "Conditions": [
-                     { "Property": "Bike Air Mode", "Op": ">", "Value": 0 }
+                    {
+                        "Property": "Bike Air Mode",
+                        "Op": ">",
+                        "Value": 0
+                    }
                 ],
                 "Inputs": [
                     "|..|........|",
@@ -83,31 +85,29 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": []
     },
     "Game Configuration": {
         "Game Name": "NES / Excite Bike",
         "Frame Rate": 600.1,
         "Bypass Emulator State": false,
-        "Last Input Step Reward": 0.0,
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1003,
-                "Conditions":
-                [
-                 { "Property": "Bike Pos X", "Op": ">", "Value": 6339.0 }
+                "Conditions": [
+                    {
+                        "Property": "Bike Pos X",
+                        "Op": ">",
+                        "Value": 6339.0
+                    }
                 ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                 { "Type": "Trigger Win" }
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
                 ]
             }
         ]

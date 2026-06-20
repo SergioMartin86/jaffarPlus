@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -31,7 +29,6 @@
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": true,
-        "Frameskip Rate": 0,
         "Store Input History": {
             "Enabled": true,
             "Max Size": 750
@@ -205,7 +202,6 @@
     "Game Configuration": {
         "Game Name": "ArkBot / Arkanoid",
         "Frame Rate": 60.1,
-        "Last Input Step Reward": 0.0,
         "Print Properties": [
             "Score",
             "Pending Score",

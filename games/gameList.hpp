@@ -44,6 +44,10 @@ std::unique_ptr<Game> Game::getGame(const nlohmann::json& emulatorConfig, const 
   // Check if game was recognized
   if (isRecognized == false) JAFFAR_THROW_LOGIC("Game '%s' not recognized. Games available in this build: %s\n", gameName.c_str(), validGameNames.c_str());
 
+  // Now that the base and the derived game have consumed every key they recognize, reject any leftover
+  // (unrecognized) Game Configuration key. Centralized here so no per-game finalize call is needed.
+  g->finalizeGameConfig();
+
   // Returning game pointer
   return g;
 }

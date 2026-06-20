@@ -26,18 +26,21 @@ public:
   // The constructor must only parse configuration so that dry runs are possible.
   TestEmulator(const nlohmann::json& config) : Emulator(config)
   {
-    _width  = jaffarCommon::json::getNumber<uint8_t>(config, "Grid Width");
-    _height = jaffarCommon::json::getNumber<uint8_t>(config, "Grid Height");
-    _startX = jaffarCommon::json::getNumber<uint8_t>(config, "Start X");
-    _startY = jaffarCommon::json::getNumber<uint8_t>(config, "Start Y");
+    _width  = jaffarCommon::json::popNumber<uint8_t>(_emulatorConfigRemaining, "Grid Width");
+    _height = jaffarCommon::json::popNumber<uint8_t>(_emulatorConfigRemaining, "Grid Height");
+    _startX = jaffarCommon::json::popNumber<uint8_t>(_emulatorConfigRemaining, "Start X");
+    _startY = jaffarCommon::json::popNumber<uint8_t>(_emulatorConfigRemaining, "Start Y");
 
     if (_width == 0 || _height == 0) JAFFAR_THROW_LOGIC("Grid dimensions must be non-zero (got %u x %u)", _width, _height);
     if (_startX >= _width || _startY >= _height) JAFFAR_THROW_LOGIC("Start position (%u, %u) lies outside the grid", _startX, _startY);
 
+    // Input parser is constructed from the original config but consumes no further config keys.
     _inputParser = std::make_unique<jaffar::InputParser>(config);
 
     _state[0] = _startX;
     _state[1] = _startY;
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
   ~TestEmulator() = default;

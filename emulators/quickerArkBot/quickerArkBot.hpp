@@ -24,10 +24,14 @@ public:
   QuickerArkBot(const nlohmann::json& config) : Emulator(config)
   {
     // Getting initial state file from the configuration
-    _initialLevel = jaffarCommon::json::getNumber<uint8_t>(config, "Initial Level");
+    _initialLevel = jaffarCommon::json::popNumber<uint8_t>(_emulatorConfigRemaining, "Initial Level");
 
     // Getting initial state file from the configuration
-    _initialScore = jaffarCommon::json::getNumber<uint32_t>(config, "Initial Score");
+    _initialScore = jaffarCommon::json::popNumber<uint32_t>(_emulatorConfigRemaining, "Initial Score");
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
+    // The ArkBot input parser and EmuInstance take no keys from this config (the instance is built from the
+    // explicit level/score values above), so nothing else needs popping for accounting.
 
     // Allocating emulator
     _quickerArkBot = new ark::EmuInstance(_initialLevel, _initialScore);

@@ -21,7 +21,10 @@ class DoubleDragon final : public jaffarPlus::Game
 public:
   static __INLINE__ std::string getName() { return "NES / Double Dragon"; }
 
-  DoubleDragon(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
+  DoubleDragon(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
+  {
+    // No game-specific configuration keys; reject any leftover (unrecognized) key in the game configuration.
+  }
 
 private:
   __INLINE__ void registerGameProperties() override

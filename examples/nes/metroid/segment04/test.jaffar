@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 5.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "",
-            "Worst State Path": ""
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -40,7 +38,6 @@
         ]
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": false,
@@ -255,7 +252,6 @@
             }
         ],
         "Bypass Emulator State": false,
-        "Last Input Step Reward": 0.0,
         "Allow Fire": true,
         "Allow Pause": false
     }

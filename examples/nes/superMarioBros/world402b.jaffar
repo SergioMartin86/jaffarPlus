@@ -41,7 +41,6 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip Rate": 0,
         "Hash Step Tolerance": 1,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": false,
@@ -178,7 +177,6 @@
         "Game Name": "NES / Super Mario Bros",
         "Frame Rate": 60.1,
         "Bypass Emulator State": true,
-        "Last Input Step Reward": 0.0,
         "Trace File Path": "world402b.trace",
         "Print Properties": [],
         "Hash Properties": [],

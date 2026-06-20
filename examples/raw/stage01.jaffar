@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -24,13 +22,8 @@
     "Emulator Configuration": {
         "Emulator Name": "QuickerRAWGL",
         "Game Data Path": "3do/Out of this World (USA).iso",
-        "Initial State File Path": "stage01.state",
         "Initial Sequence File Path": "",
-        "Initial RAM Data File Path": "",
-        "Initial RAM Data Endiannes": "Little Endian",
-        "Disabled State Properties": [
-            "NVS"
-        ]
+        "Initial RAM Data File Path": ""
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
@@ -72,7 +65,6 @@
         "Game Name": "RAW / AnotherWorld",
         "Frame Rate": 60.1,
         "Bypass Emulator State": false,
-        "Last Input Step Reward": 0.0,
         "Print Properties": [
             "Lester Swim State",
             "Lester Pos X",

@@ -6,9 +6,7 @@
       "Enabled": true,
       "Frequency (s)": 1.0,
       "Best Solution Path": "/tmp/jaffar.best.sol",
-      "Worst Solution Path": "/tmp/jaffar.worst.sol",
-      "Best State Path": "/tmp/jaffar.best.state",
-      "Worst State Path": "/tmp/jaffar.worst.state"
+      "Worst Solution Path": "/tmp/jaffar.worst.sol"
     }
   },
   "Engine Configuration": {
@@ -24,7 +22,6 @@
   "Emulator Configuration": {
     "Emulator Name": "QuickerSDLPoP",
     "Initial State File": "/tmp/chamber/chamber.state",
-    "Disabled State Properties": [],
     "SDLPoP Root Path": "/home/jaffar/jaffarPlus/extern/quickerSDLPoP/SDLPoPData/",
     "Levels File Path": "/tmp/chamber/chamber.dat",
     "Game Version": "1.4",
@@ -35,7 +32,6 @@
     "Initialize Copy Protection": false
   },
   "Runner Configuration": {
-    "Frameskip Rate": 0,
     "Hash Step Tolerance": 0,
     "Show Empty Input Slots": true,
     "Show Allowed Inputs": true,
@@ -127,7 +123,7 @@
         "Satisfies": [],
         "Actions": [
           {
-            "Type": "Set Kid Pos X Magnet",
+            "Type": "Set Player Pos X Magnet",
             "Intensity": 1.0,
             "Position": 255,
             "Room": 1
@@ -139,12 +135,12 @@
         "Description": "win past gate",
         "Conditions": [
           {
-            "Property": "Kid Pos X",
+            "Property": "Player Pos X",
             "Op": ">=",
             "Value": 180
           },
           {
-            "Property": "Kid Room",
+            "Property": "Player Room",
             "Op": "==",
             "Value": 1
           }
@@ -161,7 +157,7 @@
         "Description": "fail if dead",
         "Conditions": [
           {
-            "Property": "Kid Current HP",
+            "Property": "Player Current HP",
             "Op": "==",
             "Value": 0
           }

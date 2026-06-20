@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 5.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -105,7 +103,6 @@
         "Trace File Path": "stage73d.trace",
         "Enable Attack": true,
         "Bypass Emulator State": false,
-        "Last Input Step Reward": 0.0,
         "Print Properties": [
             "Level Exit Flag 1",
             "Level Exit Flag 2"

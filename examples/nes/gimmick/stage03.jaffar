@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -40,7 +38,6 @@
         "Serialize Only RAM": false
     },
     "Runner Configuration": {
-        "Frameskip Rate": 2,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
@@ -96,7 +93,6 @@
     "Game Configuration": {
         "Game Name": "NES / Gimmick!",
         "Frame Rate": 60.1,
-        "Last Input Step Reward": 0.0,
         "Trace File Path": "",
         "Print Properties": [],
         "Hash Properties": [],
