@@ -79,21 +79,18 @@ private:
     _BInputIdx    = _emulator->registerInput("|..|.....B..|");
   }
 
+  // One search "step" = the chosen input for a single frame, followed by a fixed number of
+  // frames holding accelerate (B). This keeps the car moving while the search only decides
+  // steering/coasting once per block, which collapses the otherwise enormous frame space.
+  static constexpr size_t _accelFramesPerStep = 6;
+
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     _player1LapsRemainingPrev = *_player1LapsRemaining;
     _player1CheckpointPrev    = *_player1Checkpoint1;
 
-    printf("_player1PosY: %u\n", *_player1PosY);
     _emulator->advanceState(input);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    printf("Advancing State\n");
-    printf("_player1PosY: %u\n", *_player1PosY);
+    for (size_t i = 0; i < _accelFramesPerStep; i++) _emulator->advanceState(_BInputIdx);
 
     // Increasing counter if input is null
     if (input != _nullInputIdx) _lastInputStep = _currentStep;
@@ -325,8 +322,6 @@ private:
   // Property pointers for quick access
   uint8_t* _workRAM;
   uint8_t* _currentRace;
-
-  uint16_t* _preRaceTimer;
 
   uint16_t* _player1LapsRemaining;
   uint16_t  _player1LapsRemainingPrev;

@@ -149,12 +149,7 @@ public:
   jaffar::InputParser* getInputParser() const override { return _quickerGPGX->getInputParser(); }
 
   // State advancing function
-  void advanceStateImpl(const jaffar::input_t& input) override
-  {
-    printf("Val: %d, Input: %u\n", _quickerGPGX->getWorkRamPointer()[0x80A8], input.port1);
-    _quickerGPGX->advanceState(input);
-    printf("Val: %d\n", _quickerGPGX->getWorkRamPointer()[0x80A8]);
-  }
+  void advanceStateImpl(const jaffar::input_t& input) override { _quickerGPGX->advanceState(input); }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override { _quickerGPGX->serializeState(serializer); };
 
