@@ -153,12 +153,11 @@ trace files, or run the search — so it is fast and host-independent. On succes
 key. This is the same check CI runs against every documented example (see
 [the accuracy note](README.md#a-note-on-accuracy)).
 
-> **Tip — silently ignored keys.** The parser only reads keys it knows about; an unrecognized or
-> misspelled key is *ignored*, not rejected. For example, some of the repository's own test fixtures
-> (such as `tests/testEmulator/gridWalker.jaffar`) carry leftover keys like `Best State Path`,
-> `Worst State Path`, or a stray top-level `Frameskip Rate` that the engine never reads. `--dryRun`
-> will not flag these. If a setting seems to have no effect, check its spelling and nesting against
-> the [Configuration Reference](02-config-reference.md).
+> **Tip — unrecognized keys are rejected.** The parser reads keys by name and **fails on any key it
+> does not recognize**, in every section, reporting `[Error] Unrecognized key(s) in <section>: '...'`.
+> A misspelled or stale key is a hard error, not a silent no-op — so `--dryRun` catches typos
+> immediately. If a key is rejected, check its spelling and nesting against the
+> [Configuration Reference](02-config-reference.md).
 
 ## Replaying a solution
 
