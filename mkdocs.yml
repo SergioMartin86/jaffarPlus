@@ -52,4 +52,6 @@ nav:
   - Search Concepts & Tuning: 04-search-concepts.md
   - Adding a Game or Emulator: 05-adding-a-game.md
   - Tooling Reference: 06-tooling.md
+  - Understanding the Output: 07-understanding-output.md
+  - Jaffar Player Interface: 08-player-interface.md
   - API Reference (C++) ↗: https://sergiomartin86.github.io/jaffarPlus/api/

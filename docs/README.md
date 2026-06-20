@@ -24,6 +24,8 @@ engine or add new games).
 | 4 | [Search Concepts & Tuning](04-search-concepts.md) | User / Contributor | How best-first search, state hashing, and the NUMA/threading model work — and which knobs to turn. |
 | 5 | [Adding a Game or Emulator](05-adding-a-game.md) | Contributor | Register a new game or emulator (now fully automatic) and expose its properties and actions. |
 | 6 | [Tooling Reference](06-tooling.md) | User / Contributor | `jaffar`, `jaffar-player`, headless screenshots, video rendering, and environment overrides. |
+| 7 | [Understanding the Output](07-understanding-output.md) | User | What every field of `jaffar`'s per-step report means, and how to read a run at a glance. |
+| 8 | [Jaffar Player Interface](08-player-interface.md) | User | `jaffar-player`'s interactive commands, options, and common workflows: replay, navigate, extract a save-state, screenshots. |
 
 An auto-generated **[C++ API reference](https://sergiomartin86.github.io/jaffarPlus/api/)** (Doxygen)
 covers the engine internals in `source/`; see [Adding a Game or Emulator](05-adding-a-game.md) for
