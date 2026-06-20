@@ -22,14 +22,17 @@ public:
 
   SuperOffRoad(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
-    // Getting checkpoint magnets
-    for (auto checkpointMagnetJs : config["Checkpoint Magnets"])
+    // Getting checkpoint magnets (also popped from the remaining-config copy for the strict-key check)
+    const auto checkpointMagnetsJs = jaffarCommon::json::popArray<nlohmann::json>(_gameConfigRemaining, "Checkpoint Magnets");
+    for (const auto& checkpointMagnetJs : checkpointMagnetsJs)
     {
       const auto checkpointId               = checkpointMagnetJs[0].get<uint8_t>();
       const auto checkpointPosX             = checkpointMagnetJs[1].get<uint8_t>();
       const auto checkpointPosY             = checkpointMagnetJs[2].get<uint8_t>();
       _checkpointPointMagnets[checkpointId] = std::make_pair(checkpointPosX, checkpointPosY);
     }
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
 private:

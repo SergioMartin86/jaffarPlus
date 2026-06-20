@@ -22,7 +22,12 @@ class PrinceOfPersia final : public jaffarPlus::Game
 public:
   static __INLINE__ std::string getName() { return "GBC / Prince Of Persia"; }
 
-  PrinceOfPersia(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config) {}
+  PrinceOfPersia(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
+  {
+    // This game reads no game-specific top-level configuration keys (rule-action keys are parsed from
+    // each rule's action object). The base ctor already consumed the common keys. Reject any leftover
+    // (unrecognized) key in the game configuration.
+  }
 
 private:
   __INLINE__ void registerGameProperties() override

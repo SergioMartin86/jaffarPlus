@@ -47,35 +47,43 @@ public:
    */
   Runner(std::unique_ptr<Game>& game, const nlohmann::json& config) : _game(std::move(game))
   {
-    _hashStepTolerance = jaffarCommon::json::getNumber<uint32_t>(config, "Hash Step Tolerance");
+    // Mutable copy so unrecognized Runner keys can be flagged after the known ones are consumed
+    auto configRemaining = config;
 
-    const auto inputHistoryJs = jaffarCommon::json::getObject(config, "Store Input History");
-    _inputHistoryEnabled      = jaffarCommon::json::getBoolean(inputHistoryJs, "Enabled");
-    _inputHistoryMaxSize      = jaffarCommon::json::getNumber<uint32_t>(inputHistoryJs, "Max Size");
+    _hashStepTolerance = jaffarCommon::json::popNumber<uint32_t>(configRemaining, "Hash Step Tolerance");
+
+    auto inputHistoryJs  = jaffarCommon::json::popObject(configRemaining, "Store Input History");
+    _inputHistoryEnabled = jaffarCommon::json::popBoolean(inputHistoryJs, "Enabled");
+    _inputHistoryMaxSize = jaffarCommon::json::popNumber<uint32_t>(inputHistoryJs, "Max Size");
+    jaffarCommon::json::checkEmpty(inputHistoryJs, "Runner Configuration > Store Input History");
 
     // Storing game inputs for delayed parsing
-    _allowedInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Allowed Input Sets");
+    _allowedInputSetsJs = jaffarCommon::json::popArray<nlohmann::json>(configRemaining, "Allowed Input Sets");
 
     // Print option: do not print allowed inputs
-    _showAllowedInputs = jaffarCommon::json::getBoolean(config, "Show Allowed Inputs");
+    _showAllowedInputs = jaffarCommon::json::popBoolean(configRemaining, "Show Allowed Inputs");
 
     // Print option: do not print placeholders for inputs not supported in this frame
-    _showEmptyInputSlots = jaffarCommon::json::getBoolean(config, "Show Empty Input Slots");
+    _showEmptyInputSlots = jaffarCommon::json::popBoolean(configRemaining, "Show Empty Input Slots");
 
     // Stores candidate inputs
-    _testCandidateInputs = jaffarCommon::json::getBoolean(config, "Test Candidate Inputs");
+    _testCandidateInputs = jaffarCommon::json::popBoolean(configRemaining, "Test Candidate Inputs");
 
     // Getting candidate input sets
-    _candidateInputSetsJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Candidate Input Sets");
+    _candidateInputSetsJs = jaffarCommon::json::popArray<nlohmann::json>(configRemaining, "Candidate Input Sets");
 
     // Getting frame skip configuration
-    const auto frameskipJs   = jaffarCommon::json::getObject(config, "Frameskip");
-    _frameskipRate           = jaffarCommon::json::getNumber<size_t>(frameskipJs, "Rate");
-    _frameskipUseCustomInput = jaffarCommon::json::getBoolean(frameskipJs, "Use Custom Input");
-    _frameskipCustomInput    = jaffarCommon::json::getString(frameskipJs, "Custom Input");
+    auto frameskipJs         = jaffarCommon::json::popObject(configRemaining, "Frameskip");
+    _frameskipRate           = jaffarCommon::json::popNumber<size_t>(frameskipJs, "Rate");
+    _frameskipUseCustomInput = jaffarCommon::json::popBoolean(frameskipJs, "Use Custom Input");
+    _frameskipCustomInput    = jaffarCommon::json::popString(frameskipJs, "Custom Input");
+    jaffarCommon::json::checkEmpty(frameskipJs, "Runner Configuration > Frameskip");
 
     // Option to bypass hash calculation via MetroHash and get it straight from the game
-    _bypassHashCalculation = jaffarCommon::json::getBoolean(config, "Bypass Hash Calculation");
+    _bypassHashCalculation = jaffarCommon::json::popBoolean(configRemaining, "Bypass Hash Calculation");
+
+    // Any remaining Runner key is unrecognized
+    jaffarCommon::json::checkEmpty(configRemaining, "Runner Configuration");
   }
 
   /**

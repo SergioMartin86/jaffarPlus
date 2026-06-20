@@ -22,7 +22,7 @@ public:
   Batman(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // Getting emulator name (for runtime use)
-    _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
+    _traceFilePath = jaffarCommon::json::popString(_gameConfigRemaining, "Trace File Path");
 
     // Loading trace
     if (_traceFilePath != "")
@@ -45,6 +45,8 @@ public:
         });
       }
     }
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
 private:

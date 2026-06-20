@@ -52,27 +52,28 @@ public:
    * @param config   Game configuration JSON, providing "Game Name", "Frame Rate",
    *                 "Bypass Emulator State", "Print Properties", "Hash Properties" and "Rules".
    */
-  Game(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : _emulator(std::move(emulator))
+  Game(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : _emulator(std::move(emulator)), _gameConfigRemaining(config)
   {
     // Getting emulator name (for runtime use)
-    _gameName = jaffarCommon::json::getString(config, "Game Name");
+    _gameName = jaffarCommon::json::popString(_gameConfigRemaining, "Game Name");
 
     // Parsing frame rate
-    _frameRate = jaffarCommon::json::getNumber<float>(config, "Frame Rate");
+    _frameRate = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Frame Rate");
 
     // Parsing whether to bypass emulator state load/saving
-    _bypassEmulatorState = jaffarCommon::json::getBoolean(config, "Bypass Emulator State");
+    _bypassEmulatorState = jaffarCommon::json::popBoolean(_gameConfigRemaining, "Bypass Emulator State");
 
     // Marking printable properties
-    const auto& printProperties = jaffarCommon::json::getArray<std::string>(config, "Print Properties");
+    const auto& printProperties = jaffarCommon::json::popArray<std::string>(_gameConfigRemaining, "Print Properties");
     for (const auto& property : printProperties) _printablePropertyNames.push_back(property);
 
     // Parsing hashable game properties
-    const auto& hashProperties = jaffarCommon::json::getArray<std::string>(config, "Hash Properties");
+    const auto& hashProperties = jaffarCommon::json::popArray<std::string>(_gameConfigRemaining, "Hash Properties");
     for (const auto& property : hashProperties) _hashablePropertyNames.push_back(property);
 
-    // Storing rules JSON for later parsing
-    _rulesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Rules");
+    // Storing rules JSON for later parsing. Consumed as a whole here; the rule-array element keys
+    // (Conditions/Actions/Satisfies/...) are still parsed leniently by parseRules() below.
+    _rulesJs = jaffarCommon::json::popArray<nlohmann::json>(_gameConfigRemaining, "Rules");
   };
 
   /**
@@ -654,6 +655,18 @@ public:
 
 protected:
   /**
+   * @brief Asserts that every key in the game configuration has been recognized.
+   *
+   * @details Call this at the END of a derived core's constructor, after it has consumed all of its
+   * own configuration keys (via the jaffarCommon::json::pop* helpers) from @ref _gameConfigRemaining.
+   * The base ctor has already popped the common keys (Game Name, Frame Rate, Bypass Emulator State,
+   * Print Properties, Hash Properties, Rules), so anything still present is an unrecognized key (a
+   * typo or unsupported option) and is reported by name. Cores that do not call this remain lenient
+   * (opt-in strict validation).
+   */
+  void finalizeGameConfig() { jaffarCommon::json::checkEmpty(_gameConfigRemaining, "Game Configuration"); }
+
+  /**
    * @brief Registers a game property so it can be referenced by name in rules and printing/hashing.
    * @param name       The property name (used to compute the indexing hash).
    * @param pointer    Pointer to the underlying memory the property reads/writes.
@@ -967,6 +980,9 @@ protected:
   std::string _gameName; ///< Game name (for runtime use).
 
   nlohmann::json _rulesJs; ///< Temporary storage of the rules JSON for delayed parsing.
+
+  /// @brief Mutable working copy of the game config; recognized keys are popped, leftovers are unrecognized. See @ref finalizeGameConfig().
+  nlohmann::json _gameConfigRemaining;
 
   bool _isInitialized = false; ///< Whether the game has been initialized.
 };

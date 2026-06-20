@@ -21,7 +21,9 @@ public:
   Sprilo(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // Parsing configuration
-    _lastInputStepReward = jaffarCommon::json::getNumber<float>(config, "Last Input Step Reward");
+    _lastInputStepReward = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Last Input Step Reward");
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
 private:

@@ -94,14 +94,20 @@ public:
     // Grabbing a runner to do continue build the state databases
     auto& r = *_runners[0];
 
+    // Mutable copy so unrecognized Engine keys can be flagged after the known ones are consumed
+    auto engineConfigRemaining = engineConfig;
+
     // Creating State database
-    const auto stateDatabaseJs = jaffarCommon::json::getObject(engineConfig, "State Database");
-    _stateDb                   = std::make_unique<jaffarPlus::StateDb>(r, jaffarCommon::json::getObject(engineConfig, "State Database"));
+    auto stateDatabaseJs = jaffarCommon::json::popObject(engineConfigRemaining, "State Database");
+    _stateDb             = std::make_unique<jaffarPlus::StateDb>(r, stateDatabaseJs);
 
     // Creating hash database
-    const auto hashDbConfig = jaffarCommon::json::getObject(engineConfig, "Hash Database");
-    _hashDbEnabled          = jaffarCommon::json::getBoolean(hashDbConfig, "Enabled");
-    if (_hashDbEnabled == true) _hashDb = std::make_unique<jaffarPlus::HashDb>(jaffarCommon::json::getObject(engineConfig, "Hash Database"));
+    auto hashDbConfig = jaffarCommon::json::popObject(engineConfigRemaining, "Hash Database");
+    _hashDbEnabled    = jaffarCommon::json::getBoolean(hashDbConfig, "Enabled");
+    if (_hashDbEnabled == true) _hashDb = std::make_unique<jaffarPlus::HashDb>(hashDbConfig);
+
+    // Any remaining Engine key is unrecognized
+    jaffarCommon::json::checkEmpty(engineConfigRemaining, "Engine Configuration");
 
     // Reserving storage for timing information
     _threadStepTime.resize(_threadCount);

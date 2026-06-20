@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.gw.candidate.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.gw.candidate.worst.sol",
-            "Best State Path": "/tmp/jaffar.gw.candidate.best.state",
-            "Worst State Path": "/tmp/jaffar.gw.candidate.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.gw.candidate.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -29,7 +27,6 @@
         "Start Y": 0
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": false,
         "Show Allowed Inputs": false,

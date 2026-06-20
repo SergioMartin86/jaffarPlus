@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -40,7 +38,6 @@
         ]
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
@@ -80,50 +77,9 @@
     "Game Configuration": {
         "Game Name": "NES / Gimmick!",
         "Frame Rate": 60.1,
-        "Last Input Step Reward": 0.0,
         "Trace File Path": "stage01.trace",
         "Print Properties": [],
         "Hash Properties": [],
-        "Unused Rules": [
-            {
-                "Label": 1000,
-                "Conditions": [],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Set Point X Magnet",
-                        "Intensity": 100.0,
-                        "Pos": 65.117
-                    },
-                    {
-                        "Type": "Set Point Y Magnet",
-                        "Intensity": 100.0,
-                        "Pos": 11.438
-                    }
-                ]
-            },
-            {
-                "Label": 1001,
-                "Conditions": [
-                    {
-                        "Property": "Current Checkpoint",
-                        "Op": ">=",
-                        "Value": 3
-                    },
-                    {
-                        "Property": "Player Status",
-                        "Op": "==",
-                        "Value": 210
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Win"
-                    }
-                ]
-            }
-        ],
         "Rules": [
             {
                 "Label": 1000,

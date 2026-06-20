@@ -11,7 +11,7 @@
     },
     "Engine Configuration": {
         "Hash Database": {
-            "Enabled": true, 
+            "Enabled": true,
             "Max Store Count": 2,
             "Max Store Size (Mb)": 100000
         },
@@ -41,11 +41,10 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 3,
         "Show Empty Input Slots": true,
@@ -56,8 +55,7 @@
         },
         "Allowed Input Sets": [
             {
-                "Conditions": [
-                ],
+                "Conditions": [],
                 "Inputs": [
                     "|..|........|"
                 ],
@@ -65,7 +63,11 @@
             },
             {
                 "Conditions": [
-                     { "Property": "Ball Launched", "Op": "==", "Value": false }
+                    {
+                        "Property": "Ball Launched",
+                        "Op": "==",
+                        "Value": false
+                    }
                 ],
                 "Inputs": [
                     "|..|......B.|"
@@ -74,10 +76,26 @@
             },
             {
                 "Conditions": [
-                     { "Property": "Ball Launched", "Op": "==", "Value": true },
-                     { "Property": "Ball Pos Y", "Op": ">", "Value": 170 },
-                     { "Property": "Ball Pos X", "Op": ">=", "Value": 141 },
-                     { "Property": "Ball Pos X", "Op": "<", "Value": 200 }
+                    {
+                        "Property": "Ball Launched",
+                        "Op": "==",
+                        "Value": true
+                    },
+                    {
+                        "Property": "Ball Pos Y",
+                        "Op": ">",
+                        "Value": 170
+                    },
+                    {
+                        "Property": "Ball Pos X",
+                        "Op": ">=",
+                        "Value": 141
+                    },
+                    {
+                        "Property": "Ball Pos X",
+                        "Op": "<",
+                        "Value": 200
+                    }
                 ],
                 "Inputs": [
                     "|..|.......A|"
@@ -86,9 +104,21 @@
             },
             {
                 "Conditions": [
-                     { "Property": "Ball Launched", "Op": "==", "Value": true },
-                     { "Property": "Ball Pos Y", "Op": ">", "Value": 170 },
-                     { "Property": "Ball Pos X", "Op": "<", "Value": 141 }
+                    {
+                        "Property": "Ball Launched",
+                        "Op": "==",
+                        "Value": true
+                    },
+                    {
+                        "Property": "Ball Pos Y",
+                        "Op": ">",
+                        "Value": 170
+                    },
+                    {
+                        "Property": "Ball Pos X",
+                        "Op": "<",
+                        "Value": 141
+                    }
                 ],
                 "Inputs": [
                     "|..|U.......|"
@@ -97,45 +127,45 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": []
     },
     "Game Configuration": {
         "Game Name": "NES / Pinball",
         "Frame Rate": 600.1,
         "Bypass Emulator State": false,
-        "Last Input Step Reward": 0.0,
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1002,
-                "Conditions":
-                [
-                ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                    { "Type": "Set Score Magnet", "Intensity": 1.0 }
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Score Magnet",
+                        "Intensity": 1.0
+                    }
                 ]
             },
             {
                 "Label": 1004,
-                "Conditions":
-                [
-                 { "Property": "Prev Score", "Op": ">", "Value": 900000 },
-                 { "Property": "Score", "Op": "<", "Value": 100000 }
+                "Conditions": [
+                    {
+                        "Property": "Prev Score",
+                        "Op": ">",
+                        "Value": 900000
+                    },
+                    {
+                        "Property": "Score",
+                        "Op": "<",
+                        "Value": 100000
+                    }
                 ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                 { "Type": "Trigger Win" }
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
                 ]
             }
         ]

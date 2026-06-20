@@ -11,7 +11,7 @@
     },
     "Engine Configuration": {
         "Hash Database": {
-            "Enabled": true, 
+            "Enabled": true,
             "Max Store Count": 2,
             "Max Store Size (Mb)": 10000
         },
@@ -27,10 +27,9 @@
         "Initial State File Path": "",
         "Use Flat Code Map": false,
         "Initial RAM Data File Path": "",
-        "SRAM Block Size": 0,
+        "SRAM Block Size": 8192,
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
-	    "SRAM Block Size": 8192,
         "Disabled State Properties": [
             "SRAM",
             "CHRR",
@@ -42,11 +41,10 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 1,
         "Show Empty Input Slots": false,
@@ -58,8 +56,7 @@
         "Allowed Input Sets": [
             {
                 "Conditions": [],
-                "Inputs": [
-                ],
+                "Inputs": [],
                 "Stop Input Evaluation": true
             },
             {
@@ -110,62 +107,67 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": []
     },
     "Game Configuration": {
         "Game Name": "NES / Street Fighter 2010",
         "Frame Rate": 60.1,
         "Bypass Emulator State": false,
-        "Last Input Step Reward": 0.0,
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,
-                "Conditions":
-                [
-                ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                    { "Type": "Set Boss HP Magnet", "Intensity": -1000.0 }, 
-                    { "Type": "Set Player Pos X Magnet", "Intensity": 1.0, "Pos": 144.0  }
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Boss HP Magnet",
+                        "Intensity": -1000.0
+                    },
+                    {
+                        "Type": "Set Player Pos X Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 144.0
+                    }
                 ]
             },
-            
             {
                 "Label": 1001,
-                "Conditions":
-                [
-                { "Property": "Boss HP", "Op": "==", "Value": -1 }
+                "Conditions": [
+                    {
+                        "Property": "Boss HP",
+                        "Op": "==",
+                        "Value": -1
+                    }
                 ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                    { "Type": "Add Reward", "Value": 100000.0 },
-                    { "Type": "Set Player Pos X Magnet", "Intensity": 1.0, "Pos": 148.0  } 
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 100000.0
+                    },
+                    {
+                        "Type": "Set Player Pos X Magnet",
+                        "Intensity": 1.0,
+                        "Pos": 148.0
+                    }
                 ]
             },
-            
             {
                 "Label": 1100,
-                "Conditions":
-                [
-                { "Property": "Open Level", "Op": "==", "Value": 10 }
+                "Conditions": [
+                    {
+                        "Property": "Open Level",
+                        "Op": "==",
+                        "Value": 10
+                    }
                 ],
-                
-                "Satisfies": [  ],
-                
-                "Actions":
-                [
-                    { "Type": "Trigger Win" }
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
                 ]
             }
         ]

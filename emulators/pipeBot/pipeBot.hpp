@@ -69,9 +69,9 @@ public:
   // Constructor must only do configuration parsing
   PipeBot(const nlohmann::json& config) : Emulator(config)
   {
-    _rowCount    = jaffarCommon::json::getNumber<uint8_t>(config, "Row Count");
-    _colCount    = jaffarCommon::json::getNumber<uint32_t>(config, "Col Count");
-    _targetScore = jaffarCommon::json::getNumber<uint8_t>(config, "Target Score");
+    _rowCount    = jaffarCommon::json::popNumber<uint8_t>(_emulatorConfigRemaining, "Row Count");
+    _colCount    = jaffarCommon::json::popNumber<uint32_t>(_emulatorConfigRemaining, "Col Count");
+    _targetScore = jaffarCommon::json::popNumber<uint8_t>(_emulatorConfigRemaining, "Target Score");
     _grid        = (uint8_t*)malloc(_rowCount * _colCount * sizeof(uint8_t));
 
     _pieceTypes = {
@@ -398,9 +398,9 @@ public:
          }},
     };
 
-    _nextPieceQueue = jaffarCommon::json::getArray<uint8_t>(config, "Next Piece Queue");
+    _nextPieceQueue = jaffarCommon::json::popArray<uint8_t>(_emulatorConfigRemaining, "Next Piece Queue");
 
-    const auto& initialPiecesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Initial Pieces");
+    const auto& initialPiecesJs = jaffarCommon::json::popArray<nlohmann::json>(_emulatorConfigRemaining, "Initial Pieces");
     for (const auto& pieceJs : initialPiecesJs)
     {
       const uint8_t pieceType = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Type");
@@ -411,7 +411,7 @@ public:
       _initialPieces.push_back(piece_t({.pos{pieceRow, pieceCol}, .type = pieceType}));
     }
 
-    const auto& upHolePiecesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Up Hole Pieces");
+    const auto& upHolePiecesJs = jaffarCommon::json::popArray<nlohmann::json>(_emulatorConfigRemaining, "Up Hole Pieces");
     for (const auto& pieceJs : upHolePiecesJs)
     {
       const uint8_t pieceRow = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Row");
@@ -419,7 +419,7 @@ public:
       _upHolePieces.insert({pieceRow, pieceCol});
     }
 
-    const auto& downHolePiecesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Down Hole Pieces");
+    const auto& downHolePiecesJs = jaffarCommon::json::popArray<nlohmann::json>(_emulatorConfigRemaining, "Down Hole Pieces");
     for (const auto& pieceJs : downHolePiecesJs)
     {
       const uint8_t pieceRow = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Row");
@@ -427,7 +427,7 @@ public:
       _downHolePieces.insert({pieceRow, pieceCol});
     }
 
-    const auto& leftHolePiecesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Left Hole Pieces");
+    const auto& leftHolePiecesJs = jaffarCommon::json::popArray<nlohmann::json>(_emulatorConfigRemaining, "Left Hole Pieces");
     for (const auto& pieceJs : leftHolePiecesJs)
     {
       const uint8_t pieceRow = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Row");
@@ -435,7 +435,7 @@ public:
       _leftHolePieces.insert({pieceRow, pieceCol});
     }
 
-    const auto& rightHolePiecesJs = jaffarCommon::json::getArray<nlohmann::json>(config, "Right Hole Pieces");
+    const auto& rightHolePiecesJs = jaffarCommon::json::popArray<nlohmann::json>(_emulatorConfigRemaining, "Right Hole Pieces");
     for (const auto& pieceJs : rightHolePiecesJs)
     {
       const uint8_t pieceRow = jaffarCommon::json::getNumber<uint8_t>(pieceJs, "Row");
@@ -443,6 +443,7 @@ public:
       _rightHolePieces.insert({pieceRow, pieceCol});
     }
 
+    // Input parser is constructed from the original config but consumes no further config keys.
     _inputParser     = std::make_unique<jaffar::InputParser>(config);
     _currentPieceIdx = 0;
 
@@ -494,6 +495,8 @@ public:
         }
       }
     if (_startPieceFound == false) JAFFAR_THROW_LOGIC("Could not find starter piece");
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   ~PipeBot() { free(_grid); }

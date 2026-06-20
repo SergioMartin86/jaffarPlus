@@ -21,8 +21,10 @@ public:
 
   PrinceOfPersiaUSA(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
-    _hashLevelProperties = jaffarCommon::json::getBoolean(config, "Hash Level Properties");
-    _hashGuardProperties = jaffarCommon::json::getBoolean(config, "Hash Guard Properties");
+    _hashLevelProperties = jaffarCommon::json::popBoolean(_gameConfigRemaining, "Hash Level Properties");
+    _hashGuardProperties = jaffarCommon::json::popBoolean(_gameConfigRemaining, "Hash Guard Properties");
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
 private:

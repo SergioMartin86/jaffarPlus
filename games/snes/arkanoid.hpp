@@ -41,14 +41,16 @@ public:
   Arkanoid(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
     // Parsing configuration
-    _remainingHitsReward           = jaffarCommon::json::getNumber<float>(config, "Remaining Hits Reward");
-    _remainingBlocksReward         = jaffarCommon::json::getNumber<float>(config, "Remaining Blocks Reward");
-    _holdLaserPowerUpReward        = jaffarCommon::json::getNumber<float>(config, "Hold Laser Powerup Reward");
-    _holdMPowerUpReward            = jaffarCommon::json::getNumber<float>(config, "Hold M Powerup Reward");
-    _fallingLaserPowerUpReward     = jaffarCommon::json::getNumber<float>(config, "Falling Laser Powerup Reward");
-    _fallingEightBallPowerUpReward = jaffarCommon::json::getNumber<float>(config, "Falling Eight Ball Powerup Reward");
-    _ballCountReward               = jaffarCommon::json::getNumber<float>(config, "Ball Count Reward");
-    _paddleMovementFrameskip       = jaffarCommon::json::getNumber<uint8_t>(config, "Paddle Movement Frameskip");
+    _remainingHitsReward           = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Remaining Hits Reward");
+    _remainingBlocksReward         = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Remaining Blocks Reward");
+    _holdLaserPowerUpReward        = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Hold Laser Powerup Reward");
+    _holdMPowerUpReward            = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Hold M Powerup Reward");
+    _fallingLaserPowerUpReward     = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Falling Laser Powerup Reward");
+    _fallingEightBallPowerUpReward = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Falling Eight Ball Powerup Reward");
+    _ballCountReward               = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Ball Count Reward");
+    _paddleMovementFrameskip       = jaffarCommon::json::popNumber<uint8_t>(_gameConfigRemaining, "Paddle Movement Frameskip");
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
 private:

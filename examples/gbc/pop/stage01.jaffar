@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -34,7 +32,6 @@
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip Rate": 0,
         "Hash Step Tolerance": 2,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
@@ -226,7 +223,6 @@
     "Game Configuration": {
         "Game Name": "GBC / Prince Of Persia",
         "Frame Rate": 60.1,
-        "Last Input Step Reward": 0.0,
         "Print Properties": [
             "Kid Frame",
             "Kid Action",

@@ -79,7 +79,6 @@
         "Game Name": "NES / Pipe Dream",
         "Frame Rate": 60.1,
         "Bypass Emulator State": false,
-        "Last Input Step Reward": 0.0,
         "Print Properties": [],
         "Hash Properties": [],
         "Rules": [

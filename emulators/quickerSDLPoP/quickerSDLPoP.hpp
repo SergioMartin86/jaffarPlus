@@ -29,23 +29,33 @@ public:
   {
     _QuickerSDLPoP = std::make_unique<SDLPoPInstance>(config);
 
+    // Keys consumed by the underlying SDLPoP instance (SDLPoPInstanceBase): popped here too so the
+    // strict-key check below accounts for them. The instance was constructed from the original config.
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "SDLPoP Root Path");
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Levels File Path");
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Game Version");
+
     // Getting initial state file path
-    _stateFilePath = jaffarCommon::json::getString(config, "Initial State File");
+    _stateFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File");
 
     // Optional fixed input sequence to replay after loading the initial state (default: none)
-    _initialSequenceFilePath = config.contains("Initial Sequence File Path") ? config["Initial Sequence File Path"].get<std::string>() : std::string("");
+    _initialSequenceFilePath =
+      _emulatorConfigRemaining.contains("Initial Sequence File Path") ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path") : std::string("");
 
     // RNG overriding configuration
-    _overrideRNGEnabled            = jaffarCommon::json::getBoolean(config, "Override RNG Enabled");
-    _overrideRNGValue              = jaffarCommon::json::getNumber<uint32_t>(config, "Override RNG Value");
-    _overrideLooseTileSoundEnabled = jaffarCommon::json::getBoolean(config, "Override Loose Tile Sound Enabled");
-    _overrideLooseTileSoundValue   = jaffarCommon::json::getNumber<uint32_t>(config, "Override Loose Tile Sound Value");
-    _initializeCopyProtection      = jaffarCommon::json::getBoolean(config, "Initialize Copy Protection");
+    _overrideRNGEnabled            = jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Override RNG Enabled");
+    _overrideRNGValue              = jaffarCommon::json::popNumber<uint32_t>(_emulatorConfigRemaining, "Override RNG Value");
+    _overrideLooseTileSoundEnabled = jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Override Loose Tile Sound Enabled");
+    _overrideLooseTileSoundValue   = jaffarCommon::json::popNumber<uint32_t>(_emulatorConfigRemaining, "Override Loose Tile Sound Value");
+    _initializeCopyProtection      = jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Initialize Copy Protection");
 
     // Exploration-only: when true, cosmetic torch/potion animations stop consuming the shared RNG, so
     // random_seed advances only on gameplay (mainly guard combat). Lets the search hash the seed soundly
     // without torch noise. Solutions found this way do NOT transcribe to the real game. Default false.
-    _disableNonGameplayRNG = config.contains("Disable Non-Gameplay RNG") ? config["Disable Non-Gameplay RNG"].get<bool>() : false;
+    _disableNonGameplayRNG =
+      _emulatorConfigRemaining.contains("Disable Non-Gameplay RNG") ? jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Disable Non-Gameplay RNG") : false;
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   void initializeImpl() override

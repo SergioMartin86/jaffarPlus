@@ -27,8 +27,10 @@ public:
 
   GridWalker(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
-    _goalX = jaffarCommon::json::getNumber<uint8_t>(config, "Goal X");
-    _goalY = jaffarCommon::json::getNumber<uint8_t>(config, "Goal Y");
+    _goalX = jaffarCommon::json::popNumber<uint8_t>(_gameConfigRemaining, "Goal X");
+    _goalY = jaffarCommon::json::popNumber<uint8_t>(_gameConfigRemaining, "Goal Y");
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
 private:

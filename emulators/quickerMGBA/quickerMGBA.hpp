@@ -24,32 +24,41 @@ public:
   QuickerMGBA(const nlohmann::json& config) : Emulator(config)
   {
     // Getting initial state file from the configuration
-    _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
+    _initialStateFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path");
 
     // For testing purposes, the initial state file can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERMGBA_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
     // Getting initial sequence file path
-    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+    _initialSequenceFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path");
 
     // Parsing rom file path
-    _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
+    _romFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File Path");
 
     // For testing purposes, the rom file path can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERMGBA_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
 
     // Parsing rom file SHA1
-    _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
+    _romFileSHA1 = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File SHA1");
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERMGBA_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
     // Getting disabled state properties
-    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    const auto disabledStateProperties = jaffarCommon::json::popArray<std::string>(_emulatorConfigRemaining, "Disabled State Properties");
     for (const auto& property : disabledStateProperties) _disabledStateProperties.push_back(property);
 
-    // Creating internal emulator instance
+    // Creating internal emulator instance (constructed from the original config)
     _quickerMGBA = std::make_unique<mgba::EmuInstance>(config);
+
+    // Keys consumed by the underlying emulator instance (EmuInstance / its InputParser): popped here
+    // too so the strict-key check below accounts for them. The instance was constructed from the
+    // original config; we pop from the remaining-copy only for accounting. ("Rom File Path" is already
+    // popped above.)
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Bios File Path");
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Controller Type");
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   void initializeImpl() override

@@ -6,9 +6,7 @@
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol",
-            "Best State Path": "/tmp/jaffar.best.state",
-            "Worst State Path": "/tmp/jaffar.worst.state"
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
         }
     },
     "Engine Configuration": {
@@ -33,11 +31,9 @@
         "System Type": "Sega Master System",
         "Controller 1 Type": "Gamepad2B",
         "Controller 2 Type": "None",
-        "Disabled State Properties": [],
-        "Work RAM Serialization Size": 8192
+        "Disabled State Properties": []
     },
     "Runner Configuration": {
-        "Frameskip Rate": 0,
         "Hash Step Tolerance": 16,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
@@ -101,7 +97,6 @@
     "Game Configuration": {
         "Game Name": "SMS / Snail Maze",
         "Frame Rate": 60.1,
-        "Last Input Step Reward": 0.0,
         "Print Properties": [
             "Player Pos X",
             "Player Pos Y",

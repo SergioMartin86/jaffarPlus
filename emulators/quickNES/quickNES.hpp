@@ -33,44 +33,52 @@ public:
   QuickNES(const nlohmann::json& config) : Emulator(config)
   {
     // Getting initial state file from the configuration
-    _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
+    _initialStateFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path");
 
     // Getting initial state file from the configuration
-    _serializeOnlyRAM = jaffarCommon::json::getBoolean(config, "Serialize Only RAM");
+    _serializeOnlyRAM = jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Serialize Only RAM");
 
     // For testing purposes, the initial state file can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKNES_OVERRIDE_INITIAL_STATE_FILE_PATH")) _initialStateFilePath = std::string(value);
 
     // Parsing rom file path
-    _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
+    _romFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File Path");
 
     // For testing purposes, the rom file path can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKNES_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
 
     // Getting initial sequence file path
-    _initialSequenceFilePath = jaffarCommon::json::getString(config, "Initial Sequence File Path");
+    _initialSequenceFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path");
 
     // For testing purposes, the sequence file path can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKNES_OVERRIDE_INITIAL_SEQUENCE_FILE_PATH")) _initialSequenceFilePath = std::string(value);
 
     // Parsing rom file SHA1
-    _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
+    _romFileSHA1 = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File SHA1");
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKNES_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
 
     // Parsing initial RAM Data file
-    _initialRAMDataFilePath = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
+    _initialRAMDataFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial RAM Data File Path");
 
     // Getting Nametable size to use
-    _NTABBlockSize = jaffarCommon::json::getNumber<size_t>(config, "Nametable Block Size");
+    _NTABBlockSize = jaffarCommon::json::popNumber<size_t>(_emulatorConfigRemaining, "Nametable Block Size");
 
     // Getting disabled state properties
-    const auto disabledStateProperties = jaffarCommon::json::getArray<std::string>(config, "Disabled State Properties");
+    const auto disabledStateProperties = jaffarCommon::json::popArray<std::string>(_emulatorConfigRemaining, "Disabled State Properties");
     for (const auto& property : disabledStateProperties) _disabledStateProperties.push_back(property);
+
+    // Keys consumed by the underlying NES instance's input parser (jaffar::InputParser): popped here
+    // too so the strict-key check below accounts for them. The instance is constructed from the
+    // original config; we pop from the remaining copy only for accounting.
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Controller 1 Type");
+    jaffarCommon::json::popString(_emulatorConfigRemaining, "Controller 2 Type");
 
     // Creating internal emulator instance
     _quickNES = std::make_unique<NESInstance>(config);
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   // Function to get a reference to the input parser from the base emulator

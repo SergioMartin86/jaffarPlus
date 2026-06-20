@@ -54,11 +54,17 @@ public:
   /**
    * @brief Constructs the emulator, performing only configuration parsing (for dry runs).
    * @param config Emulator configuration object; must contain the "Emulator Name" field.
+   *
+   * @details Keeps a mutable working copy of @p config in @ref _emulatorConfigRemaining and consumes
+   * (pops) the common keys it reads from it, so that a derived core can pop ITS own keys from the
+   * same copy and then call @ref finalizeEmulatorConfig() to reject any leftover (unrecognized) key.
+   * Strict checking is opt-in: a core that does not call @ref finalizeEmulatorConfig() is never
+   * checked, so unconverted cores keep working unchanged.
    */
-  Emulator(const nlohmann::json& config)
+  Emulator(const nlohmann::json& config) : _emulatorConfigRemaining(config)
   {
     // Getting emulator name (for runtime use)
-    _emulatorName = jaffarCommon::json::getString(config, "Emulator Name");
+    _emulatorName = jaffarCommon::json::popString(_emulatorConfigRemaining, "Emulator Name");
   };
 
   virtual ~Emulator() = default;
@@ -226,8 +232,22 @@ protected:
    */
   virtual void advanceStateImpl(const jaffar::input_t& input) = 0;
 
+  /**
+   * @brief Asserts that every key in the emulator configuration has been recognized.
+   *
+   * @details Call this at the END of a derived core's constructor, after it has consumed all of its
+   * own configuration keys (via the jaffarCommon::json::pop* helpers) from @ref
+   * _emulatorConfigRemaining. The base ctor has already popped the common keys, so anything still
+   * present is an unrecognized key (a typo or unsupported option) and is reported by name. Cores
+   * that do not call this remain lenient (opt-in strict validation).
+   */
+  void finalizeEmulatorConfig() { jaffarCommon::json::checkEmpty(_emulatorConfigRemaining, "Emulator Configuration"); }
+
   /// @brief Emulator name (for runtime use).
   std::string _emulatorName;
+
+  /// @brief Mutable working copy of the emulator config; recognized keys are popped, leftovers are unrecognized. See @ref finalizeEmulatorConfig().
+  nlohmann::json _emulatorConfigRemaining;
 
   /// @brief Whether the emulator has been initialized.
   bool _isInitialized = false;

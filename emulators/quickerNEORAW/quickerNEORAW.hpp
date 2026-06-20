@@ -24,17 +24,19 @@ public:
   QuickerNEORAW(const nlohmann::json& config) : Emulator(config)
   {
     // Getting initial state file from the configuration
-    _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
+    _initialStateFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path");
 
     // Parsing rom file path
-    _gameDataPath = jaffarCommon::json::getString(config, "Game Data Path");
+    _gameDataPath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Game Data Path");
 
     // Parsing initial RAM Data file
-    _initialRAMDataFilePath  = jaffarCommon::json::getString(config, "Initial RAM Data File Path");
-    _initialRAMDataEndiannes = jaffarCommon::json::getString(config, "Initial RAM Data Endiannes");
+    _initialRAMDataFilePath  = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial RAM Data File Path");
+    _initialRAMDataEndiannes = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial RAM Data Endiannes");
 
-    // Instantiating emulator
+    // Instantiating emulator (the underlying EmuInstance and its InputParser consume no further config keys)
     _quickerNEORAW = std::make_unique<rawspace::EmuInstance>(config);
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   void initializeImpl() override

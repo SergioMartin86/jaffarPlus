@@ -24,19 +24,18 @@ public:
   QuickerSMBC(const nlohmann::json& config) : Emulator(config)
   {
     // Getting initial state file from the configuration
-    _initialStateFilePath = jaffarCommon::json::getString(config, "Initial State File Path");
+    _initialStateFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path");
+
+    // The ROM file path/SHA1 are only used by the player build, but they are always popped here so the
+    // strict-key check below accounts for them regardless of build configuration.
+    _romFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File Path");
+    _romFileSHA1 = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File SHA1");
 
 // Only load rom file if using player
 #ifdef _JAFFAR_PLAYER
 
-    // Parsing rom file path
-    _romFilePath = jaffarCommon::json::getString(config, "Rom File Path");
-
     // For testing purposes, the rom file path can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERSMBC_OVERRIDE_ROM_FILE_PATH")) _romFilePath = std::string(value);
-
-    // Parsing rom file SHA1
-    _romFileSHA1 = jaffarCommon::json::getString(config, "Rom File SHA1");
 
     // For testing purposes, the rom file SHA1 can be overriden by environment variables
     if (auto* value = std::getenv("JAFFAR_QUICKERSMBC_OVERRIDE_ROM_FILE_SHA1")) _romFileSHA1 = std::string(value);
@@ -45,6 +44,8 @@ public:
 
     // Creating internal emulator instance
     _quickerSMBC = std::make_unique<smbc::EmuInstance>(config);
+
+    // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };
 
   void initializeImpl() override

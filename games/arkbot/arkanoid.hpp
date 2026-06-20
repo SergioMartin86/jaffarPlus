@@ -201,6 +201,8 @@ public:
       auto propertyName = std::string("Block Value [") + std::to_string(i) + std::string("]");
       registerGameProperty(propertyName, &_arkState->blocks[i], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     }
+
+    // No game-specific configuration keys; reject any leftover (unrecognized) key.
   }
 
 private:
