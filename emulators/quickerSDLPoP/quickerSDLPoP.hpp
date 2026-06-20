@@ -40,7 +40,7 @@ public:
 
     // Optional fixed input sequence to replay after loading the initial state (default: none)
     _initialSequenceFilePath =
-      _emulatorConfigRemaining.contains("Initial Sequence File Path") ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path") : std::string("");
+        _emulatorConfigRemaining.contains("Initial Sequence File Path") ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path") : std::string("");
 
     // RNG overriding configuration
     _overrideRNGEnabled            = jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Override RNG Enabled");
@@ -53,7 +53,7 @@ public:
     // random_seed advances only on gameplay (mainly guard combat). Lets the search hash the seed soundly
     // without torch noise. Solutions found this way do NOT transcribe to the real game. Default false.
     _disableNonGameplayRNG =
-      _emulatorConfigRemaining.contains("Disable Non-Gameplay RNG") ? jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Disable Non-Gameplay RNG") : false;
+        _emulatorConfigRemaining.contains("Disable Non-Gameplay RNG") ? jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Disable Non-Gameplay RNG") : false;
 
     // All recognized emulator-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   };

@@ -458,8 +458,8 @@ private:
                               int(_gameState->Kid.direction), int(_gameState->hitp_curr), int(_gameState->hitp_max), int(_gameState->Kid.alive));
     jaffarCommon::logger::log("[J+]  + [Guard]               Room: %d, Pos.x: %3d, Pos.y: %3d, Frame: %3d, Action: %2d, Color: %3u, Col: %3d, Dir: %d, HP: %d/%d, Alive: %d\n",
                               int(_gameState->Guard.room), int(_gameState->Guard.x), int(_gameState->Guard.y), int(_gameState->Guard.frame), int(_gameState->Guard.action),
-                              int(_gameState->curr_guard_color), int(_gameState->Guard.curr_col), int(_gameState->Guard.direction), int(_gameState->guardhp_curr), int(_gameState->guardhp_max),
-                              int(_gameState->Guard.alive));
+                              int(_gameState->curr_guard_color), int(_gameState->Guard.curr_col), int(_gameState->Guard.direction), int(_gameState->guardhp_curr),
+                              int(_gameState->guardhp_max), int(_gameState->Guard.alive));
     jaffarCommon::logger::log("[J+]  + Exit Room Timer:      %d\n", _gameState->exit_room_timer);
     jaffarCommon::logger::log("[J+]  + Kid Has Sword:        %d\n", _gameState->have_sword);
 
