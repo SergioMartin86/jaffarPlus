@@ -64,6 +64,8 @@ A complete user & developer manual lives in **[`docs/`](https://sergiomartin86.g
 | [4. Search Concepts & Tuning](https://sergiomartin86.github.io/jaffarPlus/04-search-concepts/) | How the search, state hashing, and NUMA/threading work — and which knobs to turn. |
 | [5. Adding a Game or Emulator](https://sergiomartin86.github.io/jaffarPlus/05-adding-a-game/) | Register a new game or emulator and expose its properties and actions. |
 | [6. Tooling Reference](https://sergiomartin86.github.io/jaffarPlus/06-tooling/) | `jaffar`, `jaffar-player`, headless screenshots, video rendering, environment overrides. |
+| [7. Understanding the Output](https://sergiomartin86.github.io/jaffarPlus/07-understanding-output/) | What every field of `jaffar`'s per-step report means, and how to read a run at a glance. |
+| [8. Jaffar Player Interface](https://sergiomartin86.github.io/jaffarPlus/08-player-interface/) | `jaffar-player`'s interactive commands, options, and workflows: replay, navigate, extract a save-state, screenshots. |
 
 A C++ **API reference** for the engine internals is generated from the source with Doxygen — browse
 it [online](https://sergiomartin86.github.io/jaffarPlus/api/), or build it locally with
