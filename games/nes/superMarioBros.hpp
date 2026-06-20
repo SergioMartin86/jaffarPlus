@@ -35,13 +35,13 @@ public:
       std::string        line;
       while (std::getline(f, line))
       {
-        auto  coordinates = jaffarCommon::string::split(line, ' ');
+        auto coordinates = jaffarCommon::string::split(line, ' ');
         // Trace lines may carry fewer than five fields (older traces store only posx/posy); read what is present and default the rest to zero.
-        float posx        = coordinates.size() > 0 ? std::atof(coordinates[0].c_str()) : 0.0f;
-        float posy        = coordinates.size() > 1 ? std::atof(coordinates[1].c_str()) : 0.0f;
-        float velx        = coordinates.size() > 2 ? std::atof(coordinates[2].c_str()) : 0.0f;
-        float vely        = coordinates.size() > 3 ? std::atof(coordinates[3].c_str()) : 0.0f;
-        float screenPosx  = coordinates.size() > 4 ? std::atof(coordinates[4].c_str()) : 0.0f;
+        float posx       = coordinates.size() > 0 ? std::atof(coordinates[0].c_str()) : 0.0f;
+        float posy       = coordinates.size() > 1 ? std::atof(coordinates[1].c_str()) : 0.0f;
+        float velx       = coordinates.size() > 2 ? std::atof(coordinates[2].c_str()) : 0.0f;
+        float vely       = coordinates.size() > 3 ? std::atof(coordinates[3].c_str()) : 0.0f;
+        float screenPosx = coordinates.size() > 4 ? std::atof(coordinates[4].c_str()) : 0.0f;
         _trace.push_back(traceEntry_t{.posx = posx, .posy = posy, .velx = velx, .vely = vely, .screenPosx = screenPosx});
       }
     }
