@@ -21,7 +21,7 @@ public:
 
   SuperMarioBros(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
-    _traceFilePath = jaffarCommon::json::getString(config, "Trace File Path");
+    _traceFilePath = jaffarCommon::json::popString(_gameConfigRemaining, "Trace File Path");
 
     // Loading trace
     if (_traceFilePath != "")
@@ -36,14 +36,17 @@ public:
       while (std::getline(f, line))
       {
         auto  coordinates = jaffarCommon::string::split(line, ' ');
-        float posx        = std::atof(coordinates[0].c_str());
-        float posy        = std::atof(coordinates[1].c_str());
-        float velx        = std::atof(coordinates[2].c_str());
-        float vely        = std::atof(coordinates[3].c_str());
-        float screenPosx  = std::atof(coordinates[4].c_str());
+        // Trace lines may carry fewer than five fields (older traces store only posx/posy); read what is present and default the rest to zero.
+        float posx        = coordinates.size() > 0 ? std::atof(coordinates[0].c_str()) : 0.0f;
+        float posy        = coordinates.size() > 1 ? std::atof(coordinates[1].c_str()) : 0.0f;
+        float velx        = coordinates.size() > 2 ? std::atof(coordinates[2].c_str()) : 0.0f;
+        float vely        = coordinates.size() > 3 ? std::atof(coordinates[3].c_str()) : 0.0f;
+        float screenPosx  = coordinates.size() > 4 ? std::atof(coordinates[4].c_str()) : 0.0f;
         _trace.push_back(traceEntry_t{.posx = posx, .posy = posy, .velx = velx, .vely = vely, .screenPosx = screenPosx});
       }
     }
+
+    // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
 private:
