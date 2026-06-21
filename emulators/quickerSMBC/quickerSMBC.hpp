@@ -44,6 +44,13 @@ public:
                                    ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path")
                                    : "";
 
+    // Getting optional list of state blocks to exclude from per-state serialization to shrink state
+    // size for the search: "DST" (the 32KB constant ROM data tables, recreated at load), "PPU" (video
+    // memory, irrelevant to headless gameplay) and "STK" (the call stack, empty at frame boundaries).
+    if (_emulatorConfigRemaining.contains("Disabled State Properties"))
+      for (const auto& p : jaffarCommon::json::popArray<std::string>(_emulatorConfigRemaining, "Disabled State Properties"))
+        _disabledStateProperties.push_back(p);
+
     // The ROM file path/SHA1 are only used by the player build, but they are always popped here so the
     // strict-key check below accounts for them regardless of build configuration.
     _romFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Rom File Path");
@@ -88,6 +95,9 @@ public:
 
     // Loading rom into emulator
     _quickerSMBC->loadROM(_romFilePath);
+
+    // Excluding requested state blocks from serialization (shrinks the per-state size for the search)
+    for (const auto& property : _disabledStateProperties) _quickerSMBC->disableStateBlock(property);
 
     // If an initial input sequence is defined, replay it from reset to reach the starting state. This
     // recreates a starting state from a reproducible boot-derived sequence rather than a binary .state.
@@ -233,6 +243,7 @@ private:
   std::string _initialStateFilePath;
   std::string _initialRAMDataFilePath;
   std::string _initialSequenceFilePath;
+  std::vector<std::string> _disabledStateProperties;
 
   // True when the previous step started an area load, so the next step must reproduce the NES's frozen
   // lag frame (see advanceStateImpl). Part of the serialized state (serializeState) so it survives the
