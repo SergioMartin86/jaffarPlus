@@ -63,6 +63,10 @@ of states to expand) and the **hash database** (visited-state deduplication). Th
 explained in [Search Concepts & Tuning](04-search-concepts.md); the keys are:
 *(Source: `source/engine.hpp`, `source/stateDb.hpp`, `source/hashDb.hpp`.)*
 
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Base State Batch Size` | number | no | How many base states each worker pulls from the per-NUMA queue per lock acquisition (clamped to 1–16). **When omitted it is auto-tuned**: at startup the engine times a burst of state advances and picks a batch worth roughly 200 µs of work, so cheap cores get a large batch (amortizing the queue lock) and heavy cores get a small one (better load balance). Measured: SDLPoP/TestEmulator → 16, Genesis/GBA/A2600 → 1. Set this explicitly to override the auto-tuned value. Pure performance knob — it does not change which states are explored or the result. |
+
 ### Engine Configuration → State Database
 
 | Key | Type | Required | Description |
