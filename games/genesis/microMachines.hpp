@@ -76,24 +76,20 @@ private:
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
-    _BInputIdx    = _emulator->registerInput("|..|.....B..|");
   }
+
+  // One search "step" advances the chosen input for a fixed number of emulator frames. Set to 1
+  // for full per-frame granularity (one emulator step per Jaffar step). Larger values hold the
+  // chosen input across a block, trading control granularity for a smaller search space (the
+  // chosen input -- not a forced accelerate -- so coast/brake remains available either way).
+  static constexpr size_t _framesPerStep = 1;
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
     _player1LapsRemainingPrev = *_player1LapsRemaining;
     _player1CheckpointPrev    = *_player1Checkpoint1;
 
-    printf("_player1PosY: %u\n", *_player1PosY);
-    _emulator->advanceState(input);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    _emulator->advanceState(_BInputIdx);
-    printf("Advancing State\n");
-    printf("_player1PosY: %u\n", *_player1PosY);
+    for (size_t i = 0; i < _framesPerStep; i++) _emulator->advanceState(input);
 
     // Increasing counter if input is null
     if (input != _nullInputIdx) _lastInputStep = _currentStep;
@@ -326,8 +322,6 @@ private:
   uint8_t* _workRAM;
   uint8_t* _currentRace;
 
-  uint16_t* _preRaceTimer;
-
   uint16_t* _player1LapsRemaining;
   uint16_t  _player1LapsRemainingPrev;
 
@@ -364,7 +358,6 @@ private:
 
   // Null input index to remember the last valid input
   InputSet::inputIndex_t _nullInputIdx;
-  InputSet::inputIndex_t _BInputIdx;
 };
 
 } // namespace genesis

@@ -39,6 +39,16 @@ std::string runCommand; ///< Command to run initially and then exit.
 ///        headless verification of a reproduction: determinism checks and golden-hash comparisons).
 bool printFinalState;
 
+/// @brief When non-empty, writes the per-step game-state hash for every step to this file (one
+///        "step\thashHi\thashLo" line per step). Used to cross-validate two emulators replaying the
+///        same solution: diffing the two dumps pinpoints the exact first frame at which they diverge.
+std::string dumpHashesPath;
+
+/// @brief When non-empty, writes the full low work-RAM ("LRAM") segment for every step to this file
+///        as a flat binary blob (size-of-LRAM bytes per step). Diffing two emulators' RAM dumps
+///        byte-by-byte identifies the exact RAM addresses (hence game variables) that diverge.
+std::string dumpRamPath;
+
 /// @brief Directory to write per-frame screenshots (BMP) into; empty disables screenshotting.
 std::string screenshotDir;
 /// @brief Steps to capture as screenshots; empty captures all rendered steps when a dir is given.
@@ -139,6 +149,40 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
   {
     const auto isInputAllowed = p.isInputAllowed(i);
     if (isInputAllowed == false) notAllowedInputStates.push_back(i);
+  }
+
+  // If requested, dump the per-step game-state hash for every step (including the end-of-sequence
+  // step) to a file. Diffing the dumps of two emulators replaying the same solution pinpoints the
+  // exact first frame at which their hashed game RAM diverges.
+  if (dumpHashesPath.empty() == false)
+  {
+    std::string dump;
+    char        line[64];
+    for (ssize_t i = 0; i <= sequenceLength; i++)
+    {
+      const auto hash = p.getStateHash(i);
+      snprintf(line, sizeof(line), "%ld\t%016lX%016lX\n", i, hash.first, hash.second);
+      dump += line;
+    }
+    if (jaffarCommon::file::saveStringToFile(dump, dumpHashesPath.c_str()) == false)
+      JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step hash dump to: %s\n", dumpHashesPath.c_str());
+  }
+
+  // If requested, dump the full low work-RAM for every step as a flat binary blob. Reading the RAM
+  // requires restoring each step's state into the live emulator first (loadStepData), so this mutates
+  // the live state -- harmless here since the interactive loop re-loads per step regardless.
+  if (dumpRamPath.empty() == false)
+  {
+    const auto lram = r.getGame()->getEmulator()->getProperty("LRAM");
+    std::string dump;
+    dump.reserve((size_t)(sequenceLength + 1) * lram.size);
+    for (ssize_t i = 0; i <= sequenceLength; i++)
+    {
+      p.loadStepData(i);
+      dump.append((const char*)lram.pointer, lram.size);
+    }
+    if (jaffarCommon::file::saveStringToFile(dump, dumpRamPath.c_str()) == false)
+      JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step RAM dump to: %s\n", dumpRamPath.c_str());
   }
 
   // Interactive section
@@ -265,6 +309,12 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
 
     // If it's not reproducing, grab command with a wait
     if (isReproduce == false && isUnattended == false) command = jaffarCommon::logger::waitForKeyPress();
+
+    // Headless fast-forward: when unattended and not actively reproducing (and not running a one-shot
+    // command), advance through the sequence as fast as possible -- no key wait, no frame-rate sleep.
+    // This is what makes --unattended --exitOnEnd terminate promptly for batch/verification runs
+    // (otherwise neither branch above advances and the loop spins forever).
+    if (isReproduce == false && isUnattended == true && runCommand == "") currentStep++;
 
     // If running a command given from the console, set it now
     if (runCommand != "") command = runCommand[0];
@@ -401,6 +451,12 @@ int main(int argc, char* argv[])
       .help("Prints a stable summary (step, state type, state hash) of the final state on exit, for headless verification.")
       .default_value(false)
       .implicit_value(true);
+  program.add_argument("--dumpHashes")
+      .help("Writes the per-step game-state hash for every step to the given file (for cross-emulator divergence checks).")
+      .default_value(std::string(""));
+  program.add_argument("--dumpRam")
+      .help("Writes the full low work-RAM (LRAM) for every step to the given file as flat binary (for byte-level cross-emulator diffs).")
+      .default_value(std::string(""));
 
   // Try to parse arguments
   try
@@ -453,6 +509,12 @@ int main(int argc, char* argv[])
 
   // Getting the print-final-state flag
   printFinalState = program.get<bool>("--printFinalState");
+
+  // Getting the per-step hash dump path (if any)
+  dumpHashesPath = program.get<std::string>("--dumpHashes");
+
+  // Getting the per-step RAM dump path (if any)
+  dumpRamPath = program.get<std::string>("--dumpRam");
 
   // Initializing terminal
   jaffarCommon::logger::initializeTerminal();

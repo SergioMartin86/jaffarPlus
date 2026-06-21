@@ -106,6 +106,13 @@ public:
     _hashDbEnabled    = jaffarCommon::json::getBoolean(hashDbConfig, "Enabled");
     if (_hashDbEnabled == true) _hashDb = std::make_unique<jaffarPlus::HashDb>(hashDbConfig);
 
+    // Base-state pull batch size (per-worker queue-pull granularity). Optional: an explicit value
+    // always wins; otherwise 0 here means "auto-tune", resolved in initialize() from the measured
+    // per-state cost (light cores -> larger batch to amortize the queue lock; heavy/variable cores
+    // -> small batch for load balance).
+    _baseStateBatch = engineConfigRemaining.contains("Base State Batch Size") ? jaffarCommon::json::popNumber<size_t>(engineConfigRemaining, "Base State Batch Size") : 0;
+    if (_baseStateBatch > BASE_STATE_BATCH_MAX) _baseStateBatch = BASE_STATE_BATCH_MAX;
+
     // Any remaining Engine key is unrecognized
     jaffarCommon::json::checkEmpty(engineConfigRemaining, "Engine Configuration");
 
@@ -170,13 +177,20 @@ public:
     // Resetting last active manually solution save rule id
     _manualSaveSolutionActiveLastRuleId = -1;
 
+    // Create the one shared input-history backing (e.g. the trie, for the "Trie" strategy; null for
+    // raw/none) and inject it into every worker runner BEFORE they initialize, so all workers share it.
+    // It is sized with one free-list shard per worker thread plus one for the driver's intermediate-result
+    // thread (contention-free alloc/free). The StateDb reaches the strategy via the reference runner.
+    _inputHistoryBacking = inputHistory::createSharedBacking(_runners[0]->getInputHistoryConfig(), _threadCount + 1);
+
     // Initializing runners, one per thread
     JAFFAR_PARALLEL
     {
       // Creating thread's own runner (index by OpenMP thread id, consistent with construction/workerFunction)
       auto& r = _runners[jaffarCommon::parallel::getThreadId()];
 
-      // Initializing runner
+      // Share the one backing (prefix sharing) and give each worker its own free-list shard (its thread id).
+      r->setInputHistoryBacking(_inputHistoryBacking, (uint32_t)jaffarCommon::parallel::getThreadId(), _threadCount + 1);
       r->initialize();
     }
 
@@ -188,6 +202,46 @@ public:
 
     // Grabbing a runner to do continue initialization
     auto& r = *_runners[0];
+
+    // Auto-tune the base-state pull batch (when "Base State Batch Size" was not set in the config).
+    // We time a burst of state advances on the (just-loaded) initial state -- which is representative
+    // of the core's per-state cost -- then choose a batch so each batch is ~TARGET_BATCH_NS of work:
+    // enough to amortize the per-NUMA queue lock on cheap cores (large batch) while keeping a small
+    // batch on heavy/variable cores so end-of-step load imbalance stays low. The measurement state is
+    // saved and restored so the search still starts from the exact initial state. Batch size never
+    // affects which states are explored, only the work distribution.
+    if (_baseStateBatch == 0)
+    {
+      const size_t       stateSize = r.getStateSize();
+      std::vector<char>  scratch(stateSize);
+      {
+        jaffarCommon::serializer::Contiguous s(scratch.data(), stateSize);
+        r.serializeState(s);
+      }
+
+      const auto allowedInputs = r.getAllowedInputs();
+      const InputSet::inputIndex_t calInput = allowedInputs.empty() ? (InputSet::inputIndex_t)0 : allowedInputs[0];
+
+      const size_t CAL_FRAMES = 200;
+      const auto   tCal0      = jaffarCommon::timing::now();
+      for (size_t i = 0; i < CAL_FRAMES; i++) r.advanceState(calInput);
+      const size_t perStateNs = jaffarCommon::timing::timeDeltaNanoseconds(jaffarCommon::timing::now(), tCal0) / CAL_FRAMES;
+
+      // Restore the exact initial state
+      {
+        jaffarCommon::deserializer::Contiguous d(scratch.data(), stateSize);
+        r.deserializeState(d);
+      }
+
+      // ~200us of work per batch: SDLPoP (~10us/state) -> ~16, Genesis (~600us/state) -> 1.
+      constexpr size_t TARGET_BATCH_NS = 200000;
+      size_t           b               = (perStateNs > 0) ? ((TARGET_BATCH_NS + perStateNs / 2) / perStateNs) : BASE_STATE_BATCH_MAX;
+      if (b < 1) b = 1;
+      if (b > BASE_STATE_BATCH_MAX) b = BASE_STATE_BATCH_MAX;
+      _baseStateBatch = b;
+      jaffarCommon::logger::log("[J+] Auto-tuned base-state batch size: %lu (measured %.1f us/state)\n", _baseStateBatch, (double)perStateNs / 1000.0);
+    }
+    if (_baseStateBatch < 1) _baseStateBatch = 1;
 
     // Evaluate game rules on the initial state
     r.getGame()->evaluateRules();
@@ -216,11 +270,14 @@ public:
     // Getting memory for the reference state
     _stateSizeInDatabase = _stateDb->getStateSizeInDatabase();
 
+    // Standalone snapshots hold the FULL self-contained state ([hot][history]); the DB slot is hot-only.
+    _fullStateSize = _stateDb->getFullStateSize();
+
     // Allocating memory for the best win state
-    _stepBestWinState.stateData = malloc(_stateSizeInDatabase);
+    _stepBestWinState.stateData = malloc(_fullStateSize);
 
     // Allocating memory for manual state saving
-    _manualSaveSolution.stateData = malloc(_stateSizeInDatabase);
+    _manualSaveSolution.stateData = malloc(_fullStateSize);
 
     // Getting hash from first state
     const auto hash = r.computeHash();
@@ -569,6 +626,9 @@ public:
   /** @brief Returns the size, in bytes, of a single state as stored in the database. */
   __INLINE__ size_t getStateSizeInDatabase() const { return _stateSizeInDatabase; }
 
+  /// @brief Full self-contained state size ([hot]+[history]); for standalone snapshots outside the slabs.
+  __INLINE__ size_t getFullStateSize() const { return _fullStateSize; }
+
 private:
   /// @brief Number of base states a worker pulls from the state-DB queue per lock acquisition (batch size).
   // Number of base states a worker pulls from the shared per-NUMA state-DB queue per lock
@@ -584,7 +644,11 @@ private:
   // stay robust for workloads with cheaper per-state work or higher thread counts. (A page-sized
   // batch of 512 pointers was tried, on the theory the buffer would be cache/TLB friendly, but the
   // buffer is tiny and L1-resident at any of these sizes, so the load-imbalance cost dominated.)
-  static constexpr size_t BASE_STATE_BATCH = 16;
+  // The batch size is configurable ("Base State Batch Size"); when unset it comes from the
+  // emulator's getSuggestedStateBatchSize() (heavy cores 1 for load balance, light cores ~16 to
+  // amortize the queue lock). BASE_STATE_BATCH_MAX bounds the thread-local pull buffer; the active
+  // count is _baseStateBatch (clamped to [1, MAX]).
+  static constexpr size_t BASE_STATE_BATCH_MAX = 16;
 
   /// @brief Outcome of running a single input on a base state.
   enum inputResult_t
@@ -681,9 +745,9 @@ private:
     // shared per-NUMA queue lock is acquired once per BASE_STATE_BATCH states instead of once per
     // state. With many worker threads per NUMA domain and cheap per-state work, the single-state
     // lock/unlock dominates wall time ("Popping Base State"); batching amortizes it away.
-    void* baseStateBatch[BASE_STATE_BATCH];
+    void* baseStateBatch[BASE_STATE_BATCH_MAX];
     JAFFAR_PROF_DECL(t);
-    size_t batchCount = _stateDb->popStates(baseStateBatch, BASE_STATE_BATCH, threadId);
+    size_t batchCount = _stateDb->popStates(baseStateBatch, _baseStateBatch, threadId);
     JAFFAR_PROF_ACC(acc.popBaseStateDb, t);
     size_t batchIdx = 0;
 
@@ -696,9 +760,9 @@ private:
       // Increasing base state counter
       acc.baseStatesProcessed++;
 
-      // Load state into runner via the state database
+      // Load state into runner via the state database (base states are slab slots: hot slot + cold path)
       JAFFAR_PROF_DECL(t0);
-      _stateDb->loadStateIntoRunner(*r, baseStateData);
+      _stateDb->loadStateFromSlot(*r, baseStateData);
       JAFFAR_PROF_ACC(acc.runnerStateLoad, t0);
 
       // Getting allowed inputs
@@ -749,7 +813,7 @@ private:
       if (batchIdx >= batchCount)
       {
         JAFFAR_PROF_DECL(t9);
-        batchCount = _stateDb->popStates(baseStateBatch, BASE_STATE_BATCH, threadId);
+        batchCount = _stateDb->popStates(baseStateBatch, _baseStateBatch, threadId);
         JAFFAR_PROF_ACC(acc.popBaseStateDb, t9);
         batchIdx = 0;
       }
@@ -773,9 +837,9 @@ private:
     // Increasing new state counter
     acc.newStatesProcessed++;
 
-    // Re-loading base state
+    // Re-loading base state (slab slot: hot slot + cold path)
     JAFFAR_PROF_DECL(t0);
-    _stateDb->loadStateIntoRunner(r, baseStateData);
+    _stateDb->loadStateFromSlot(r, baseStateData);
     JAFFAR_PROF_ACC(acc.runnerStateLoad, t0);
 
     // Running input
@@ -959,14 +1023,22 @@ private:
   /// @brief Thread-safe state database holding the current and next step's states.
   std::unique_ptr<jaffarPlus::StateDb> _stateDb;
 
+  /// @brief The one shared input-history backing (e.g. the trie) shared by all worker runners; an opaque
+  /// handle owned for the whole search. Null for the raw/none strategies, which have no shared structure.
+  std::shared_ptr<void> _inputHistoryBacking;
+
   /// @brief Whether hashing is enabled. Games that cannot loop skip the hash DB to save memory and computation.
-  bool _hashDbEnabled;
+  bool   _hashDbEnabled;
+  size_t _baseStateBatch; ///< Active base-state pull batch size ("Base State Batch Size").
 
   /// @brief Thread-safe hash database used to detect repeated states.
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
 
   /// @brief Size of a single state as stored in the database, in bytes.
   size_t _stateSizeInDatabase;
+
+  /// @brief Full self-contained serialized state size ([hot]+[history]) for standalone snapshot buffers.
+  size_t _fullStateSize;
 
   std::mutex  _stepBestWinStateLock; ///< Guards updates to @ref _stepBestWinState.
   stateInfo_t _stepBestWinState;     ///< Best win state (by reward) found during the current step.

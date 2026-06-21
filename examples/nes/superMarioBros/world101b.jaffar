@@ -45,7 +45,7 @@
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Store Input History": {
-            "Enabled": true,
+            "Type": "Raw",
             "Max Size": 120
         },
         "Allowed Input Sets": [

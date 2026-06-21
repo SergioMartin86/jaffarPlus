@@ -1,0 +1,155 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 20000,
+            "Enabled": true
+        },
+        "State Database": {
+            "Max Size (Mb)": 400000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerNES",
+        "Rom File Path": "Super Mario Bros. (JU) (PRG0) [!].nes",
+        "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
+        "Initial Sequence File Path": "",
+        "Initial State File Path": "",
+        "Use Flat Code Map": false,
+        "Initial RAM Data File Path": "",
+        "SRAM Block Size": 8192,
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None",
+        "Disabled State Properties": [
+            "SRAM",
+            "CHRR",
+            "NTAB",
+            "SPRT",
+            "CTRL"
+        ],
+        "Nametable Block Size": 2048
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Hash Step Tolerance": 4,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Type": "Raw",
+            "Max Size": 400
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|..LR....|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Vel Y1",
+                        "Op": "<=",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|.......A|",
+                    "|..|..L....A|",
+                    "|..|...R...A|",
+                    "|..|..LR...A|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Conditions": [
+                    {
+                        "Property": "Player Vel Y1",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Inputs": [
+                    "|..|.D......|",
+                    "|..|..L...B.|",
+                    "|..|...R..B.|",
+                    "|..|..LR..B.|",
+                    "|..|..L...BA|",
+                    "|..|...R..BA|",
+                    "|..|..LR..BA|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [],
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Super Mario Bros",
+        "Frame Rate": 60.1,
+        "Trace File Path": "",
+        "Print Properties": [],
+        "Hash Properties": [],
+        "Rules": [
+            {
+                "Label": 1000,
+                "Conditions": [],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Set Trace Magnet",
+                        "Intensity X": 1.0,
+                        "Intensity Y": 0.1,
+                        "Offset": 1
+                    }
+                ]
+            },
+            {
+                "Label": 1999,
+                "Conditions": [
+                    {
+                        "Property": "Current World",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Current Stage",
+                        "Op": "==",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Game Mode",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ],
+        "Bypass Emulator State": false
+    }
+}

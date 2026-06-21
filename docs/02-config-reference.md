@@ -63,6 +63,10 @@ of states to expand) and the **hash database** (visited-state deduplication). Th
 explained in [Search Concepts & Tuning](04-search-concepts.md); the keys are:
 *(Source: `source/engine.hpp`, `source/stateDb.hpp`, `source/hashDb.hpp`.)*
 
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `Base State Batch Size` | number | no | How many base states each worker pulls from the per-NUMA queue per lock acquisition (clamped to 1–16). **When omitted it is auto-tuned**: at startup the engine times a burst of state advances and picks a batch worth roughly 200 µs of work, so cheap cores get a large batch (amortizing the queue lock) and heavy cores get a small one (better load balance). Measured: SDLPoP/TestEmulator → 16, Genesis/GBA/A2600 → 1. Set this explicitly to override the auto-tuned value. Pure performance knob — it does not change which states are explored or the result. |
+
 ### Engine Configuration → State Database
 
 | Key | Type | Required | Description |
@@ -232,10 +236,83 @@ state, how state hashing behaves, and frame-skipping. *(Source: `source/runner.h
 
 ### Runner Configuration → Store Input History
 
+Selects *how* each state remembers the path of inputs that produced it. The search needs this to write
+the winning `.sol` (and the intermediate best/worst solutions). One strategy is chosen with `Type`:
+
 | Key | Type | Required | Description |
 |-----|------|----------|-------------|
-| `Enabled` | boolean | yes | Whether to record input history (required to emit a `.sol` solution). |
-| `Max Size` | number | yes | Maximum number of inputs to record per state. |
+| `Type` | string | yes | One of `None`, `Raw`, or `Trie`. No default — it must be set explicitly. |
+| `Max Size` | number | for `Raw` and `Trie` | Maximum number of inputs recorded. For `Raw` it sizes the per-state buffer (longer solutions are truncated). For `Trie` it bounds only the reconstructed solution/snapshot buffer; the live search path is unbounded. Omit for `None`. |
+
+```jsonc
+"Store Input History": { "Type": "Trie", "Max Size": 5000 }   // recommended default
+"Store Input History": { "Type": "Raw",  "Max Size": 5000 }   // classic, self-contained
+"Store Input History": { "Type": "None" }                      // no solutions, smallest state
+```
+
+#### How the strategies store the path
+
+Because the search branches, the many states it holds at once share large common prefixes. Suppose it is
+holding three states reached by these input paths (`R`=Right, `L`=Left, `A`/`B`=other inputs):
+
+```
+  start ─R─R─┬─A─┬─L   → state P   (path: R R A L)
+             │   └─R   → state Q   (path: R R A R)
+             └─B       → state W   (path: R R B)
+```
+
+**`Raw`** — every state carries its *entire* path, in a fixed `Max Size`-wide bit-packed buffer:
+
+```
+  P: [R][R][A][L]·············   (· = unused, padded to Max Size)
+  Q: [R][R][A][R]·············
+  W: [R][R][B]················
+        └──┴──┘  the shared "R R (A)" prefix is duplicated in every state
+```
+
+**`Trie`** — the paths live *once* in a shared tree of moves; each state stores only a 4-byte id of its
+leaf node (plus a 4-byte step count):
+
+```
+  shared trie:                 states (8 bytes each):
+    root─R─R─┬─A─┬─L  «nL»        P → nL
+             │   └─R  «nR»        Q → nR
+             └─B      «nB»        W → nB
+        the "R R A" prefix is stored ONCE and shared by P and Q
+```
+
+**`None`** — only the step count is kept; the inputs are discarded:
+
+```
+  P: [count=4]   Q: [count=4]   W: [count=3]      (no inputs → no .sol)
+```
+
+#### Trade-offs
+
+|                         | `None`            | `Raw`                                   | `Trie`                                       |
+|-------------------------|-------------------|-----------------------------------------|----------------------------------------------|
+| Per-state footprint     | 4 B (count)       | fixed `Max Size × bits/input` (e.g. ~4 KB at 8000 steps) | 8 B (node id + count)            |
+| Total path memory       | ~none             | grows as *states × depth* (prefixes duplicated) | *shared prefixes* → size of the path tree (far smaller) |
+| Reconstruct a `.sol`?   | no                | yes                                     | yes                                          |
+| Shared structure        | none              | none (each state self-contained)        | one reference-counted trie (sharded → contention-free) |
+| Path length limit       | counter only      | capped at `Max Size` (longer truncates) | unbounded live; `Max Size` only caps the reconstructed `.sol` |
+| Search throughput       | baseline          | baseline                                | ~same as `Raw` at full thread count          |
+
+- **`None`** — *Pros:* smallest possible state, zero path bookkeeping. *Cons:* no solution can be written.
+  *Use when* you only care whether a win is reachable (benchmarks, reachability checks), not the inputs.
+- **`Raw`** — *Pros:* dead simple and fully self-contained — no shared structure, no cross-thread
+  coordination, perfectly predictable memory. *Cons:* every state pays for a full `Max Size`-wide buffer
+  regardless of its actual depth, and sibling states duplicate their shared prefixes, so total memory
+  balloons on deep/wide searches; solutions longer than `Max Size` are truncated.
+  *Use when* searches are short/shallow, or you want the simplest behavior and memory is not the bottleneck.
+- **`Trie`** — *Pros:* tiny per-state footprint (8 bytes, independent of depth); total path memory scales
+  with the *shared* path tree instead of states × depth, so it is far smaller exactly on the large
+  searches where it matters; the live path is unbounded. *Cons:* it is a shared, reference-counted
+  structure (more machinery internally); writing a solution walks the leaf node back to the root — an
+  `O(depth)` step, but only at snapshot/solution time, not during the search.
+  *Use when* searches are deep or large (the common case) — this is the recommended default. The smaller
+  per-state size also lets more states fit in the database (see *State Size* in
+  [Understanding the Output](07-understanding-output.md)).
 
 ### Runner Configuration → Frameskip
 

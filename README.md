@@ -138,3 +138,5 @@ Author
   license above covers only the source code in this repository. A binary you build links one of
   those cores and is therefore a derivative work under that core's GPL — so if you choose to
   distribute such a binary, it must be distributed under the corresponding GPL terms.
+
+- Development note: parts of this software were developed with the assistance of AI tools (Anthropic's Claude / Claude Code).

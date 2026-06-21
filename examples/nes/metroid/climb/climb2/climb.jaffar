@@ -43,7 +43,7 @@
         "Show Allowed Inputs": false,
         "Bypass Hash Calculation": false,
         "Store Input History": {
-            "Enabled": true,
+            "Type": "Raw",
             "Max Size": 200
         },
         "Allowed Input Sets": [
