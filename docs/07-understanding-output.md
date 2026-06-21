@@ -57,7 +57,7 @@ as the solution if it wins.
 
 | Field | Meaning |
 |---|---|
-| `Input History Enabled` / `Input History Size` | Whether the path of inputs to this state is stored, and its capacity (`Store Input History` in the config). |
+| `Input History Type` | How the path of inputs to each state is stored — `None`, `Raw`, or `Trie` (`Store Input History` in the config), with its per-state cold/full sizes. |
 | `Possible Input Count` | Size of the game's full input alphabet (encoded in N bits). |
 | `Current Input Count` | How many steps deep this best state is. |
 | `Hash` | The state's content hash (used for deduplication). |
