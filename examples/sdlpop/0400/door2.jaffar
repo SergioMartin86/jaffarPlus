@@ -1,0 +1,800 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 0,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/jaffar.l4door2.best.sol",
+            "Worst Solution Path": "/tmp/jaffar.l4door2.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 50000,
+            "Enabled": true
+        },
+        "State Database": {
+            "Max Size (Mb)": 100000
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "QuickerSDLPoP",
+        "Initial State File": "closer.state",
+        "SDLPoP Root Path": "../../../extern/quickerSDLPoP/SDLPoPData/",
+        "Levels File Path": "",
+        "Game Version": "1.4",
+        "Override RNG Enabled": true,
+        "Override RNG Value": 2543872016,
+        "Override Loose Tile Sound Enabled": true,
+        "Override Loose Tile Sound Value": 21,
+        "Initialize Copy Protection": false
+    },
+    "Runner Configuration": {
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": false,
+        "Show Allowed Inputs": false,
+        "Store Input History": {
+            "Type": "Raw",
+            "Max Size": 600
+        },
+        "Allowed Input Sets": [
+            {
+                "Description": "Not doing anything is always an option",
+                "Conditions": [],
+                "Inputs": [
+                    "|.|.....|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Description": "If cutscene, then only allow pressing shift",
+                "Conditions": [
+                    {
+                        "Property": "Current Level",
+                        "Op": "!=",
+                        "Value": "Next Level"
+                    }
+                ],
+                "Inputs": [
+                    "|.|....S|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "For level 1, if Player touches ground and music plays, try restarting level",
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "==",
+                        "Value": 109
+                    },
+                    {
+                        "Property": "Need Level 1 Music",
+                        "Op": "==",
+                        "Value": 33
+                    }
+                ],
+                "Inputs": [
+                    "|r|.....|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Description": "For level 3, when checkpoint activates, try restarting level",
+                "Conditions": [
+                    {
+                        "Property": "Current Level",
+                        "Op": "==",
+                        "Value": 3
+                    },
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Inputs": [
+                    "|r|.....|"
+                ],
+                "Stop Input Evaluation": false
+            },
+            {
+                "Description": "If bumped, there's nothing to do really",
+                "Conditions": [
+                    {
+                        "Property": "Player Action",
+                        "Op": "==",
+                        "Value": 5
+                    }
+                ],
+                "Inputs": [
+                    "|.|....S|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "If in mid air, try to grab onto something",
+                "Conditions": [
+                    {
+                        "Property": "Player Action",
+                        "Op": "==",
+                        "Value": 3
+                    }
+                ],
+                "Inputs": [
+                    "|.|....S|",
+                    "|.|..U..|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "If in free fall, hope to grab onto something",
+                "Conditions": [
+                    {
+                        "Property": "Player Action",
+                        "Op": "==",
+                        "Value": 4
+                    }
+                ],
+                "Inputs": [
+                    "|.|....S|",
+                    "|.|..U..|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "If on guarde, only try attacking commands",
+                "Conditions": [
+                    {
+                        "Property": "Player Sword",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Inputs": [
+                    "|.|L....|",
+                    "|.|.R...|",
+                    "|.|..U..|",
+                    "|.|...D.|",
+                    "|.|....S|",
+                    "|.|..U.S|",
+                    "|.|...DS|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "If standing, try all possible movements",
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "==",
+                        "Value": 15
+                    }
+                ],
+                "Inputs": [
+                    "|.|L....|",
+                    "|.|.R...|",
+                    "|.|..U..|",
+                    "|.|...D.|",
+                    "|.|....S|",
+                    "|.|L.U..|",
+                    "|.|.RU..|",
+                    "|.|L..D.|",
+                    "|.|.R.D.|",
+                    "|.|L...S|",
+                    "|.|.R..S|",
+                    "|.|.RU.S|",
+                    "|.|L.U.S|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "If finishing turning, try all possible movements",
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": ">=",
+                        "Value": 50
+                    },
+                    {
+                        "Property": "Player Frame",
+                        "Op": "<",
+                        "Value": 53
+                    }
+                ],
+                "Inputs": [
+                    "|.|L....|",
+                    "|.|.R...|",
+                    "|.|..U..|",
+                    "|.|...D.|",
+                    "|.|....S|",
+                    "|.|L.U..|",
+                    "|.|.RU..|",
+                    "|.|L..D.|",
+                    "|.|.R.D.|",
+                    "|.|L...S|",
+                    "|.|.R..S|",
+                    "|.|.RU.S|",
+                    "|.|L.U.S|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "If turning frame, try most possible movements",
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "==",
+                        "Value": 48
+                    }
+                ],
+                "Inputs": [
+                    "|.|L....|",
+                    "|.|.R...|",
+                    "|.|..U..|",
+                    "|.|...D.|",
+                    "|.|....S|",
+                    "|.|L.U..|",
+                    "|.|.RU..|",
+                    "|.|L..D.|",
+                    "|.|.R.D.|",
+                    "|.|L...S|",
+                    "|.|.R..S|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "If turning frame, try most possible movements",
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "<",
+                        "Value": 4
+                    }
+                ],
+                "Inputs": [
+                    "|.|L....|",
+                    "|.|.R...|",
+                    "|.|..U..|",
+                    "|.|...D.|",
+                    "|.|L.U..|",
+                    "|.|.RU..|",
+                    "|.|L..D.|",
+                    "|.|.R.D.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "Starting jump up, check directions, jump and grab",
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": ">=",
+                        "Value": 67
+                    },
+                    {
+                        "Property": "Player Frame",
+                        "Op": "<",
+                        "Value": 70
+                    }
+                ],
+                "Inputs": [
+                    "|.|L....|",
+                    "|.|.R...|",
+                    "|.|..U..|",
+                    "|.|...D.|",
+                    "|.|....S|",
+                    "|.|L.U..|",
+                    "|.|.RU..|",
+                    "|.|..U.S|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "Running, all movement without shift",
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "<",
+                        "Value": 15
+                    }
+                ],
+                "Inputs": [
+                    "|.|L....|",
+                    "|.|.R...|",
+                    "|.|..U..|",
+                    "|.|...D.|",
+                    "|.|L.U..|",
+                    "|.|.RU..|",
+                    "|.|L..D.|",
+                    "|.|.R.D.|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "Hanging, up and shift are the only options",
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": ">=",
+                        "Value": 87
+                    },
+                    {
+                        "Property": "Player Frame",
+                        "Op": "<",
+                        "Value": 100
+                    }
+                ],
+                "Inputs": [
+                    "|.|..U..|",
+                    "|.|....S|",
+                    "|.|..U.S|"
+                ],
+                "Stop Input Evaluation": true
+            },
+            {
+                "Description": "Crouched, can only stand, drink, or bunny hop",
+                "Conditions": [
+                    {
+                        "Property": "Player Frame",
+                        "Op": "==",
+                        "Value": 109
+                    }
+                ],
+                "Inputs": [
+                    "|.|....S|",
+                    "|.|L....|",
+                    "|.|.R...|",
+                    "|.|...D.|",
+                    "|.|L..D.|",
+                    "|.|.R.D.|",
+                    "|.|...DS|"
+                ],
+                "Stop Input Evaluation": true
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|.|.....|",
+                    "|.|....S|",
+                    "|.|...D.|",
+                    "|.|...DS|",
+                    "|.|..U..|",
+                    "|.|..U.S|",
+                    "|.|.R...|",
+                    "|.|.R..S|",
+                    "|.|.R.D.|",
+                    "|.|.R.DS|",
+                    "|.|.RU..|",
+                    "|.|.RU.S|",
+                    "|.|L....|",
+                    "|.|L...S|",
+                    "|.|L..D.|",
+                    "|.|L..DS|",
+                    "|.|L.U..|",
+                    "|.|L.U.S|"
+                ],
+                "Stop Input Evaluation": true
+            }
+        ],
+        "Bypass Hash Calculation": false,
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": ""
+        }
+    },
+    "Game Configuration": {
+        "Game Name": "SDLPoP / Prince of Persia",
+        "Frame Rate": 24.0,
+        "Print Properties": [],
+        "Hash Properties": [],
+        "Rules": [
+            {
+                "Label": 4000,
+                "Conditions": [
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 24
+                    },
+                    {
+                        "Property": "Guard Current HP",
+                        "Op": "==",
+                        "Value": 2
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Player Pos X Magnet",
+                        "Room": 24,
+                        "Intensity": 1.0,
+                        "Position": 225
+                    },
+                    {
+                        "Type": "Set Guard Pos X Magnet",
+                        "Room": 24,
+                        "Intensity": 10.0,
+                        "Position": 225
+                    }
+                ]
+            },
+            {
+                "Label": 4001,
+                "Conditions": [
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": 7
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Player Pos X Magnet",
+                        "Room": 7,
+                        "Intensity": 2.0,
+                        "Position": 0
+                    },
+                    {
+                        "Type": "Set Guard Pos X Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Position": 0
+                    }
+                ]
+            },
+            {
+                "Label": 4002,
+                "Conditions": [
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Guard Pos X Raw",
+                        "Op": ">",
+                        "Value": 230
+                    }
+                ],
+                "Satisfies": [
+                    4001
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    }
+                ]
+            },
+            {
+                "Label": 4102,
+                "Conditions": [
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 24
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Guard Pos X Raw",
+                        "Op": ">",
+                        "Value": 230
+                    }
+                ],
+                "Satisfies": [
+                    4002
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Player Pos X Magnet",
+                        "Room": 24,
+                        "Intensity": 1.0,
+                        "Position": 255
+                    }
+                ]
+            },
+            {
+                "Label": 4103,
+                "Conditions": [
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Player Pos X",
+                        "Op": ">",
+                        "Value": 30
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": 7
+                    },
+                    {
+                        "Property": "Guard Pos X Raw",
+                        "Op": ">",
+                        "Value": 230
+                    }
+                ],
+                "Satisfies": [
+                    4102
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Player Pos X Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Position": 255
+                    },
+                    {
+                        "Type": "Set Guard Pos X Magnet",
+                        "Room": 7,
+                        "Intensity": 1.0,
+                        "Position": 255
+                    },
+                    {
+                        "Type": "Set Guard HP Magnet",
+                        "Intensity": 1000.0
+                    }
+                ]
+            },
+            {
+                "Label": 4003,
+                "Conditions": [
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Guard Current HP",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [
+                    4103
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Player Pos X Magnet",
+                        "Room": 4,
+                        "Intensity": 2.0,
+                        "Position": 70
+                    },
+                    {
+                        "Type": "Set Guard Pos X Magnet",
+                        "Room": 4,
+                        "Intensity": 5.0,
+                        "Position": 86
+                    }
+                ]
+            },
+            {
+                "Label": 4004,
+                "Conditions": [
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Guard Current HP",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [
+                    4003
+                ],
+                "Actions": [
+                    {
+                        "Type": "Add Reward",
+                        "Value": 10000.0
+                    },
+                    {
+                        "Type": "Set Guard Pos X Magnet",
+                        "Room": 4,
+                        "Intensity": 20.0,
+                        "Position": 170
+                    }
+                ]
+            },
+            {
+                "Label": 4999,
+                "Conditions": [
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": "Player Room"
+                    },
+                    {
+                        "Property": "Guard Current HP",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "!=",
+                        "Value": 4
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 4998,
+                "Conditions": [
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": "Player Room"
+                    },
+                    {
+                        "Property": "Guard Current HP",
+                        "Op": ">",
+                        "Value": 1
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": 4
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 4997,
+                "Conditions": [
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "!=",
+                        "Value": 4
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 4005,
+                "Conditions": [
+                    {
+                        "Property": "Level Door Open",
+                        "Op": "==",
+                        "Value": 1
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            },
+            {
+                "Label": 4996,
+                "Conditions": [
+                    {
+                        "Property": "Player Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Player Pos X Raw",
+                        "Op": ">",
+                        "Value": 120
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            },
+            {
+                "Label": 4995,
+                "Conditions": [
+                    {
+                        "Property": "Guard Current HP",
+                        "Op": "==",
+                        "Value": 0
+                    },
+                    {
+                        "Property": "Guard Room",
+                        "Op": "==",
+                        "Value": 4
+                    },
+                    {
+                        "Property": "Guard Pos X Raw",
+                        "Op": ">=",
+                        "Value": 180
+                    },
+                    {
+                        "Property": "Level Door Open",
+                        "Op": "==",
+                        "Value": 0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Fail"
+                    }
+                ]
+            }
+        ],
+        "Bypass Emulator State": false
+    }
+}
