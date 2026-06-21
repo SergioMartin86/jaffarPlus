@@ -15,6 +15,7 @@
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
+#include "inputHistory/inputHistoryFactory.hpp"
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <memory>
@@ -52,10 +53,9 @@ public:
 
     _hashStepTolerance = jaffarCommon::json::popNumber<uint32_t>(configRemaining, "Hash Step Tolerance");
 
-    auto inputHistoryJs  = jaffarCommon::json::popObject(configRemaining, "Store Input History");
-    _inputHistoryEnabled = jaffarCommon::json::popBoolean(inputHistoryJs, "Enabled");
-    _inputHistoryMaxSize = jaffarCommon::json::popNumber<uint32_t>(inputHistoryJs, "Max Size");
-    jaffarCommon::json::checkEmpty(inputHistoryJs, "Runner Configuration > Store Input History");
+    // The input-history strategy (None / Raw / Trie) is selected and validated by the InputHistory
+    // factory from this object; stored here and built in initialize() once the input set is known.
+    _inputHistoryConfig = jaffarCommon::json::popObject(configRemaining, "Store Input History");
 
     // Storing game inputs for delayed parsing
     _allowedInputSetsJs = jaffarCommon::json::popArray<nlohmann::json>(configRemaining, "Allowed Input Sets");
@@ -117,28 +117,32 @@ public:
     // "Custom Input" now fails here at init rather than crashing deep in the simulation loop.
     if (_frameskipUseCustomInput) _frameskipCustomInputIdx = getInputIndex(_frameskipCustomInput);
 
-    // If storing input history, allocate input history storage
-    if (_inputHistoryEnabled == true)
+    // Build the configured input-history strategy now that the input set (hence _maxInputIndex) is known.
+    // Worker runners share a backing injected by the engine (setInputHistoryBacking); a standalone runner
+    // (player / driver) makes its own private backing here.
+    if (_historyBacking == nullptr)
     {
-      // Calculating bit storage for the possible inputs index
-      _inputIndexSizeBits = jaffarCommon::bitwise::getEncodingBitsForElementCount(_maxInputIndex);
-
-      // Total size in bits for the input history
-      size_t inputHistorySizeBits = _inputHistoryMaxSize * _inputIndexSizeBits;
-
-      // Total size in bytes
-      size_t inputHistorySizeBytes = inputHistorySizeBits / 8;
-
-      // Add one byte if not perfectly divisible by 8
-      if (inputHistorySizeBits % 8 > 0) inputHistorySizeBytes++;
-
-      // Allocating storage now
-      _inputHistory.resize(inputHistorySizeBytes);
-
-      // Clearing storage (set to zero)
-      memset(_inputHistory.data(), 0, _inputHistory.size());
+      _historyBacking = inputHistory::createSharedBacking(_inputHistoryConfig, _historyNumShards);
+      _historyShardId = 0;
     }
+    _inputHistory = inputHistory::create(_inputHistoryConfig, (uint32_t)_maxInputIndex, _historyNumShards, _historyShardId, _historyBacking);
   }
+
+  /// @brief Injects the shared input-history backing (e.g. the engine's one trie) plus this runner's
+  /// free-list shard (its worker thread id) and the shard count, so all workers share one structure while
+  /// allocating/freeing contention-free. Must be called before @ref initialize.
+  __INLINE__ void setInputHistoryBacking(const std::shared_ptr<void>& backing, const uint32_t shardId, const uint32_t numShards)
+  {
+    _historyBacking   = backing;
+    _historyShardId   = shardId;
+    _historyNumShards = numShards;
+  }
+
+  /// @brief The configured "Store Input History" object (used by the engine to build the shared backing).
+  __INLINE__ const nlohmann::json& getInputHistoryConfig() const { return _inputHistoryConfig; }
+
+  /// @brief The input-history strategy in use (for the StateDb's per-slot manager operations).
+  __INLINE__ InputHistory* getInputHistory() const { return _inputHistory.get(); }
 
   /**
    * @brief Builds an @ref InputSet from its JSON description.
@@ -333,22 +337,7 @@ public:
    */
   __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx)
   {
-    if (_inputHistoryEnabled == true)
-    {
-      // Store the input, unless we've reached the configured history capacity
-      if (_currentInputCount < _inputHistoryMaxSize) { setInput(_currentInputCount, inputIdx); }
-
-      // Past capacity, further inputs are counted but not recorded: any solution longer than
-      // "Store Input History / Max Size" is silently truncated and will not reproduce in full.
-      // Warn once (across all threads) so this is not mistaken for a complete solution.
-      else if (_inputHistoryTruncationWarned.exchange(true) == false)
-        jaffarCommon::logger::log("[J+] Warning: input history exceeded its maximum size (%u). Solutions longer than this are truncated; increase 'Store "
-                                  "Input History / Max Size' to record them in full.\n",
-                                  _inputHistoryMaxSize);
-    }
-
-    // Advancing step counter
-    _currentInputCount++;
+    _inputHistory->pushInput(inputIdx);
   }
 
   /**
@@ -356,28 +345,6 @@ public:
    * @param stepId   The step (history slot) to write to.
    * @param inputIdx The input index to store.
    */
-  __INLINE__ void setInput(const size_t stepId, const InputSet::inputIndex_t inputIdx)
-  {
-    // Using bit-encoded copy to store the new input
-    jaffarCommon::bitwise::bitcopy(_inputHistory.data(), _inputHistory.size(), stepId, &inputIdx, sizeof(InputSet::inputIndex_t), 0, 1, _inputIndexSizeBits);
-  }
-
-  /**
-   * @brief Reads the input index stored in the bit-packed input history at a given step.
-   * @param stepId The step (history slot) to read from.
-   * @return The input index stored at @p stepId.
-   */
-  __INLINE__ InputSet::inputIndex_t getInput(const size_t stepId) const
-  {
-    // Temporary storage for the new input
-    InputSet::inputIndex_t inputIdx = 0;
-
-    // Using bit-encoded copy to store the new input
-    jaffarCommon::bitwise::bitcopy(&inputIdx, sizeof(InputSet::inputIndex_t), 0, _inputHistory.data(), _inputHistory.size(), stepId, 1, _inputIndexSizeBits);
-
-    // Returning value
-    return inputIdx;
-  }
 
   /**
    * @brief Serializes the runner state: the game state, the input history, and the input counter.
@@ -385,14 +352,10 @@ public:
    */
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const
   {
-    // Performing serialization of the internal game instance
+    // Game state, then the self-contained ("full") input-history form (used by in-memory, run-scoped
+    // snapshots: the player's initial state and the best/worst/win buffers).
     _game->serializeState(serializer);
-
-    // Serializing input history data
-    if (_inputHistoryEnabled == true) serializer.push(_inputHistory.data(), _inputHistory.size());
-
-    // Serializing current step
-    serializer.pushContiguous(&_currentInputCount, sizeof(_currentInputCount));
+    _inputHistory->serializeFull(serializer);
   }
 
   /**
@@ -401,14 +364,8 @@ public:
    */
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer)
   {
-    // Performing serialization of the internal game instance
     _game->deserializeState(deserializer);
-
-    // Deserializing input history
-    if (_inputHistoryEnabled == true) deserializer.pop(_inputHistory.data(), _inputHistory.size());
-
-    // Deserializing current step
-    deserializer.popContiguous(&_currentInputCount, sizeof(_currentInputCount));
+    _inputHistory->deserializeFull(deserializer);
   }
 
   /**
@@ -434,16 +391,8 @@ public:
 
   // Cold state: the input history buffer + step counter. Written once when a state is created, read
   // once when a solution is reconstructed -- never touched during the search proper. Always contiguous.
-  __INLINE__ void serializeHistory(jaffarCommon::serializer::Base& serializer) const
-  {
-    if (_inputHistoryEnabled == true) serializer.pushContiguous(_inputHistory.data(), _inputHistory.size());
-    serializer.pushContiguous(&_currentInputCount, sizeof(_currentInputCount));
-  }
-  __INLINE__ void deserializeHistory(jaffarCommon::deserializer::Base& deserializer)
-  {
-    if (_inputHistoryEnabled == true) deserializer.popContiguous(_inputHistory.data(), _inputHistory.size());
-    deserializer.popContiguous(&_currentInputCount, sizeof(_currentInputCount));
-  }
+  __INLINE__ void serializeHistory(jaffarCommon::serializer::Base& serializer) const { _inputHistory->serializeCold(serializer); }
+  __INLINE__ void deserializeHistory(jaffarCommon::deserializer::Base& deserializer) { _inputHistory->deserializeCold(deserializer); }
 
   __INLINE__ size_t getHotStateSize() const
   {
@@ -451,12 +400,7 @@ public:
     this->serializeHotState(s);
     return s.getOutputSize();
   }
-  __INLINE__ size_t getHistorySize() const
-  {
-    jaffarCommon::serializer::Contiguous s;
-    this->serializeHistory(s);
-    return s.getOutputSize();
-  }
+  __INLINE__ size_t getHistorySize() const { return _inputHistory->getColdSize(); }
 
   /**
    * @brief Computes a hash of the current runner state.
@@ -496,33 +440,7 @@ public:
    * @return The recorded inputs, one per line.
    * @throws A runtime error if a recorded input index has no registered string.
    */
-  std::string getInputHistoryString() const
-  {
-    // Fail if input history is not enabled
-    if (_inputHistoryEnabled == false) return "";
-
-    // Getting the history into a string
-    std::string inputHistoryString;
-
-    // For each entry, add the input string up to the current step or the maximum size
-    for (size_t i = 0; i < _currentInputCount && i < _inputHistoryMaxSize; i++)
-    {
-      // Getting input index
-      const auto inputIdx = getInput(i);
-
-      // Safety check
-      if (_inputStringMap.contains(inputIdx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", inputIdx);
-
-      // Getting input string
-      const std::string& inputString = _inputStringMap.at(inputIdx);
-
-      // Adding it to the story
-      inputHistoryString += inputString;
-      inputHistoryString += "\n";
-    }
-
-    return inputHistoryString;
-  }
+  std::string getInputHistoryString() const { return _inputHistory->toString(_inputStringMap); }
 
   /**
    * @brief Returns the input string registered for an input index.
@@ -547,16 +465,10 @@ public:
     auto hashStepToleranceStage = getHashStepToleranceStage();
 
     // Memory usage
-    jaffarCommon::logger::log("[J+]  + Input History Enabled: %s\n", _inputHistoryEnabled ? "true" : "false");
-    if (_inputHistoryEnabled == true)
-    {
-      jaffarCommon::logger::log("[J+]    + Possible Input Count: %u (Encoded in %lu bits)\n", _maxInputIndex, _inputIndexSizeBits);
-      jaffarCommon::logger::log("[J+]    + Input History Size: %u steps (%lu Bytes, %lu Bits)\n", _inputHistoryMaxSize, _inputHistory.size(),
-                                _inputIndexSizeBits * _inputHistoryMaxSize);
-    }
+    jaffarCommon::logger::log("[J+]  + Input History Type: %s (cold %lu B, full %lu B)\n", inputHistory::getType(_inputHistoryConfig).c_str(), _inputHistory->getColdSize(), _inputHistory->getFullSize());
 
     // Printing runner state
-    jaffarCommon::logger::log("[J+]  + Current Input Count: %u\n", _currentInputCount);
+    jaffarCommon::logger::log("[J+]  + Current Input Count: %lu\n", _inputHistory->getInputCount());
     jaffarCommon::logger::log("[J+]  + Hash: %s\n", hash.c_str());
     jaffarCommon::logger::log("[J+]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
 
@@ -585,14 +497,9 @@ public:
   }
 
   /** @brief Returns the current hash-step-tolerance stage (current input count modulo tolerance + 1). */
-  __INLINE__ uint32_t getHashStepToleranceStage() const { return _currentInputCount % (_hashStepTolerance + 1); }
+  __INLINE__ uint32_t getHashStepToleranceStage() const { return (uint32_t)_inputHistory->getInputCount() % (_hashStepTolerance + 1); }
   /** @brief Returns a pointer to the owned game instance. */
   __INLINE__ Game* getGame() const { return _game.get(); }
-
-  /** @brief Returns whether input-history recording is enabled. */
-  __INLINE__ bool getInputHistoryEnabled() const { return _inputHistoryEnabled; }
-  /** @brief Returns the maximum number of input-history steps that can be recorded. */
-  __INLINE__ size_t getInputHistoryMaximumStep() const { return _inputHistoryMaxSize; }
 
   /**
    * @brief Creates a runner from the emulator, game and runner configurations.
@@ -623,20 +530,14 @@ private:
 
   std::unique_ptr<Game> _game; ///< The owned game instance driven by the runner.
 
-  uint32_t _inputHistoryMaxSize; ///< Maximum number of steps that can be recorded in the input history.
-
-  uint32_t _currentInputCount = 0; ///< Number of inputs applied so far (the current step counter).
-
   uint32_t _hashStepTolerance; ///< Hash step tolerance, used to derive the hash-step-tolerance stage.
 
-  bool _inputHistoryEnabled; ///< Whether the input history is recorded.
-
-  /// @brief Warn-once guard (shared across all runner instances/threads) for input-history truncation.
-  static inline std::atomic<bool> _inputHistoryTruncationWarned = false;
-
-  size_t _inputIndexSizeBits; ///< Number of bits used to encode each input index in the history.
-
-  std::vector<uint8_t> _inputHistory; ///< Bit-packed storage for the recorded input history.
+  // --- Input history (strategy-agnostic) -----------------------------------------------------------
+  nlohmann::json                _inputHistoryConfig; ///< The "Store Input History" config object (selects None/Raw/Trie).
+  std::unique_ptr<InputHistory> _inputHistory;       ///< The configured strategy instance (built in initialize()).
+  std::shared_ptr<void>         _historyBacking;     ///< Shared backing (e.g. the one trie), injected by the engine or owned privately.
+  uint32_t                      _historyShardId   = 0; ///< This runner's contention-free free-list shard (its worker thread id).
+  uint32_t                      _historyNumShards = 2; ///< Shard count of the backing (engine: threadCount+1; standalone: 2).
 
   bool _bypassHashCalculation; ///< Whether @ref computeHash returns the game's direct hash instead of hashing via MetroHash128.
 

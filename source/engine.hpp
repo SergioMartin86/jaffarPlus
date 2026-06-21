@@ -177,13 +177,20 @@ public:
     // Resetting last active manually solution save rule id
     _manualSaveSolutionActiveLastRuleId = -1;
 
+    // Create the one shared input-history backing (e.g. the trie, for the "Trie" strategy; null for
+    // raw/none) and inject it into every worker runner BEFORE they initialize, so all workers share it.
+    // It is sized with one free-list shard per worker thread plus one for the driver's intermediate-result
+    // thread (contention-free alloc/free). The StateDb reaches the strategy via the reference runner.
+    _inputHistoryBacking = inputHistory::createSharedBacking(_runners[0]->getInputHistoryConfig(), _threadCount + 1);
+
     // Initializing runners, one per thread
     JAFFAR_PARALLEL
     {
       // Creating thread's own runner (index by OpenMP thread id, consistent with construction/workerFunction)
       auto& r = _runners[jaffarCommon::parallel::getThreadId()];
 
-      // Initializing runner
+      // Share the one backing (prefix sharing) and give each worker its own free-list shard (its thread id).
+      r->setInputHistoryBacking(_inputHistoryBacking, (uint32_t)jaffarCommon::parallel::getThreadId(), _threadCount + 1);
       r->initialize();
     }
 
@@ -1015,6 +1022,10 @@ private:
 
   /// @brief Thread-safe state database holding the current and next step's states.
   std::unique_ptr<jaffarPlus::StateDb> _stateDb;
+
+  /// @brief The one shared input-history backing (e.g. the trie) shared by all worker runners; an opaque
+  /// handle owned for the whole search. Null for the raw/none strategies, which have no shared structure.
+  std::shared_ptr<void> _inputHistoryBacking;
 
   /// @brief Whether hashing is enabled. Games that cannot loop skip the hash DB to save memory and computation.
   bool   _hashDbEnabled;

@@ -6,8 +6,10 @@
  *        the search one step at a time and a free-slot pool the workers draw from.
  */
 
+#include "inputHistory/inputHistory.hpp"
 #include "numa.hpp"
 #include <cstdlib>
+#include <jaffarCommon/bitwise.hpp>
 #include <jaffarCommon/concurrent.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/json.hpp>
@@ -95,8 +97,13 @@ public:
   {
     // Getting game state size. The hot slot holds only the game+emulator state the search hashes and
     // advances each step; the per-state path (input history + step counter) goes to a parallel cold slab.
+    _ih           = _runner->getInputHistory(); // reference strategy for per-slot manager ops
     _stateSizeRaw = _runner->getHotStateSize();
     _histSize     = _runner->getHistorySize();
+    // Standalone buffers hold the FULL self-contained serialize ([hot]+[full history]). In trie mode the
+    // cold slot's history (a node id) is smaller than the full history (the reconstructed bit-packed
+    // buffer), so the full size is the runner's own getStateSize(), not _stateSizeRaw + _histSize.
+    _fullStateSizeBytes = _runner->getStateSize();
 
     // States are stored raw (uncompressed). We align each state to a padding boundary to favor
     // vectorized access and prevent false sharing.
@@ -204,9 +211,14 @@ public:
     for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++) JAFFAR_PARALLEL_FOR
     for (size_t i = 0; i < _allocableBytesPerNuma[numaNodeIdx]; i += pageSize) _internalBuffersStart[numaNodeIdx][i] = 1;
 
-    // Likewise fault in the history slabs
+    // Likewise fault in the history slabs (one byte per page).
     for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++) JAFFAR_PARALLEL_FOR
     for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx] * _histSize; i += pageSize) _histBuffersStart[numaNodeIdx][i] = 1;
+
+    // Let the input-history strategy initialize each fresh cold slot (e.g. the trie marks its node id as
+    // empty so a recycled slot is never mistaken for holding a node). No-op for raw/none.
+    for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++) JAFFAR_PARALLEL_FOR
+    for (size_t s = 0; s < _maxStatesPerNuma[numaNodeIdx]; s++) _ih->initColdSlot(&_histBuffersStart[numaNodeIdx][s * _histSize]);
 
     // Adding the state pointers to the free state queues
     _freeStateQueues.resize(_numaCount);
@@ -231,7 +243,7 @@ public:
   {
     // Full, self-contained serialization ([hot][history]) into a standalone buffer (NOT a slab slot):
     // used for the best/worst/win/manual snapshots kept outside the NUMA slabs, which have no cold mirror.
-    jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw + _histSize);
+    jaffarCommon::serializer::Contiguous s(statePtr, _fullStateSizeBytes);
     r.serializeState(s);
     return s.getOutputSize();
   }
@@ -256,12 +268,14 @@ public:
    */
   __INLINE__ void captureSlotToBuffer(const void* slotPtr, void* buffer)
   {
+    // Hot state copies verbatim; the input-history strategy converts its cold slot into the buffer's
+    // self-contained full history region (raw/none: copy; trie: reconstruct the path from its node id).
     memcpy(buffer, slotPtr, _stateSizeRaw);
-    memcpy((uint8_t*)buffer + _stateSizeRaw, getHistoryPtr(slotPtr), _histSize);
+    _ih->captureColdToFull(getHistoryPtr(const_cast<void*>(slotPtr)), (uint8_t*)buffer + _stateSizeRaw);
   }
 
   /// @brief Full self-contained serialized state size ([hot][history]); for standalone state buffers.
-  __INLINE__ size_t getFullStateSize() const { return _stateSizeRaw + _histSize; }
+  __INLINE__ size_t getFullStateSize() const { return _fullStateSizeBytes; }
 
   /**
    * @brief Serializes the runner's state into the given slot and inserts it into the next-state queue.
@@ -310,7 +324,7 @@ public:
   __INLINE__ void loadStateIntoRunner(Runner& r, const void* statePtr)
   {
     // Full, self-contained deserialization ([hot][history]) from a standalone buffer (NOT a slab slot).
-    jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw + _histSize);
+    jaffarCommon::deserializer::Contiguous d(statePtr, _fullStateSizeBytes);
     r.deserializeState(d);
   }
 
@@ -347,6 +361,16 @@ public:
     jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes (hot %lu + cold/history %lu)\n", _stateSizeRaw + _histSize, _stateSizeRaw, _histSize);
     jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (hot %lu + %lu padding to %u, cold %lu)\n", _stateSize + _histSize, _stateSize, _stateSizePadding,
                               _JAFFAR_STATE_PADDING_BYTES, _histSize);
+    const size_t historyMem = _ih->getApproxMemoryBytes(); // shared-structure memory (e.g. the trie); 0 for raw/none
+    if (historyMem > 0)
+    {
+      const double MB        = 1024.0 * 1024.0;
+      const double sharedMb  = historyMem / MB;                                   // shared structure (trie nodes)
+      const double coldMb    = currentStateCount * (double)_histSize / MB;        // per-state cold slot (node id)
+      const double bitpackMb = currentStateCount * (double)(_fullStateSizeBytes - _stateSizeRaw) / MB; // raw bit-packed equivalent
+      jaffarCommon::logger::log("[J+]  + Input History (shared):        %.1f Mb shared + %.1f Mb cold slots = %.1f Mb total (raw would be %.1f Mb)\n", sharedMb, coldMb,
+                                sharedMb + coldMb, bitpackMb);
+    }
 
     // Only print the first and the last
     for (int i = 0; i < _numaCount; i++)
@@ -526,6 +550,10 @@ public:
    */
   __INLINE__ void returnFreeState(void* const statePtr, const size_t threadId)
   {
+    // Let the input-history strategy release any shared resource this slot held (the trie frees its path
+    // node, recycling into this worker's own contention-free shard). No-op for raw/none.
+    _ih->releaseColdSlot(getHistoryPtr(statePtr), threadId);
+
     // Return the slot to this thread's own free-slot cache when there is room, so the next
     // getFreeState() on this thread can reuse it without touching the shared queue (no atomic, no
     // NUMA scan). The cache is bounded so a worker can never hoard more than a negligible number of
@@ -840,6 +868,14 @@ private:
   /// @brief Start pointer of each NUMA domain's parallel history (cold) slab. Indexed identically to the
   /// state slab: the history for the hot slot at index i lives at _histBuffersStart[numa] + i*_histSize.
   std::vector<uint8_t*> _histBuffersStart;
+
+  /// @brief The reference runner's input-history strategy, used for the per-slot manager operations
+  /// (initColdSlot / releaseColdSlot / captureColdToFull). Polymorphic: no-ops for raw/none, GC for trie.
+  InputHistory* _ih = nullptr;
+
+  /// @brief Full self-contained serialized state size ([hot]+[full bit-packed history]) for standalone
+  /// snapshot buffers. May exceed _stateSizeRaw + _histSize in trie mode (cold slot stores only a node id).
+  size_t _fullStateSizeBytes = 0;
 };
 
 } // namespace jaffarPlus
