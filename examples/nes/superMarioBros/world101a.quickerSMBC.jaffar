@@ -27,7 +27,8 @@
         "Disabled State Properties": [
             "PPU",
             "DST",
-            "STK"
+            "STK",
+            "SPR"
         ]
     },
     "Runner Configuration": {
