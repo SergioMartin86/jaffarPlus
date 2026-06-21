@@ -365,8 +365,8 @@ public:
     if (historyMem > 0)
     {
       const double MB        = 1024.0 * 1024.0;
-      const double sharedMb  = historyMem / MB;                                   // shared structure (trie nodes)
-      const double coldMb    = currentStateCount * (double)_histSize / MB;        // per-state cold slot (node id)
+      const double sharedMb  = historyMem / MB;                                                        // shared structure (trie nodes)
+      const double coldMb    = currentStateCount * (double)_histSize / MB;                             // per-state cold slot (node id)
       const double bitpackMb = currentStateCount * (double)(_fullStateSizeBytes - _stateSizeRaw) / MB; // raw bit-packed equivalent
       jaffarCommon::logger::log("[J+]  + Input History (shared):        %.1f Mb shared + %.1f Mb cold slots = %.1f Mb total (raw would be %.1f Mb)\n", sharedMb, coldMb,
                                 sharedMb + coldMb, bitpackMb);

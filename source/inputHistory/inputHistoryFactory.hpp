@@ -48,13 +48,16 @@ __INLINE__ std::unique_ptr<InputHistory> create(const nlohmann::json& config, co
                                                 const std::shared_ptr<void>& backing)
 {
   // Strictly consume the config: pop the recognized keys, then reject any leftover (unknown) key.
-  auto                          cfg = config;
+  auto                          cfg  = config;
   const auto                    type = jaffarCommon::json::popString(cfg, "Type");
   std::unique_ptr<InputHistory> result;
-  if (type == "None") result = std::make_unique<InputHistoryNone>();
-  else if (type == "Raw") result = std::make_unique<InputHistoryRaw>(maxInputIndex, jaffarCommon::json::popNumber<uint32_t>(cfg, "Max Size"));
+  if (type == "None")
+    result = std::make_unique<InputHistoryNone>();
+  else if (type == "Raw")
+    result = std::make_unique<InputHistoryRaw>(maxInputIndex, jaffarCommon::json::popNumber<uint32_t>(cfg, "Max Size"));
   else if (type == "Trie")
-    result = std::make_unique<InputHistoryTrie>(static_cast<SequenceInputTrie*>(backing.get()), shardId, numShards - 1, maxInputIndex, jaffarCommon::json::popNumber<uint32_t>(cfg, "Max Size"));
+    result = std::make_unique<InputHistoryTrie>(static_cast<SequenceInputTrie*>(backing.get()), shardId, numShards - 1, maxInputIndex,
+                                                jaffarCommon::json::popNumber<uint32_t>(cfg, "Max Size"));
   else
     JAFFAR_THROW_LOGIC("Unrecognized 'Store Input History' Type: '%s' (expected None, Raw or Trie)", type.c_str());
   jaffarCommon::json::checkEmpty(cfg, "Runner Configuration > Store Input History");

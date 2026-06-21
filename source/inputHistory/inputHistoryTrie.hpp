@@ -37,8 +37,8 @@ public:
   InputHistoryTrie(SequenceInputTrie* trie, const uint32_t shardId, const uint32_t managerShard, const uint32_t maxInputIndex, const uint32_t maxSize)
       : _trie(trie), _shardId(shardId), _managerShard(managerShard), _maxSize(maxSize)
   {
-    _bits          = jaffarCommon::bitwise::getEncodingBitsForElementCount(maxInputIndex);
-    _bitpackBytes  = (_maxSize * _bits + 7) / 8;
+    _bits         = jaffarCommon::bitwise::getEncodingBitsForElementCount(maxInputIndex);
+    _bitpackBytes = (_maxSize * _bits + 7) / 8;
     _scratch.resize(_bitpackBytes, 0);
   }
 
@@ -124,8 +124,8 @@ public:
   {
     // Cold = [node id][count]; full = [bit-packed history][count]. Reconstruct the node's path into the
     // full buffer so the snapshot is self-contained (no later reference into the trie).
-    const nodeId_t  node  = *reinterpret_cast<const nodeId_t*>(cold);
-    const uint32_t  count = *reinterpret_cast<const uint32_t*>(reinterpret_cast<const uint8_t*>(cold) + sizeof(nodeId_t));
+    const nodeId_t node  = *reinterpret_cast<const nodeId_t*>(cold);
+    const uint32_t count = *reinterpret_cast<const uint32_t*>(reinterpret_cast<const uint8_t*>(cold) + sizeof(nodeId_t));
     reconstructIntoBuffer(node, reinterpret_cast<uint8_t*>(full), /*pin=*/true);
     *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(full) + _bitpackBytes) = count;
   }
@@ -141,15 +141,14 @@ private:
     std::vector<InputSet::inputIndex_t> seq;
     _trie->reconstruct(node, seq);
     if (pin) _trie->release(node, _managerShard);
-    for (size_t i = 0; i < seq.size() && i < _maxSize; i++)
-      jaffarCommon::bitwise::bitcopy(buffer, _bitpackBytes, i, &seq[i], sizeof(InputSet::inputIndex_t), 0, 1, _bits);
+    for (size_t i = 0; i < seq.size() && i < _maxSize; i++) jaffarCommon::bitwise::bitcopy(buffer, _bitpackBytes, i, &seq[i], sizeof(InputSet::inputIndex_t), 0, 1, _bits);
   }
 
   void rebuildNodeFromBuffer(const uint8_t* buffer)
   {
     if (_ownNode) _trie->release(_node, _shardId);
-    _node    = SequenceInputTrie::ROOT;
-    _ownNode = false;
+    _node              = SequenceInputTrie::ROOT;
+    _ownNode           = false;
     const size_t steps = (_count < _maxSize) ? _count : _maxSize;
     for (size_t i = 0; i < steps; i++)
     {
@@ -162,15 +161,15 @@ private:
     }
   }
 
-  SequenceInputTrie* const _trie;
-  const uint32_t           _shardId;
-  const uint32_t           _managerShard;
-  const uint32_t           _maxSize;
-  size_t                   _bits         = 0;
-  size_t                   _bitpackBytes = 0;
-  nodeId_t                 _node         = SequenceInputTrie::ROOT;
-  bool                     _ownNode      = false;
-  uint32_t                 _count        = 0;
+  SequenceInputTrie* const     _trie;
+  const uint32_t               _shardId;
+  const uint32_t               _managerShard;
+  const uint32_t               _maxSize;
+  size_t                       _bits         = 0;
+  size_t                       _bitpackBytes = 0;
+  nodeId_t                     _node         = SequenceInputTrie::ROOT;
+  bool                         _ownNode      = false;
+  uint32_t                     _count        = 0;
   mutable std::vector<uint8_t> _scratch; // bit-pack scratch for the full (snapshot) form
 };
 

@@ -25,7 +25,7 @@ public:
   /// @param maxSize       Maximum number of steps recorded; longer solutions are truncated.
   InputHistoryRaw(const uint32_t maxInputIndex, const uint32_t maxSize) : _maxSize(maxSize)
   {
-    _bits           = jaffarCommon::bitwise::getEncodingBitsForElementCount(maxInputIndex);
+    _bits              = jaffarCommon::bitwise::getEncodingBitsForElementCount(maxInputIndex);
     const size_t bytes = (_maxSize * _bits + 7) / 8;
     _buffer.resize(bytes, 0);
   }
@@ -38,7 +38,8 @@ public:
 
   void pushInput(const InputSet::inputIndex_t input) override
   {
-    if (_count < _maxSize) setInput(_count, input);
+    if (_count < _maxSize)
+      setInput(_count, input);
     else if (_truncationWarned.exchange(true) == false)
       jaffarCommon::logger::log("[J+] Warning: input history exceeded its maximum size (%u). Longer solutions are truncated; raise 'Store Input History / Max Size'.\n", _maxSize);
     _count++;
@@ -88,10 +89,10 @@ private:
     return idx;
   }
 
-  const uint32_t       _maxSize;
-  size_t               _bits = 0;
-  uint32_t             _count = 0;
-  std::vector<uint8_t> _buffer;
+  const uint32_t                  _maxSize;
+  size_t                          _bits  = 0;
+  uint32_t                        _count = 0;
+  std::vector<uint8_t>            _buffer;
   static inline std::atomic<bool> _truncationWarned = false;
 };
 

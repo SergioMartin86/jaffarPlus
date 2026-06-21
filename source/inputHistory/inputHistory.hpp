@@ -70,7 +70,11 @@ public:
   virtual void initColdSlot(void* cold) const { (void)cold; }
   /// @brief Releases any shared resource a freed cold slot was holding (trie GC). @p shard is the
   /// freeing thread's id, used to recycle into a contention-free per-thread pool. Default: no-op.
-  virtual void releaseColdSlot(void* cold, const size_t shard) const { (void)cold; (void)shard; }
+  virtual void releaseColdSlot(void* cold, const size_t shard) const
+  {
+    (void)cold;
+    (void)shard;
+  }
   /// @brief Converts a stored cold representation into a self-contained full one (best/worst snapshot).
   virtual void captureColdToFull(const void* cold, void* full) const = 0;
 
