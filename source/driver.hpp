@@ -126,8 +126,9 @@ public:
     // Initializing engine
     _engine->initialize();
 
-    // Allocating space for the current best and worst states
-    _stateSize = _engine->getStateSizeInDatabase();
+    // Allocating space for the current best and worst states. These are standalone snapshots outside the
+    // NUMA slabs, so they hold the FULL self-contained state ([hot]+[history]), not just the hot slot.
+    _stateSize = _engine->getFullStateSize();
     _bestStateStorage.resize(_stateSize);
     _worstStateStorage.resize(_stateSize);
   }
@@ -345,8 +346,8 @@ public:
     // Getting worst state so far
     auto worstState = _engine->getStateDb()->getWorstState();
 
-    // Saving worst state into the storage
-    memcpy(_worstStateStorage.data(), worstState, _stateSize);
+    // Saving worst state into the storage (gather hot slab slot + its cold history into the full buffer)
+    _engine->getStateDb()->captureSlotToBuffer(worstState, _worstStateStorage.data());
 
     // Loading worst state state into runner
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _worstStateStorage.data());
@@ -384,8 +385,8 @@ public:
       // Getting best state so far
       auto bestState = _engine->getStateDb()->getBestState();
 
-      // Saving best state into the storage
-      if (bestState != nullptr) memcpy(_bestStateStorage.data(), bestState, _stateSize);
+      // Saving best state into the storage (gather hot slab slot + its cold history into the full buffer)
+      if (bestState != nullptr) _engine->getStateDb()->captureSlotToBuffer(bestState, _bestStateStorage.data());
     }
 
     // If we have found a winning state in this step that improves on the current best, save it now

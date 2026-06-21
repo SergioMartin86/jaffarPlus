@@ -422,6 +422,42 @@ public:
     return s.getOutputSize();
   }
 
+  // ---- Hot/cold split ------------------------------------------------------------------------------
+  // The State DB stores the per-state "path" (the bit-packed input history + step counter) in a
+  // parallel "cold" slab instead of the hot state slot it hashes/advances every step. These helpers let
+  // it write/measure the two parts separately. serializeState()/getStateSize() above are unchanged and
+  // still produce the FULL state for every other caller (player, playback, on-disk checkpoints).
+
+  // Hot state: the game+emulator state -- everything the search actually reads each step.
+  __INLINE__ void serializeHotState(jaffarCommon::serializer::Base& serializer) const { _game->serializeState(serializer); }
+  __INLINE__ void deserializeHotState(jaffarCommon::deserializer::Base& deserializer) { _game->deserializeState(deserializer); }
+
+  // Cold state: the input history buffer + step counter. Written once when a state is created, read
+  // once when a solution is reconstructed -- never touched during the search proper. Always contiguous.
+  __INLINE__ void serializeHistory(jaffarCommon::serializer::Base& serializer) const
+  {
+    if (_inputHistoryEnabled == true) serializer.pushContiguous(_inputHistory.data(), _inputHistory.size());
+    serializer.pushContiguous(&_currentInputCount, sizeof(_currentInputCount));
+  }
+  __INLINE__ void deserializeHistory(jaffarCommon::deserializer::Base& deserializer)
+  {
+    if (_inputHistoryEnabled == true) deserializer.popContiguous(_inputHistory.data(), _inputHistory.size());
+    deserializer.popContiguous(&_currentInputCount, sizeof(_currentInputCount));
+  }
+
+  __INLINE__ size_t getHotStateSize() const
+  {
+    jaffarCommon::serializer::Contiguous s;
+    this->serializeHotState(s);
+    return s.getOutputSize();
+  }
+  __INLINE__ size_t getHistorySize() const
+  {
+    jaffarCommon::serializer::Contiguous s;
+    this->serializeHistory(s);
+    return s.getOutputSize();
+  }
+
   /**
    * @brief Computes a hash of the current runner state.
    *
