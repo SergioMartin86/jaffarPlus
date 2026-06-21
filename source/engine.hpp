@@ -263,11 +263,14 @@ public:
     // Getting memory for the reference state
     _stateSizeInDatabase = _stateDb->getStateSizeInDatabase();
 
+    // Standalone snapshots hold the FULL self-contained state ([hot][history]); the DB slot is hot-only.
+    _fullStateSize = _stateDb->getFullStateSize();
+
     // Allocating memory for the best win state
-    _stepBestWinState.stateData = malloc(_stateSizeInDatabase);
+    _stepBestWinState.stateData = malloc(_fullStateSize);
 
     // Allocating memory for manual state saving
-    _manualSaveSolution.stateData = malloc(_stateSizeInDatabase);
+    _manualSaveSolution.stateData = malloc(_fullStateSize);
 
     // Getting hash from first state
     const auto hash = r.computeHash();
@@ -616,6 +619,9 @@ public:
   /** @brief Returns the size, in bytes, of a single state as stored in the database. */
   __INLINE__ size_t getStateSizeInDatabase() const { return _stateSizeInDatabase; }
 
+  /// @brief Full self-contained state size ([hot]+[history]); for standalone snapshots outside the slabs.
+  __INLINE__ size_t getFullStateSize() const { return _fullStateSize; }
+
 private:
   /// @brief Number of base states a worker pulls from the state-DB queue per lock acquisition (batch size).
   // Number of base states a worker pulls from the shared per-NUMA state-DB queue per lock
@@ -747,9 +753,9 @@ private:
       // Increasing base state counter
       acc.baseStatesProcessed++;
 
-      // Load state into runner via the state database
+      // Load state into runner via the state database (base states are slab slots: hot slot + cold path)
       JAFFAR_PROF_DECL(t0);
-      _stateDb->loadStateIntoRunner(*r, baseStateData);
+      _stateDb->loadStateFromSlot(*r, baseStateData);
       JAFFAR_PROF_ACC(acc.runnerStateLoad, t0);
 
       // Getting allowed inputs
@@ -824,9 +830,9 @@ private:
     // Increasing new state counter
     acc.newStatesProcessed++;
 
-    // Re-loading base state
+    // Re-loading base state (slab slot: hot slot + cold path)
     JAFFAR_PROF_DECL(t0);
-    _stateDb->loadStateIntoRunner(r, baseStateData);
+    _stateDb->loadStateFromSlot(r, baseStateData);
     JAFFAR_PROF_ACC(acc.runnerStateLoad, t0);
 
     // Running input
@@ -1019,6 +1025,9 @@ private:
 
   /// @brief Size of a single state as stored in the database, in bytes.
   size_t _stateSizeInDatabase;
+
+  /// @brief Full self-contained serialized state size ([hot]+[history]) for standalone snapshot buffers.
+  size_t _fullStateSize;
 
   std::mutex  _stepBestWinStateLock; ///< Guards updates to @ref _stepBestWinState.
   stateInfo_t _stepBestWinState;     ///< Best win state (by reward) found during the current step.

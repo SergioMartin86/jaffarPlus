@@ -93,8 +93,10 @@ public:
    */
   __INLINE__ void initialize()
   {
-    // Getting game state size
-    _stateSizeRaw = _runner->getStateSize();
+    // Getting game state size. The hot slot holds only the game+emulator state the search hashes and
+    // advances each step; the per-state path (input history + step counter) goes to a parallel cold slab.
+    _stateSizeRaw = _runner->getHotStateSize();
+    _histSize     = _runner->getHistorySize();
 
     // States are stored raw (uncompressed). We align each state to a padding boundary to favor
     // vectorized access and prevent false sharing.
@@ -137,7 +139,9 @@ public:
     // Getting maximum number of states for each NUMA domain
     _maxStatesPerNuma.resize(_numaCount);
     _currentStatesPerNuma.resize(_numaCount);
-    for (int i = 0; i < _numaCount; i++) _maxStatesPerNuma[i] = std::max(_maxSizePerNuma[i] / _stateSize, 1ul);
+    // The per-state memory footprint is the padded hot slot plus its cold history slot, so the budget
+    // covers both slabs and the state count stays ~unchanged versus storing them together.
+    for (int i = 0; i < _numaCount; i++) _maxStatesPerNuma[i] = std::max(_maxSizePerNuma[i] / (_stateSize + _histSize), 1ul);
 
     // Getting totals for statistics
     _maxSize   = 0;
@@ -184,12 +188,25 @@ public:
       _internalBuffersEnd[i] = &_internalBuffersStart[i][_allocableBytesPerNuma[i]];
     }
 
+    // Creating the parallel history (cold) slabs, one per NUMA domain, on the same node. Mirrors the
+    // state-slab grid: the cold slot for state index i is at _histBuffersStart[numa] + i*_histSize.
+    _histBuffersStart.resize(_numaCount);
+    for (int i = 0; i < _numaCount; i++)
+    {
+      _histBuffersStart[i] = (uint8_t*)numa_alloc_onnode(_maxStatesPerNuma[i] * _histSize, i);
+      if (_histBuffersStart[i] == NULL) JAFFAR_THROW_RUNTIME("Error trying to allocate history slab for numa domain %d\n", i);
+    }
+
     // Getting system's page size (typically 4K but it may change in the future)
     const size_t pageSize = sysconf(_SC_PAGESIZE);
 
-    // Initializing the internal buffers
+    // Initializing the internal buffers (touch one byte per page to fault them in on the owning node)
     for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++) JAFFAR_PARALLEL_FOR
     for (size_t i = 0; i < _allocableBytesPerNuma[numaNodeIdx]; i += pageSize) _internalBuffersStart[numaNodeIdx][i] = 1;
+
+    // Likewise fault in the history slabs
+    for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++) JAFFAR_PARALLEL_FOR
+    for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx] * _histSize; i += pageSize) _histBuffersStart[numaNodeIdx][i] = 1;
 
     // Adding the state pointers to the free state queues
     _freeStateQueues.resize(_numaCount);
@@ -212,11 +229,39 @@ public:
    */
   __INLINE__ size_t saveStateFromRunner(Runner& r, void* statePtr)
   {
-    // Serializing the runner state directly (raw, uncompressed) into the destination slot
-    jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
+    // Full, self-contained serialization ([hot][history]) into a standalone buffer (NOT a slab slot):
+    // used for the best/worst/win/manual snapshots kept outside the NUMA slabs, which have no cold mirror.
+    jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw + _histSize);
     r.serializeState(s);
     return s.getOutputSize();
   }
+
+  /**
+   * @brief Serializes the runner into a state-database slab slot: hot state into the slot, path (input
+   * history + step counter) into the parallel cold slot. Use only with slab-slot pointers.
+   */
+  __INLINE__ size_t saveStateToSlot(Runner& r, void* statePtr)
+  {
+    jaffarCommon::serializer::Contiguous s(statePtr, _stateSizeRaw);
+    r.serializeHotState(s);
+    jaffarCommon::serializer::Contiguous h(getHistoryPtr(statePtr), _histSize);
+    r.serializeHistory(h);
+    return s.getOutputSize();
+  }
+
+  /**
+   * @brief Gathers a slab slot's hot state and its cold history mirror into a contiguous full-state
+   * buffer ([hot][history], matching @ref saveStateFromRunner's layout). Used to snapshot the best/worst
+   * state out of the slabs into standalone storage that @ref loadStateIntoRunner can later restore.
+   */
+  __INLINE__ void captureSlotToBuffer(const void* slotPtr, void* buffer)
+  {
+    memcpy(buffer, slotPtr, _stateSizeRaw);
+    memcpy((uint8_t*)buffer + _stateSizeRaw, getHistoryPtr(slotPtr), _histSize);
+  }
+
+  /// @brief Full self-contained serialized state size ([hot][history]); for standalone state buffers.
+  __INLINE__ size_t getFullStateSize() const { return _stateSizeRaw + _histSize; }
 
   /**
    * @brief Serializes the runner's state into the given slot and inserts it into the next-state queue.
@@ -234,11 +279,11 @@ public:
     // Check that we got a free state (we did not overflow state memory)
     if (statePtr == nullptr) JAFFAR_THROW_RUNTIME("Provided a null state -- probably ran out of free states\n");
 
-    // Encoding internal runner state into the state pointer
+    // Encoding internal runner state into the state pointer (slab slot: hot into slot, path into cold slab)
     try
     {
       // Getting state from the runner
-      saveStateFromRunner(r, statePtr);
+      saveStateToSlot(r, statePtr);
     }
     catch (const std::runtime_error& x)
     {
@@ -264,9 +309,21 @@ public:
    */
   __INLINE__ void loadStateIntoRunner(Runner& r, const void* statePtr)
   {
-    // Deserializing the raw (uncompressed) state directly from the slot into the runner
-    jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
+    // Full, self-contained deserialization ([hot][history]) from a standalone buffer (NOT a slab slot).
+    jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw + _histSize);
     r.deserializeState(d);
+  }
+
+  /**
+   * @brief Deserializes a state-database slab slot into the runner: hot state from the slot, path from
+   * the parallel cold slot. Use only with slab-slot pointers.
+   */
+  __INLINE__ void loadStateFromSlot(Runner& r, const void* statePtr)
+  {
+    jaffarCommon::deserializer::Contiguous d(statePtr, _stateSizeRaw);
+    r.deserializeHotState(d);
+    jaffarCommon::deserializer::Contiguous h(getHistoryPtr(statePtr), _histSize);
+    r.deserializeHistory(h);
   }
 
   /**
@@ -281,14 +338,15 @@ public:
   __INLINE__ void printInfo() const
   {
     const size_t currentStateCount = getStateCount();
-    const size_t currentStateBytes = currentStateCount * _stateSize;
+    const size_t currentStateBytes = currentStateCount * (_stateSize + _histSize); // hot slab + cold history slab
 
     jaffarCommon::logger::log("[J+]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n", currentStateCount,
                               (double)currentStateCount * 1.0e-6, _maxStates, (double)_maxStates * 1.0e-6, 100.0 * (double)currentStateCount / (double)_maxStates);
     jaffarCommon::logger::log("[J+]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n", (double)currentStateBytes / (1024.0 * 1024.0),
                               (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
-    jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes\n", _stateSizeRaw);
-    jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (%lu padding bytes to %u)\n", _stateSize, _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES);
+    jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes (hot %lu + cold/history %lu)\n", _stateSizeRaw + _histSize, _stateSizeRaw, _histSize);
+    jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (hot %lu + %lu padding to %u, cold %lu)\n", _stateSize + _histSize, _stateSize, _stateSizePadding,
+                              _JAFFAR_STATE_PADDING_BYTES, _histSize);
 
     // Only print the first and the last
     for (int i = 0; i < _numaCount; i++)
@@ -429,6 +487,20 @@ public:
 
     // Check for error
     JAFFAR_THROW_RUNTIME("Did not find the corresponding numa domain for the provided state pointer. This must be a bug in Jaffar\n");
+  }
+
+  /**
+   * @brief Returns the cold history slot mirroring the given hot state slot (same NUMA domain + index).
+   * @param statePtr A hot state-slab slot pointer.
+   * @return Pointer into the parallel history slab for the same slot index.
+   * @details The hot slabs are fixed grids of @ref _stateSize slots, so the slot index is plain pointer
+   * arithmetic and the cold slab is addressed at the same index with @ref _histSize stride.
+   */
+  __INLINE__ void* getHistoryPtr(const void* const statePtr)
+  {
+    const int    numa = getStateNumaDomain(const_cast<void*>(statePtr));
+    const size_t idx  = ((const uint8_t*)statePtr - _internalBuffersStart[numa]) / _stateSize;
+    return _histBuffersStart[numa] + idx * _histSize;
   }
 
   /**
@@ -758,6 +830,16 @@ private:
 
   /// @brief Number of bytes allocated for the state slab in each NUMA domain.
   std::vector<size_t> _allocableBytesPerNuma;
+
+  /// @brief Unpadded size of one state's cold "path" data (bit-packed input history + step counter).
+  /// Stored in a parallel slab (@ref _histBuffersStart) rather than in the hot state slot, so the data
+  /// the search hashes/advances every step stays dense. Written once at state creation, read once when
+  /// a solution is reconstructed.
+  size_t _histSize = 0;
+
+  /// @brief Start pointer of each NUMA domain's parallel history (cold) slab. Indexed identically to the
+  /// state slab: the history for the hot slot at index i lives at _histBuffersStart[numa] + i*_histSize.
+  std::vector<uint8_t*> _histBuffersStart;
 };
 
 } // namespace jaffarPlus
