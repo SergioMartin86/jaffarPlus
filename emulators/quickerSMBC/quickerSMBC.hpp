@@ -24,8 +24,11 @@ public:
   // Constructor must only do configuration parsing
   QuickerSMBC(const nlohmann::json& config) : Emulator(config)
   {
-    // Getting initial state file from the configuration
-    _initialStateFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path");
+    // Getting optional initial state file from the configuration (a binary .state snapshot). Optional:
+    // a run may instead start from an "Initial Sequence File Path" (boot-derived inputs) or default reset.
+    _initialStateFilePath = _emulatorConfigRemaining.contains("Initial State File Path")
+                                ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path")
+                                : "";
 
     // Getting optional initial RAM-data file. When set, its bytes overwrite the 2KB work RAM after
     // initialization, letting a run start from an arbitrary RAM image (e.g. another emulator's work
@@ -33,6 +36,13 @@ public:
     _initialRAMDataFilePath = _emulatorConfigRemaining.contains("Initial RAM Data File Path")
                                   ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial RAM Data File Path")
                                   : "";
+
+    // Getting optional initial input-sequence file. When set, its inputs are replayed from reset to
+    // reach the starting state (instead of loading a binary .state snapshot), so a run can start from a
+    // reproducible, boot-derived sequence. Optional: defaults to none.
+    _initialSequenceFilePath = _emulatorConfigRemaining.contains("Initial Sequence File Path")
+                                   ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path")
+                                   : "";
 
     // The ROM file path/SHA1 are only used by the player build, but they are always popped here so the
     // strict-key check below accounts for them regardless of build configuration.
@@ -78,6 +88,19 @@ public:
 
     // Loading rom into emulator
     _quickerSMBC->loadROM(_romFilePath);
+
+    // If an initial input sequence is defined, replay it from reset to reach the starting state. This
+    // recreates a starting state from a reproducible boot-derived sequence rather than a binary .state.
+    if (_initialSequenceFilePath.empty() == false)
+    {
+      std::string initialSequenceFileString;
+      if (jaffarCommon::file::loadStringFromFile(initialSequenceFileString, _initialSequenceFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial sequence file: %s\n", _initialSequenceFilePath.c_str());
+
+      const auto  initialSequence = jaffarCommon::string::split(initialSequenceFileString, '\0');
+      auto* const inputParser     = _quickerSMBC->getInputParser();
+      for (const auto& inputString : initialSequence) advanceStateImpl(inputParser->parseInputString(inputString));
+    }
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
@@ -209,6 +232,7 @@ private:
 
   std::string _initialStateFilePath;
   std::string _initialRAMDataFilePath;
+  std::string _initialSequenceFilePath;
 
   // True when the previous step started an area load, so the next step must reproduce the NES's frozen
   // lag frame (see advanceStateImpl). Part of the serialized state (serializeState) so it survives the
