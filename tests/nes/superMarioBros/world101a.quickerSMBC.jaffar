@@ -28,7 +28,8 @@
             "PPU",
             "DST",
             "STK",
-            "SPR"
+            "SPR",
+            "SCRP"
         ]
     },
     "Runner Configuration": {
