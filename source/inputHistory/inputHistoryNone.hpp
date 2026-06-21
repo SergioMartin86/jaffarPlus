@@ -11,6 +11,7 @@
 namespace jaffarPlus
 {
 
+/// @brief Records only the step counter; smallest per-state footprint, but no solution reconstruction.
 class InputHistoryNone final : public InputHistory
 {
 public:
@@ -31,7 +32,7 @@ public:
   void captureColdToFull(const void* cold, void* full) const override { memcpy(full, cold, sizeof(_count)); }
 
 private:
-  uint32_t _count = 0;
+  uint32_t _count = 0; ///< Number of inputs applied so far (the step counter).
 };
 
 } // namespace jaffarPlus

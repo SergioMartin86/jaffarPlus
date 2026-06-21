@@ -330,18 +330,11 @@ public:
   /**
    * @brief Records an applied input into the input history and advances the input counter.
    *
-   * @details When input history is enabled, stores @p inputIdx at the current step unless capacity
-   * (@ref _inputHistoryMaxSize) has been reached, in which case the input is counted but not recorded
-   * and a one-time warning is emitted. The input counter is always advanced.
+   * @details Forwards to the configured input-history strategy, which stores the input (subject to its
+   * own capacity rules) and advances its step counter.
    * @param inputIdx The index of the input that was applied.
    */
   __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx) { _inputHistory->pushInput(inputIdx); }
-
-  /**
-   * @brief Writes an input index into the bit-packed input history at a given step.
-   * @param stepId   The step (history slot) to write to.
-   * @param inputIdx The input index to store.
-   */
 
   /**
    * @brief Serializes the runner state: the game state, the input history, and the input counter.
@@ -382,21 +375,25 @@ public:
   // it write/measure the two parts separately. serializeState()/getStateSize() above are unchanged and
   // still produce the FULL state for every other caller (player, playback, on-disk checkpoints).
 
-  // Hot state: the game+emulator state -- everything the search actually reads each step.
+  /// @brief Serializes only the hot game+emulator state (what the search reads every step) into @p serializer.
   __INLINE__ void serializeHotState(jaffarCommon::serializer::Base& serializer) const { _game->serializeState(serializer); }
+  /// @brief Restores only the hot game+emulator state from @p deserializer.
   __INLINE__ void deserializeHotState(jaffarCommon::deserializer::Base& deserializer) { _game->deserializeState(deserializer); }
 
-  // Cold state: the input history buffer + step counter. Written once when a state is created, read
-  // once when a solution is reconstructed -- never touched during the search proper. Always contiguous.
+  /// @brief Serializes only the cold input-history "path" (written once at state creation, read at
+  /// solution time) into @p serializer.
   __INLINE__ void serializeHistory(jaffarCommon::serializer::Base& serializer) const { _inputHistory->serializeCold(serializer); }
+  /// @brief Restores only the cold input-history "path" from @p deserializer.
   __INLINE__ void deserializeHistory(jaffarCommon::deserializer::Base& deserializer) { _inputHistory->deserializeCold(deserializer); }
 
+  /// @brief Returns the serialized size of the hot game+emulator state, in bytes.
   __INLINE__ size_t getHotStateSize() const
   {
     jaffarCommon::serializer::Contiguous s;
     this->serializeHotState(s);
     return s.getOutputSize();
   }
+  /// @brief Returns the serialized size of the cold input-history "path", in bytes.
   __INLINE__ size_t getHistorySize() const { return _inputHistory->getColdSize(); }
 
   /**
