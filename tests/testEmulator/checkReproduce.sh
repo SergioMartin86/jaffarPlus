@@ -34,7 +34,7 @@ fi
 # 2. Reproduction: replaying the found solution must reach a Win state. (The player neutralizes
 #    frameskip during reproduction, so frameskip-expanded histories replay verbatim.)
 repro="$(OMP_NUM_THREADS=1 "$PLAYER" "$CONFIG" "$SOL" --reproduce --disableRender --exitOnEnd --unattended 2>&1)"
-[[ "$repro" == *"Game State Type: Win"* ]] || { printf '%s\n' "$repro" | tail -n 20; fail "replaying the solution did not reach a Win state"; }
+[[ "$repro" =~ "Game State Type:"[[:space:]]+"Win" ]] || { printf '%s\n' "$repro" | tail -n 20; fail "replaying the solution did not reach a Win state"; }
 
 echo "PASS: $DESC -- solution length $EXPLEN found and reproduced to Win"
 exit 0

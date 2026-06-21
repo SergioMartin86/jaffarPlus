@@ -354,13 +354,13 @@ public:
     const size_t currentStateCount = getStateCount();
     const size_t currentStateBytes = currentStateCount * (_stateSize + _histSize); // hot slab + cold history slab
 
-    jaffarCommon::logger::log("[J+]  + Current State Count:           %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n", currentStateCount,
+    jaffarCommon::logger::log("[J+]  + Current State Count:                      %lu (%f Mstates) /  %lu (%f Mstates) Max / %5.2f%% Full\n", currentStateCount,
                               (double)currentStateCount * 1.0e-6, _maxStates, (double)_maxStates * 1.0e-6, 100.0 * (double)currentStateCount / (double)_maxStates);
-    jaffarCommon::logger::log("[J+]  + Current State Size:            %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n", (double)currentStateBytes / (1024.0 * 1024.0),
+    jaffarCommon::logger::log("[J+]  + Current State Size:                       %.3f Mb (%.6f Gb) / %.3f Mb (%.6f Gb) Max\n", (double)currentStateBytes / (1024.0 * 1024.0),
                               (double)currentStateBytes / (1024.0 * 1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0), (double)_maxSize / (1024.0 * 1024.0 * 1024.0));
-    jaffarCommon::logger::log("[J+]  + State Size Raw:                %lu bytes (hot %lu + cold/history %lu)\n", _stateSizeRaw + _histSize, _stateSizeRaw, _histSize);
-    jaffarCommon::logger::log("[J+]  + State Size in DB:              %lu bytes (hot %lu + %lu padding to %u, cold %lu)\n", _stateSize + _histSize, _stateSize, _stateSizePadding,
-                              _JAFFAR_STATE_PADDING_BYTES, _histSize);
+    jaffarCommon::logger::log("[J+]  + State Size Raw:                           %lu bytes (hot %lu + cold/history %lu)\n", _stateSizeRaw + _histSize, _stateSizeRaw, _histSize);
+    jaffarCommon::logger::log("[J+]  + State Size in DB:                         %lu bytes (hot %lu + %lu padding to %u, cold %lu)\n", _stateSize + _histSize, _stateSize,
+                              _stateSizePadding, _JAFFAR_STATE_PADDING_BYTES, _histSize);
     const size_t historyMem = _ih->getApproxMemoryBytes(); // shared-structure memory (e.g. the trie); 0 for raw/none
     if (historyMem > 0)
     {
@@ -368,7 +368,7 @@ public:
       const double sharedMb  = historyMem / MB;                                                        // shared structure (trie nodes)
       const double coldMb    = currentStateCount * (double)_histSize / MB;                             // per-state cold slot (node id)
       const double bitpackMb = currentStateCount * (double)(_fullStateSizeBytes - _stateSizeRaw) / MB; // raw bit-packed equivalent
-      jaffarCommon::logger::log("[J+]  + Input History (shared):        %.1f Mb shared + %.1f Mb cold slots = %.1f Mb total (raw would be %.1f Mb)\n", sharedMb, coldMb,
+      jaffarCommon::logger::log("[J+]  + Input History (shared):                   %.1f Mb shared + %.1f Mb cold slots = %.1f Mb total (raw would be %.1f Mb)\n", sharedMb, coldMb,
                                 sharedMb + coldMb, bitpackMb);
     }
 
@@ -399,29 +399,29 @@ public:
 
     size_t totalDatabaseStatesRequested = nonLocalDatabaseState + localDatabaseState + databaseStateNotFound;
     jaffarCommon::logger::log("[J+] + Database Popping State Rates:\n");
-    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:                     %5.3f%%\n", 100.0 * (double)localDatabaseState / (double)totalDatabaseStatesRequested);
-    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                        %5.3f%%\n", 100.0 * (double)nonLocalDatabaseState / (double)totalDatabaseStatesRequested);
-    jaffarCommon::logger::log("[J+]  + Numa No DB State Found Rate:                    %5.3f%%\n", 100.0 * (double)databaseStateNotFound / (double)totalDatabaseStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:               %5.3f%%\n", 100.0 * (double)localDatabaseState / (double)totalDatabaseStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                  %5.3f%%\n", 100.0 * (double)nonLocalDatabaseState / (double)totalDatabaseStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa No DB State Found Rate:              %5.3f%%\n", 100.0 * (double)databaseStateNotFound / (double)totalDatabaseStatesRequested);
 
     // Thread-local free-slot cache effectiveness: fraction of all getFreeState / returnFreeState
     // calls served locally (and thus kept off the shared free-state queue).
     const size_t totalGets    = freeStateCacheHit + nonLocalFreeState + localFreeState + stealingFreeState + freeStateNotFound;
     const size_t totalReturns = freeStateCacheReturn + /* shared-queue spills are not separately counted */ 0;
     jaffarCommon::logger::log("[J+] + Free-Slot Cache:\n");
-    jaffarCommon::logger::log("[J+]  + Get Cache Hit Rate:                             %5.3f%% (%lu hits)\n",
+    jaffarCommon::logger::log("[J+]  + Get Cache Hit Rate:                       %5.3f%% (%lu hits)\n",
                               totalGets == 0 ? 0.0 : 100.0 * (double)freeStateCacheHit / (double)totalGets, freeStateCacheHit);
-    jaffarCommon::logger::log("[J+]  + Return Cache Absorb Count:                      %lu\n", freeStateCacheReturn);
+    jaffarCommon::logger::log("[J+]  + Return Cache Absorb Count:                %lu\n", freeStateCacheReturn);
     (void)totalReturns;
 
     size_t totalFreeStatesRequested = nonLocalFreeState + localFreeState + freeStateNotFound + stealingFreeState;
     jaffarCommon::logger::log("[J+] + Get Free State Rates (shared-queue only):\n");
-    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:                     %5.3f%%\n", 100.0 * (double)localFreeState / (double)totalFreeStatesRequested);
-    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                        %5.3f%%\n", 100.0 * (double)nonLocalFreeState / (double)totalFreeStatesRequested);
-    jaffarCommon::logger::log("[J+]  + State DB Stealing Rate:                         %5.3f%%\n", 100.0 * (double)stealingFreeState / (double)totalFreeStatesRequested);
-    jaffarCommon::logger::log("[J+]  + Numa No Free State Found Rate:                  %5.3f%%\n", 100.0 * (double)freeStateNotFound / (double)totalFreeStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa Locality Success Rate:               %5.3f%%\n", 100.0 * (double)localFreeState / (double)totalFreeStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa Locality Fail Rate:                  %5.3f%%\n", 100.0 * (double)nonLocalFreeState / (double)totalFreeStatesRequested);
+    jaffarCommon::logger::log("[J+]  + State DB Stealing Rate:                   %5.3f%%\n", 100.0 * (double)stealingFreeState / (double)totalFreeStatesRequested);
+    jaffarCommon::logger::log("[J+]  + Numa No Free State Found Rate:            %5.3f%%\n", 100.0 * (double)freeStateNotFound / (double)totalFreeStatesRequested);
 
     size_t NUMAAccessCount = nonLocalDatabaseState + localDatabaseState + nonLocalFreeState + localFreeState + stealingFreeState;
-    jaffarCommon::logger::log("[J+]  + Average NUMA Distance:                          %lu / %lu = %5.3f\n", distanceAccumulator, NUMAAccessCount,
+    jaffarCommon::logger::log("[J+]  + Average NUMA Distance:                    %lu / %lu = %5.3f\n", distanceAccumulator, NUMAAccessCount,
                               (double)distanceAccumulator / (double)NUMAAccessCount);
   }
 

@@ -37,7 +37,7 @@ out="$(OMP_NUM_THREADS=1 "$JAFFAR" "$CONFIG" 2>&1)"
 [[ "$(solLen "$WIN_SOL")" -ge 1 ]] || fail "saved checkpoint solution file is empty"
 
 repro="$(OMP_NUM_THREADS=1 "$PLAYER" "$CONFIG" "$SOL" --reproduce --disableRender --exitOnEnd --unattended 2>&1)"
-[[ "$repro" == *"Game State Type: Win"* ]] || { printf '%s\n' "$repro" | tail -n 20; fail "replaying the solution did not reach a Win state"; }
+[[ "$repro" =~ "Game State Type:"[[:space:]]+"Win" ]] || { printf '%s\n' "$repro" | tail -n 20; fail "replaying the solution did not reach a Win state"; }
 
 # 4. Determinism: a multi-threaded search must also find an optimal (length-8) solution. Different
 #    thread counts may surface a different shortest path, but BFS guarantees the same optimal depth.

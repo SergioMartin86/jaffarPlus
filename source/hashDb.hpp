@@ -162,11 +162,12 @@ public:
     const double l2BudgetMb = (double)(_maxStoreSizeBytes * _maxStoreCount) * toMb;
 
     jaffarCommon::logger::log("[J+]   Two-Tier Dedup (%d NUMA-local L1 + global L2):\n", _numaCount);
-    jaffarCommon::logger::log("[J+]      + L1 (local): Checks: %lu, Local Hits: %lu (%.3f%%), Entries: %.3f M, Size: %.1f / %.1f Mb\n", l1q, l1c,
+    jaffarCommon::logger::log("[J+]      + L1 (local):                           Checks: %lu, Local Hits: %lu (%.3f%%), Entries: %.3f M, Size: %.1f / %.1f Mb\n", l1q, l1c,
                               l1q == 0 ? 0.0 : 100.0 * (double)l1c / (double)l1q, (double)l1entries * toMb, l1SizeMb, l1BudgetMb);
-    jaffarCommon::logger::log("[J+]      + L2 (global): Checks (L1 misses): %lu (%.3f%% of all), Cross-Domain Hits: %lu, Entries: %.3f M, Size: %.1f / %.1f Mb\n", l2q,
-                              l1q == 0 ? 0.0 : 100.0 * (double)l2q / (double)l1q, l2c, (double)l2entries * toMb, storeSizeMb(_l2), l2BudgetMb);
-    jaffarCommon::logger::log("[J+]      + Served locally (no L2 access): %.3f%% | Total dup rate: %.3f%%\n", l1q == 0 ? 0.0 : 100.0 * (double)l1c / (double)l1q,
+    jaffarCommon::logger::log(
+        "[J+]      + L2 (global):                          Checks (L1 misses): %lu (%.3f%% of all), Cross-Domain Hits: %lu, Entries: %.3f M, Size: %.1f / %.1f Mb\n", l2q,
+        l1q == 0 ? 0.0 : 100.0 * (double)l2q / (double)l1q, l2c, (double)l2entries * toMb, storeSizeMb(_l2), l2BudgetMb);
+    jaffarCommon::logger::log("[J+]      + Served locally (no L2 access):        %.3f%% | Total dup rate: %.3f%%\n", l1q == 0 ? 0.0 : 100.0 * (double)l1c / (double)l1q,
                               l1q == 0 ? 0.0 : 100.0 * (double)(l1c + l2c) / (double)l1q);
     // L2 rolling-window breakdown (Id/Age make window rolling observable)
     printStores(_l2, "L2 ");

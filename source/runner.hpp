@@ -459,16 +459,16 @@ public:
     auto hashStepToleranceStage = getHashStepToleranceStage();
 
     // Memory usage
-    jaffarCommon::logger::log("[J+]  + Input History Type: %s (cold %lu B, full %lu B)\n", inputHistory::getType(_inputHistoryConfig).c_str(), _inputHistory->getColdSize(),
-                              _inputHistory->getFullSize());
+    jaffarCommon::logger::log("[J+]  + Input History Type:                       %s (cold %lu B, full %lu B)\n", inputHistory::getType(_inputHistoryConfig).c_str(),
+                              _inputHistory->getColdSize(), _inputHistory->getFullSize());
 
     // Printing runner state
-    jaffarCommon::logger::log("[J+]  + Current Input Count: %lu\n", _inputHistory->getInputCount());
-    jaffarCommon::logger::log("[J+]  + Hash: %s\n", hash.c_str());
-    jaffarCommon::logger::log("[J+]  + Hash Step Tolerance Stage: %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
+    jaffarCommon::logger::log("[J+]  + Current Input Count:                      %lu\n", _inputHistory->getInputCount());
+    jaffarCommon::logger::log("[J+]  + Hash:                                     %s\n", hash.c_str());
+    jaffarCommon::logger::log("[J+]  + Hash Step Tolerance Stage:                %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
 
     // Printing frameskip information
-    if (_frameskipRate > 0) jaffarCommon::logger::log("[J+]  + Frameskip Rate: %lu\n", _frameskipRate);
+    if (_frameskipRate > 0) jaffarCommon::logger::log("[J+]  + Frameskip Rate:                           %lu\n", _frameskipRate);
 
     // Check whether we want to print inputs
     if (_showAllowedInputs == true)
