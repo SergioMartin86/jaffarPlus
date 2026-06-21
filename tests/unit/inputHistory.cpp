@@ -44,8 +44,8 @@ static void pushAll(InputHistory& h, std::initializer_list<int> seq)
 // Round-trips a history through serializeCold/deserializeCold into `dst` (sharing any backing).
 static void coldRoundTrip(const InputHistory& src, InputHistory& dst)
 {
-  std::vector<uint8_t>                  buf(src.getColdSize());
-  jaffarCommon::serializer::Contiguous  s(buf.data(), buf.size());
+  std::vector<uint8_t>                 buf(src.getColdSize());
+  jaffarCommon::serializer::Contiguous s(buf.data(), buf.size());
   src.serializeCold(s);
   EXPECT_EQ(s.getOutputSize(), src.getColdSize());
   jaffarCommon::deserializer::Contiguous d(buf.data(), buf.size());
@@ -54,8 +54,8 @@ static void coldRoundTrip(const InputHistory& src, InputHistory& dst)
 
 static void fullRoundTrip(const InputHistory& src, InputHistory& dst)
 {
-  std::vector<uint8_t>                  buf(src.getFullSize());
-  jaffarCommon::serializer::Contiguous  s(buf.data(), buf.size());
+  std::vector<uint8_t>                 buf(src.getFullSize());
+  jaffarCommon::serializer::Contiguous s(buf.data(), buf.size());
   src.serializeFull(s);
   EXPECT_EQ(s.getOutputSize(), src.getFullSize());
   jaffarCommon::deserializer::Contiguous d(buf.data(), buf.size());
@@ -104,10 +104,10 @@ TEST(InputHistoryFactory, CreatesEachStrategy)
 
 TEST(InputHistoryFactory, RejectsBadConfig)
 {
-  EXPECT_ANY_THROW(create(nlohmann::json{{"Type", "Bogus"}}, MAX_INPUT_INDEX, 1, 0, nullptr));   // unknown type
-  EXPECT_ANY_THROW(create(nlohmann::json{{"Type", "Raw"}}, MAX_INPUT_INDEX, 1, 0, nullptr));     // Raw needs Max Size
+  EXPECT_ANY_THROW(create(nlohmann::json{{"Type", "Bogus"}}, MAX_INPUT_INDEX, 1, 0, nullptr));                              // unknown type
+  EXPECT_ANY_THROW(create(nlohmann::json{{"Type", "Raw"}}, MAX_INPUT_INDEX, 1, 0, nullptr));                                // Raw needs Max Size
   EXPECT_ANY_THROW(create(nlohmann::json{{"Type", "Raw"}, {"Max Size", 4}, {"Bogus", 1}}, MAX_INPUT_INDEX, 1, 0, nullptr)); // stray key
-  EXPECT_ANY_THROW(create(nlohmann::json{{"Type", "None"}, {"Max Size", 4}}, MAX_INPUT_INDEX, 1, 0, nullptr)); // None takes no Max Size
+  EXPECT_ANY_THROW(create(nlohmann::json{{"Type", "None"}, {"Max Size", 4}}, MAX_INPUT_INDEX, 1, 0, nullptr));              // None takes no Max Size
 }
 
 // --------------------------------------------------------------------------------------------------
@@ -120,7 +120,7 @@ TEST(InputHistoryNone, CountOnlyNoSolution)
   EXPECT_EQ(h.getInputCount(), 0u);
   pushAll(h, {1, 2, 3, 0});
   EXPECT_EQ(h.getInputCount(), 4u);
-  EXPECT_EQ(h.toString(kMap), "");          // no inputs recorded
+  EXPECT_EQ(h.toString(kMap), ""); // no inputs recorded
   EXPECT_EQ(h.getColdSize(), h.getFullSize());
 
   InputHistoryNone other;
@@ -181,7 +181,7 @@ TEST(InputHistoryRaw, TruncatesPastMaxSize)
 {
   InputHistoryRaw h(MAX_INPUT_INDEX, 3); // only 3 inputs are recorded
   pushAll(h, {1, 2, 3, 4, 0});
-  EXPECT_EQ(h.getInputCount(), 5u);                 // count tracks every push
+  EXPECT_EQ(h.getInputCount(), 5u);                  // count tracks every push
   EXPECT_EQ(h.toString(kMap), expectSeq({1, 2, 3})); // but only the first Max Size are reconstructible
 }
 
@@ -225,19 +225,28 @@ TEST(InputHistoryTrie, ExpandFromBaseSharesPrefix)
 
   // Child 1: load the base, append 4 (-> L).
   InputHistoryTrie child1(&trie, 1, 3, MAX_INPUT_INDEX, 100);
-  { jaffarCommon::deserializer::Contiguous d(slot.data(), slot.size()); child1.deserializeCold(d); }
+  {
+    jaffarCommon::deserializer::Contiguous d(slot.data(), slot.size());
+    child1.deserializeCold(d);
+  }
   child1.pushInput(idx_t(4));
   EXPECT_EQ(child1.toString(kMap), expectSeq({1, 2, 3, 4}));
 
   // Child 2: load the same base, append 0 (-> R). Independent leaf, shared prefix.
   InputHistoryTrie child2(&trie, 2, 3, MAX_INPUT_INDEX, 100);
-  { jaffarCommon::deserializer::Contiguous d(slot.data(), slot.size()); child2.deserializeCold(d); }
+  {
+    jaffarCommon::deserializer::Contiguous d(slot.data(), slot.size());
+    child2.deserializeCold(d);
+  }
   child2.pushInput(idx_t(0));
   EXPECT_EQ(child2.toString(kMap), expectSeq({1, 2, 3, 0}));
 
   // The stored base is unaffected by either child.
   InputHistoryTrie reload(&trie, 3, 3, MAX_INPUT_INDEX, 100);
-  { jaffarCommon::deserializer::Contiguous d(slot.data(), slot.size()); reload.deserializeCold(d); }
+  {
+    jaffarCommon::deserializer::Contiguous d(slot.data(), slot.size());
+    reload.deserializeCold(d);
+  }
   EXPECT_EQ(reload.toString(kMap), expectSeq({1, 2, 3}));
 }
 
@@ -368,7 +377,8 @@ TEST(SequenceTrie, ReferenceCountRecyclesNodes)
   // not grow with more cycles (reported memory tracks the live-node high-water mark, which the recycler
   // keeps flat once a depth-8 path's worth of nodes has been allocated once).
   SequenceInputTrie t(1);
-  auto              buildAndFree = [&](int reps) {
+  auto              buildAndFree = [&](int reps)
+  {
     for (int i = 0; i < reps; i++)
     {
       nodeId n = SequenceInputTrie::ROOT;
@@ -384,7 +394,7 @@ TEST(SequenceTrie, ReferenceCountRecyclesNodes)
 
   buildAndFree(100); // reach the steady-state high-water mark
   const size_t mem = t.getApproxMemoryBytes();
-  buildAndFree(100000); // 100k more build/free cycles
+  buildAndFree(100000);                     // 100k more build/free cycles
   EXPECT_EQ(t.getApproxMemoryBytes(), mem); // fully recycled: no growth
 }
 
@@ -398,22 +408,24 @@ TEST(SequenceTrie, ConcurrentShardedExtendRelease)
 
   std::vector<std::thread> threads;
   for (uint32_t s = 0; s < NTHREADS; s++)
-    threads.emplace_back([&, s]() {
-      for (int i = 0; i < 4000; i++)
-      {
-        nodeId n = SequenceInputTrie::ROOT;
-        for (int d = 0; d < 10; d++)
+    threads.emplace_back(
+        [&, s]()
         {
-          const nodeId next = t.extend(n, idx_t((s + d) % MAX_INPUT_INDEX), s);
-          if (n != SequenceInputTrie::ROOT) t.release(n, s); // release the prior node as we advance
-          n = next;
-        }
-        std::vector<idx_t> seq;
-        t.reconstruct(n, seq);
-        if (seq.size() != 10) ok.store(false);
-        t.release(n, s); // leaf release cascades up, freeing this thread's whole chain
-      }
-    });
+          for (int i = 0; i < 4000; i++)
+          {
+            nodeId n = SequenceInputTrie::ROOT;
+            for (int d = 0; d < 10; d++)
+            {
+              const nodeId next = t.extend(n, idx_t((s + d) % MAX_INPUT_INDEX), s);
+              if (n != SequenceInputTrie::ROOT) t.release(n, s); // release the prior node as we advance
+              n = next;
+            }
+            std::vector<idx_t> seq;
+            t.reconstruct(n, seq);
+            if (seq.size() != 10) ok.store(false);
+            t.release(n, s); // leaf release cascades up, freeing this thread's whole chain
+          }
+        });
   for (auto& th : threads) th.join();
   EXPECT_TRUE(ok.load());
 }

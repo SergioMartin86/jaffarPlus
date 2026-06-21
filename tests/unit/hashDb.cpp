@@ -30,7 +30,7 @@ namespace
 nlohmann::json makeConfig()
 {
   nlohmann::json j;
-  j["Max Store Count"]    = 4;
+  j["Max Store Count"]     = 4;
   j["Max Store Size (Mb)"] = 4096.0;
   return j;
 }
@@ -40,7 +40,11 @@ nlohmann::json makeConfig()
 hash_t H(uint64_t v) { return jaffarCommon::hash::calculateMetroHash(&v, sizeof(v)); }
 
 // Single-threaded tests: the (dense) thread id is always 0, so any thread count >= 1 works
-void simulateTopology(int numaDomains) { _threadCount = 8; _numaCount = numaDomains; }
+void simulateTopology(int numaDomains)
+{
+  _threadCount = 8;
+  _numaCount   = numaDomains;
+}
 
 } // namespace
 
@@ -75,7 +79,7 @@ TEST(HashDbTwoTier, NoFalsePositives)
   EXPECT_FALSE(db.checkHashExists(H(7)));
   EXPECT_FALSE(db.checkHashExists(H(8))); // distinct, never seen
   EXPECT_FALSE(db.checkHashExists(H(9)));
-  EXPECT_TRUE(db.checkHashExists(H(7)));  // now seen
+  EXPECT_TRUE(db.checkHashExists(H(7))); // now seen
 }
 
 // Repeats within the same domain are caught by that domain's local L1.
@@ -150,10 +154,10 @@ TEST(HashDbTwoTier, MatchesGlobalDedupOverSequence)
 
     // Reference verdict ignores the domain (single store); two-tier uses it for L1 routing
     _preferredNumaDomain = 0;
-    const bool g = global.checkHashExists(h);
+    const bool g         = global.checkHashExists(h);
 
     _preferredNumaDomain = domain;
-    const bool t = twoTier.checkHashExists(h);
+    const bool t         = twoTier.checkHashExists(h);
 
     ASSERT_EQ(g, t) << "two-tier vs global verdict mismatch at i=" << i << " value=" << v << " domain=" << domain;
     if (t == false) twoTierNew++;

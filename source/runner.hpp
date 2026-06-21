@@ -7,6 +7,7 @@
  */
 
 #include "game.hpp"
+#include "inputHistory/inputHistoryFactory.hpp"
 #include "inputSet.hpp"
 #include <atomic>
 #include <cstdint>
@@ -15,7 +16,6 @@
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
-#include "inputHistory/inputHistoryFactory.hpp"
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
 #include <memory>
@@ -335,10 +335,7 @@ public:
    * and a one-time warning is emitted. The input counter is always advanced.
    * @param inputIdx The index of the input that was applied.
    */
-  __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx)
-  {
-    _inputHistory->pushInput(inputIdx);
-  }
+  __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx) { _inputHistory->pushInput(inputIdx); }
 
   /**
    * @brief Writes an input index into the bit-packed input history at a given step.
@@ -465,7 +462,8 @@ public:
     auto hashStepToleranceStage = getHashStepToleranceStage();
 
     // Memory usage
-    jaffarCommon::logger::log("[J+]  + Input History Type: %s (cold %lu B, full %lu B)\n", inputHistory::getType(_inputHistoryConfig).c_str(), _inputHistory->getColdSize(), _inputHistory->getFullSize());
+    jaffarCommon::logger::log("[J+]  + Input History Type: %s (cold %lu B, full %lu B)\n", inputHistory::getType(_inputHistoryConfig).c_str(), _inputHistory->getColdSize(),
+                              _inputHistory->getFullSize());
 
     // Printing runner state
     jaffarCommon::logger::log("[J+]  + Current Input Count: %lu\n", _inputHistory->getInputCount());
@@ -533,9 +531,9 @@ private:
   uint32_t _hashStepTolerance; ///< Hash step tolerance, used to derive the hash-step-tolerance stage.
 
   // --- Input history (strategy-agnostic) -----------------------------------------------------------
-  nlohmann::json                _inputHistoryConfig; ///< The "Store Input History" config object (selects None/Raw/Trie).
-  std::unique_ptr<InputHistory> _inputHistory;       ///< The configured strategy instance (built in initialize()).
-  std::shared_ptr<void>         _historyBacking;     ///< Shared backing (e.g. the one trie), injected by the engine or owned privately.
+  nlohmann::json                _inputHistoryConfig;   ///< The "Store Input History" config object (selects None/Raw/Trie).
+  std::unique_ptr<InputHistory> _inputHistory;         ///< The configured strategy instance (built in initialize()).
+  std::shared_ptr<void>         _historyBacking;       ///< Shared backing (e.g. the one trie), injected by the engine or owned privately.
   uint32_t                      _historyShardId   = 0; ///< This runner's contention-free free-list shard (its worker thread id).
   uint32_t                      _historyNumShards = 2; ///< Shard count of the backing (engine: threadCount+1; standalone: 2).
 
