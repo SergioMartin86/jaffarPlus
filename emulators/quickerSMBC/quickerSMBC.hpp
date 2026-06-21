@@ -1,13 +1,13 @@
 #pragma once
 
 #include <SMBCInstance.hpp>
+#include <cstring>
 #include <emulator.hpp>
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
-#include <cstring>
 #include <mutex>
 
 namespace jaffarPlus
@@ -26,30 +26,25 @@ public:
   {
     // Getting optional initial state file from the configuration (a binary .state snapshot). Optional:
     // a run may instead start from an "Initial Sequence File Path" (boot-derived inputs) or default reset.
-    _initialStateFilePath = _emulatorConfigRemaining.contains("Initial State File Path")
-                                ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path")
-                                : "";
+    _initialStateFilePath = _emulatorConfigRemaining.contains("Initial State File Path") ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path") : "";
 
     // Getting optional initial RAM-data file. When set, its bytes overwrite the 2KB work RAM after
     // initialization, letting a run start from an arbitrary RAM image (e.g. another emulator's work
     // RAM, for cross-validation with aligned starting states). Optional: defaults to none.
-    _initialRAMDataFilePath = _emulatorConfigRemaining.contains("Initial RAM Data File Path")
-                                  ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial RAM Data File Path")
-                                  : "";
+    _initialRAMDataFilePath =
+        _emulatorConfigRemaining.contains("Initial RAM Data File Path") ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial RAM Data File Path") : "";
 
     // Getting optional initial input-sequence file. When set, its inputs are replayed from reset to
     // reach the starting state (instead of loading a binary .state snapshot), so a run can start from a
     // reproducible, boot-derived sequence. Optional: defaults to none.
-    _initialSequenceFilePath = _emulatorConfigRemaining.contains("Initial Sequence File Path")
-                                   ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path")
-                                   : "";
+    _initialSequenceFilePath =
+        _emulatorConfigRemaining.contains("Initial Sequence File Path") ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial Sequence File Path") : "";
 
     // Getting optional list of state blocks to exclude from per-state serialization to shrink state
     // size for the search: "DST" (the 32KB constant ROM data tables, recreated at load), "PPU" (video
     // memory, irrelevant to headless gameplay) and "STK" (the call stack, empty at frame boundaries).
     if (_emulatorConfigRemaining.contains("Disabled State Properties"))
-      for (const auto& p : jaffarCommon::json::popArray<std::string>(_emulatorConfigRemaining, "Disabled State Properties"))
-        _disabledStateProperties.push_back(p);
+      for (const auto& p : jaffarCommon::json::popArray<std::string>(_emulatorConfigRemaining, "Disabled State Properties")) _disabledStateProperties.push_back(p);
 
     // The ROM file path/SHA1 are only used by the player build, but they are always popped here so the
     // strict-key check below accounts for them regardless of build configuration.
@@ -165,11 +160,11 @@ public:
 
     _quickerSMBC->advanceState(input);
 
-    _owedLagFrame = ram[0x0770] == 1     // OperMode == game mode
-                 && ram[0x0772] == 1     // OperMode_Task == area-load
-                 && ram[0x000E] == 0     // GameEngineSubroutine now idle
-                 && ram[0x0774] == 1     // DisableScreenFlag set
-                 && prevGES != 0;        // ...and it just dropped from non-zero (load start)
+    _owedLagFrame = ram[0x0770] == 1    // OperMode == game mode
+                    && ram[0x0772] == 1 // OperMode_Task == area-load
+                    && ram[0x000E] == 0 // GameEngineSubroutine now idle
+                    && ram[0x0774] == 1 // DisableScreenFlag set
+                    && prevGES != 0;    // ...and it just dropped from non-zero (load start)
   }
 
   __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override
@@ -240,9 +235,9 @@ private:
   std::string _romFilePath = "";
   std::string _romFileSHA1;
 
-  std::string _initialStateFilePath;
-  std::string _initialRAMDataFilePath;
-  std::string _initialSequenceFilePath;
+  std::string              _initialStateFilePath;
+  std::string              _initialRAMDataFilePath;
+  std::string              _initialSequenceFilePath;
   std::vector<std::string> _disabledStateProperties;
 
   // True when the previous step started an area load, so the next step must reproduce the NES's frozen
