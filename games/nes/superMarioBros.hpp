@@ -495,7 +495,11 @@ private:
 
   __INLINE__ void serializeStateImpl(jaffarCommon::serializer::Base& serializer) const override
   {
-    serializer.push(_lowMem, 0x800);
+    // _lowMem aliases the emulator's work RAM (getProperty("LRAM").pointer), which the emulator already
+    // (de)serializes as part of its own state. Storing it here too duplicates the full 2KB in every
+    // state. Only keep this copy when the emulator state is bypassed (then it is the sole RAM image);
+    // otherwise rely on the emulator's copy, which is restored before deserializeStateImpl runs.
+    if (_bypassEmulatorState == true) serializer.push(_lowMem, 0x800);
     serializer.push(&_currentStep, sizeof(_currentStep));
     serializer.push(&_playerPosX, sizeof(_playerPosX));
     serializer.push(&_playerPosY, sizeof(_playerPosY));
@@ -505,7 +509,7 @@ private:
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
   {
-    deserializer.pop(_lowMem, 0x800);
+    if (_bypassEmulatorState == true) deserializer.pop(_lowMem, 0x800);
     deserializer.pop(&_currentStep, sizeof(_currentStep));
     deserializer.pop(&_playerPosX, sizeof(_playerPosX));
     deserializer.pop(&_playerPosY, sizeof(_playerPosY));

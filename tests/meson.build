@@ -48,6 +48,19 @@ test('hashDb',
       unitHashDb,
       suite : [ 'unit' ])
 
+# Input-history strategies (None / Raw / shared-prefix Trie), the strict factory, and the underlying
+# SequenceTrie (sharing, ref-count GC, concurrent sharded free lists). Needs threads for the concurrency
+# test; the trie uses std::atomic/std::mutex (no numa, no OpenMP).
+unitInputHistory = executable('unit-inputHistory',
+      'unit/inputHistory.cpp',
+      cpp_args : testCommonCppArgs + jaffarCPPFlags,
+      include_directories : jaffarIncludes,
+      dependencies : [ jaffarCommonDependency, gtestDependency, dependency('threads') ])
+
+test('inputHistory',
+      unitInputHistory,
+      suite : [ 'unit' ])
+
 ###### Adding example validator test
 
 bash = find_program('bash')

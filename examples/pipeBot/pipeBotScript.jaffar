@@ -11,7 +11,7 @@
     },
     "Engine Configuration": {
         "Hash Database": {
-	    "Enabled": false,
+            "Enabled": false,
             "Max Store Count": 2,
             "Max Store Size (Mb)": 50000
         },
@@ -23,58 +23,98 @@
         "Emulator Name": "PipeBot",
         "Row Count": 8,
         "Col Count": 10,
-        "Up Hole Pieces":
-        [
-          { "Row": 0, "Col": 1 },
-          { "Row": 0, "Col": 2 },
-          { "Row": 0, "Col": 3 },
-          { "Row": 0, "Col": 5 },
-          { "Row": 0, "Col": 8 }
+        "Up Hole Pieces": [
+            {
+                "Row": 0,
+                "Col": 1
+            },
+            {
+                "Row": 0,
+                "Col": 2
+            },
+            {
+                "Row": 0,
+                "Col": 3
+            },
+            {
+                "Row": 0,
+                "Col": 5
+            },
+            {
+                "Row": 0,
+                "Col": 8
+            }
         ],
-        "Down Hole Pieces":
-        [
-          { "Row": 7, "Col": 1 },
-          { "Row": 7, "Col": 2 },
-          { "Row": 7, "Col": 3 },
-          { "Row": 7, "Col": 5 },
-          { "Row": 7, "Col": 8 }
+        "Down Hole Pieces": [
+            {
+                "Row": 7,
+                "Col": 1
+            },
+            {
+                "Row": 7,
+                "Col": 2
+            },
+            {
+                "Row": 7,
+                "Col": 3
+            },
+            {
+                "Row": 7,
+                "Col": 5
+            },
+            {
+                "Row": 7,
+                "Col": 8
+            }
         ],
-        "Left Hole Pieces":
-        [
-          { "Row": 2, "Col": 0 },
-          { "Row": 5, "Col": 0 }
+        "Left Hole Pieces": [
+            {
+                "Row": 2,
+                "Col": 0
+            },
+            {
+                "Row": 5,
+                "Col": 0
+            }
         ],
-        "Right Hole Pieces":
-        [
-          { "Row": 2, "Col": 9 },
-          { "Row": 5, "Col": 9 }
+        "Right Hole Pieces": [
+            {
+                "Row": 2,
+                "Col": 9
+            },
+            {
+                "Row": 5,
+                "Col": 9
+            }
         ],
         "Target Score": 0,
         "Next Piece Queue": [],
         "Initial Pieces": [
-          { "Type": 1, "Row": 1, "Col": 1 }
+            {
+                "Type": 1,
+                "Row": 1,
+                "Col": 1
+            }
         ]
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Frameskip":
-        {
-          "Rate": 0,
-          "Use Custom Input": false,
-          "Custom Input": "|..|........|"
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
         },
         "Hash Step Tolerance": 0,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Store Input History": {
-            "Enabled": true,
+            "Type": "Raw",
             "Max Size": 120
         },
         "Allowed Input Sets": [
             {
                 "Conditions": [],
-                "Inputs": [
-                ],
+                "Inputs": [],
                 "Stop Input Evaluation": true
             },
             {
@@ -86,28 +126,24 @@
             }
         ],
         "Test Candidate Inputs": false,
-        "Candidate Input Sets": [
-        ]
+        "Candidate Input Sets": []
     },
     "Game Configuration": {
         "Game Name": "PipeBot / PipeBot",
         "Frame Rate": 60.1,
         "Bypass Emulator State": false,
         "Last Input Step Reward": 0.0,
-        "Print Properties": [
-        ],
-        "Hash Properties": [
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
-            {   
+            {
                 "Label": 1001,
                 "Conditions": [
-                        {
+                    {
                         "Property": "End Is Met",
                         "Op": "==",
                         "Value": true
                     }
-
                 ],
                 "Satisfies": [],
                 "Actions": [
@@ -115,7 +151,7 @@
                         "Type": "Trigger Win"
                     }
                 ]
-	        }
+            }
         ]
     }
 }

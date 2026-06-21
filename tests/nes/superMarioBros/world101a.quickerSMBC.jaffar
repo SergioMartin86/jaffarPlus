@@ -1,7 +1,7 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 1000,
+        "Max Steps": 0,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -16,28 +16,29 @@
             "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 1000
+            "Max Size (Mb)": 10000
         }
     },
     "Emulator Configuration": {
         "Emulator Name": "QuickerSMBC",
         "Rom File Path": "../../../extern/quickerSMBC/tests/roms/Super Mario Bros. (JU) (PRG0) [!].nes",
         "Rom File SHA1": "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922",
-        "Initial State File Path": "world101a.quickerSMBC.state",
+        "Initial Sequence File Path": "world101a.quickerSMBC.initial.sol",
         "Disabled State Properties": [
             "PPU",
             "DST",
-            "STK"
-        ],
-        "Nametable Block Size": 2048
+            "STK",
+            "SPR",
+            "SCRP"
+        ]
     },
     "Runner Configuration": {
         "Bypass Hash Calculation": false,
-        "Hash Step Tolerance": 0,
+        "Hash Step Tolerance": 4,
         "Show Empty Input Slots": true,
         "Show Allowed Inputs": true,
         "Store Input History": {
-            "Enabled": true,
+            "Type": "Raw",
             "Max Size": 1000
         },
         "Allowed Input Sets": [
@@ -45,7 +46,15 @@
                 "Conditions": [],
                 "Inputs": [
                     "|..|........|",
-                    "|..|...R..B.|"
+                    "|..|..L.....|",
+                    "|..|...R....|",
+                    "|..|..L....A|",
+                    "|..|...R...A|",
+                    "|..|..L...B.|",
+                    "|..|...R..B.|",
+                    "|..|..L...BA|",
+                    "|..|...R..BA|",
+                    "|..|.D......|"
                 ],
                 "Stop Input Evaluation": false
             }
@@ -61,24 +70,8 @@
     "Game Configuration": {
         "Game Name": "NES / Super Mario Bros",
         "Frame Rate": 60.1,
-        "Last Input Step Reward": 0.0,
-        "Print Properties": [
-            "Mario Vel X1",
-            "Mario Vel Y1",
-            "Mario Vel Y2",
-            "Mario Walking Frame"
-        ],
-        "Hash Properties": [
-            "Mario Pos X1",
-            "Mario Pos X2",
-            "Mario Pos X3",
-            "Mario Pos Y1",
-            "Mario Pos Y2",
-            "Mario Vel X1",
-            "Mario Vel Y1",
-            "Mario Vel Y2",
-            "Mario Walking Frame"
-        ],
+        "Print Properties": [],
+        "Hash Properties": [],
         "Rules": [
             {
                 "Label": 1000,
@@ -97,7 +90,7 @@
                 "Label": 1999,
                 "Conditions": [
                     {
-                        "Property": "Mario Pos X",
+                        "Property": "Player Pos X",
                         "Op": ">",
                         "Value": 100
                     }
