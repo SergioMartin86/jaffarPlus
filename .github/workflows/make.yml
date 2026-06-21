@@ -54,9 +54,16 @@ jobs:
             # Doxygen does not create nested parent directories for OUTPUT_DIRECTORY, and this job
             # never runs `meson setup`, so create the output path first.
             mkdir -p build/doxygen
-            doxygen Doxyfile
-            echo "----- Doxygen warnings (should be empty) -----"
+            # WARN_AS_ERROR=FAIL_ON_WARNINGS makes doxygen exit non-zero on any warning; tolerate that
+            # here so the warning log is still printed, then fail explicitly below.
+            doxygen Doxyfile || true
+            echo "----- Doxygen warnings (must be empty) -----"
             cat build/doxygen/doxygen-warnings.log || true
+            if [ -s build/doxygen/doxygen-warnings.log ]; then
+              echo "FAIL: Doxygen produced warnings (see above). The API reference must build cleanly."
+              exit 1
+            fi
+            echo "OK: Doxygen produced no warnings."
     - name: Uploading API reference
       uses: actions/upload-artifact@v4
       with:

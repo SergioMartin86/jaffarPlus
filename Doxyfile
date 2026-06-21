@@ -64,7 +64,9 @@ WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = YES
 WARN_IF_DOC_ERROR      = YES
 WARN_NO_PARAMDOC       = NO
-WARN_AS_ERROR          = NO
+# Fail the build on any warning: FAIL_ON_WARNINGS reports every warning, then exits non-zero. The CI job
+# also gates on the warning log being empty (see .github/workflows/make.yml) so the warnings are printed.
+WARN_AS_ERROR          = FAIL_ON_WARNINGS
 WARN_LOGFILE           = build/doxygen/doxygen-warnings.log
 
 #---------------------------------------------------------------------------
