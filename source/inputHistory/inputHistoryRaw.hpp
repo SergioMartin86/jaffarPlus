@@ -18,9 +18,12 @@
 namespace jaffarPlus
 {
 
+/// @brief Stores the full bit-packed input sequence in every state (JaffarPlus's classic behavior):
+/// self-contained per state, but the largest per-state footprint. Selected with `{"Type": "Raw", ...}`.
 class InputHistoryRaw final : public InputHistory
 {
 public:
+  /// @brief Constructs the strategy and sizes the per-state bit-packed buffer.
   /// @param maxInputIndex One past the highest input index (sets the per-step bit width).
   /// @param maxSize       Maximum number of steps recorded; longer solutions are truncated.
   InputHistoryRaw(const uint32_t maxInputIndex, const uint32_t maxSize) : _maxSize(maxSize)
@@ -78,10 +81,12 @@ public:
   void captureColdToFull(const void* cold, void* full) const override { memcpy(full, cold, getColdSize()); }
 
 private:
+  /// @brief Writes the input index for @p step into the bit-packed buffer.
   __INLINE__ void setInput(const size_t step, const InputSet::inputIndex_t input)
   {
     jaffarCommon::bitwise::bitcopy(_buffer.data(), _buffer.size(), step, &input, sizeof(InputSet::inputIndex_t), 0, 1, _bits);
   }
+  /// @brief Reads the input index recorded for @p step from the bit-packed buffer.
   __INLINE__ InputSet::inputIndex_t getInput(const size_t step) const
   {
     InputSet::inputIndex_t idx = 0;
@@ -89,11 +94,11 @@ private:
     return idx;
   }
 
-  const uint32_t                  _maxSize;
-  size_t                          _bits  = 0;
-  uint32_t                        _count = 0;
-  std::vector<uint8_t>            _buffer;
-  static inline std::atomic<bool> _truncationWarned = false;
+  const uint32_t                  _maxSize;                  ///< Maximum number of steps recorded.
+  size_t                          _bits  = 0;                ///< Bits used to encode one input index.
+  uint32_t                        _count = 0;                ///< Number of inputs applied so far.
+  std::vector<uint8_t>            _buffer;                   ///< Bit-packed input sequence.
+  static inline std::atomic<bool> _truncationWarned = false; ///< Set once after the first over-Max-Size push.
 };
 
 } // namespace jaffarPlus

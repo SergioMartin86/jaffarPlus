@@ -30,9 +30,16 @@
 namespace jaffarPlus
 {
 
+/**
+ * @brief Abstract strategy for remembering the input path that produced each search state.
+ *
+ * Concrete strategies (none / raw bit-packed / shared-prefix trie) implement the per-runner cursor ops
+ * and the manager ops on stored cold-slot bytes; see the file header and inputHistoryFactory.hpp.
+ */
 class InputHistory
 {
 public:
+  /// @brief Virtual destructor for the strategy interface.
   virtual ~InputHistory() = default;
 
   // ---- per-runner cursor ---------------------------------------------------------------------------

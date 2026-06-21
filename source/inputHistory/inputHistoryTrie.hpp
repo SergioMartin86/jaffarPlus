@@ -25,15 +25,19 @@ namespace jaffarPlus
 /// @brief The shared trie type backing every InputHistoryTrie instance of one search.
 using SequenceInputTrie = jaffarCommon::sequenceTrie::SequenceTrie<InputSet::inputIndex_t>;
 
+/// @brief Stores each state's path as one node id into a shared, reference-counted prefix trie; sibling
+/// states share their common prefix, so per-state cold storage is just a node id + count. `{"Type":"Trie"}`.
 class InputHistoryTrie final : public InputHistory
 {
 public:
-  using nodeId_t = SequenceInputTrie::nodeId_t;
+  using nodeId_t = SequenceInputTrie::nodeId_t; ///< Trie node identifier type.
 
-  /// @param trie         The shared trie (created once per search; outlives all instances).
-  /// @param shardId      This runner's contention-free free-list shard (its worker thread id).
-  /// @param managerShard A shard reserved for StateDb/driver-thread operations (captureColdToFull).
-  /// @param maxInputIndex / maxSize  Encoding for the bit-packed snapshot (full) form.
+  /// @brief Binds this instance to the shared trie and sizes the bit-packed snapshot (full) form.
+  /// @param trie          The shared trie (created once per search; outlives all instances).
+  /// @param shardId       This runner's contention-free free-list shard (its worker thread id).
+  /// @param managerShard  A shard reserved for StateDb/driver-thread operations (captureColdToFull).
+  /// @param maxInputIndex One past the highest input index (sets the snapshot's per-step bit width).
+  /// @param maxSize       Maximum steps held in the reconstructed snapshot (full) form.
   InputHistoryTrie(SequenceInputTrie* trie, const uint32_t shardId, const uint32_t managerShard, const uint32_t maxInputIndex, const uint32_t maxSize)
       : _trie(trie), _shardId(shardId), _managerShard(managerShard), _maxSize(maxSize)
   {
@@ -131,8 +135,9 @@ public:
   }
 
 private:
-  // Reconstruct `node`'s path into a bit-packed buffer. When `pin`, briefly hold a reference so a worker
-  // freeing the source slot cannot free the node mid-walk (best/worst snapshot runs off the search threads).
+  /// @brief Reconstructs @p node's path into a bit-packed @p buffer. When @p pin, briefly holds a
+  /// reference so a worker freeing the source slot cannot free the node mid-walk (best/worst snapshots
+  /// run off the search threads).
   void reconstructIntoBuffer(nodeId_t node, uint8_t* buffer, bool pin = false) const
   {
     std::memset(buffer, 0, _bitpackBytes);
@@ -144,6 +149,8 @@ private:
     for (size_t i = 0; i < seq.size() && i < _maxSize; i++) jaffarCommon::bitwise::bitcopy(buffer, _bitpackBytes, i, &seq[i], sizeof(InputSet::inputIndex_t), 0, 1, _bits);
   }
 
+  /// @brief Rebuilds the cursor's owned trie node by re-extending the path stored in a bit-packed @p buffer
+  /// (so a restored runner, e.g. the player, can keep extending the path).
   void rebuildNodeFromBuffer(const uint8_t* buffer)
   {
     if (_ownNode) _trie->release(_node, _shardId);
@@ -161,16 +168,16 @@ private:
     }
   }
 
-  SequenceInputTrie* const     _trie;
-  const uint32_t               _shardId;
-  const uint32_t               _managerShard;
-  const uint32_t               _maxSize;
-  size_t                       _bits         = 0;
-  size_t                       _bitpackBytes = 0;
-  nodeId_t                     _node         = SequenceInputTrie::ROOT;
-  bool                         _ownNode      = false;
-  uint32_t                     _count        = 0;
-  mutable std::vector<uint8_t> _scratch; // bit-pack scratch for the full (snapshot) form
+  SequenceInputTrie* const     _trie;                                   ///< The shared trie backing this instance.
+  const uint32_t               _shardId;                                ///< This runner's free-list shard.
+  const uint32_t               _managerShard;                           ///< Shard for off-thread manager ops.
+  const uint32_t               _maxSize;                                ///< Max steps in the snapshot (full) form.
+  size_t                       _bits         = 0;                       ///< Bits per input index in the snapshot.
+  size_t                       _bitpackBytes = 0;                       ///< Size of the bit-packed snapshot buffer.
+  nodeId_t                     _node         = SequenceInputTrie::ROOT; ///< Cursor's current trie node.
+  bool                         _ownNode      = false;                   ///< Whether this cursor holds a reference to _node.
+  uint32_t                     _count        = 0;                       ///< Number of inputs applied so far.
+  mutable std::vector<uint8_t> _scratch;                                ///< Bit-pack scratch for the full (snapshot) form.
 };
 
 } // namespace jaffarPlus
