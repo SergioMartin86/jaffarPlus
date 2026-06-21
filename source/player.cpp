@@ -173,7 +173,7 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
   // the live state -- harmless here since the interactive loop re-loads per step regardless.
   if (dumpRamPath.empty() == false)
   {
-    const auto lram = r.getGame()->getEmulator()->getProperty("LRAM");
+    const auto  lram = r.getGame()->getEmulator()->getProperty("LRAM");
     std::string dump;
     dump.reserve((size_t)(sequenceLength + 1) * lram.size);
     for (ssize_t i = 0; i <= sequenceLength; i++)
@@ -181,8 +181,7 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       p.loadStepData(i);
       dump.append((const char*)lram.pointer, lram.size);
     }
-    if (jaffarCommon::file::saveStringToFile(dump, dumpRamPath.c_str()) == false)
-      JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step RAM dump to: %s\n", dumpRamPath.c_str());
+    if (jaffarCommon::file::saveStringToFile(dump, dumpRamPath.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step RAM dump to: %s\n", dumpRamPath.c_str());
   }
 
   // Interactive section

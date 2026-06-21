@@ -212,15 +212,15 @@ public:
     // affects which states are explored, only the work distribution.
     if (_baseStateBatch == 0)
     {
-      const size_t       stateSize = r.getStateSize();
-      std::vector<char>  scratch(stateSize);
+      const size_t      stateSize = r.getStateSize();
+      std::vector<char> scratch(stateSize);
       {
         jaffarCommon::serializer::Contiguous s(scratch.data(), stateSize);
         r.serializeState(s);
       }
 
-      const auto allowedInputs = r.getAllowedInputs();
-      const InputSet::inputIndex_t calInput = allowedInputs.empty() ? (InputSet::inputIndex_t)0 : allowedInputs[0];
+      const auto                   allowedInputs = r.getAllowedInputs();
+      const InputSet::inputIndex_t calInput      = allowedInputs.empty() ? (InputSet::inputIndex_t)0 : allowedInputs[0];
 
       const size_t CAL_FRAMES = 200;
       const auto   tCal0      = jaffarCommon::timing::now();
