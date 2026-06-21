@@ -127,11 +127,15 @@ public:
   void captureColdToFull(const void* cold, void* full) const override
   {
     // Cold = [node id][count]; full = [bit-packed history][count]. Reconstruct the node's path into the
-    // full buffer so the snapshot is self-contained (no later reference into the trie).
-    const nodeId_t node  = *reinterpret_cast<const nodeId_t*>(cold);
-    const uint32_t count = *reinterpret_cast<const uint32_t*>(reinterpret_cast<const uint8_t*>(cold) + sizeof(nodeId_t));
+    // full buffer so the snapshot is self-contained (no later reference into the trie). Use memcpy for the
+    // node id and count: the count lives at offset _bitpackBytes in `full`, which is not 4-byte aligned, so
+    // a direct uint32_t store there would be undefined (misaligned) behavior.
+    nodeId_t node;
+    uint32_t count;
+    std::memcpy(&node, cold, sizeof(node));
+    std::memcpy(&count, reinterpret_cast<const uint8_t*>(cold) + sizeof(nodeId_t), sizeof(count));
     reconstructIntoBuffer(node, reinterpret_cast<uint8_t*>(full), /*pin=*/true);
-    *reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(full) + _bitpackBytes) = count;
+    std::memcpy(reinterpret_cast<uint8_t*>(full) + _bitpackBytes, &count, sizeof(count));
   }
 
 private:
