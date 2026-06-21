@@ -7,6 +7,7 @@
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/base.hpp>
+#include <cstring>
 #include <mutex>
 
 namespace jaffarPlus
@@ -25,6 +26,13 @@ public:
   {
     // Getting initial state file from the configuration
     _initialStateFilePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path");
+
+    // Getting optional initial RAM-data file. When set, its bytes overwrite the 2KB work RAM after
+    // initialization, letting a run start from an arbitrary RAM image (e.g. another emulator's work
+    // RAM, for cross-validation with aligned starting states). Optional: defaults to none.
+    _initialRAMDataFilePath = _emulatorConfigRemaining.contains("Initial RAM Data File Path")
+                                  ? jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial RAM Data File Path")
+                                  : "";
 
     // The ROM file path/SHA1 are only used by the player build, but they are always popped here so the
     // strict-key check below accounts for them regardless of build configuration.
@@ -79,18 +87,74 @@ public:
       bool        success = jaffarCommon::file::loadStringFromFile(initialState, _initialStateFilePath);
       if (success == false) JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from initial state file: %s\n", _initialStateFilePath.c_str());
 
-      // Deserializing initial state into the emulator
+      // Deserializing initial state into the emulator. Initial-state (.state) files hold only the core
+      // engine state, so restore that directly (NOT the wrapper's deserializeState, which also expects
+      // the appended lag-frame flag) and reset the flag -- a clean starting state is never mid-lag. This
+      // keeps existing .state files loadable while the flag still travels with search/state-DB states.
       jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
-      deserializeState(d);
+      _quickerSMBC->deserializeState(d);
+      _owedLagFrame = false;
+    }
+
+    // Pushing initial RAM data, if provided (overwrites the 2KB work RAM after state load)
+    if (_initialRAMDataFilePath.empty() == false)
+    {
+      std::string initialRAMDataString;
+      if (jaffarCommon::file::loadStringFromFile(initialRAMDataString, _initialRAMDataFilePath) == false)
+        JAFFAR_THROW_LOGIC("[ERROR] Could not find or read from RAM Data file: %s\n", _initialRAMDataFilePath.c_str());
+
+      memcpy(_quickerSMBC->getRamPointer(), initialRAMDataString.data(), 0x800);
     }
   }
 
   // State advancing function
-  void advanceStateImpl(const jaffar::input_t& input) override { _quickerSMBC->advanceState(input); }
+  void advanceStateImpl(const jaffar::input_t& input) override
+  {
+    // SMB lag-frame fidelity: on the real NES, every area load "loses" one frame -- the load runs with
+    // the NMI disabled while the screen is rebuilt, so that frame the game state is frozen (the NMI's
+    // FrameCounter increment and pseudo-random LSFR churn don't happen). The decompiled core collapses
+    // the load into a single frame, so it has no equivalent lost frame; the result is that after every
+    // level transition its FrameCounter and LSFR run one step ahead of the NES. The player never reads
+    // those, so player physics stay in sync, but FrameCounter parity gates enemy movement (e.g. the
+    // every-other-frame piranha-plant rise/fall) and the LSFR drives enemy behaviour, so long runs
+    // eventually desync. Reproduce the lost frame: detect the area-load (GameEngineSubroutine drops
+    // non-zero->0 with the screen disabled in game mode) and, on the following step, hold the state
+    // (consume the input without advancing) -- a frozen frame matching the NES's, which re-aligns
+    // FrameCounter, the LSFR and hence enemy timing.
+    if (_owedLagFrame)
+    {
+      _owedLagFrame = false;
+      return; // frozen NES lag frame: consume this (null transition) input without advancing
+    }
 
-  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override { _quickerSMBC->serializeState(serializer); };
+    uint8_t* ram     = _quickerSMBC->getRamPointer();
+    uint8_t  prevGES = ram[0x000E]; // GameEngineSubroutine before the frame
 
-  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override { _quickerSMBC->deserializeState(deserializer); };
+    _quickerSMBC->advanceState(input);
+
+    _owedLagFrame = ram[0x0770] == 1     // OperMode == game mode
+                 && ram[0x0772] == 1     // OperMode_Task == area-load
+                 && ram[0x000E] == 0     // GameEngineSubroutine now idle
+                 && ram[0x0774] == 1     // DisableScreenFlag set
+                 && prevGES != 0;        // ...and it just dropped from non-zero (load start)
+  }
+
+  __INLINE__ void serializeState(jaffarCommon::serializer::Base& serializer) const override
+  {
+    _quickerSMBC->serializeState(serializer);
+    // The pending-lag-frame flag (see advanceStateImpl) spans two steps, so it must travel with the
+    // serialized state for a state-saving best-first search to reproduce the held lag frame correctly
+    // after restoring a just-entered-area state. It is appended after the core engine state so that
+    // legacy initial-state (.state) files -- which hold only the engine state -- remain loadable via
+    // the engine-only path in initializeImpl().
+    serializer.push(&_owedLagFrame, sizeof(_owedLagFrame));
+  };
+
+  __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer) override
+  {
+    _quickerSMBC->deserializeState(deserializer);
+    deserializer.pop(&_owedLagFrame, sizeof(_owedLagFrame));
+  };
 
   __INLINE__ void printInfo() const override {}
 
@@ -144,6 +208,12 @@ private:
   std::string _romFileSHA1;
 
   std::string _initialStateFilePath;
+  std::string _initialRAMDataFilePath;
+
+  // True when the previous step started an area load, so the next step must reproduce the NES's frozen
+  // lag frame (see advanceStateImpl). Part of the serialized state (serializeState) so it survives the
+  // state save/restore a best-first search performs.
+  bool _owedLagFrame = false;
 };
 
 } // namespace emulator
