@@ -239,7 +239,7 @@ public:
       if (b < 1) b = 1;
       if (b > BASE_STATE_BATCH_MAX) b = BASE_STATE_BATCH_MAX;
       _baseStateBatch = b;
-      jaffarCommon::logger::log("[J+] Auto-tuned base-state batch size: %lu (measured %.1f us/state)\n", _baseStateBatch, (double)perStateNs / 1000.0);
+      jaffarCommon::logger::log("[J+] Auto-tuned base-state batch size:            %lu (measured %.1f us/state)\n", _baseStateBatch, (double)perStateNs / 1000.0);
     }
     if (_baseStateBatch < 1) _baseStateBatch = 1;
 
@@ -501,72 +501,72 @@ public:
   void printInfo()
   {
     // Printing information
-    jaffarCommon::logger::log("[J+] Thread Count / NUMA Domains:                      %3d / %d\n", _threadCount, _numaCount);
+    jaffarCommon::logger::log("[J+] Thread Count / NUMA Domains:                 %3d / %d\n", _threadCount, _numaCount);
 #ifdef JAFFARPLUS_DETAILED_PROFILING
-    jaffarCommon::logger::log("[J+] Elapsed Time (Step/Total):                  %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_currentStepTime),
+    jaffarCommon::logger::log("[J+] Elapsed Time (Step/Total):                   %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_currentStepTime),
                               100.0 * ((double)(_subTotalAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_totalRunningTime),
                               100.0 * ((double)_subTotalAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Runner State Avance (Step/Total):        %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_runnerStateAdvanceAverageTime),
+    jaffarCommon::logger::log("[J+]  + Runner State Avance (Step/Total):         %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_runnerStateAdvanceAverageTime),
                               100.0 * ((double)(_runnerStateAdvanceAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_runnerStateAdvanceAverageCumulativeTime),
                               100.0 * ((double)_runnerStateAdvanceAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Runner State Load (Step/Total):          %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_runnerStateLoadAverageTime),
+    jaffarCommon::logger::log("[J+]  + Runner State Load (Step/Total):           %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_runnerStateLoadAverageTime),
                               100.0 * ((double)(_runnerStateLoadAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_runnerStateLoadAverageCumulativeTime),
                               100.0 * ((double)_runnerStateLoadAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Runner State Save (Step/Total):          %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_runnerStateSaveAverageTime),
+    jaffarCommon::logger::log("[J+]  + Runner State Save (Step/Total):           %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_runnerStateSaveAverageTime),
                               100.0 * ((double)(_runnerStateSaveAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_runnerStateSaveAverageCumulativeTime),
                               100.0 * ((double)_runnerStateSaveAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Hash Calculation (Step/Total):           %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_calculateHashAverageTime),
+    jaffarCommon::logger::log("[J+]  + Hash Calculation (Step/Total):            %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_calculateHashAverageTime),
                               100.0 * ((double)(_calculateHashAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_calculateHashAverageCumulativeTime),
                               100.0 * ((double)_calculateHashAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Hash Checking (Step/Total):              %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_checkHashAverageTime),
+    jaffarCommon::logger::log("[J+]  + Hash Checking (Step/Total):               %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_checkHashAverageTime),
                               100.0 * ((double)(_checkHashAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_checkHashAverageCumulativeTime),
                               100.0 * ((double)_checkHashAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Rule Checking (Step/Total):              %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_ruleCheckingAverageTime),
+    jaffarCommon::logger::log("[J+]  + Rule Checking (Step/Total):               %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_ruleCheckingAverageTime),
                               100.0 * ((double)(_ruleCheckingAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_ruleCheckingAverageCumulativeTime),
                               100.0 * ((double)_ruleCheckingAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Get Free State (Step/Total):             %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_getFreeStateAverageTime),
+    jaffarCommon::logger::log("[J+]  + Get Free State (Step/Total):              %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_getFreeStateAverageTime),
                               100.0 * ((double)(_getFreeStateAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_getFreeStateAverageCumulativeTime),
                               100.0 * ((double)_getFreeStateAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Return Free State (Step/Total):          %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_returnFreeStateAverageTime),
+    jaffarCommon::logger::log("[J+]  + Return Free State (Step/Total):           %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_returnFreeStateAverageTime),
                               100.0 * ((double)(_returnFreeStateAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_returnFreeStateAverageCumulativeTime),
                               100.0 * ((double)_returnFreeStateAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Calculate Reward (Step/Total):           %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_calculateRewardAverageTime),
+    jaffarCommon::logger::log("[J+]  + Calculate Reward (Step/Total):            %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_calculateRewardAverageTime),
                               100.0 * ((double)(_calculateRewardAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_calculateRewardAverageCumulativeTime),
                               100.0 * ((double)_calculateRewardAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Popping Base State (Step/Total):         %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_popBaseStateDbAverageTime),
+    jaffarCommon::logger::log("[J+]  + Popping Base State (Step/Total):          %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_popBaseStateDbAverageTime),
                               100.0 * ((double)(_popBaseStateDbAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_popBaseStateDbAverageCumulativeTime),
                               100.0 * ((double)_popBaseStateDbAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Get Allowed Inputs (Step/Total):         %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_getAllowedInputsAverageTime),
+    jaffarCommon::logger::log("[J+]  + Get Allowed Inputs (Step/Total):          %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_getAllowedInputsAverageTime),
                               100.0 * ((double)(_getAllowedInputsAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_getAllowedInputsAverageCumulativeTime),
                               100.0 * ((double)_getAllowedInputsAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Get Candidate Inputs (Step/Total):       %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_getCandidateInputsAverageTime),
+    jaffarCommon::logger::log("[J+]  + Get Candidate Inputs (Step/Total):        %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_getCandidateInputsAverageTime),
                               100.0 * ((double)(_getCandidateInputsAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_getCandidateInputsAverageCumulativeTime),
                               100.0 * ((double)_getCandidateInputsAverageCumulativeTime) / (double)(_totalRunningTime));
 #else
     // Detailed per-operation profiling is compiled out (default). Only the coarse step wall time and
     // the serially-measured DB-advance stages below are available; build -DdetailedProfiling=true for
     // the full per-operation breakdown.
-    jaffarCommon::logger::log("[J+] Elapsed Time (Step/Total):                  %9.3fs / %9.3fs   (per-operation breakdown disabled; build -DdetailedProfiling=true)\n",
+    jaffarCommon::logger::log("[J+] Elapsed Time (Step/Total):                   %9.3fs / %9.3fs   (per-operation breakdown disabled; build -DdetailedProfiling=true)\n",
                               1.0e-6 * (double)(_currentStepTime), 1.0e-6 * (double)(_totalRunningTime));
 #endif
 
-    jaffarCommon::logger::log("[J+]  + Advance Hash Db (Step/Total):            %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_advanceHashDbAverageTime),
+    jaffarCommon::logger::log("[J+]  + Advance Hash Db (Step/Total):             %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_advanceHashDbAverageTime),
                               100.0 * ((double)(_advanceHashDbAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_advanceHashDbAverageCumulativeTime),
                               100.0 * ((double)_advanceHashDbAverageCumulativeTime) / (double)(_totalRunningTime));
 
-    jaffarCommon::logger::log("[J+]  + Advance State Db (Step/Total):           %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_advanceStateDbAverageTime),
+    jaffarCommon::logger::log("[J+]  + Advance State Db (Step/Total):            %9.3fs (%7.3f%%) / %9.3fs (%3.3f%%)\n", 1.0e-6 * (double)(_advanceStateDbAverageTime),
                               100.0 * ((double)(_advanceStateDbAverageTime) / (double)(_currentStepTime)), 1.0e-6 * (double)(_advanceStateDbAverageCumulativeTime),
                               100.0 * ((double)_advanceStateDbAverageCumulativeTime) / (double)(_totalRunningTime));
 
@@ -609,16 +609,16 @@ public:
     }
 
     jaffarCommon::logger::log("[J+] Manually Saved Solution:\n");
-    jaffarCommon::logger::log("[J+]   + Path:         '%s'\n", _manualSaveSolution.path.c_str());
-    jaffarCommon::logger::log("[J+]   + Reward:        %f\n", _manualSaveSolution.reward);
-    jaffarCommon::logger::log("[J+]   + Last Rule Idx: %ld (Active: %ld, Path: '%s')\n", _manualSaveSolution.lastRuleIdx, _manualSaveSolutionActiveLastRuleId,
-                              _manualSaveSolutionLastPath.c_str());
+    jaffarCommon::logger::log("[J+]   + Path:                                    '%s'\n", _manualSaveSolution.path.c_str());
+    jaffarCommon::logger::log("[J+]   + Reward:                                  %f\n", _manualSaveSolution.reward);
+    jaffarCommon::logger::log("[J+]   + Last Rule Idx:                           %ld (Active: %ld, Path: '%s')\n", _manualSaveSolution.lastRuleIdx,
+                              _manualSaveSolutionActiveLastRuleId, _manualSaveSolutionLastPath.c_str());
 
     // Printing candidate inpts
     jaffarCommon::logger::log("[J+] Candidate Inputs:\n");
     for (const auto& entry : _candidateInputsDetected)
     {
-      jaffarCommon::logger::log("[J+]  + Hash: %s\n", jaffarCommon::hash::hashToString(entry.first).c_str());
+      jaffarCommon::logger::log("[J+]  + Hash:                                     %s\n", jaffarCommon::hash::hashToString(entry.first).c_str());
       for (const auto input : entry.second) jaffarCommon::logger::log("[J+]    + %3lu %s\n", input, _runners[0]->getInputStringFromIndex(input).c_str());
     }
   }

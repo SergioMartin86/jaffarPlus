@@ -293,17 +293,17 @@ public:
     for (const auto& p : _propertyPrintVector) maximumNameSize = std::max(maximumNameSize, p->getName().size());
 
     // Printing game state
-    jaffarCommon::logger::log("[J+]  + Game State Type: ");
+    jaffarCommon::logger::log("[J+]  + Game State Type:                          ");
     if (_stateType == stateType_t::normal) jaffarCommon::logger::log("Normal");
     if (_stateType == stateType_t::win) jaffarCommon::logger::log("Win");
     if (_stateType == stateType_t::fail) jaffarCommon::logger::log("Fail");
     jaffarCommon::logger::log("\n");
 
     // Printing game state
-    jaffarCommon::logger::log("[J+]  + Game State Reward: %f\n", _reward);
+    jaffarCommon::logger::log("[J+]  + Game State Reward:                        %f\n", _reward);
 
     // Printing rule status
-    jaffarCommon::logger::log("[J+]  + Rule Status: ");
+    jaffarCommon::logger::log("[J+]  + Rule Status:                              ");
     for (size_t i = 0; i < _rules.size(); i++) jaffarCommon::logger::log("%d", jaffarCommon::bitwise::getBitValue(_rulesStatus.data(), i) ? 1 : 0);
     jaffarCommon::logger::log("\n");
 
