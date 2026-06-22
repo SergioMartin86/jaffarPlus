@@ -317,8 +317,7 @@ private:
     hashEngine.Update(*_playerPosX1);
     hashEngine.Update(*_playerPosX2);
     hashEngine.Update(*_playerPosX3);
-    hashEngine.Update(*_playerPosY2);
-    hashEngine.Update(*_playerPosY2);
+    hashEngine.Update(*_playerPosY2); // (previously hashed twice; the redundant duplicate was removed)
     hashEngine.Update(*_playerMomentumX);
     hashEngine.Update(*_playerFacingDirection);
     hashEngine.Update(*_playerMovingDirection);
