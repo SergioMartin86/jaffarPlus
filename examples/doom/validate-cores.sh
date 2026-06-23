@@ -7,9 +7,8 @@
 # quicker core is gameplay-faithful to base for this run.
 #
 # Usage: ./validate-cores.sh <config.jaffar> <solution.sol>
-#   NOTE: use a config whose "State Size" is large enough for the *base* core,
-#   which is untrimmed (~8.4 KB on doom1.e1m1.reduced). The provided
-#   doom1.e1m1.reduced.render.jaffar (1 MB) works for both cores.
+#   Use the ordinary search config -- the base player auto-sizes its state buffer
+#   on rendering builds, so no special large-State-Size config is needed.
 #
 # Requires: build-dsda (new core) and build-dsda-base (-DdoomCore=base) built.
 set -euo pipefail
