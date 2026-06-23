@@ -31,7 +31,7 @@
                 "Expected SHA1": "D8604FA2A4154F80C3C2730DCB0836BB1D14323C"
             },
             {
-                "File Path": "../../extern/quickerDSDA/tests/wads/doom1.e1m1.reduced.wad",
+                "File Path": "doom1.e1m1.reduced.wad",
                 "Expected SHA1": "FB588657F42D9B14A57768A70CA55922D8EDD71E"
             }
         ],

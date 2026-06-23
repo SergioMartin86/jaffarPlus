@@ -94,6 +94,12 @@ public:
     // Excluding requested state blocks from serialization (shrinks the per-state size for the search)
     for (const auto& property : _disabledStateProperties) _quickerSMBC->disableStateBlock(property);
 
+    // Owe the NES power-on warmup frames so the timer phase matches the real console (see _owedBootFrames).
+    // Default matches the NES SMB reset (2-VBlank wait + RAM clear); overridable for verification.
+    _owedBootFrames           = 5;
+    const char* bootWarmupEnv = std::getenv("JAFFAR_SMBC_BOOT_WARMUP");
+    if (bootWarmupEnv != nullptr) _owedBootFrames = std::atoi(bootWarmupEnv);
+
     // If an initial input sequence is defined, replay it from reset to reach the starting state. This
     // recreates a starting state from a reproducible boot-derived sequence rather than a binary .state.
     if (_initialSequenceFilePath.empty() == false)
@@ -121,7 +127,8 @@ public:
       // keeps existing .state files loadable while the flag still travels with search/state-DB states.
       jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
       _quickerSMBC->deserializeState(d);
-      _owedLagFrame = false;
+      _owedLagFrame   = false;
+      _owedBootFrames = 0; // a loaded state is post-boot; never mid-warmup
     }
 
     // Pushing initial RAM data, if provided (overwrites the 2KB work RAM after state load)
@@ -149,6 +156,14 @@ public:
     // non-zero->0 with the screen disabled in game mode) and, on the following step, hold the state
     // (consume the input without advancing) -- a frozen frame matching the NES's, which re-aligns
     // FrameCounter, the LSFR and hence enemy timing.
+    //
+    // Boot warmup: hold the first few frames after reset (NES PPU warmup, see _owedBootFrames) so the
+    // interval-timer phase matches the console before any gameplay runs.
+    if (_owedBootFrames > 0)
+    {
+      _owedBootFrames--;
+      return; // frozen NES warmup frame: consume input without advancing
+    }
     if (_owedLagFrame)
     {
       _owedLagFrame = false;
@@ -244,6 +259,15 @@ private:
   // lag frame (see advanceStateImpl). Part of the serialized state (serializeState) so it survives the
   // state save/restore a best-first search performs.
   bool _owedLagFrame = false;
+
+  // Frames of NES power-on warmup still owed (see advanceStateImpl). On the real NES the reset routine
+  // spends several frames before the main loop runs (PPU "wait for 2 VBlanks" + RAM clear), during which
+  // FrameCounter and the interval-timer counter do not advance. The decompiled core runs its init
+  // (code(0)) instantly inside loadROM, so without compensation its IntervalTimerControl phase ends up
+  // ahead of the NES -- which shifts the level-load ScreenTimer wait and desyncs a replayed NES movie
+  // (e.g. full.sol). Holding this many frames at boot re-aligns the timer phase. Boot-only (always 0
+  // by the time any search/segment state is reached), so it is not serialized.
+  int _owedBootFrames = 0;
 };
 
 } // namespace emulator

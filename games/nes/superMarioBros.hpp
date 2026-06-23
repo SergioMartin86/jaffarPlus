@@ -67,6 +67,10 @@ private:
     registerGameProperty("Player Moving Direction", &_lowMem[0x0045], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Facing Direction", &_lowMem[0x0033], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Floating Mode", &_lowMem[0x001D], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    // Swimming flag (0x0704): nonzero only in water (verified land=0 / swim=1). Used by allowed-input
+    // conditions to prune water-ineffective inputs (B/run and Down are no-ops in water) and to still
+    // offer A (the swim stroke) while sinking.
+    registerGameProperty("Swimming Flag", &_lowMem[0x0704], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Walking Mode", &_lowMem[0x0702], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Walking Delay", &_lowMem[0x070C], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Player Walking Frame", &_lowMem[0x070D], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -287,8 +291,8 @@ private:
       hashEngine.Update(&_lowMem[start], diff);
     }
 
-    hashEngine.Update(*_animationTimer);
-    hashEngine.Update(*_jumpSwimTimer);
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x0781 PlayerAnimTimer: reads only feed animation-frame + fireball-throw timing, never movement): hashEngine.Update(*_animationTimer);
+    hashEngine.Update((uint8_t)(*_jumpSwimTimer != 0)); // [HASH-RESTRICT] boolean: only the nonzero check (5566) is a gameplay decision; timer is nonzero only in (forced) water
     hashEngine.Update(*_runningTimer);
     hashEngine.Update(*_blockBounceTimer);
     hashEngine.Update(*_sideCollisionTimer);
@@ -312,20 +316,19 @@ private:
 
     // Adding fixed hash elements
     hashEngine.Update(*_screenPosX1);
-    hashEngine.Update(*_playerAnimation);
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x0001 animation): hashEngine.Update(*_playerAnimation);
     hashEngine.Update(*_playerState);
     hashEngine.Update(*_playerPosX1);
     hashEngine.Update(*_playerPosX2);
     hashEngine.Update(*_playerPosX3);
-    hashEngine.Update(*_playerPosY2);
-    hashEngine.Update(*_playerPosY2);
+    hashEngine.Update(*_playerPosY2); // (previously hashed twice; the redundant duplicate was removed)
     hashEngine.Update(*_playerMomentumX);
     hashEngine.Update(*_playerFacingDirection);
     hashEngine.Update(*_playerMovingDirection);
     hashEngine.Update(*_playerFloatingMode);
-    hashEngine.Update(*_playerWalkingMode);
-    hashEngine.Update(*_playerWalkingDelay);
-    hashEngine.Update(*_playerWalkingFrame);
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x0702 walk-anim): hashEngine.Update(*_playerWalkingMode);
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x070C walk-anim): hashEngine.Update(*_playerWalkingDelay);
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x070D walk-anim): hashEngine.Update(*_playerWalkingFrame);
     hashEngine.Update(*_playerMaxVelLeft);
     hashEngine.Update(*_playerMaxVelRight);
     hashEngine.Update(*_playerVelX1);
@@ -364,7 +367,7 @@ private:
     // hashEngine.Update(*_enemyCollision);
     hashEngine.Update(*_hitDetectionFlag);
 
-    hashEngine.Update(*_animationTimer);
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x0781 PlayerAnimTimer: reads only feed animation-frame + fireball-throw timing, never movement): hashEngine.Update(*_animationTimer);
     hashEngine.Update(*_jumpSwimTimer);
     hashEngine.Update(*_runningTimer);
     hashEngine.Update(*_blockBounceTimer);
@@ -387,31 +390,31 @@ private:
     hashEngine.Update(*_warpZoneControl);
     hashEngine.Update(*_nextScreen);
 
-    hashEngine.Update(_lowMem[0x0000]); // 	Temp/various uses. Is used in vertical physics for gravity acceleration (value copied from 0x0709).
+    // [HASH-RESTRICT safe-only] dropped (derived 0x0000 = copy of gravity 0x0709): hashEngine.Update(_lowMem[0x0000]); // 	Temp/various uses. Is used in vertical physics for gravity acceleration (value copied from 0x0709).
     hashEngine.Update(_lowMem[0x0002]); // 	Temp/various. Something to do with player y (but it skips to 0 every x frames, even when you dont move)
     hashEngine.Update(_lowMem[0x0003]); // 	Player's direction (and others). 1 - Right 2 - Left
     hashEngine.Update(_lowMem[0x0005]); // 	Something to do with player x (same as 0x0002)
-    hashEngine.Update(_lowMem[0x03AD]); // 	Player x pos within current screen offset
-    hashEngine.Update(_lowMem[0x03B8]); // 	Player y pos within current screen (vertical screens always offset at 0?)
-    hashEngine.Update(_lowMem[0x0400]); // 	Player Object X-MoveForce.
+    // [HASH-RESTRICT safe-only] dropped (derived 0x03AD = playerX - screenX): hashEngine.Update(_lowMem[0x03AD]); // 	Player x pos within current screen offset
+    // [HASH-RESTRICT safe-only] dropped (derived 0x03B8 = playerY - screenY): hashEngine.Update(_lowMem[0x03B8]); // 	Player y pos within current screen (vertical screens always offset at 0?)
+    // [HASH-RESTRICT safe-only] dropped (dup 0x0400 (kept as _playerPosX3)): hashEngine.Update(_lowMem[0x0400]); // 	Player Object X-MoveForce.
     hashEngine.Update(_lowMem[0x0416]); // 	Player Object YMF_Dummy.
-    hashEngine.Update(_lowMem[0x0433]); // 	Player vertical fractional velocity. This is not accounted for when clamping to max fall velocity etc.
-    hashEngine.Update(_lowMem[0x0450]); // 	Player max velocity to the left. Values taken from 0xE4: max walking vel 0xD8: max running vel (changes to this when pressing B+L)
-    hashEngine.Update(_lowMem[0x0456]); // 	Player max velocity to the right 0x1C - max walking vel 0x30 - max running vel (changes to this when pressing B+R)
+    // [HASH-RESTRICT safe-only] dropped (dup 0x0433 (kept as _playerVelY2)): hashEngine.Update(_lowMem[0x0433]); // 	Player vertical fractional velocity. This is not accounted for when clamping to max fall velocity etc.
+    // [HASH-RESTRICT safe-only] dropped (dup 0x0450 (kept as _playerMaxVelLeft)): hashEngine.Update(_lowMem[0x0450]); // 	Player max velocity to the left. Values taken from 0xE4: max walking vel 0xD8: max running vel (changes to this when pressing B+L)
+    // [HASH-RESTRICT safe-only] dropped (dup 0x0456 (kept as _playerMaxVelRight)): hashEngine.Update(_lowMem[0x0456]); // 	Player max velocity to the right 0x1C - max walking vel 0x30 - max running vel (changes to this when pressing B+R)
     hashEngine.Update(_lowMem[0x0490]); // 	Player Collision_Bits,if you collided with Any Block / Object / Brick , Then Value will change to 0xFE otherwise it will stay 0xFF.
-    hashEngine.Update(_lowMem[0x04AC]); // 	Player hitbox (1x4 bytes, <<x1,y1> <x2,y2>>)
+    // [HASH-RESTRICT safe-only] dropped (derived 0x04AC hitbox = f(pos,size)): hashEngine.Update(_lowMem[0x04AC]); // 	Player hitbox (1x4 bytes, <<x1,y1> <x2,y2>>)
     hashEngine.Update(&_lowMem[0x0500], 0x019F); // -0x069F	Current tile (Does not effect graphics)
-    hashEngine.Update(_lowMem[0x06D5]);          // 	PlayerGfx_Offset , Player sprite Mario state (didn't check them myself)
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x06D5 sprite-gfx): hashEngine.Update(_lowMem[0x06D5]);          // 	PlayerGfx_Offset , Player sprite Mario state (didn't check them myself)
     hashEngine.Update(_lowMem[0x0700]);          // 	Player X-Speed Absolute ,Player speed in _either_ direction (0 - 0x28)
-    hashEngine.Update(_lowMem[0x0701]);          // 	Friction Adder High ,Is breaking when 1 (freeze this and you immediately stand still when you stop moving)
-    hashEngine.Update(_lowMem[0x0702]);          // 	Walk animation (didn't check values)
+    // [HASH-RESTRICT safe-only] dropped (dup 0x0701 (kept as _playerFriction)): hashEngine.Update(_lowMem[0x0701]);          // 	Friction Adder High ,Is breaking when 1 (freeze this and you immediately stand still when you stop moving)
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x0702 walk-anim (also dup)): hashEngine.Update(_lowMem[0x0702]);          // 	Walk animation (didn't check values)
     hashEngine.Update(_lowMem[0x0704]);          // 	Swimming Flag ,Set to 0 to swim
-    hashEngine.Update(_lowMem[0x0705]);          // 	Player X-MoveForce, runs when you press left or right
-    hashEngine.Update(_lowMem[0x0709]);          // 	Current gravity which will be applied to the player sprite (see 0x0000, 0x0433 and Notes page).
+    // [HASH-RESTRICT safe-only] dropped (dup 0x0705 (kept as _playerMomentumX)): hashEngine.Update(_lowMem[0x0705]);          // 	Player X-MoveForce, runs when you press left or right
+    // [HASH-RESTRICT safe-only] dropped (dup 0x0709 (kept as _playerGravity)): hashEngine.Update(_lowMem[0x0709]);          // 	Current gravity which will be applied to the player sprite (see 0x0000, 0x0433 and Notes page).
     hashEngine.Update(_lowMem[0x070A]);          // 	Current fall gravity (not sure how this is decided).
-    hashEngine.Update(_lowMem[0x070B]);          // 	When not 0, runs big-small animation (but does not affect anything internally)
-    hashEngine.Update(_lowMem[0x070C]);          // 	Player walk animation delay, in game frames (1/60 s). 0x05=slow walk, 0x03=full walk speed, 0x02=fastest/running speed
-    hashEngine.Update(_lowMem[0x070D]);          // 	Player walk animation current frame index (0,1,2,0,etc)
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x070B (does not affect anything internally)): hashEngine.Update(_lowMem[0x070B]);          // 	When not 0, runs big-small animation (but does not affect anything internally)
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x070C walk-anim (also dup)): hashEngine.Update(_lowMem[0x070C]);          // 	Player walk animation delay, in game frames (1/60 s). 0x05=slow walk, 0x03=full walk speed, 0x02=fastest/running speed
+    // [HASH-RESTRICT safe-only] dropped (cosmetic 0x070D walk-anim (also dup)): hashEngine.Update(_lowMem[0x070D]);          // 	Player walk animation current frame index (0,1,2,0,etc)
     hashEngine.Update(
         _lowMem[0x0714]); // 	0x04 when ducking as big mario, 0 otherwise (also when ducking as small). Keeps being 4 when you slide of an edge while ducking (so does not affect
                           // image, but does when set to 4 and being small...). When this register is frozen, you can move like normal, you're just ducking while doing so.
