@@ -690,13 +690,18 @@ jobs:
             git -C extern/quickerDSDA submodule update --init --recursive
             meson setup extern/quickerDSDA/build extern/quickerDSDA -DonlyFree=true
             ninja -C extern/quickerDSDA/build
-            ninja test -C extern/quickerDSDA/build
+            # Serial test execution (--num-processes 1): the quickerDSDA testers
+            # (pTester/tTester) are multi-threaded, and with OMP_PROC_BIND=true on a
+            # 2-core runner meson's default parallel test run oversubscribes the pinned
+            # cores -> the engine's per-thread sched_getcpu indexing collides and crashes
+            # (the job appears "cancelled"). One multi-threaded test at a time stays 1:1.
+            meson test -C extern/quickerDSDA/build --num-processes 1
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerDSDA
     - name: Building project
       run: ninja -C build
     - name: Validating examples
-      run: meson test ValidateExamples -C build      
+      run: meson test ValidateExamples -C build --num-processes 1
     - uses: actions/upload-artifact@v4
       if: always()
       with:
