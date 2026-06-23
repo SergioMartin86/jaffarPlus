@@ -223,6 +223,11 @@ jobs:
       run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Building and testing the quickerNES submodule
+      run: |
+            meson setup extern/quickerNES/build extern/quickerNES -DonlyOpenSource=true -DenableArkanoidInputs=true
+            ninja -C extern/quickerNES/build
+            ninja test -C extern/quickerNES/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerNES
     - name: Building project
@@ -252,6 +257,11 @@ jobs:
       run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Building and testing the quickerNES submodule
+      run: |
+            meson setup extern/quickerNES/build extern/quickerNES -DonlyOpenSource=true -DenableArkanoidInputs=true
+            ninja -C extern/quickerNES/build
+            ninja test -C extern/quickerNES/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulator=QuickerNESArkanoid
     - name: Building project
@@ -281,6 +291,11 @@ jobs:
       run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Building and testing the quickerSDLPoP submodule
+      run: |
+            meson setup extern/quickerSDLPoP/build extern/quickerSDLPoP
+            ninja -C extern/quickerSDLPoP/build
+            SDL_VIDEODRIVER=dummy ninja test -C extern/quickerSDLPoP/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerSDLPoP
     - name: Building project
@@ -310,6 +325,11 @@ jobs:
       run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Building and testing the quickerSnes9x submodule
+      run: |
+            meson setup extern/quickerSnes9x/build extern/quickerSnes9x -DonlyOpenSource=true
+            ninja -C extern/quickerSnes9x/build
+            ninja test -C extern/quickerSnes9x/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerSnes9x
     - name: Building project
@@ -338,7 +358,12 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
+    - name: Building and testing the quickerGPGX submodule
+      run: |
+            meson setup extern/quickerGPGX/build extern/quickerGPGX -DonlyOpenSource=true
+            ninja -C extern/quickerGPGX/build
+            ninja test -C extern/quickerGPGX/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerGPGX
     - name: Building project
@@ -367,7 +392,12 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
+    - name: Building and testing the quickerStella submodule
+      run: |
+            meson setup extern/quickerStella/build extern/quickerStella -DonlyOpenSource=true
+            ninja -C extern/quickerStella/build
+            SDL_AUDIODRIVER=dummy SDL_VIDEODRIVER=dummy ninja test -C extern/quickerStella/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerStella
     - name: Building project
@@ -401,7 +431,12 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
+    - name: Building and testing the atari2600Hawk submodule
+      run: |
+            meson setup extern/atari2600Hawk/build extern/atari2600Hawk -DonlyOpenSource=true
+            ninja -C extern/atari2600Hawk/build
+            SDL_AUDIODRIVER=dummy SDL_VIDEODRIVER=dummy ninja test -C extern/atari2600Hawk/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=Atari2600Hawk
     - name: Building project
@@ -430,7 +465,12 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
+    - name: Building and testing the quickerSMBC submodule
+      run: |
+            meson setup extern/quickerSMBC/build extern/quickerSMBC -DonlyOpenSource=true
+            ninja -C extern/quickerSMBC/build
+            SDL_AUDIODRIVER=dummy SDL_VIDEODRIVER=dummy ninja test -C extern/quickerSMBC/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerSMBC
     - name: Building project
@@ -459,7 +499,13 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
+    - name: Building the quickerNEORAW submodule
+      # Build only: the submodule's tests require Another World game files that
+      # cannot be shipped in public CI (its own CI disables them for the same reason).
+      run: |
+            meson setup extern/quickerNEORAW/build extern/quickerNEORAW -DonlyOpenSource=true
+            ninja -C extern/quickerNEORAW/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerNEORAW
     - name: Building project
@@ -488,7 +534,13 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev 
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
+    - name: Building the quickerRAWGL submodule
+      # Build only: the submodule's tests require Another World game files that
+      # cannot be shipped in public CI (its own CI disables them for the same reason).
+      run: |
+            meson setup extern/quickerRAWGL/build extern/quickerRAWGL -DonlyOpenSource=true
+            ninja -C extern/quickerRAWGL/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerRAWGL
     - name: Building project
@@ -518,6 +570,11 @@ jobs:
       run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Building and testing the quickerArkBot submodule
+      run: |
+            meson setup extern/quickerArkBot/build extern/quickerArkBot -DonlyOpenSource=true
+            ninja -C extern/quickerArkBot/build
+            ninja test -C extern/quickerArkBot/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerArkBot
     - name: Building project
@@ -546,7 +603,12 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
+    - name: Building and testing the quickerMGBA submodule
+      run: |
+            meson setup extern/quickerMGBA/build extern/quickerMGBA -DonlyOpenSource=true
+            ninja -C extern/quickerMGBA/build
+            ninja test -C extern/quickerMGBA/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerMGBA
     - name: Building project
@@ -575,7 +637,12 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
+    - name: Building and testing the quickerGambatte submodule
+      run: |
+            meson setup extern/quickerGambatte/build extern/quickerGambatte -DonlyOpenSource=true
+            ninja -C extern/quickerGambatte/build
+            ninja test -C extern/quickerGambatte/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerGambatte
     - name: Building project
@@ -604,7 +671,12 @@ jobs:
     - name: Updating Apt
       run: sudo apt update
     - name: Installing apt packages
-      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
+    - name: Building and testing the quickerDSDA submodule
+      run: |
+            meson setup extern/quickerDSDA/build extern/quickerDSDA -DonlyFree=true
+            ninja -C extern/quickerDSDA/build
+            ninja test -C extern/quickerDSDA/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerDSDA
     - name: Building project
