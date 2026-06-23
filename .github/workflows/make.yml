@@ -225,6 +225,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Building and testing the quickerNES submodule
       run: |
+            git -C extern/quickerNES submodule update --init --recursive
             meson setup extern/quickerNES/build extern/quickerNES -DonlyOpenSource=true -DenableArkanoidInputs=true
             ninja -C extern/quickerNES/build
             ninja test -C extern/quickerNES/build
@@ -259,6 +260,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Building and testing the quickerNES submodule
       run: |
+            git -C extern/quickerNES submodule update --init --recursive
             meson setup extern/quickerNES/build extern/quickerNES -DonlyOpenSource=true -DenableArkanoidInputs=true
             ninja -C extern/quickerNES/build
             ninja test -C extern/quickerNES/build
@@ -293,6 +295,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Building and testing the quickerSDLPoP submodule
       run: |
+            git -C extern/quickerSDLPoP submodule update --init --recursive
             meson setup extern/quickerSDLPoP/build extern/quickerSDLPoP
             ninja -C extern/quickerSDLPoP/build
             SDL_VIDEODRIVER=dummy ninja test -C extern/quickerSDLPoP/build
@@ -327,6 +330,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Building and testing the quickerSnes9x submodule
       run: |
+            git -C extern/quickerSnes9x submodule update --init --recursive
             meson setup extern/quickerSnes9x/build extern/quickerSnes9x -DonlyOpenSource=true
             ninja -C extern/quickerSnes9x/build
             ninja test -C extern/quickerSnes9x/build
@@ -361,6 +365,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
     - name: Building and testing the quickerGPGX submodule
       run: |
+            git -C extern/quickerGPGX submodule update --init --recursive
             meson setup extern/quickerGPGX/build extern/quickerGPGX -DonlyOpenSource=true
             ninja -C extern/quickerGPGX/build
             ninja test -C extern/quickerGPGX/build
@@ -395,6 +400,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
     - name: Building and testing the quickerStella submodule
       run: |
+            git -C extern/quickerStella submodule update --init --recursive
             meson setup extern/quickerStella/build extern/quickerStella -DonlyOpenSource=true
             ninja -C extern/quickerStella/build
             SDL_AUDIODRIVER=dummy SDL_VIDEODRIVER=dummy ninja test -C extern/quickerStella/build
@@ -434,6 +440,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
     - name: Building and testing the atari2600Hawk submodule
       run: |
+            git -C extern/atari2600Hawk submodule update --init --recursive
             meson setup extern/atari2600Hawk/build extern/atari2600Hawk -DonlyOpenSource=true
             ninja -C extern/atari2600Hawk/build
             SDL_AUDIODRIVER=dummy SDL_VIDEODRIVER=dummy ninja test -C extern/atari2600Hawk/build
@@ -468,6 +475,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
     - name: Building and testing the quickerSMBC submodule
       run: |
+            git -C extern/quickerSMBC submodule update --init --recursive
             meson setup extern/quickerSMBC/build extern/quickerSMBC -DonlyOpenSource=true
             ninja -C extern/quickerSMBC/build
             SDL_AUDIODRIVER=dummy SDL_VIDEODRIVER=dummy ninja test -C extern/quickerSMBC/build
@@ -504,6 +512,7 @@ jobs:
       # Build only: the submodule's tests require Another World game files that
       # cannot be shipped in public CI (its own CI disables them for the same reason).
       run: |
+            git -C extern/quickerNEORAW submodule update --init --recursive
             meson setup extern/quickerNEORAW/build extern/quickerNEORAW -DonlyOpenSource=true
             ninja -C extern/quickerNEORAW/build
     - name: Run meson configuration
@@ -539,6 +548,7 @@ jobs:
       # Build only: the submodule's tests require Another World game files that
       # cannot be shipped in public CI (its own CI disables them for the same reason).
       run: |
+            git -C extern/quickerRAWGL submodule update --init --recursive
             meson setup extern/quickerRAWGL/build extern/quickerRAWGL -DonlyOpenSource=true
             ninja -C extern/quickerRAWGL/build
     - name: Run meson configuration
@@ -572,6 +582,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Building and testing the quickerArkBot submodule
       run: |
+            git -C extern/quickerArkBot submodule update --init --recursive
             meson setup extern/quickerArkBot/build extern/quickerArkBot -DonlyOpenSource=true
             ninja -C extern/quickerArkBot/build
             ninja test -C extern/quickerArkBot/build
@@ -606,6 +617,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
     - name: Building and testing the quickerMGBA submodule
       run: |
+            git -C extern/quickerMGBA submodule update --init --recursive
             meson setup extern/quickerMGBA/build extern/quickerMGBA -DonlyOpenSource=true
             ninja -C extern/quickerMGBA/build
             ninja test -C extern/quickerMGBA/build
@@ -640,6 +652,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
     - name: Building and testing the quickerGambatte submodule
       run: |
+            git -C extern/quickerGambatte submodule update --init --recursive
             meson setup extern/quickerGambatte/build extern/quickerGambatte -DonlyOpenSource=true
             ninja -C extern/quickerGambatte/build
             ninja test -C extern/quickerGambatte/build
@@ -674,6 +687,7 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
     - name: Building and testing the quickerDSDA submodule
       run: |
+            git -C extern/quickerDSDA submodule update --init --recursive
             meson setup extern/quickerDSDA/build extern/quickerDSDA -DonlyFree=true
             ninja -C extern/quickerDSDA/build
             ninja test -C extern/quickerDSDA/build
