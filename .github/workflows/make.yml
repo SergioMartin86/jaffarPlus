@@ -685,14 +685,12 @@ jobs:
       run: sudo apt update
     - name: Installing apt packages
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev libvorbis-dev
-    - name: Building the quickerDSDA submodule
-      # Build only for now: the quickerDSDA core's own tests are currently failing
-      # (crash/std::logic_error) and are being fixed upstream. Re-add the test step
-      # (ninja test -C extern/quickerDSDA/build) once they pass again.
+    - name: Building and testing the quickerDSDA submodule
       run: |
             git -C extern/quickerDSDA submodule update --init --recursive
             meson setup extern/quickerDSDA/build extern/quickerDSDA -DonlyFree=true
             ninja -C extern/quickerDSDA/build
+            ninja test -C extern/quickerDSDA/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=QuickerDSDA
     - name: Building project
