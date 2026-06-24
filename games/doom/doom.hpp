@@ -80,6 +80,21 @@ public:
       }
     }
 
+    // Configurable dedup-hash quantization. Defaults reproduce full precision (no bucketing)
+    // so existing configs behave exactly as before. posFracBits / momFracBits = number of
+    // 16.16 fractional bits KEPT (0 = whole map units, 16 = raw); angleBits = number of high
+    // bits of the 32-bit BAM angle KEPT (e.g. 8 -> 256 directions, 32 = raw).
+    int posFracBits = _gameConfigRemaining.contains("Hash Pos Frac Bits") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Hash Pos Frac Bits") : 16;
+    int momFracBits = _gameConfigRemaining.contains("Hash Mom Frac Bits") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Hash Mom Frac Bits") : 16;
+    int angleBits   = _gameConfigRemaining.contains("Hash Angle Bits") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Hash Angle Bits") : 32;
+    _hashIncludeZ   = _gameConfigRemaining.contains("Hash Include Z") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Hash Include Z") : true;
+    posFracBits     = std::max(0, std::min(16, posFracBits));
+    momFracBits     = std::max(0, std::min(16, momFracBits));
+    angleBits       = std::max(1, std::min(32, angleBits));
+    _hashPosShift   = 16 - posFracBits;
+    _hashMomShift   = 16 - momFracBits;
+    _hashAngleShift = 32 - angleBits;
+
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("||   0,   0,   0,   0,...|");
 
@@ -169,15 +184,23 @@ private:
     // Advancing state once
     // _emulator->advanceState(_currentInputIdx);
 
+    // Quantized player-state dedup hash. Per-field granularity is configurable (see the
+    // constructor knobs); defaults reproduce full 16.16 / 32-bit precision so configs that
+    // don't set the knobs behave exactly as before. Coarser buckets collapse the per-step
+    // input fan-out (many near-identical successors -> one bucket); the risk is that
+    // over-coarse POSITION can merge frame-distinct states near the exit line and, because
+    // dedup is first-seen-wins, discard the faster one.
     if (players[0].mo != nullptr)
     {
-      hashEngine.Update(players[0].mo->x);
-      hashEngine.Update(players[0].mo->y);
-      hashEngine.Update(players[0].mo->z);
-      hashEngine.Update(players[0].mo->angle);
-      hashEngine.Update(players[0].mo->momx);
-      hashEngine.Update(players[0].mo->momy);
-      hashEngine.Update(players[0].mo->momz);
+      hashEngine.Update((uint32_t)(players[0].mo->x >> _hashPosShift));
+      hashEngine.Update((uint32_t)(players[0].mo->y >> _hashPosShift));
+      if (_hashIncludeZ) hashEngine.Update((uint32_t)(players[0].mo->z >> _hashPosShift));
+
+      hashEngine.Update((uint32_t)((uint32_t)players[0].mo->angle >> _hashAngleShift));
+
+      hashEngine.Update((int32_t)(players[0].mo->momx >> _hashMomShift));
+      hashEngine.Update((int32_t)(players[0].mo->momy >> _hashMomShift));
+      if (_hashIncludeZ) hashEngine.Update((int32_t)(players[0].mo->momz >> _hashMomShift));
     }
 
     // Restoring state
@@ -535,6 +558,12 @@ private:
   float _player1DistanceToPoint;
 
   size_t _maxStateSize;
+
+  // Dedup-hash quantization shifts (precomputed in constructor from the config knobs)
+  int  _hashPosShift   = 0;
+  int  _hashMomShift   = 0;
+  int  _hashAngleShift = 0;
+  bool _hashIncludeZ   = true;
 
   uint16_t _currentStep = 0;
 
