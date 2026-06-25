@@ -194,6 +194,37 @@ public:
       r->initialize();
     }
 
+    // Combined RAM guard: the per-NUMA check inside StateDb::initialize() validates ONLY the state
+    // DB, and the hash DB's peak footprint is (Max Store Size x Max Store Count) -- NOT just Max Store
+    // Size. Summing both against total free RAM here catches a silent overcommit that the OS would
+    // otherwise resolve by OOM-killing the process mid-run (hours in). Done before any DB allocates.
+    {
+      const size_t stateBudget = _stateDb->getMaxBudgetBytes();
+      const size_t hashBudget  = (_hashDbEnabled == true) ? _hashDb->getMaxBudgetBytes() : 0;
+      const size_t totalBudget = stateBudget + hashBudget;
+      size_t freeRam = 0;
+      for (int i = 0; i < _numaCount; i++)
+      {
+        long long nodeFree = 0;
+        numa_node_size64(i, &nodeFree);
+        freeRam += (size_t)nodeFree;
+      }
+      const size_t usable = (size_t)((double)freeRam * 0.90); // 10% headroom: emulators, drain buffers, OS
+      if (totalBudget > usable)
+      {
+        const double GB = 1024.0 * 1024.0 * 1024.0;
+        JAFFAR_THROW_RUNTIME(
+          "Configured database budget exceeds available memory:\n"
+          "  State DB 'Max Size (Mb)'                       = %.1f GB\n"
+          "  Hash DB  'Max Store Size' x 'Max Store Count'  = %.1f GB\n"
+          "  TOTAL                                          = %.1f GB\n"
+          "  Usable (90%% of %.1f GB free RAM)               = %.1f GB\n"
+          "Reduce 'State Database/Max Size (Mb)' and/or 'Hash Database/Max Store Size (Mb)'.\n"
+          "NOTE: the hash DB PEAK footprint is Max Store Size x Max Store Count, not just Max Store Size.\n",
+          (double)stateBudget / GB, (double)hashBudget / GB, (double)totalBudget / GB, (double)freeRam / GB, (double)usable / GB);
+      }
+    }
+
     // Initializing State Db
     _stateDb->initialize();
 

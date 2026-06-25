@@ -64,6 +64,9 @@ public:
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB")) _maxSizeMb = std::stoul(value);
   }
 
+  /// @brief Configured maximum state-DB footprint in bytes (used by the engine's combined RAM guard).
+  __INLINE__ size_t getMaxBudgetBytes() const { return _maxSizeMb * 1024UL * 1024UL; }
+
   /**
    * @brief Frees the per-NUMA current- and next-state queues allocated in @ref initialize().
    *

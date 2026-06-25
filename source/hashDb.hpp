@@ -47,6 +47,10 @@ public:
     if (auto* value = std::getenv("JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB")) _maxStoreSizeMb = std::stoul(value);
   }
 
+  /// @brief Configured PEAK hash-DB footprint in bytes = Max Store Size x Max Store Count (the
+  /// rolling generations can be live simultaneously). Used by the engine's combined RAM guard.
+  __INLINE__ size_t getMaxBudgetBytes() const { return (size_t)(_maxStoreSizeMb * 1024.0 * 1024.0) * _maxStoreCount; }
+
   /// @brief Destroys the database, deleting all per-domain L1 stores and the global L2 store.
   ~HashDb()
   {
@@ -143,15 +147,20 @@ public:
     // Two-tier: aggregate L1 across domains + the global L2
     size_t l1q = 0, l1c = 0, l1entries = 0;
     double l1SizeMb = 0.0;
+    // Use LIFETIME (since-start) totals for the aggregate ratios so L1 and L2 are compared over the
+    // same whole-run window. The per-store getQueryCount()/getCollisionCount() are reset on every roll
+    // and the tiers roll at very different rates (L1 budget is a small fraction of L2's, so L1 rolls
+    // far more often) -- comparing those current-window counts made l2q/l1q and the dup rate exceed
+    // 100%. The lifetime totals make every ratio below a true fraction bounded by 100%.
     for (auto* const g : _l1)
     {
-      l1q += g->getQueryCount();
-      l1c += g->getCollisionCount();
+      l1q += g->getTotalQueryCount();
+      l1c += g->getTotalCollisionCount();
       for (const auto& s : g->_hashStores) l1entries += s.hashSet.size();
       l1SizeMb += storeSizeMb(g);
     }
-    const size_t l2q       = _l2->getQueryCount();
-    const size_t l2c       = _l2->getCollisionCount();
+    const size_t l2q       = _l2->getTotalQueryCount();
+    const size_t l2c       = _l2->getTotalCollisionCount();
     size_t       l2entries = 0;
     for (const auto& s : _l2->_hashStores) l2entries += s.hashSet.size();
 
@@ -303,6 +312,11 @@ private:
 
     std::vector<paddedCounter_t> _threadCollisionCount; ///< Per-thread collision counts for the current store, indexed by thread id.
 
+    /// @brief Lifetime query/collision totals from all ALREADY-ROLLED generations (the per-thread
+    /// counters above are reset on every roll and the oldest generations are eventually discarded, so
+    /// these accumulators preserve the since-start totals for normalized, bounded-by-100% telemetry).
+    size_t _lifetimeQueryCount = 0, _lifetimeCollisionCount = 0;
+
     // Aggregating helpers (called only at reporting / store-rollover time, never in the hot path)
 
     /**
@@ -331,6 +345,10 @@ private:
       for (auto& c : _threadQueryCount) c.value = 0;
       for (auto& c : _threadCollisionCount) c.value = 0;
     }
+    /// @brief Lifetime (since-start) totals = already-rolled generations + the current window. Used for
+    /// the normalized aggregate telemetry, which compares L1 and L2 over the SAME (whole-run) window.
+    __INLINE__ size_t getTotalQueryCount() const { return _lifetimeQueryCount + getQueryCount(); }
+    __INLINE__ size_t getTotalCollisionCount() const { return _lifetimeCollisionCount + getCollisionCount(); }
   };
 
   /**
@@ -395,6 +413,10 @@ private:
       // IS the current (back) store, so popping it first would leave currentHashStore dangling.
       currentHashStore.queryCount     = g->getQueryCount();
       currentHashStore.collisionCount = g->getCollisionCount();
+      // Fold this window's counts into the lifetime accumulators BEFORE the reset, so the since-start
+      // totals survive both the reset and the eventual discard (pop_front) of this generation.
+      g->_lifetimeQueryCount     += currentHashStore.queryCount;
+      g->_lifetimeCollisionCount += currentHashStore.collisionCount;
       g->resetCounts();
 
       // If we already reached the maximum hash stores, discard the oldest one
