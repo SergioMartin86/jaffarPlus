@@ -218,11 +218,10 @@ public:
 
       // Reference reward floor: if the best leading edge has fallen below the reference at this step, the run
       // can no longer keep pace with the reference -- cancel now (purely a stop signal; nothing was pruned).
-      if (_referenceFloorEnabled && _currentStep < _referenceReward.size()
-          && _bestStateReward < _referenceReward[_currentStep] - _referenceFloorTolerance)
+      if (_referenceFloorEnabled && _currentStep < _referenceReward.size() && _bestStateReward < _referenceReward[_currentStep] - _referenceFloorTolerance)
       {
-        jaffarCommon::logger::log("[J+] Best (%.6f) fell below reference floor (%.6f, tol %.4f) at step %lu by %.6f -- cancelling.\n",
-                                  _bestStateReward, _referenceReward[_currentStep], _referenceFloorTolerance, _currentStep,
+        jaffarCommon::logger::log("[J+] Best (%.6f) fell below reference floor (%.6f, tol %.4f) at step %lu by %.6f -- cancelling.\n", _bestStateReward,
+                                  _referenceReward[_currentStep], _referenceFloorTolerance, _currentStep,
                                   _referenceReward[_currentStep] - _referenceFloorTolerance - _bestStateReward);
         exitReason = exitReason_t::bestBelowReference;
         break;

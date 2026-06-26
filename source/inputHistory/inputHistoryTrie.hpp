@@ -48,8 +48,7 @@ public:
     // The trie node stores the input index as a 16-bit element (see SequenceInputTrie). maxInputIndex is one
     // past the highest input index, so it must fit in 16 bits. Real searches register a few hundred inputs
     // at most; if a game ever exceeds this, use Type "Raw" instead.
-    if (maxInputIndex > 0x10000u)
-      JAFFAR_THROW_RUNTIME("Trie input-history supports at most 65536 distinct inputs (got %u); use Store Input History Type \"Raw\".", maxInputIndex);
+    if (maxInputIndex > 0x10000u) JAFFAR_THROW_RUNTIME("Trie input-history supports at most 65536 distinct inputs (got %u); use Store Input History Type \"Raw\".", maxInputIndex);
     _bits         = jaffarCommon::bitwise::getEncodingBitsForElementCount(maxInputIndex);
     _bitpackBytes = (_maxSize * _bits + 7) / 8;
     _scratch.resize(_bitpackBytes, 0);

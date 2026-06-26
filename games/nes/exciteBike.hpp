@@ -1,12 +1,12 @@
 #pragma once
 
 #include <atomic>
-#include <unordered_map>
-#include <vector>
-#include <fstream>
 #include <emulator.hpp>
+#include <fstream>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
+#include <unordered_map>
+#include <vector>
 
 namespace jaffarPlus
 {
@@ -33,13 +33,13 @@ public:
     std::string s = "|..|........|";
     // Start (index 8) = marker so tokens never collide with the real controls (which use U/D/L/R/B/A only);
     // the index is encoded across the other 7 buttons -> 128 distinct tokens (enough for full per-posY lanes).
-    if (i & 1)   s[4]  = 'U';
-    if (i & 2)   s[5]  = 'D';
-    if (i & 4)   s[6]  = 'L';
-    if (i & 8)   s[7]  = 'R';
-    if (i & 16)  s[9]  = 's'; // Select
-    if (i & 32)  s[10] = 'B';
-    if (i & 64)  s[11] = 'A';
+    if (i & 1) s[4] = 'U';
+    if (i & 2) s[5] = 'D';
+    if (i & 4) s[6] = 'L';
+    if (i & 8) s[7] = 'R';
+    if (i & 16) s[9] = 's'; // Select
+    if (i & 32) s[10] = 'B';
+    if (i & 64) s[11] = 'A';
     s[8] = 'S'; // Start = marker (tokens are never applied to the emulator; advanceStateImpl maps token -> control)
     return s;
   }
@@ -50,8 +50,14 @@ public:
   static __INLINE__ std::string groundInput(bool turbo, int laneDir, int angDir)
   {
     std::string s = "|..|........|";
-    if (laneDir > 0) s[4] = 'U'; else if (laneDir < 0) s[5] = 'D';
-    if (angDir > 0) s[6] = 'L'; else if (angDir < 0) s[7] = 'R';
+    if (laneDir > 0)
+      s[4] = 'U';
+    else if (laneDir < 0)
+      s[5] = 'D';
+    if (angDir > 0)
+      s[6] = 'L';
+    else if (angDir < 0)
+      s[7] = 'R';
     s[turbo ? 11 : 10] = turbo ? 'A' : 'B';
     return s;
   }
@@ -62,8 +68,14 @@ public:
   static __INLINE__ std::string airInput(int laneDir, int angDir)
   {
     std::string s = "|..|........|";
-    if (laneDir > 0) s[4] = 'U'; else if (laneDir < 0) s[5] = 'D';
-    if (angDir > 0) s[6] = 'L'; else if (angDir < 0) s[7] = 'R';
+    if (laneDir > 0)
+      s[4] = 'U';
+    else if (laneDir < 0)
+      s[5] = 'D';
+    if (angDir > 0)
+      s[6] = 'L';
+    else if (angDir < 0)
+      s[7] = 'R';
     return s;
   }
 
@@ -72,20 +84,14 @@ public:
     // Commit-and-hold parameters (the whole allowed-input set is built in this .hpp, not in the config's
     // "Allowed Input Sets"). At each ground->air transition the search commits to a TARGET ANGLE held for
     // the jump; at each air->ground transition it commits to a TARGET LANE (posY) held on the ground.
-    _commitAngleMin = _gameConfigRemaining.contains("Commit Angle Min")
-                        ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Angle Min") : 2;
-    _commitAngleMax = _gameConfigRemaining.contains("Commit Angle Max")
-                        ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Angle Max") : 11;
-    _commitLaneCount = _gameConfigRemaining.contains("Commit Lane Count")
-                         ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Lane Count") : 6;
-    const int laneYmin = _gameConfigRemaining.contains("Commit Lane PosY Min")
-                           ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Lane PosY Min") : 94;
-    const int laneYmax = _gameConfigRemaining.contains("Commit Lane PosY Max")
-                           ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Lane PosY Max") : 151;
+    _commitAngleMin    = _gameConfigRemaining.contains("Commit Angle Min") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Angle Min") : 2;
+    _commitAngleMax    = _gameConfigRemaining.contains("Commit Angle Max") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Angle Max") : 11;
+    _commitLaneCount   = _gameConfigRemaining.contains("Commit Lane Count") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Lane Count") : 6;
+    const int laneYmin = _gameConfigRemaining.contains("Commit Lane PosY Min") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Lane PosY Min") : 94;
+    const int laneYmax = _gameConfigRemaining.contains("Commit Lane PosY Max") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Lane PosY Max") : 151;
     // Full lane freedom: one committable lane per integer posY in [min,max] (the bike may commit to ANY ground
     // position, still held for the whole ground stretch). Otherwise, _commitLaneCount evenly-spaced lanes.
-    const bool fullLaneFreedom = _gameConfigRemaining.contains("Full Lane Freedom")
-                                   ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Full Lane Freedom") : false;
+    const bool fullLaneFreedom = _gameConfigRemaining.contains("Full Lane Freedom") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Full Lane Freedom") : false;
     if (fullLaneFreedom)
     {
       for (int y = laneYmin; y <= laneYmax; y++) _laneTargets.push_back(y);
@@ -95,8 +101,7 @@ public:
     {
       for (int l = 0; l < _commitLaneCount; l++)
       {
-        const int y = (_commitLaneCount == 1) ? laneYmin
-                                              : laneYmin + (int)((double)l * (laneYmax - laneYmin) / (_commitLaneCount - 1) + 0.5);
+        const int y = (_commitLaneCount == 1) ? laneYmin : laneYmin + (int)((double)l * (laneYmax - laneYmin) / (_commitLaneCount - 1) + 0.5);
         _laneTargets.push_back(y);
       }
     }
@@ -104,16 +109,13 @@ public:
     // Opponent removal: the CPU racers (posY at 0x8D/0x8E/0x8F; player posY=0x8C) can knock a lane-locked
     // player off the bike even going straight. When enabled, every frame we park them out of the player's
     // lane band (default posY 255 = off the track) so they can never collide. See stateUpdatePostHook.
-    _removeOpponents = _gameConfigRemaining.contains("Remove Opponents")
-                         ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Remove Opponents") : false;
-    _opponentParkY = _gameConfigRemaining.contains("Opponent Park Y")
-                       ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Opponent Park Y") : 255;
+    _removeOpponents = _gameConfigRemaining.contains("Remove Opponents") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Remove Opponents") : false;
+    _opponentParkY   = _gameConfigRemaining.contains("Opponent Park Y") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Opponent Park Y") : 255;
 
     // Auto-feather turbo: on the ground use A (turbo, faster but heats the engine, temp at 0x3B6) while temp
     // is below this limit, else fall back to B (normal accel, holds temp flat -> never overheats); airborne
     // jumps cool it back down. TAS peaks at 29, so default 29 (tune up toward the true redline to push harder).
-    _turboTempLimit = _gameConfigRemaining.contains("Turbo Temp Limit")
-                        ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Turbo Temp Limit") : 29;
+    _turboTempLimit = _gameConfigRemaining.contains("Turbo Temp Limit") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Turbo Temp Limit") : 29;
 
     // Per-frame airborne angle: instead of committing one airborne angle and holding it, branch the angle
     // EVERY airborne frame over {raise (L), lower (R), hold} -- full per-frame control of the angle arc
@@ -121,10 +123,8 @@ public:
     // Master gate for the search's commit-and-hold token system. When OFF (default) AND per-frame airborne is
     // off, advanceStateImpl applies inputs RAW (pristine behavior) so reference movies (race01a.tas.sol) replay
     // bit-exact. Search configs turn this (or Airborne Per Frame Angle) on to use the token action space.
-    _commitAndHold = _gameConfigRemaining.contains("Commit And Hold")
-                       ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Commit And Hold") : false;
-    _airbornePerFrameAngle = _gameConfigRemaining.contains("Airborne Per Frame Angle")
-                               ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Airborne Per Frame Angle") : false;
+    _commitAndHold         = _gameConfigRemaining.contains("Commit And Hold") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Commit And Hold") : false;
+    _airbornePerFrameAngle = _gameConfigRemaining.contains("Airborne Per Frame Angle") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Airborne Per Frame Angle") : false;
     // Macro-airborne: collapse each jump into ONE search step. Disassembly proof: airborne velX is constant
     // (player air-friction ~0), so posX during a jump is a deterministic function of (entry posX, velX,
     // frames-aloft) and carries NO search information -- the only posX-relevant output of a jump is its
@@ -134,23 +134,21 @@ public:
     // committed target) and yields ONE landing successor. Ground stays commit-and-hold (one frame/step). This
     // kills the airborne breadth so the search can go deep enough to optimize the ground/sub-pixel run to the
     // finish -- the only place a frame can hide. See excitebike-disassembly-findings.
-    _macroAirborne = _gameConfigRemaining.contains("Macro Airborne")
-                       ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Macro Airborne") : false;
+    _macroAirborne = _gameConfigRemaining.contains("Macro Airborne") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Macro Airborne") : false;
     // Initial block-transition count: _blockXTransitions is a running counter (256-px blocks passed) that
     // makes _bikePosX absolute; it is NOT in the emulator state, so when seeding mid-run from an Initial
     // State File this restores it (set to floor(seed posX / 256)) so _bikePosX is correct from frame 0.
-    _initialBlockTransitions = _gameConfigRemaining.contains("Initial Block Transitions")
-                                 ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Initial Block Transitions") : 0;
+    _initialBlockTransitions =
+        _gameConfigRemaining.contains("Initial Block Transitions") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Initial Block Transitions") : 0;
     // Airborne hash quantization: right-shift the airborne breadth bytes by this many bits when hashing while
     // airborne (merges near-identical airborne states -> bounds breadth; dedup-only, never prunes by reward).
-    _airQ = _gameConfigRemaining.contains("Airborne Hash Quantization")
-              ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Airborne Hash Quantization") : 0;
+    _airQ = _gameConfigRemaining.contains("Airborne Hash Quantization") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Airborne Hash Quantization") : 0;
     // Per-element hash drops (experiment): list of breadth-driving bytes to EXCLUDE from the dedup hash, to
     // test which are NOT reward-relevant (dropping them cuts breadth without trailing). Names: VelZ PosZ1
     // PosZ2 PosY VelY1 VelY2 Angle Flight GameCycle.
-    std::vector<std::string> drops = _gameConfigRemaining.contains("Hash Drops")
-                                       ? jaffarCommon::json::popArray<std::string>(_gameConfigRemaining, "Hash Drops") : std::vector<std::string>{};
-    auto has = [&](const char* n) { return std::find(drops.begin(), drops.end(), std::string(n)) != drops.end(); };
+    std::vector<std::string> drops =
+        _gameConfigRemaining.contains("Hash Drops") ? jaffarCommon::json::popArray<std::string>(_gameConfigRemaining, "Hash Drops") : std::vector<std::string>{};
+    auto has       = [&](const char* n) { return std::find(drops.begin(), drops.end(), std::string(n)) != drops.end(); };
     _dropVelZ      = has("VelZ");
     _dropPosZ1     = has("PosZ1");
     _dropPosZ2     = has("PosZ2");
@@ -198,7 +196,7 @@ private:
     // Upward jump momentum ($BC): >0 while climbing, hits 0 at the apex and stays 0 through the descent. Used
     // to split the airborne angle into a climb segment (nose-up) and a descent/landing segment (nose-down),
     // matching the TAS's frame-precise jump arc (verified: TAS noses 9->11 climbing, 11->3 descending).
-    _climbRemaining   = (uint8_t*)registerGameProperty("Climb Remaining", &_lowMem[0x00BC], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    _climbRemaining = (uint8_t*)registerGameProperty("Climb Remaining", &_lowMem[0x00BC], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     registerGameProperty("Block X Transitions", &_blockXTransitions, Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Bike Pos X", &_bikePosX, Property::datatype_t::dt_float32, Property::endianness_t::little);
@@ -218,17 +216,18 @@ private:
     _inNull = _nullInputIdx;
     // Airborne controls: [laneDir -1..1][angDir -1..1] -> steer posY (U/D) + angle (L/R), no accel.
     for (int ld = -1; ld <= 1; ld++)
-      for (int ad = -1; ad <= 1; ad++)
-        _airCtrl[ld + 1][ad + 1] = _emulator->registerInput(airInput(ld, ad));
+      for (int ad = -1; ad <= 1; ad++) _airCtrl[ld + 1][ad + 1] = _emulator->registerInput(airInput(ld, ad));
     // Ground controls: [turbo?][laneDir -1..1][angDir -1..1] -> accel + lane steer (U/D) + angle steer (L/R).
     for (int t = 0; t < 2; t++)
       for (int ld = -1; ld <= 1; ld++)
-        for (int ad = -1; ad <= 1; ad++)
-          _groundCtrl[t][ld + 1][ad + 1] = _emulator->registerInput(groundInput(t == 1, ld, ad));
+        for (int ad = -1; ad <= 1; ad++) _groundCtrl[t][ld + 1][ad + 1] = _emulator->registerInput(groundInput(t == 1, ld, ad));
 
     // Commit tokens (selectors): one per target angle, one per target lane, plus a single "hold" token.
     // The search branches over these ONLY at transitions; advanceStateImpl decodes them.
-    _angleTokens.clear(); _laneTokens.clear(); _tokenAngle.clear(); _tokenLane.clear();
+    _angleTokens.clear();
+    _laneTokens.clear();
+    _tokenAngle.clear();
+    _tokenLane.clear();
     uint32_t ti = 0;
     for (int a = _commitAngleMin; a <= _commitAngleMax; a++)
     {
@@ -244,11 +243,11 @@ private:
     }
     _holdToken = _emulator->registerInput(commitToken(ti++));
 
-    _committedAngle      = -1; // uncommitted: airborne jump angle (branched first when airborne)
-    _committedAirLane    = -1; // uncommitted: airborne posY target (branched after the jump angle)
+    _committedAngle        = -1; // uncommitted: airborne jump angle (branched first when airborne)
+    _committedAirLane      = -1; // uncommitted: airborne posY target (branched after the jump angle)
     _committedDescentAngle = -1; // uncommitted: airborne descent/landing angle (branched at the apex, BC==0)
-    _committedLane       = -1; // uncommitted: ground lane (branched first when on the ground)
-    _committedGroundAngle = -1; // uncommitted: ground angle (branched after the lane)
+    _committedLane         = -1; // uncommitted: ground lane (branched first when on the ground)
+    _committedGroundAngle  = -1; // uncommitted: ground angle (branched after the lane)
 
     stateUpdatePostHook();
   }
@@ -264,34 +263,42 @@ private:
       // Airborne: steer angle (L/R) toward the climb angle while climbing ($BC>0), or the descent/landing
       // angle once past the apex ($BC==0); steer posY (U/D) toward the committed air lane. All held.
       const int angTarget = (int)_committedAngle;
-      int angDir = 0;
+      int       angDir    = 0;
       if (angTarget >= 0)
       {
-        if ((int)*_bikeAngle < angTarget) angDir = 1;       // angle too low  -> L (raise)
-        else if ((int)*_bikeAngle > angTarget) angDir = -1; // angle too high -> R (lower)
+        if ((int)*_bikeAngle < angTarget)
+          angDir = 1; // angle too low  -> L (raise)
+        else if ((int)*_bikeAngle > angTarget)
+          angDir = -1; // angle too high -> R (lower)
       }
       int laneDir = 0;
       if (_committedAirLane >= 0)
       {
-        if ((int)*_bikePosY > _committedAirLane) laneDir = 1;       // posY too high -> U (decrease)
-        else if ((int)*_bikePosY < _committedAirLane) laneDir = -1; // posY too low  -> D (increase)
+        if ((int)*_bikePosY > _committedAirLane)
+          laneDir = 1; // posY too high -> U (decrease)
+        else if ((int)*_bikePosY < _committedAirLane)
+          laneDir = -1; // posY too low  -> D (increase)
       }
       return _airCtrl[laneDir + 1][angDir + 1];
     }
     // Ground: accel (auto-feather turbo A under the redline, else B) + steer toward the committed lane (U/D)
     // AND the committed ground angle (L/R), both held until the next air<->ground transition.
-    const bool turbo = ((int)*_bikeEngineTemp < _turboTempLimit);
-    int laneDir = 0;
+    const bool turbo   = ((int)*_bikeEngineTemp < _turboTempLimit);
+    int        laneDir = 0;
     if (_committedLane >= 0)
     {
-      if ((int)*_bikePosY > _committedLane) laneDir = 1;       // posY too high -> U (decrease)
-      else if ((int)*_bikePosY < _committedLane) laneDir = -1; // posY too low  -> D (increase)
+      if ((int)*_bikePosY > _committedLane)
+        laneDir = 1; // posY too high -> U (decrease)
+      else if ((int)*_bikePosY < _committedLane)
+        laneDir = -1; // posY too low  -> D (increase)
     }
     int angDir = 0;
     if (_committedGroundAngle >= 0)
     {
-      if ((int)*_bikeAngle < _committedGroundAngle) angDir = 1;       // angle too low  -> L (raise)
-      else if ((int)*_bikeAngle > _committedGroundAngle) angDir = -1; // angle too high -> R (lower)
+      if ((int)*_bikeAngle < _committedGroundAngle)
+        angDir = 1; // angle too low  -> L (raise)
+      else if ((int)*_bikeAngle > _committedGroundAngle)
+        angDir = -1; // angle too high -> R (lower)
     }
     return _groundCtrl[turbo ? 1 : 0][laneDir + 1][angDir + 1];
   }
@@ -315,7 +322,11 @@ private:
       const uint8_t prevAir = *_bikeAirMode;
       _emulator->advanceState(input);
       _currentStep++;
-      if (prevAir > 0 && *_bikeAirMode == 0) { _committedLane = -1; _committedGroundAngle = -1; } // air -> ground
+      if (prevAir > 0 && *_bikeAirMode == 0)
+      {
+        _committedLane        = -1;
+        _committedGroundAngle = -1;
+      } // air -> ground
       _lastInput = input;
       return;
     }
@@ -327,16 +338,20 @@ private:
     const auto ai = _tokenAngle.find(input);
     if (ai != _tokenAngle.end())
     {
-      if (*_bikeAirMode > 0) _committedAngle = (int16_t)ai->second;               // airborne jump angle
-      else _committedGroundAngle = (int16_t)ai->second;                          // ground-stretch angle
+      if (*_bikeAirMode > 0)
+        _committedAngle = (int16_t)ai->second; // airborne jump angle
+      else
+        _committedGroundAngle = (int16_t)ai->second; // ground-stretch angle
     }
     else
     {
       const auto li = _tokenLane.find(input);
       if (li != _tokenLane.end())
       {
-        if (*_bikeAirMode > 0) _committedAirLane = (int16_t)li->second;   // airborne posY target
-        else _committedLane = (int16_t)li->second;                       // ground lane
+        if (*_bikeAirMode > 0)
+          _committedAirLane = (int16_t)li->second; // airborne posY target
+        else
+          _committedLane = (int16_t)li->second; // ground lane
       }
     }
 
@@ -347,13 +362,13 @@ private:
     // Re-commit at every air<->ground transition: a new jump picks a fresh airborne angle; a new ground stretch
     // picks a fresh lane AND ground angle (-1 => the next frames in that phase branch over the targets).
     const uint8_t newAir = *_bikeAirMode;
-    if (prevAir == 0 && newAir > 0)                       // ground -> air: commit fresh climb angle, air posY, descent angle
+    if (prevAir == 0 && newAir > 0) // ground -> air: commit fresh climb angle, air posY, descent angle
     {
       _committedAngle        = -1;
       _committedAirLane      = -1;
       _committedDescentAngle = -1;
     }
-    if (prevAir > 0 && newAir == 0)                       // air -> ground: commit a fresh lane + ground angle
+    if (prevAir > 0 && newAir == 0) // air -> ground: commit a fresh lane + ground angle
     {
       _committedLane        = -1;
       _committedGroundAngle = -1;
@@ -523,16 +538,22 @@ private:
     if (*_bikeAirMode > 0)
     {
       // Airborne: commit the jump angle, then the posY/air lane, then hold both (crash-free best machinery).
-      if (_committedAngle < 0) allowedInputSet.insert(allowedInputSet.end(), _angleTokens.begin(), _angleTokens.end());
-      else if (_committedAirLane < 0) allowedInputSet.insert(allowedInputSet.end(), _laneTokens.begin(), _laneTokens.end());
-      else allowedInputSet.push_back(_holdToken);
+      if (_committedAngle < 0)
+        allowedInputSet.insert(allowedInputSet.end(), _angleTokens.begin(), _angleTokens.end());
+      else if (_committedAirLane < 0)
+        allowedInputSet.insert(allowedInputSet.end(), _laneTokens.begin(), _laneTokens.end());
+      else
+        allowedInputSet.push_back(_holdToken);
     }
     else
     {
       // Ground: first commit the lane, then (still on the ground) commit the ground angle, then hold both.
-      if (_committedLane < 0) allowedInputSet.insert(allowedInputSet.end(), _laneTokens.begin(), _laneTokens.end());
-      else if (_committedGroundAngle < 0) allowedInputSet.insert(allowedInputSet.end(), _angleTokens.begin(), _angleTokens.end());
-      else allowedInputSet.push_back(_holdToken);
+      if (_committedLane < 0)
+        allowedInputSet.insert(allowedInputSet.end(), _laneTokens.begin(), _laneTokens.end());
+      else if (_committedGroundAngle < 0)
+        allowedInputSet.insert(allowedInputSet.end(), _angleTokens.begin(), _angleTokens.end());
+      else
+        allowedInputSet.push_back(_holdToken);
     }
   }
 
@@ -623,27 +644,27 @@ private:
   uint8_t  _prevBlockX;
 
   // --- Commit-and-hold (single-frame angle/lane commitment; see getAdditionalAllowedInputs) ----------
-  int      _commitAngleMin, _commitAngleMax, _commitLaneCount;
-  std::vector<int> _laneTargets;                                  // target posY per lane
-  InputSet::inputIndex_t _inNull;                               // null input
-  InputSet::inputIndex_t _airCtrl[3][3];                        // [laneDir+1][angDir+1] airborne controls (posY+angle)
-  InputSet::inputIndex_t _groundCtrl[2][3][3];                   // [turbo?][laneDir+1][angDir+1] ground controls
-  int      _turboTempLimit;                                      // use A (turbo) on the ground while temp < this
-  bool     _commitAndHold;                                       // master gate: false => raw inputs (pristine replay)
-  bool     _airbornePerFrameAngle;                               // branch angle (L/R/hold) every airborne frame
-  bool     _macroAirborne = false;                               // collapse each jump into one search step (full-jump macro)
-  int      _airQ;                                                // airborne hash quantization (right-shift bits)
-  bool _dropVelZ, _dropPosZ1, _dropPosZ2, _dropPosY, _dropVelY1, _dropVelY2, _dropAngle, _dropFlight, _dropGameCycle; // per-element hash drops
-  int      _initialBlockTransitions;                             // seed value for _blockXTransitions (mid-run seed)
-  bool     _firstPostHook;                                       // true until the first stateUpdatePostHook call
-  std::vector<InputSet::inputIndex_t> _angleTokens, _laneTokens;  // branch tokens (ordered)
+  int                                 _commitAngleMin, _commitAngleMax, _commitLaneCount;
+  std::vector<int>                    _laneTargets;           // target posY per lane
+  InputSet::inputIndex_t              _inNull;                // null input
+  InputSet::inputIndex_t              _airCtrl[3][3];         // [laneDir+1][angDir+1] airborne controls (posY+angle)
+  InputSet::inputIndex_t              _groundCtrl[2][3][3];   // [turbo?][laneDir+1][angDir+1] ground controls
+  int                                 _turboTempLimit;        // use A (turbo) on the ground while temp < this
+  bool                                _commitAndHold;         // master gate: false => raw inputs (pristine replay)
+  bool                                _airbornePerFrameAngle; // branch angle (L/R/hold) every airborne frame
+  bool                                _macroAirborne = false; // collapse each jump into one search step (full-jump macro)
+  int                                 _airQ;                  // airborne hash quantization (right-shift bits)
+  bool                                _dropVelZ, _dropPosZ1, _dropPosZ2, _dropPosY, _dropVelY1, _dropVelY2, _dropAngle, _dropFlight, _dropGameCycle; // per-element hash drops
+  int                                 _initialBlockTransitions;            // seed value for _blockXTransitions (mid-run seed)
+  bool                                _firstPostHook;                      // true until the first stateUpdatePostHook call
+  std::vector<InputSet::inputIndex_t> _angleTokens, _laneTokens;           // branch tokens (ordered)
   std::unordered_map<InputSet::inputIndex_t, int> _tokenAngle, _tokenLane; // token -> target value
-  InputSet::inputIndex_t _holdToken;
-  uint8_t* _climbRemaining;                                     // $BC: >0 climbing, 0 at apex/descent
-  int16_t  _committedAngle, _committedAirLane, _committedDescentAngle, _committedLane, _committedGroundAngle; // -1=uncommitted
+  InputSet::inputIndex_t                          _holdToken;
+  uint8_t*                                        _climbRemaining; // $BC: >0 climbing, 0 at apex/descent
+  int16_t                                         _committedAngle, _committedAirLane, _committedDescentAngle, _committedLane, _committedGroundAngle; // -1=uncommitted
 
-  bool     _removeOpponents;                                      // park CPU opponents off-track each frame
-  int      _opponentParkY;                                        // posY to park opponents at (default 255)
+  bool _removeOpponents; // park CPU opponents off-track each frame
+  int  _opponentParkY;   // posY to park opponents at (default 255)
 };
 
 } // namespace nes
