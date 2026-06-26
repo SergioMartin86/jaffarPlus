@@ -315,7 +315,8 @@ private:
     /// @brief Lifetime query/collision totals from all ALREADY-ROLLED generations (the per-thread
     /// counters above are reset on every roll and the oldest generations are eventually discarded, so
     /// these accumulators preserve the since-start totals for normalized, bounded-by-100% telemetry).
-    size_t _lifetimeQueryCount = 0, _lifetimeCollisionCount = 0;
+    size_t _lifetimeQueryCount     = 0;
+    size_t _lifetimeCollisionCount = 0; ///< Lifetime collision total; companion to _lifetimeQueryCount (same since-start window).
 
     // Aggregating helpers (called only at reporting / store-rollover time, never in the hot path)
 
@@ -348,6 +349,8 @@ private:
     /// @brief Lifetime (since-start) totals = already-rolled generations + the current window. Used for
     /// the normalized aggregate telemetry, which compares L1 and L2 over the SAME (whole-run) window.
     __INLINE__ size_t getTotalQueryCount() const { return _lifetimeQueryCount + getQueryCount(); }
+    /// @brief Lifetime (since-start) collision total = already-rolled generations + the current window
+    /// (the collision companion to getTotalQueryCount(), for the normalized aggregate telemetry).
     __INLINE__ size_t getTotalCollisionCount() const { return _lifetimeCollisionCount + getCollisionCount(); }
   };
 
@@ -415,7 +418,7 @@ private:
       currentHashStore.collisionCount = g->getCollisionCount();
       // Fold this window's counts into the lifetime accumulators BEFORE the reset, so the since-start
       // totals survive both the reset and the eventual discard (pop_front) of this generation.
-      g->_lifetimeQueryCount     += currentHashStore.queryCount;
+      g->_lifetimeQueryCount += currentHashStore.queryCount;
       g->_lifetimeCollisionCount += currentHashStore.collisionCount;
       g->resetCounts();
 

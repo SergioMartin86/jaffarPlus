@@ -48,7 +48,13 @@ std::string dumpHashesPath;
 ///        as a flat binary blob (size-of-LRAM bytes per step). Diffing two emulators' RAM dumps
 ///        byte-by-byte identifies the exact RAM addresses (hence game variables) that diverge.
 std::string dumpRamPath;
+
+/// @brief When set (--saveStateStep), the step at which to capture a full emulator savestate (paired
+///        with --saveStateFile). Parsed as an unsigned step index; empty unless saving is requested.
 std::string saveStateStepStr;
+
+/// @brief When non-empty (--saveStateFile), the path to write the emulator savestate captured at
+///        --saveStateStep (e.g. to seed another search cleanly from a chosen frame).
 std::string saveStateFilePath;
 
 /// @brief Directory to write per-frame screenshots (BMP) into; empty disables screenshotting.
@@ -193,7 +199,7 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
   {
     const auto step = (ssize_t)parseUInt(saveStateStepStr, "--saveStateStep");
     p.loadStepData(step);
-    std::string saveData;
+    std::string  saveData;
     const size_t stateSize = r.getGame()->getEmulator()->getStateSize();
     saveData.resize(stateSize);
     jaffarCommon::serializer::Contiguous s(saveData.data(), stateSize);
@@ -477,9 +483,7 @@ int main(int argc, char* argv[])
   program.add_argument("--dumpRam")
       .help("Writes the full low work-RAM (LRAM) for every step to the given file as flat binary (for byte-level cross-emulator diffs).")
       .default_value(std::string(""));
-  program.add_argument("--saveStateStep")
-      .help("Step at which to save the emulator state (used with --saveStateFile), then exit.")
-      .default_value(std::string(""));
+  program.add_argument("--saveStateStep").help("Step at which to save the emulator state (used with --saveStateFile), then exit.").default_value(std::string(""));
   program.add_argument("--saveStateFile")
       .help("File to write the emulator's full state at --saveStateStep to (load as Emulator 'Initial State File Path').")
       .default_value(std::string(""));
@@ -540,7 +544,7 @@ int main(int argc, char* argv[])
   dumpHashesPath = program.get<std::string>("--dumpHashes");
 
   // Getting the per-step RAM dump path (if any)
-  dumpRamPath = program.get<std::string>("--dumpRam");
+  dumpRamPath       = program.get<std::string>("--dumpRam");
   saveStateStepStr  = program.get<std::string>("--saveStateStep");
   saveStateFilePath = program.get<std::string>("--saveStateFile");
 
