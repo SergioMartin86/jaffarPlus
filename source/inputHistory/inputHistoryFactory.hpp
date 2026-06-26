@@ -38,6 +38,15 @@ __INLINE__ std::shared_ptr<void> createSharedBacking(const nlohmann::json& confi
   return nullptr;
 }
 
+/// @brief Hard upper bound (bytes) on the shared backing's memory: the trie's node-storage ceiling for the
+/// "Trie" strategy, 0 for None/Raw (their per-state history lives in the StateDb slot, already budgeted).
+/// Used by the engine's RAM guard to account for this otherwise-uncounted, unbounded-growth structure.
+__INLINE__ size_t getSharedBackingMaxMemoryBytes(const std::shared_ptr<void>& backing)
+{
+  if (backing == nullptr) return 0;
+  return static_cast<SequenceInputTrie*>(backing.get())->getMaxMemoryBytes();
+}
+
 /**
  * @brief Creates one runner's input-history instance bound to @p backing.
  * @param config        The "Store Input History" configuration object ("Type" plus any per-strategy keys).

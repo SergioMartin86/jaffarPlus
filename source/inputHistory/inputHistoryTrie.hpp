@@ -23,7 +23,11 @@ namespace jaffarPlus
 {
 
 /// @brief The shared trie type backing every InputHistoryTrie instance of one search.
-using SequenceInputTrie = jaffarCommon::sequenceTrie::SequenceTrie<InputSet::inputIndex_t>;
+/// The trie stores each path element as a 16-bit input index (not the full size_t inputIndex_t): this
+/// halves the node and, with the 16-bit refCount, makes the node 8 bytes -> the trie's hard memory ceiling
+/// drops from ~96 GiB to ~32 GiB. Valid because a search registers far fewer than 65536 distinct inputs
+/// (the constructor enforces this).
+using SequenceInputTrie = jaffarCommon::sequenceTrie::SequenceTrie<uint16_t>;
 
 /// @brief Stores each state's path as one node id into a shared, reference-counted prefix trie; sibling
 /// states share their common prefix, so per-state cold storage is just a node id + count. `{"Type":"Trie"}`.
@@ -41,6 +45,11 @@ public:
   InputHistoryTrie(SequenceInputTrie* trie, const uint32_t shardId, const uint32_t managerShard, const uint32_t maxInputIndex, const uint32_t maxSize)
       : _trie(trie), _shardId(shardId), _managerShard(managerShard), _maxSize(maxSize)
   {
+    // The trie node stores the input index as a 16-bit element (see SequenceInputTrie). maxInputIndex is one
+    // past the highest input index, so it must fit in 16 bits. Real searches register a few hundred inputs
+    // at most; if a game ever exceeds this, use Type "Raw" instead.
+    if (maxInputIndex > 0x10000u)
+      JAFFAR_THROW_RUNTIME("Trie input-history supports at most 65536 distinct inputs (got %u); use Store Input History Type \"Raw\".", maxInputIndex);
     _bits         = jaffarCommon::bitwise::getEncodingBitsForElementCount(maxInputIndex);
     _bitpackBytes = (_maxSize * _bits + 7) / 8;
     _scratch.resize(_bitpackBytes, 0);
@@ -58,7 +67,7 @@ public:
   {
     // Append as a new owned node; the prior owned node (e.g. a frameskip sub-frame) is kept alive by the
     // new node's child edge, so drop this runner's transient reference to it. The trie is unbounded.
-    const nodeId_t next = _trie->extend(_node, input, _shardId);
+    const nodeId_t next = _trie->extend(_node, (uint16_t)input, _shardId); // input < maxInputIndex <= 65536 (ctor-checked)
     if (_ownNode) _trie->release(_node, _shardId);
     _node    = next;
     _ownNode = true;
@@ -101,7 +110,7 @@ public:
     std::string out;
     for (size_t i = 0; i < seq.size() && i < _maxSize; i++)
     {
-      if (inputStringMap.contains(seq[i]) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", seq[i]);
+      if (inputStringMap.contains(seq[i]) == false) JAFFAR_THROW_RUNTIME("Move Index %lu not found in runner\n", (unsigned long)seq[i]);
       out += inputStringMap.at(seq[i]) + std::string("\n");
     }
     return out;
@@ -147,7 +156,7 @@ private:
     std::memset(buffer, 0, _bitpackBytes);
     if (node == SequenceInputTrie::NONE) return;
     if (pin) _trie->acquire(node);
-    std::vector<InputSet::inputIndex_t> seq;
+    std::vector<InputSet::inputIndex_t> seq; // reconstruct widens the trie's 16-bit elements into these
     _trie->reconstruct(node, seq);
     if (pin) _trie->release(node, _managerShard);
     for (size_t i = 0; i < seq.size() && i < _maxSize; i++) jaffarCommon::bitwise::bitcopy(buffer, _bitpackBytes, i, &seq[i], sizeof(InputSet::inputIndex_t), 0, 1, _bits);
@@ -165,7 +174,7 @@ private:
     {
       InputSet::inputIndex_t idx = 0;
       jaffarCommon::bitwise::bitcopy(&idx, sizeof(InputSet::inputIndex_t), 0, buffer, _bitpackBytes, i, 1, _bits);
-      const nodeId_t next = _trie->extend(_node, idx, _shardId);
+      const nodeId_t next = _trie->extend(_node, (uint16_t)idx, _shardId);
       if (_ownNode) _trie->release(_node, _shardId);
       _node    = next;
       _ownNode = true;
