@@ -11,7 +11,9 @@
 #include "runner.hpp"
 #include <chrono>
 #include <cstdlib>
+#include <fstream>
 #include <limits>
+#include <vector>
 
 namespace jaffarPlus
 {
@@ -37,7 +39,9 @@ public:
 
     outOfStates = 1, ///< Engine ran out of states
 
-    maximumStepReached = 2 ///< Maximum step reached
+    maximumStepReached = 2, ///< Maximum step reached
+
+    bestBelowReference = 3 ///< The best state's reward fell below the reference reward floor at this step
   };
 
   /**
@@ -78,6 +82,31 @@ public:
     _saveIntermediateBestSolutionPath  = jaffarCommon::json::popString(saveIntermediateResultsJs, "Best Solution Path");
     _saveIntermediateWorstSolutionPath = jaffarCommon::json::popString(saveIntermediateResultsJs, "Worst Solution Path");
     jaffarCommon::json::checkEmpty(saveIntermediateResultsJs, "Driver Configuration > Save Intermediate Results");
+
+    // Optional reference reward floor: cancel the whole job if the BEST state's reward falls below a
+    // per-step reference reward trace (beyond tolerance). This is purely a driver-level stopping criterion
+    // and diagnostic -- it does NOT prune states (recoverable slower-then-faster lines are kept); it only
+    // detects the first step at which the leading edge falls behind the reference (e.g. a reference TAS) and
+    // stops, so the run isn't ground on once it can no longer keep pace. Reward must be monotone-comparable.
+    _referenceFloorEnabled   = false;
+    _referenceFloorTolerance = 0.0f;
+    if (driverConfig.contains("Reference Reward Floor"))
+    {
+      auto refJs               = jaffarCommon::json::popObject(driverConfig, "Reference Reward Floor");
+      _referenceFloorEnabled   = jaffarCommon::json::popBoolean(refJs, "Enabled");
+      _referenceFloorTolerance = jaffarCommon::json::popNumber<float>(refJs, "Tolerance");
+      const auto refPath       = jaffarCommon::json::popString(refJs, "Path");
+      jaffarCommon::json::checkEmpty(refJs, "Driver Configuration > Reference Reward Floor");
+      if (_referenceFloorEnabled)
+      {
+        std::ifstream f(refPath);
+        if (f.good() == false) JAFFAR_THROW_RUNTIME("[ERROR] Could not open 'Reference Reward Floor' > 'Path': '%s'\n", refPath.c_str());
+        float v;
+        while (f >> v) _referenceReward.push_back(v);
+        jaffarCommon::logger::log("[J+] Reference reward floor enabled: %lu steps loaded, tolerance %.4f\n", _referenceReward.size(), _referenceFloorTolerance);
+      }
+    }
+
     jaffarCommon::json::checkEmpty(driverConfig, "Driver Configuration");
 
     // Getting component configurations (consumed from the root so the root check below can flag strays)
@@ -186,6 +215,18 @@ public:
       // Updating best and worst states
       updateBestState();
       updateWorstState();
+
+      // Reference reward floor: if the best leading edge has fallen below the reference at this step, the run
+      // can no longer keep pace with the reference -- cancel now (purely a stop signal; nothing was pruned).
+      if (_referenceFloorEnabled && _currentStep < _referenceReward.size()
+          && _bestStateReward < _referenceReward[_currentStep] - _referenceFloorTolerance)
+      {
+        jaffarCommon::logger::log("[J+] Best (%.6f) fell below reference floor (%.6f, tol %.4f) at step %lu by %.6f -- cancelling.\n",
+                                  _bestStateReward, _referenceReward[_currentStep], _referenceFloorTolerance, _currentStep,
+                                  _referenceReward[_currentStep] - _referenceFloorTolerance - _bestStateReward);
+        exitReason = exitReason_t::bestBelowReference;
+        break;
+      }
 
       // Storing manually saved solution, if required
       storeManualSaveSolution();
@@ -448,6 +489,17 @@ public:
       jaffarCommon::logger::log("[J+] Current Reward (Win / Worst):                %.6f / %.6f (Diff: %.6f)\n", _bestStateReward, _worstStateReward,
                                 _bestStateReward - _worstStateReward);
 
+    // When a reference reward floor is active, show the reference reward at this step and how the best
+    // compares to it (positive = best ahead of the reference, negative = best behind), for easy human review.
+    if (_referenceFloorEnabled)
+    {
+      if (_currentStep < _referenceReward.size())
+        jaffarCommon::logger::log("[J+] Reference Reward (Best - Ref):               %.6f (Best %+.6f, tol %.4f)\n", _referenceReward[_currentStep],
+                                  _bestStateReward - _referenceReward[_currentStep], _referenceFloorTolerance);
+      else
+        jaffarCommon::logger::log("[J+] Reference Reward (Best - Ref):               (none: step beyond reference trace)\n");
+    }
+
     // Printing engine information
     jaffarCommon::logger::log("[J+] Engine Information: \n");
     _engine->printInfo();
@@ -510,6 +562,10 @@ private:
   float _bestStateReward; ///< Reward for the best (win or otherwise) state found so far.
 
   float _worstStateReward; ///< Reward for the worst state found so far.
+
+  bool               _referenceFloorEnabled;   ///< Whether the reference reward floor cancel is active.
+  float              _referenceFloorTolerance; ///< Allowed shortfall of best below the reference per step.
+  std::vector<float> _referenceReward;         ///< Per-step reference reward floor (index = step).
 
   std::string _bestStateStorage; ///< Storage for the current best (win or otherwise) state.
 

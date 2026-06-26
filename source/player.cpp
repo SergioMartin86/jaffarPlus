@@ -48,6 +48,8 @@ std::string dumpHashesPath;
 ///        as a flat binary blob (size-of-LRAM bytes per step). Diffing two emulators' RAM dumps
 ///        byte-by-byte identifies the exact RAM addresses (hence game variables) that diverge.
 std::string dumpRamPath;
+std::string saveStateStepStr;
+std::string saveStateFilePath;
 
 /// @brief Directory to write per-frame screenshots (BMP) into; empty disables screenshotting.
 std::string screenshotDir;
@@ -182,6 +184,25 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       dump.append((const char*)lram.pointer, lram.size);
     }
     if (jaffarCommon::file::saveStringToFile(dump, dumpRamPath.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step RAM dump to: %s\n", dumpRamPath.c_str());
+  }
+
+  // If requested, restore the state at a single step and save the emulator's FULL state to a file (for use
+  // as the Emulator "Initial State File Path" -- a mid-run seed). Prints the bike posX so the caller can set
+  // the game's "Initial Block Transitions" to make _bikePosX absolute. Then exits.
+  if (saveStateFilePath.empty() == false)
+  {
+    const auto step = (ssize_t)parseUInt(saveStateStepStr, "--saveStateStep");
+    p.loadStepData(step);
+    std::string saveData;
+    const size_t stateSize = r.getGame()->getEmulator()->getStateSize();
+    saveData.resize(stateSize);
+    jaffarCommon::serializer::Contiguous s(saveData.data(), stateSize);
+    r.getGame()->getEmulator()->serializeState(s);
+    if (jaffarCommon::file::saveStringToFile(saveData, saveStateFilePath.c_str()) == false)
+      JAFFAR_THROW_LOGIC("[ERROR] Could not write state at step %ld to: %s\n", (long)step, saveStateFilePath.c_str());
+    jaffarCommon::logger::log("[J+] Saved emulator state at step %ld to %s (%lu bytes)\n", (long)step, saveStateFilePath.c_str(), stateSize);
+    r.getGame()->printInfo();
+    return 0;
   }
 
   // Interactive section
@@ -456,6 +477,12 @@ int main(int argc, char* argv[])
   program.add_argument("--dumpRam")
       .help("Writes the full low work-RAM (LRAM) for every step to the given file as flat binary (for byte-level cross-emulator diffs).")
       .default_value(std::string(""));
+  program.add_argument("--saveStateStep")
+      .help("Step at which to save the emulator state (used with --saveStateFile), then exit.")
+      .default_value(std::string(""));
+  program.add_argument("--saveStateFile")
+      .help("File to write the emulator's full state at --saveStateStep to (load as Emulator 'Initial State File Path').")
+      .default_value(std::string(""));
 
   // Try to parse arguments
   try
@@ -514,6 +541,8 @@ int main(int argc, char* argv[])
 
   // Getting the per-step RAM dump path (if any)
   dumpRamPath = program.get<std::string>("--dumpRam");
+  saveStateStepStr  = program.get<std::string>("--saveStateStep");
+  saveStateFilePath = program.get<std::string>("--saveStateFile");
 
   // Initializing terminal
   jaffarCommon::logger::initializeTerminal();
