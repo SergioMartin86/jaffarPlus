@@ -99,6 +99,7 @@ int main(int argc, char* argv[])
   if (exitReason == jaffarPlus::Driver::exitReason_t::winStateFound) exitReasonString = "Solution found.";
   if (exitReason == jaffarPlus::Driver::exitReason_t::outOfStates) exitReasonString = "Engine ran out of states.";
   if (exitReason == jaffarPlus::Driver::exitReason_t::maximumStepReached) exitReasonString = "Maximum step count reached.";
+  if (exitReason == jaffarPlus::Driver::exitReason_t::bestBelowReference) exitReasonString = "Best fell below the reference reward floor.";
 
   // Getting current step
   auto finalStep = d->getCurrentStep();
