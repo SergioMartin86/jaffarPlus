@@ -106,6 +106,12 @@ public:
     // Loading rom into emulator
     _quickerNES->loadROM((uint8_t*)romFileData.data(), romFileData.size());
 
+    // Set the NTAB/SRAM serialize block sizes BEFORE any Initial State deserialization, so a state saved
+    // with these (config) block sizes is read back with the same layout. (Previously these were set only
+    // after the Initial State load, which deserialized with default sizes and corrupted/overflowed.)
+    _quickerNES->setNTABBlockSize(_NTABBlockSize);
+    _quickerNES->setSRAMBlockSize(_SRAMBlockSize);
+
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
     {
@@ -122,12 +128,6 @@ public:
 
     // Now disabling state properties, as requested
     disableStateProperties();
-
-    // Setting Nametable block size to serialize. Some games don't use the entire memory so it's ok to reduce it
-    _quickerNES->setNTABBlockSize(_NTABBlockSize);
-
-    // Setting SRAM block size to serialize. Some games don't use the entire memory so it's ok to reduce it
-    _quickerNES->setSRAMBlockSize(_SRAMBlockSize);
 
     // Getting input parser from the internal emulator
     const auto inputParser = _quickerNES->getInputParser();
