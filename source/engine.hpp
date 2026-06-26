@@ -201,7 +201,15 @@ public:
     {
       const size_t stateBudget = _stateDb->getMaxBudgetBytes();
       const size_t hashBudget  = (_hashDbEnabled == true) ? _hashDb->getMaxBudgetBytes() : 0;
-      const size_t totalBudget = stateBudget + hashBudget;
+      // Shared input-history trie: an uncounted structure that grows ~ live-states x depth up to its hard
+      // node cap (~100 GB for the Trie strategy on this build). Reserve its ceiling. (0 for None/Raw.)
+      const size_t historyBound = inputHistory::getSharedBackingMaxMemoryBytes(_inputHistoryBacking);
+      // The state DB is a fixed pool (1x; full slots are scavenged from the current step, never doubled).
+      // The hash DB phmap grows by doubling, so during a rehash the old table and the new 2x table briefly
+      // coexist -- reserve ~2x the hash budget for that transient. (Empirically a 270 GB state+hash config
+      // peaked at ~520 GB RSS = state + ~2*hash + trie, then OOM-killed mid-run.)
+      const size_t hashPeak    = hashBudget * 2;
+      const size_t totalBudget = stateBudget + hashPeak + historyBound;
       size_t freeRam = 0;
       for (int i = 0; i < _numaCount; i++)
       {
@@ -209,19 +217,21 @@ public:
         numa_node_size64(i, &nodeFree);
         freeRam += (size_t)nodeFree;
       }
-      const size_t usable = (size_t)((double)freeRam * 0.90); // 10% headroom: emulators, drain buffers, OS
+      const size_t usable = (size_t)((double)freeRam * 0.90); // 10% headroom: emulators, OS, fragmentation
       if (totalBudget > usable)
       {
         const double GB = 1024.0 * 1024.0 * 1024.0;
         JAFFAR_THROW_RUNTIME(
           "Configured database budget exceeds available memory:\n"
-          "  State DB 'Max Size (Mb)'                       = %.1f GB\n"
-          "  Hash DB  'Max Store Size' x 'Max Store Count'  = %.1f GB\n"
-          "  TOTAL                                          = %.1f GB\n"
-          "  Usable (90%% of %.1f GB free RAM)               = %.1f GB\n"
+          "  State DB ('Max Size (Mb)', fixed pool)                       = %.1f GB\n"
+          "  Hash DB peak (2 x 'Max Store Size' x 'Max Store Count')      = %.1f GB\n"
+          "  Input-history trie (hard node-storage ceiling)               = %.1f GB\n"
+          "  TOTAL                                                        = %.1f GB\n"
+          "  Usable (90%% of %.1f GB free RAM)                             = %.1f GB\n"
           "Reduce 'State Database/Max Size (Mb)' and/or 'Hash Database/Max Store Size (Mb)'.\n"
-          "NOTE: the hash DB PEAK footprint is Max Store Size x Max Store Count, not just Max Store Size.\n",
-          (double)stateBudget / GB, (double)hashBudget / GB, (double)totalBudget / GB, (double)freeRam / GB, (double)usable / GB);
+          "NOTE: the hash DB phmap doubles on growth, so a rehash briefly holds the old + new (2x) table; the\n"
+          "Trie input-history is a separate structure that grows up to ~100 GB. Both are otherwise uncounted.\n",
+          (double)stateBudget / GB, (double)hashPeak / GB, (double)historyBound / GB, (double)totalBudget / GB, (double)freeRam / GB, (double)usable / GB);
       }
     }
 
