@@ -48,6 +48,7 @@ std::string dumpHashesPath;
 ///        as a flat binary blob (size-of-LRAM bytes per step). Diffing two emulators' RAM dumps
 ///        byte-by-byte identifies the exact RAM addresses (hence game variables) that diverge.
 std::string dumpRamPath;
+std::string dumpRewardPath;
 
 /// @brief When set (--saveStateStep), the step at which to capture a full emulator savestate (paired
 ///        with --saveStateFile). Parsed as an unsigned step index; empty unless saving is requested.
@@ -190,6 +191,21 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       dump.append((const char*)lram.pointer, lram.size);
     }
     if (jaffarCommon::file::saveStringToFile(dump, dumpRamPath.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step RAM dump to: %s\n", dumpRamPath.c_str());
+  }
+
+  // If requested, write the per-step game reward (one value per line) to a file. The reward is part of the
+  // serialized game state, so loadStepData restores each step's reward directly -- this is exactly the value
+  // the search compares against, suitable as a "Reference Reward Floor" trace.
+  if (dumpRewardPath.empty() == false)
+  {
+    std::string dump;
+    for (ssize_t i = 0; i <= sequenceLength; i++)
+    {
+      p.loadStepData(i);
+      dump += std::to_string(r.getGame()->getReward()) + "\n";
+    }
+    if (jaffarCommon::file::saveStringToFile(dump, dumpRewardPath.c_str()) == false)
+      JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step reward dump to: %s\n", dumpRewardPath.c_str());
   }
 
   // If requested, restore the state at a single step and save the emulator's FULL state to a file (for use
@@ -483,6 +499,9 @@ int main(int argc, char* argv[])
   program.add_argument("--dumpRam")
       .help("Writes the full low work-RAM (LRAM) for every step to the given file as flat binary (for byte-level cross-emulator diffs).")
       .default_value(std::string(""));
+  program.add_argument("--dumpReward")
+      .help("Writes the per-step game reward (one value per line) to the given file (for use as a 'Reference Reward Floor' trace).")
+      .default_value(std::string(""));
   program.add_argument("--saveStateStep").help("Step at which to save the emulator state (used with --saveStateFile), then exit.").default_value(std::string(""));
   program.add_argument("--saveStateFile")
       .help("File to write the emulator's full state at --saveStateStep to (load as Emulator 'Initial State File Path').")
@@ -545,6 +564,7 @@ int main(int argc, char* argv[])
 
   // Getting the per-step RAM dump path (if any)
   dumpRamPath       = program.get<std::string>("--dumpRam");
+  dumpRewardPath    = program.get<std::string>("--dumpReward");
   saveStateStepStr  = program.get<std::string>("--saveStateStep");
   saveStateFilePath = program.get<std::string>("--saveStateFile");
 
