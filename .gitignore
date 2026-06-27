@@ -73,3 +73,8 @@ jaffar.worst.sol
 # Auto-generated registry lists (genRegistry.py writes these into the build dir)
 *.gen.hpp
 site/
+
+# exciteBikeNative: vendored game data (regenerable from the exciteBot project; do not commit, like ROMs)
+emulators/exciteBikeNative/track_layout.hpp
+emulators/exciteBikeNative/track_sections.hpp
+examples/nes/exciteBike/*.seed.ram
