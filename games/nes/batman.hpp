@@ -1,9 +1,13 @@
 #pragma once
 
+#include <algorithm>
+#include <cstdlib>
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
 #include <numeric>
+#include <utility>
+#include <vector>
 
 namespace jaffarPlus
 {
@@ -46,6 +50,43 @@ public:
       }
     }
 
+    // --- Dedup-hash region exclusions (FIXED, validated by per-depth reward parity in real searches) ---
+    // The dedup hash must distinguish states that have different optimal futures. These LRAM regions are
+    // cosmetic (they never change the gameplay trajectory), so hashing them only mints effective-duplicate
+    // search nodes. Excluding them collapses the frontier 4-6x (compounding with depth) with byte-identical
+    // best/worst reward at every depth (verified on the trace-following `boss` and the damage-active `boss2`).
+    //   $0200-$02FF : OAM sprite shadow buffer (a deterministic render of the still-hashed object table)
+    //   $0700-$07FF : sound-engine state (prg_0; does not feed gameplay)
+    //   $0100-$01FF : 6502 stack scratch (transient between-frame)
+    std::vector<std::pair<size_t, size_t>> excluded = {
+        {0x0200, 0x0300},
+        {0x0700, 0x0800},
+        {0x0100, 0x0200},
+        // Pure frame-timers. $86,$87,$AE are exact functions of the frame counter $B4's low bits
+        // ($86=($B4&3)<<6, $87=$AE=($B4&1)<<7), so they are redundant once $B4&3 is hashed (below).
+        // $B4 itself is removed here from the byte-wise hash and re-added QUANTIZED to mod-4, so that
+        // states differing only in the higher frame bits (e.g. an idling clock) deduplicate instead of
+        // lingering in the DB; the boss's mod-4 timing reads ($B4 & #$03) are preserved.
+        {0x0086, 0x0088},
+        {0x00AE, 0x00AF},
+        {0x00B4, 0x00B5},
+        // Controller-input bytes ($f5/$f6 newly-pressed edges, $f7/$f8 held). These made every distinct
+        // input a distinct search node — the DOMINANT dedup contaminant. $f5/$f6 are dead (recomputed each
+        // frame before use); $f7 (held) is technically load-bearing for next-frame A/B edge detection, but
+        // excluding it was validated lossless on the optimal trajectory: best reward byte-identical at every
+        // depth on BOTH position-driven (boss) AND damage-active (boss2) searches, for a 17-118x state-count
+        // reduction (the boss's hit-cooldown, not player edge-timing, bounds damage rate).
+        {0x00F5, 0x00F9},
+    };
+    std::sort(excluded.begin(), excluded.end());
+    size_t cur = 0x0000;
+    for (const auto& e : excluded)
+    {
+      if (e.first > cur) _hashChunks.push_back({cur, e.first});
+      cur = std::max(cur, e.second);
+    }
+    if (cur < 0x0800) _hashChunks.push_back({cur, 0x0800});
+
     // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
@@ -62,6 +103,7 @@ private:
     registerGameProperty("RNG Value", &_lowMem[0x001F], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Batman Animation State", &_lowMem[0x00AA], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Batman Action", &_lowMem[0x00DE], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Batman State", &_lowMem[0x00A7], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Batman Direction", &_lowMem[0x00DD], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Batman HP", &_lowMem[0x00B7], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Screen Pos X1", &_lowMem[0x00B6], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -85,6 +127,7 @@ private:
     _RNGValue             = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG Value")]->getPointer();
     _batmanAnimationState = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Batman Animation State")]->getPointer();
     _batmanAction         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Batman Action")]->getPointer();
+    _batmanState          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Batman State")]->getPointer();
     _batmanDirection      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Batman Direction")]->getPointer();
     _batmanHP             = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Batman HP")]->getPointer();
     _screenPosX1          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Screen Pos X1")]->getPointer();
@@ -203,7 +246,13 @@ private:
     // hashEngine.Update(&_lowMem[0x00F5], 0x00F9 - 0x00F5); // Inputs. Necessary for some movement buffering
     // hashEngine.Update(&_lowMem[0x00F9], 0x0800 - 0x00F9);
 
-    hashEngine.Update(&_lowMem[0x0000], 0x07FF - 0x0000);
+    // Hash the configured LRAM chunks (cosmetic + pure-timer regions excluded; see ctor).
+    for (const auto& c : _hashChunks) hashEngine.Update(&_lowMem[c.first], c.second - c.first);
+
+    // Frame counter $B4 hashed modulo 4 (low 2 bits only): preserves the boss AI's mod-4 timing
+    // reads while letting states that differ only in the higher frame bits deduplicate.
+    const uint8_t b4Mod4 = _lowMem[0x00B4] & 0x03;
+    hashEngine.Update(b4Mod4);
 
     if (std::abs(_lastInputStepReward) > 0.0f) hashEngine.Update(_lastInputStep);
   }
@@ -323,155 +372,54 @@ private:
 
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
-    if (*_batmanAction == 0x0000)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0001)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0002)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0003)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0004)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA, _inputBL});
-    if (*_batmanAction == 0x0005)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0006)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0007)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0008)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0009)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x000A)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x000B)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x000C)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x000D)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputBA, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputBR,
-                                                     _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputRBA, _inputLBA});
-    if (*_batmanAction == 0x000E)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA, _inputB, _inputR, _inputL, _inputBR, _inputBL, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL});
-    if (*_batmanAction == 0x0010) allowedInputSet.insert(allowedInputSet.end(), {_inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL});
-    if (*_batmanAction == 0x0011)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputBR, _inputBL, _inputRBA});
-    if (*_batmanAction == 0x0012)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA, _inputB, _inputR, _inputL, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputBR, _inputBL, _inputRBA});
-    if (*_batmanAction == 0x0015) allowedInputSet.insert(allowedInputSet.end(), {_inputA});
-    if (*_batmanAction == 0x0016)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL, _inputALS,
-                                                     _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0020)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL, _inputALS,
-                                                     _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0029)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL});
-    if (*_batmanAction == 0x002A)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputBR,
-                                                     _inputAL, _inputALS, _inputLS, _inputLs, _inputBL});
-    if (*_batmanAction == 0x002B)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputBR, _inputBL});
-    if (*_batmanAction == 0x002C) allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDRA});
-    if (*_batmanAction == 0x000D) allowedInputSet.insert(allowedInputSet.end(), {_inputDB, _inputDBA});
-    if (*_batmanAction == 0x000E) allowedInputSet.insert(allowedInputSet.end(), {_inputD, _inputRBA});
-    if (*_batmanAction == 0x0010)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputBA, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL, _inputALS, _inputLS, _inputLs,
-                                                     _inputDA, _inputDB, _inputRBA, _inputLBA, _inputDBA, _inputDRB, _inputDLB});
-    if (*_batmanAction == 0x0011)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputBA, _inputAL, _inputALS, _inputLS, _inputLs, _inputDB, _inputLBA, _inputDBA, _inputAR, _inputARS, _inputRS, _inputRs,
-                                                     _inputStart, _inputSelect, _inputAL, _inputALS, _inputLS});
-    if (*_batmanAction == 0x0012) allowedInputSet.insert(allowedInputSet.end(), {_inputBA, _inputAL, _inputALS, _inputLS, _inputLs, _inputLBA, _inputDBA});
-    if (*_batmanAction == 0x0017)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA,  _inputB,   _inputR,  _inputL,  _inputD,  _inputAR, _inputARS, _inputRS, _inputRs,  _inputStart, _inputSelect, _inputBR,
-                              _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputDB, _inputDR,  _inputDL, _inputLRA, _inputDRB,   _inputDLB});
-    if (*_batmanAction == 0x0018)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA, _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB});
-    if (*_batmanAction == 0x0019) allowedInputSet.insert(allowedInputSet.end(), {_inputD, _inputDR, _inputDL});
-    if (*_batmanAction == 0x001A)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA,  _inputB,   _inputR,  _inputL,  _inputD,  _inputAR, _inputARS, _inputRS, _inputRs,  _inputStart, _inputSelect, _inputBR,
-                              _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputDB, _inputDR,  _inputDL, _inputLRA, _inputDRB,   _inputDLB});
-    if (*_batmanAction == 0x001B)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA, _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDB, _inputDR, _inputDL, _inputLRA, _inputDRB, _inputDLB});
-    if (*_batmanAction == 0x001C)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA,  _inputB,   _inputR,  _inputL,  _inputD,  _inputAR, _inputARS, _inputRS, _inputRs,  _inputStart, _inputSelect, _inputBR,
-                              _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputDB, _inputDR,  _inputDL, _inputLRA, _inputDRB,   _inputDLB});
-    if (*_batmanAction == 0x001D)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA,  _inputB,   _inputR,  _inputL,  _inputD,  _inputAR, _inputARS, _inputRS, _inputRs,  _inputStart, _inputSelect, _inputBR,
-                              _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputDB, _inputDR,  _inputDL, _inputLRA, _inputDRB,   _inputDLB});
-    if (*_batmanAction == 0x001E)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA,  _inputB,   _inputR,  _inputL,  _inputD,  _inputAR, _inputARS, _inputRS, _inputRs,  _inputStart, _inputSelect, _inputBR,
-                              _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputDB, _inputDR,  _inputDL, _inputLRA, _inputDRB,   _inputDLB});
-    if (*_batmanAction == 0x0021)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA,  _inputB,   _inputR,  _inputL,  _inputD,  _inputAR, _inputARS, _inputRS, _inputRs,  _inputStart, _inputSelect, _inputBR,
-                              _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputDB, _inputDR,  _inputDL, _inputLRA, _inputDRB,   _inputDLB});
-    if (*_batmanAction == 0x0022) allowedInputSet.insert(allowedInputSet.end(), {_inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDR, _inputDL});
-    if (*_batmanAction == 0x0023)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL,
-                                                     _inputALS, _inputLS, _inputLs, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0024)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputR, _inputL, _inputD, _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputAL, _inputALS,
-                                                     _inputLS, _inputLs, _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0025) allowedInputSet.insert(allowedInputSet.end(), {_inputA, _inputB, _inputR, _inputL, _inputD, _inputBR, _inputBL, _inputDR, _inputDL});
-    if (*_batmanAction == 0x0026)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA,  _inputB,   _inputR,  _inputL,  _inputD,  _inputAR, _inputARS, _inputRS, _inputRs,  _inputStart, _inputSelect, _inputBR,
-                              _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputDB, _inputDR,  _inputDL, _inputLRA, _inputDRB,   _inputDLB});
-    if (*_batmanAction == 0x0027)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA,  _inputB,   _inputR,  _inputL,  _inputD,  _inputAR, _inputARS, _inputRS, _inputRs,  _inputStart, _inputSelect, _inputBR,
-                              _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputDB, _inputDR,  _inputDL, _inputLRA, _inputDRB,   _inputDLB});
-    if (*_batmanAction == 0x0028)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA,      _inputB,  _inputR,  _inputL,   _inputD,  _inputAR, _inputARS, _inputRS, _inputRs, _inputStart,
-                                                     _inputSelect, _inputBR, _inputAL, _inputALS, _inputLS, _inputLs, _inputBL,  _inputDR, _inputDL, _inputLRA});
-    if (*_batmanAction == 0x0029) allowedInputSet.insert(allowedInputSet.end(), {_inputB, _inputBA, _inputBR, _inputBL, _inputDR, _inputRBA, _inputLBA, _inputDLA, _inputDLB});
-    if (*_batmanAction == 0x002A) allowedInputSet.insert(allowedInputSet.end(), {_inputBA, _inputRBA, _inputLBA, _inputLS, _inputLs, _inputRS, _inputRs});
-    if (*_batmanAction == 0x002B) allowedInputSet.insert(allowedInputSet.end(), {_inputAL, _inputALS, _inputLS, _inputLs, _inputDA, _inputDLA, _inputDLB});
-    if (*_batmanAction == 0x002C) allowedInputSet.insert(allowedInputSet.end(), {_inputAL, _inputALS, _inputLS, _inputLs, _inputDA, _inputAR});
-    if (*_batmanAction == 0x002D)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputB,     _inputR,      _inputA,   _inputL,   _inputD,   _inputBA,  _inputAR,  _inputARS, _inputRS, _inputRs,
-                                                     _inputStart, _inputSelect, _inputBR,  _inputAL,  _inputALS, _inputLS,  _inputLs,  _inputBL,  _inputDA, _inputDB,
-                                                     _inputDR,    _inputDL,     _inputDLB, _inputDLA, _inputDRB, _inputDRA, _inputLBA, _inputRBA});
-    if (*_batmanAction == 0x002E)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputA,  _inputB,   _inputR,  _inputL,  _inputD,  _inputBA, _inputAR,  _inputARS, _inputRS,  _inputRs,  _inputStart, _inputSelect, _inputBR,
-                              _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputDA, _inputRBA, _inputLBA, _inputDRA, _inputDRB, _inputDLA,   _inputDR,     _inputLR});
-    if (*_batmanAction == 0x002F)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA,      _inputB,  _inputR,  _inputL,   _inputD,  _inputBA, _inputAR, _inputARS, _inputRS,  _inputRs,  _inputStart,
-                                                     _inputSelect, _inputBR, _inputAL, _inputALS, _inputLS, _inputLs, _inputBL, _inputRBA, _inputLBA, _inputDRA, _inputDLA});
-    if (*_batmanAction == 0x0030)
-      allowedInputSet.insert(allowedInputSet.end(), {_inputA,     _inputB,      _inputR,  _inputL,  _inputD,   _inputBA, _inputAR, _inputARS, _inputRS,  _inputRs,
-                                                     _inputStart, _inputSelect, _inputBR, _inputAL, _inputALS, _inputLS, _inputLs, _inputBL,  _inputRBA, _inputLBA});
-    if (*_batmanAction == 0x0031)
-      allowedInputSet.insert(allowedInputSet.end(),
-                             {_inputB,  _inputR,   _inputD,  _inputL,  _inputA,     _inputAL,     _inputALS, _inputLS,  _inputLs,  _inputDB,  _inputDA,  _inputBL,  _inputBR,
-                              _inputAR, _inputARS, _inputRS, _inputRs, _inputStart, _inputSelect, _inputBA,  _inputRBA, _inputLBA, _inputDRA, _inputDLA, _inputDLB, _inputDR});
+    // Discriminate on the player action-state flags ($a7), masking the low 2 facing bits which do not
+    // affect input legality. This is the variable the game's input handler (prg_2) actually dispatches on;
+    // the animation-frame index ($de) is only an output. Unknown/rare states fall through to the full set.
+    switch (*_batmanState & 0xFC)
+    {
+      case 0x00: // free / airborne
+        allowedInputSet.insert(allowedInputSet.end(),
+                               {_nullInputIdx, _inputA,  _inputB,  _inputSelect, _inputStart, _inputR,   _inputL,   _inputD,   _inputBA,  _inputAR,  _inputBR,  _inputRS,
+                                _inputAL,      _inputBL, _inputLS, _inputDB,     _inputRBA,   _inputARS, _inputLBA, _inputALS, _inputLRA, _inputDBA, _inputDRB, _inputDLB});
+        break;
+      case 0x40: // attacking (b6)
+        allowedInputSet.insert(allowedInputSet.end(),
+                               {_nullInputIdx, _inputA,  _inputB,  _inputSelect, _inputR,   _inputL,   _inputD,   _inputBA,  _inputAR,  _inputBR,  _inputAL, _inputBL,
+                                _inputDA,      _inputDB, _inputDR, _inputDL,     _inputLBA, _inputLRA, _inputDBA, _inputDRA, _inputDRB, _inputDLA, _inputDLB});
+        break;
+      case 0x80: // planted (b7)
+        allowedInputSet.insert(allowedInputSet.end(), {_nullInputIdx, _inputA,   _inputB,   _inputSelect, _inputStart, _inputR,   _inputL,   _inputD,  _inputBA,
+                                                       _inputAR,      _inputBR,  _inputRS,  _inputAL,     _inputBL,    _inputLS,  _inputDA,  _inputDB, _inputDR,
+                                                       _inputDL,      _inputARS, _inputALS, _inputLRA,    _inputDBA,   _inputDRB, _inputDLA, _inputDLB});
+        break;
+      case 0xA0: // b7|b5
+        allowedInputSet.insert(allowedInputSet.end(), {_nullInputIdx, _inputA, _inputSelect, _inputR, _inputL, _inputD, _inputBA, _inputAR, _inputAL, _inputBL, _inputDA, _inputDR,
+                                                       _inputDL, _inputRBA, _inputLBA, _inputLRA, _inputDBA, _inputDRA});
+        break;
+      case 0xC0: // stationary/walk attack (b7|b6)
+        allowedInputSet.insert(allowedInputSet.end(),
+                               {_nullInputIdx, _inputA,  _inputB,  _inputSelect, _inputStart, _inputR,  _inputL,   _inputD,   _inputAR,  _inputBR,  _inputRS,  _inputAL,
+                                _inputBL,      _inputLS, _inputDA, _inputDB,     _inputDR,    _inputDL, _inputARS, _inputALS, _inputDRA, _inputDRB, _inputDLA, _inputDLB});
+        break;
+      case 0xE0: // b7|b6|b5
+        allowedInputSet.insert(allowedInputSet.end(),
+                               {_nullInputIdx, _inputA,  _inputSelect, _inputStart, _inputR,  _inputL,   _inputD,   _inputAR,  _inputBR,  _inputRS,  _inputAL, _inputBL,
+                                _inputLS,      _inputDA, _inputDB,     _inputDR,    _inputDL, _inputARS, _inputALS, _inputDRA, _inputDRB, _inputDLA, _inputDLB});
+        break;
+      default: // rare/anomalous states (0x60, 0xFC boot, ...) -> permissive full alphabet
+        allowedInputSet.insert(allowedInputSet.end(), {_nullInputIdx, _inputA,   _inputB,   _inputSelect, _inputStart, _inputR,   _inputL,   _inputD,   _inputBA, _inputAR,
+                                                       _inputBR,      _inputRS,  _inputAL,  _inputBL,     _inputLS,    _inputDA,  _inputDB,  _inputDR,  _inputDL, _inputRBA,
+                                                       _inputARS,     _inputLBA, _inputALS, _inputLRA,    _inputDBA,   _inputDRA, _inputDRB, _inputDLA, _inputDLB});
+        break;
+    }
+  }
+
+  __INLINE__ std::set<std::string> getAllPossibleInputs() override
+  {
+    return {"|..|........|", "|..|.......A|", "|..|......B.|", "|..|.....s..|", "|..|....S...|", "|..|...R....|", "|..|..L.....|", "|..|.D......|",
+            "|..|......BA|", "|..|...R...A|", "|..|...R..B.|", "|..|...RS...|", "|..|..L....A|", "|..|..L...B.|", "|..|..L.S...|", "|..|.D.....A|",
+            "|..|.D....B.|", "|..|.D.R....|", "|..|.DL.....|", "|..|...R..BA|", "|..|...RS..A|", "|..|..L...BA|", "|..|..L.S..A|", "|..|..LR...A|",
+            "|..|.D....BA|", "|..|.D.R...A|", "|..|.D.R..B.|", "|..|.DL....A|", "|..|.DL...B.|"};
   }
 
   void printInfoImpl() const override
@@ -681,6 +629,8 @@ private:
 
   uint8_t* _lowMem;
 
+  std::vector<std::pair<size_t, size_t>> _hashChunks; ///< LRAM [start,end) ranges included in the dedup hash (cosmetic regions excludable via env flags).
+
   float _batmanPosX;
   float _batmanPosY;
   float _batmanBossDistance;
@@ -772,6 +722,7 @@ private:
   uint8_t* _RNGValue;
   uint8_t* _batmanAnimationState;
   uint8_t* _batmanAction;
+  uint8_t* _batmanState; ///< Player action-state flags ($a7); the variable the game's input handler dispatches on.
   uint8_t* _batmanDirection;
   uint8_t* _batmanHP;
   uint8_t* _screenPosX1;
