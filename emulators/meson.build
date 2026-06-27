@@ -105,3 +105,9 @@ jaffarCPPFlags += '-D__JAFFAR_USE_TESTEMULATOR'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_TESTGAME'
 subdir('testEmulator')
 endif
+
+if emulator == 'ExciteBikeNative'
+jaffarCPPFlags += '-D__JAFFAR_USE_EXCITEBIKENATIVE'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_NES'
+subdir('exciteBikeNative')
+endif
