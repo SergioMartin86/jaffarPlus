@@ -97,7 +97,11 @@ public:
       _referenceFloorTolerance = jaffarCommon::json::popNumber<float>(refJs, "Tolerance");
       const auto refPath       = jaffarCommon::json::popString(refJs, "Path");
       jaffarCommon::json::checkEmpty(refJs, "Driver Configuration > Reference Reward Floor");
-      if (_referenceFloorEnabled)
+      // The trace file is a runtime artifact: only open it for a real run. Under --dryRun (JAFFAR_IS_DRY_RUN)
+      // we validate the config shape but skip the read, matching how ROM / initial-solution files are deferred
+      // to engine init (which dryRun never reaches) -- so config validation does not depend on the cwd-relative
+      // trace being present next to the build directory.
+      if (_referenceFloorEnabled && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr)
       {
         std::ifstream f(refPath);
         if (f.good() == false) JAFFAR_THROW_RUNTIME("[ERROR] Could not open 'Reference Reward Floor' > 'Path': '%s'\n", refPath.c_str());
