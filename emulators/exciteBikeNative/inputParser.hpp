@@ -16,17 +16,17 @@ typedef uint32_t port_t;
 
 struct input_t
 {
-  bool power = false;
-  bool reset = false;
-  port_t port1 = 0;
-  port_t port2 = 0;
-  port_t arkanoidLatch = 0;
-  uint8_t arkanoidFire = 0;
+  bool    power         = false;
+  bool    reset         = false;
+  port_t  port1         = 0;
+  port_t  port2         = 0;
+  port_t  arkanoidLatch = 0;
+  uint8_t arkanoidFire  = 0;
 };
 
 class InputParser
 {
-  public:
+public:
   enum controller_t
   {
     none,
@@ -39,13 +39,13 @@ class InputParser
 
   controller_t _controller1Type;
   controller_t _controller2Type;
-  
-  InputParser(const nlohmann::json &config)
+
+  InputParser(const nlohmann::json& config)
   {
     // Parsing controller 1 type
     {
-      bool isTypeRecognized = false;
-      const auto controller1Type = jaffarCommon::json::getString(config, "Controller 1 Type");
+      bool       isTypeRecognized = false;
+      const auto controller1Type  = jaffarCommon::json::getString(config, "Controller 1 Type");
       if (controller1Type == "None")
       {
         _controller1Type = controller_t::none;
@@ -67,7 +67,7 @@ class InputParser
         isTypeRecognized = true;
       }
 
-      #ifdef _QUICKERNES_SUPPORT_ARKANOID_INPUTS
+#ifdef _QUICKERNES_SUPPORT_ARKANOID_INPUTS
       if (controller1Type == "ArkanoidNES")
       {
         _controller1Type = controller_t::arkanoidNES;
@@ -78,15 +78,15 @@ class InputParser
         _controller1Type = controller_t::arkanoidFamicom;
         isTypeRecognized = true;
       }
-      #endif
-      
+#endif
+
       if (isTypeRecognized == false) JAFFAR_THROW_LOGIC("Controller 1 type not recognized: '%s'\n", controller1Type.c_str());
     }
 
     // Parsing controller 2 type
     {
-      bool isTypeRecognized = false;
-      const auto controller2Type = jaffarCommon::json::getString(config, "Controller 2 Type");
+      bool       isTypeRecognized = false;
+      const auto controller2Type  = jaffarCommon::json::getString(config, "Controller 2 Type");
       if (controller2Type == "None")
       {
         _controller2Type = controller_t::none;
@@ -111,7 +111,7 @@ class InputParser
     }
   }
 
-  inline input_t parseInputString(const std::string &inputString) const
+  inline input_t parseInputString(const std::string& inputString) const
   {
     // Storage for the input
     input_t input;
@@ -143,13 +143,10 @@ class InputParser
     return input;
   }
 
-  private:
-  static inline void reportBadInputString(const std::string &inputString)
-  {
-    JAFFAR_THROW_LOGIC("Could not decode input string: '%s'\n", inputString.c_str());
-  }
+private:
+  static inline void reportBadInputString(const std::string& inputString) { JAFFAR_THROW_LOGIC("Could not decode input string: '%s'\n", inputString.c_str()); }
 
-  static void parseJoyPadInput(uint8_t &code, std::istringstream &ss, const std::string &inputString)
+  static void parseJoyPadInput(uint8_t& code, std::istringstream& ss, const std::string& inputString)
   {
     // Currently read character
     char c;
@@ -201,7 +198,7 @@ class InputParser
   static inline void parseArkanoidInput(input_t& input, std::istringstream& ss, const std::string& inputString)
   {
     uint8_t potentiometer = 0;
-    uint8_t fire = 0;
+    uint8_t fire          = 0;
 
     // Controller separator
     if (ss.get() != '|') reportBadInputString(inputString);
@@ -211,11 +208,11 @@ class InputParser
 
     char c = ss.get(); // Hundreds
     if (c != ' ' && c < 48 && c > 57) reportBadInputString(inputString);
-    if (c != ' ') potentiometer += 100 * ( (uint8_t)c - 48 );
+    if (c != ' ') potentiometer += 100 * ((uint8_t)c - 48);
 
     c = ss.get(); // Tenths
     if (c != ' ' && c < 48 && c > 57) reportBadInputString(inputString);
-    if (c != ' ') potentiometer += 10 * ( (uint8_t)c - 48 );
+    if (c != ' ') potentiometer += 10 * ((uint8_t)c - 48);
 
     c = ss.get(); // Units
     if (c != ' ' && c < 48 && c > 57) reportBadInputString(inputString);
@@ -225,7 +222,7 @@ class InputParser
     if (ss.get() != ',') reportBadInputString(inputString);
 
     // Fire
-    
+
     c = ss.get();
     if (c != '.' && c != 'F') reportBadInputString(inputString);
     if (c == 'F') fire = 1;
@@ -235,7 +232,7 @@ class InputParser
 
     // Potentiometer is encoded in port 2 - MSB and adding one bit for signalling the presence of the potentiometer, subtracted from 173
     uint8_t subtracter = 171 - potentiometer;
-   
+
     input.arkanoidLatch = 0;
     if ((subtracter & 128) > 0) input.arkanoidLatch += 1;
     if ((subtracter & 64) > 0) input.arkanoidLatch += 2;
@@ -247,7 +244,7 @@ class InputParser
     if ((subtracter & 1) > 0) input.arkanoidLatch += 128;
   }
 
-  static void parseControllerInputs(const controller_t type, port_t &port, std::istringstream &ss, const std::string &inputString)
+  static void parseControllerInputs(const controller_t type, port_t& port, std::istringstream& ss, const std::string& inputString)
   {
     // If no controller assigned then, its port is all zeroes.
     if (type == controller_t::none)
@@ -323,14 +320,14 @@ class InputParser
     if (ss.get() != '|') reportBadInputString(inputString);
 
     // Advancing 7 positions (this input is not supported)
-    for (size_t i = 0; i < 7; i++) if (ss.get() != '.') reportBadInputString(inputString);
+    for (size_t i = 0; i < 7; i++)
+      if (ss.get() != '.') reportBadInputString(inputString);
 
     // Then, parse the arkanoid controller input
     parseArkanoidInput(input, ss, inputString);
   }
 
-
-  static void parseConsoleInputs(bool &reset, bool &power, std::istringstream &ss, const std::string &inputString)
+  static void parseConsoleInputs(bool& reset, bool& power, std::istringstream& ss, const std::string& inputString)
   {
     // Currently read character
     char c;

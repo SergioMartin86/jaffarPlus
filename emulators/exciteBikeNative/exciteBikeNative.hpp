@@ -46,8 +46,7 @@ public:
   {
     // Race-start RAM snapshot (stands in for the un-modeled boot/countdown). 2048 bytes. Optional:
     // if absent, initialize() uses the engine's flat baseline (Engine::reset()) -- e.g. for ROM-free tests.
-    if (_emulatorConfigRemaining.contains("Race Start RAM File Path"))
-      _raceStartRamPath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Race Start RAM File Path");
+    if (_emulatorConfigRemaining.contains("Race Start RAM File Path")) _raceStartRamPath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Race Start RAM File Path");
 
     // Reuse the NES joypad input parser (identical "|..|UDLRSsBA|" -> controller byte decoding).
     // It reads the controller-type keys without popping, so consume them here too; the base factory
@@ -68,8 +67,7 @@ public:
       return;
     }
     std::string ram;
-    if (jaffarCommon::file::loadStringFromFile(ram, _raceStartRamPath) == false)
-      JAFFAR_THROW_LOGIC("Could not read race-start RAM snapshot: '%s'", _raceStartRamPath.c_str());
+    if (jaffarCommon::file::loadStringFromFile(ram, _raceStartRamPath) == false) JAFFAR_THROW_LOGIC("Could not read race-start RAM snapshot: '%s'", _raceStartRamPath.c_str());
     if (ram.size() < excitebike::Engine::LRAM_SIZE)
       JAFFAR_THROW_LOGIC("Race-start RAM snapshot '%s' is %zu bytes, need >= %zu", _raceStartRamPath.c_str(), ram.size(), (size_t)excitebike::Engine::LRAM_SIZE);
     _engine.seedFromRam(reinterpret_cast<const uint8_t*>(ram.data()));
@@ -112,13 +110,13 @@ public:
   }
 
   // Render-related: no-ops (the native engine has no video output).
-  void            initializeVideoOutput() override {}
-  void            finalizeVideoOutput() override {}
-  __INLINE__ void enableRendering() override {}
-  __INLINE__ void disableRendering() override {}
-  __INLINE__ void updateRendererState(const size_t /*stepIdx*/, const std::string /*input*/) override {}
-  __INLINE__ void serializeRendererState(jaffarCommon::serializer::Base& serializer) const override { serializeState(serializer); }
-  __INLINE__ void deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) override { deserializeState(deserializer); }
+  void              initializeVideoOutput() override {}
+  void              finalizeVideoOutput() override {}
+  __INLINE__ void   enableRendering() override {}
+  __INLINE__ void   disableRendering() override {}
+  __INLINE__ void   updateRendererState(const size_t /*stepIdx*/, const std::string /*input*/) override {}
+  __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base& serializer) const override { serializeState(serializer); }
+  __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) override { deserializeState(deserializer); }
   __INLINE__ size_t getRendererStateSize() const override
   {
     jaffarCommon::serializer::Contiguous s;
