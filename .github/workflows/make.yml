@@ -205,6 +205,79 @@ jobs:
         name: meson-logs-coverage-TestEmulator
         path: build/meson-logs/
 
+  # Build (ExciteBikeNative) + tests. The native Excitebike physics engine (excitebike::Engine, via the
+  # extern/exciteBot submodule) as an emulation core. ROM-free: the tests run from the engine's flat
+  # baseline with a synthetic stub track (gen_stub_track.py), so no copyrighted ROM/RAM is needed -- a
+  # fast, deterministic gate over the emulator API + 64-byte packed state + search + reproduction.
+  build-ExciteBikeNative:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Checkout submodules (jaffarCommon + exciteBot)
+      run: |
+            git submodule init extern/jaffarCommon extern/exciteBot
+            git submodule update extern/jaffarCommon extern/exciteBot
+    - name: Generate synthetic stub track headers (ROM-free build)
+      run: python3 emulators/exciteBikeNative/gen_stub_track.py
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=ExciteBikeNative -Dgame=exciteBike
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+
+  # Code coverage of the engine (source/) exercised by the ROM-free ExciteBikeNative suite. Like
+  # coverage-TestEmulator it is ROM-less and deterministic; Codecov union-merges it with the other
+  # coverage upload (the emulator wrapper itself lives under emulators/, outside the source/ filter,
+  # consistent with every other core).
+  coverage-ExciteBikeNative:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Checkout submodules (jaffarCommon + exciteBot)
+      run: |
+            git submodule init extern/jaffarCommon extern/exciteBot
+            git submodule update extern/jaffarCommon extern/exciteBot
+    - name: Generate synthetic stub track headers (ROM-free build)
+      run: python3 emulators/exciteBikeNative/gen_stub_track.py
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson, ninja and gcovr
+      run: python3 -m pip install meson ninja gcovr
+    - name: Updating Apt
+      run: sudo apt update
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -Db_coverage=true -DuseNCurses=false -Demulator=ExciteBikeNative -Dgame=exciteBike
+    - name: Building project
+      run: ninja -C build
+    - name: Running tests
+      run: ninja test -C build
+    - name: Running coverage analysis
+      run: ninja coverage-xml -C build
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: SergioMartin86/jaffarPlus
+        flags: ExciteBikeNative
+        fail_ci_if_error: true
+        files: build/meson-logs/coverage.xml
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: meson-logs-coverage-ExciteBikeNative
+        path: build/meson-logs/
+
   # Build (QuickerNES) + tests. Validates the engine against a real emulator core/ROM; coverage is
   # measured separately on the TestEmulator harness (see coverage-TestEmulator).
   build-QuickerNES:
