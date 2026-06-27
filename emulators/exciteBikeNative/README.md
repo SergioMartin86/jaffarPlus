@@ -12,13 +12,17 @@ hashable state (see the [exciteBot](https://github.com/SergioMartin86/exciteBot)
   the single source of truth for the physics. Initialize with:
   `git submodule update --init extern/exciteBot`
 - `track_layout.hpp`, `track_sections.hpp` — ROM-derived game data (per-lane terrain + section
-  features). **Generated, gitignored** (like a ROM). Regenerate from the submodule:
-  ```
-  cd extern/exciteBot
-  python3 tools/extract_track_layout.py        # writes source/track_layout.hpp (needs tas.ram)
-  python3 tools/gen_sections_header.py          # writes source/track_sections.hpp
-  cp source/track_layout.hpp source/track_sections.hpp ../../emulators/exciteBikeNative/
-  ```
+  features). **Generated, gitignored** (like a ROM). Two ways to produce them:
+  - **ROM-free (CI / flat-baseline tests):** `python3 gen_stub_track.py` writes a SYNTHETIC all-flat
+    stub (no ROM content) — enough to build and run the flat tests. CI does this automatically.
+  - **Full fidelity (needs the ROM / `tas.ram`):** regenerate the real headers from the submodule and
+    copy them in (they take precedence — the stub generator only writes a header if it is missing):
+    ```
+    cd extern/exciteBot
+    python3 tools/extract_track_layout.py        # writes source/track_layout.hpp (needs tas.ram)
+    python3 tools/gen_sections_header.py          # writes source/track_sections.hpp
+    cp source/track_layout.hpp source/track_sections.hpp ../../emulators/exciteBikeNative/
+    ```
 
 ## Build & run
 ```

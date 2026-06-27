@@ -44,8 +44,10 @@ public:
   // Constructor: parse configuration only (no heavy init), so dry runs work.
   ExciteBikeNative(const nlohmann::json& config) : Emulator(config)
   {
-    // Race-start RAM snapshot (stands in for the un-modeled boot/countdown). 2048 bytes.
-    _raceStartRamPath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Race Start RAM File Path");
+    // Race-start RAM snapshot (stands in for the un-modeled boot/countdown). 2048 bytes. Optional:
+    // if absent, initialize() uses the engine's flat baseline (Engine::reset()) -- e.g. for ROM-free tests.
+    if (_emulatorConfigRemaining.contains("Race Start RAM File Path"))
+      _raceStartRamPath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Race Start RAM File Path");
 
     // Reuse the NES joypad input parser (identical "|..|UDLRSsBA|" -> controller byte decoding).
     // It reads the controller-type keys without popping, so consume them here too; the base factory

@@ -1,0 +1,81 @@
+{
+    "Driver Configuration": {
+        "End On First Win State": true,
+        "Max Steps": 200,
+        "Save Intermediate Results": {
+            "Enabled": true,
+            "Frequency (s)": 1.0,
+            "Best Solution Path": "/tmp/exbike.best.sol",
+            "Worst Solution Path": "/tmp/exbike.worst.sol"
+        }
+    },
+    "Engine Configuration": {
+        "Hash Database": {
+            "Enabled": true,
+            "Max Store Count": 2,
+            "Max Store Size (Mb)": 100
+        },
+        "State Database": {
+            "Max Size (Mb)": 50
+        }
+    },
+    "Emulator Configuration": {
+        "Emulator Name": "ExciteBikeNative",
+        "Controller 1 Type": "Joypad",
+        "Controller 2 Type": "None"
+    },
+    "Runner Configuration": {
+        "Bypass Hash Calculation": false,
+        "Frameskip": {
+            "Rate": 0,
+            "Use Custom Input": false,
+            "Custom Input": "|..|........|"
+        },
+        "Hash Step Tolerance": 0,
+        "Show Empty Input Slots": true,
+        "Show Allowed Inputs": true,
+        "Store Input History": {
+            "Type": "Raw",
+            "Max Size": 200
+        },
+        "Allowed Input Sets": [
+            {
+                "Conditions": [],
+                "Inputs": [
+                    "|..|........|",
+                    "|..|......B.|",
+                    "|..|U.....B.|",
+                    "|..|.D....B.|"
+                ],
+                "Stop Input Evaluation": false
+            }
+        ],
+        "Test Candidate Inputs": false,
+        "Candidate Input Sets": []
+    },
+    "Game Configuration": {
+        "Game Name": "NES / Excite Bike",
+        "Frame Rate": 600.1,
+        "Bypass Emulator State": false,
+        "Print Properties": [],
+        "Hash Properties": [],
+        "Rules": [
+            {
+                "Label": 1,
+                "Conditions": [
+                    {
+                        "Property": "Bike Pos X",
+                        "Op": ">",
+                        "Value": 200.0
+                    }
+                ],
+                "Satisfies": [],
+                "Actions": [
+                    {
+                        "Type": "Trigger Win"
+                    }
+                ]
+            }
+        ]
+    }
+}
