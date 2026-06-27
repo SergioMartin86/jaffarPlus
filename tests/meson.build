@@ -240,6 +240,15 @@ test('player_reports',
       args : [ 'checkPlayerReports.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
       suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
 
+# --dumpReward: per-step reward trace of a replayed solution, checked against GridWalker's exact
+# -(distance) + win-bonus rewards for a winning and a non-winning route (Reference Reward Floor source).
+test('player_dump_reward',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkPlayerDumpReward.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
+      suite : [ 'reproductions', 'TestEmulator', 'gridWalker' ])
+
 # Interactive frame advance/go-back controls: drives the real interactive loop via piped keystrokes
 # and verifies step arithmetic, boundary clamping, hash consistency, and absolute loaded state.
 test('player_navigation',
