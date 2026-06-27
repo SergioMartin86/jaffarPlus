@@ -320,6 +320,43 @@ test('race04_short_missing_solution',
 
 endif
 
+## NES / Excite Bike -- native physics engine core (excitebike::Engine, via the exciteBot submodule)
+
+if emulator == 'ExciteBikeNative'
+
+# ROM-free: the native engine starts from its flat baseline (no race-start RAM seed), so these tests
+# carry NO copyrighted ROM/RAM. They exercise the full integration end-to-end: the emulator API, the
+# 64-byte packed state, the search (reaches the posX>200 win) and deterministic reproduction of the
+# found solution. DB pools are shrunk via env (same mechanism the sprilo tests use).
+exciteBikeNativeEnv  = [ 'JAFFAR_ENGINE_OVERRIDE_MAX_STATEDB_SIZE_MB=10' ]
+exciteBikeNativeEnv += 'JAFFAR_ENGINE_OVERRIDE_MAX_HASHDB_SIZE_MB=100'
+
+test('exciteBike_native_search',
+      jaffar,
+      workdir : meson.current_source_dir() + '/nes/exciteBike',
+      timeout: testTimeout,
+      args : 'flatRun.jaffar',
+      env : exciteBikeNativeEnv,
+      suite : [ 'runs', 'ExciteBikeNative', 'exciteBike' ])
+
+test('exciteBike_native_reproduce',
+      jaffarPlayer,
+      workdir : meson.current_source_dir() + '/nes/exciteBike',
+      timeout: testTimeout,
+      args : [ 'flatRun.jaffar', 'flatRun.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
+      suite : [ 'reproductions', 'ExciteBikeNative', 'exciteBike' ])
+
+# Negative path: a missing solution file must make the player fail cleanly
+test('exciteBike_native_missing_solution',
+      jaffarPlayer,
+      workdir : meson.current_source_dir() + '/nes/exciteBike',
+      timeout: testTimeout,
+      args : [ 'flatRun.jaffar', 'does_not_exist.sol', '--reproduce', '--disableRender', '--exitOnEnd', '--unattended' ],
+      should_fail : true,
+      suite : [ 'reproductions', 'ExciteBikeNative', 'exciteBike' ])
+
+endif
+
 ## SDLPoP / Prince Of Persia
 
 if emulator == 'QuickerSDLPoP'
