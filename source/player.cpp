@@ -48,6 +48,9 @@ std::string dumpHashesPath;
 ///        as a flat binary blob (size-of-LRAM bytes per step). Diffing two emulators' RAM dumps
 ///        byte-by-byte identifies the exact RAM addresses (hence game variables) that diverge.
 std::string dumpRamPath;
+
+/// @brief When non-empty (--dumpReward), writes the per-step game reward (one value per line) for the
+///        replayed solution to this file. Suitable as a driver "Reference Reward Floor" trace.
 std::string dumpRewardPath;
 
 /// @brief When set (--saveStateStep), the step at which to capture a full emulator savestate (paired
