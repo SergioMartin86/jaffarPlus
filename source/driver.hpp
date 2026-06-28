@@ -41,7 +41,9 @@ public:
 
     maximumStepReached = 2, ///< Maximum step reached
 
-    bestBelowReference = 3 ///< The best state's reward fell below the reference reward floor at this step
+    bestBelowReference = 3, ///< The best state's reward fell below the reference reward floor at this step
+
+    inputHistoryNearCapacity = 4 ///< The shared input-history trie neared/hit its hard memory ceiling
   };
 
   /**
@@ -229,6 +231,31 @@ public:
                                   _referenceReward[_currentStep] - _referenceFloorTolerance - _bestStateReward);
         exitReason = exitReason_t::bestBelowReference;
         break;
+      }
+
+      // Input-history backing guard: the "Trie" strategy's shared node pool grows ~ live-states x depth
+      // toward a hard ceiling (getInputHistoryMaxMemoryBytes). Stop GRACEFULLY at a high-water mark -- or, as
+      // a backstop, if a worker already latched the pool exhausted -- so the search saves its best result and
+      // exits cleanly, instead of a worker hitting the ceiling mid-step and terminating the whole process.
+      // No-op for None/Raw (ceiling 0): their history lives in the StateDb slot, already bounded.
+      {
+        const size_t ihCeiling = _engine->getInputHistoryMaxMemoryBytes();
+        if (ihCeiling > 0)
+        {
+          const size_t ihNow     = _engine->getInputHistoryApproxMemoryBytes();
+          const bool   exhausted = _engine->isInputHistoryExhausted();
+          if (exhausted || ihNow >= (size_t)((double)ihCeiling * _inputHistoryCapacityWatermark))
+          {
+            const double GB = 1024.0 * 1024.0 * 1024.0;
+            jaffarCommon::logger::log("[J+] Input-history trie at %.1f / %.1f GB (%.0f%% of its hard ceiling)%s at step %lu -- stopping "
+                                      "gracefully. The Trie node pool grows ~ live-states x depth and cannot be enlarged past RAM; switch "
+                                      "Store Input History Type to \"Raw\" (bounded by 'State Database/Max Size (Mb)'), or lower the State "
+                                      "DB size so fewer live states slow the trie's growth.\n",
+                                      (double)ihNow / GB, (double)ihCeiling / GB, 100.0 * (double)ihNow / (double)ihCeiling, exhausted ? " (pool exhausted)" : "", _currentStep);
+            exitReason = exitReason_t::inputHistoryNearCapacity;
+            break;
+          }
+        }
       }
 
       // Storing manually saved solution, if required
@@ -569,6 +596,12 @@ private:
   bool               _referenceFloorEnabled;   ///< Whether the reference reward floor cancel is active.
   float              _referenceFloorTolerance; ///< Allowed shortfall of best below the reference per step.
   std::vector<float> _referenceReward;         ///< Per-step reference reward floor (index = step).
+
+  /// @brief Fraction of the input-history trie's hard ceiling at which the run stops gracefully (high-water
+  /// mark). One step's growth (~ live-states nodes) is far below the remaining headroom at this level, so the
+  /// next per-step check always fires before a worker hits the actual ceiling. Not a config key (sane fixed
+  /// default); the real lever is Store Input History Type ("Raw" vs "Trie") and the State DB size.
+  double _inputHistoryCapacityWatermark = 0.95;
 
   std::string _bestStateStorage; ///< Storage for the current best (win or otherwise) state.
 

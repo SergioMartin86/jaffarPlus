@@ -8,8 +8,16 @@
  *        raw bit-packed history. Selected with `{"Type": "Trie", "Max Size": N}` ("Max Size" bounds only
  *        the reconstructed snapshot/solution buffer; the live search path is unbounded).
  *
- * Cold form (StateDb slot): [node id (4)][count (4)]. Full form (self-contained snapshot): the path
- * reconstructed into a bit-packed buffer + count, so snapshots need no reference back into the trie.
+ * Cold form (StateDb slot): [node id][count]. Full form (self-contained snapshot): the path reconstructed
+ * into a bit-packed buffer + count, so snapshots need no reference back into the trie.
+ *
+ * UNBOUNDED GROWTH + HARD CEILING (watch this): unlike Raw, the trie is a SEPARATE shared pool NOT counted
+ * in the State DB budget; it grows ~ live-states x depth and is capped at the trie's hard node ceiling
+ * (SequenceTrie::getMaxMemoryBytes, reserved by the engine RAM guard). When that ceiling is reached the
+ * trie soft-fails (extend() returns NONE, isExhausted() latches) rather than throwing inside the parallel
+ * region, and the driver stops the run gracefully (exit reason inputHistoryNearCapacity). Because prefix
+ * sharing fades with depth, Raw (per-state cost fixed by Max Size, bounded by the State DB) can beat Trie
+ * on very deep searches -- compare the per-step "Input History (shared) ... raw would be ..." figures.
  */
 
 #include "inputHistory.hpp"
@@ -77,7 +85,10 @@ public:
 
   void serializeCold(jaffarCommon::serializer::Base& s) const override
   {
-    _trie->acquire(_node); // the destination slot becomes a holder of this path node
+    // _node may be NONE if the trie hit its capacity ceiling (extend returned NONE); acquiring NONE would
+    // index out of bounds. Skip it -- releaseColdSlot() already skips NONE too, so the refcount stays
+    // balanced. (The run is stopped gracefully by the driver's capacity guard right after this anyway.)
+    if (_node != SequenceInputTrie::NONE) _trie->acquire(_node); // the destination slot becomes a holder of this path node
     s.pushContiguous(&_node, sizeof(_node));
     s.pushContiguous(&_count, sizeof(_count));
   }

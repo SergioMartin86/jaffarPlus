@@ -100,6 +100,8 @@ int main(int argc, char* argv[])
   if (exitReason == jaffarPlus::Driver::exitReason_t::outOfStates) exitReasonString = "Engine ran out of states.";
   if (exitReason == jaffarPlus::Driver::exitReason_t::maximumStepReached) exitReasonString = "Maximum step count reached.";
   if (exitReason == jaffarPlus::Driver::exitReason_t::bestBelowReference) exitReasonString = "Best fell below the reference reward floor.";
+  if (exitReason == jaffarPlus::Driver::exitReason_t::inputHistoryNearCapacity)
+    exitReasonString = "Input-history trie neared its hard memory ceiling (use Type \"Raw\" or a smaller State DB).";
 
   // Getting current step
   auto finalStep = d->getCurrentStep();

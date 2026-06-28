@@ -47,6 +47,23 @@ __INLINE__ size_t getSharedBackingMaxMemoryBytes(const std::shared_ptr<void>& ba
   return static_cast<SequenceInputTrie*>(backing.get())->getMaxMemoryBytes();
 }
 
+/// @brief Current (approximate) live memory of the shared backing: the trie's node-storage footprint for
+/// the "Trie" strategy, 0 for None/Raw. The driver polls this against the ceiling to stop gracefully before
+/// the trie's hard cap is hit.
+__INLINE__ size_t getSharedBackingApproxMemoryBytes(const std::shared_ptr<void>& backing)
+{
+  if (backing == nullptr) return 0;
+  return static_cast<SequenceInputTrie*>(backing.get())->getApproxMemoryBytes();
+}
+
+/// @brief True if the shared backing (the trie) has hit its hard node-storage ceiling. False for None/Raw
+/// (which have no such ceiling -- their history lives in the StateDb slot, already budgeted).
+__INLINE__ bool isSharedBackingExhausted(const std::shared_ptr<void>& backing)
+{
+  if (backing == nullptr) return false;
+  return static_cast<SequenceInputTrie*>(backing.get())->isExhausted();
+}
+
 /**
  * @brief Creates one runner's input-history instance bound to @p backing.
  * @param config        The "Store Input History" configuration object ("Type" plus any per-strategy keys).
