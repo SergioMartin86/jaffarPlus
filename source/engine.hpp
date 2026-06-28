@@ -202,7 +202,7 @@ public:
       const size_t stateBudget = _stateDb->getMaxBudgetBytes();
       const size_t hashBudget  = (_hashDbEnabled == true) ? _hashDb->getMaxBudgetBytes() : 0;
       // Shared input-history trie: an uncounted structure that grows ~ live-states x depth up to its hard
-      // node cap (~100 GB for the Trie strategy on this build). Reserve its ceiling. (0 for None/Raw.)
+      // node cap (~384 GiB for the Trie strategy on this build). Reserve its ceiling. (0 for None/Raw.)
       const size_t historyBound = inputHistory::getSharedBackingMaxMemoryBytes(_inputHistoryBacking);
       // The state DB is a fixed pool (1x; full slots are scavenged from the current step, never doubled).
       // The hash DB phmap grows by doubling, so during a rehash the old table and the new 2x table briefly
@@ -229,7 +229,7 @@ public:
                              "  Usable (90%% of %.1f GB free RAM)                             = %.1f GB\n"
                              "Reduce 'State Database/Max Size (Mb)' and/or 'Hash Database/Max Store Size (Mb)'.\n"
                              "NOTE: the hash DB phmap doubles on growth, so a rehash briefly holds the old + new (2x) table; the\n"
-                             "Trie input-history is a separate structure that grows up to ~100 GB. Both are otherwise uncounted.\n",
+                             "Trie input-history is a separate structure that grows up to ~384 GiB. Both are otherwise uncounted.\n",
                              (double)stateBudget / GB, (double)hashPeak / GB, (double)historyBound / GB, (double)totalBudget / GB, (double)freeRam / GB, (double)usable / GB);
       }
     }
@@ -534,6 +534,13 @@ public:
   auto getWinStatesFound() const { return _winStates.load(); }
   /** @brief Returns the number of states currently held in the state database. */
   auto getStateCount() const { return _stateDb->getStateCount(); }
+
+  /** @brief Hard memory ceiling (bytes) of the shared input-history backing; 0 for None/Raw (no ceiling). */
+  size_t getInputHistoryMaxMemoryBytes() const { return inputHistory::getSharedBackingMaxMemoryBytes(_inputHistoryBacking); }
+  /** @brief Current (approximate) live memory (bytes) of the shared input-history backing; 0 for None/Raw. */
+  size_t getInputHistoryApproxMemoryBytes() const { return inputHistory::getSharedBackingApproxMemoryBytes(_inputHistoryBacking); }
+  /** @brief True if the shared input-history backing (the Trie) has hit its hard node-storage ceiling. */
+  bool isInputHistoryExhausted() const { return inputHistory::isSharedBackingExhausted(_inputHistoryBacking); }
 
   /**
    * @brief Logs engine status: timing breakdown, throughput, state counts, checkpoints, databases, and detected candidate inputs.

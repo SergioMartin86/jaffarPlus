@@ -309,10 +309,32 @@ leaf node (plus a 4-byte step count):
   with the *shared* path tree instead of states × depth, so it is far smaller exactly on the large
   searches where it matters; the live path is unbounded. *Cons:* it is a shared, reference-counted
   structure (more machinery internally); writing a solution walks the leaf node back to the root — an
-  `O(depth)` step, but only at snapshot/solution time, not during the search.
+  `O(depth)` step, but only at snapshot/solution time, not during the search. **Its total memory is *not*
+  bounded by the State DB and has a hard ceiling that very deep searches can hit — see the caution below.**
   *Use when* searches are deep or large (the common case) — this is the recommended default. The smaller
   per-state size also lets more states fit in the database (see *State Size* in
   [Understanding the Output](07-understanding-output.md)).
+
+> [!IMPORTANT]
+> **The `Trie` pool grows *unbounded* and has a hard ceiling — keep an eye on it.** Unlike `Raw` (whose
+> history lives *inside* each state slot and is therefore bounded by `State Database → Max Size (Mb)`), the
+> `Trie` is a **separate shared structure** that grows roughly as **live-states × path-depth** (minus shared
+> prefixes) and is **not counted in the State DB budget**. Two things to watch:
+>
+> - **It has a hard node-storage ceiling.** The node pool is capped at a fixed maximum. The engine's startup
+>   RAM guard reserves that ceiling, and the search now **stops *gracefully*** when the pool nears it — exit
+>   reason *"Input-history trie neared its hard memory ceiling"*, with the best result saved — instead of a
+>   worker hitting the wall mid-step and terminating the whole run. If you hit this, switch to `Raw` or
+>   **reduce the State DB size** (fewer live states ⇒ the trie grows more slowly and reaches deeper first).
+> - **Prefix-sharing fades with depth, so `Trie` can lose to `Raw` on very deep searches.** `Raw`'s per-state
+>   cost is *fixed* (`Max Size`-wide); the trie's grows ~linearly with depth as deep frontier states stop
+>   sharing tails. Past a crossover depth the trie can use **more** total memory than `Raw` would — while
+>   `Raw` stays bounded by the State DB (no separate pool, no ceiling).
+>
+> **Watch the `Input History (shared): … Mb … = … Mb total (raw would be … Mb)` line** in the per-step output
+> ([Understanding the Output](07-understanding-output.md)): if the trie's total climbs toward its ceiling, or
+> rises above the *“raw would be”* figure, prefer `Raw` and size the State DB to the RAM you have. `Trie`
+> stays the better default for short-to-moderate-depth searches with healthy prefix sharing.
 
 ### Runner Configuration → Frameskip
 
