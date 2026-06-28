@@ -50,42 +50,62 @@ public:
       }
     }
 
-    // --- Dedup-hash region exclusions (FIXED, validated by per-depth reward parity in real searches) ---
-    // The dedup hash must distinguish states that have different optimal futures. These LRAM regions are
-    // cosmetic (they never change the gameplay trajectory), so hashing them only mints effective-duplicate
-    // search nodes. Excluding them collapses the frontier 4-6x (compounding with depth) with byte-identical
-    // best/worst reward at every depth (verified on the trace-following `boss` and the damage-active `boss2`).
-    //   $0200-$02FF : OAM sprite shadow buffer (a deterministic render of the still-hashed object table)
-    //   $0700-$07FF : sound-engine state (prg_0; does not feed gameplay)
-    //   $0100-$01FF : 6502 stack scratch (transient between-frame)
-    std::vector<std::pair<size_t, size_t>> excluded = {
-        {0x0200, 0x0300},
-        {0x0700, 0x0800},
-        {0x0100, 0x0200},
-        // Pure frame-timers. $86,$87,$AE are exact functions of the frame counter $B4's low bits
-        // ($86=($B4&3)<<6, $87=$AE=($B4&1)<<7), so they are redundant once $B4&3 is hashed (below).
-        // $B4 itself is removed here from the byte-wise hash and re-added QUANTIZED to mod-4, so that
-        // states differing only in the higher frame bits (e.g. an idling clock) deduplicate instead of
-        // lingering in the DB; the boss's mod-4 timing reads ($B4 & #$03) are preserved.
-        {0x0086, 0x0088},
-        {0x00AE, 0x00AF},
-        {0x00B4, 0x00B5},
-        // Controller-input bytes ($f5/$f6 newly-pressed edges, $f7/$f8 held). These made every distinct
-        // input a distinct search node — the DOMINANT dedup contaminant. $f5/$f6 are dead (recomputed each
-        // frame before use); $f7 (held) is technically load-bearing for next-frame A/B edge detection, but
-        // excluding it was validated lossless on the optimal trajectory: best reward byte-identical at every
-        // depth on BOTH position-driven (boss) AND damage-active (boss2) searches, for a 17-118x state-count
-        // reduction (the boss's hit-cooldown, not player edge-timing, bounds damage rate).
-        {0x00F5, 0x00F9},
+    // --- Dedup-hash ALLOWLIST (causal-state model) ---
+    // Rather than hashing all of LRAM and subtracting proven-cosmetic regions (the old blocklist, which
+    // left ~200 never-analyzed varying bytes in the hash by default), we hash ONLY the bytes that are
+    // known to be part of the gameplay state determining the boss fight's future. Every byte NOT listed
+    // here is assumed irrelevant-to-the-future and is merged. This is more aggressive than the blocklist:
+    // omitting a load-bearing byte silently merges states with different futures, so the allowlist is
+    // validated by per-depth reward parity against the blocklist oracle and guarded at runtime by the
+    // Reference Reward Floor. Build it generously first, then carve.
+    //
+    // Regions (LRAM, [start,end)):
+    //   $0000        game mode
+    //   $0010-$0022  RNG/LFSR state + level timer ($16/$1A/$1C/$1F seen high-cardinality; boss AI (prg_6)
+    //                consumes RNG $1F ~114x, so the RNG state is causal for future boss behavior)
+    //   $003D        game_state (per disassembly)
+    //   $00A6-$00AA  weapon $A6, action-state $A7 (the input discriminator), animation $AA
+    //   $00B7-$00B8  Batman HP $B7, ammo $B8
+    //   $00D0-$00DF  Batman pos Y ($D0-$D2) / X ($D3-$D5), physics accumulator $D6/$D7 (prg_2 16-bit
+    //                update), direction $DD, sprite/action $DE, jump timer $DF
+    //   $0500-$05FF  object table: boss + projectiles + Boss HP ($5E0). Included whole for now (no carving).
+    // The frame counter $B4 is hashed separately, quantized to mod-4 (see calculateHashValues); the pure
+    // frame-timers $86/$87/$AE are exact functions of $B4 and are simply not listed (dropped). Controller
+    // bytes $F5-$F8 are inputs, not state, and are not listed.
+    //
+    // VALIDATION: per-depth reward parity vs the blocklist oracle was checked at 9 checkpoints seeded
+    // along the reference fight (frames 0,50,...,400). BEST (optimal) reward is byte-identical at every
+    // checkpoint and depth -> the optimum is never merged away. WORST reward diverges only at frames
+    // 50-100, traced to transient zero-page pointer-scratch $84/$85 (an ($84),y indirect pointer rebuilt
+    // in 4 PRG banks, not persistent state): the allowlist correctly merges states that differ only in
+    // stale scratch, keeping the better-reward representative. $84/$85 is deliberately NOT listed -- it is
+    // not causal for the optimum, and re-admitting it would only preserve dominated laggards a bounded-DB
+    // search prunes anyway. Net: ~5-6x fewer states at depth 12, compounding with depth.
+    _hashChunks = {
+        {0x0000, 0x0001}, {0x0010, 0x0023}, {0x003D, 0x003E}, {0x00A6, 0x00AB}, {0x00B7, 0x00B9}, {0x00D0, 0x00E0}, {0x0500, 0x0600},
     };
-    std::sort(excluded.begin(), excluded.end());
-    size_t cur = 0x0000;
-    for (const auto& e : excluded)
+
+    // EXPERIMENTAL add-back probe (env-gated): BATMAN_HASH_ADD="lo-hi,lo-hi,..." (hex, [lo,hi)) appends
+    // extra regions to the allowlist so omitted-causal bytes can be bisected without recompiling.
+    if (const char* add = std::getenv("BATMAN_HASH_ADD"))
     {
-      if (e.first > cur) _hashChunks.push_back({cur, e.first});
-      cur = std::max(cur, e.second);
+      std::string s(add);
+      size_t      pos = 0;
+      while (pos < s.size())
+      {
+        size_t comma = s.find(',', pos);
+        if (comma == std::string::npos) comma = s.size();
+        std::string tok  = s.substr(pos, comma - pos);
+        size_t      dash = tok.find('-');
+        if (dash != std::string::npos)
+        {
+          size_t lo = std::strtoul(tok.substr(0, dash).c_str(), nullptr, 16);
+          size_t hi = std::strtoul(tok.substr(dash + 1).c_str(), nullptr, 16);
+          if (hi > lo) _hashChunks.push_back({lo, hi});
+        }
+        pos = comma + 1;
+      }
     }
-    if (cur < 0x0800) _hashChunks.push_back({cur, 0x0800});
 
     // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
@@ -246,7 +266,7 @@ private:
     // hashEngine.Update(&_lowMem[0x00F5], 0x00F9 - 0x00F5); // Inputs. Necessary for some movement buffering
     // hashEngine.Update(&_lowMem[0x00F9], 0x0800 - 0x00F9);
 
-    // Hash the configured LRAM chunks (cosmetic + pure-timer regions excluded; see ctor).
+    // Hash the allowlisted LRAM chunks (causal gameplay state only; see ctor).
     for (const auto& c : _hashChunks) hashEngine.Update(&_lowMem[c.first], c.second - c.first);
 
     // Frame counter $B4 hashed modulo 4 (low 2 bits only): preserves the boss AI's mod-4 timing
@@ -629,7 +649,7 @@ private:
 
   uint8_t* _lowMem;
 
-  std::vector<std::pair<size_t, size_t>> _hashChunks; ///< LRAM [start,end) ranges included in the dedup hash (cosmetic regions excludable via env flags).
+  std::vector<std::pair<size_t, size_t>> _hashChunks; ///< LRAM [start,end) ranges ALLOWLISTED into the dedup hash (causal gameplay state only; see ctor).
 
   float _batmanPosX;
   float _batmanPosY;
