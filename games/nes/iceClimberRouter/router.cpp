@@ -47,6 +47,7 @@ int main(int argc, char* argv[])
   program.add_argument("--maxAir").help("Max airborne frames per jump.").default_value(std::string("70"));
   program.add_argument("--posBucket").help("Dedup bucket size for player X/Y (smaller=finer).").default_value(std::string("2"));
   program.add_argument("--cloudBucket").help("Dedup bucket size for cloud X (smaller=finer).").default_value(std::string("4"));
+  program.add_argument("--climb").help("Whole-level mode: start in the CLIMB (cloud-climb mtns) and route through to the grab, not bonus-only.").default_value(false).implicit_value(true);
   try { program.parse_args(argc, argv); }
   catch (const std::exception& e) { fprintf(stderr, "%s\n", e.what()); return 1; }
 
@@ -57,6 +58,7 @@ int main(int argc, char* argv[])
   const int    MAXAIR   = std::stoi(program.get<std::string>("--maxAir"));
   const int    PB       = std::stoi(program.get<std::string>("--posBucket"));
   const int    CB       = std::stoi(program.get<std::string>("--cloudBucket"));
+  const bool   CLIMB    = program.get<bool>("--climb");
 
   std::string configStr;
   if (jaffarCommon::file::loadStringFromFile(configStr, configFile) == false) { fprintf(stderr, "cannot read %s\n", configFile.c_str()); return 1; }
@@ -85,6 +87,11 @@ int main(int argc, char* argv[])
   auto onGround = [&]() { return lram[0x00E0] == 0; };
   auto inBonus  = [&]() { return lram[0x00D7] == 21; };
   auto grabbed  = [&]() { return lram[0x004D] > 0 && lram[0x0243] != 112; };
+  // "In play" gate. Bonus-only mode: the player is in the bonus (D7==21). Whole-level/climb mode spans
+  // the cloud-climb (D7!=21) AND the final bonus, so there's no single flag -- and $0382 is NOT a clean
+  // death bit (it's 1 during normal mtn6 play). The macro search only expands ON-GROUND nodes and only
+  // adds a jump that LANDS (else it times out at maxAir), so a fall is dropped without a death gate.
+  auto inPlay   = [&]() { return CLIMB ? true : inBonus(); };
   auto key = [&](int wraps) {
     char buf[256];
     int len = snprintf(buf, sizeof(buf), "%d|%d|%d|%d|%d|", wraps, lram[0x64] / PB, lram[0x66] / PB, lram[0x13] / 8, lram[0xE0]);
@@ -99,7 +106,11 @@ int main(int argc, char* argv[])
   // prepend to the final solution.
   std::vector<idx_t> introPath;
   { int g = 0;
-    while (inBonus() && g++ < 90)
+    // Climb mode with an injected start sits in the PREVIOUS mountain's bonus-end; advance through it
+    // and the level transition (ICE_INJECT_LEVEL pins $59) until the new mountain's climb begins.
+    if (CLIMB) while (inBonus() && g++ < 400) { r->advanceState(NOOP); introPath.push_back(NOOP); }
+    // Advance NOOP until the player is controllable (a test A-press actually launches a jump).
+    while (g++ < 400)
     {
       if (onGround())
       {
@@ -114,7 +125,7 @@ int main(int argc, char* argv[])
   }
   fprintf(stderr, "[router] entry (post-intro %zu frames): posX=%d posY=%d onGround=%d inBonus=%d scroll=%d\n",
           introPath.size(), lram[0x64], lram[0x66], (int)onGround(), (int)inBonus(), lram[0x13]);
-  if (!inBonus()) { fprintf(stderr, "[router] not in bonus stage after init (D7=%d)\n", lram[0x00D7]); return 1; }
+  if (!inPlay()) { fprintf(stderr, "[router] not in a playable state after init (D7=%d $382=%d)\n", lram[0x00D7], lram[0x0382]); return 1; }
 
   struct Node { std::string state; int parent; std::vector<idx_t> macro; int frames; int wraps; uint8_t prevScroll; };
   std::vector<Node> pool;
@@ -143,7 +154,7 @@ int main(int argc, char* argv[])
     std::string baseState = pool[ni].state; int baseFrames = pool[ni].frames;
     int baseWraps = pool[ni].wraps; uint8_t baseScroll = pool[ni].prevScroll;
     restoreState(baseState);
-    if (!onGround() || !inBonus()) continue;
+    if (!onGround() || !inPlay()) continue;
     expansions++;
     if (expansions % 500 == 0) fprintf(stderr, "[router] expanded=%ld nodes=%zu frontier=%zu best-wraps=%d scroll=%d\n", expansions, pool.size(), pq.size(), baseWraps, baseScroll);
 
@@ -169,11 +180,11 @@ int main(int argc, char* argv[])
         r->advanceState(g); mp.push_back(g);
         if ((int)lram[0x13] - (int)ps > 120) w++; ps = lram[0x13];
         if (grabbed()) { solved = true; break; }
-        if (!inBonus() || !onGround()) break;
+        if (!inPlay() || !onGround()) break;
         if (key(w) != baseKey) { settled = true; break; }
       }
       if (solved) { solNode = ni; solMacro = mp; break; }
-      if (settled && inBonus() && onGround()) tryAdd(mp, w, ps);
+      if (settled && inPlay() && onGround()) tryAdd(mp, w, ps);
     }
     if (solNode >= 0) break;
 
@@ -194,13 +205,13 @@ int main(int argc, char* argv[])
       for (int t = 0; t < MAXAIR; t++)
       {
         if (grabbed()) { solved = true; break; }
-        if (!inBonus()) break;
+        if (!inPlay()) break;
         if (onGround() && t > 0) { landed = true; break; }
         r->advanceState(air); jp.push_back(air);
         if ((int)lram[0x13] - (int)ps > 120) w++; ps = lram[0x13];
       }
       if (solved) { solNode = ni; solMacro = jp; break; }
-      if (landed && inBonus()) tryAdd(jp, w, ps);
+      if (landed && inPlay()) tryAdd(jp, w, ps);
     }
     if (solNode >= 0) break;
   }
