@@ -229,21 +229,33 @@ public:
       }
   }
 
-  // This function opens the video output (e.g., window)
+  // This function opens the video output (e.g., window). In a headless/display-less environment the
+  // window/renderer can't be created; we degrade gracefully to a "screenshot-only" mode (m_renderer
+  // stays null, showRender becomes a no-op) so that --screenshotDir still works (it only needs
+  // _curBlit, populated by updateRendererState -- no SDL).
   void initializeVideoOutput() override
   {
-    // Opening rendering window
-    SDL_SetMainReady();
+    m_window = nullptr; m_renderer = nullptr; m_tex = nullptr;
 
-    // We can only call SDL_InitSubSystem once
+    SDL_SetMainReady();
     if (!SDL_WasInit(SDL_INIT_VIDEO))
-      if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) JAFFAR_THROW_LOGIC("Failed to initialize video: %s", SDL_GetError());
+      if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
+      {
+        jaffarCommon::logger::log("[J+] WARNING: no SDL video (%s); running headless (screenshots only).\n", SDL_GetError());
+        return;
+      }
 
     m_window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
-    if (m_window == nullptr) JAFFAR_THROW_LOGIC("Coult not open SDL window");
+    if (m_window == nullptr) { jaffarCommon::logger::log("[J+] WARNING: no SDL window; headless (screenshots only).\n"); return; }
 
-    // Creating SDL renderer
-    if (!(m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED))) JAFFAR_THROW_RUNTIME("Coult not create SDL renderer in NES emulator");
+    // Prefer accelerated, fall back to software, then to headless (screenshot-only).
+    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
+    if (m_renderer == nullptr) m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE);
+    if (m_renderer == nullptr)
+    {
+      jaffarCommon::logger::log("[J+] WARNING: no SDL renderer; headless (screenshots only).\n");
+      SDL_DestroyWindow(m_window); m_window = nullptr; return;
+    }
     if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256)))
       JAFFAR_THROW_RUNTIME("Coult not create SDL texture in NES emulator");
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
@@ -265,6 +277,43 @@ public:
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
   {
     saveBlit(_quickerNES->getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0);
+  }
+
+  // Write the current rendered frame (_curBlit, populated by updateRendererState) to a 24-bit BMP.
+  // No SDL/display needed -- _curBlit holds 0x00RRGGBB pixels at image_width x image_height.
+  void saveScreenshot(const std::string& path) override
+  {
+    const int W = (int)emulator_t::image_width;
+    const int H = (int)emulator_t::image_height;
+    const int rowSize  = ((W * 3 + 3) / 4) * 4;
+    const int dataSize = rowSize * H;
+    const int fileSize = 54 + dataSize;
+    uint8_t hdr[54] = {0};
+    hdr[0] = 'B'; hdr[1] = 'M';
+    *(uint32_t*)(hdr + 2)  = (uint32_t)fileSize;
+    *(uint32_t*)(hdr + 10) = 54;
+    *(uint32_t*)(hdr + 14) = 40;
+    *(int32_t*)(hdr + 18)  = W;
+    *(int32_t*)(hdr + 22)  = H; // positive height => bottom-up
+    *(uint16_t*)(hdr + 26) = 1;
+    *(uint16_t*)(hdr + 28) = 24;
+    *(uint32_t*)(hdr + 34) = (uint32_t)dataSize;
+    FILE* f = fopen(path.c_str(), "wb");
+    if (f == nullptr) return;
+    fwrite(hdr, 1, 54, f);
+    std::vector<uint8_t> row(rowSize, 0);
+    for (int y = H - 1; y >= 0; y--) // BMP rows are bottom-up
+    {
+      for (int x = 0; x < W; x++)
+      {
+        uint32_t px      = (uint32_t)_curBlit[y * W + x];
+        row[x * 3 + 0]   = (uint8_t)(px & 0xFF);         // B
+        row[x * 3 + 1]   = (uint8_t)((px >> 8) & 0xFF);  // G
+        row[x * 3 + 2]   = (uint8_t)((px >> 16) & 0xFF); // R
+      }
+      fwrite(row.data(), 1, (size_t)rowSize, f);
+    }
+    fclose(f);
   }
   __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base& serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
   __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * BLIT_SIZE); }
@@ -305,6 +354,8 @@ public:
 
   __INLINE__ void showRender() override
   {
+    if (m_renderer == nullptr) return; // headless (screenshot-only) mode
+
     void* nesPixels = nullptr;
     int   pitch     = 0;
 

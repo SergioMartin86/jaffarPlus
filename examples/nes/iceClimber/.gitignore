@@ -1,0 +1,6 @@
+*.asm
+*.inc
+*.nes
+reference
+disasm
+*.state
