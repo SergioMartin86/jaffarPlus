@@ -92,9 +92,12 @@ int main(int argc, char* argv[])
   // death bit (it's 1 during normal mtn6 play). The macro search only expands ON-GROUND nodes and only
   // adds a jump that LANDS (else it times out at maxAir), so a fall is dropped without a death gate.
   auto inPlay   = [&]() { return CLIMB ? true : inBonus(); };
+  // A cloud-climb (e.g. mtn6) requires breaking a HOLE in a destructible ceiling: jumps that smash a
+  // brick fall back to the same spot but ARE progress. Including the bricks-broken count ($0364) in the
+  // dedup key keeps those states distinct (else each break dedups onto the pre-break state and is lost).
   auto key = [&](int wraps) {
     char buf[256];
-    int len = snprintf(buf, sizeof(buf), "%d|%d|%d|%d|%d|", wraps, lram[0x64] / PB, lram[0x66] / PB, lram[0x13] / 8, lram[0xE0]);
+    int len = snprintf(buf, sizeof(buf), "%d|%d|%d|%d|%d|b%d|", wraps, lram[0x64] / PB, lram[0x66] / PB, lram[0x13] / 8, lram[0xE0], lram[0x0364]);
     for (int i = 0; i < 4; i++)
       if (lram[0x0786 + i] && len > 0 && len < (int)sizeof(buf) - 16)
         len += snprintf(buf + len, sizeof(buf) - len, "%d:%d,", i, lram[0x0682 + i] / CB);
@@ -139,6 +142,9 @@ int main(int argc, char* argv[])
     // Weight COMMITTED climb (scroll-wraps + low scroll) far above transient jump height (posY): a
     // high jump must not look like real progress, or the A* chases jumps instead of scroll-downs.
     int heightScore = (w * 240 - (int)ps) * 4 + (144 - (int)posY);
+    // Breaking a ceiling brick gains no height yet but is REQUIRED progress -- reward it so the search
+    // commits to punching a hole instead of exhausting hole-less states at the same height.
+    heightScore += (int)lram[0x0364] * 30;
     return frames - 6 * heightScore;
   };
 
