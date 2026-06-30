@@ -38,7 +38,6 @@ using idx_t = InputSet::inputIndex_t;
 int main(int argc, char* argv[])
 {
   setvbuf(stderr, NULL, _IONBF, 0); // unbuffered: progress shows even when piped/killed
-  jaffarCommon::logger::initializeTerminal();
 
   argparse::ArgumentParser program("jaffar-router");
   program.add_argument("configFile").help("Jaffar config (its Initial Sequence must reach the bonus entry).").required();
@@ -46,6 +45,8 @@ int main(int argc, char* argv[])
   program.add_argument("--maxNodes").help("Node-expansion cap.").default_value(std::string("60000"));
   program.add_argument("--maxWait").help("Max ride frames before a jump.").default_value(std::string("200"));
   program.add_argument("--maxAir").help("Max airborne frames per jump.").default_value(std::string("70"));
+  program.add_argument("--posBucket").help("Dedup bucket size for player X/Y (smaller=finer).").default_value(std::string("2"));
+  program.add_argument("--cloudBucket").help("Dedup bucket size for cloud X (smaller=finer).").default_value(std::string("4"));
   try { program.parse_args(argc, argv); }
   catch (const std::exception& e) { fprintf(stderr, "%s\n", e.what()); return 1; }
 
@@ -54,6 +55,8 @@ int main(int argc, char* argv[])
   const size_t MAXNODES = std::stoul(program.get<std::string>("--maxNodes"));
   const int    MAXWAIT  = std::stoi(program.get<std::string>("--maxWait"));
   const int    MAXAIR   = std::stoi(program.get<std::string>("--maxAir"));
+  const int    PB       = std::stoi(program.get<std::string>("--posBucket"));
+  const int    CB       = std::stoi(program.get<std::string>("--cloudBucket"));
 
   std::string configStr;
   if (jaffarCommon::file::loadStringFromFile(configStr, configFile) == false) { fprintf(stderr, "cannot read %s\n", configFile.c_str()); return 1; }
@@ -83,9 +86,11 @@ int main(int argc, char* argv[])
   auto inBonus  = [&]() { return lram[0x00D7] == 21; };
   auto grabbed  = [&]() { return lram[0x004D] > 0 && lram[0x0243] != 112; };
   auto key = [&](int wraps) {
-    char buf[160];
-    int len = snprintf(buf, sizeof(buf), "%d|%d|%d|%d|%d|", wraps, lram[0x64] / 4, lram[0x66] / 4, lram[0x13] / 8, lram[0xE0]);
-    for (int i = 0; i < 4; i++) if (lram[0x0786 + i]) len += snprintf(buf + len, sizeof(buf) - len, "%d:%d,", i, lram[0x0682 + i] / 8);
+    char buf[256];
+    int len = snprintf(buf, sizeof(buf), "%d|%d|%d|%d|%d|", wraps, lram[0x64] / PB, lram[0x66] / PB, lram[0x13] / 8, lram[0xE0]);
+    for (int i = 0; i < 4; i++)
+      if (lram[0x0786 + i] && len > 0 && len < (int)sizeof(buf) - 16)
+        len += snprintf(buf + len, sizeof(buf) - len, "%d:%d,", i, lram[0x0682 + i] / CB);
     return std::string(buf);
   };
 
@@ -120,7 +125,9 @@ int main(int argc, char* argv[])
   // toward the top/grab instead of exhausting low states. heightScore rises monotonically with the
   // climb (each scroll-wrap = +240; lower scroll within a screen = higher).
   auto priorityOf = [&](int frames, int w, uint8_t ps, uint8_t posY) {
-    int heightScore = w * 240 - (int)ps + (144 - (int)posY);
+    // Weight COMMITTED climb (scroll-wraps + low scroll) far above transient jump height (posY): a
+    // high jump must not look like real progress, or the A* chases jumps instead of scroll-downs.
+    int heightScore = (w * 240 - (int)ps) * 4 + (144 - (int)posY);
     return frames - 6 * heightScore;
   };
 
@@ -170,12 +177,16 @@ int main(int argc, char* argv[])
     }
     if (solNode >= 0) break;
 
-    // JUMPS (macro to next landing): steer none/left/right.
-    for (int jt = 0; jt < 3; jt++)
+    // JUMPS (macro to next landing): every LAUNCH (straight/left/right) x every held AIR-STEER
+    // (none/left/right) = 9 variants. This covers e.g. "launch-left then RELEASE" (LA then noop, drift
+    // on momentum), which real solutions use and a held-steer-only model misses.
+    idx_t launches[3] = {IA, ILA, IRA};
+    idx_t airs[3]     = {NOOP, IL, IR};
+    for (int li = 0; li < 3 && solNode < 0; li++)
+    for (int ai = 0; ai < 3 && solNode < 0; ai++)
     {
       restoreState(baseState); int w = baseWraps; uint8_t ps = baseScroll;
-      idx_t first = jt == 0 ? IA : jt == 1 ? ILA : IRA;
-      idx_t air   = jt == 0 ? NOOP : jt == 1 ? IL : IR;
+      idx_t first = launches[li], air = airs[ai];
       std::vector<idx_t> jp; jp.push_back(first);
       r->advanceState(first);
       if ((int)lram[0x13] - (int)ps > 120) w++; ps = lram[0x13];
@@ -207,6 +218,5 @@ int main(int argc, char* argv[])
   for (auto i : full) out += r->getInputStringFromIndex(i) + "\n";
   jaffarCommon::file::saveStringToFile(out, outputFile);
   fprintf(stderr, "[router] SOLVED! bonus length=%zu frames, wrote %s (expanded=%ld nodes=%zu)\n", full.size(), outputFile.c_str(), expansions, pool.size());
-  jaffarCommon::logger::finalizeTerminal();
   return 0;
 }
