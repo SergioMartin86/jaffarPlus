@@ -48,6 +48,8 @@ int main(int argc, char* argv[])
   program.add_argument("--posBucket").help("Dedup bucket size for player X/Y (smaller=finer).").default_value(std::string("2"));
   program.add_argument("--cloudBucket").help("Dedup bucket size for cloud X (smaller=finer).").default_value(std::string("4"));
   program.add_argument("--climb").help("Whole-level mode: start in the CLIMB (cloud-climb mtns) and route through to the grab, not bonus-only.").default_value(false).implicit_value(true);
+  program.add_argument("--greed").help("Height-vs-pathcost weight (high=greedy hillclimb, low=routes around ceilings).").default_value(std::string("6"));
+  program.add_argument("--brick").help("Priority reward per broken ceiling brick.").default_value(std::string("30"));
   try { program.parse_args(argc, argv); }
   catch (const std::exception& e) { fprintf(stderr, "%s\n", e.what()); return 1; }
 
@@ -59,6 +61,8 @@ int main(int argc, char* argv[])
   const int    PB       = std::stoi(program.get<std::string>("--posBucket"));
   const int    CB       = std::stoi(program.get<std::string>("--cloudBucket"));
   const bool   CLIMB    = program.get<bool>("--climb");
+  const int    GREED    = std::stoi(program.get<std::string>("--greed"));
+  const int    BRICK    = std::stoi(program.get<std::string>("--brick"));
 
   std::string configStr;
   if (jaffarCommon::file::loadStringFromFile(configStr, configFile) == false) { fprintf(stderr, "cannot read %s\n", configFile.c_str()); return 1; }
@@ -152,8 +156,10 @@ int main(int argc, char* argv[])
     int heightScore = (w * 240 - (int)ps) * 4 + (144 - (int)posY);
     // Breaking a ceiling brick gains no height yet but is REQUIRED progress -- reward it so the search
     // commits to punching a hole instead of exhausting hole-less states at the same height.
-    heightScore += (int)lram[0x0364] * 30;
-    return frames - 6 * heightScore;
+    heightScore += (int)lram[0x0364] * BRICK;
+    // GREED scales how strongly height beats path-cost (frames). High = greedy hill-climb (fast but
+    // stalls under a ceiling that needs a lateral/descent detour); low = broader, routes around it.
+    return frames - GREED * heightScore;
   };
 
   pool.push_back({saveState(), -1, {}, 0, 0, lram[0x13]});
@@ -204,16 +210,21 @@ int main(int argc, char* argv[])
     }
     if (solNode >= 0) break;
 
-    // JUMPS (macro to next landing): every LAUNCH (straight/left/right) x every held AIR-STEER
-    // (none/left/right) = 9 variants. This covers e.g. "launch-left then RELEASE" (LA then noop, drift
-    // on momentum), which real solutions use and a held-steer-only model misses.
+    // JUMPS (macro to next landing): LAUNCH (straight/left/right) x AIR-STEER (none/left/right) x how
+    // long the steer is HELD before drifting (release timing). Holding a steer the whole jump only
+    // makes the maximal lateral leap (which overshoots a near platform into the gap); releasing early
+    // makes shorter hops, so the player can land on a close platform across a small gap.
     idx_t launches[3] = {IA, ILA, IRA};
     idx_t airs[3]     = {NOOP, IL, IR};
+    const int HOLD = 9999;
+    int releases[4]   = {HOLD, 6, 11, 17}; // frames to hold the steer before drifting (NOOP)
     for (int li = 0; li < 3 && solNode < 0; li++)
     for (int ai = 0; ai < 3 && solNode < 0; ai++)
+    for (int ri = 0; ri < 4 && solNode < 0; ri++)
     {
+      if (ai == 0 && ri > 0) continue; // no steer => release timing is meaningless; do it once
       restoreState(baseState); int w = baseWraps; uint8_t ps = baseScroll;
-      idx_t first = launches[li], air = airs[ai];
+      idx_t first = launches[li], air = airs[ai]; int rel = releases[ri];
       std::vector<idx_t> jp; jp.push_back(first);
       r->advanceState(first);
       if ((int)lram[0x13] - (int)ps > 120) w++; ps = lram[0x13];
@@ -223,7 +234,8 @@ int main(int argc, char* argv[])
         if (grabbed()) { solved = true; break; }
         if (!inPlay()) break;
         if (onGround() && t > 0) { landed = true; break; }
-        r->advanceState(air); jp.push_back(air);
+        idx_t step = (t < rel) ? air : NOOP; // hold the steer, then drift
+        r->advanceState(step); jp.push_back(step);
         if ((int)lram[0x13] - (int)ps > 120) w++; ps = lram[0x13];
       }
       if (solved) { solNode = ni; solMacro = jp; break; }
