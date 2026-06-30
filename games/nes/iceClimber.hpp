@@ -62,6 +62,7 @@ private:
     registerGameProperty("Bird Direction", &_lowMem[0x00D5], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Is Bird Detected", &_isBirdDetected, Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Is Condor Active", &_isCondorActive, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Left Bonus", &_leftBonus, Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Min Bird Dist", &_minBirdDist, Property::datatype_t::dt_float32, Property::endianness_t::little);
 
     registerGameProperty("Player Real Pos Y", &_playerRealPosY, Property::datatype_t::dt_float32, Property::endianness_t::little);
@@ -101,6 +102,11 @@ private:
     if (auto* e = std::getenv("ICE_WDIST"))  { _wDist  = std::stof(e); _envWeights = true; }
     if (auto* e = std::getenv("ICE_WAWAY"))  { _wAway  = std::stof(e); _envWeights = true; }
     if (auto* e = std::getenv("ICE_WSTAND")) { _wStand = std::stof(e); _envWeights = true; }
+    // LEVEL INJECTION: pin the level counter ($59)/completed-count ($56) so a search whose Initial
+    // Sequence ends just before a LEVEL TRANSITION loads ANY mountain (the transition's terrain-gen
+    // reads the pinned $59). Works at a transition -- NOT at boot, where terrain-gen happens inside the
+    // atomic initial-sequence replay (which bypasses this hook). 0-based ($59=N => mountain N+1); -1=off.
+    if (auto* e = std::getenv("ICE_INJECT_LEVEL")) _injectLevel = std::stoi(e);
     // Load the imitation seed trajectory (per-frame "posX posY ..." waypoints) if ICE_REF is set.
     if (auto* e = std::getenv("ICE_REF"))
     {
@@ -201,6 +207,25 @@ private:
   // Updating derivative values after updating the internal state
   __INLINE__ void stateUpdatePostHook() override
   {
+    if (_injectLevel >= 0) { _lowMem[0x0059] = (uint8_t)_injectLevel; _lowMem[0x0056] = (uint8_t)_injectLevel; }
+    // "Left Bonus" latch: set once the player is NOT in a bonus (condor not flying). Lets a climb's win
+    // rule require D7==21 AGAIN *after* a climb -- so an injected search starting at the previous
+    // mountain's bonus-end doesn't win instantly, and a normal climb (starts at D7!=21) still works.
+    // On FIRST entering the climb, reset the climb-Y/condor tracking: an injected search inherits the
+    // previous mountain's scroll-wrap count and best-Y, which would corrupt this climb's realY/reward.
+    if (_lowMem[0x00D7] != 21)
+    {
+      if (_leftBonus == 0)
+      {
+        _fullScreenScrolls = 0;
+        _playerBestPosY    = std::numeric_limits<float>::infinity();
+        _bestReachY        = std::numeric_limits<float>::infinity();
+        _isBirdDetected    = 0;
+        _isCondorActive    = 0;
+        _minBirdDist       = std::numeric_limits<float>::infinity();
+      }
+      _leftBonus = 1;
+    }
     updateRealPosY();
 
     // Select this level's bonus-stage reward weights from the per-level table (unless a sweep pinned
@@ -260,6 +285,7 @@ private:
     serializer.pushContiguous(&_bestReachY, sizeof(_bestReachY));
     serializer.pushContiguous(&_minBirdDist, sizeof(_minBirdDist));
     serializer.pushContiguous(&_refIdx, sizeof(_refIdx));
+    serializer.pushContiguous(&_leftBonus, sizeof(_leftBonus));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -275,6 +301,7 @@ private:
     deserializer.popContiguous(&_bestReachY, sizeof(_bestReachY));
     deserializer.popContiguous(&_minBirdDist, sizeof(_minBirdDist));
     deserializer.popContiguous(&_refIdx, sizeof(_refIdx));
+    deserializer.popContiguous(&_leftBonus, sizeof(_leftBonus));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -489,6 +516,8 @@ private:
   float    _wAway  = 40.0f;
   float    _wStand = 8.0f;
   bool     _envWeights = false; // true => env pinned the weights (sweep); skip the per-level table
+  int      _injectLevel = -1;   // ICE_INJECT_LEVEL: pin $59/$56 so a pre-transition search loads any mtn
+  uint8_t  _leftBonus = 0;      // latched once D7!=21 -- a climb win requires re-entering the bonus after
 
   // IMITATION SEED: the bonus stage's timed moving-cloud ride is unsearchable by a reward-priority beam
   // (no gradient through the multi-step ride -- it drops the path even when a solution exists). So we
