@@ -4,6 +4,9 @@
 #include <game.hpp>
 #include <jaffarCommon/json.hpp>
 #include <numeric>
+#include <vector>
+#include <fstream>
+#include <cstdlib>
 
 namespace jaffarPlus
 {
@@ -93,6 +96,22 @@ private:
     _fullScreenScrolls = 0;
     _playerBestPosY    = std::numeric_limits<float>::infinity();
     _bestReachY        = std::numeric_limits<float>::infinity();
+    // Sweep override: if any ICE_W* env var is set, it pins the weights (used by the fast bonus
+    // harness to tune a level). Otherwise the per-level table (levelStrat, keyed on $59) supplies them.
+    if (auto* e = std::getenv("ICE_WDIST"))  { _wDist  = std::stof(e); _envWeights = true; }
+    if (auto* e = std::getenv("ICE_WAWAY"))  { _wAway  = std::stof(e); _envWeights = true; }
+    if (auto* e = std::getenv("ICE_WSTAND")) { _wStand = std::stof(e); _envWeights = true; }
+    // Load the imitation seed trajectory (per-frame "posX posY ..." waypoints) if ICE_REF is set.
+    if (auto* e = std::getenv("ICE_REF"))
+    {
+      std::ifstream f(e); std::string line;
+      while (std::getline(f, line))
+      {
+        if (line.empty() || line[0] == '#') continue;
+        int x, y; if (std::sscanf(line.c_str(), "%d %d", &x, &y) == 2) { _refX.push_back(x); _refY.push_back(y); }
+      }
+      _refN = _refX.size(); _refLoaded = _refN > 0;
+    }
     updateRealPosY();
 
     // Initializing values
@@ -184,6 +203,22 @@ private:
   {
     updateRealPosY();
 
+    // Select this level's bonus-stage reward weights from the per-level table (unless a sweep pinned
+    // them via env). Keyed on $59 so the global multi-mountain run auto-switches per level.
+    if (!_envWeights) { auto s = levelStrat(_lowMem[0x0059]); _wDist = s.wDist; _wAway = s.wAway; _wStand = s.wStand; }
+
+    // Advance the imitation seed: bump _refIdx (monotonic) to the FURTHEST upcoming reference waypoint
+    // the player is currently near, scanning a small look-ahead window so frameskip (which skips frames
+    // the per-frame reference visited) doesn't stall progress. The reward then pays for _refIdx, so the
+    // beam is pulled along the demonstration.
+    if (_refLoaded)
+    {
+      int px = (int)_lowMem[0x0064], py = (int)_lowMem[0x0066];
+      size_t limit = std::min((size_t)_refIdx + 8, _refN);
+      for (size_t k = (size_t)_refIdx + 1; k < limit; k++)
+        if (std::abs(px - _refX[k]) + std::abs(py - _refY[k]) <= 8) _refIdx = (uint16_t)k;
+    }
+
     // The condor ("giant bird") is the grab target. Its position is $D6 (X) / $D7 (Y); once the
     // player nears the top it flies at a fixed top-screen altitude ($D7 == 21), circling and
     // wrapping around in X. Player ($64,$66) and condor ($D6,$D7) are BOTH in the same settled
@@ -224,6 +259,7 @@ private:
     serializer.pushContiguous(&_playerRealBestPosYDiff, sizeof(_playerRealBestPosYDiff));
     serializer.pushContiguous(&_bestReachY, sizeof(_bestReachY));
     serializer.pushContiguous(&_minBirdDist, sizeof(_minBirdDist));
+    serializer.pushContiguous(&_refIdx, sizeof(_refIdx));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -238,6 +274,7 @@ private:
     deserializer.popContiguous(&_playerRealBestPosYDiff, sizeof(_playerRealBestPosYDiff));
     deserializer.popContiguous(&_bestReachY, sizeof(_bestReachY));
     deserializer.popContiguous(&_minBirdDist, sizeof(_minBirdDist));
+    deserializer.popContiguous(&_refIdx, sizeof(_refIdx));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -264,10 +301,24 @@ private:
     // Reward making holes in the ceiling (hole-making progress).
     reward += 2.0 * (float)*_bricksBroken;
 
-    // Once the condor has been seen, reward the closest the player has EVER come to it (monotonic,
-    // so the beam converges toward overlap instead of chasing the circling condor). The climb term
-    // plateaus at the summit, so this drives the endgame; overlap fires the grab/win.
-    if (_isBirdDetected == 1) reward += 256.0f - _minBirdDist;
+    // Condor proximity (monotonic closest approach). SMALL weight: the bonus stage is a vertical
+    // SCROLLING climb and the condor rides at the top of the screen, scrolling WITH the camera, so the
+    // screen-distance to it stays ~constant (~30) the whole climb -- it gives no climb gradient and,
+    // worse, is reachable just by jumping (no landing), so a big weight TRAPS the search hovering
+    // airborne near the condor on the first screen instead of doing the real work (land on a cloud ->
+    // scroll -> repeat). Keep it as a small final-grab nudge; REAL height (below) drives the climb.
+    if (_isBirdDetected == 1) reward += 0.1f * (256.0f - _minBirdDist);
+
+    // IMITATION SEED reward (dominant when ICE_REF is loaded): pay for progress along the reference
+    // demonstration (_refIdx, monotonic) plus a pull toward the next waypoint. The big per-waypoint
+    // weight makes the demonstration the highest-reward path, so the beam follows it to the grab
+    // (which the bare bonus reward can't reach) while still able to deviate/refine. Inert otherwise.
+    if (_refLoaded)
+    {
+      reward += 50.0f * (float)_refIdx;
+      size_t nx = std::min((size_t)_refIdx + 1, _refN - 1);
+      reward -= (float)(std::abs((int)*_playerPosX - _refX[nx]) + std::abs((int)*_playerPosY - _refY[nx]));
+    }
 
     // BONUS-STAGE CLOUD LADDER (secondary driver). The top of each mountain is a bonus stage where
     // the player must ascend by landing on moving cloud platforms before reaching the condor. There
@@ -289,15 +340,33 @@ private:
       }
       if (tgt >= 0)
       {
-        // General "head toward the next cloud" signal (NOT mountain-specific): reward horizontal
-        // alignment with the next cloud's span. NOTE: this is greedy and on some mountains (e.g. mtn3)
-        // the nearest cloud is a trap requiring a non-greedy wait-for-wrap -- which a reward-priority
-        // beam can't generally express (delayed-reward). Kept as the best general guidance we have.
-        float L = (float)_lowMem[0x0682 + tgt], R = (float)_lowMem[0x06A0 + tgt];
-        float dx;
-        if (R >= L) dx = (pX < L) ? (L - pX) : (pX > R ? pX - R : 0.0f);            // [L,R] span
-        else        dx = (pX <= R || pX >= L) ? 0.0f : std::min(L - pX, pX - R + 256.0f); // wrapped
-        reward -= 0.5f * dx;
+        // DIRECTIONAL, WRAP-AWARE distance to the next cloud = how far the cloud must travel, IN ITS
+        // DIRECTION OF MOTION (it wraps), to reach the player's X. This folds in both the wrap and the
+        // direction the user asked for: a cloud APPROACHING along the short arc is near (small), the
+        // SAME gap with the cloud moving AWAY is large (it must loop all the way around). Examples:
+        // player 0, cloud 255 -> 1 if right-moving (wraps straight in), 255 if left-moving (full
+        // traverse); player 120, cloud 140 -> 20 if left-moving (toward), 236 if right-moving (away).
+        // Makes WAITING productive: an approaching cloud's distance shrinks each frame, so the reward
+        // rises and the beam KEEPS the wait state -> the search can wait for the loop-around instead of
+        // greedily hopping the nearest cloud (the trap). 0 when the span is currently over the player.
+        // CIRCULAR distance + a MODEST away-penalty. Circular |gap| is smooth (the full directional
+        // distance's -127 swing when the target cloud loops away disrupted the beam and lowered the
+        // ascent). But direction still matters -- 40px toward != 40px away -- so add a small constant
+        // when the cloud is moving to WIDEN the short-arc gap (looping away). Capped (not the full
+        // 256-loop) so it biases toward approaching clouds without the disruptive swing.
+        int  L = _lowMem[0x0682 + tgt], R = _lowMem[0x06A0 + tgt], P = (int)pX;
+        bool over = (R >= L) ? (P >= L && P <= R) : (P >= L || P <= R); // span currently over player?
+        int  dirD = 0;
+        if (!over)
+        {
+          float  cX  = (R >= L) ? (L + R) * 0.5f : std::fmod((L + R + 256.0f) * 0.5f, 256.0f); // center
+          int    gap = (int)cX - P;
+          if (gap > 128) gap -= 256; else if (gap < -128) gap += 256;  // signed short-arc, [-128,128]
+          int8_t v   = (int8_t)_lowMem[0x07B7 + tgt];                  // signed cloud velocity
+          bool   away = (gap > 0 && v > 0) || (gap < 0 && v < 0);       // cloud widening the short-arc gap
+          dirD = std::abs(gap) + (away ? (int)_wAway : 0);
+        }
+        reward -= _wDist * (float)dirD;
       }
       else
       {
@@ -312,6 +381,23 @@ private:
         if (dxc > 128.0f) dxc = 256.0f - dxc;             // condor X wraps
         reward -= 1.0f * dxc;
       }
+
+      // REWARD CLEAN CLOUD LANDINGS: standing (handler $6A==1) with the feet on an active cloud (Y
+      // matches its surface, X within its span). Riding the ladder is a sequence of moving-cloud
+      // landings; a horizontal-proximity reward alone leaves the player flailing airborne (handler 2)
+      // and reaching cloud height by luck. Rewarding the actual STAND makes the search build the
+      // c3->c2->c1->c0 ride step by step. SMALL tie-breaker only: if it's too high the beam grabs the
+      // first reachable cloud-stand instead of waiting for the well-timed one (the directional term
+      // rewards that wait), so keep it well below the reward gained by waiting for an approaching cloud.
+      if (*_playerJumping == 0) // ON-GROUND (standing) -- NOT handler $6A==1, which also occurs mid-fall
+        for (int i = 0; i < 4; i++)
+        {
+          if (_lowMem[0x0786 + i] == 0) continue;
+          if (std::abs((int)pY - ((int)_lowMem[0x06BE + i] + 32)) > 6) continue; // feet on this surface
+          int L = _lowMem[0x0682 + i], R = _lowMem[0x06A0 + i], P = (int)pX;
+          bool onSpan = (R >= L) ? (P >= L && P <= R) : (P >= L || P <= R);
+          if (onSpan) { reward += _wStand; break; }                              // standing on a cloud
+        }
     }
 
     // Huge bonus on the grab (= level complete), so a winning line is the global best-reward state
@@ -395,6 +481,40 @@ private:
   float    _playerBestPosY;   // best height reached while STANDING (secured) — drives fall-back prune
   float    _bestReachY;       // best height EVER reached incl. airborne (jump peaks) — drives reward
   float    _playerRealBestPosYDiff;
+
+  // Active bonus-stage reward weights for the current frame (set per-level from levelStrat() unless an
+  // ICE_W* env var pinned them for a sweep). ICE_WDIST=cloud distance weight, ICE_WAWAY=away-penalty,
+  // ICE_WSTAND=clean-landing bonus.
+  float    _wDist  = 0.5f;
+  float    _wAway  = 40.0f;
+  float    _wStand = 8.0f;
+  bool     _envWeights = false; // true => env pinned the weights (sweep); skip the per-level table
+
+  // IMITATION SEED: the bonus stage's timed moving-cloud ride is unsearchable by a reward-priority beam
+  // (no gradient through the multi-step ride -- it drops the path even when a solution exists). So we
+  // SEED the beam with a reference demonstration trajectory (per-frame posX,posY from a real solution,
+  // file in env ICE_REF) and reward FOLLOWING it: a monotonic "furthest reference waypoint reached"
+  // term that dominates the bonus reward. This makes the demonstration the highest-reward path -> the
+  // beam can't drop it and rides it to the grab, while still free to deviate (refine).
+  std::vector<int> _refX, _refY;
+  size_t   _refN     = 0;
+  bool     _refLoaded = false;
+  uint16_t _refIdx   = 0;   // furthest reference waypoint reached (monotonic; serialized per state)
+
+  // PER-LEVEL STRATEGY TABLE. With only 32 mountains we hand-tune each level's bonus-stage strategy
+  // (the cloud-ride is layout-specific). Keyed on the mountain index ($59), so a single-mountain
+  // search uses that level's params and the global multi-mountain run auto-switches per level -- the
+  // model the RNG-aware study needs. Common cloud machinery stays shared; only the params differ.
+  struct LevelStrat { float wDist; float wAway; float wStand; };
+  __INLINE__ LevelStrat levelStrat(uint8_t lvl) const
+  {
+    switch (lvl)
+    {
+      // mountain 3 ($59==2): baseline from the fast-harness sweep (to be finalized)
+      case 2:  return {0.5f, 40.0f, 8.0f};
+      default: return {0.5f, 40.0f, 8.0f}; // general default until each level is hand-tuned
+    }
+  }
 
   // Null input index to remember the last valid input
   InputSet::inputIndex_t _nullInputIdx;

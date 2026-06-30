@@ -39,6 +39,16 @@ if meson.is_subproject() == false
     dependencies : [ jaffarDependency ],
   )
 
+  # Game-specific tool: Ice Climber bonus-stage router. Built ONLY when this single game is selected
+  # (-Dgame=iceClimber), following the per-game tool convention (cf. games/nes/arkanoid2, lunarBall).
+  if get_option('game') == 'iceClimber'
+    iceClimberRouter = executable('iceClimber-router',
+      'games/nes/iceClimberRouter/router.cpp',
+      cpp_args: [ NCursesCPPFlags ],
+      dependencies : [ jaffarDependency ],
+    )
+  endif
+
   # Build test suite if requested
   if get_option('buildTests') == true
     subdir('tests')
