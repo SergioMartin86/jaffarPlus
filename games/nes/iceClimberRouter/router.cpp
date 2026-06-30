@@ -108,12 +108,20 @@ int main(int argc, char* argv[])
   // effect). Advance NOOP until a test A-press actually launches a jump; collect those frames to
   // prepend to the final solution.
   std::vector<idx_t> introPath;
+  if (CLIMB)
   { int g = 0;
-    // Climb mode with an injected start sits in the PREVIOUS mountain's bonus-end; advance through it
-    // and the level transition (ICE_INJECT_LEVEL pins $59) until the new mountain's climb begins.
-    if (CLIMB) while (inBonus() && g++ < 400) { r->advanceState(NOOP); introPath.push_back(NOOP); }
-    // Advance NOOP until the player is controllable (a test A-press actually launches a jump).
-    while (g++ < 400)
+    // Injected start sits in the PREVIOUS mountain's bonus-end (player carried UP, posY~63). Advance
+    // through that + the level transition + the new level's load until the player settles ON THE GROUND
+    // at the climb BOTTOM (posY>=150). Start the search the frame it lands -- don't burn a fixed cap
+    // (that drifts the clouds out of phase). 150 separates the climb bottom (~192) from the carried-up
+    // bonus-end (~63).
+    while ((!onGround() || lram[0x66] < 150) && g++ < 400) { r->advanceState(NOOP); introPath.push_back(NOOP); }
+  }
+  else
+  { int g = 0;
+    // Bonus-only: the player is uncontrollable for ~35 frames; advance NOOP until a test A-press
+    // actually launches a jump, collecting those frames to prepend to the final solution.
+    while (g++ < 90)
     {
       if (onGround())
       {
@@ -153,6 +161,7 @@ int main(int argc, char* argv[])
   pq.push({priorityOf(0, 0, lram[0x13], lram[0x66]), 0});
 
   int solNode = -1; std::vector<idx_t> solMacro; long expansions = 0;
+  int bestNi = 0, bestClimb = -1000000; // highest-climb node so far (for emitting a partial route)
 
   while (!pq.empty() && pool.size() < MAXNODES)
   {
@@ -162,6 +171,7 @@ int main(int argc, char* argv[])
     restoreState(baseState);
     if (!onGround() || !inPlay()) continue;
     expansions++;
+    { int climb = baseWraps * 1000 - (int)baseScroll; if (climb > bestClimb) { bestClimb = climb; bestNi = ni; } }
     if (expansions % 500 == 0) fprintf(stderr, "[router] expanded=%ld nodes=%zu frontier=%zu best-wraps=%d scroll=%d\n", expansions, pool.size(), pq.size(), baseWraps, baseScroll);
 
     auto tryAdd = [&](const std::vector<idx_t>& macro, int w, uint8_t ps) {
@@ -222,7 +232,13 @@ int main(int argc, char* argv[])
     if (solNode >= 0) break;
   }
 
-  if (solNode < 0) { fprintf(stderr, "[router] NO SOLUTION (expanded=%ld nodes=%zu)\n", expansions, pool.size()); return 2; }
+  bool partial = false;
+  if (solNode < 0)
+  {
+    // No full route to the grab: emit the highest-climb partial instead (for inspection/screenshots).
+    partial = true; solNode = bestNi; solMacro.clear();
+    fprintf(stderr, "[router] NO SOLUTION (expanded=%ld nodes=%zu) -- writing best PARTIAL (climb=%d)\n", expansions, pool.size(), bestClimb);
+  }
 
   // Reconstruct: intro frames, then root..solNode macros, then solMacro
   std::vector<std::vector<idx_t>> chain;
@@ -234,6 +250,7 @@ int main(int argc, char* argv[])
   std::string out;
   for (auto i : full) out += r->getInputStringFromIndex(i) + "\n";
   jaffarCommon::file::saveStringToFile(out, outputFile);
-  fprintf(stderr, "[router] SOLVED! bonus length=%zu frames, wrote %s (expanded=%ld nodes=%zu)\n", full.size(), outputFile.c_str(), expansions, pool.size());
-  return 0;
+  fprintf(stderr, "[router] %s length=%zu frames, wrote %s (expanded=%ld nodes=%zu)\n",
+          partial ? "PARTIAL" : "SOLVED!", full.size(), outputFile.c_str(), expansions, pool.size());
+  return partial ? 2 : 0;
 }
