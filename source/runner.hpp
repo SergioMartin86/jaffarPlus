@@ -547,12 +547,13 @@ private:
   uint32_t _hashStepTolerance; ///< Hash step tolerance, used to derive the hash-step-tolerance stage.
 
   // --- Input history (strategy-agnostic) -----------------------------------------------------------
-  nlohmann::json                _inputHistoryConfig;   ///< The "Store Input History" config object (selects None/Raw/Trie).
-  std::unique_ptr<InputHistory> _inputHistory;         ///< The configured strategy instance (built in initialize()).
-  size_t                        _stepCount = 0;        ///< Inputs applied so far (the state's depth). Runner-owned, NOT serialized; set per search step by the engine/driver (@ref setSearchStep) or the player, and advanced by @ref pushInput. Feeds Hash Step Tolerance and bounds solution reconstruction.
-  std::shared_ptr<void>         _historyBacking;       ///< Shared backing (e.g. the one trie), injected by the engine or owned privately.
-  uint32_t                      _historyShardId   = 0; ///< This runner's contention-free free-list shard (its worker thread id).
-  uint32_t                      _historyNumShards = 2; ///< Shard count of the backing (engine: threadCount+1; standalone: 2).
+  nlohmann::json                _inputHistoryConfig; ///< The "Store Input History" config object (selects None/Raw/Trie).
+  std::unique_ptr<InputHistory> _inputHistory;       ///< The configured strategy instance (built in initialize()).
+  size_t _stepCount = 0; ///< Inputs applied so far (the state's depth). Runner-owned, NOT serialized; set per search step by the engine/driver (@ref setSearchStep) or the player,
+                         ///< and advanced by @ref pushInput. Feeds Hash Step Tolerance and bounds solution reconstruction.
+  std::shared_ptr<void> _historyBacking;       ///< Shared backing (e.g. the one trie), injected by the engine or owned privately.
+  uint32_t              _historyShardId   = 0; ///< This runner's contention-free free-list shard (its worker thread id).
+  uint32_t              _historyNumShards = 2; ///< Shard count of the backing (engine: threadCount+1; standalone: 2).
 
   bool _bypassHashCalculation; ///< Whether @ref computeHash returns the game's direct hash instead of hashing via MetroHash128.
 
