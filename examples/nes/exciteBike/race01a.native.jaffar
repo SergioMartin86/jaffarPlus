@@ -1,23 +1,29 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 1500,
+        "Max Steps": 2270,
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
             "Best Solution Path": "/tmp/jaffar.best.sol",
             "Worst Solution Path": "/tmp/jaffar.worst.sol"
+        },
+        "Reference Reward Floor": {
+            "Enabled": true,
+            "Tolerance": 1.0,
+            "Path": "race01a.refreward"
         }
     },
     "Engine Configuration": {
         "Hash Database": {
             "Enabled": true,
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 4000
+            "Max Store Size (Mb)": 2000
         },
         "State Database": {
-            "Max Size (Mb)": 22000
-        }
+            "Max Size (Mb)": 100000
+        },
+        "Base State Batch Size": 16
     },
     "Emulator Configuration": {
         "Emulator Name": "ExciteBikeNative",
@@ -37,7 +43,7 @@
         "Show Allowed Inputs": true,
         "Store Input History": {
             "Type": "Raw",
-            "Max Size": 1500
+            "Max Size": 2300
         },
         "Allowed Input Sets": [
             {
@@ -85,12 +91,12 @@
         "Hash Properties": [],
         "Rules": [
             {
-                "Label": 1003,
+                "Label": 1000,
                 "Conditions": [
                     {
-                        "Property": "Bike Pos X",
+                        "Property": "Race Over Flag",
                         "Op": ">",
-                        "Value": 6339.0
+                        "Value": 0
                     }
                 ],
                 "Satisfies": [],
