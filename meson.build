@@ -39,6 +39,9 @@ if meson.is_subproject() == false
     dependencies : [ jaffarDependency ],
   )
 
+  # Per-game auxiliary tools (each guarded by its game's single-game target; see games/meson.build)
+  subdir('games')
+
   # Build test suite if requested
   if get_option('buildTests') == true
     subdir('tests')
