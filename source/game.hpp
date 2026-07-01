@@ -583,6 +583,20 @@ public:
   /** @brief Returns the current state's reward. */
   __INLINE__ float getReward() const { return _reward; }
 
+  /**
+   * @brief One line of a per-step trace for `player --dumpTrace` (space-separated coordinates the game wants to
+   *        record, e.g. for a trace-magnet reference). Default is empty; games override to emit their coordinates.
+   */
+  virtual __INLINE__ std::string getTraceLine() const { return ""; }
+
+  /**
+   * @brief Reward used for the Reference Reward Floor comparison: the un-biased progress reward, WITHOUT any
+   *        eviction-only ranking penalty (e.g. a trace magnet). Defaults to the full reward; a game that
+   *        subtracts a ranking-only bias from its reward overrides this to add that bias back, so the floor
+   *        measures true progress (position) and never false-cancels a position-correct-but-biased state.
+   */
+  virtual __INLINE__ float getFloorReward() const { return _reward; }
+
   /** @brief Returns the current state type (normal, win or fail). */
   __INLINE__ stateType_t getStateType() const { return _stateType; }
 

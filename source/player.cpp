@@ -53,6 +53,10 @@ std::string dumpRamPath;
 ///        replayed solution to this file. Suitable as a driver "Reference Reward Floor" trace.
 std::string dumpRewardPath;
 
+/// @brief When non-empty (--dumpTrace), writes the game's per-step trace line (Game::getTraceLine, one line per
+///        step) for the replayed solution to this file. Suitable as a game "Trace File Path" (trace-magnet ref).
+std::string dumpTracePath;
+
 /// @brief When set (--saveStateStep), the step at which to capture a full emulator savestate (paired
 ///        with --saveStateFile). Parsed as an unsigned step index; empty unless saving is requested.
 std::string saveStateStepStr;
@@ -215,6 +219,21 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
     }
     if (jaffarCommon::file::saveStringToFile(dump, dumpRewardPath.c_str()) == false)
       JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step reward dump to: %s\n", dumpRewardPath.c_str());
+  }
+
+  // If requested, write the game's per-step trace line (Game::getTraceLine) to a file, one line per step. Like the
+  // reward dump, loadStepData restores each step's full state first, so the coordinates are exact. Suitable as a
+  // game "Trace File Path" for the trace magnet.
+  if (dumpTracePath.empty() == false)
+  {
+    std::string dump;
+    for (ssize_t i = 0; i <= sequenceLength; i++)
+    {
+      p.loadStepData(i);
+      dump += r.getGame()->getTraceLine() + "\n";
+    }
+    if (jaffarCommon::file::saveStringToFile(dump, dumpTracePath.c_str()) == false)
+      JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step trace dump to: %s\n", dumpTracePath.c_str());
   }
 
   // If requested, restore the state at a single step and save the emulator's FULL state to a file (for use
@@ -511,6 +530,9 @@ int main(int argc, char* argv[])
   program.add_argument("--dumpReward")
       .help("Writes the per-step game reward (one value per line) to the given file (for use as a 'Reference Reward Floor' trace).")
       .default_value(std::string(""));
+  program.add_argument("--dumpTrace")
+      .help("Writes the game's per-step trace line (Game::getTraceLine) to the given file (for use as a game 'Trace File Path' / trace magnet).")
+      .default_value(std::string(""));
   program.add_argument("--saveStateStep").help("Step at which to save the emulator state (used with --saveStateFile), then exit.").default_value(std::string(""));
   program.add_argument("--saveStateFile")
       .help("File to write the emulator's full state at --saveStateStep to (load as Emulator 'Initial State File Path').")
@@ -574,6 +596,7 @@ int main(int argc, char* argv[])
   // Getting the per-step RAM dump path (if any)
   dumpRamPath       = program.get<std::string>("--dumpRam");
   dumpRewardPath    = program.get<std::string>("--dumpReward");
+  dumpTracePath     = program.get<std::string>("--dumpTrace");
   saveStateStepStr  = program.get<std::string>("--saveStateStep");
   saveStateFilePath = program.get<std::string>("--saveStateFile");
 
