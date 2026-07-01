@@ -306,7 +306,9 @@ public:
 
     if (manualSaveSolution.path != "")
     {
-      // Loading worst state state into runner
+      // Loading the saved state into the runner (its depth was recorded at capture; set it before
+      // deserializing so the trie can rebuild and the solution renders to the right length).
+      _runner->setStepCount(manualSaveSolution.stepCount);
       _engine->getStateDb()->loadStateIntoRunner(*_runner, manualSaveSolution.stateData);
 
       // Saving manually stored solution
@@ -420,7 +422,9 @@ public:
     // Saving worst state into the storage (gather hot slab slot + its cold history into the full buffer)
     _engine->getStateDb()->captureSlotToBuffer(worstState, _worstStateStorage.data());
 
-    // Loading worst state state into runner
+    // The worst state belongs to the current frontier, so its depth is the current search step (the step
+    // counter is not stored per-state). Set it before loading so the solution renders to the right length.
+    _runner->setSearchStep(_currentStep);
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _worstStateStorage.data());
 
     // Saving worst solution into storage
@@ -472,12 +476,17 @@ public:
         // Saving new best
         _bestWinStateReward = winStateEntry.reward;
 
-        // Saving win state into the storage
+        // Saving win state into the storage (and remembering its depth for solution rendering)
         memcpy(_bestStateStorage.data(), winStateEntry.stateData, _stateSize);
+        _bestWinStateStepCount = winStateEntry.stepCount;
       }
     }
 
-    // Loading best state state into runner
+    // Set the runner's step counter to the best state's depth before loading (the counter is not stored
+    // per-state): a win's depth was recorded at capture; an ordinary best belongs to the current frontier.
+    if (_winStatesFound > 0) _runner->setStepCount(_bestWinStateStepCount);
+    else _runner->setSearchStep(_currentStep);
+    _bestStateStepCount = _runner->getStepCount(); // remembered so the printInfo reload uses the same depth
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage.data());
 
     // Updating best state reward
@@ -534,7 +543,8 @@ public:
     jaffarCommon::logger::log("[J+] Engine Information: \n");
     _engine->printInfo();
 
-    // Loading best state into runner
+    // Loading best state into runner (same depth updateBestState() used, so the trie rebuilds correctly)
+    _runner->setStepCount(_bestStateStepCount);
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage.data());
 
     // Printing best state information to screen
@@ -587,7 +597,9 @@ private:
 
   size_t _winStatesFound; ///< Total number of win states found so far.
 
-  float _bestWinStateReward; ///< Reward for the best win state found so far.
+  float  _bestWinStateReward;        ///< Reward for the best win state found so far.
+  size_t _bestWinStateStepCount = 0; ///< Depth of the best win state (recorded at capture; the count is not stored per-state).
+  size_t _bestStateStepCount    = 0; ///< Depth of the current best state, set by updateBestState() and reused by the printInfo reload.
 
   float _bestStateReward; ///< Reward for the best (win or otherwise) state found so far.
 

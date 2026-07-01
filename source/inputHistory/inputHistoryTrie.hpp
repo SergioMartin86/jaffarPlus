@@ -8,8 +8,9 @@
  *        raw bit-packed history. Selected with `{"Type": "Trie", "Max Size": N}` ("Max Size" bounds only
  *        the reconstructed snapshot/solution buffer; the live search path is unbounded).
  *
- * Cold form (StateDb slot): [node id][count]. Full form (self-contained snapshot): the path reconstructed
- * into a bit-packed buffer + count, so snapshots need no reference back into the trie.
+ * Cold form (StateDb slot): [node id]. Full form (self-contained snapshot): the path reconstructed into a
+ * bit-packed buffer, so snapshots need no reference back into the trie. The runner's step counter is stored
+ * separately (prefixed by the runner), not by this strategy.
  *
  * UNBOUNDED GROWTH + HARD CEILING (watch this): unlike Raw, the trie is a SEPARATE shared pool NOT counted
  * in the State DB budget; it grows ~ live-states x depth and is capped at the trie's hard node ceiling
@@ -67,10 +68,9 @@ public:
     if (_ownNode) _trie->release(_node, _shardId);
     _node    = SequenceInputTrie::ROOT;
     _ownNode = false;
-    _count   = 0;
   }
 
-  void pushInput(const InputSet::inputIndex_t input) override
+  void pushInput(const size_t /*stepCount*/, const InputSet::inputIndex_t input) override
   {
     // Append as a new owned node; the prior owned node (e.g. a frameskip sub-frame) is kept alive by the
     // new node's child edge, so drop this runner's transient reference to it. The trie is unbounded.
@@ -78,10 +78,7 @@ public:
     if (_ownNode) _trie->release(_node, _shardId);
     _node    = next;
     _ownNode = true;
-    _count++;
   }
-
-  size_t getInputCount() const override { return _count; }
 
   void serializeCold(jaffarCommon::serializer::Base& s) const override
   {
@@ -90,13 +87,11 @@ public:
     // balanced. (The run is stopped gracefully by the driver's capacity guard right after this anyway.)
     if (_node != SequenceInputTrie::NONE) _trie->acquire(_node); // the destination slot becomes a holder of this path node
     s.pushContiguous(&_node, sizeof(_node));
-    s.pushContiguous(&_count, sizeof(_count));
   }
   void deserializeCold(jaffarCommon::deserializer::Base& d) override
   {
     if (_ownNode) _trie->release(_node, _shardId); // drop a just-discarded candidate node, if any
     d.popContiguous(&_node, sizeof(_node));
-    d.popContiguous(&_count, sizeof(_count));
     _ownNode = false; // borrowed from the slot (kept alive until the slot is freed)
   }
 
@@ -104,19 +99,17 @@ public:
   {
     reconstructIntoBuffer(_node, _scratch.data()); // self-contained bit-packed copy (no trie reference)
     s.pushContiguous(_scratch.data(), _bitpackBytes);
-    s.pushContiguous(&_count, sizeof(_count));
   }
-  void deserializeFull(jaffarCommon::deserializer::Base& d) override
+  void deserializeFull(jaffarCommon::deserializer::Base& d, const size_t stepCount) override
   {
     d.popContiguous(_scratch.data(), _bitpackBytes);
-    d.popContiguous(&_count, sizeof(_count));
-    rebuildNodeFromBuffer(_scratch.data()); // so a restored runner (e.g. the player) can keep extending
+    rebuildNodeFromBuffer(_scratch.data(), stepCount); // so a restored runner (e.g. the player) can keep extending
   }
 
-  std::string toString(const std::map<InputSet::inputIndex_t, std::string>& inputStringMap) const override
+  std::string toString(const std::map<InputSet::inputIndex_t, std::string>& inputStringMap, const size_t /*stepCount*/) const override
   {
     std::vector<InputSet::inputIndex_t> seq;
-    _trie->reconstruct(_node, seq);
+    _trie->reconstruct(_node, seq); // the node fully encodes its path, so seq.size() is the true step count
     std::string out;
     for (size_t i = 0; i < seq.size() && i < _maxSize; i++)
     {
@@ -126,8 +119,8 @@ public:
     return out;
   }
 
-  size_t getColdSize() const override { return sizeof(_node) + sizeof(_count); }
-  size_t getFullSize() const override { return _bitpackBytes + sizeof(_count); }
+  size_t getColdSize() const override { return sizeof(_node); }
+  size_t getFullSize() const override { return _bitpackBytes; }
 
   void initColdSlot(void* cold) const override { *reinterpret_cast<nodeId_t*>(cold) = SequenceInputTrie::NONE; }
 
@@ -145,16 +138,12 @@ public:
 
   void captureColdToFull(const void* cold, void* full) const override
   {
-    // Cold = [node id][count]; full = [bit-packed history][count]. Reconstruct the node's path into the
-    // full buffer so the snapshot is self-contained (no later reference into the trie). Use memcpy for the
-    // node id and count: the count lives at offset _bitpackBytes in `full`, which is not 4-byte aligned, so
-    // a direct uint32_t store there would be undefined (misaligned) behavior.
+    // Cold path = [node id]; full path = [bit-packed history]. Reconstruct the node's path into the full
+    // buffer so the snapshot is self-contained (no later reference into the trie). The runner's step-count
+    // prefix that precedes both is copied separately by the StateDb.
     nodeId_t node;
-    uint32_t count;
     std::memcpy(&node, cold, sizeof(node));
-    std::memcpy(&count, reinterpret_cast<const uint8_t*>(cold) + sizeof(nodeId_t), sizeof(count));
     reconstructIntoBuffer(node, reinterpret_cast<uint8_t*>(full), /*pin=*/true);
-    std::memcpy(reinterpret_cast<uint8_t*>(full) + _bitpackBytes, &count, sizeof(count));
   }
 
 private:
@@ -172,14 +161,14 @@ private:
     for (size_t i = 0; i < seq.size() && i < _maxSize; i++) jaffarCommon::bitwise::bitcopy(buffer, _bitpackBytes, i, &seq[i], sizeof(InputSet::inputIndex_t), 0, 1, _bits);
   }
 
-  /// @brief Rebuilds the cursor's owned trie node by re-extending the path stored in a bit-packed @p buffer
-  /// (so a restored runner, e.g. the player, can keep extending the path).
-  void rebuildNodeFromBuffer(const uint8_t* buffer)
+  /// @brief Rebuilds the cursor's owned trie node by re-extending the @p stepCount path elements stored in a
+  /// bit-packed @p buffer (so a restored runner, e.g. the player, can keep extending the path).
+  void rebuildNodeFromBuffer(const uint8_t* buffer, const size_t stepCount)
   {
     if (_ownNode) _trie->release(_node, _shardId);
     _node              = SequenceInputTrie::ROOT;
     _ownNode           = false;
-    const size_t steps = (_count < _maxSize) ? _count : _maxSize;
+    const size_t steps = (stepCount < _maxSize) ? stepCount : _maxSize;
     for (size_t i = 0; i < steps; i++)
     {
       InputSet::inputIndex_t idx = 0;
@@ -199,7 +188,6 @@ private:
   size_t                       _bitpackBytes = 0;                       ///< Size of the bit-packed snapshot buffer.
   nodeId_t                     _node         = SequenceInputTrie::ROOT; ///< Cursor's current trie node.
   bool                         _ownNode      = false;                   ///< Whether this cursor holds a reference to _node.
-  uint32_t                     _count        = 0;                       ///< Number of inputs applied so far.
   mutable std::vector<uint8_t> _scratch;                                ///< Bit-pack scratch for the full (snapshot) form.
 };
 

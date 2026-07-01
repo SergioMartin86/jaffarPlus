@@ -36,9 +36,14 @@ static std::string expectSeq(std::initializer_list<int> seq)
   return out;
 }
 
-static void pushAll(InputHistory& h, std::initializer_list<int> seq)
+// The Runner (not the strategy) owns the step counter now, so the tests track it too: pushAll writes each
+// input at the running step position and returns the resulting step count, which callers thread into
+// toString()/deserializeFull() exactly as the Runner does.
+static size_t pushAll(InputHistory& h, std::initializer_list<int> seq, size_t start = 0)
 {
-  for (int i : seq) h.pushInput(idx_t(i));
+  size_t count = start;
+  for (int i : seq) h.pushInput(count++, idx_t(i));
+  return count;
 }
 
 // Round-trips a history through serializeCold/deserializeCold into `dst` (sharing any backing).
@@ -52,14 +57,14 @@ static void coldRoundTrip(const InputHistory& src, InputHistory& dst)
   dst.deserializeCold(d);
 }
 
-static void fullRoundTrip(const InputHistory& src, InputHistory& dst)
+static void fullRoundTrip(const InputHistory& src, InputHistory& dst, const size_t count)
 {
   std::vector<uint8_t>                  buf(src.getFullSize());
   jaffarCommon::serializer::Contiguous  s(buf.data(), buf.size());
   src.serializeFull(s);
   EXPECT_EQ(s.getOutputSize(), src.getFullSize());
   jaffarCommon::deserializer::Contiguous d(buf.data(), buf.size());
-  dst.deserializeFull(d);
+  dst.deserializeFull(d, count); // the runner supplies the step count; it is not in the stream
 }
 
 // --------------------------------------------------------------------------------------------------
@@ -83,22 +88,22 @@ TEST(InputHistoryFactory, CreatesEachStrategy)
   { // None
     nlohmann::json cfg{{"Type", "None"}};
     auto           h = create(cfg, MAX_INPUT_INDEX, 4, 0, nullptr);
-    pushAll(*h, {1, 2});
-    EXPECT_EQ(h->getInputCount(), 2u);
-    EXPECT_EQ(h->toString(kMap), "");
+    size_t         n = pushAll(*h, {1, 2});
+    EXPECT_EQ(n, 2u);
+    EXPECT_EQ(h->toString(kMap, n), "");
   }
   { // Raw
     nlohmann::json cfg{{"Type", "Raw"}, {"Max Size", 50}};
     auto           h = create(cfg, MAX_INPUT_INDEX, 4, 0, nullptr);
-    pushAll(*h, {1, 2, 3});
-    EXPECT_EQ(h->toString(kMap), expectSeq({1, 2, 3}));
+    size_t         n = pushAll(*h, {1, 2, 3});
+    EXPECT_EQ(h->toString(kMap, n), expectSeq({1, 2, 3}));
   }
   { // Trie
     nlohmann::json cfg{{"Type", "Trie"}, {"Max Size", 50}};
     auto           backing = createSharedBacking(cfg, 4);
     auto           h       = create(cfg, MAX_INPUT_INDEX, 4, 0, backing);
-    pushAll(*h, {1, 2, 3});
-    EXPECT_EQ(h->toString(kMap), expectSeq({1, 2, 3}));
+    size_t         n       = pushAll(*h, {1, 2, 3});
+    EXPECT_EQ(h->toString(kMap, n), expectSeq({1, 2, 3}));
   }
 }
 
@@ -117,18 +122,16 @@ TEST(InputHistoryFactory, RejectsBadConfig)
 TEST(InputHistoryNone, CountOnlyNoSolution)
 {
   InputHistoryNone h;
-  EXPECT_EQ(h.getInputCount(), 0u);
-  pushAll(h, {1, 2, 3, 0});
-  EXPECT_EQ(h.getInputCount(), 4u);
-  EXPECT_EQ(h.toString(kMap), "");          // no inputs recorded
+  size_t           n = pushAll(h, {1, 2, 3, 0});
+  EXPECT_EQ(n, 4u);                         // the test tracks the count (the strategy no longer does)
+  EXPECT_EQ(h.toString(kMap, n), "");       // no inputs recorded
   EXPECT_EQ(h.getColdSize(), h.getFullSize());
+  EXPECT_EQ(h.getColdSize(), 0u);           // None stores no path bytes; the count lives in the runner
 
   InputHistoryNone other;
-  coldRoundTrip(h, other);
-  EXPECT_EQ(other.getInputCount(), 4u);
+  coldRoundTrip(h, other); // a no-op for None (nothing to round-trip)
 
   h.reset();
-  EXPECT_EQ(h.getInputCount(), 0u);
 
   // Default manager ops are harmless no-ops.
   std::vector<uint8_t> slot(h.getColdSize());
@@ -146,24 +149,24 @@ TEST(InputHistoryNone, CountOnlyNoSolution)
 TEST(InputHistoryRaw, RecordsAndReconstructs)
 {
   InputHistoryRaw h(MAX_INPUT_INDEX, 100);
-  pushAll(h, {1, 3, 2, 4, 0});
-  EXPECT_EQ(h.getInputCount(), 5u);
-  EXPECT_EQ(h.toString(kMap), expectSeq({1, 3, 2, 4, 0}));
+  size_t          n = pushAll(h, {1, 3, 2, 4, 0});
+  EXPECT_EQ(n, 5u);
+  EXPECT_EQ(h.toString(kMap, n), expectSeq({1, 3, 2, 4, 0}));
   EXPECT_EQ(h.getColdSize(), h.getFullSize()); // self-contained: cold == full
 
   InputHistoryRaw other(MAX_INPUT_INDEX, 100);
   coldRoundTrip(h, other);
-  EXPECT_EQ(other.toString(kMap), expectSeq({1, 3, 2, 4, 0}));
+  EXPECT_EQ(other.toString(kMap, n), expectSeq({1, 3, 2, 4, 0}));
 
   InputHistoryRaw third(MAX_INPUT_INDEX, 100);
-  fullRoundTrip(h, third);
-  EXPECT_EQ(third.toString(kMap), expectSeq({1, 3, 2, 4, 0}));
+  fullRoundTrip(h, third, n);
+  EXPECT_EQ(third.toString(kMap, n), expectSeq({1, 3, 2, 4, 0}));
 }
 
 TEST(InputHistoryRaw, CaptureColdToFullEqualsCopy)
 {
   InputHistoryRaw h(MAX_INPUT_INDEX, 100);
-  pushAll(h, {2, 2, 1});
+  size_t          n = pushAll(h, {2, 2, 1});
   std::vector<uint8_t>                 cold(h.getColdSize());
   jaffarCommon::serializer::Contiguous s(cold.data(), cold.size());
   h.serializeCold(s);
@@ -173,16 +176,16 @@ TEST(InputHistoryRaw, CaptureColdToFullEqualsCopy)
 
   InputHistoryRaw                        restored(MAX_INPUT_INDEX, 100);
   jaffarCommon::deserializer::Contiguous d(full.data(), full.size());
-  restored.deserializeFull(d);
-  EXPECT_EQ(restored.toString(kMap), expectSeq({2, 2, 1}));
+  restored.deserializeFull(d, n);
+  EXPECT_EQ(restored.toString(kMap, n), expectSeq({2, 2, 1}));
 }
 
 TEST(InputHistoryRaw, TruncatesPastMaxSize)
 {
   InputHistoryRaw h(MAX_INPUT_INDEX, 3); // only 3 inputs are recorded
-  pushAll(h, {1, 2, 3, 4, 0});
-  EXPECT_EQ(h.getInputCount(), 5u);                 // count tracks every push
-  EXPECT_EQ(h.toString(kMap), expectSeq({1, 2, 3})); // but only the first Max Size are reconstructible
+  size_t          n = pushAll(h, {1, 2, 3, 4, 0});
+  EXPECT_EQ(n, 5u);                                    // count tracks every push
+  EXPECT_EQ(h.toString(kMap, n), expectSeq({1, 2, 3})); // but only the first Max Size are reconstructible
 }
 
 // --------------------------------------------------------------------------------------------------
@@ -193,22 +196,22 @@ TEST(InputHistoryTrie, RecordsAndReconstructs)
 {
   SequenceInputTrie trie(4);
   InputHistoryTrie  h(&trie, 0, 3, MAX_INPUT_INDEX, 100);
-  pushAll(h, {1, 3, 2, 4, 0});
-  EXPECT_EQ(h.getInputCount(), 5u);
-  EXPECT_EQ(h.toString(kMap), expectSeq({1, 3, 2, 4, 0}));
-  EXPECT_EQ(h.getColdSize(), sizeof(nodeId) + sizeof(uint32_t)); // 8 bytes: node id + count
+  size_t            n = pushAll(h, {1, 3, 2, 4, 0});
+  EXPECT_EQ(n, 5u);
+  EXPECT_EQ(h.toString(kMap, n), expectSeq({1, 3, 2, 4, 0}));
+  EXPECT_EQ(h.getColdSize(), sizeof(nodeId)); // just the node id now; the count lives in the runner
 }
 
 TEST(InputHistoryTrie, ColdRoundTripSharesTrie)
 {
   SequenceInputTrie trie(4);
   InputHistoryTrie  a(&trie, 0, 3, MAX_INPUT_INDEX, 100);
-  pushAll(a, {1, 2, 3});
+  size_t            n = pushAll(a, {1, 2, 3});
 
   InputHistoryTrie b(&trie, 1, 3, MAX_INPUT_INDEX, 100); // a different worker shard, same trie
   coldRoundTrip(a, b);
-  EXPECT_EQ(b.getInputCount(), 3u);
-  EXPECT_EQ(b.toString(kMap), expectSeq({1, 2, 3}));
+  EXPECT_EQ(n, 3u);
+  EXPECT_EQ(b.toString(kMap, n), expectSeq({1, 2, 3}));
 }
 
 TEST(InputHistoryTrie, ExpandFromBaseSharesPrefix)
@@ -217,43 +220,43 @@ TEST(InputHistoryTrie, ExpandFromBaseSharesPrefix)
   // all share the base's prefix nodes.
   SequenceInputTrie trie(4);
   InputHistoryTrie  base(&trie, 0, 3, MAX_INPUT_INDEX, 100);
-  pushAll(base, {1, 2, 3}); // R R A
+  size_t            baseN = pushAll(base, {1, 2, 3}); // R R A (base depth 3)
 
   std::vector<uint8_t>                 slot(base.getColdSize());
   jaffarCommon::serializer::Contiguous s(slot.data(), slot.size());
   base.serializeCold(s); // the stored slot holds the "1 2 3" node
 
-  // Child 1: load the base, append 4 (-> L).
+  // Child 1: load the base, append 4 (-> L) at the base's step.
   InputHistoryTrie child1(&trie, 1, 3, MAX_INPUT_INDEX, 100);
   { jaffarCommon::deserializer::Contiguous d(slot.data(), slot.size()); child1.deserializeCold(d); }
-  child1.pushInput(idx_t(4));
-  EXPECT_EQ(child1.toString(kMap), expectSeq({1, 2, 3, 4}));
+  child1.pushInput(baseN, idx_t(4));
+  EXPECT_EQ(child1.toString(kMap, baseN + 1), expectSeq({1, 2, 3, 4}));
 
   // Child 2: load the same base, append 0 (-> R). Independent leaf, shared prefix.
   InputHistoryTrie child2(&trie, 2, 3, MAX_INPUT_INDEX, 100);
   { jaffarCommon::deserializer::Contiguous d(slot.data(), slot.size()); child2.deserializeCold(d); }
-  child2.pushInput(idx_t(0));
-  EXPECT_EQ(child2.toString(kMap), expectSeq({1, 2, 3, 0}));
+  child2.pushInput(baseN, idx_t(0));
+  EXPECT_EQ(child2.toString(kMap, baseN + 1), expectSeq({1, 2, 3, 0}));
 
   // The stored base is unaffected by either child.
   InputHistoryTrie reload(&trie, 3, 3, MAX_INPUT_INDEX, 100);
   { jaffarCommon::deserializer::Contiguous d(slot.data(), slot.size()); reload.deserializeCold(d); }
-  EXPECT_EQ(reload.toString(kMap), expectSeq({1, 2, 3}));
+  EXPECT_EQ(reload.toString(kMap, baseN), expectSeq({1, 2, 3}));
 }
 
 TEST(InputHistoryTrie, FullFormIsSelfContained)
 {
   SequenceInputTrie trie(4);
   InputHistoryTrie  a(&trie, 0, 3, MAX_INPUT_INDEX, 100);
-  pushAll(a, {4, 1, 1, 2});
-  EXPECT_EQ(a.getFullSize(), ((100u * jaffarCommon::bitwise::getEncodingBitsForElementCount(MAX_INPUT_INDEX) + 7) / 8) + sizeof(uint32_t));
+  size_t            n = pushAll(a, {4, 1, 1, 2});
+  EXPECT_EQ(a.getFullSize(), ((100u * jaffarCommon::bitwise::getEncodingBitsForElementCount(MAX_INPUT_INDEX) + 7) / 8)); // bit-packed path only (no count)
 
   // serializeFull -> deserializeFull reconstructs the path, and the restored cursor can keep extending.
   InputHistoryTrie b(&trie, 1, 3, MAX_INPUT_INDEX, 100);
-  fullRoundTrip(a, b);
-  EXPECT_EQ(b.toString(kMap), expectSeq({4, 1, 1, 2}));
-  b.pushInput(idx_t(3));
-  EXPECT_EQ(b.toString(kMap), expectSeq({4, 1, 1, 2, 3}));
+  fullRoundTrip(a, b, n);
+  EXPECT_EQ(b.toString(kMap, n), expectSeq({4, 1, 1, 2}));
+  b.pushInput(n, idx_t(3));
+  EXPECT_EQ(b.toString(kMap, n + 1), expectSeq({4, 1, 1, 2, 3}));
 }
 
 TEST(InputHistoryTrie, CaptureColdToFullForSnapshots)
@@ -261,7 +264,7 @@ TEST(InputHistoryTrie, CaptureColdToFullForSnapshots)
   // captureColdToFull is the best/worst-snapshot path: a stored cold slot -> a self-contained full buffer.
   SequenceInputTrie trie(4);
   InputHistoryTrie  a(&trie, 0, 3, MAX_INPUT_INDEX, 100);
-  pushAll(a, {1, 4, 2});
+  size_t            n = pushAll(a, {1, 4, 2});
 
   std::vector<uint8_t>                 cold(a.getColdSize());
   jaffarCommon::serializer::Contiguous s(cold.data(), cold.size());
@@ -272,8 +275,8 @@ TEST(InputHistoryTrie, CaptureColdToFullForSnapshots)
 
   InputHistoryTrie                       restored(&trie, 1, 3, MAX_INPUT_INDEX, 100);
   jaffarCommon::deserializer::Contiguous d(full.data(), full.size());
-  restored.deserializeFull(d);
-  EXPECT_EQ(restored.toString(kMap), expectSeq({1, 4, 2}));
+  restored.deserializeFull(d, n);
+  EXPECT_EQ(restored.toString(kMap, n), expectSeq({1, 4, 2}));
 }
 
 TEST(InputHistoryTrie, InitAndReleaseColdSlot)
@@ -299,11 +302,10 @@ TEST(InputHistoryTrie, EmptyPath)
 {
   SequenceInputTrie trie(4);
   InputHistoryTrie  h(&trie, 0, 3, MAX_INPUT_INDEX, 100);
-  EXPECT_EQ(h.getInputCount(), 0u);
-  EXPECT_EQ(h.toString(kMap), "");
+  EXPECT_EQ(h.toString(kMap, 0), "");
   InputHistoryTrie b(&trie, 1, 3, MAX_INPUT_INDEX, 100);
   coldRoundTrip(h, b);
-  EXPECT_EQ(b.toString(kMap), "");
+  EXPECT_EQ(b.toString(kMap, 0), "");
 }
 
 TEST(InputHistory, RawAndTrieAgree)
@@ -312,12 +314,14 @@ TEST(InputHistory, RawAndTrieAgree)
   SequenceInputTrie trie(2);
   InputHistoryTrie  tr(&trie, 0, 1, MAX_INPUT_INDEX, 100);
   InputHistoryRaw   rw(MAX_INPUT_INDEX, 100);
+  size_t            c = 0;
   for (int x : {1, 3, 2, 4, 0, 1, 1, 2, 3})
   {
-    tr.pushInput(idx_t(x));
-    rw.pushInput(idx_t(x));
+    tr.pushInput(c, idx_t(x));
+    rw.pushInput(c, idx_t(x));
+    c++;
   }
-  EXPECT_EQ(tr.toString(kMap), rw.toString(kMap));
+  EXPECT_EQ(tr.toString(kMap, c), rw.toString(kMap, c));
 }
 
 // --------------------------------------------------------------------------------------------------

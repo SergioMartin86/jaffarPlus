@@ -11,28 +11,24 @@
 namespace jaffarPlus
 {
 
-/// @brief Records only the step counter; smallest per-state footprint, but no solution reconstruction.
+/// @brief Records nothing; smallest per-state footprint (the runner's count alone), no solution reconstruction.
 class InputHistoryNone final : public InputHistory
 {
 public:
-  void   reset() override { _count = 0; }
-  void   pushInput(const InputSet::inputIndex_t /*input*/) override { _count++; }
-  size_t getInputCount() const override { return _count; }
+  void reset() override {}
+  void pushInput(const size_t /*stepCount*/, const InputSet::inputIndex_t /*input*/) override {}
 
-  void serializeCold(jaffarCommon::serializer::Base& s) const override { s.pushContiguous(&_count, sizeof(_count)); }
-  void deserializeCold(jaffarCommon::deserializer::Base& d) override { d.popContiguous(&_count, sizeof(_count)); }
-  void serializeFull(jaffarCommon::serializer::Base& s) const override { serializeCold(s); }
-  void deserializeFull(jaffarCommon::deserializer::Base& d) override { deserializeCold(d); }
+  void serializeCold(jaffarCommon::serializer::Base& /*s*/) const override {}
+  void deserializeCold(jaffarCommon::deserializer::Base& /*d*/) override {}
+  void serializeFull(jaffarCommon::serializer::Base& /*s*/) const override {}
+  void deserializeFull(jaffarCommon::deserializer::Base& /*d*/, const size_t /*stepCount*/) override {}
 
-  std::string toString(const std::map<InputSet::inputIndex_t, std::string>& /*m*/) const override { return ""; }
+  std::string toString(const std::map<InputSet::inputIndex_t, std::string>& /*m*/, const size_t /*stepCount*/) const override { return ""; }
 
-  size_t getColdSize() const override { return sizeof(_count); }
-  size_t getFullSize() const override { return sizeof(_count); }
+  size_t getColdSize() const override { return 0; }
+  size_t getFullSize() const override { return 0; }
 
-  void captureColdToFull(const void* cold, void* full) const override { memcpy(full, cold, sizeof(_count)); }
-
-private:
-  uint32_t _count = 0; ///< Number of inputs applied so far (the step counter).
+  void captureColdToFull(const void* /*cold*/, void* /*full*/) const override {}
 };
 
 } // namespace jaffarPlus

@@ -328,13 +328,30 @@ public:
   }
 
   /**
-   * @brief Records an applied input into the input history and advances the input counter.
+   * @brief Records an applied input into the input history at the current step, and advances the step counter.
    *
-   * @details Forwards to the configured input-history strategy, which stores the input (subject to its
-   * own capacity rules) and advances its step counter.
+   * @details The runner owns the step counter (it is what feeds Hash Step Tolerance and is NOT serialized into
+   * every state -- see @ref setSearchStep). The configured strategy stores the input at position @ref _stepCount
+   * (subject to its own capacity rules); the runner then advances the counter.
    * @param inputIdx The index of the input that was applied.
    */
-  __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx) { _inputHistory->pushInput(inputIdx); }
+  __INLINE__ void pushInput(const InputSet::inputIndex_t inputIdx)
+  {
+    _inputHistory->pushInput(_stepCount, inputIdx);
+    _stepCount++;
+  }
+
+  /// @brief Sets the step counter directly (its input-count value). Used when restoring a snapshot whose depth
+  /// was recorded at capture (best/worst/win/manual), and by the player as it replays.
+  __INLINE__ void setStepCount(const size_t stepCount) { _stepCount = stepCount; }
+
+  /// @brief Sets the step counter from a search step. Since every state at search step N shares the same depth,
+  /// the engine/driver supply N here instead of serializing the counter per state. Accounts for frameskip
+  /// (each search step records 1 + @ref _frameskipRate inputs).
+  __INLINE__ void setSearchStep(const size_t searchStep) { _stepCount = searchStep * (_frameskipRate + 1); }
+
+  /// @brief Returns the current step counter (number of inputs applied / the state's depth).
+  __INLINE__ size_t getStepCount() const { return _stepCount; }
 
   /**
    * @brief Serializes the runner state: the game state, the input history, and the input counter.
@@ -355,7 +372,9 @@ public:
   __INLINE__ void deserializeState(jaffarCommon::deserializer::Base& deserializer)
   {
     _game->deserializeState(deserializer);
-    _inputHistory->deserializeFull(deserializer);
+    // The step counter is not part of the stream; the caller sets it (via setStepCount/setSearchStep) before
+    // deserializing so strategies that rebuild from the path length (the trie) have it available.
+    _inputHistory->deserializeFull(deserializer, _stepCount);
   }
 
   /**
@@ -434,7 +453,7 @@ public:
    * @return The recorded inputs, one per line.
    * @throws A runtime error if a recorded input index has no registered string.
    */
-  std::string getInputHistoryString() const { return _inputHistory->toString(_inputStringMap); }
+  std::string getInputHistoryString() const { return _inputHistory->toString(_inputStringMap, _stepCount); }
 
   /**
    * @brief Returns the input string registered for an input index.
@@ -463,7 +482,7 @@ public:
                               _inputHistory->getColdSize(), _inputHistory->getFullSize());
 
     // Printing runner state
-    jaffarCommon::logger::log("[J+]  + Current Input Count:                      %lu\n", _inputHistory->getInputCount());
+    jaffarCommon::logger::log("[J+]  + Current Input Count:                      %lu\n", _stepCount);
     jaffarCommon::logger::log("[J+]  + Hash:                                     %s\n", hash.c_str());
     jaffarCommon::logger::log("[J+]  + Hash Step Tolerance Stage:                %u / %u\n", hashStepToleranceStage, _hashStepTolerance);
 
@@ -492,7 +511,7 @@ public:
   }
 
   /** @brief Returns the current hash-step-tolerance stage (current input count modulo tolerance + 1). */
-  __INLINE__ uint32_t getHashStepToleranceStage() const { return (uint32_t)_inputHistory->getInputCount() % (_hashStepTolerance + 1); }
+  __INLINE__ uint32_t getHashStepToleranceStage() const { return (uint32_t)_stepCount % (_hashStepTolerance + 1); }
   /** @brief Returns a pointer to the owned game instance. */
   __INLINE__ Game* getGame() const { return _game.get(); }
 
@@ -530,6 +549,7 @@ private:
   // --- Input history (strategy-agnostic) -----------------------------------------------------------
   nlohmann::json                _inputHistoryConfig;   ///< The "Store Input History" config object (selects None/Raw/Trie).
   std::unique_ptr<InputHistory> _inputHistory;         ///< The configured strategy instance (built in initialize()).
+  size_t                        _stepCount = 0;        ///< Inputs applied so far (the state's depth). Runner-owned, NOT serialized; set per search step by the engine/driver (@ref setSearchStep) or the player, and advanced by @ref pushInput. Feeds Hash Step Tolerance and bounds solution reconstruction.
   std::shared_ptr<void>         _historyBacking;       ///< Shared backing (e.g. the one trie), injected by the engine or owned privately.
   uint32_t                      _historyShardId   = 0; ///< This runner's contention-free free-list shard (its worker thread id).
   uint32_t                      _historyNumShards = 2; ///< Shard count of the backing (engine: threadCount+1; standalone: 2).

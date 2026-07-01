@@ -712,8 +712,9 @@ private:
   /// @brief A reward value paired with a serialized state buffer.
   struct stateInfo_t
   {
-    float reward;              ///< Reward associated with the stored state.
-    void* stateData = nullptr; ///< Raw buffer holding the serialized state, or nullptr if unset.
+    float  reward;              ///< Reward associated with the stored state.
+    void*  stateData = nullptr; ///< Raw buffer holding the serialized state, or nullptr if unset.
+    size_t stepCount = 0;       ///< Depth (input count) of the saved state, recorded at capture (the count is not serialized per-state).
   };
 
   /// @brief A manually saved solution: its input path, reward, serialized state, and triggering rule index.
@@ -723,6 +724,7 @@ private:
     float       reward;              ///< Reward of the saved state.
     void*       stateData = nullptr; ///< Raw buffer holding the serialized saved state, or nullptr if unset.
     ssize_t     lastRuleIdx;         ///< Index of the last rule active when the state was saved.
+    size_t      stepCount = 0;       ///< Depth (input count) of the saved state, recorded at capture.
   };
 
   /**
@@ -810,6 +812,7 @@ private:
       // Load state into runner via the state database (base states are slab slots: hot slot + cold path)
       JAFFAR_PROF_DECL(t0);
       _stateDb->loadStateFromSlot(*r, baseStateData);
+      r->setSearchStep(_currentStep); // base state's depth = current search step (count is not stored per-state)
       JAFFAR_PROF_ACC(acc.runnerStateLoad, t0);
 
       // Getting allowed inputs
@@ -887,6 +890,7 @@ private:
     // Re-loading base state (slab slot: hot slot + cold path)
     JAFFAR_PROF_DECL(t0);
     _stateDb->loadStateFromSlot(r, baseStateData);
+    r.setSearchStep(_currentStep); // base state's depth = current search step (count is not stored per-state)
     JAFFAR_PROF_ACC(acc.runnerStateLoad, t0);
 
     // Running input
@@ -998,7 +1002,8 @@ private:
       if (reward > _stepBestWinState.reward)
       {
         _stateDb->saveStateFromRunner(r, _stepBestWinState.stateData);
-        _stepBestWinState.reward = reward;
+        _stepBestWinState.reward    = reward;
+        _stepBestWinState.stepCount = r.getStepCount(); // record depth: the count is not serialized per-state
       }
       _stepBestWinStateLock.unlock();
 
@@ -1047,6 +1052,7 @@ private:
         _manualSaveSolution.path             = r.getGame()->getSaveSolutionPath();
         _manualSaveSolution.reward           = reward;
         _manualSaveSolution.lastRuleIdx      = currentLastRuleIdx;
+        _manualSaveSolution.stepCount        = r.getStepCount(); // record depth (the count is not serialized per-state)
         _manualSaveSolutionUpdatedLastRuleId = true;
       }
 
