@@ -35,7 +35,7 @@ printf '|R|\n|R|\n|R|\n|R|\n|D|\n|D|\n|D|\n|D|\n' > "$WIN_SOL"
   || fail "player exited non-zero on --dumpReward (winning route)"
 [[ -s "$WIN_OUT" ]] || fail "--dumpReward produced no file"
 [[ "$(wc -l < "$WIN_OUT")" == "9" ]] || fail "winning trace line count != 9 (got $(wc -l < "$WIN_OUT"))"
-EXP_WIN="0.000000 -7.000000 -6.000000 -5.000000 -4.000000 -3.000000 -2.000000 -1.000000 100000.000000"
+EXP_WIN="0 -7 -6 -5 -4 -3 -2 -1 100000"
 [[ "$(trace "$WIN_OUT")" == "$EXP_WIN" ]] || fail "winning reward trace mismatch: got [$(trace "$WIN_OUT")] want [$EXP_WIN]"
 
 # --- Case 2: non-winning route RRRR stops at (4,0) (distance 4): rewards stay negative, no +100000. ---
@@ -43,7 +43,7 @@ printf '|R|\n|R|\n|R|\n|R|\n' > "$NOWIN_SOL"
 "$PLAYER" "$CONFIG" "$NOWIN_SOL" "${PLAY_FLAGS[@]}" --dumpReward "$NOWIN_OUT" >/dev/null 2>&1 \
   || fail "player exited non-zero on --dumpReward (non-winning route)"
 [[ "$(wc -l < "$NOWIN_OUT")" == "5" ]] || fail "non-winning trace line count != 5 (got $(wc -l < "$NOWIN_OUT"))"
-EXP_NOWIN="0.000000 -7.000000 -6.000000 -5.000000 -4.000000"
+EXP_NOWIN="0 -7 -6 -5 -4"
 [[ "$(trace "$NOWIN_OUT")" == "$EXP_NOWIN" ]] || fail "non-winning reward trace mismatch: got [$(trace "$NOWIN_OUT")] want [$EXP_NOWIN]"
 
 echo "PASS: --dumpReward trace win [$EXP_WIN] ; nowin [$EXP_NOWIN]"
