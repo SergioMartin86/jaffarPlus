@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 
 /**
  * @file exciteBikeNative.hpp
@@ -48,6 +49,12 @@ public:
     // if absent, initialize() uses the engine's flat baseline (Engine::reset()) -- e.g. for ROM-free tests.
     if (_emulatorConfigRemaining.contains("Race Start RAM File Path")) _raceStartRamPath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Race Start RAM File Path");
 
+    // Optional mid-run seed: a full engine state (the 68-byte serialized Engine::State written by
+    // jaffar-player --saveStateFile). When set, initialize() loads it AFTER the race-start RAM seed, so the
+    // search can start from an arbitrary frame (e.g. for isolating a deep region). Pair with the game's
+    // "Initial Block Transitions" so the absolute Bike Pos X is correct from the seeded frame.
+    if (_emulatorConfigRemaining.contains("Initial State File Path")) _initialStatePath = jaffarCommon::json::popString(_emulatorConfigRemaining, "Initial State File Path");
+
     // Reuse the NES joypad input parser (identical "|..|UDLRSsBA|" -> controller byte decoding).
     // It reads the controller-type keys without popping, so consume them here too; the base factory
     // always calls finalizeEmulatorConfig(), which rejects any leftover key.
@@ -64,13 +71,27 @@ public:
     {
       jaffarCommon::logger::log("[J+] WARNING: ExciteBikeNative has no 'Race Start RAM File Path'; using flat baseline (frame 0 will not match the real race start).\n");
       _engine.reset();
-      return;
     }
-    std::string ram;
-    if (jaffarCommon::file::loadStringFromFile(ram, _raceStartRamPath) == false) JAFFAR_THROW_LOGIC("Could not read race-start RAM snapshot: '%s'", _raceStartRamPath.c_str());
-    if (ram.size() < excitebike::Engine::LRAM_SIZE)
-      JAFFAR_THROW_LOGIC("Race-start RAM snapshot '%s' is %zu bytes, need >= %zu", _raceStartRamPath.c_str(), ram.size(), (size_t)excitebike::Engine::LRAM_SIZE);
-    _engine.seedFromRam(reinterpret_cast<const uint8_t*>(ram.data()));
+    else
+    {
+      std::string ram;
+      if (jaffarCommon::file::loadStringFromFile(ram, _raceStartRamPath) == false) JAFFAR_THROW_LOGIC("Could not read race-start RAM snapshot: '%s'", _raceStartRamPath.c_str());
+      if (ram.size() < excitebike::Engine::LRAM_SIZE)
+        JAFFAR_THROW_LOGIC("Race-start RAM snapshot '%s' is %zu bytes, need >= %zu", _raceStartRamPath.c_str(), ram.size(), (size_t)excitebike::Engine::LRAM_SIZE);
+      _engine.seedFromRam(reinterpret_cast<const uint8_t*>(ram.data()));
+    }
+
+    // Mid-run seed: overlay a saved full engine state (the 68-byte Engine::State from --saveStateFile).
+    if (!_initialStatePath.empty())
+    {
+      std::string st;
+      if (jaffarCommon::file::loadStringFromFile(st, _initialStatePath) == false) JAFFAR_THROW_LOGIC("Could not read 'Initial State File Path': '%s'", _initialStatePath.c_str());
+      if (st.size() < sizeof(excitebike::Engine::State))
+        JAFFAR_THROW_LOGIC("Initial state '%s' is %zu bytes, need >= %zu", _initialStatePath.c_str(), st.size(), sizeof(excitebike::Engine::State));
+      excitebike::Engine::State s;
+      memcpy(&s, st.data(), sizeof(s));
+      _engine.deserialize(s);
+    }
   }
 
   jaffar::InputParser* getInputParser() const override { return _inputParser.get(); }
@@ -128,6 +149,7 @@ public:
 private:
   excitebike::Engine                   _engine;
   std::string                          _raceStartRamPath;
+  std::string                          _initialStatePath;
   std::unique_ptr<jaffar::InputParser> _inputParser;
 };
 
