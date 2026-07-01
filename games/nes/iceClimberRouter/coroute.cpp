@@ -36,6 +36,7 @@ int main(int argc, char* argv[])
   program.add_argument("--start").help("Fresh: replay init seq, then advance to the injected mountain's climb bottom.").default_value(false).implicit_value(true);
   program.add_argument("--load").help("Load an in-process checkpoint written by --save (skips init).").default_value(std::string(""));
   program.add_argument("--inputs").help("Segment to apply, e.g. \"L12 A1 .20\".").default_value(std::string(""));
+  program.add_argument("--applySol").help("Apply raw per-frame input strings from a .sol file (e.g. a router output) before --inputs.").default_value(std::string(""));
   program.add_argument("--save").help("Write the resulting checkpoint here.").default_value(std::string(""));
   program.add_argument("--route").help("APPEND the applied per-frame inputs here (the accumulating route).").default_value(std::string(""));
   try { program.parse_args(argc, argv); }
@@ -74,6 +75,19 @@ int main(int argc, char* argv[])
     // Advance through the prior bonus-end + level transition + load until settled on the ground at the
     // climb bottom (posY>=150). ICE_INJECT_LEVEL (env) pins $59 through the transition.
     for (int g = 0; g < 400 && (lram[0x00E0] != 0 || lram[0x66] < 150); g++) { r->advanceState(NOOP); routeAdd += "|..|........|\n"; }
+  }
+
+  // Apply a raw .sol of per-frame input strings first (e.g. replaying a router solution to its endpoint).
+  const std::string applySolF = program.get<std::string>("--applySol");
+  if (applySolF.empty() == false)
+  {
+    std::string sol; if (jaffarCommon::file::loadStringFromFile(sol, applySolF) == false) { fprintf(stderr, "cannot read sol %s\n", applySolF.c_str()); return 1; }
+    std::string line;
+    for (char c : sol + "\n")
+    {
+      if (c == '\n') { if (line.empty() == false) { r->advanceState(r->getInputIndex(line)); routeAdd += line + "\n"; } line.clear(); }
+      else if (c != '\r') line += c;
+    }
   }
 
   // Apply the input segment.
