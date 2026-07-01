@@ -150,7 +150,8 @@ public:
 
     // Resetting best states reward
     _bestWinStateReward = -std::numeric_limits<float>::infinity();
-    _bestStateReward    = -std::numeric_limits<float>::infinity();
+    _bestStateReward      = -std::numeric_limits<float>::infinity();
+    _bestStateFloorReward = -std::numeric_limits<float>::infinity();
 
     // Resetting worst state reward
     _worstStateReward = std::numeric_limits<float>::infinity();
@@ -224,11 +225,11 @@ public:
 
       // Reference reward floor: if the best leading edge has fallen below the reference at this step, the run
       // can no longer keep pace with the reference -- cancel now (purely a stop signal; nothing was pruned).
-      if (_referenceFloorEnabled && _currentStep < _referenceReward.size() && _bestStateReward < _referenceReward[_currentStep] - _referenceFloorTolerance)
+      if (_referenceFloorEnabled && _currentStep < _referenceReward.size() && _bestStateFloorReward < _referenceReward[_currentStep] - _referenceFloorTolerance)
       {
-        jaffarCommon::logger::log("[J+] Best (%.6f) fell below reference floor (%.6f, tol %.4f) at step %lu by %.6f -- cancelling.\n", _bestStateReward,
+        jaffarCommon::logger::log("[J+] Best (%.6f) fell below reference floor (%.6f, tol %.4f) at step %lu by %.6f -- cancelling.\n", _bestStateFloorReward,
                                   _referenceReward[_currentStep], _referenceFloorTolerance, _currentStep,
-                                  _referenceReward[_currentStep] - _referenceFloorTolerance - _bestStateReward);
+                                  _referenceReward[_currentStep] - _referenceFloorTolerance - _bestStateFloorReward);
         exitReason = exitReason_t::bestBelowReference;
         break;
       }
@@ -490,7 +491,8 @@ public:
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage.data());
 
     // Updating best state reward
-    _bestStateReward = _runner->getGame()->getReward();
+    _bestStateReward      = _runner->getGame()->getReward();
+    _bestStateFloorReward = _runner->getGame()->getFloorReward(); // un-biased position for the Reference Reward Floor (decoupled from the magnet)
 
     // Storing best solution
     _bestSolutionStorage = _runner->getInputHistoryString();
@@ -534,7 +536,7 @@ public:
     {
       if (_currentStep < _referenceReward.size())
         jaffarCommon::logger::log("[J+] Reference Reward (Best - Ref):               %.6f (Best %+.6f, tol %.4f)\n", _referenceReward[_currentStep],
-                                  _bestStateReward - _referenceReward[_currentStep], _referenceFloorTolerance);
+                                  _bestStateFloorReward - _referenceReward[_currentStep], _referenceFloorTolerance);
       else
         jaffarCommon::logger::log("[J+] Reference Reward (Best - Ref):               (none: step beyond reference trace)\n");
     }
@@ -601,7 +603,8 @@ private:
   size_t _bestWinStateStepCount = 0; ///< Depth of the best win state (recorded at capture; the count is not stored per-state).
   size_t _bestStateStepCount    = 0; ///< Depth of the current best state, set by updateBestState() and reused by the printInfo reload.
 
-  float _bestStateReward; ///< Reward for the best (win or otherwise) state found so far.
+  float _bestStateReward;      ///< Ranking reward (magnet-biased) for the best state found so far; drives eviction/display.
+  float _bestStateFloorReward; ///< Un-biased progress (position) reward of the best state; used for the Reference Reward Floor comparison.
 
   float _worstStateReward; ///< Reward for the worst state found so far.
 
