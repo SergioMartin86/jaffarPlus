@@ -23,32 +23,36 @@ namespace games
 namespace nes
 {
 
+// --- DIAGNOSTIC: per-byte distinct-value histogram over AIRBORNE states (measures where the hash density
+// lives). Cheap (load-then-fetch_or), cumulative across the run. Dumped in printInfoImpl. ---
+namespace ebdiag
+{
+struct ByteHist
+{
+  std::atomic<uint64_t> bits[4]{};
+  inline void rec(uint8_t v)
+  {
+    uint64_t m = 1ULL << (v & 63);
+    int      i = v >> 6;
+    if (!(bits[i].load(std::memory_order_relaxed) & m)) bits[i].fetch_or(m, std::memory_order_relaxed);
+  }
+  int distinct() const
+  {
+    int c = 0;
+    for (int i = 0; i < 4; i++) c += __builtin_popcountll(bits[i].load(std::memory_order_relaxed));
+    return c;
+  }
+};
+static constexpr int NHB                = 14;
+inline ByteHist      g_hb[NHB];
+inline const char*   g_hbName[NHB] = {"posZ2", "posY",  "velY1",   "velY2",   "velZ",      "posZ1",   "angle",
+                                      "velX1", "velX2", "flight1", "flight2", "flight3", "gameCycle", "posX2"};
+} // namespace ebdiag
+
 class ExciteBike final : public jaffarPlus::Game
 {
 public:
   static __INLINE__ std::string getName() { return "NES / Excite Bike"; }
-
-  /// @brief A unique input "token" string for the commit-and-hold scheme. Tokens are SELECTORS chosen by
-  /// the search at air<->ground transitions (to pick a target angle / lane / "hold"); they are NEVER
-  /// applied to the emulator -- advanceStateImpl decodes the token and applies the real control input
-  /// (auto-level L/R, or lane U/D + accel) instead. So a token's button content only needs to be unique:
-  /// the A bit (index 11) is set as a marker so tokens never collide with the real controls (null/L/R/B/
-  /// B+U/B+D, none of which set A), and the index is encoded in U,D,L,R,B (indices 4,5,6,7,10).
-  static __INLINE__ std::string commitToken(uint32_t i)
-  {
-    std::string s = "|..|........|";
-    // Start (index 8) = marker so tokens never collide with the real controls (which use U/D/L/R/B/A only);
-    // the index is encoded across the other 7 buttons -> 128 distinct tokens (enough for full per-posY lanes).
-    if (i & 1) s[4] = 'U';
-    if (i & 2) s[5] = 'D';
-    if (i & 4) s[6] = 'L';
-    if (i & 8) s[7] = 'R';
-    if (i & 16) s[9] = 's'; // Select
-    if (i & 32) s[10] = 'B';
-    if (i & 64) s[11] = 'A';
-    s[8] = 'S'; // Start = marker (tokens are never applied to the emulator; advanceStateImpl maps token -> control)
-    return s;
-  }
 
   /// @brief Real ground control input: accel (B, or A=turbo) + lane steer + angle steer, applied together as a
   /// NES diagonal. laneDir>0 => U (decreases posY toward a lower committed lane), <0 => D. angDir>0 => L (raises
@@ -87,30 +91,13 @@ public:
 
   ExciteBike(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
-    // Commit-and-hold parameters (the whole allowed-input set is built in this .hpp, not in the config's
-    // "Allowed Input Sets"). At each ground->air transition the search commits to a TARGET ANGLE held for
-    // the jump; at each air->ground transition it commits to a TARGET LANE (posY) held on the ground.
-    _commitAngleMin    = _gameConfigRemaining.contains("Commit Angle Min") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Angle Min") : 2;
-    _commitAngleMax    = _gameConfigRemaining.contains("Commit Angle Max") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Angle Max") : 11;
-    _commitLaneCount   = _gameConfigRemaining.contains("Commit Lane Count") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Lane Count") : 6;
-    const int laneYmin = _gameConfigRemaining.contains("Commit Lane PosY Min") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Lane PosY Min") : 94;
-    const int laneYmax = _gameConfigRemaining.contains("Commit Lane PosY Max") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Commit Lane PosY Max") : 151;
-    // Full lane freedom: one committable lane per integer posY in [min,max] (the bike may commit to ANY ground
-    // position, still held for the whole ground stretch). Otherwise, _commitLaneCount evenly-spaced lanes.
-    const bool fullLaneFreedom = _gameConfigRemaining.contains("Full Lane Freedom") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Full Lane Freedom") : false;
-    if (fullLaneFreedom)
-    {
-      for (int y = laneYmin; y <= laneYmax; y++) _laneTargets.push_back(y);
-      _commitLaneCount = (int)_laneTargets.size();
-    }
-    else
-    {
-      for (int l = 0; l < _commitLaneCount; l++)
-      {
-        const int y = (_commitLaneCount == 1) ? laneYmin : laneYmin + (int)((double)l * (laneYmax - laneYmin) / (_commitLaneCount - 1) + 0.5);
-        _laneTargets.push_back(y);
-      }
-    }
+    // Search action space (built in this .hpp, not the config's "Allowed Input Sets"):
+    //   AIRBORNE: fully free per-frame angle -- {raise (L), lower (R), hold} every airborne frame. No commit.
+    //   GROUND:   lane commit by U/D-drop -- the bike steers U/D to a chosen lane, and the moment it issues a
+    //             no-lane-change input it LOCKS that lane (U/D removed) until the next landing; throttle is
+    //             automatic (B to hold the 832 cap, coast when carrying launch speed velX>832).
+    // No multi-frame macro (one emulator frame per step) and no airborne-angle commitment (both removed:
+    // jumps vary their angle in-flight, so the angle must stay free per-frame).
 
     // Opponent removal: the CPU racers (posY at 0x8D/0x8E/0x8F; player posY=0x8C) can knock a lane-locked
     // player off the bike even going straight. When enabled, every frame we park them out of the player's
@@ -118,29 +105,32 @@ public:
     _removeOpponents = _gameConfigRemaining.contains("Remove Opponents") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Remove Opponents") : false;
     _opponentParkY   = _gameConfigRemaining.contains("Opponent Park Y") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Opponent Park Y") : 255;
 
-    // Auto-feather turbo: on the ground use A (turbo, faster but heats the engine, temp at 0x3B6) while temp
-    // is below this limit, else fall back to B (normal accel, holds temp flat -> never overheats); airborne
-    // jumps cool it back down. TAS peaks at 29, so default 29 (tune up toward the true redline to push harder).
-    _turboTempLimit = _gameConfigRemaining.contains("Turbo Temp Limit") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Turbo Temp Limit") : 29;
-
-    // Per-frame airborne angle: instead of committing one airborne angle and holding it, branch the angle
-    // EVERY airborne frame over {raise (L), lower (R), hold} -- full per-frame control of the angle arc
-    // (nose-up climb -> nose-down descent), the expressiveness commit-and-hold's single airborne angle lacks.
-    // Master gate for the search's commit-and-hold token system. When OFF (default) AND per-frame airborne is
-    // off, advanceStateImpl applies inputs RAW (pristine behavior) so reference movies (race01a.tas.sol) replay
-    // bit-exact. Search configs turn this (or Airborne Per Frame Angle) on to use the token action space.
-    _commitAndHold         = _gameConfigRemaining.contains("Commit And Hold") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Commit And Hold") : false;
-    _airbornePerFrameAngle = _gameConfigRemaining.contains("Airborne Per Frame Angle") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Airborne Per Frame Angle") : false;
-    // Macro-airborne: collapse each jump into ONE search step. Disassembly proof: airborne velX is constant
-    // (player air-friction ~0), so posX during a jump is a deterministic function of (entry posX, velX,
-    // frames-aloft) and carries NO search information -- the only posX-relevant output of a jump is its
-    // LANDING (frame + re-entry point). So instead of branching the angle every airborne frame (the
-    // 3^airtime posZ2 explosion), branch only a small set of DESCENT-ANGLE policies at takeoff; each policy
-    // runs the WHOLE jump internally (auto-leveling: climb to the ceiling while $BC>0, then descend toward the
-    // committed target) and yields ONE landing successor. Ground stays commit-and-hold (one frame/step). This
-    // kills the airborne breadth so the search can go deep enough to optimize the ground/sub-pixel run to the
-    // finish -- the only place a frame can hide. See excitebike-disassembly-findings.
-    _macroAirborne = _gameConfigRemaining.contains("Macro Airborne") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Macro Airborne") : false;
+    // Master gate for the search action space. OFF (default) => advanceStateImpl applies inputs RAW, so
+    // reference movies (race01a.tas.sol) replay bit-exact. Search configs set "Search Mode": true.
+    _searchMode = _gameConfigRemaining.contains("Search Mode") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Search Mode") : false;
+    // Descent angle: lock the HIGH descent (commit one angle) but FREE the final approach near the ground so
+    // the landing stays exact. "Near the ground" uses the engine's own landing trigger: it lands when posY
+    // ($8C) reaches groundY = ($A0 - $BC - height $B8); so distToGround = groundY - posY shrinks to 0 at
+    // touchdown. Free the angle once distToGround <= this threshold; lock it above. -1 (default) => the whole
+    // descent stays free (the plain hybrid). Larger => free more of the approach (more landing precision, less
+    // breadth cut); smaller => lock more of the descent.
+    _descentFreeBelowDist =
+        _gameConfigRemaining.contains("Descent Free Below Ground Dist") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Descent Free Below Ground Dist") : -1;
+    // Master switch for ALL airborne angle commits (climb-lock + descent). Default true. Set FALSE for full
+    // per-frame airborne angle freedom (the only tol=0-exact model -- the reference's in-air angle is
+    // frame-by-frame consequential to the landing). Costs airborne breadth, paid with a bigger State DB.
+    _airborneAngleCommit = _gameConfigRemaining.contains("Airborne Angle Commit") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Airborne Angle Commit") : true;
+    // Ground angle steering: also offer L/R to steer the bike ground angle ($AC), which the reference uses to
+    // set up takeoff arcs on ramps. Default false (preserve prior behavior). When true the ground angle is also
+    // hashed so the steered (takeoff-relevant) angle is preserved instead of deduped away.
+    _groundAngleSteering = _gameConfigRemaining.contains("Ground Angle Steering") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Ground Angle Steering") : false;
+    // Free throttle: offer BOTH B (accelerate) and coast (no accel) every ground frame instead of the auto-rule
+    // (coast iff velX>832). The reference pulses B/coast at velX==832 on downhills, which the auto-rule cannot
+    // express. Default false. Adds ground breadth (2x per control) -- pair with aggressive dedup.
+    _freeThrottle = _gameConfigRemaining.contains("Free Throttle") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Free Throttle") : false;
+    // Ground diagonals: offer lane+angle simultaneous combos (U+L, U+R, D+L, D+R). The reference presses them
+    // to set up takeoffs (e.g. U+R+B at frame 1130). Needs Ground Angle Steering. Default false. Adds breadth.
+    _groundDiagonals = _gameConfigRemaining.contains("Ground Diagonals") ? jaffarCommon::json::popBoolean(_gameConfigRemaining, "Ground Diagonals") : false;
     // Initial block-transition count: _blockXTransitions is a running counter (256-px blocks passed) that
     // makes _bikePosX absolute; it is NOT in the emulator state, so when seeding mid-run from an Initial
     // State File this restores it (set to floor(seed posX / 256)) so _bikePosX is correct from frame 0.
@@ -163,15 +153,18 @@ public:
     _dropVelY2     = has("VelY2");
     _dropAngle     = has("Angle");
     _dropFlight    = has("Flight");
+    _dropFlight2   = has("Flight2"); // drop ONLY the fractional flight2 accumulator (keep flight3 arc info)
     _dropGameCycle = has("GameCycle");
-
-    // Trace magnet: a per-step reference trajectory ("posX posY posZ2 velX flight2", one line per search step,
-    // generated by `player --dumpTrace`). A SMALL reward penalty proportional to the bike's distance from the trace at
-    // the current step keeps reference-adjacent states competitive in the (reward-ranked) State DB, so a non-greedy
-    // optimum (the reference line, temporarily lower posX than an apparent-better route) is not evicted once the DB
-    // fills. Reward stays the sole eviction driver -- the magnet just grants legitimate reward for staying near the
-    // known-good line. The reference itself has distance 0 (magnet 0), so the Reference Reward Floor is unaffected.
-    // Intensities are set by the "Set Trace Magnet" rule action (default all 0 => magnet off, even with a trace loaded).
+    // Dedicated flight2 (0x380) airborne quantization (right-shift) -- coarsen the fractional accumulator
+    // without dropping it entirely. 0 => full resolution (unless Flight2 is in Hash Drops).
+    _flight2Q = _gameConfigRemaining.contains("Flight2 Hash Quantization") ? jaffarCommon::json::popNumber<int>(_gameConfigRemaining, "Flight2 Hash Quantization") : 0;
+    // Trace magnet: a per-step reference trajectory ("<posX> <posY> <posZ2>", one line per search step, generated by
+    // `player --dumpTrace`). A SMALL reward penalty proportional to the bike's distance from the trace at the current
+    // step keeps reference-adjacent states competitive in the (reward-ranked) State DB, so a non-greedy optimum (the
+    // reference line, temporarily lower posX than an apparent-better route) is not evicted once the DB fills. Reward
+    // stays the sole eviction driver -- the magnet just grants legitimate reward for staying near the known-good line.
+    // The reference itself has distance 0 (magnet 0), so the Reference Reward Floor is unaffected. Intensities are set
+    // by the "Set Trace Magnet" rule action (default all 0 => magnet off, even with a trace loaded).
     _traceFilePath = _gameConfigRemaining.contains("Trace File Path") ? jaffarCommon::json::popString(_gameConfigRemaining, "Trace File Path") : std::string("");
     if (_traceFilePath != "")
     {
@@ -247,7 +240,6 @@ private:
     _maxVel            = 0;
 
     // Real control inputs actually applied to the emulator (never branched over by the search directly).
-    _inNull = _nullInputIdx;
     // Airborne controls: [laneDir -1..1][angDir -1..1] -> steer posY (U/D) + angle (L/R), no accel.
     for (int ld = -1; ld <= 1; ld++)
       for (int ad = -1; ad <= 1; ad++) _airCtrl[ld + 1][ad + 1] = _emulator->registerInput(airInput(ld, ad));
@@ -256,92 +248,37 @@ private:
       for (int ld = -1; ld <= 1; ld++)
         for (int ad = -1; ad <= 1; ad++) _groundCtrl[t][ld + 1][ad + 1] = _emulator->registerInput(groundInput(t == 1, ld, ad));
 
-    // Commit tokens (selectors): one per target angle, one per target lane, plus a single "hold" token.
-    // The search branches over these ONLY at transitions; advanceStateImpl decodes them.
-    _angleTokens.clear();
-    _laneTokens.clear();
-    _tokenAngle.clear();
-    _tokenLane.clear();
-    uint32_t ti = 0;
-    for (int a = _commitAngleMin; a <= _commitAngleMax; a++)
-    {
-      const auto idx = _emulator->registerInput(commitToken(ti++));
-      _angleTokens.push_back(idx);
-      _tokenAngle[idx] = a;
-    }
-    for (int l = 0; l < _commitLaneCount; l++)
-    {
-      const auto idx = _emulator->registerInput(commitToken(ti++));
-      _laneTokens.push_back(idx);
-      _tokenLane[idx] = _laneTargets[l];
-    }
-    _holdToken = _emulator->registerInput(commitToken(ti++));
+    // Convenience handles into the control tables (laneDir/angDir index = value+1):
+    _airAngleRaise = _airCtrl[1][2]; // L: raise angle (no lane, no accel)
+    _airAngleLower = _airCtrl[1][0]; // R: lower angle
+    _airAngleHold  = _airCtrl[1][1]; // hold (= null)
+    _groundLockB   = _groundCtrl[0][1][1]; // B, no lane steer -- the "lock here" input while accelerating
+    // (coast + no-lane-steer == null == _nullInputIdx; both are treated as the lock input on the ground)
 
-    _committedAngle        = -1; // uncommitted: airborne jump angle (branched first when airborne)
-    _committedAirLane      = -1; // uncommitted: airborne posY target (branched after the jump angle)
-    _committedDescentAngle = -1; // uncommitted: airborne descent/landing angle (branched at the apex, BC==0)
-    _committedLane         = -1; // uncommitted: ground lane (branched first when on the ground)
-    _committedGroundAngle  = -1; // uncommitted: ground angle (branched after the lane)
+    _laneLocked = false; // fresh ground stretch: U/D allowed until the search locks a lane
+    _angleLocked = false; // fresh jump: L/R allowed until the search locks the angle
 
     stateUpdatePostHook();
   }
 
-  // The real control input to apply this frame, derived from the committed angle/lane and the CURRENT
-  // (pre-advance) state. Airborne: auto-level toward the committed target angle (L raises, R lowers).
-  // Ground: accelerate while steering toward the committed target lane (posY) -- U decreases posY, D
-  // increases it. (The committed values were just set by a transition token, or held from earlier.)
-  __INLINE__ InputSet::inputIndex_t computeControl() const
+  // Airborne lock phase: lock the angle during the CLIMB always, and during the HIGH descent when the
+  // distance-to-ground mechanism is on; FREE the final approach near the ground (distToGround <= threshold)
+  // so the landing stays exact. distToGround = groundY - posY, the engine's own landing trigger (lands at
+  // posY >= groundY = $A0 - $BC - height $B8). _descentFreeBelowDist < 0 => whole descent free (plain hybrid).
+  __INLINE__ bool airAngleLockPhase() const
   {
-    if (*_bikeAirMode > 0)
-    {
-      // Airborne: steer angle (L/R) toward the climb angle while climbing ($BC>0), or the descent/landing
-      // angle once past the apex ($BC==0); steer posY (U/D) toward the committed air lane. All held.
-      const int angTarget = (int)_committedAngle;
-      int       angDir    = 0;
-      if (angTarget >= 0)
-      {
-        if ((int)*_bikeAngle < angTarget)
-          angDir = 1; // angle too low  -> L (raise)
-        else if ((int)*_bikeAngle > angTarget)
-          angDir = -1; // angle too high -> R (lower)
-      }
-      int laneDir = 0;
-      if (_committedAirLane >= 0)
-      {
-        if ((int)*_bikePosY > _committedAirLane)
-          laneDir = 1; // posY too high -> U (decrease)
-        else if ((int)*_bikePosY < _committedAirLane)
-          laneDir = -1; // posY too low  -> D (increase)
-      }
-      return _airCtrl[laneDir + 1][angDir + 1];
-    }
-    // Ground: accel (auto-feather turbo A under the redline, else B) + steer toward the committed lane (U/D)
-    // AND the committed ground angle (L/R), both held until the next air<->ground transition.
-    const bool turbo   = ((int)*_bikeEngineTemp < _turboTempLimit);
-    int        laneDir = 0;
-    if (_committedLane >= 0)
-    {
-      if ((int)*_bikePosY > _committedLane)
-        laneDir = 1; // posY too high -> U (decrease)
-      else if ((int)*_bikePosY < _committedLane)
-        laneDir = -1; // posY too low  -> D (increase)
-    }
-    int angDir = 0;
-    if (_committedGroundAngle >= 0)
-    {
-      if ((int)*_bikeAngle < _committedGroundAngle)
-        angDir = 1; // angle too low  -> L (raise)
-      else if ((int)*_bikeAngle > _committedGroundAngle)
-        angDir = -1; // angle too high -> R (lower)
-    }
-    return _groundCtrl[turbo ? 1 : 0][laneDir + 1][angDir + 1];
+    if (!_airborneAngleCommit) return false; // full per-frame airborne angle freedom (no commit)
+    if (*_climbRemaining > 0) return true;       // climb: always lock
+    if (_descentFreeBelowDist < 0) return false; // descent fully free
+    const int groundY      = (0xA0 - (int)*_climbRemaining - (int)*_bikePosZ2) & 0xFF;
+    const int distToGround = groundY - (int)*_bikePosY;
+    return distToGround > _descentFreeBelowDist; // lock the high descent; free near the ground
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
   {
-    // Raw (pristine) mode: when neither the commit-and-hold token system nor per-frame airborne is enabled,
-    // apply the input directly. This keeps reference movies (race01a.tas.sol) replaying bit-exact.
-    if (!_commitAndHold && !_airbornePerFrameAngle)
+    // Raw (pristine) mode: apply inputs directly so reference movies (race01a.tas.sol) replay bit-exact.
+    if (!_searchMode)
     {
       _emulator->advanceState(input);
       _currentStep++;
@@ -349,64 +286,26 @@ private:
       return;
     }
 
-    // Per-frame airborne angle: while airborne, the chosen input is a REAL control (raise/lower/hold) applied
-    // directly (no commit-and-hold). Ground stays commit-and-hold.
-    if (_airbornePerFrameAngle && *_bikeAirMode > 0)
-    {
-      const uint8_t prevAir = *_bikeAirMode;
-      _emulator->advanceState(input);
-      _currentStep++;
-      if (prevAir > 0 && *_bikeAirMode == 0)
-      {
-        _committedLane        = -1;
-        _committedGroundAngle = -1;
-      } // air -> ground
-      _lastInput = input;
-      return;
-    }
+    // Search mode: every offered input is ALREADY a real control (see getAdditionalAllowedInputs), applied
+    // directly -- exactly ONE emulator frame per step (no macro / fast-forward). On the GROUND, a no-lane-
+    // steer input (B-only while accelerating, or null while coasting) LOCKS the current lane: U/D are dropped
+    // for the rest of the ground stretch (this is the lane commit).
+    const uint8_t prevAir   = *_bikeAirMode;
+    const uint8_t prevClimb = *_climbRemaining; // $BC: >0 climbing, 0 at apex/descent (for the climb/descent split)
+    if (prevAir == 0 && !_laneLocked && (input == _groundLockB || input == _nullInputIdx)) _laneLocked = true;
+    // Lock the angle when the search picks hold during a lock phase (climb, or high descent). Computed on the
+    // pre-advance state, consistent with the inputs offered by getAdditionalAllowedInputs.
+    const bool lockPhase = airAngleLockPhase();
+    if (prevAir > 0 && lockPhase && !_angleLocked && input == _airAngleHold) _angleLocked = true;
 
-    // The search's chosen input is a commit TOKEN (at a transition) or the hold token (mid-phase). Decode
-    // it into the committed target; the actual emulator input is computeControl() (auto-level / lane drive).
-    // An angle token sets the AIRBORNE jump angle if airborne, else the GROUND-stretch angle (same 10 tokens,
-    // routed by the current air mode). A lane token sets the committed lane. The hold token changes nothing.
-    const auto ai = _tokenAngle.find(input);
-    if (ai != _tokenAngle.end())
-    {
-      if (*_bikeAirMode > 0)
-        _committedAngle = (int16_t)ai->second; // airborne jump angle
-      else
-        _committedGroundAngle = (int16_t)ai->second; // ground-stretch angle
-    }
-    else
-    {
-      const auto li = _tokenLane.find(input);
-      if (li != _tokenLane.end())
-      {
-        if (*_bikeAirMode > 0)
-          _committedAirLane = (int16_t)li->second; // airborne posY target
-        else
-          _committedLane = (int16_t)li->second; // ground lane
-      }
-    }
-
-    const uint8_t prevAir = *_bikeAirMode;
-    _emulator->advanceState(computeControl());
+    _emulator->advanceState(input);
     _currentStep++;
 
-    // Re-commit at every air<->ground transition: a new jump picks a fresh airborne angle; a new ground stretch
-    // picks a fresh lane AND ground angle (-1 => the next frames in that phase branch over the targets).
     const uint8_t newAir = *_bikeAirMode;
-    if (prevAir == 0 && newAir > 0) // ground -> air: commit fresh climb angle, air posY, descent angle
-    {
-      _committedAngle        = -1;
-      _committedAirLane      = -1;
-      _committedDescentAngle = -1;
-    }
-    if (prevAir > 0 && newAir == 0) // air -> ground: commit a fresh lane + ground angle
-    {
-      _committedLane        = -1;
-      _committedGroundAngle = -1;
-    }
+    if (prevAir == 0 && newAir > 0) _angleLocked = false; // takeoff: fresh climb-angle commit
+    // Apex (climb -> descent): re-commit a fresh descent angle when the descent has a lock phase (dist mech on).
+    if (_descentFreeBelowDist >= 0 && newAir > 0 && prevClimb > 0 && *_climbRemaining == 0) _angleLocked = false;
+    if (prevAir > 0 && newAir == 0) _laneLocked = false; // landing: fresh ground stretch
 
     _lastInput = input;
   }
@@ -421,7 +320,7 @@ private:
     hashEngine.Update(*_currentLoop);
     hashEngine.Update(*_raceOverFlag);
     hashEngine.Update(*_bikeMoving);
-    if (!_dropAngle && *_bikeAirMode > 0) hashEngine.Update(*_bikeAngle);
+    if (!_dropAngle && (*_bikeAirMode > 0 || _groundAngleSteering)) hashEngine.Update(*_bikeAngle); // ground angle matters for takeoffs
     hashEngine.Update(*_bikeAirMode);
     hashEngine.Update(*_bikeVelX2);
     hashEngine.Update(*_bikeVelX1);
@@ -433,24 +332,38 @@ private:
     if (!_dropVelZ) hashEngine.Update((uint8_t)(aq ? (*_bikeVelZ >> _airQ) : *_bikeVelZ));
     if (!_dropPosZ1) hashEngine.Update((uint8_t)(aq ? (*_bikePosZ1 >> _airQ) : *_bikePosZ1));
     if (!_dropPosZ2) hashEngine.Update((uint8_t)(aq ? (*_bikePosZ2 >> _airQ) : *_bikePosZ2));
+    // DIAGNOSTIC: record per-byte distinct values over airborne states (unquantized raw values).
+    if (*_bikeAirMode > 0)
+    {
+      using namespace ebdiag;
+      g_hb[0].rec(*_bikePosZ2);    g_hb[1].rec(*_bikePosY);     g_hb[2].rec(*_bikeVelY1);
+      g_hb[3].rec(*_bikeVelY2);    g_hb[4].rec(*_bikeVelZ);     g_hb[5].rec(*_bikePosZ1);
+      g_hb[6].rec(*_bikeAngle);    g_hb[7].rec(*_bikeVelX1);    g_hb[8].rec(*_bikeVelX2);
+      g_hb[9].rec(*_bikeFlightMode1); g_hb[10].rec(*_bikeFlightMode2); g_hb[11].rec(*_bikeFlightMode3);
+      g_hb[12].rec(*_gameCycle);   g_hb[13].rec(*_bikePosX2);
+    }
     if (!_dropPosY) hashEngine.Update((uint8_t)(aq ? (*_bikePosY >> _airQ) : *_bikePosY));
     if (!_dropVelY1) hashEngine.Update((uint8_t)(aq ? (*_bikeVelY1 >> _airQ) : *_bikeVelY1));
     if (!_dropVelY2) hashEngine.Update((uint8_t)(aq ? (*_bikeVelY2 >> _airQ) : *_bikeVelY2));
     if (!_dropFlight)
     {
       hashEngine.Update(*_bikeFlightMode1);
-      hashEngine.Update(*_bikeFlightMode2);
+      // flight2 (0x380) is the FRACTIONAL vertical-arc accumulator (256 distinct = the dominant airborne
+      // breadth driver) but reward-irrelevant at sub-resolution; flight3 (0x384) is the integer arc part
+      // (few distinct, set at takeoff -> reward-relevant, keep full). Drop or quantize ONLY flight2.
+      if (!_dropFlight2)
+      {
+        const int f2shift = (*_bikeAirMode > 0 && _flight2Q > 0) ? _flight2Q : 0;
+        hashEngine.Update((uint8_t)(*_bikeFlightMode2 >> f2shift));
+      }
       hashEngine.Update(*_bikeFlightMode3);
     }
     if (!_dropGameCycle) hashEngine.Update(*_gameCycle);
     hashEngine.Update(*_currBlockX);
-    // Commit-and-hold targets: two states with identical RAM but different committed angle/lane have
-    // DIFFERENT futures (they auto-level / steer to different targets), so they must NOT dedup.
-    hashEngine.Update(_committedAngle);
-    hashEngine.Update(_committedAirLane);
-    hashEngine.Update(_committedDescentAngle);
-    hashEngine.Update(_committedLane);
-    hashEngine.Update(_committedGroundAngle);
+    // Lane-lock flag: two ground states with identical RAM but different lock status have DIFFERENT futures
+    // (locked => U/D removed, can no longer change lane), so they must NOT dedup.
+    hashEngine.Update((uint8_t)_laneLocked);
+    hashEngine.Update((uint8_t)_angleLocked); // locked vs adjusting at the same angle are different futures
     // hashEngine.Update(*_prevBlockX        );
     // hashEngine.Update(_blockXTransitions );
     // hashEngine.Update(_curVel          );
@@ -539,11 +452,8 @@ private:
     serializer.push(&_maxVel, sizeof(_maxVel));
     serializer.push(&_blockXTransitions, sizeof(_blockXTransitions));
     serializer.push(&_prevBlockX, sizeof(_prevBlockX));
-    serializer.push(&_committedAngle, sizeof(_committedAngle));
-    serializer.push(&_committedAirLane, sizeof(_committedAirLane));
-    serializer.push(&_committedDescentAngle, sizeof(_committedDescentAngle));
-    serializer.push(&_committedLane, sizeof(_committedLane));
-    serializer.push(&_committedGroundAngle, sizeof(_committedGroundAngle));
+    serializer.push(&_laneLocked, sizeof(_laneLocked));
+    serializer.push(&_angleLocked, sizeof(_angleLocked));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -560,11 +470,8 @@ private:
     deserializer.pop(&_maxVel, sizeof(_maxVel));
     deserializer.pop(&_blockXTransitions, sizeof(_blockXTransitions));
     deserializer.pop(&_prevBlockX, sizeof(_prevBlockX));
-    deserializer.pop(&_committedAngle, sizeof(_committedAngle));
-    deserializer.pop(&_committedAirLane, sizeof(_committedAirLane));
-    deserializer.pop(&_committedDescentAngle, sizeof(_committedDescentAngle));
-    deserializer.pop(&_committedLane, sizeof(_committedLane));
-    deserializer.pop(&_committedGroundAngle, sizeof(_committedGroundAngle));
+    deserializer.pop(&_laneLocked, sizeof(_laneLocked));
+    deserializer.pop(&_angleLocked, sizeof(_angleLocked));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -598,50 +505,92 @@ private:
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
   {
     // Raw (pristine) mode: no additional inputs -- the search uses only the config's base input set.
-    if (!_commitAndHold && !_airbornePerFrameAngle) return;
-
-    if (_airbornePerFrameAngle && *_bikeAirMode > 0)
-    {
-      // Per-frame airborne: raise (L), lower (R), or hold the angle this frame (real controls, applied directly).
-      allowedInputSet.push_back(_airCtrl[1][2]); // L (raise)
-      allowedInputSet.push_back(_airCtrl[1][0]); // R (lower)
-      allowedInputSet.push_back(_airCtrl[1][1]); // null (hold)
-      return;
-    }
+    if (!_searchMode) return;
 
     if (*_bikeAirMode > 0)
     {
-      // Airborne: commit the jump angle, then the posY/air lane, then hold both (crash-free best machinery).
-      if (_committedAngle < 0)
-        allowedInputSet.insert(allowedInputSet.end(), _angleTokens.begin(), _angleTokens.end());
-      else if (_committedAirLane < 0)
-        allowedInputSet.insert(allowedInputSet.end(), _laneTokens.begin(), _laneTokens.end());
+      // AIRBORNE: angle commit by free-adjust-then-lock, mirroring the ground lane-lock. While the angle is
+      // unlocked the search may raise (L), lower (R), or HOLD (which LOCKS the angle); once locked, only hold
+      // is offered (no L/R) so the angle stops branching. The lock is reset at takeoff (fresh climb angle) and
+      // at the apex ($BC: climb-momentum>0 -> ==0, fresh descent angle), so a jump commits one climb and one
+      // descent angle. The lock is OPTIONAL (the search can keep adjusting), so the reference arc stays
+      // reachable; the win is when a piecewise-constant arc lands identically -> 1 successor instead of 3.
+      // HYBRID climb-lock / descent-free: the angle wiggle during the CLIMB ($BC>0) is far from the landing
+      // and inconsequential, so we commit it (free-adjust-then-lock) to collapse breadth; the DESCENT ($BC==0)
+      // determines the landing (where committed angles accumulate big losses), so it stays FULLY FREE per
+      // frame. So: way up -> lock; way down -> unlock; next jump -> lock again.
+      // Phases in which the lock applies: the climb always; the high descent when the distance-to-ground
+      // mechanism is on; never the final approach near the ground (so the landing stays free/exact).
+      const bool lockPhase = airAngleLockPhase();
+      if (lockPhase && _angleLocked)
+      {
+        allowedInputSet.push_back(_airAngleHold); // locked phase: hold the committed angle
+      }
       else
-        allowedInputSet.push_back(_holdToken);
+      {
+        // Free-adjust. In a lock phase, choosing hold LOCKS; otherwise (free descent) it is just a per-frame hold.
+        allowedInputSet.push_back(_airAngleRaise); // L
+        allowedInputSet.push_back(_airAngleLower); // R
+        allowedInputSet.push_back(_airAngleHold);  // hold
+      }
+      return;
     }
-    else
+
+    // GROUND: automatic throttle (coast to keep launch speed when velX>832, else B to hold the 832 cap), plus
+    // the lane commit by U/D-drop. While the lane is unlocked the search may steer U or D, or LOCK in place
+    // (the no-lane-steer input); once locked, U/D are removed for the rest of the ground stretch.
+    const int  velX16    = (int)*_bikeVelX2 * 256 + (int)*_bikeVelX1;
+    const bool autoCoast = (velX16 > 832);
+    // Throttle per control: B (accelerate, caps velX at 832) vs coast (no accel; a downhill then pushes velX
+    // past 832 -- launch speed). Auto picks coast iff velX>832. But the reference COASTS at velX==832 in a
+    // B/coast pulse on downhills (heat/sub-pixel management) -- which the auto-rule cannot express. _freeThrottle
+    // => offer BOTH variants so the search can reproduce that pulse. The coast variant of a control is its
+    // airborne (no-accel) input; the B variant is the ground input.
+    auto pushThr = [&](InputSet::inputIndex_t bVar, InputSet::inputIndex_t coastVar) {
+      if (_freeThrottle)
+      {
+        allowedInputSet.push_back(bVar);
+        allowedInputSet.push_back(coastVar);
+      }
+      else
+        allowedInputSet.push_back(autoCoast ? coastVar : bVar);
+    };
+    if (!_laneLocked)
     {
-      // Ground: first commit the lane, then (still on the ground) commit the ground angle, then hold both.
-      if (_committedLane < 0)
-        allowedInputSet.insert(allowedInputSet.end(), _laneTokens.begin(), _laneTokens.end());
-      else if (_committedGroundAngle < 0)
-        allowedInputSet.insert(allowedInputSet.end(), _angleTokens.begin(), _angleTokens.end());
-      else
-        allowedInputSet.push_back(_holdToken);
+      pushThr(_groundCtrl[0][2][1], _airCtrl[2][1]); // up   (U)
+      pushThr(_groundCtrl[0][0][1], _airCtrl[0][1]); // down (D)
     }
+    // Ground ANGLE steering (L/R on $AC): the reference steers the ground angle to set up takeoff arcs on ramps
+    // (e.g. L drives $AC 8->11, releases to 9 for the frame-569 ramp). FREE per-frame (NOT a commit) -- the
+    // reference re-steers it (L for a stretch, releases, then R later), so a lock would forbid the re-steer.
+    // Bounded by hashing the ground angle (see computeAdditionalHashing) so states converge once it re-settles.
+    if (_groundAngleSteering)
+    {
+      pushThr(_groundCtrl[0][1][2], _airCtrl[1][2]); // L: raise ground angle
+      pushThr(_groundCtrl[0][1][0], _airCtrl[1][0]); // R: lower ground angle
+    }
+    // Ground DIAGONALS: the reference presses lane AND angle simultaneously (e.g. U+R+B at frame 1130 to set up
+    // a takeoff), which single-axis inputs cannot express. Offer the 4 lane*angle combos when the lane is still
+    // unlocked. Needs angle steering on (the diagonals are lane+angle).
+    if (_groundDiagonals && _groundAngleSteering && !_laneLocked)
+    {
+      pushThr(_groundCtrl[0][2][2], _airCtrl[2][2]); // U+L
+      pushThr(_groundCtrl[0][2][0], _airCtrl[2][0]); // U+R
+      pushThr(_groundCtrl[0][0][2], _airCtrl[0][2]); // D+L
+      pushThr(_groundCtrl[0][0][0], _airCtrl[0][0]); // D+R
+    }
+    pushThr(_groundLockB, _nullInputIdx); // no lane steer: LOCKS the lane if not yet locked (see advanceStateImpl), else hold
   }
 
-  // Full alphabet of inputs the game may request (the real controls + every commit token).
+  // Full alphabet of inputs the game may request (the real controls -- no tokens any more).
   __INLINE__ std::set<std::string> getAllPossibleInputs() override
   {
     std::set<std::string> s = {"|..|........|"}; // null
     for (int ld = -1; ld <= 1; ld++)
-      for (int ad = -1; ad <= 1; ad++) s.insert(airInput(ld, ad)); // 9 airborne combos
+      for (int ad = -1; ad <= 1; ad++) s.insert(airInput(ld, ad)); // airborne combos (angle + lane steer)
     for (int t = 0; t < 2; t++)
       for (int ld = -1; ld <= 1; ld++)
-        for (int ad = -1; ad <= 1; ad++) s.insert(groundInput(t == 1, ld, ad)); // 18 ground combos
-    const uint32_t nTokens = (uint32_t)((_commitAngleMax - _commitAngleMin + 1) + _commitLaneCount + 1);
-    for (uint32_t i = 0; i < nTokens; i++) s.insert(commitToken(i)); // commit tokens
+        for (int ad = -1; ad <= 1; ad++) s.insert(groundInput(t == 1, ld, ad)); // ground combos (accel + steer)
     return s;
   }
 
@@ -670,15 +619,23 @@ private:
       jaffarCommon::logger::log("[J+]  + Trace Magnet:                     I(X %.4f Y %.4f Z %.4f V %.4f F %.4f) off %+d | step %u | dist(X %.3f Y %.1f Z %.1f V %.1f F %.1f)\n",
                                 _traceMagnet.intensityX, _traceMagnet.intensityY, _traceMagnet.intensityZ, _traceMagnet.intensityV, _traceMagnet.intensityF, _traceMagnet.offset,
                                 _traceStep, _traceDistanceX, _traceDistanceY, _traceDistanceZ, _traceDistanceV, _traceDistanceF);
+    // DIAGNOSTIC: where the airborne hash density lives (distinct values per byte, cumulative).
+    {
+      using namespace ebdiag;
+      char line[512]; int off = 0;
+      off += snprintf(line + off, sizeof(line) - off, "[J+]  + [HASH-DENSITY airborne distinct/256]:");
+      for (int i = 0; i < NHB; i++) off += snprintf(line + off, sizeof(line) - off, " %s=%d", g_hbName[i], g_hb[i].distinct());
+      jaffarCommon::logger::log("%s\n", line);
+    }
   }
 
   bool parseRuleActionImpl(Rule& rule, const std::string& actionType, const nlohmann::json& actionJs) override
   {
     bool recognizedActionType = false;
 
-    // Sets the trace-magnet strength on each anchored axis (posX, posY, posZ2, velX, flight2) plus an optional step
-    // offset. A higher intensity holds the reference line harder (more penalty for straying); keep it SMALL so raw
-    // posX still drives the search. Requires a "Trace File Path". See calculateGameSpecificReward.
+    // Sets the trace-magnet strength on each anchored axis (posX, posY, posZ2) plus an optional step offset. A
+    // higher intensity holds the reference line harder (more penalty for straying); keep it SMALL so raw posX
+    // still drives the search. Requires a "Trace File Path". See calculateGameSpecificReward.
     if (actionType == "Set Trace Magnet")
     {
       if (_useTrace == false) JAFFAR_THROW_LOGIC("Specified 'Set Trace Magnet' action but no 'Trace File Path' was provided.\n");
@@ -739,24 +696,25 @@ private:
   uint8_t  _prevBlockX;
 
   // --- Commit-and-hold (single-frame angle/lane commitment; see getAdditionalAllowedInputs) ----------
-  int                                 _commitAngleMin, _commitAngleMax, _commitLaneCount;
-  std::vector<int>                    _laneTargets;           // target posY per lane
-  InputSet::inputIndex_t              _inNull;                // null input
-  InputSet::inputIndex_t              _airCtrl[3][3];         // [laneDir+1][angDir+1] airborne controls (posY+angle)
-  InputSet::inputIndex_t              _groundCtrl[2][3][3];   // [turbo?][laneDir+1][angDir+1] ground controls
-  int                                 _turboTempLimit;        // use A (turbo) on the ground while temp < this
-  bool                                _commitAndHold;         // master gate: false => raw inputs (pristine replay)
-  bool                                _airbornePerFrameAngle; // branch angle (L/R/hold) every airborne frame
-  bool                                _macroAirborne = false; // collapse each jump into one search step (full-jump macro)
-  int                                 _airQ;                  // airborne hash quantization (right-shift bits)
-  bool                                _dropVelZ, _dropPosZ1, _dropPosZ2, _dropPosY, _dropVelY1, _dropVelY2, _dropAngle, _dropFlight, _dropGameCycle; // per-element hash drops
-  int                                 _initialBlockTransitions;            // seed value for _blockXTransitions (mid-run seed)
-  bool                                _firstPostHook;                      // true until the first stateUpdatePostHook call
-  std::vector<InputSet::inputIndex_t> _angleTokens, _laneTokens;           // branch tokens (ordered)
-  std::unordered_map<InputSet::inputIndex_t, int> _tokenAngle, _tokenLane; // token -> target value
-  InputSet::inputIndex_t                          _holdToken;
-  uint8_t*                                        _climbRemaining; // $BC: >0 climbing, 0 at apex/descent
-  int16_t                                         _committedAngle, _committedAirLane, _committedDescentAngle, _committedLane, _committedGroundAngle; // -1=uncommitted
+  // --- Search action space (single-frame; see getAdditionalAllowedInputs / advanceStateImpl) -----------
+  InputSet::inputIndex_t _airCtrl[3][3];       // [laneDir+1][angDir+1] airborne controls (posY+angle, no accel)
+  InputSet::inputIndex_t _groundCtrl[2][3][3]; // [turbo?][laneDir+1][angDir+1] ground controls (accel + steer)
+  InputSet::inputIndex_t _airAngleRaise, _airAngleLower, _airAngleHold; // free per-frame airborne angle controls
+  InputSet::inputIndex_t _groundLockB;                                  // B + no lane steer = "lock lane" while accelerating
+  bool                   _searchMode; // master gate: false => raw inputs (pristine replay); true => search action space
+  int                    _descentFreeBelowDist; // free the descent angle only when distToGround <= this (-1 => whole descent free)
+  bool                   _airborneAngleCommit;  // false => fully free per-frame airborne angle (tol=0-exact)
+  bool                   _groundAngleSteering;  // offer + hash ground angle steering (L/R) for takeoff setup
+  bool                   _freeThrottle;         // offer both B and coast per ground frame (reference pulses at the cap)
+  bool                   _groundDiagonals;      // offer lane+angle ground combos (reference uses U+R etc.)
+  bool                   _laneLocked; // ground: true once the lane is committed (U/D removed until next landing)
+  bool                   _angleLocked; // air: true once the angle is committed (L/R removed until apex/landing)
+  int                    _airQ;       // airborne hash quantization (right-shift bits)
+  bool _dropVelZ, _dropPosZ1, _dropPosZ2, _dropPosY, _dropVelY1, _dropVelY2, _dropAngle, _dropFlight, _dropFlight2, _dropGameCycle; // per-element hash drops
+  int  _flight2Q; // dedicated flight2 airborne quantization (right-shift bits)
+  int      _initialBlockTransitions; // seed value for _blockXTransitions (mid-run seed)
+  bool     _firstPostHook;           // true until the first stateUpdatePostHook call
+  uint8_t* _climbRemaining;          // $BC: >0 climbing, 0 at apex/descent
 
   bool _removeOpponents; // park CPU opponents off-track each frame
   int  _opponentParkY;   // posY to park opponents at (default 255)
