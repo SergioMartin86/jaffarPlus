@@ -50,6 +50,7 @@ int main(int argc, char* argv[])
   program.add_argument("--climb").help("Whole-level mode: start in the CLIMB (cloud-climb mtns) and route through to the grab, not bonus-only.").default_value(false).implicit_value(true);
   program.add_argument("--greed").help("Height-vs-pathcost weight (high=greedy hillclimb, low=routes around ceilings).").default_value(std::string("6"));
   program.add_argument("--brick").help("Priority reward per broken ceiling brick.").default_value(std::string("30"));
+  program.add_argument("--load").help("Resume from an in-process checkpoint (from iceClimber-coroute --save); skips init/intro. Output is the continuation only -- prepend the route that reached the checkpoint.").default_value(std::string(""));
   try { program.parse_args(argc, argv); }
   catch (const std::exception& e) { fprintf(stderr, "%s\n", e.what()); return 1; }
 
@@ -63,6 +64,7 @@ int main(int argc, char* argv[])
   const bool   CLIMB    = program.get<bool>("--climb");
   const int    GREED    = std::stoi(program.get<std::string>("--greed"));
   const int    BRICK    = std::stoi(program.get<std::string>("--brick"));
+  const std::string LOAD = program.get<std::string>("--load");
 
   std::string configStr;
   if (jaffarCommon::file::loadStringFromFile(configStr, configFile) == false) { fprintf(stderr, "cannot read %s\n", configFile.c_str()); return 1; }
@@ -71,9 +73,10 @@ int main(int argc, char* argv[])
   auto gameConfig     = jaffarCommon::json::getObject(config, "Game Configuration");
   auto runnerConfig   = jaffarCommon::json::getObject(config, "Runner Configuration");
   runnerConfig["Frameskip"]["Rate"] = 0; // frame-precise (input is read every frame)
+  if (LOAD.empty() == false) emulatorConfig["Initial Sequence File Path"] = ""; // resuming: no replay
 
   auto r = jaffarPlus::Runner::getRunner(emulatorConfig, gameConfig, runnerConfig);
-  r->initialize(); // replays the Initial Sequence -> bonus entry
+  r->initialize(); // replays the Initial Sequence -> bonus entry (or nothing, when resuming from --load)
   auto* lram = (uint8_t*)r->getGame()->getEmulator()->getProperty("LRAM").pointer;
   const size_t stateSize = r->getStateSize();
 
@@ -112,7 +115,13 @@ int main(int argc, char* argv[])
   // effect). Advance NOOP until a test A-press actually launches a jump; collect those frames to
   // prepend to the final solution.
   std::vector<idx_t> introPath;
-  if (CLIMB)
+  if (LOAD.empty() == false)
+  {
+    // Resume from a co-routed checkpoint: the state IS the start; the route that reached it is external.
+    std::string b; if (jaffarCommon::file::loadStringFromFile(b, LOAD) == false) { fprintf(stderr, "[router] cannot read checkpoint %s\n", LOAD.c_str()); return 1; }
+    jaffarCommon::deserializer::Contiguous d((void*)b.data(), b.size()); r->deserializeState(d);
+  }
+  else if (CLIMB)
   { int g = 0;
     // Injected start sits in the PREVIOUS mountain's bonus-end (player carried UP, posY~63). Advance
     // through that + the level transition + the new level's load until the player settles ON THE GROUND

@@ -47,6 +47,11 @@ if meson.is_subproject() == false
       cpp_args: [ NCursesCPPFlags ],
       dependencies : [ jaffarDependency ],
     )
+    iceClimberCoroute = executable('iceClimber-coroute',
+      'games/nes/iceClimberRouter/coroute.cpp',
+      cpp_args: [ NCursesCPPFlags ],
+      dependencies : [ jaffarDependency ],
+    )
   endif
 
   # Build test suite if requested
