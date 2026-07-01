@@ -149,7 +149,7 @@ public:
     _winStatesFound = 0;
 
     // Resetting best states reward
-    _bestWinStateReward = -std::numeric_limits<float>::infinity();
+    _bestWinStateReward   = -std::numeric_limits<float>::infinity();
     _bestStateReward      = -std::numeric_limits<float>::infinity();
     _bestStateFloorReward = -std::numeric_limits<float>::infinity();
 
@@ -485,8 +485,10 @@ public:
 
     // Set the runner's step counter to the best state's depth before loading (the counter is not stored
     // per-state): a win's depth was recorded at capture; an ordinary best belongs to the current frontier.
-    if (_winStatesFound > 0) _runner->setStepCount(_bestWinStateStepCount);
-    else _runner->setSearchStep(_currentStep);
+    if (_winStatesFound > 0)
+      _runner->setStepCount(_bestWinStateStepCount);
+    else
+      _runner->setSearchStep(_currentStep);
     _bestStateStepCount = _runner->getStepCount(); // remembered so the printInfo reload uses the same depth
     _engine->getStateDb()->loadStateIntoRunner(*_runner, _bestStateStorage.data());
 

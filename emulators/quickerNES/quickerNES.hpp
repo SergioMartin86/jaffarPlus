@@ -235,7 +235,9 @@ public:
   // _curBlit, populated by updateRendererState -- no SDL).
   void initializeVideoOutput() override
   {
-    m_window = nullptr; m_renderer = nullptr; m_tex = nullptr;
+    m_window   = nullptr;
+    m_renderer = nullptr;
+    m_tex      = nullptr;
 
     SDL_SetMainReady();
     if (!SDL_WasInit(SDL_INIT_VIDEO))
@@ -246,7 +248,11 @@ public:
       }
 
     m_window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, SDL_WINDOW_RESIZABLE);
-    if (m_window == nullptr) { jaffarCommon::logger::log("[J+] WARNING: no SDL window; headless (screenshots only).\n"); return; }
+    if (m_window == nullptr)
+    {
+      jaffarCommon::logger::log("[J+] WARNING: no SDL window; headless (screenshots only).\n");
+      return;
+    }
 
     // Prefer accelerated, fall back to software, then to headless (screenshot-only).
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
@@ -254,7 +260,9 @@ public:
     if (m_renderer == nullptr)
     {
       jaffarCommon::logger::log("[J+] WARNING: no SDL renderer; headless (screenshots only).\n");
-      SDL_DestroyWindow(m_window); m_window = nullptr; return;
+      SDL_DestroyWindow(m_window);
+      m_window = nullptr;
+      return;
     }
     if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256)))
       JAFFAR_THROW_RUNTIME("Coult not create SDL texture in NES emulator");
@@ -283,13 +291,14 @@ public:
   // No SDL/display needed -- _curBlit holds 0x00RRGGBB pixels at image_width x image_height.
   void saveScreenshot(const std::string& path) override
   {
-    const int W = (int)emulator_t::image_width;
-    const int H = (int)emulator_t::image_height;
-    const int rowSize  = ((W * 3 + 3) / 4) * 4;
-    const int dataSize = rowSize * H;
-    const int fileSize = 54 + dataSize;
-    uint8_t hdr[54] = {0};
-    hdr[0] = 'B'; hdr[1] = 'M';
+    const int W            = (int)emulator_t::image_width;
+    const int H            = (int)emulator_t::image_height;
+    const int rowSize      = ((W * 3 + 3) / 4) * 4;
+    const int dataSize     = rowSize * H;
+    const int fileSize     = 54 + dataSize;
+    uint8_t   hdr[54]      = {0};
+    hdr[0]                 = 'B';
+    hdr[1]                 = 'M';
     *(uint32_t*)(hdr + 2)  = (uint32_t)fileSize;
     *(uint32_t*)(hdr + 10) = 54;
     *(uint32_t*)(hdr + 14) = 40;
@@ -298,7 +307,7 @@ public:
     *(uint16_t*)(hdr + 26) = 1;
     *(uint16_t*)(hdr + 28) = 24;
     *(uint32_t*)(hdr + 34) = (uint32_t)dataSize;
-    FILE* f = fopen(path.c_str(), "wb");
+    FILE* f                = fopen(path.c_str(), "wb");
     if (f == nullptr) return;
     fwrite(hdr, 1, 54, f);
     std::vector<uint8_t> row(rowSize, 0);
@@ -306,10 +315,10 @@ public:
     {
       for (int x = 0; x < W; x++)
       {
-        uint32_t px      = (uint32_t)_curBlit[y * W + x];
-        row[x * 3 + 0]   = (uint8_t)(px & 0xFF);         // B
-        row[x * 3 + 1]   = (uint8_t)((px >> 8) & 0xFF);  // G
-        row[x * 3 + 2]   = (uint8_t)((px >> 16) & 0xFF); // R
+        uint32_t px    = (uint32_t)_curBlit[y * W + x];
+        row[x * 3 + 0] = (uint8_t)(px & 0xFF);         // B
+        row[x * 3 + 1] = (uint8_t)((px >> 8) & 0xFF);  // G
+        row[x * 3 + 2] = (uint8_t)((px >> 16) & 0xFF); // R
       }
       fwrite(row.data(), 1, (size_t)rowSize, f);
     }

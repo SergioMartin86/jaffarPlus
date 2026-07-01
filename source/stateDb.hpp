@@ -226,7 +226,7 @@ public:
     // when there is no cold slab (_histSize == 0, the "None" strategy).
     if (_histSize > 0)
       for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++) JAFFAR_PARALLEL_FOR
-      for (size_t s = 0; s < _maxStatesPerNuma[numaNodeIdx]; s++) _ih->initColdSlot(&_histBuffersStart[numaNodeIdx][s * _histSize]);
+    for (size_t s = 0; s < _maxStatesPerNuma[numaNodeIdx]; s++) _ih->initColdSlot(&_histBuffersStart[numaNodeIdx][s * _histSize]);
 
     // Adding the state pointers to the free state queues
     _freeStateQueues.resize(_numaCount);
