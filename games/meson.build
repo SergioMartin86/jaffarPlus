@@ -1,8 +1,14 @@
-# Declaring source and include dirs for a NES game instance / emulator
+# Per-game auxiliary tools. Game folders that ship .cpp tool sources provide their own meson.build
+# building each tool as an executable, guarded so it only builds for that game's single-game target
+# (-Dgame=<stem> with the game's emulator). Meson has no directory glob, so tool-bearing folders are
+# listed here explicitly -- add a folder when it gains a .cpp tool.
+gameToolDirs = [
+  'arkbot/arkanoid',
+  'nes/arkanoid2',
+  'nes/lunarBall',
+  'genesis/shoveit',
+]
 
-srcDir = meson.current_source_dir()
-gameInstanceSrc = [ srcDir + '/gameInstance.cpp', srcDir + '/gameRule.cpp' ]
-gameInstanceIncludes = include_directories(['.'])
-gameInstanceCPPFlags = [ '-D_STATE_DATA_SIZE_TRAIN=12816', '-D_STATE_DATA_SIZE_PLAY=12816']
-gameInstanceCFlags = [  ] 
-gameTools =  [ ]
+foreach d : gameToolDirs
+  subdir(d)
+endforeach
