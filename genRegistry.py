@@ -25,8 +25,8 @@ GAME_DIR_GUARD = {
     "pipeBot":"defined(__JAFFAR_ENABLE_PIPEBOT)", "test":"defined(__JAFFAR_ENABLE_TESTGAME)",
 }
 GAME_FILE_GUARD = {
-    "nes/superMarioBros.hpp":"(defined(__JAFFAR_ENABLE_SMBC) || defined(__JAFFAR_ENABLE_NES))",
-    "nes/arkanoid2.hpp":"defined(__JAFFAR_USE_QUICKERNES_ARKANOID)",
+    "nes/superMarioBros/superMarioBros.hpp":"(defined(__JAFFAR_ENABLE_SMBC) || defined(__JAFFAR_ENABLE_NES))",
+    "nes/arkanoid2/arkanoid2.hpp":"defined(__JAFFAR_USE_QUICKERNES_ARKANOID)",
 }
 # --- emulators: directory -> use guard is __JAFFAR_USE_<UPPER(dir)>, with one override ---
 EMU_GUARD_OVERRIDE = {"quickerArkBot": "__JAFFAR_USE_ARKBOT"}
