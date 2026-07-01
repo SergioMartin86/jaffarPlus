@@ -43,34 +43,38 @@ public:
   virtual ~InputHistory() = default;
 
   // ---- per-runner cursor ---------------------------------------------------------------------------
+  //
+  // NOTE: the step counter is NOT owned here. The Runner owns the count (it is what implements Hash Step
+  // Tolerance) and is the sole party that serializes/deserializes it, prepending it to the cold/full blob.
+  // Strategies that need the current step (raw's write position, the trie's reconstruction length) receive
+  // it as a parameter; they never store or serialize it themselves.
 
-  /// @brief Resets the cursor to the empty path (step 0).
+  /// @brief Resets the cursor to the empty path.
   virtual void reset() = 0;
 
-  /// @brief Records one applied input, advancing the path and the step counter.
-  virtual void pushInput(const InputSet::inputIndex_t input) = 0;
+  /// @brief Records one applied input at path position @p stepCount (the runner's current step counter).
+  virtual void pushInput(const size_t stepCount, const InputSet::inputIndex_t input) = 0;
 
-  /// @brief Number of inputs applied so far (the current step counter).
-  virtual size_t getInputCount() const = 0;
-
-  /// @brief Writes the compact "cold" path representation (stored in each StateDb slot).
+  /// @brief Writes the compact "cold" path representation (stored in each StateDb slot), excluding the count.
   virtual void serializeCold(jaffarCommon::serializer::Base& s) const = 0;
-  /// @brief Restores the cursor from a "cold" representation.
+  /// @brief Restores the cursor from a "cold" representation (the count is restored by the runner).
   virtual void deserializeCold(jaffarCommon::deserializer::Base& d) = 0;
 
-  /// @brief Writes the self-contained "full" path representation (for standalone snapshot buffers).
+  /// @brief Writes the self-contained "full" path representation (for standalone snapshot buffers), excluding the count.
   virtual void serializeFull(jaffarCommon::serializer::Base& s) const = 0;
-  /// @brief Restores the cursor from a "full" representation.
-  virtual void deserializeFull(jaffarCommon::deserializer::Base& d) = 0;
+  /// @brief Restores the cursor from a "full" representation. @p stepCount is the runner's already-restored
+  /// step counter, needed by strategies (the trie) that rebuild their cursor from the path length.
+  virtual void deserializeFull(jaffarCommon::deserializer::Base& d, const size_t stepCount) = 0;
 
-  /// @brief Reconstructs the path as a newline-separated string of input strings (the solution).
-  virtual std::string toString(const std::map<InputSet::inputIndex_t, std::string>& inputStringMap) const = 0;
+  /// @brief Reconstructs the path as a newline-separated string of input strings (the solution). @p stepCount
+  /// is the runner's step counter, bounding how many recorded steps are rendered.
+  virtual std::string toString(const std::map<InputSet::inputIndex_t, std::string>& inputStringMap, const size_t stepCount) const = 0;
 
   // ---- manager ops on stored bytes (use the shared backing only) -----------------------------------
 
-  /// @brief Size, in bytes, of the cold representation in a StateDb slot.
+  /// @brief Size, in bytes, of the cold path representation in a StateDb slot (EXCLUDING the runner's count).
   virtual size_t getColdSize() const = 0;
-  /// @brief Size, in bytes, of the full (self-contained) representation in a snapshot buffer.
+  /// @brief Size, in bytes, of the full (self-contained) path representation in a snapshot buffer (EXCLUDING the count).
   virtual size_t getFullSize() const = 0;
 
   /// @brief Prepares a fresh/recycled cold slot (e.g. marks it as holding no trie node). Default: no-op.
@@ -82,7 +86,8 @@ public:
     (void)cold;
     (void)shard;
   }
-  /// @brief Converts a stored cold representation into a self-contained full one (best/worst snapshot).
+  /// @brief Converts a stored cold path into a self-contained full one (best/worst snapshot). Operates on the
+  /// path only; the runner's count prefix is copied separately by the StateDb.
   virtual void captureColdToFull(const void* cold, void* full) const = 0;
 
   /// @brief Approximate resident memory of any shared structure (e.g. the trie), in bytes. Default: 0.

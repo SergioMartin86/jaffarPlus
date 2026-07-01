@@ -33,40 +33,25 @@ public:
     _buffer.resize(bytes, 0);
   }
 
-  void reset() override
-  {
-    _count = 0;
-    std::memset(_buffer.data(), 0, _buffer.size());
-  }
+  void reset() override { std::memset(_buffer.data(), 0, _buffer.size()); }
 
-  void pushInput(const InputSet::inputIndex_t input) override
+  void pushInput(const size_t stepCount, const InputSet::inputIndex_t input) override
   {
-    if (_count < _maxSize)
-      setInput(_count, input);
+    if (stepCount < _maxSize)
+      setInput(stepCount, input);
     else if (_truncationWarned.exchange(true) == false)
       jaffarCommon::logger::log("[J+] Warning: input history exceeded its maximum size (%u). Longer solutions are truncated; raise 'Store Input History / Max Size'.\n", _maxSize);
-    _count++;
   }
 
-  size_t getInputCount() const override { return _count; }
-
-  void serializeCold(jaffarCommon::serializer::Base& s) const override
-  {
-    s.pushContiguous(_buffer.data(), _buffer.size());
-    s.pushContiguous(&_count, sizeof(_count));
-  }
-  void deserializeCold(jaffarCommon::deserializer::Base& d) override
-  {
-    d.popContiguous(_buffer.data(), _buffer.size());
-    d.popContiguous(&_count, sizeof(_count));
-  }
+  void serializeCold(jaffarCommon::serializer::Base& s) const override { s.pushContiguous(_buffer.data(), _buffer.size()); }
+  void deserializeCold(jaffarCommon::deserializer::Base& d) override { d.popContiguous(_buffer.data(), _buffer.size()); }
   void serializeFull(jaffarCommon::serializer::Base& s) const override { serializeCold(s); }
-  void deserializeFull(jaffarCommon::deserializer::Base& d) override { deserializeCold(d); }
+  void deserializeFull(jaffarCommon::deserializer::Base& d, const size_t /*stepCount*/) override { deserializeCold(d); }
 
-  std::string toString(const std::map<InputSet::inputIndex_t, std::string>& inputStringMap) const override
+  std::string toString(const std::map<InputSet::inputIndex_t, std::string>& inputStringMap, const size_t stepCount) const override
   {
     std::string out;
-    for (size_t i = 0; i < _count && i < _maxSize; i++)
+    for (size_t i = 0; i < stepCount && i < _maxSize; i++)
     {
       const auto idx = getInput(i);
       if (inputStringMap.contains(idx) == false) JAFFAR_THROW_RUNTIME("Move Index %u not found in runner\n", idx);
@@ -75,10 +60,10 @@ public:
     return out;
   }
 
-  size_t getColdSize() const override { return _buffer.size() + sizeof(_count); }
-  size_t getFullSize() const override { return getColdSize(); }
+  size_t getColdSize() const override { return _buffer.size(); }
+  size_t getFullSize() const override { return _buffer.size(); }
 
-  void captureColdToFull(const void* cold, void* full) const override { memcpy(full, cold, getColdSize()); }
+  void captureColdToFull(const void* cold, void* full) const override { memcpy(full, cold, _buffer.size()); }
 
 private:
   /// @brief Writes the input index for @p step into the bit-packed buffer.
@@ -95,8 +80,7 @@ private:
   }
 
   const uint32_t                  _maxSize;                  ///< Maximum number of steps recorded.
-  size_t                          _bits  = 0;                ///< Bits used to encode one input index.
-  uint32_t                        _count = 0;                ///< Number of inputs applied so far.
+  size_t                          _bits = 0;                 ///< Bits used to encode one input index.
   std::vector<uint8_t>            _buffer;                   ///< Bit-packed input sequence.
   static inline std::atomic<bool> _truncationWarned = false; ///< Set once after the first over-Max-Size push.
 };

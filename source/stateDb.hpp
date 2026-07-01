@@ -200,12 +200,15 @@ public:
 
     // Creating the parallel history (cold) slabs, one per NUMA domain, on the same node. Mirrors the
     // state-slab grid: the cold slot for state index i is at _histBuffersStart[numa] + i*_histSize.
-    _histBuffersStart.resize(_numaCount);
-    for (int i = 0; i < _numaCount; i++)
-    {
-      _histBuffersStart[i] = (uint8_t*)numa_alloc_onnode(_maxStatesPerNuma[i] * _histSize, i);
-      if (_histBuffersStart[i] == NULL) JAFFAR_THROW_RUNTIME("Error trying to allocate history slab for numa domain %d\n", i);
-    }
+    // _histSize is 0 for the "None" strategy (no path stored, and the step counter is now runner-owned, not
+    // per-state): there is no cold slab to allocate, and all cold-slot ops are no-ops over 0 bytes.
+    _histBuffersStart.resize(_numaCount, nullptr);
+    if (_histSize > 0)
+      for (int i = 0; i < _numaCount; i++)
+      {
+        _histBuffersStart[i] = (uint8_t*)numa_alloc_onnode(_maxStatesPerNuma[i] * _histSize, i);
+        if (_histBuffersStart[i] == NULL) JAFFAR_THROW_RUNTIME("Error trying to allocate history slab for numa domain %d\n", i);
+      }
 
     // Getting system's page size (typically 4K but it may change in the future)
     const size_t pageSize = sysconf(_SC_PAGESIZE);
@@ -219,9 +222,11 @@ public:
     for (size_t i = 0; i < _maxStatesPerNuma[numaNodeIdx] * _histSize; i += pageSize) _histBuffersStart[numaNodeIdx][i] = 1;
 
     // Let the input-history strategy initialize each fresh cold slot (e.g. the trie marks its node id as
-    // empty so a recycled slot is never mistaken for holding a node). No-op for raw/none.
-    for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++) JAFFAR_PARALLEL_FOR
-    for (size_t s = 0; s < _maxStatesPerNuma[numaNodeIdx]; s++) _ih->initColdSlot(&_histBuffersStart[numaNodeIdx][s * _histSize]);
+    // empty so a recycled slot is never mistaken for holding a node). No-op for raw/none. Skipped entirely
+    // when there is no cold slab (_histSize == 0, the "None" strategy).
+    if (_histSize > 0)
+      for (int numaNodeIdx = 0; numaNodeIdx < _numaCount; numaNodeIdx++) JAFFAR_PARALLEL_FOR
+      for (size_t s = 0; s < _maxStatesPerNuma[numaNodeIdx]; s++) _ih->initColdSlot(&_histBuffersStart[numaNodeIdx][s * _histSize]);
 
     // Adding the state pointers to the free state queues
     _freeStateQueues.resize(_numaCount);

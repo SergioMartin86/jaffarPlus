@@ -205,7 +205,13 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
     for (ssize_t i = 0; i <= sequenceLength; i++)
     {
       p.loadStepData(i);
-      dump += std::to_string(r.getGame()->getReward()) + "\n";
+      // Full precision (NOT std::to_string, which truncates to 6 decimals): the reward is on the 1/256
+      // sub-pixel grid, so 6 decimals (e.g. 0.246094) does not round-trip the exact value (0.24609375),
+      // which makes a "Reference Reward Floor" with tolerance 0 false-cancel on an EXACT match. %.17g
+      // preserves the value so a tol=0 floor only cancels when the search is genuinely behind.
+      char rbuf[64];
+      snprintf(rbuf, sizeof(rbuf), "%.17g", (double)r.getGame()->getReward());
+      dump += std::string(rbuf) + "\n";
     }
     if (jaffarCommon::file::saveStringToFile(dump, dumpRewardPath.c_str()) == false)
       JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step reward dump to: %s\n", dumpRewardPath.c_str());
@@ -647,7 +653,9 @@ int main(int argc, char* argv[])
       // If repeating, then wait a bit before repeating to prevent fast repetition of short movies
       sleep(1);
 
-      // Reloading the initial state
+      // Reloading the initial state (captured at step 0); the step counter is not in the stream, so reset
+      // it here before deserializing (the player advances it itself as it replays).
+      r->setStepCount(0);
       jaffarCommon::deserializer::Contiguous d(initialState.data(), initialState.size());
       r->deserializeState(d);
     }
