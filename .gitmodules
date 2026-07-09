@@ -43,3 +43,7 @@
 [submodule "extern/exciteBot"]
 	path = extern/exciteBot
 	url = https://github.com/SergioMartin86/exciteBot.git
+[submodule "extern/nesHawk"]
+	path = extern/nesHawk
+	url = https://github.com/SergioMartin86/QuickerNesHawk.git
+	branch = main

@@ -18,7 +18,8 @@ option('emulator',
     'QuickerDSDA',
     'PipeBot',
     'TestEmulator',
-    'ExciteBikeNative'
+    'ExciteBikeNative',
+    'NesHawk'
    ],
   description : 'Selects the emulation core to compile JaffarPlus with'
 )

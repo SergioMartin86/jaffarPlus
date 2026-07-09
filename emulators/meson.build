@@ -111,3 +111,9 @@ jaffarCPPFlags += '-D__JAFFAR_USE_EXCITEBIKENATIVE'
 jaffarCPPFlags += '-D__JAFFAR_ENABLE_NES'
 subdir('exciteBikeNative')
 endif
+
+if emulator == 'NesHawk'
+jaffarCPPFlags += '-D__JAFFAR_USE_NESHAWK'
+jaffarCPPFlags += '-D__JAFFAR_ENABLE_NES'
+subdir('nesHawk')
+endif

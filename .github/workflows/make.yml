@@ -781,6 +781,42 @@ jobs:
         name: meson-logs-QuickerDSDA
         path: build/meson-logs/
 
+  # Build (NesHawk) -- header-only C++ translation of BizHawk's NesHawk core. The submodule
+  # (extern/nesHawk = github.com/SergioMartin86/QuickerNesHawk) ships its own meson build and a
+  # ROM-free cpuFuzz regression test; we build and run those first, then compile jaffarPlus against
+  # the core. Unlike the QuickerX cores, NesHawk is pulled in by relative-path include rather than
+  # as a meson subproject, so the submodule must be checked out explicitly here.
+  build-NesHawk:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Checkout NesHawk
+      run: |
+            git submodule init extern/nesHawk
+            git submodule update --recursive extern/nesHawk
+    - name: Create build directory
+      run: mkdir build
+    - name: Installing meson and ninja
+      run: python3 -m pip install meson ninja
+    - name: Updating Apt
+      run: sudo apt update
+    - name: Installing apt packages
+      run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
+    - name: Building and testing the NesHawk submodule
+      run: |
+            meson setup extern/nesHawk/build extern/nesHawk
+            ninja -C extern/nesHawk/build
+            meson test -C extern/nesHawk/build
+    - name: Run meson configuration
+      run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=NesHawk
+    - name: Building project
+      run: ninja -C build
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: meson-logs-NesHawk
+        path: build/meson-logs/
+
   # Publish the manual (mkdocs-material) + the Doxygen C++ API reference (served under /api) to
   # GitHub Pages. Runs only on master. Requires a one-time repo setting: Settings -> Pages ->
   # Build and deployment -> Source = "GitHub Actions".
