@@ -288,6 +288,11 @@ public:
     updateBestState();
     saveBestStateInformation();
 
+    // Also flush any pending "Trigger Save Solution" request: with End-On-First-Win the loop breaks at
+    // the top before the winning step's storeManualSaveSolution() runs, so a win rule's save would be
+    // lost. The engine's manual-save request persists across steps, so writing it here captures it.
+    storeManualSaveSolution();
+
     // Final report
     printInfo();
 

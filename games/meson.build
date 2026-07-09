@@ -6,6 +6,7 @@ gameToolDirs = [
   'arkbot/arkanoid',
   'nes/arkanoid2',
   'nes/lunarBall',
+  'nes/princeOfPersia',
   'genesis/shoveit',
 ]
 

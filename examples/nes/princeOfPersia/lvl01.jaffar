@@ -1,22 +1,27 @@
 {
   "Driver Configuration": {
     "End On First Win State": true,
-    "Max Steps": 5500,
+    "Max Steps": 6000,
     "Save Intermediate Results": {
       "Enabled": true,
       "Frequency (s)": 1.0,
       "Best Solution Path": "/tmp/jaffar.best.sol",
       "Worst Solution Path": "/tmp/jaffar.worst.sol"
+    },
+    "Reference Reward Floor": {
+      "Enabled": true,
+      "Tolerance": 0.0,
+      "Path": "lvl01.tas.reward"
     }
   },
   "Engine Configuration": {
     "Hash Database": {
-      "Max Store Count": 4,
-      "Max Store Size (Mb)": 3000,
+      "Max Store Count": 2,
+      "Max Store Size (Mb)": 500,
       "Enabled": true
     },
     "State Database": {
-      "Max Size (Mb)": 10000
+      "Max Size (Mb)": 16000
     }
   },
   "Emulator Configuration": {
@@ -31,7 +36,7 @@
     "Controller 1 Type": "Joypad",
     "Controller 2 Type": "None",
     "Disabled State Properties": [],
-    "Nametable Block Size": 0
+    "Nametable Block Size": 4096
   },
   "Runner Configuration": {
     "Hash Step Tolerance": 0,
@@ -40,13 +45,13 @@
     "Bypass Hash Calculation": false,
     "Store Input History": {
       "Type": "Raw",
-      "Max Size": 5600
+      "Max Size": 10100
     },
     "Allowed Input Sets": [],
     "Test Candidate Inputs": false,
     "Candidate Input Sets": [],
     "Frameskip": {
-      "Rate": 1,
+      "Rate": 0,
       "Use Custom Input": false,
       "Custom Input": ""
     }
@@ -55,9 +60,8 @@
     "Game Name": "NES / Prince Of Persia",
     "Frame Rate": 60.1,
     "Bypass Emulator State": false,
-    "Skip Frames": true,
     "Enable Pause": false,
-    "Timer Tolerance": 6,
+    "Timer Tolerance": 0,
     "Print Properties": [
       "Player Room",
       "Player Pos X",
@@ -92,6 +96,16 @@
             "Property": "Player Room",
             "Op": "==",
             "Value": 1
+          },
+          {
+            "Property": "Player Fight Mode",
+            "Op": "==",
+            "Value": 0
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -140,6 +154,11 @@
             "Property": "Player Room",
             "Op": "==",
             "Value": 5
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -188,6 +207,11 @@
             "Property": "Player Room",
             "Op": "==",
             "Value": 7
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -210,7 +234,7 @@
             "Type": "Set Player Horizontal Magnet",
             "Intensity": 1.0,
             "Room": 7,
-            "Center": 262,
+            "Center": 197,
             "Min": 0,
             "Max": 400
           },
@@ -226,6 +250,51 @@
             "Type": "Set Next Room Reward",
             "Room": 6,
             "Intensity": 100.0
+          }
+        ]
+      },
+      {
+        "Label": 1204,
+        "Conditions": [
+          {
+            "Property": "Player Room",
+            "Op": "==",
+            "Value": 7
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
+          },
+          {
+            "Property": "Player Position Y",
+            "Op": ">",
+            "Value": 100
+          }
+        ],
+        "Satisfies": [
+          1004
+        ],
+        "Actions": [
+          {
+            "Type": "Add Reward",
+            "Value": 1000.0
+          },
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 1.0,
+            "Room": 7,
+            "Center": 257,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 10.0,
+            "Room": 7,
+            "Center": 128,
+            "Min": 0,
+            "Max": 400
           }
         ]
       },
@@ -246,6 +315,11 @@
             "Property": "Current Door State",
             "Op": "<",
             "Value": 10
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -286,6 +360,11 @@
             "Property": "Player Room",
             "Op": "==",
             "Value": 6
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -334,6 +413,11 @@
             "Property": "Player Room",
             "Op": "==",
             "Value": 19
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -382,6 +466,11 @@
             "Property": "Player Room",
             "Op": "==",
             "Value": 11
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -430,6 +519,11 @@
             "Property": "Player Room",
             "Op": "==",
             "Value": 14
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -460,6 +554,10 @@
             "Type": "Set Next Room Reward",
             "Room": 11,
             "Intensity": 100.0
+          },
+          {
+            "Type": "Trigger Save Solution",
+            "Path": "/tmp/pop.deep14.sol"
           }
         ]
       },
@@ -475,6 +573,11 @@
             "Property": "Player Fight Mode",
             "Op": "==",
             "Value": 1
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -520,6 +623,11 @@
             "Property": "Player Fight Mode",
             "Op": "==",
             "Value": 1
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -573,6 +681,11 @@
             "Property": "Player Fight Mode",
             "Op": "==",
             "Value": 1
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -595,7 +708,7 @@
             "Type": "Set Player Horizontal Magnet",
             "Intensity": 1.0,
             "Room": 19,
-            "Center": 400,
+            "Center": 44,
             "Min": 0,
             "Max": 400
           },
@@ -615,6 +728,45 @@
         ]
       },
       {
+        "Label": 1211,
+        "Conditions": [
+          {
+            "Property": "Player Room",
+            "Op": "==",
+            "Value": 19
+          },
+          {
+            "Property": "Player Fight Mode",
+            "Op": "==",
+            "Value": 1
+          },
+          {
+            "Property": "Player Position Y",
+            "Op": ">",
+            "Value": 100
+          }
+        ],
+        "Satisfies": [],
+        "Actions": [
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 1.0,
+            "Room": 19,
+            "Center": 400,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 0.0,
+            "Room": 19,
+            "Center": 128,
+            "Min": 0,
+            "Max": 200
+          }
+        ]
+      },
+      {
         "Label": 1012,
         "Conditions": [
           {
@@ -626,6 +778,11 @@
             "Property": "Player Fight Mode",
             "Op": "==",
             "Value": 1
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -684,6 +841,11 @@
             "Property": "Player Position Y",
             "Op": "<",
             "Value": 70
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -729,6 +891,11 @@
             "Property": "Player Fight Mode",
             "Op": "==",
             "Value": 1
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -792,6 +959,11 @@
             "Property": "Player Position Y",
             "Op": "<",
             "Value": 70
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -845,6 +1017,11 @@
             "Property": "Player Fight Mode",
             "Op": "==",
             "Value": 1
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -875,6 +1052,14 @@
             "Type": "Set Next Room Reward",
             "Room": 1,
             "Intensity": 100.0
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 1.0,
+            "Room": 5,
+            "Center": 65,
+            "Min": 0,
+            "Max": 200
           }
         ]
       },
@@ -890,6 +1075,11 @@
             "Property": "Player Fight Mode",
             "Op": "==",
             "Value": 1
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -920,6 +1110,14 @@
             "Type": "Set Next Room Reward",
             "Room": 2,
             "Intensity": 100.0
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 1.0,
+            "Room": 1,
+            "Center": 128,
+            "Min": 0,
+            "Max": 200
           }
         ]
       },
@@ -935,6 +1133,11 @@
             "Property": "Player Fight Mode",
             "Op": "==",
             "Value": 1
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -965,6 +1168,14 @@
             "Type": "Set Next Room Reward",
             "Room": 8,
             "Intensity": 100.0
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 1.0,
+            "Room": 2,
+            "Center": 128,
+            "Min": 0,
+            "Max": 200
           }
         ]
       },
@@ -975,6 +1186,11 @@
             "Property": "Player Room",
             "Op": "==",
             "Value": 8
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -1015,6 +1231,11 @@
             "Property": "Exit Door State",
             "Op": "<",
             "Value": 35
+          },
+          {
+            "Property": "Screen Transition",
+            "Op": "==",
+            "Value": 0
           }
         ],
         "Satisfies": [
@@ -1039,15 +1260,24 @@
         "Label": 1020,
         "Conditions": [
           {
-            "Property": "Player Frame",
-            "Op": "==",
-            "Value": 220
+            "Property": "Current Level",
+            "Op": ">",
+            "Value": 0
+          },
+          {
+            "Property": "Is Paused",
+            "Op": "!=",
+            "Value": 6
           }
         ],
         "Satisfies": [],
         "Actions": [
           {
             "Type": "Trigger Win"
+          },
+          {
+            "Type": "Trigger Save Solution",
+            "Path": "/tmp/pop.win.sol"
           }
         ]
       },
@@ -1058,6 +1288,47 @@
             "Property": "Player HP",
             "Op": "==",
             "Value": 0
+          }
+        ],
+        "Satisfies": [],
+        "Actions": [
+          {
+            "Type": "Trigger Fail"
+          }
+        ]
+      },
+      {
+        "Label": 1021,
+        "Conditions": [
+          {
+            "Property": "Player Frame",
+            "Op": "==",
+            "Value": 220
+          }
+        ],
+        "Satisfies": [],
+        "Actions": [
+          {
+            "Type": "Add Reward",
+            "Value": 10000.0
+          },
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 1.0,
+            "Room": 8,
+            "Center": 400,
+            "Min": 0,
+            "Max": 400
+          }
+        ]
+      },
+      {
+        "Label": 1122,
+        "Conditions": [
+          {
+            "Property": "CPU Halted",
+            "Op": "==",
+            "Value": 1
           }
         ],
         "Satisfies": [],

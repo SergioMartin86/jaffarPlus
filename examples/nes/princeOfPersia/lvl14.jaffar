@@ -1,316 +1,315 @@
 {
-    "Driver Configuration": {
-        "End On First Win State": true,
-        "Max Steps": 5500,
-        "Save Intermediate Results": {
-            "Enabled": true,
-            "Frequency (s)": 1.0,
-            "Best Solution Path": "/tmp/jaffar.best.sol",
-            "Worst Solution Path": "/tmp/jaffar.worst.sol"
-        }
-    },
-    "Engine Configuration": {
-        "Hash Database": {
-            "Max Store Count": 4,
-            "Max Store Size (Mb)": 3000,
-            "Enabled": true
-        },
-        "State Database": {
-            "Max Size (Mb)": 10000
-        }
-    },
-    "Emulator Configuration": {
-        "Emulator Name": "QuickerNES",
-        "Use Flat Code Map": false,
-        "SRAM Block Size": 8192,
-        "Rom File Path": "Prince of Persia (U) [!].nes",
-        "Rom File SHA1": "6B58F149F34FA829135619C58700CAAA95B9CDE3",
-        "Initial State File Path": "",
-        "Initial Sequence File Path": "lvl14.initial.sol",
-        "Initial RAM Data File Path": "",
-        "Controller 1 Type": "Joypad",
-        "Controller 2 Type": "None",
-        "Disabled State Properties": [],
-        "Nametable Block Size": 0
-    },
-    "Runner Configuration": {
-        "Hash Step Tolerance": 0,
-        "Show Empty Input Slots": true,
-        "Show Allowed Inputs": true,
-        "Bypass Hash Calculation": false,
-        "Store Input History": {
-            "Type": "Raw",
-            "Max Size": 5600
-        },
-        "Allowed Input Sets": [],
-        "Test Candidate Inputs": false,
-        "Candidate Input Sets": [],
-        "Frameskip": {
-            "Rate": 1,
-            "Use Custom Input": false,
-            "Custom Input": ""
-        }
-    },
-    "Game Configuration": {
-        "Game Name": "NES / Prince Of Persia",
-        "Frame Rate": 60.1,
-        "Bypass Emulator State": false,
-        "Skip Frames": true,
-        "Enable Pause": false,
-        "Timer Tolerance": 6,
-        "Print Properties": [
-            "Player Room",
-            "Player Pos X",
-            "Player Pos Y Actual"
-        ],
-        "Hash Properties": [],
-        "Rules": [
-            {
-                "Label": 1001,
-                "Conditions": [],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Set Player Horizontal Magnet",
-                        "Intensity": 1.0,
-                        "Room": 3,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Vertical Magnet",
-                        "Intensity": 0.0,
-                        "Room": 3,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    }
-                ]
-            },
-            {
-                "Label": 1002,
-                "Conditions": [
-                    {
-                        "Property": "Player Room",
-                        "Op": "==",
-                        "Value": 2
-                    },
-                    {
-                        "Property": "Drawn Room",
-                        "Op": "==",
-                        "Value": 2
-                    }
-                ],
-                "Satisfies": [
-                    1001
-                ],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 10000.0
-                    },
-                    {
-                        "Type": "Set Player Horizontal Magnet",
-                        "Intensity": 0.0,
-                        "Room": 3,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Vertical Magnet",
-                        "Intensity": 0.0,
-                        "Room": 3,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Horizontal Magnet",
-                        "Intensity": 1.0,
-                        "Room": 2,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Vertical Magnet",
-                        "Intensity": 0.0,
-                        "Room": 2,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    }
-                ]
-            },
-            {
-                "Label": 1003,
-                "Conditions": [
-                    {
-                        "Property": "Player Room",
-                        "Op": "==",
-                        "Value": 1
-                    },
-                    {
-                        "Property": "Drawn Room",
-                        "Op": "==",
-                        "Value": 1
-                    }
-                ],
-                "Satisfies": [
-                    1002
-                ],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 20000.0
-                    },
-                    {
-                        "Type": "Set Player Horizontal Magnet",
-                        "Intensity": 0.0,
-                        "Room": 2,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Vertical Magnet",
-                        "Intensity": 0.0,
-                        "Room": 2,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Horizontal Magnet",
-                        "Intensity": 1.0,
-                        "Room": 1,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Vertical Magnet",
-                        "Intensity": 0.0,
-                        "Room": 1,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    }
-                ]
-            },
-            {
-                "Label": 1004,
-                "Conditions": [
-                    {
-                        "Property": "Player Room",
-                        "Op": "==",
-                        "Value": 0
-                    },
-                    {
-                        "Property": "Drawn Room",
-                        "Op": "==",
-                        "Value": 0
-                    }
-                ],
-                "Satisfies": [
-                    1003
-                ],
-                "Actions": [
-                    {
-                        "Type": "Add Reward",
-                        "Value": 10000.0
-                    },
-                    {
-                        "Type": "Set Player Horizontal Magnet",
-                        "Intensity": 0.0,
-                        "Room": 1,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Vertical Magnet",
-                        "Intensity": 0.0,
-                        "Room": 1,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Horizontal Magnet",
-                        "Intensity": 1.0,
-                        "Room": 0,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    },
-                    {
-                        "Type": "Set Player Vertical Magnet",
-                        "Intensity": 0.0,
-                        "Room": 0,
-                        "Center": 0,
-                        "Min": 0,
-                        "Max": 400
-                    }
-                ]
-            },
-            {
-                "Label": 1005,
-                "Conditions": [
-                    {
-                        "Property": "Player Room",
-                        "Op": "==",
-                        "Value": 4
-                    },
-                    {
-                        "Property": "Drawn Room",
-                        "Op": "==",
-                        "Value": 4
-                    }
-                ],
-                "Satisfies": [
-                    1004
-                ],
-                "Actions": [
-                    {
-                        "Type": "Trigger Win"
-                    }
-                ]
-            },
-            {
-                "Label": 1120,
-                "Conditions": [
-                    {
-                        "Property": "Player HP",
-                        "Op": "==",
-                        "Value": 0
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
-                    }
-                ]
-            },
-            {
-                "Label": 1122,
-                "Conditions": [
-                    {
-                        "Property": "Is Paused",
-                        "Op": "!=",
-                        "Value": 2
-                    }
-                ],
-                "Satisfies": [],
-                "Actions": [
-                    {
-                        "Type": "Trigger Fail"
-                    }
-                ]
-            }
-        ]
+  "Driver Configuration": {
+    "End On First Win State": true,
+    "Max Steps": 5500,
+    "Save Intermediate Results": {
+      "Enabled": true,
+      "Frequency (s)": 1.0,
+      "Best Solution Path": "/tmp/jaffar.best.sol",
+      "Worst Solution Path": "/tmp/jaffar.worst.sol"
     }
+  },
+  "Engine Configuration": {
+    "Hash Database": {
+      "Max Store Count": 4,
+      "Max Store Size (Mb)": 3000,
+      "Enabled": true
+    },
+    "State Database": {
+      "Max Size (Mb)": 10000
+    }
+  },
+  "Emulator Configuration": {
+    "Emulator Name": "QuickerNES",
+    "Use Flat Code Map": false,
+    "SRAM Block Size": 8192,
+    "Rom File Path": "Prince of Persia (U) [!].nes",
+    "Rom File SHA1": "6B58F149F34FA829135619C58700CAAA95B9CDE3",
+    "Initial State File Path": "",
+    "Initial Sequence File Path": "lvl14.initial.sol",
+    "Initial RAM Data File Path": "",
+    "Controller 1 Type": "Joypad",
+    "Controller 2 Type": "None",
+    "Disabled State Properties": [],
+    "Nametable Block Size": 0
+  },
+  "Runner Configuration": {
+    "Hash Step Tolerance": 0,
+    "Show Empty Input Slots": true,
+    "Show Allowed Inputs": true,
+    "Bypass Hash Calculation": false,
+    "Store Input History": {
+      "Type": "Raw",
+      "Max Size": 5600
+    },
+    "Allowed Input Sets": [],
+    "Test Candidate Inputs": false,
+    "Candidate Input Sets": [],
+    "Frameskip": {
+      "Rate": 1,
+      "Use Custom Input": false,
+      "Custom Input": ""
+    }
+  },
+  "Game Configuration": {
+    "Game Name": "NES / Prince Of Persia",
+    "Frame Rate": 60.1,
+    "Bypass Emulator State": false,
+    "Enable Pause": false,
+    "Timer Tolerance": 6,
+    "Print Properties": [
+      "Player Room",
+      "Player Pos X",
+      "Player Pos Y Actual"
+    ],
+    "Hash Properties": [],
+    "Rules": [
+      {
+        "Label": 1001,
+        "Conditions": [],
+        "Satisfies": [],
+        "Actions": [
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 1.0,
+            "Room": 3,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 0.0,
+            "Room": 3,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          }
+        ]
+      },
+      {
+        "Label": 1002,
+        "Conditions": [
+          {
+            "Property": "Player Room",
+            "Op": "==",
+            "Value": 2
+          },
+          {
+            "Property": "Drawn Room",
+            "Op": "==",
+            "Value": 2
+          }
+        ],
+        "Satisfies": [
+          1001
+        ],
+        "Actions": [
+          {
+            "Type": "Add Reward",
+            "Value": 10000.0
+          },
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 0.0,
+            "Room": 3,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 0.0,
+            "Room": 3,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 1.0,
+            "Room": 2,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 0.0,
+            "Room": 2,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          }
+        ]
+      },
+      {
+        "Label": 1003,
+        "Conditions": [
+          {
+            "Property": "Player Room",
+            "Op": "==",
+            "Value": 1
+          },
+          {
+            "Property": "Drawn Room",
+            "Op": "==",
+            "Value": 1
+          }
+        ],
+        "Satisfies": [
+          1002
+        ],
+        "Actions": [
+          {
+            "Type": "Add Reward",
+            "Value": 20000.0
+          },
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 0.0,
+            "Room": 2,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 0.0,
+            "Room": 2,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 1.0,
+            "Room": 1,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 0.0,
+            "Room": 1,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          }
+        ]
+      },
+      {
+        "Label": 1004,
+        "Conditions": [
+          {
+            "Property": "Player Room",
+            "Op": "==",
+            "Value": 0
+          },
+          {
+            "Property": "Drawn Room",
+            "Op": "==",
+            "Value": 0
+          }
+        ],
+        "Satisfies": [
+          1003
+        ],
+        "Actions": [
+          {
+            "Type": "Add Reward",
+            "Value": 10000.0
+          },
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 0.0,
+            "Room": 1,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 0.0,
+            "Room": 1,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Horizontal Magnet",
+            "Intensity": 1.0,
+            "Room": 0,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          },
+          {
+            "Type": "Set Player Vertical Magnet",
+            "Intensity": 0.0,
+            "Room": 0,
+            "Center": 0,
+            "Min": 0,
+            "Max": 400
+          }
+        ]
+      },
+      {
+        "Label": 1005,
+        "Conditions": [
+          {
+            "Property": "Player Room",
+            "Op": "==",
+            "Value": 4
+          },
+          {
+            "Property": "Drawn Room",
+            "Op": "==",
+            "Value": 4
+          }
+        ],
+        "Satisfies": [
+          1004
+        ],
+        "Actions": [
+          {
+            "Type": "Trigger Win"
+          }
+        ]
+      },
+      {
+        "Label": 1120,
+        "Conditions": [
+          {
+            "Property": "Player HP",
+            "Op": "==",
+            "Value": 0
+          }
+        ],
+        "Satisfies": [],
+        "Actions": [
+          {
+            "Type": "Trigger Fail"
+          }
+        ]
+      },
+      {
+        "Label": 1122,
+        "Conditions": [
+          {
+            "Property": "Is Paused",
+            "Op": "!=",
+            "Value": 2
+          }
+        ],
+        "Satisfies": [],
+        "Actions": [
+          {
+            "Type": "Trigger Fail"
+          }
+        ]
+      }
+    ]
+  }
 }

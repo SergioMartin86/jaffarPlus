@@ -13,6 +13,22 @@
 #include <unordered_map>
 #include <vector>
 
+// Glitch-hunt input alphabet (U+X impossible-combo probes) is orthogonal to the QuickerNES-only
+// bad-access DETECTOR: the probes are also needed by the NesHawk build for the free-exploration run
+// (run 3). So the alphabet is guarded by _POP_GLITCH_HUNT (definable for any emulator build) while
+// the detector (property/hashing/trace) stays under _QUICKERNES_DETECT_BAD_ACCESS. The detector
+// build implies the alphabet.
+// Either core's bad-access detector implies both the unified detector guard (_POP_BAD_ACCESS, used
+// for the "CPU Bad Access" property/hashing/trace) and the glitch-hunt input alphabet.
+#if defined(_QUICKERNES_DETECT_BAD_ACCESS) || defined(_NESHAWK_DETECT_BAD_ACCESS)
+  #ifndef _POP_BAD_ACCESS
+    #define _POP_BAD_ACCESS
+  #endif
+#endif
+#if defined(_POP_BAD_ACCESS) && !defined(_POP_GLITCH_HUNT)
+  #define _POP_GLITCH_HUNT
+#endif
+
 namespace jaffarPlus
 {
 
@@ -32,16 +48,30 @@ public:
 
   PrinceOfPersia(std::unique_ptr<Emulator> emulator, const nlohmann::json& config) : jaffarPlus::Game(std::move(emulator), config)
   {
-    // Whether the game logic advances several emulator frames per Jaffar step, stopping at the next
-    // actionable frame (the original NES core is only interactive every few frames).
-    _skipFrames = jaffarCommon::json::popBoolean(_gameConfigRemaining, "Skip Frames");
-
     // Whether pressing Start (pause) is a meaningful game action to explore.
     _enablePause = jaffarCommon::json::popBoolean(_gameConfigRemaining, "Enable Pause");
 
     // Global-timer hashing tolerance: the timer is folded into the state hash modulo (tolerance + 1),
     // so states that differ only by up to this many timer ticks are treated as equivalent.
     _timerTolerance = jaffarCommon::json::popNumber<uint8_t>(_gameConfigRemaining, "Timer Tolerance");
+
+    // Optional ledge-grab/climb bias: reward for being in a grab/climb-up animation frame while in one of
+    // the listed rooms (see calculateGameSpecificReward). Biases the search to catch a ledge and climb
+    // out rather than fall into a pit. Both keys optional; absent => disabled.
+    if (_gameConfigRemaining.contains("Climb Bonus")) _climbBonus = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Climb Bonus");
+    if (_gameConfigRemaining.contains("Climb Bonus Rooms"))
+      for (const auto r : jaffarCommon::json::popArray<int>(_gameConfigRemaining, "Climb Bonus Rooms")) _climbBonusRooms.insert((uint8_t)r);
+
+#ifdef _POP_BAD_ACCESS
+    // Optional: minimum reward jump for a derail to count as "progress-advancing" (see _glitchAdvanced).
+    if (_gameConfigRemaining.contains("Glitch Reward Threshold")) _glitchRewardThreshold = jaffarCommon::json::popNumber<float>(_gameConfigRemaining, "Glitch Reward Threshold");
+    if (_gameConfigRemaining.contains("Glitch Settle Frames")) _glitchSettleFrames = jaffarCommon::json::popNumber<uint8_t>(_gameConfigRemaining, "Glitch Settle Frames");
+    if (_gameConfigRemaining.contains("Glitch Settle Window")) _glitchSettleWindow = jaffarCommon::json::popNumber<uint8_t>(_gameConfigRemaining, "Glitch Settle Window");
+#endif
+#ifdef _POP_GLITCH_HUNT
+    // Optional override for the phase-pruning ceiling (see getAdditionalAllowedInputs).
+    if (_gameConfigRemaining.contains("Max Input Phase")) _maxInputPhase = jaffarCommon::json::popNumber<uint8_t>(_gameConfigRemaining, "Max Input Phase");
+#endif
 
     // All recognized game-configuration keys have now been consumed; the framework rejects any leftover.
   }
@@ -60,6 +90,33 @@ private:
     registerGameProperty("Bottom Text Timer", &_lowMem[0x06E5], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Game State", &_lowMem[0x001C], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Password Timer", &_lowMem[0x007D], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    // Next-level index consumed by the level loader (0-based, part of the 0x0766-0x076A load-parameter
+    // cluster). Unlike zero-page 0x0070 ("Current Level"), which the loaders reuse as scratch and can hold
+    // transient garbage mid-sequence, this lives in the stable game-variable region: it is 0 for the whole
+    // level and flips to the destination index exactly when the level-end is confirmed (or a level-skip
+    // glitch triggers a load). A death-reload of the same level keeps it 0. Use it for win detection.
+    registerGameProperty("Next Level", &_lowMem[0x0767], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+
+    // Emulator CPU halt latch: 1 once a KIL/JAM opcode executed (real hardware freezes there; only reset
+    // recovers). The U+D input family jumps through a bad action pointer and CAN land on such opcodes --
+    // those lineages are emulator artifacts, not valid play, and must FAIL (rule on this property).
+    registerGameProperty("CPU Halted", _emulator->getProperty("CPU Halt Latch").pointer, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+
+#ifdef _POP_BAD_ACCESS
+    // Glitch-investigation detector (only in -D_QUICKERNES_DETECT_BAD_ACCESS QuickerNES builds): a
+    // per-frame flag, 1 iff this frame's advance executed an unofficial opcode or fetched code from
+    // RAM -- i.e. the U+X action-pointer dispatch derailed into data-as-code. Legit play never sets
+    // it (validated). This is the WIN signal for the QuickerNES "find where a bad access is reachable"
+    // search; the room/position it fires in is then transplanted to the NesHawk ground-truth core.
+    registerGameProperty("CPU Bad Access", _emulator->getProperty("CPU Bad Access").pointer, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    // "Glitch Advanced" == 1 marks a state whose parent was a derail that RAISED the reward (see the
+    // one-frame-lag detector in advanceStateImpl). A win rule on this catches any progress-advancing
+    // U+X glitch -- teleport forward, room skip, level skip -- without hardcoding specific effects,
+    // because the reward already encodes progress. Normal play never sets it (a non-derail frame has
+    // _prevBadAccess 0; a benign derail does not raise the reward past the threshold).
+    registerGameProperty("Glitch Advanced", &_glitchAdvanced, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Teleported", &_teleported, Property::datatype_t::dt_uint8, Property::endianness_t::little);
+#endif
 
     registerGameProperty("Player Pos X", &_lowMem[0x060F], Property::datatype_t::dt_int16, Property::endianness_t::little);
     registerGameProperty("Player Pos Y", &_lowMem[0x0611], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -108,6 +165,10 @@ private:
     _globalTimer        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
     _currentLevel       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Current Level")]->getPointer();
     _rngState           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG State")]->getPointer();
+    _cpuHalted          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("CPU Halted")]->getPointer();
+#ifdef _POP_BAD_ACCESS
+    _cpuBadAccess       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("CPU Bad Access")]->getPointer();
+#endif
     _framePhase         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Frame Phase")]->getPointer();
     _bottomTextTimer    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Bottom Text Timer")]->getPointer();
     _gameState          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game State")]->getPointer();
@@ -193,9 +254,31 @@ private:
     _in_UDB  = _emulator->registerInput("|..|UD....B.|");
     _in_UDBA = _emulator->registerInput("|..|UD....BA|");
 
+#ifdef _POP_GLITCH_HUNT
+    // Glitch-hunt probe alphabet: physically-impossible pad combinations (opposed D-pad directions,
+    // U+X families) that the action-pointer dispatch can index past the end of its table with. These
+    // are offered in EVERY actionable state (see getAdditionalAllowedInputs) so the search can look
+    // for the multi-frame setup that arms a bad access anywhere it can act. Combos that are inert in
+    // a given state produce the same machine state as null and are pruned by dedup, so this broad
+    // alphabet is self-limiting -- it only branches where an impossible combo actually changes state.
+    _in_UL   = _emulator->registerInput("|..|U.L.....|");
+    _in_UR   = _emulator->registerInput("|..|U..R....|");
+    _in_ULR  = _emulator->registerInput("|..|U.LR....|");
+    _in_LR   = _emulator->registerInput("|..|..LR....|");
+    _in_UDL  = _emulator->registerInput("|..|UDL.....|");
+    _in_UDR  = _emulator->registerInput("|..|UD.R....|");
+    _in_UDLR = _emulator->registerInput("|..|UDLR....|");
+    _in_UDA  = _emulator->registerInput("|..|UD.....A|");
+    _in_ULA  = _emulator->registerInput("|..|U.L....A|");
+    _in_URA  = _emulator->registerInput("|..|U..R...A|");
+    _glitchProbes = {_in_UD, _in_UDB, _in_UDBA, _in_UBA, _in_UL, _in_UR, _in_ULR,
+                     _in_LR, _in_UDL, _in_UDR, _in_UDLR, _in_UDA, _in_ULA, _in_URA};
+#endif
+
     using V = std::vector<InputSet::inputIndex_t>;
     auto set = [&](uint8_t frame, V moves) { _frameMoves[frame] = std::move(moves); };
 
+    set(0x00, {_in_A}); // post-exit-walk pose: A confirms the level end (increments Current Level = the win)
     for (uint8_t f = 0x01; f <= 0x04; f++) set(f, {_in_L, _in_R});
     set(0x05, {_in_A, _in_L, _in_R});
     for (uint8_t f = 0x06; f <= 0x0D; f++) set(f, {_in_L, _in_R, _in_LA, _in_RA});
@@ -245,9 +328,15 @@ private:
 
   __INLINE__ std::set<std::string> getAllPossibleInputs() override
   {
-    return {"|..|........|", "|..|U.......|", "|..|.D......|", "|..|..L.....|", "|..|...R....|", "|..|....S...|", "|..|.......A|",
+    std::set<std::string> inputs = {"|..|........|", "|..|U.......|", "|..|.D......|", "|..|..L.....|", "|..|...R....|", "|..|....S...|", "|..|.......A|",
             "|..|......B.|", "|..|..L....A|", "|..|...R...A|", "|..|.D....B.|", "|..|..L...B.|", "|..|...R..B.|", "|..|U.....B.|",
             "|..|UD......|", "|..|.DL.....|", "|..|.D.R....|", "|..|......BA|", "|..|U.....BA|", "|..|UD....B.|", "|..|UD....BA|"};
+#ifdef _POP_GLITCH_HUNT
+    // pre-register the glitch-hunt probe alphabet (must include every input the search can emit)
+    inputs.insert({"|..|U.L.....|", "|..|U..R....|", "|..|U.LR....|", "|..|..LR....|", "|..|UDL.....|",
+                   "|..|UD.R....|", "|..|UDLR....|", "|..|UD.....A|", "|..|U.L....A|", "|..|U..R...A|"});
+#endif
+    return inputs;
   }
 
   __INLINE__ void getAdditionalAllowedInputs(std::vector<InputSet::inputIndex_t>& allowedInputSet) override
@@ -255,22 +344,17 @@ private:
     // The null (wait) input is always available
     allowedInputSet.push_back(_in_null);
 
-    // Per-frame model (Skip Frames off): POP runs its game logic once per Frame-Phase cycle
-    // (0 -> 1 -> 2 -> 4). Controller input is only committed on ONE "input frame" per cycle; every other
-    // frame ignores it, so we branch only on input frames and force null elsewhere. The input frame
-    // DIFFERS BY MODE: normal play commits on Frame Phase 2, but while a sword is drawn (fight mode) it
-    // commits on Frame Phase 1 (empirically: only phase-1 R walks the player during fight mode). EXCEPT a
-    // just-pressed Up may repeat, since walking through an open exit door needs Up on consecutive frames.
-    const uint8_t _inputFramePhase = (*_playerFightMode == 1) ? 1 : 2;
-    if (_skipFrames == false && *_framePhase != _inputFramePhase)
-    {
-      // A just-pressed Up or Down may repeat on the following (non-input) frame: some actions need the
-      // button held across two consecutive raw frames -- Up for walking through an open exit door, and
-      // Down for picking up the sword. Without this the action is unexpressible in the per-frame model.
-      if (_lastInputType == lastInput_up) allowedInputSet.push_back(_in_U);
-      if (_lastInputType == lastInput_down) allowedInputSet.push_back(_in_D);
-      return;
-    }
+#ifdef _POP_GLITCH_HUNT
+    // Phase pruning (USER directive, empirically bounded): the game only EXECUTES an input at certain
+    // frame phases; at the rest the input is a no-op, so offer ONLY null there. The user's model is a
+    // single active phase (2 normally / 3 in the display view), but measured against the legit level
+    // the meaningful inputs actually span current-state phases {0,1,2} -- a strict single-phase rule
+    // loses real inputs and stalls the search. Phases {3,4} are NEVER used by any meaningful input
+    // (validated: nulling every off-{0,1,2} input replays the level identically). So we prune non-null
+    // branching at phases {3,4} -- lossless, and it removes ~40% of the frame-by-frame branching. The
+    // ceiling is configurable via _maxInputPhase.
+    if (*_framePhase > _maxInputPhase) return; // phases 3,4: only null is meaningful
+#endif
 
     // Pausing, when enabled, is a valid action in any state
     if (_enablePause) allowedInputSet.push_back(_in_S);
@@ -278,6 +362,14 @@ private:
     // Frame-specific moves
     const auto it = _frameMoves.find(*_playerFrame);
     if (it != _frameMoves.end()) allowedInputSet.insert(allowedInputSet.end(), it->second.begin(), it->second.end());
+
+#ifdef _POP_GLITCH_HUNT
+    // Glitch hunt: the U+X action-pointer glitch ONLY arms from the standing-idle pose (USER: no other
+    // player frame activates it). Player Frame 0x0F is that standing frame (confirmed: the teleport
+    // fires at frame 0x0F). So offer the impossible-combo probes ONLY when standing -- a large branching
+    // cut vs. offering them in every actionable frame.
+    if (*_playerFrame == 0x0F) allowedInputSet.insert(allowedInputSet.end(), _glitchProbes.begin(), _glitchProbes.end());
+#endif
   }
 
   __INLINE__ void advanceStateImpl(const InputSet::inputIndex_t input) override
@@ -285,38 +377,58 @@ private:
     // Remembering the frame before advancing so the derived frame-diff can be computed
     _playerPrevFrame = *_playerFrame;
 
-    if (_skipFrames == false)
+#ifdef _POP_BAD_ACCESS
+    // DELAYED reward-improve-after-glitch detection (one-frame lag; see member docs). The glitch frame
+    // itself is a TRANSIENT -- a crash/garbage posX (e.g. 0x6012 / 65519). The game must run a few
+    // frames to SETTLE. So we do NOT win on the glitch; instead a glitch opens a window [K, K+W] frames
+    // later, and we flag a state's CHILDREN if, inside that window and once the screen is stable (no
+    // active transition), the reward has risen above the recorded pre-glitch reward. A glitch that
+    // crashes/dies or lands somewhere no better never reaches an improved settled state, so it never
+    // wins. At this point getReward() holds the reward of the state we are expanding.
+    const float _rewardBeforeAdvance = getReward();
+    _glitchAdvanced = (_framesSinceGlitch != 255 && _framesSinceGlitch >= _glitchSettleFrames
+                       && *_screenTransition == 0
+                       && _rewardBeforeAdvance > _preGlitchReward + _glitchRewardThreshold) ? 1 : 0;
+    const int _posXBefore = (int)*_playerPosX;
+#endif
+
+    _emulator->advanceState(input);
+
+#ifdef _POP_BAD_ACCESS
+    // "Glitch this frame" = a detected derail (unofficial opcode / RAM exec) OR a POSITION TELEPORT:
+    // an in-room posX jump with NO active screen transition. The teleport arm is essential because the
+    // real U+X teleport reaches the entity-reposition routine (legit code) fed garbage via DOCUMENTED
+    // opcodes, so the bad-access flag never fires (bad=0) -- yet posX jumps to a wild value (e.g.
+    // 0x6012). The transition gate excludes normal room-edge wraps (which are big posX jumps too but
+    // occur during a transition). Validated: 0 false-positives across the legit level.
+    const int _posXAfter = (int)*_playerPosX;
+    const int _posXDelta  = _posXAfter > _posXBefore ? _posXAfter - _posXBefore : _posXBefore - _posXAfter;
+    const bool _teleport  = (_posXDelta > 40) && (*_screenTransition == 0);
+    _prevBadAccess = *_cpuBadAccess;                           // pure derail (for the CPU Bad Access rules)
+    _prevGlitch    = (*_cpuBadAccess != 0 || _teleport) ? 1 : 0; // derail OR teleport (opens the settle window)
+    _teleported    = _teleport ? 1 : 0;                        // deterministic teleport flag (diagnostic)
+
+    // Advance the post-glitch settle window for the child state. Open it ONLY on a FRESH glitch (no
+    // window already open): the settling of a teleport is itself a series of big posX jumps that each
+    // re-trigger the glitch flag, and resetting the window on those would overwrite the true pre-glitch
+    // reward with the high TRANSIENT reward, hiding the real improvement. Once open, the counter just
+    // ages until the window closes (255 = no open window).
+    if (_prevGlitch == 1 && _framesSinceGlitch == 255) { _preGlitchReward = _rewardBeforeAdvance; _framesSinceGlitch = 0; }
+    else if (_framesSinceGlitch != 255)
     {
-      _emulator->advanceState(input);
+      _framesSinceGlitch++;
+      if (_framesSinceGlitch > _glitchSettleFrames + _glitchSettleWindow) _framesSinceGlitch = 255;
     }
-    else
-    {
-      // Advance one frame with no input, then keep advancing (feeding the input only on the actionable
-      // sub-frames) until the game returns to the next interactive frame.
-      _emulator->advanceState(_in_null);
-
-      size_t skippedFrames = 0;
-      while (*_framePhase != 1 || *_isPaused != 2 || *_screenTransition == 255)
-      {
-        InputSet::inputIndex_t subInput = (*_framePhase == 2 || *_framePhase == 3) ? input : _in_null;
-        if (_enablePause && input == _in_S && *_framePhase == 4) subInput = input;
-        _emulator->advanceState(subInput);
-
-        skippedFrames++;
-        if (skippedFrames > 128) break;
-      }
-    }
-
-    // Record the kind of input just applied, so the next frame's allowed set can be constrained
-    // (only null after an input, but Up may repeat). Part of the serialized state.
-    if (input == _in_null) _lastInputType = lastInput_null;
-    else if (input == _in_U) _lastInputType = lastInput_up;
-    else if (input == _in_D) _lastInputType = lastInput_down;
-    else _lastInputType = lastInput_other;
+#endif
 
     // Count frames elapsed inside the current room transition (reset outside one). Used to reward
     // transition progress so the reward-guided DB keeps later-transition states instead of evicting them.
     _transitionFrames = (*_screenTransition != 0) ? (uint16_t)(_transitionFrames + 1) : 0;
+
+    // Count consecutive lag frames (engine-busy frames, Is Paused == 5). During a lag burst the entire
+    // game RAM is bit-identical frame to frame (the progress lives in PPU timing, outside LRAM), so
+    // without this counter consecutive lag frames hash identically and dedup would prune the wait.
+    _lagFrames = (*_isPaused == 5) ? (uint8_t)(_lagFrames + 1) : 0;
 
     _currentStep++;
     stateUpdatePostHook();
@@ -388,6 +500,27 @@ private:
       hashEngine.Update(*_rngState);
     }
 
+    // Lag frames (Is Paused == 5) repeat the entire game RAM bit-identically while the engine catches up,
+    // so consecutive lag frames are indistinguishable to the hash. The software lag-frame counter breaks
+    // the tie so a solution can wait through a lag burst without dedup pruning it.
+    hashEngine.Update(_lagFrames);
+
+    // A CPU-halted state must never hash-merge with a healthy state that happens to share its RAM.
+    hashEngine.Update(*_cpuHalted);
+
+#ifdef _POP_BAD_ACCESS
+    // A GLITCH frame (derail into data-as-code, OR a position teleport) must not hash-merge with a
+    // normal frame that happens to share its RAM (many glitches self-heal to normal-looking RAM).
+    // Without this, first-seen-wins dedup keeps the NORMAL path for that hash slot, and the saved
+    // "win" solution reaches the state via ordinary play -- so it replays with no glitch. Hashing
+    // all three glitch flags keeps the glitch states (and their input histories, incl. the arming/
+    // teleport input and the reward-jump win flag) distinct, so the winning solution reproduces.
+    hashEngine.Update(*_cpuBadAccess);
+    hashEngine.Update(_prevGlitch);
+    hashEngine.Update(_glitchAdvanced);
+    hashEngine.Update(_teleported);
+#endif
+
     if (*_gameState == 8) hashEngine.Update(*_passwordTimer);
     if (*_gameState == 8 && *_passwordTimer == 0) hashEngine.Update(*_globalTimer);
     if (*_gameState == 1 && *_playerFrame == 0 && *_playerMovement == 91) hashEngine.Update(*_globalTimer);
@@ -451,6 +584,13 @@ private:
 
     // Climb-DOWN (0x8D-0x94, frames DECREASING): interp rises smoothly as the player lowers itself.
     if (f >= 0x8D && f <= 0x94 && _playerFrameDiff < 0) _playerPosYActual += (float)(0x94 - f);
+
+    // Running jump (0x27-0x2C): the leap arc transiently RAISES the player (raw Y dips ~14) which a
+    // downward vertical magnet punishes -- the mid-air states sink below their non-jumping peers and get
+    // evicted exactly where the route REQUIRES the jump (e.g. room 7's gap). Report the last grounded Y
+    // for the whole arc so a forward jump is pure horizontal progress, never a reward valley.
+    if (f >= 0x27 && f <= 0x2C) _playerPosYActual = (float)_lastGroundedPosY;
+    else _lastGroundedPosY = *_playerPosY;
   }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -470,16 +610,34 @@ private:
   {
     serializer.pushContiguous(&_playerPrevFrame, sizeof(_playerPrevFrame));
     serializer.pushContiguous(&_currentStep, sizeof(_currentStep));
-    serializer.pushContiguous(&_lastInputType, sizeof(_lastInputType));
     serializer.pushContiguous(&_transitionFrames, sizeof(_transitionFrames));
+    serializer.pushContiguous(&_lagFrames, sizeof(_lagFrames));
+    serializer.pushContiguous(&_lastGroundedPosY, sizeof(_lastGroundedPosY));
+#ifdef _POP_BAD_ACCESS
+    serializer.pushContiguous(&_preGlitchReward, sizeof(_preGlitchReward));
+    serializer.pushContiguous(&_framesSinceGlitch, sizeof(_framesSinceGlitch));
+    serializer.pushContiguous(&_prevBadAccess, sizeof(_prevBadAccess));
+    serializer.pushContiguous(&_prevGlitch, sizeof(_prevGlitch));
+    serializer.pushContiguous(&_glitchAdvanced, sizeof(_glitchAdvanced));
+    serializer.pushContiguous(&_teleported, sizeof(_teleported));
+#endif
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer) override
   {
     deserializer.popContiguous(&_playerPrevFrame, sizeof(_playerPrevFrame));
     deserializer.popContiguous(&_currentStep, sizeof(_currentStep));
-    deserializer.popContiguous(&_lastInputType, sizeof(_lastInputType));
     deserializer.popContiguous(&_transitionFrames, sizeof(_transitionFrames));
+    deserializer.popContiguous(&_lagFrames, sizeof(_lagFrames));
+    deserializer.popContiguous(&_lastGroundedPosY, sizeof(_lastGroundedPosY));
+#ifdef _POP_BAD_ACCESS
+    deserializer.popContiguous(&_preGlitchReward, sizeof(_preGlitchReward));
+    deserializer.popContiguous(&_framesSinceGlitch, sizeof(_framesSinceGlitch));
+    deserializer.popContiguous(&_prevBadAccess, sizeof(_prevBadAccess));
+    deserializer.popContiguous(&_prevGlitch, sizeof(_prevGlitch));
+    deserializer.popContiguous(&_glitchAdvanced, sizeof(_glitchAdvanced));
+    deserializer.popContiguous(&_teleported, sizeof(_teleported));
+#endif
   }
 
   __INLINE__ float calculateGameSpecificReward() const override
@@ -491,14 +649,17 @@ private:
     // drawn/next room (0x0051) already equals the target but the player room (0x04DE) has not yet caught
     // up -- grant a SMALL reward that grows with transition frames, so the reward-guided DB is drawn to
     // trigger and push the correct transition to completion instead of parking on a positional magnet.
-    // Once BOTH rooms equal the target, the transition is done (transitionFrames resets to 0) and the
-    // rule's full Add-Reward fires; that full reward is set larger than the summed transient reward.
-    // The base term compensates for the room magnet switching OFF the instant a transition starts
-    // (magnets require room==drawn): without it the reward DROPS at the transition entry (lost magnet,
-    // up to ~613) and the reward-guided search refuses to leave the room. Base > max magnet keeps the
-    // entry strictly above the pre-transition reward, so triggering & completing the transition is always
-    // rewarded; the per-frame term then favours later-transition states through to completion.
-    if (_nextRoomTarget != 255 && *_drawnRoom == _nextRoomTarget && *_playerRoom != _nextRoomTarget)
+    // The term is active for the ENTIRE scroll (Screen Transition != 0), gated to the desired direction
+    // (either room pointer equals the target; a backtrack transition matches neither). It makes the whole
+    // exit->scroll->entry sequence monotonically increasing:
+    //   - The base term compensates for the room magnet switching OFF the instant a transition starts
+    //     (magnets require room==drawn): base > max magnet (~613) keeps the scroll entry strictly above
+    //     the pre-transition reward.
+    //   - The per-frame term then favours later-scroll states through to completion.
+    //   - The room rules' full Add-Reward (+10000) is gated on Screen Transition == 0, so it fires at
+    //     scroll COMPLETION, on top of the restored magnet -- always above the scroll peak (~3700), never
+    //     mid-scroll (firing at the Player-Room flip used to make the vanishing scroll term a ~1150 dip).
+    if (_nextRoomTarget != 255 && *_screenTransition != 0 && (*_drawnRoom == _nextRoomTarget || *_playerRoom == _nextRoomTarget))
       reward += _nextRoomBase + _nextRoomReward * (float)_transitionFrames;
 
     // Magnets only take effect when the player's room matches the drawn room (i.e. no active transition)
@@ -524,6 +685,16 @@ private:
         float diff         = -255.0f + std::abs(vMagnet.center - boundedValue);
         reward += vMagnet.intensity * -diff;
       }
+    }
+
+    // Ledge-grab / climb bias for rooms with a pickup-over-a-pit (e.g. room 14's sword). The search
+    // otherwise falls straight into the pit, grabs the item at the bottom, and gets stuck in the draw
+    // animation (a dead-end). Rewarding the grab/climb-up animation frames biases it to catch the ledge
+    // and climb out instead of falling. Gated to the configured rooms so it never perturbs normal play.
+    if (_climbBonusRooms.count(*_playerRoom) != 0)
+    {
+      const auto f = *_playerFrame;
+      if ((f >= 0x43 && f <= 0x5B) || (f >= 0x87 && f <= 0x93)) reward += _climbBonus;
     }
 
     // Rewarding reaching the end-of-game state
@@ -573,11 +744,20 @@ private:
   // re-synchronization: level/room progression, HP (a drop to 0 = death = desync), position and frame.
   __INLINE__ std::string getTraceLine() const override
   {
-    char buf[220];
+    char buf[280];
+#ifdef _POP_BAD_ACCESS
+    const unsigned badAccess = *_cpuBadAccess;
+    const unsigned gAdv = _glitchAdvanced;
+    const unsigned pGlitch = _prevGlitch;
+    const float rew = getReward();
+#else
+    const unsigned badAccess = 0;
+    const unsigned gAdv = 0, pGlitch = 0; const float rew = 0.0f;
+#endif
     snprintf(buf, sizeof(buf),
-             "lvl=%u room=%u drawn=%u hp=%u fight=%u posX=%d posY=%.1f frame=0x%02X trans=%u paused=%u phase=%u rng=0x%02X gpres=%u gpx=%u ghp=%u gnot=%u",
+             "lvl=%u room=%u drawn=%u hp=%u fight=%u posX=%d posY=%.1f frame=0x%02X trans=%u paused=%u phase=%u rng=0x%02X gpres=%u gpx=%u ghp=%u gnot=%u halt=%u bad=%u rew=%.0f pGl=%u gAdv=%u",
              *_currentLevel, *_playerRoom, *_drawnRoom, *_playerHP, *_playerFightMode, (int)*_playerPosX, _playerPosYActual, *_playerFrame, *_screenTransition,
-             *_isPaused, *_framePhase, *_rngState, *_guardPresent, *_guardPosX, *_guardHP, *_guardNotice);
+             *_isPaused, *_framePhase, *_rngState, *_guardPresent, *_guardPosX, *_guardHP, *_guardNotice, *_cpuHalted, badAccess, rew, pGlitch, gAdv);
     return std::string(buf);
   }
 
@@ -651,7 +831,6 @@ private:
   float                                       _playerDirectionMagnet = 0.0f;
 
   // Configuration
-  bool    _skipFrames     = true;
   bool    _enablePause    = false;
   uint8_t _timerTolerance = 0;
 
@@ -662,6 +841,10 @@ private:
   uint8_t*  _globalTimer;
   uint8_t*  _currentLevel;
   uint8_t*  _rngState;
+  uint8_t*  _cpuHalted; // emulator CPU halt latch (KIL/JAM executed); see registerGameProperties
+#ifdef _POP_BAD_ACCESS
+  uint8_t*  _cpuBadAccess; // per-frame bad-access flag (glitch investigation); see registerGameProperties
+#endif
   uint8_t*  _framePhase;
   uint8_t*  _bottomTextTimer;
   uint8_t*  _gameState;
@@ -712,24 +895,55 @@ private:
   uint8_t _playerPrevFrame  = 0;
   uint32_t _currentStep  = 0;
 
-  // Kind of input applied on the previous frame, constraining the current frame's allowed inputs under
-  // the per-frame (Skip Frames off) model. Serialized as part of the game state.
-  enum lastInput_t : uint8_t { lastInput_null = 0, lastInput_up = 1, lastInput_other = 2, lastInput_down = 3 };
-  uint8_t _lastInputType = lastInput_null;
-
   // Frames elapsed inside the current room transition (0 when not transitioning). Serialized; used to
   // both hash-distinguish mid-scroll frames and reward transition progress.
   uint16_t _transitionFrames  = 0;
+
+  // Consecutive lag frames so far (Is Paused == 5; 0 outside a lag burst). Serialized; hashed to
+  // distinguish frames whose entire game RAM repeats bit-identically while the engine catches up.
+  uint8_t _lagFrames = 0;
+
+  // Player Pos Y on the most recent grounded (non-running-jump) frame. Serialized; used to keep the
+  // vertical-magnet reward flat across a running jump's arc (see stateUpdatePostHook).
+  uint8_t _lastGroundedPosY = 0;
+
+#ifdef _POP_BAD_ACCESS
+  // Reward-increasing-derail detector (glitch hunt). The reward already encodes "progress" (room
+  // magnets + per-room bonuses), so a garbage execution that RAISES the reward is progress-advancing
+  // by construction -- it teleported/skipped forward, not just derailed benignly. jaffar decides a
+  // state's win-ness (evaluateRules) BEFORE computing its reward (updateReward), so this is detected
+  // with a one-frame lag: each state carries its parent's reward and whether it was born from a
+  // derail; when the state is expanded, we check (born-from-derail AND reward > parentReward+thresh)
+  // and flag its children via "Glitch Advanced", which a win rule watches. All serialized.
+  float   _preGlitchReward = 0.0f;   // reward recorded just before the most recent glitch opened the window
+  uint8_t _framesSinceGlitch = 255;  // frames since the last glitch (255 = no open settle window)
+  uint8_t _prevBadAccess = 0;        // was this state produced by a bad-access (derailing) frame?
+  uint8_t _prevGlitch = 0;           // was this state produced by a GLITCH frame (derail OR position teleport)?
+  uint8_t _glitchAdvanced = 0;       // 1 iff a post-glitch settled state improved reward (delayed win signal)
+  uint8_t _teleported = 0;           // this frame was an in-room posX teleport (diagnostic)
+  float   _glitchRewardThreshold = 100.0f; // min reward improvement over pre-glitch to count as progress
+  uint8_t _glitchSettleFrames = 8;   // K: frames to let a glitch settle before checking reward improvement
+  uint8_t _glitchSettleWindow = 40;  // W: how many further frames the post-glitch win window stays open
+#endif
   // Current room-progression target: the "next room" (0x0051 value) the search should transition into,
   // and the per-transition-frame reward for progressing toward it. Set each rule-eval by "Set Next Room
   // Reward"; not serialized (re-derived from the satisfied rules every step).
   uint8_t  _nextRoomTarget = 255;
   float    _nextRoomReward = 0.0f;
   float    _nextRoomBase   = 0.0f; // base reward compensating the magnet loss at the transition entry
+  float           _climbBonus = 0.0f;    // reward for a grab/climb-up frame in a climb-bonus room
+  std::set<uint8_t> _climbBonusRooms;    // rooms where the climb bonus applies (e.g. 14, the sword pit)
 
   // Input alphabet
   InputSet::inputIndex_t _in_null, _in_U, _in_D, _in_L, _in_R, _in_S, _in_A, _in_B;
   InputSet::inputIndex_t _in_LA, _in_RA, _in_DB, _in_LB, _in_RB, _in_UB, _in_UD, _in_DL, _in_DR, _in_BA, _in_UBA, _in_UDB, _in_UDBA;
+#ifdef _POP_GLITCH_HUNT
+  InputSet::inputIndex_t _in_UL, _in_UR, _in_ULR, _in_LR, _in_UDL, _in_UDR, _in_UDLR, _in_UDA, _in_ULA, _in_URA;
+  std::vector<InputSet::inputIndex_t> _glitchProbes;
+  // Phase pruning ceiling: non-null inputs offered only when Frame Phase <= this. Default 2 (prune the
+  // never-used phases 3,4); overridable via game config "Max Input Phase".
+  uint8_t _maxInputPhase = 2;
+#endif
 
   // Per-frame allowed-move table
   std::unordered_map<uint8_t, std::vector<InputSet::inputIndex_t>> _frameMoves;

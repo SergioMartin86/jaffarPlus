@@ -69,6 +69,12 @@ public:
     _NTABBlockSize = jaffarCommon::json::popNumber<size_t>(_emulatorConfigRemaining, "Nametable Block Size");
     _SRAMBlockSize = jaffarCommon::json::popNumber<size_t>(_emulatorConfigRemaining, "SRAM Block Size");
 
+    // Optional (default off): serialize the full CPU/PPU/APU timing state so a deserialized replay
+    // matches a live run even in glitch/derailed-execution regions. Only glitch-hunting games (e.g. PoP)
+    // need it; leaving it off keeps the lighter, ~850 B-smaller original serialization.
+    if (_emulatorConfigRemaining.contains("Precise State Timing"))
+      _preciseTiming = jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Precise State Timing");
+
     // Getting disabled state properties
     const auto disabledStateProperties = jaffarCommon::json::popArray<std::string>(_emulatorConfigRemaining, "Disabled State Properties");
     for (const auto& property : disabledStateProperties) _disabledStateProperties.push_back(property);
@@ -87,6 +93,10 @@ public:
 
   // Function to get a reference to the input parser from the base emulator
   jaffar::InputParser* getInputParser() const override { return _quickerNES->getInputParser(); }
+
+  // Raw pointer to the internal quickerNES::Emu, for auxiliary tools that need core-level hooks
+  // (e.g. the per-instruction trace callback used to audit glitch inputs at the CPU level).
+  void* getInternalEmulatorPointer() const { return _quickerNES->getInternalEmulatorPointer(); }
 
   void initializeImpl() override
   {
@@ -111,6 +121,9 @@ public:
     // after the Initial State load, which deserialized with default sizes and corrupted/overflowed.)
     _quickerNES->setNTABBlockSize(_NTABBlockSize);
     _quickerNES->setSRAMBlockSize(_SRAMBlockSize);
+
+    // Set precise-timing BEFORE any Initial State deserialization so the load uses the matching format.
+    _quickerNES->setPreciseTiming(_preciseTiming);
 
     // If initial state file defined, load it
     if (_initialStateFilePath.empty() == false)
@@ -183,6 +196,18 @@ public:
     if (propertyName == "CHRR") return property_t(_quickerNES->getCHRMem(), _quickerNES->getCHRMemSize());
     if (propertyName == "SPRT") return property_t(_quickerNES->getSpriteMem(), _quickerNES->getSpriteMemSize());
     if (propertyName == "PALR") return property_t(_quickerNES->getPALMem(), _quickerNES->getPALMemSize());
+    // CPU sticky halt latch (1 after a KIL/JAM executed; only console reset clears it). Games should
+    // register it and FAIL any state that jammed the CPU -- real hardware freezes there, and letting
+    // the emulator's NMI revive the game would make such states emulator artifacts, not valid play.
+    if (propertyName == "CPU Halt Latch") return property_t(_quickerNES->getHaltLatchPtr(), 1);
+    // Glitch-investigation detector (only present in -D_QUICKERNES_DETECT_BAD_ACCESS builds): per-frame
+    // flag, 1 iff this frame executed an unofficial opcode or fetched code from RAM (data-as-code derail).
+    if (propertyName == "CPU Bad Access")
+    {
+      auto* p = _quickerNES->getBadAccessPtr();
+      if (p == nullptr) JAFFAR_THROW_LOGIC("Property 'CPU Bad Access' requires a -D_QUICKERNES_DETECT_BAD_ACCESS build.");
+      return property_t(p, 1);
+    }
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
@@ -402,6 +427,7 @@ private:
   bool        _useFlatCodeMap;
   size_t      _NTABBlockSize;
   size_t      _SRAMBlockSize;
+  bool        _preciseTiming = false;
   std::string _romFilePath;
   std::string _romFileSHA1;
 

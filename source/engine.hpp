@@ -12,6 +12,7 @@
 #include "numa.hpp"
 #include "runner.hpp"
 #include "stateDb.hpp"
+#include <jaffarCommon/file.hpp>
 #include <algorithm>
 #include <emulatorList.hpp>
 #include <gameList.hpp>
@@ -1005,6 +1006,16 @@ private:
         _stepBestWinState.reward    = reward;
         _stepBestWinState.stepCount = r.getStepCount(); // record depth: the count is not serialized per-state
       }
+      // Persist the winning input history DIRECTLY, now, when the runner still holds the exact path that
+      // reached this win. The driver's post-search "best state" render loads a saved state and rebuilds
+      // its history, which is unreliable for terminal win states (a win is never pushed to the DB, so the
+      // best-state saver tracks the non-win frontier instead). This writes only on a strictly-better win
+      // (rare, under the lock), so the file always holds the highest-reward winning solution found.
+      if (reward > _bestWinSolutionReward)
+      {
+        _bestWinSolutionReward = reward;
+        jaffarCommon::file::saveStringToFile(r.getInputHistoryString(), _winSolutionPath);
+      }
       _stepBestWinStateLock.unlock();
 
       // Freeing up the state data
@@ -1095,6 +1106,10 @@ private:
 
   std::mutex  _stepBestWinStateLock; ///< Guards updates to @ref _stepBestWinState.
   stateInfo_t _stepBestWinState;     ///< Best win state (by reward) found during the current step.
+  /// Highest-reward win seen across ALL steps, and the file its input history is written to at detection
+  /// time (see the win-state handling in computeState). Reliable even for terminal win states.
+  float       _bestWinSolutionReward = -std::numeric_limits<float>::infinity();
+  std::string _winSolutionPath = "/tmp/jaffar.winsolution.sol";
 
   // Storage for manually triggered save solutionm
 
