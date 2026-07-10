@@ -65,14 +65,12 @@ int main(int argc, char* argv[])
 
   // Loading configuration
   std::string configFileString;
-  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false)
-    JAFFAR_THROW_LOGIC("[ERROR] Could not read Jaffar config file: %s\n", configFile.c_str());
+  if (jaffarCommon::file::loadStringFromFile(configFileString, configFile) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not read Jaffar config file: %s\n", configFile.c_str());
   const auto config = nlohmann::json::parse(configFileString);
 
   // Loading solution
   std::string solutionString;
-  if (jaffarCommon::file::loadStringFromFile(solutionString, solutionFile) == false)
-    JAFFAR_THROW_LOGIC("[ERROR] Could not read solution file: %s\n", solutionFile.c_str());
+  if (jaffarCommon::file::loadStringFromFile(solutionString, solutionFile) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not read solution file: %s\n", solutionFile.c_str());
   const auto solution = jaffarCommon::string::split(solutionString, '\n');
 
   // Creating the runner

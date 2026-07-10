@@ -72,8 +72,7 @@ public:
     // Optional (default off): serialize the full CPU/PPU/APU timing state so a deserialized replay
     // matches a live run even in glitch/derailed-execution regions. Only glitch-hunting games (e.g. PoP)
     // need it; leaving it off keeps the lighter, ~850 B-smaller original serialization.
-    if (_emulatorConfigRemaining.contains("Precise State Timing"))
-      _preciseTiming = jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Precise State Timing");
+    if (_emulatorConfigRemaining.contains("Precise State Timing")) _preciseTiming = jaffarCommon::json::popBoolean(_emulatorConfigRemaining, "Precise State Timing");
 
     // Getting disabled state properties
     const auto disabledStateProperties = jaffarCommon::json::popArray<std::string>(_emulatorConfigRemaining, "Disabled State Properties");

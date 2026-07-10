@@ -12,11 +12,11 @@
 #include "numa.hpp"
 #include "runner.hpp"
 #include "stateDb.hpp"
-#include <jaffarCommon/file.hpp>
 #include <algorithm>
 #include <emulatorList.hpp>
 #include <gameList.hpp>
 #include <jaffarCommon/deserializers/base.hpp>
+#include <jaffarCommon/file.hpp>
 #include <jaffarCommon/hash.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
@@ -1109,7 +1109,7 @@ private:
   /// Highest-reward win seen across ALL steps, and the file its input history is written to at detection
   /// time (see the win-state handling in computeState). Reliable even for terminal win states.
   float       _bestWinSolutionReward = -std::numeric_limits<float>::infinity();
-  std::string _winSolutionPath = "/tmp/jaffar.winsolution.sol";
+  std::string _winSolutionPath       = "/tmp/jaffar.winsolution.sol"; ///< File the best win-state's input history is written to (see @ref _bestWinSolutionReward).
 
   // Storage for manually triggered save solutionm
 

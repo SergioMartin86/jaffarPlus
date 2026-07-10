@@ -1,14 +1,14 @@
 #pragma once
 
+#include <array>
+#include <cstdio>
+#include <cstring>
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/deserializers/contiguous.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/serializers/contiguous.hpp>
-#include <array>
-#include <cstdio>
-#include <cstring>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -21,12 +21,12 @@
 // Either core's bad-access detector implies both the unified detector guard (_POP_BAD_ACCESS, used
 // for the "CPU Bad Access" property/hashing/trace) and the glitch-hunt input alphabet.
 #if defined(_QUICKERNES_DETECT_BAD_ACCESS) || defined(_NESHAWK_DETECT_BAD_ACCESS)
-  #ifndef _POP_BAD_ACCESS
-    #define _POP_BAD_ACCESS
-  #endif
+#ifndef _POP_BAD_ACCESS
+#define _POP_BAD_ACCESS
+#endif
 #endif
 #if defined(_POP_BAD_ACCESS) && !defined(_POP_GLITCH_HUNT)
-  #define _POP_GLITCH_HUNT
+#define _POP_GLITCH_HUNT
 #endif
 
 namespace jaffarPlus
@@ -162,27 +162,27 @@ private:
     registerGameProperty("Level 10 Room 4 Door State", &_lowMem[0x0541], Property::datatype_t::dt_uint8, Property::endianness_t::little);
 
     // Caching pointers used by the game logic
-    _globalTimer        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
-    _currentLevel       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Current Level")]->getPointer();
-    _rngState           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG State")]->getPointer();
-    _cpuHalted          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("CPU Halted")]->getPointer();
+    _globalTimer  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Global Timer")]->getPointer();
+    _currentLevel = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Current Level")]->getPointer();
+    _rngState     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("RNG State")]->getPointer();
+    _cpuHalted    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("CPU Halted")]->getPointer();
 #ifdef _POP_BAD_ACCESS
-    _cpuBadAccess       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("CPU Bad Access")]->getPointer();
+    _cpuBadAccess = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("CPU Bad Access")]->getPointer();
 #endif
     _framePhase         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Frame Phase")]->getPointer();
     _bottomTextTimer    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Bottom Text Timer")]->getPointer();
     _gameState          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Game State")]->getPointer();
     _passwordTimer      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Password Timer")]->getPointer();
-    _playerPosX            = (int16_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
-    _playerPosY            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
-    _playerDirection       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Direction")]->getPointer();
-    _playerFrame           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Frame")]->getPointer();
-    _playerMovement        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Movement")]->getPointer();
-    _playerFallWait        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Fall Wait")]->getPointer();
-    _playerHP              = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player HP")]->getPointer();
-    _playerRoom            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Room")]->getPointer();
-    _playerJumpingState    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Jumping State")]->getPointer();
-    _playerFightMode       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Fight Mode")]->getPointer();
+    _playerPosX         = (int16_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos X")]->getPointer();
+    _playerPosY         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Pos Y")]->getPointer();
+    _playerDirection    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Direction")]->getPointer();
+    _playerFrame        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Frame")]->getPointer();
+    _playerMovement     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Movement")]->getPointer();
+    _playerFallWait     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Fall Wait")]->getPointer();
+    _playerHP           = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player HP")]->getPointer();
+    _playerRoom         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Room")]->getPointer();
+    _playerJumpingState = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Jumping State")]->getPointer();
+    _playerFightMode    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Player Fight Mode")]->getPointer();
     _guardPosX          = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Guard Pos X")]->getPointer();
     _guardHP            = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Guard HP")]->getPointer();
     _guardNotice        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Guard Notice")]->getPointer();
@@ -200,18 +200,18 @@ private:
     _currentDoorState   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Current Door State")]->getPointer();
     _exitDoorState      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Exit Door State")]->getPointer();
 
-    _lvl1FirstTileBG      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Lvl1 First Tile BG")]->getPointer();
-    _lvl1FirstTileFG      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Lvl1 First Tile FG")]->getPointer();
-    _lvl2LastTileFG       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Lvl2 Last Tile FG")]->getPointer();
-    _lvl2ExitDoorState    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 2 Exit Door State")]->getPointer();
-    _lvl3GateTimer        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 3 Checkpoint Gate Timer")]->getPointer();
+    _lvl1FirstTileBG       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Lvl1 First Tile BG")]->getPointer();
+    _lvl1FirstTileFG       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Lvl1 First Tile FG")]->getPointer();
+    _lvl2LastTileFG        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Lvl2 Last Tile FG")]->getPointer();
+    _lvl2ExitDoorState     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 2 Exit Door State")]->getPointer();
+    _lvl3GateTimer         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 3 Checkpoint Gate Timer")]->getPointer();
     _lvl3SkeletonLooseTile = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Lvl3 Skeleton Loose Tile")]->getPointer();
-    _lvl4ExitDoorState    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 4 Exit Door State")]->getPointer();
-    _lvl5GateTimer        = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 5 Gate Timer")]->getPointer();
-    _lvl7SlowfallState    = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 7 Slow Fall Potion State")]->getPointer();
-    _lvl9Room15DoorState  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 9 Room 15 Door State")]->getPointer();
-    _lvl10Room0DoorState  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 10 Room 0 Door State")]->getPointer();
-    _lvl10Room4DoorState  = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 10 Room 4 Door State")]->getPointer();
+    _lvl4ExitDoorState     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 4 Exit Door State")]->getPointer();
+    _lvl5GateTimer         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 5 Gate Timer")]->getPointer();
+    _lvl7SlowfallState     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 7 Slow Fall Potion State")]->getPointer();
+    _lvl9Room15DoorState   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 9 Room 15 Door State")]->getPointer();
+    _lvl10Room0DoorState   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 10 Room 0 Door State")]->getPointer();
+    _lvl10Room4DoorState   = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Level 10 Room 4 Door State")]->getPointer();
 
     // Derived / artificial properties (usable in rule conditions)
     registerGameProperty("Player Pos Y Actual", &_playerPosYActual, Property::datatype_t::dt_float32, Property::endianness_t::little);
@@ -261,21 +261,20 @@ private:
     // for the multi-frame setup that arms a bad access anywhere it can act. Combos that are inert in
     // a given state produce the same machine state as null and are pruned by dedup, so this broad
     // alphabet is self-limiting -- it only branches where an impossible combo actually changes state.
-    _in_UL   = _emulator->registerInput("|..|U.L.....|");
-    _in_UR   = _emulator->registerInput("|..|U..R....|");
-    _in_ULR  = _emulator->registerInput("|..|U.LR....|");
-    _in_LR   = _emulator->registerInput("|..|..LR....|");
-    _in_UDL  = _emulator->registerInput("|..|UDL.....|");
-    _in_UDR  = _emulator->registerInput("|..|UD.R....|");
-    _in_UDLR = _emulator->registerInput("|..|UDLR....|");
-    _in_UDA  = _emulator->registerInput("|..|UD.....A|");
-    _in_ULA  = _emulator->registerInput("|..|U.L....A|");
-    _in_URA  = _emulator->registerInput("|..|U..R...A|");
-    _glitchProbes = {_in_UD, _in_UDB, _in_UDBA, _in_UBA, _in_UL, _in_UR, _in_ULR,
-                     _in_LR, _in_UDL, _in_UDR, _in_UDLR, _in_UDA, _in_ULA, _in_URA};
+    _in_UL        = _emulator->registerInput("|..|U.L.....|");
+    _in_UR        = _emulator->registerInput("|..|U..R....|");
+    _in_ULR       = _emulator->registerInput("|..|U.LR....|");
+    _in_LR        = _emulator->registerInput("|..|..LR....|");
+    _in_UDL       = _emulator->registerInput("|..|UDL.....|");
+    _in_UDR       = _emulator->registerInput("|..|UD.R....|");
+    _in_UDLR      = _emulator->registerInput("|..|UDLR....|");
+    _in_UDA       = _emulator->registerInput("|..|UD.....A|");
+    _in_ULA       = _emulator->registerInput("|..|U.L....A|");
+    _in_URA       = _emulator->registerInput("|..|U..R...A|");
+    _glitchProbes = {_in_UD, _in_UDB, _in_UDBA, _in_UBA, _in_UL, _in_UR, _in_ULR, _in_LR, _in_UDL, _in_UDR, _in_UDLR, _in_UDA, _in_ULA, _in_URA};
 #endif
 
-    using V = std::vector<InputSet::inputIndex_t>;
+    using V  = std::vector<InputSet::inputIndex_t>;
     auto set = [&](uint8_t frame, V moves) { _frameMoves[frame] = std::move(moves); };
 
     set(0x00, {_in_A}); // post-exit-walk pose: A confirms the level end (increments Current Level = the win)
@@ -329,12 +328,12 @@ private:
   __INLINE__ std::set<std::string> getAllPossibleInputs() override
   {
     std::set<std::string> inputs = {"|..|........|", "|..|U.......|", "|..|.D......|", "|..|..L.....|", "|..|...R....|", "|..|....S...|", "|..|.......A|",
-            "|..|......B.|", "|..|..L....A|", "|..|...R...A|", "|..|.D....B.|", "|..|..L...B.|", "|..|...R..B.|", "|..|U.....B.|",
-            "|..|UD......|", "|..|.DL.....|", "|..|.D.R....|", "|..|......BA|", "|..|U.....BA|", "|..|UD....B.|", "|..|UD....BA|"};
+                                    "|..|......B.|", "|..|..L....A|", "|..|...R...A|", "|..|.D....B.|", "|..|..L...B.|", "|..|...R..B.|", "|..|U.....B.|",
+                                    "|..|UD......|", "|..|.DL.....|", "|..|.D.R....|", "|..|......BA|", "|..|U.....BA|", "|..|UD....B.|", "|..|UD....BA|"};
 #ifdef _POP_GLITCH_HUNT
     // pre-register the glitch-hunt probe alphabet (must include every input the search can emit)
-    inputs.insert({"|..|U.L.....|", "|..|U..R....|", "|..|U.LR....|", "|..|..LR....|", "|..|UDL.....|",
-                   "|..|UD.R....|", "|..|UDLR....|", "|..|UD.....A|", "|..|U.L....A|", "|..|U..R...A|"});
+    inputs.insert(
+        {"|..|U.L.....|", "|..|U..R....|", "|..|U.LR....|", "|..|..LR....|", "|..|UDL.....|", "|..|UD.R....|", "|..|UDLR....|", "|..|UD.....A|", "|..|U.L....A|", "|..|U..R...A|"});
 #endif
     return inputs;
   }
@@ -386,9 +385,9 @@ private:
     // crashes/dies or lands somewhere no better never reaches an improved settled state, so it never
     // wins. At this point getReward() holds the reward of the state we are expanding.
     const float _rewardBeforeAdvance = getReward();
-    _glitchAdvanced = (_framesSinceGlitch != 255 && _framesSinceGlitch >= _glitchSettleFrames
-                       && *_screenTransition == 0
-                       && _rewardBeforeAdvance > _preGlitchReward + _glitchRewardThreshold) ? 1 : 0;
+    _glitchAdvanced =
+        (_framesSinceGlitch != 255 && _framesSinceGlitch >= _glitchSettleFrames && *_screenTransition == 0 && _rewardBeforeAdvance > _preGlitchReward + _glitchRewardThreshold) ? 1
+                                                                                                                                                                                : 0;
     const int _posXBefore = (int)*_playerPosX;
 #endif
 
@@ -401,19 +400,23 @@ private:
     // opcodes, so the bad-access flag never fires (bad=0) -- yet posX jumps to a wild value (e.g.
     // 0x6012). The transition gate excludes normal room-edge wraps (which are big posX jumps too but
     // occur during a transition). Validated: 0 false-positives across the legit level.
-    const int _posXAfter = (int)*_playerPosX;
-    const int _posXDelta  = _posXAfter > _posXBefore ? _posXAfter - _posXBefore : _posXBefore - _posXAfter;
+    const int  _posXAfter = (int)*_playerPosX;
+    const int  _posXDelta = _posXAfter > _posXBefore ? _posXAfter - _posXBefore : _posXBefore - _posXAfter;
     const bool _teleport  = (_posXDelta > 40) && (*_screenTransition == 0);
-    _prevBadAccess = *_cpuBadAccess;                           // pure derail (for the CPU Bad Access rules)
-    _prevGlitch    = (*_cpuBadAccess != 0 || _teleport) ? 1 : 0; // derail OR teleport (opens the settle window)
-    _teleported    = _teleport ? 1 : 0;                        // deterministic teleport flag (diagnostic)
+    _prevBadAccess        = *_cpuBadAccess;                             // pure derail (for the CPU Bad Access rules)
+    _prevGlitch           = (*_cpuBadAccess != 0 || _teleport) ? 1 : 0; // derail OR teleport (opens the settle window)
+    _teleported           = _teleport ? 1 : 0;                          // deterministic teleport flag (diagnostic)
 
     // Advance the post-glitch settle window for the child state. Open it ONLY on a FRESH glitch (no
     // window already open): the settling of a teleport is itself a series of big posX jumps that each
     // re-trigger the glitch flag, and resetting the window on those would overwrite the true pre-glitch
     // reward with the high TRANSIENT reward, hiding the real improvement. Once open, the counter just
     // ages until the window closes (255 = no open window).
-    if (_prevGlitch == 1 && _framesSinceGlitch == 255) { _preGlitchReward = _rewardBeforeAdvance; _framesSinceGlitch = 0; }
+    if (_prevGlitch == 1 && _framesSinceGlitch == 255)
+    {
+      _preGlitchReward   = _rewardBeforeAdvance;
+      _framesSinceGlitch = 0;
+    }
     else if (_framesSinceGlitch != 255)
     {
       _framesSinceGlitch++;
@@ -558,7 +561,7 @@ private:
   {
     _playerFrameDiff  = (int8_t)(*_playerFrame - _playerPrevFrame);
     _playerPosYActual = (float)*_playerPosY;
-    const auto f = *_playerFrame;
+    const auto f      = *_playerFrame;
 
     // The game snaps Player Pos Y discretely during a climb (still on the lower platform, then suddenly
     // up on the higher one), which makes a raw-Y magnet flat-then-jump with no gradient across the climb.
@@ -589,8 +592,10 @@ private:
     // downward vertical magnet punishes -- the mid-air states sink below their non-jumping peers and get
     // evicted exactly where the route REQUIRES the jump (e.g. room 7's gap). Report the last grounded Y
     // for the whole arc so a forward jump is pure horizontal progress, never a reward valley.
-    if (f >= 0x27 && f <= 0x2C) _playerPosYActual = (float)_lastGroundedPosY;
-    else _lastGroundedPosY = *_playerPosY;
+    if (f >= 0x27 && f <= 0x2C)
+      _playerPosYActual = (float)_lastGroundedPosY;
+    else
+      _lastGroundedPosY = *_playerPosY;
   }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -599,7 +604,7 @@ private:
     _playerHorizontalMagnet.fill(genericMagnet_t{});
     _playerVerticalMagnet.fill(genericMagnet_t{});
     _playerDirectionMagnet = 0.0f;
-    _nextRoomTarget        = 255;  // no transition target until a satisfied rule sets one
+    _nextRoomTarget        = 255; // no transition target until a satisfied rule sets one
     _nextRoomReward        = 0.0f;
     _nextRoomBase          = 0.0f;
   }
@@ -747,17 +752,19 @@ private:
     char buf[280];
 #ifdef _POP_BAD_ACCESS
     const unsigned badAccess = *_cpuBadAccess;
-    const unsigned gAdv = _glitchAdvanced;
-    const unsigned pGlitch = _prevGlitch;
-    const float rew = getReward();
+    const unsigned gAdv      = _glitchAdvanced;
+    const unsigned pGlitch   = _prevGlitch;
+    const float    rew       = getReward();
 #else
     const unsigned badAccess = 0;
-    const unsigned gAdv = 0, pGlitch = 0; const float rew = 0.0f;
+    const unsigned gAdv = 0, pGlitch = 0;
+    const float    rew = 0.0f;
 #endif
     snprintf(buf, sizeof(buf),
-             "lvl=%u room=%u drawn=%u hp=%u fight=%u posX=%d posY=%.1f frame=0x%02X trans=%u paused=%u phase=%u rng=0x%02X gpres=%u gpx=%u ghp=%u gnot=%u halt=%u bad=%u rew=%.0f pGl=%u gAdv=%u",
-             *_currentLevel, *_playerRoom, *_drawnRoom, *_playerHP, *_playerFightMode, (int)*_playerPosX, _playerPosYActual, *_playerFrame, *_screenTransition,
-             *_isPaused, *_framePhase, *_rngState, *_guardPresent, *_guardPosX, *_guardHP, *_guardNotice, *_cpuHalted, badAccess, rew, pGlitch, gAdv);
+             "lvl=%u room=%u drawn=%u hp=%u fight=%u posX=%d posY=%.1f frame=0x%02X trans=%u paused=%u phase=%u rng=0x%02X gpres=%u gpx=%u ghp=%u gnot=%u halt=%u bad=%u rew=%.0f "
+             "pGl=%u gAdv=%u",
+             *_currentLevel, *_playerRoom, *_drawnRoom, *_playerHP, *_playerFightMode, (int)*_playerPosX, _playerPosYActual, *_playerFrame, *_screenTransition, *_isPaused,
+             *_framePhase, *_rngState, *_guardPresent, *_guardPosX, *_guardHP, *_guardNotice, *_cpuHalted, badAccess, rew, pGlitch, gAdv);
     return std::string(buf);
   }
 
@@ -803,7 +810,13 @@ private:
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       // Base compensation for the magnet lost at the transition entry (default 700 > max magnet ~613).
       float base = actionJs.contains("Base") ? jaffarCommon::json::getNumber<float>(actionJs, "Base") : 700.0f;
-      rule.addAction([=, this]() { this->_nextRoomTarget = room; this->_nextRoomReward = intensity; this->_nextRoomBase = base; });
+      rule.addAction(
+          [=, this]()
+          {
+            this->_nextRoomTarget = room;
+            this->_nextRoomReward = intensity;
+            this->_nextRoomBase   = base;
+          });
       recognizedActionType = true;
     }
 
@@ -838,12 +851,12 @@ private:
   uint8_t* _lowMem;
 
   // Cached game-value pointers
-  uint8_t*  _globalTimer;
-  uint8_t*  _currentLevel;
-  uint8_t*  _rngState;
-  uint8_t*  _cpuHalted; // emulator CPU halt latch (KIL/JAM executed); see registerGameProperties
+  uint8_t* _globalTimer;
+  uint8_t* _currentLevel;
+  uint8_t* _rngState;
+  uint8_t* _cpuHalted; // emulator CPU halt latch (KIL/JAM executed); see registerGameProperties
 #ifdef _POP_BAD_ACCESS
-  uint8_t*  _cpuBadAccess; // per-frame bad-access flag (glitch investigation); see registerGameProperties
+  uint8_t* _cpuBadAccess; // per-frame bad-access flag (glitch investigation); see registerGameProperties
 #endif
   uint8_t*  _framePhase;
   uint8_t*  _bottomTextTimer;
@@ -890,14 +903,14 @@ private:
   uint8_t* _lvl10Room4DoorState;
 
   // Derived values
-  float   _playerPosYActual = 0.0f;
-  int8_t  _playerFrameDiff  = 0;
-  uint8_t _playerPrevFrame  = 0;
-  uint32_t _currentStep  = 0;
+  float    _playerPosYActual = 0.0f;
+  int8_t   _playerFrameDiff  = 0;
+  uint8_t  _playerPrevFrame  = 0;
+  uint32_t _currentStep      = 0;
 
   // Frames elapsed inside the current room transition (0 when not transitioning). Serialized; used to
   // both hash-distinguish mid-scroll frames and reward transition progress.
-  uint16_t _transitionFrames  = 0;
+  uint16_t _transitionFrames = 0;
 
   // Consecutive lag frames so far (Is Paused == 5; 0 outside a lag burst). Serialized; hashed to
   // distinguish frames whose entire game RAM repeats bit-identically while the engine catches up.
@@ -915,30 +928,30 @@ private:
   // with a one-frame lag: each state carries its parent's reward and whether it was born from a
   // derail; when the state is expanded, we check (born-from-derail AND reward > parentReward+thresh)
   // and flag its children via "Glitch Advanced", which a win rule watches. All serialized.
-  float   _preGlitchReward = 0.0f;   // reward recorded just before the most recent glitch opened the window
-  uint8_t _framesSinceGlitch = 255;  // frames since the last glitch (255 = no open settle window)
-  uint8_t _prevBadAccess = 0;        // was this state produced by a bad-access (derailing) frame?
-  uint8_t _prevGlitch = 0;           // was this state produced by a GLITCH frame (derail OR position teleport)?
-  uint8_t _glitchAdvanced = 0;       // 1 iff a post-glitch settled state improved reward (delayed win signal)
-  uint8_t _teleported = 0;           // this frame was an in-room posX teleport (diagnostic)
+  float   _preGlitchReward       = 0.0f;   // reward recorded just before the most recent glitch opened the window
+  uint8_t _framesSinceGlitch     = 255;    // frames since the last glitch (255 = no open settle window)
+  uint8_t _prevBadAccess         = 0;      // was this state produced by a bad-access (derailing) frame?
+  uint8_t _prevGlitch            = 0;      // was this state produced by a GLITCH frame (derail OR position teleport)?
+  uint8_t _glitchAdvanced        = 0;      // 1 iff a post-glitch settled state improved reward (delayed win signal)
+  uint8_t _teleported            = 0;      // this frame was an in-room posX teleport (diagnostic)
   float   _glitchRewardThreshold = 100.0f; // min reward improvement over pre-glitch to count as progress
-  uint8_t _glitchSettleFrames = 8;   // K: frames to let a glitch settle before checking reward improvement
-  uint8_t _glitchSettleWindow = 40;  // W: how many further frames the post-glitch win window stays open
+  uint8_t _glitchSettleFrames    = 8;      // K: frames to let a glitch settle before checking reward improvement
+  uint8_t _glitchSettleWindow    = 40;     // W: how many further frames the post-glitch win window stays open
 #endif
   // Current room-progression target: the "next room" (0x0051 value) the search should transition into,
   // and the per-transition-frame reward for progressing toward it. Set each rule-eval by "Set Next Room
   // Reward"; not serialized (re-derived from the satisfied rules every step).
-  uint8_t  _nextRoomTarget = 255;
-  float    _nextRoomReward = 0.0f;
-  float    _nextRoomBase   = 0.0f; // base reward compensating the magnet loss at the transition entry
-  float           _climbBonus = 0.0f;    // reward for a grab/climb-up frame in a climb-bonus room
-  std::set<uint8_t> _climbBonusRooms;    // rooms where the climb bonus applies (e.g. 14, the sword pit)
+  uint8_t           _nextRoomTarget = 255;
+  float             _nextRoomReward = 0.0f;
+  float             _nextRoomBase   = 0.0f; // base reward compensating the magnet loss at the transition entry
+  float             _climbBonus     = 0.0f; // reward for a grab/climb-up frame in a climb-bonus room
+  std::set<uint8_t> _climbBonusRooms;       // rooms where the climb bonus applies (e.g. 14, the sword pit)
 
   // Input alphabet
   InputSet::inputIndex_t _in_null, _in_U, _in_D, _in_L, _in_R, _in_S, _in_A, _in_B;
   InputSet::inputIndex_t _in_LA, _in_RA, _in_DB, _in_LB, _in_RB, _in_UB, _in_UD, _in_DL, _in_DR, _in_BA, _in_UBA, _in_UDB, _in_UDBA;
 #ifdef _POP_GLITCH_HUNT
-  InputSet::inputIndex_t _in_UL, _in_UR, _in_ULR, _in_LR, _in_UDL, _in_UDR, _in_UDLR, _in_UDA, _in_ULA, _in_URA;
+  InputSet::inputIndex_t              _in_UL, _in_UR, _in_ULR, _in_LR, _in_UDL, _in_UDR, _in_UDLR, _in_UDA, _in_ULA, _in_URA;
   std::vector<InputSet::inputIndex_t> _glitchProbes;
   // Phase pruning ceiling: non-null inputs offered only when Frame Phase <= this. Default 2 (prune the
   // never-used phases 3,4); overridable via game config "Max Input Phase".

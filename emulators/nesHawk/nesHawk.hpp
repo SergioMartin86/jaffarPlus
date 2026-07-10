@@ -71,8 +71,7 @@ public:
   {
     // Reading from ROM file
     std::string romFileData;
-    if (jaffarCommon::file::loadStringFromFile(romFileData, _romFilePath.c_str()) == false)
-      JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _romFilePath.c_str());
+    if (jaffarCommon::file::loadStringFromFile(romFileData, _romFilePath.c_str()) == false) JAFFAR_THROW_LOGIC("Could not find/read from ROM file: %s\n", _romFilePath.c_str());
 
     // Getting SHA1 of ROM for checksum
     auto actualRomSHA1 = jaffarCommon::hash::getSHA1String(romFileData);
@@ -138,7 +137,7 @@ public:
     }
 
     const bool parentWasFresh = _parentFresh;
-    _parentFresh = false;
+    _parentFresh              = false;
 
     _nes->FrameAdvance((uint8_t)input.port1);
     updateHaltLatch();
@@ -227,13 +226,19 @@ private:
     // opcode, so this is exact (and inherently sticky) at frame granularity.
     switch (_nes->cpu->opcode)
     {
-      case 0x02: case 0x12: case 0x22: case 0x32: case 0x42: case 0x52: case 0x62: case 0x72:
-      case 0x92: case 0xB2: case 0xD2: case 0xF2:
-        _cpuHaltLatch = 1;
-        break;
-      default:
-        _cpuHaltLatch = 0;
-        break;
+      case 0x02:
+      case 0x12:
+      case 0x22:
+      case 0x32:
+      case 0x42:
+      case 0x52:
+      case 0x62:
+      case 0x72:
+      case 0x92:
+      case 0xB2:
+      case 0xD2:
+      case 0xF2: _cpuHaltLatch = 1; break;
+      default: _cpuHaltLatch = 0; break;
     }
   }
 
@@ -243,7 +248,7 @@ private:
   uint8_t                              _cpuHaltLatch = 0;
 
   // lag-frame sibling cache (see advanceStateImpl)
-  bool                 _parentFresh = false;
+  bool                 _parentFresh   = false;
   bool                 _lagChildValid = false;
   std::vector<uint8_t> _lagParent;
   std::vector<uint8_t> _lagChild;
