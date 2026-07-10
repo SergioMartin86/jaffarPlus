@@ -782,7 +782,7 @@ jobs:
         path: build/meson-logs/
 
   # Build (NesHawk) -- header-only C++ translation of BizHawk's NesHawk core. The submodule
-  # (extern/nesHawk = github.com/SergioMartin86/QuickerNesHawk) ships its own meson build and a
+  # (extern/quickerNesHawk = github.com/SergioMartin86/QuickerNesHawk) ships its own meson build and a
   # ROM-free cpuFuzz regression test; we build and run those first, then compile jaffarPlus against
   # the core. Unlike the QuickerX cores, NesHawk is pulled in by relative-path include rather than
   # as a meson subproject, so the submodule must be checked out explicitly here.
@@ -792,8 +792,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Checkout NesHawk
       run: |
-            git submodule init extern/nesHawk
-            git submodule update --recursive extern/nesHawk
+            git submodule init extern/quickerNesHawk
+            git submodule update --recursive extern/quickerNesHawk
     - name: Create build directory
       run: mkdir build
     - name: Installing meson and ninja
@@ -804,9 +804,9 @@ jobs:
       run: sudo apt install libgtest-dev libnuma-dev libtbb-dev libsdl2-dev libsdl2-image-dev
     - name: Building and testing the NesHawk submodule
       run: |
-            meson setup extern/nesHawk/build extern/nesHawk
-            ninja -C extern/nesHawk/build
-            meson test -C extern/nesHawk/build
+            meson setup extern/quickerNesHawk/build extern/quickerNesHawk
+            ninja -C extern/quickerNesHawk/build
+            meson test -C extern/quickerNesHawk/build
     - name: Run meson configuration
       run: meson setup build -Dbuildtype=release -DuseNCurses=false -Demulator=NesHawk
     - name: Building project

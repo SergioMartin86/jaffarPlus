@@ -5,9 +5,9 @@
  * @brief JaffarPlus emulator wrapper around the C++ translation of BizHawk's NesHawk core.
  *
  * NesHawk is the cycle-accurate ground-truth NES core (BizHawk, C#, MIT), translated 1:1 to C++
- * under extern/nesHawk/source/ and validated byte-exact against the genuine C# implementation
+ * under extern/quickerNesHawk/source/ and validated byte-exact against the genuine C# implementation
  * (per-frame 2KB RAM over a 55,412-frame full-game movie plus both level-1 solutions; see
- * extern/nesHawk/harness for the golden oracle). Use it when search results must hold on real
+ * extern/quickerNesHawk/harness for the golden oracle). Use it when search results must hold on real
  * hardware timing: QuickerNES is instruction-granular and diverges from NesHawk on
  * interrupt-timing-sensitive glitches (e.g. the Prince of Persia U+D action glitch family).
  *
@@ -15,15 +15,15 @@
  *
  * The translated core is a single system configuration matching the Prince of Persia (NES) cart:
  * UNROM (mapper 2), 128KB PRG, 8KB CHR-RAM, vertical mirroring, NTSC, one joypad. Other carts
- * need their board translated first (extern/nesHawk/source/nesBoards.hpp).
+ * need their board translated first (extern/quickerNesHawk/source/nesBoards.hpp).
  *
  * Config keys (subset of QuickerNES's, same meanings): "Rom File Path", "Rom File SHA1",
  * "Initial State File Path", "Initial Sequence File Path", "Initial RAM Data File Path",
  * "Controller 1 Type", "Controller 2 Type".
  */
 
-#include "../../extern/nesHawk/source/nes.hpp"
-#include "../../extern/nesHawk/source/nesSerialization.hpp"
+#include "../../extern/quickerNesHawk/source/nes.hpp"
+#include "../../extern/quickerNesHawk/source/nesSerialization.hpp"
 #include "inputParser.hpp"
 #include <emulator.hpp>
 #include <jaffarCommon/deserializers/base.hpp>
