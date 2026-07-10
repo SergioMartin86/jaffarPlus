@@ -43,7 +43,9 @@ public:
 
     bestBelowReference = 3, ///< The best state's reward fell below the reference reward floor at this step
 
-    inputHistoryNearCapacity = 4 ///< The shared input-history trie neared/hit its hard memory ceiling
+    inputHistoryNearCapacity = 4, ///< The shared input-history trie neared/hit its hard memory ceiling
+
+    referenceBelowWorst = 5 ///< The reference reward fell below the worst kept state (reference evicted from the frontier)
   };
 
   /**
@@ -90,14 +92,19 @@ public:
     // and diagnostic -- it does NOT prune states (recoverable slower-then-faster lines are kept); it only
     // detects the first step at which the leading edge falls behind the reference (e.g. a reference TAS) and
     // stops, so the run isn't ground on once it can no longer keep pace. Reward must be monotone-comparable.
-    _referenceFloorEnabled   = false;
-    _referenceFloorTolerance = 0.0f;
+    _referenceFloorEnabled       = false;
+    _referenceFloorTolerance     = 0.0f;
+    _cancelIfReferenceBelowWorst = false;
     if (driverConfig.contains("Reference Reward Floor"))
     {
       auto refJs               = jaffarCommon::json::popObject(driverConfig, "Reference Reward Floor");
       _referenceFloorEnabled   = jaffarCommon::json::popBoolean(refJs, "Enabled");
       _referenceFloorTolerance = jaffarCommon::json::popNumber<float>(refJs, "Tolerance");
       const auto refPath       = jaffarCommon::json::popString(refJs, "Path");
+      // Optional (default false): also cancel the instant the reference reward falls BELOW the worst kept
+      // state -- i.e. the reference solution has been evicted from the frontier, so the winning line can no
+      // longer be reached no matter how good "best" looks. A stricter companion to the best-below check.
+      _cancelIfReferenceBelowWorst = refJs.contains("Cancel If Reference Below Worst") ? jaffarCommon::json::popBoolean(refJs, "Cancel If Reference Below Worst") : false;
       jaffarCommon::json::checkEmpty(refJs, "Driver Configuration > Reference Reward Floor");
       // The trace file is a runtime artifact: only open it for a real run. Under --dryRun (JAFFAR_IS_DRY_RUN)
       // we validate the config shape but skip the read, matching how ROM / initial-solution files are deferred
@@ -231,6 +238,17 @@ public:
                                   _referenceReward[_currentStep], _referenceFloorTolerance, _currentStep,
                                   _referenceReward[_currentStep] - _referenceFloorTolerance - _bestStateFloorReward);
         exitReason = exitReason_t::bestBelowReference;
+        break;
+      }
+
+      // Reference-below-worst guard (opt-in): the reference reward has dropped below the WORST kept state,
+      // which means the reference solution was evicted from the frontier -- the winning line is gone even if
+      // "best" still looks healthy. Cancel immediately so we don't grind a frontier that no longer contains it.
+      if (_cancelIfReferenceBelowWorst && _referenceFloorEnabled && _currentStep < _referenceReward.size() && _referenceReward[_currentStep] < _worstStateReward)
+      {
+        jaffarCommon::logger::log("[J+] Reference (%.6f) fell below worst kept state (%.6f) at step %lu -- reference evicted from frontier, cancelling.\n",
+                                  _referenceReward[_currentStep], _worstStateReward, _currentStep);
+        exitReason = exitReason_t::referenceBelowWorst;
         break;
       }
 
@@ -615,9 +633,10 @@ private:
 
   float _worstStateReward; ///< Reward for the worst state found so far.
 
-  bool               _referenceFloorEnabled;   ///< Whether the reference reward floor cancel is active.
-  float              _referenceFloorTolerance; ///< Allowed shortfall of best below the reference per step.
-  std::vector<float> _referenceReward;         ///< Per-step reference reward floor (index = step).
+  bool               _referenceFloorEnabled;       ///< Whether the reference reward floor cancel is active.
+  float              _referenceFloorTolerance;     ///< Allowed shortfall of best below the reference per step.
+  bool               _cancelIfReferenceBelowWorst; ///< Opt-in: cancel when the reference reward drops below the worst kept state (reference evicted).
+  std::vector<float> _referenceReward;             ///< Per-step reference reward floor (index = step).
 
   /// @brief Fraction of the input-history trie's hard ceiling at which the run stops gracefully (high-water
   /// mark). One step's growth (~ live-states nodes) is far below the remaining headroom at this level, so the

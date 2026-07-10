@@ -14,6 +14,7 @@
 #include "stateDb.hpp"
 #include <algorithm>
 #include <emulatorList.hpp>
+#include <fstream>
 #include <gameList.hpp>
 #include <jaffarCommon/deserializers/base.hpp>
 #include <jaffarCommon/file.hpp>
@@ -113,6 +114,47 @@ public:
     // -> small batch for load balance).
     _baseStateBatch = engineConfigRemaining.contains("Base State Batch Size") ? jaffarCommon::json::popNumber<size_t>(engineConfigRemaining, "Base State Batch Size") : 0;
     if (_baseStateBatch > BASE_STATE_BATCH_MAX) _baseStateBatch = BASE_STATE_BATCH_MAX;
+
+    // Optional reference pinning: keep a known (reference) solution's lineage anchored in the frontier so
+    // it is never evicted, and reward being AHEAD of it. We load the reference's per-depth state hashes;
+    // when a newly generated state's hash matches the reference hash at depth d (its own depth), or at
+    // d+1..d+Lookahead (i.e. it has reached the reference's near-future state early -- it is 1..L frames
+    // ahead), we add a large reward bonus, escalating with how far ahead it is. The base match (k=0)
+    // guarantees the reference path is never the worst state (never evicted); the k>0 matches steer the
+    // search to stay slightly ahead. Purely additive to the DB-ordering reward; the reference-floor
+    // comparison uses the unbiased floor reward and is unaffected.
+    _refPinEnabled = false;
+    if (engineConfigRemaining.contains("Reference Pinning"))
+    {
+      auto pinJs            = jaffarCommon::json::popObject(engineConfigRemaining, "Reference Pinning");
+      _refPinEnabled        = jaffarCommon::json::popBoolean(pinJs, "Enabled");
+      _refPinBonus          = jaffarCommon::json::popNumber<float>(pinJs, "Bonus");
+      _refPinLookahead      = jaffarCommon::json::popNumber<size_t>(pinJs, "Lookahead");
+      _refPinLookaheadBonus = jaffarCommon::json::popNumber<float>(pinJs, "Lookahead Bonus");
+      const auto pinPath    = jaffarCommon::json::popString(pinJs, "Path");
+      jaffarCommon::json::checkEmpty(pinJs, "Engine Configuration > Reference Pinning");
+      if (_refPinEnabled && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr)
+      {
+        std::ifstream f(pinPath);
+        if (f.good() == false) JAFFAR_THROW_RUNTIME("[ERROR] Could not open 'Reference Pinning' > 'Path': '%s'\n", pinPath.c_str());
+        // Format matches jaffar-player --dumpHashes: "<step>\t<016X first><016X second>" per line.
+        size_t      step;
+        std::string hex;
+        while (f >> step >> hex)
+        {
+          if (hex.size() != 32) continue;
+          jaffarCommon::hash::hash_t h;
+          h.first  = std::stoull(hex.substr(0, 16), nullptr, 16);
+          h.second = std::stoull(hex.substr(16, 16), nullptr, 16);
+          if (step >= _refPinHashes.size()) _refPinHashes.resize(step + 1);
+          _refPinHashes[step] = h;
+        }
+        _refPinnedAtDepth = std::make_unique<std::atomic<uint8_t>[]>(_refPinHashes.size());
+        for (size_t i = 0; i < _refPinHashes.size(); i++) _refPinnedAtDepth[i].store(0, std::memory_order_relaxed);
+        jaffarCommon::logger::log("[J+] Reference pinning enabled: %lu hashes loaded, bonus %.1f, lookahead %lu (+%.1f/frame ahead)\n", _refPinHashes.size(), _refPinBonus,
+                                  _refPinLookahead, _refPinLookaheadBonus);
+      }
+    }
 
     // Any remaining Engine key is unrecognized
     jaffarCommon::json::checkEmpty(engineConfigRemaining, "Engine Configuration");
@@ -623,6 +665,9 @@ public:
                               1.0e-6 * (double)_totalBaseStatesProcessed);
     jaffarCommon::logger::log("[J+] New States Processed:                        %.3f Mstates (Total: %.3f Mstates)\n", 1.0e-6 * (double)_stepNewStatesProcessed,
                               1.0e-6 * (double)_totalNewStatesProcessed);
+    if (_refPinEnabled)
+      jaffarCommon::logger::log("[J+] Reference Pin Hits (cumulative):             %lu (deepest %lu / %lu; ref-depth matches seen %lu)\n", _refPinHits.load(),
+                                _refPinMaxDepthHit.load(), _refPinHashes.size(), _refPinSeenPreDedup.load());
 
     jaffarCommon::logger::log("[J+] Base States Performance:                     %.3f Mstates/s (Average: %.3f Mstates/s)\n",
                               1.0e-6 * (double)_stepBaseStatesProcessed / (1.0e-6 * (double)_currentStepTime),
@@ -951,8 +996,41 @@ private:
     bool hashExists = _hashDbEnabled ? _hashDb->checkHashExists(hash) : false;
     JAFFAR_PROF_ACC(acc.checkHash, t3);
 
-    // If state is repeated then we are not interested in it, continue
-    if (hashExists == true) return inputResult_t::repeated;
+    // Reference pinning (decided BEFORE the dedup drop): if this child matches the reference lineage at
+    // its own depth (k=0) or a near-future depth (k=1..Lookahead, i.e. it is 1..L frames ahead), claim
+    // that reference depth EXACTLY ONCE (compare_exchange) and pin this copy. Claiming before dedup is
+    // essential: the same reference RAM is reached by many convergent paths (and can be first reached --
+    // and added UNPINNED -- at a shallower depth by a path more than Lookahead frames ahead), so if we
+    // waited until after the dedup check the reference lineage would be deduped away before it could be
+    // pinned. The single claimed copy bypasses dedup so it is always anchored; all later duplicates are
+    // dropped normally. Only the DB-ordering reward is affected (the floor uses the unbiased reward).
+    float pinBonus = 0.0f;
+    bool  isRefPin = false;
+    if (_refPinEnabled)
+    {
+      const size_t newDepth = _currentStep + 1;
+      for (size_t k = 0; k <= _refPinLookahead; k++)
+      {
+        const size_t idx = newDepth + k;
+        if (idx < _refPinHashes.size() && hash == _refPinHashes[idx])
+        {
+          _refPinSeenPreDedup.fetch_add(1, std::memory_order_relaxed);
+          uint8_t expected = 0;
+          if (_refPinnedAtDepth[idx].compare_exchange_strong(expected, 1, std::memory_order_relaxed))
+          {
+            pinBonus = _refPinBonus + (float)k * _refPinLookaheadBonus;
+            isRefPin = true;
+            _refPinHits.fetch_add(1, std::memory_order_relaxed);
+            _refPinMaxDepthHit.store(std::max(_refPinMaxDepthHit.load(std::memory_order_relaxed), idx), std::memory_order_relaxed);
+          }
+          break; // matched this reference depth (whether we claimed it or a peer did); do not check further k
+        }
+      }
+    }
+
+    // If state is repeated then we are not interested in it -- UNLESS it is the reference copy we just
+    // claimed, which we keep and anchor regardless (bypassing dedup for the pinned lineage).
+    if (hashExists == true && isRefPin == false) return inputResult_t::repeated;
 
     // Evaluating game rules based on the new state
     JAFFAR_PROF_DECL(t4);
@@ -989,8 +1067,8 @@ private:
     JAFFAR_PROF_DECL(t6);
     r.getGame()->updateReward();
 
-    // Getting state reward
-    const auto reward = r.getGame()->getReward();
+    // Getting state reward, plus the reference-pin bonus decided before the dedup check above.
+    auto reward = r.getGame()->getReward() + pinBonus;
     JAFFAR_PROF_ACC(acc.calculateReward, t6);
 
     // If this is a win state, register it and return
@@ -1094,6 +1172,18 @@ private:
   /// @brief Whether hashing is enabled. Games that cannot loop skip the hash DB to save memory and computation.
   bool   _hashDbEnabled;
   size_t _baseStateBatch; ///< Active base-state pull batch size ("Base State Batch Size").
+
+  // Reference pinning + lookahead (see constructor). Anchors a reference lineage in the frontier and
+  // rewards being 1..Lookahead frames ahead of it.
+  bool                                    _refPinEnabled        = false; ///< Whether reference pinning is active.
+  float                                   _refPinBonus          = 0.0f;  ///< Reward bonus for matching the reference at the state's own depth.
+  size_t                                  _refPinLookahead      = 0;     ///< How many future depths to also match (being ahead).
+  float                                   _refPinLookaheadBonus = 0.0f;  ///< Extra bonus per frame ahead of the reference.
+  std::vector<jaffarCommon::hash::hash_t> _refPinHashes;                 ///< Reference state hash at each search depth.
+  std::atomic<size_t>                     _refPinHits{0};                ///< Cumulative reference-pin hits (diagnostic).
+  std::atomic<size_t>                     _refPinMaxDepthHit{0};         ///< Deepest reference depth a pin matched (diagnostic).
+  std::atomic<size_t>                     _refPinSeenPreDedup{0};        ///< Reference-depth matches seen (diagnostic).
+  std::unique_ptr<std::atomic<uint8_t>[]> _refPinnedAtDepth;             ///< Per reference depth: claimed(1)/unclaimed(0), so exactly one copy is pinned.
 
   /// @brief Thread-safe hash database used to detect repeated states.
   std::unique_ptr<jaffarPlus::HashDb> _hashDb;
