@@ -32,10 +32,12 @@ if meson.is_subproject() == false
     dependencies : [ jaffarDependency, dependency('numa') ],
   )
 
-  # Jaffar Player tool
+  # Jaffar Player tool. Built with NESHAWK_FULL_AV so the NesHawk core keeps its audio/video paths
+  # (the pixel pipeline that fills the PPU framebuffer); the search binary above stays headless for
+  # speed. The macro is inert for every other emulator.
   jaffarPlayer = executable('jaffar-player',
     'source/player.cpp',
-    cpp_args: [ NCursesCPPFlags, '-D_JAFFAR_PLAYER' ],
+    cpp_args: [ NCursesCPPFlags, '-D_JAFFAR_PLAYER', '-DNESHAWK_FULL_AV' ],
     dependencies : [ jaffarDependency ],
   )
 

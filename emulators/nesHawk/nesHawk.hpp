@@ -80,6 +80,11 @@ public:
 
     // Power-on (parses the iNES header, boots the hardcoded NES-UNROM board)
     _nes = std::make_unique<nesHawk::NES>(reinterpret_cast<const uint8_t*>(romFileData.data()), romFileData.size());
+
+    // Plug a second standard joypad into port 2 when the config asks for one (default: unplugged,
+    // which is byte-exact with the P1-only translation). Rockman's game-end glitch reads controller 2.
+    _nes->controllerDeck._port2Connected = (_inputParser->_controller2Type != jaffar::InputParser::controller_t::none);
+
     _stateBuffer.resize(nesHawk::nesStateSize(*_nes));
 
     // If initial state file defined, load it
@@ -139,7 +144,7 @@ public:
     const bool parentWasFresh = _parentFresh;
     _parentFresh              = false;
 
-    _nes->FrameAdvance((uint8_t)input.port1);
+    _nes->FrameAdvance((uint8_t)input.port1, (uint8_t)input.port2);
     updateHaltLatch();
 
     if (parentWasFresh && _nes->islag)
@@ -202,24 +207,153 @@ public:
     jaffarCommon::logger::log("[J+]  + CPU Halted:                          %u\n", _cpuHaltLatch);
   }
 
-  // Render-related: no-ops for now (searches run with --disableRender; for visualization replay
-  // the solution on the QuickerNES build or export it to BizHawk).
-  void              initializeVideoOutput() override {}
-  void              finalizeVideoOutput() override {}
-  __INLINE__ void   enableRendering() override {}
-  __INLINE__ void   disableRendering() override {}
-  __INLINE__ void   updateRendererState(const size_t /*stepIdx*/, const std::string /*input*/) override {}
-  __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base& serializer) const override { serializeState(serializer); }
-  __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) override { deserializeState(deserializer); }
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Video output. The NesHawk PPU always renders into its framebuffer ppu->xbuf[256*240] -- each
+  // entry is a 9-bit value (6-bit NES color index in bits 0-5 | color-emphasis in bits 6-8). We map
+  // the base color index through a standard 64-entry NES palette into a 0x00RRGGBB blit buffer, which
+  // both feeds the SDL window (showRender) and BMP screenshots (saveScreenshot). Mirrors the
+  // QuickerNES wrapper so jaffar-player behaves identically across cores. Emphasis bits are ignored
+  // (they only slightly tint the picture), which is more than enough to see the game.
+  static constexpr int NESHAWK_WIDTH  = 256;
+  static constexpr int NESHAWK_HEIGHT = 240;
+  static constexpr int NESHAWK_BLIT   = 256 * 256; // texture is 256x256; only the top 256x240 is used
+
+  void initializeVideoOutput() override
+  {
+    m_window   = nullptr;
+    m_renderer = nullptr;
+    m_tex      = nullptr;
+
+    SDL_SetMainReady();
+    if (!SDL_WasInit(SDL_INIT_VIDEO))
+      if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
+      {
+        jaffarCommon::logger::log("[J+] WARNING: no SDL video (%s); running headless (screenshots only).\n", SDL_GetError());
+        return;
+      }
+
+    m_window = SDL_CreateWindow("JaffarPlus", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, NESHAWK_WIDTH, NESHAWK_HEIGHT, SDL_WINDOW_RESIZABLE);
+    if (m_window == nullptr)
+    {
+      jaffarCommon::logger::log("[J+] WARNING: no SDL window; headless (screenshots only).\n");
+      return;
+    }
+
+    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
+    if (m_renderer == nullptr) m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE);
+    if (m_renderer == nullptr)
+    {
+      jaffarCommon::logger::log("[J+] WARNING: no SDL renderer; headless (screenshots only).\n");
+      SDL_DestroyWindow(m_window);
+      m_window = nullptr;
+      return;
+    }
+    if (!(m_tex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 256)))
+      JAFFAR_THROW_RUNTIME("Could not create SDL texture in NesHawk emulator");
+    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+    m_nesDest = {0, 0, NESHAWK_WIDTH, NESHAWK_HEIGHT};
+  }
+
+  void finalizeVideoOutput() override
+  {
+    if (m_tex) SDL_DestroyTexture(m_tex);
+    if (m_renderer) SDL_DestroyRenderer(m_renderer);
+    if (m_window) SDL_DestroyWindow(m_window);
+    m_tex      = nullptr;
+    m_renderer = nullptr;
+    m_window   = nullptr;
+  }
+
+  // The PPU renders unconditionally, so there is nothing to toggle; kept for interface parity.
+  __INLINE__ void enableRendering() override {}
+  __INLINE__ void disableRendering() override {}
+
+  __INLINE__ void updateRendererState(const size_t /*stepIdx*/, const std::string /*input*/) override
+  {
+    const int16_t* xbuf = _nes->ppu->xbuf;
+    for (int i = 0; i < NESHAWK_WIDTH * NESHAWK_HEIGHT; i++) _curBlit[i] = _nesPalette[xbuf[i] & 0x3F];
+  }
+
+  // Write the current rendered frame (_curBlit) to a 24-bit BMP. No SDL/display needed.
+  void saveScreenshot(const std::string& path) override
+  {
+    const int W            = NESHAWK_WIDTH;
+    const int H            = NESHAWK_HEIGHT;
+    const int rowSize      = ((W * 3 + 3) / 4) * 4;
+    const int dataSize     = rowSize * H;
+    const int fileSize     = 54 + dataSize;
+    uint8_t   hdr[54]      = {0};
+    hdr[0]                 = 'B';
+    hdr[1]                 = 'M';
+    *(uint32_t*)(hdr + 2)  = (uint32_t)fileSize;
+    *(uint32_t*)(hdr + 10) = 54;
+    *(uint32_t*)(hdr + 14) = 40;
+    *(int32_t*)(hdr + 18)  = W;
+    *(int32_t*)(hdr + 22)  = H; // positive height => bottom-up
+    *(uint16_t*)(hdr + 26) = 1;
+    *(uint16_t*)(hdr + 28) = 24;
+    *(uint32_t*)(hdr + 34) = (uint32_t)dataSize;
+    FILE* f                = fopen(path.c_str(), "wb");
+    if (f == nullptr) return;
+    fwrite(hdr, 1, 54, f);
+    std::vector<uint8_t> row(rowSize, 0);
+    for (int y = H - 1; y >= 0; y--) // BMP rows are bottom-up
+    {
+      for (int x = 0; x < W; x++)
+      {
+        uint32_t px    = (uint32_t)_curBlit[y * W + x];
+        row[x * 3 + 0] = (uint8_t)(px & 0xFF);         // B
+        row[x * 3 + 1] = (uint8_t)((px >> 8) & 0xFF);  // G
+        row[x * 3 + 2] = (uint8_t)((px >> 16) & 0xFF); // R
+      }
+      fwrite(row.data(), 1, (size_t)rowSize, f);
+    }
+    fclose(f);
+  }
+
+  __INLINE__ void showRender() override
+  {
+    if (m_renderer == nullptr) return; // headless (screenshot-only) mode
+
+    void* nesPixels = nullptr;
+    int   pitch     = 0;
+    if (SDL_LockTexture(m_tex, nullptr, &nesPixels, &pitch) < 0) JAFFAR_THROW_RUNTIME("Could not lock texture in NesHawk emulator");
+    memcpy(nesPixels, _curBlit, sizeof(int32_t) * NESHAWK_BLIT);
+    SDL_UnlockTexture(m_tex);
+
+    SDL_RenderClear(m_renderer);
+    const SDL_Rect blitRect = {0, 0, NESHAWK_WIDTH, NESHAWK_HEIGHT};
+    SDL_RenderCopy(m_renderer, m_tex, &blitRect, &m_nesDest);
+    SDL_RenderPresent(m_renderer);
+  }
+
+  // The renderer state is the pixel buffer itself (populated from the live PPU framebuffer by
+  // updateRendererState during the player's caching pass), matching the QuickerNES contract: the
+  // player caches _curBlit per step and replays it back for display/screenshots.
+  __INLINE__ void   serializeRendererState(jaffarCommon::serializer::Base& serializer) const override { serializer.pushContiguous(_curBlit, sizeof(int32_t) * NESHAWK_BLIT); }
+  __INLINE__ void   deserializeRendererState(jaffarCommon::deserializer::Base& deserializer) override { deserializer.popContiguous(_curBlit, sizeof(int32_t) * NESHAWK_BLIT); }
   __INLINE__ size_t getRendererStateSize() const override
   {
     jaffarCommon::serializer::Contiguous s;
     serializeRendererState(s);
     return s.getOutputSize();
   }
-  __INLINE__ void showRender() override {}
 
 private:
+  // Standard 64-color NES (2C02) palette as 0x00RRGGBB; index = ppu->xbuf & 0x3F.
+  static constexpr int32_t _nesPalette[64] = {0x545454, 0x001E74, 0x081090, 0x300088, 0x440064, 0x5C0030, 0x540400, 0x3C1800, 0x202A00, 0x083A00, 0x004000, 0x003C00, 0x00323C,
+                                              0x000000, 0x000000, 0x000000, 0x989698, 0x084CC4, 0x3032EC, 0x5C1EE4, 0x8814B0, 0xA01464, 0x982220, 0x783C00, 0x545A00, 0x287200,
+                                              0x087C00, 0x007628, 0x006678, 0x000000, 0x000000, 0x000000, 0xECEEEC, 0x4C9AEC, 0x787CEC, 0xB062EC, 0xE454EC, 0xEC58B4, 0xEC6A64,
+                                              0xD48820, 0xA0AA00, 0x74C400, 0x4CD020, 0x38CC6C, 0x38B4CC, 0x3C3C3C, 0x000000, 0x000000, 0xECEEEC, 0xA8CCEC, 0xBCBCEC, 0xD4B2EC,
+                                              0xECAEEC, 0xECAED4, 0xECB4B0, 0xE4C490, 0xCCD278, 0xB4DE78, 0xA8E290, 0x98E2B4, 0xA0D6E4, 0xA0A2A0, 0x000000, 0x000000};
+
+  // SDL video state (mirrors the QuickerNES wrapper)
+  SDL_Window*   m_window               = nullptr;
+  SDL_Renderer* m_renderer             = nullptr;
+  SDL_Texture*  m_tex                  = nullptr;
+  SDL_Rect      m_nesDest              = {0, 0, NESHAWK_WIDTH, NESHAWK_HEIGHT};
+  int32_t       _curBlit[NESHAWK_BLIT] = {0}; // 0x00RRGGBB, top 256x240 populated each rendered frame
+
   __INLINE__ void updateHaltLatch()
   {
     // KIL/JAM opcodes: x2 for x in {0,1,2,3,4,5,6,7,9,B,D,F}. A jammed CPU never leaves the

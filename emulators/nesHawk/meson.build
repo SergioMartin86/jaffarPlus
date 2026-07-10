@@ -7,3 +7,8 @@ nesHawkDependency = declare_dependency(
  )
 
 emulatorDependencies += nesHawkDependency
+
+# The wrapper's video output (jaffar-player window + BMP screenshots) uses SDL2 directly, like the
+# QuickerNES wrapper. QuickerNES gets SDL2 transitively from its subproject; NesHawk has no subproject,
+# so link SDL2 explicitly here.
+emulatorDependencies += dependency('sdl2')
