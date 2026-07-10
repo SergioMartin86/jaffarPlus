@@ -12,9 +12,9 @@ add_test_setup('default',
 
 ###### Unit tests (pure logic, emulator-independent)
 
-# Uses the system gtest (libgtest-dev) when present, falling back to the
-# bundled wrap (extern/gtest.wrap) otherwise. 'main: true' links gtest_main.
-gtestDependency = dependency('gtest', main: true, fallback: [ 'gtest', 'gtest_main_dep' ])
+# Uses the system gtest (libgtest-dev), which every CI build job installs via apt.
+# 'main: true' links gtest_main.
+gtestDependency = dependency('gtest', main: true)
 
 unitPropertyCondition = executable('unit-propertyAndCondition',
       'unit/propertyAndCondition.cpp',
