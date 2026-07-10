@@ -115,7 +115,7 @@ Its inputs are single pipe-delimited characters: `|U|`, `|D|`, `|L|`, `|R|`, and
 
 ### ROM-based cores (common pattern)
 
-The console cores (QuickerNES, QuickerSnes9x, QuickerGPGX, QuickerStella, QuickerGambatte, …) share
+The console cores (QuickerNES, NesHawk, QuickerSnes9x, QuickerGPGX, QuickerStella, QuickerGambatte, …) share
 a similar set of keys. The exact set varies per core — consult the core's header under `emulators/`
 — but the recurring keys are:
 

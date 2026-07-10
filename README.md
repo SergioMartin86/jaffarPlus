@@ -80,6 +80,7 @@ it [online](https://sergiomartin86.github.io/jaffarPlus/api/), or build it local
 | Atari 2600               | [QuickerStella](https://github.com/SergioMartin86/quickerStella)             |
 | Atari 2600               | [Atari2600Hawk](https://github.com/CasualPokePlayer/libAtari2600Hawk)        |
 | NES                      | [QuickerNES](https://github.com/SergioMartin86/quickerNES)                   |
+| NES                      | [QuickerNesHawk](https://github.com/SergioMartin86/QuickerNesHawk)           |
 | SNES                     | [QuickerSnes9x](https://github.com/SergioMartin86/quickerSnes9x)             |
 | Sega Genesis             | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 |
 | Sega CD                  | [QuickerGPGX](https://github.com/SergioMartin86/quickerGPGX)                 |

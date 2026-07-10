@@ -72,10 +72,15 @@ This produces two executables in `build/`:
 The `-Demulator=` option selects which emulation core is compiled in. The available choices are:
 
 ```
-QuickNES  QuickerNES  QuickerNESArkanoid  QuickerGPGX  QuickerSDLPoP  QuickerSnes9x
+QuickNES  QuickerNES  QuickerNESArkanoid  NesHawk  QuickerGPGX  QuickerSDLPoP  QuickerSnes9x
 QuickerStella  Atari2600Hawk  QuickerSMBC  QuickerNEORAW  QuickerRAWGL  QuickerArkBot
-QuickerMGBA  QuickerGambatte  QuickerDSDA  PipeBot  TestEmulator
+QuickerMGBA  QuickerGambatte  QuickerDSDA  PipeBot  ExciteBikeNative  TestEmulator
 ```
+
+`NesHawk` is a C++ translation of BizHawk's cycle-accurate NesHawk NES core
+([QuickerNesHawk](https://github.com/SergioMartin86/QuickerNesHawk)). It is slower than `QuickerNES`
+but validated byte-exact against the reference emulator, so it is the core to use when a search
+result must be confirmed on ground-truth NES hardware timing rather than an approximation.
 
 Each core builds the games written for it. For example:
 
