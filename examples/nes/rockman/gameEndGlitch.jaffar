@@ -1,0 +1,111 @@
+{
+ "Driver Configuration": {
+  "End On First Win State": true,
+  "Max Steps": 2200,
+  "Save Intermediate Results": {
+   "Enabled": true,
+   "Frequency (s)": 1.0,
+   "Best Solution Path": "/tmp/jaffar.best.sol",
+   "Worst Solution Path": "/tmp/jaffar.worst.sol"
+  },
+  "Reference Reward Floor": {
+   "Enabled": false,
+   "Tolerance": 0.0,
+   "Path": ""
+  }
+ },
+ "Engine Configuration": {
+  "Hash Database": {
+   "Max Store Count": 2,
+   "Max Store Size (Mb)": 500,
+   "Enabled": true
+  },
+  "State Database": {
+   "Max Size (Mb)": 16000
+  }
+ },
+ "Emulator Configuration": {
+  "Emulator Name": "NesHawk",
+  "Rom File Path": "Rockman (J) [!].nes",
+  "Rom File SHA1": "5914D409EA027A96C2BB58F5136C5E7E9B2E8300",
+  "Initial State File Path": "",
+  "Initial Sequence File Path": "",
+  "Initial RAM Data File Path": "",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "Joypad"
+ },
+ "Runner Configuration": {
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+  "Bypass Hash Calculation": false,
+  "Store Input History": {
+   "Type": "Raw",
+   "Max Size": 2300
+  },
+  "Allowed Input Sets": [],
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [],
+  "Frameskip": {
+   "Rate": 0,
+   "Use Custom Input": false,
+   "Custom Input": ""
+  }
+ },
+ "Game Configuration": {
+  "Game Name": "NES / Rockman",
+  "Frame Rate": 60.1,
+  "Bypass Emulator State": false,
+  "Print Properties": [
+   "Game Mode",
+   "Player HP",
+   "Special Frame"
+  ],
+  "Hash Properties": [],
+  "Rules": [
+   {
+    "Label": 1,
+    "Conditions": [],
+    "Satisfies": [],
+    "Actions": [
+     {
+      "Type": "Set Camera Progress Magnet",
+      "Intensity": 10.0
+     },
+     {
+      "Type": "Set Bullet Arm Magnet",
+      "Intensity": 50.0
+     },
+     {
+      "Type": "Set Fire Delay Magnet",
+      "Intensity": 30.0
+     },
+     {
+      "Type": "Set Lever Rewards",
+      "Bullet A": 4000.0,
+      "Bullet B": 4000.0,
+      "Spawn 650": 8000.0,
+      "Spawn 653": 8000.0
+     }
+    ]
+   },
+   {
+    "Label": 1000,
+    "Conditions": [
+     {
+      "Property": "Game Mode",
+      "Op": "==",
+      "Value": 11
+     }
+    ],
+    "Satisfies": [],
+    "Actions": [
+     {
+      "Type": "Trigger Win"
+     }
+    ]
+   }
+  ],
+  "Setup Cam Threshold": 640
+ }
+}

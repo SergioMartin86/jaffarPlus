@@ -1,0 +1,34 @@
+SystemID NES
+0023	b	u	0	RAM	Game Timer
+0014	b	u	0	RAM	P1 Input
+0018	b	u	0	RAM	P1 Hold
+001B	b	u	0	RAM	Camera Pos X1
+001A	b	u	0	RAM	Camera Pos X2
+001C	b	u	0	RAM	Camera State
+001E	b	u	0	RAM	Camera Pos Y
+0020	b	u	0	RAM	Player Pos X1
+0022	b	u	0	RAM	Player Pos X2
+0021	b	u	0	RAM	Player Pos X3
+0025	b	u	0	RAM	Player Pos Y1
+0024	b	u	0	RAM	Player Pos Y2
+002C	b	u	0	RAM	Ground State
+0055	b	u	0	RAM	Player Invincibility
+0060	b	u	0	RAM	Bullet On Screen
+0094	b	u	0	RAM	Side Object
+0482	b	h	0	RAM	Bullet 1 Pos X
+0483	b	h	0	RAM	Bullet 2 Pos X
+0484	b	h	0	RAM	Bullet 3 Pos X
+0602	b	h	0	RAM	Bullet 1 Pos Y
+0603	b	h	0	RAM	Bullet 2 Pos Y
+0604	b	h	0	RAM	Bullet 3 Pos Y
+001F	b	u	0	RAM	Lag Frame State
+01FE	b	u	0	RAM	Lag Frame Type
+0600	b	h	0	RAM	Object 0
+0031	b	u	0	RAM	Game Mode
+0041	b	u	0	RAM	Pause State
+0045	b	u	0	RAM	Pause Switch
+008D	b	u	0	RAM	playerDirection
+006C	b	u	0	RAM	playerHP
+0098	b	u	0	RAM	playerVelX
+00F3	b	u	0	RAM	specialFrame
+

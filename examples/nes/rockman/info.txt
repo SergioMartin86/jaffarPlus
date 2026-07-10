@@ -1,0 +1,172 @@
+RAM Map: https://datacrystal.tcrf.net/wiki/Mega_Man_(NES)/RAM_map
+
+Glitch Explanation (From: https://tasvideos.org/4308S by pirohiko & finalfighter)
+
+DelayFFObjectGlitch
+DelayObject is taken out from bank2 (usually bank6, instead) when NMI interrupts the process of objectFF. Object 00-FF appears in the Iceman stage. FinalFighter discovered that $600 was executed, when DelayObject55 appeared. We increase the number of instructions executed in one frame by manipulating music, drop items and Rockman's action so that NMI interrupts the particular process in the frame.
+Instructions
+ObjectFireDelay is manipulated by DropItems. $23 increases every frame, and DelayObject55 may appear when $23 is 55.
+$0023	55
+$0600	54	F8	50	4D	54	F8	F8
+$0650	00	AC	21	00	6B	17	00
+$06F0	1B	3C	3E	1B	3D	3C	20
+DelayObjects is taken out
+$0023	56
+$0600	54	F8	50	4D	54	F8	F8
+$0650	3C	AD	22	1F	6C	18	00
+$06F0	03	3C	3E	01	3D	3C	55
+DelayObject55 calls $600
+0600: 54 F8 NOP F8,X               ; Y of Rockman = 54
+0602: 50 4D BVC $0651              ; Y of Rockbuster1,2 = 50,4D
+0650: 3C UNDEFINED (NO USE)        ; ObjectFireDelay of DelayObject3 = 3C
+0651: AD 22 1F LDA $1F22 = #$0A    ; ObjectFireDelay of DropItems = AD,22
+                                   ; ObjectFireDelay of DelayObject1 = 1F
+0654: 6C 18 00 JMP ($0018) = $C460 ; (instruction of StageClear)
+                                   ; ObjectFireDelay of DropItems = 6C,18
+                                   ; ObjectFireDelay of DelayObject55 = 00
+                                   ; Input of Controllers = $0018 = 60,C4
+C45E: A9 00 lda #$00
+C460: 85 31 sta $31(CurrentStage)  ; <-- Jumped here
+C462: 4C 0C C1 jmp $C10C
+History
+11/01/21 - FinalFighter found DelayObjectFFGlitch.
+14/04/29 - FinalFighter read about the article of SMB3 ACE TAS. [dead link removed]
+14/04/30 - FinalFighter remembered that some objects had called a RAM address. http://www.yuko2ch.net/rockman/JumpAddressList.txt
+14/05/01 - Creation of LuaScripts. FinalFighter and pirohiko confirmed by some cheats that DelayEnding in IceManStage was possible.
+14/05/08 - We began to work on a new TAS.
+14/05/13 - New TAS completed!
+
+
+Jump Address List:
+
+jump 敵番号
+AAD1 00  80   Blader/Bunbi Heri
+AB79  1   1   Met/Metall/Hard Hat
+ABF6  2   2   Flea
+AC5E  3   3   Spine/Gabyoall
+ACCA  4   4   Octopus Battery/Suzy (vertical moving)
+B2CA  5   5   Screw bomber (on floor)
+AD28  6   6   Watcher
+AD77  7   7   Peng
+AD77  8   8   Killer bullet
+ABF2  9   9   Big Eye
+AE11  A   A   Flying Shell/Shellgun/Hamburger
+AF26  B   B   Beak/wallgun (on right wall)
+B3B0  C   C   Electricity A
+AFB5  D   D   Bombomb
+B4E6  E   E   Zig-zag fire
+B59B  F   F   Vertical fire
+B3F9 10  90
+B6C3  1   1
+B054  2   2   Sniper Joe
+B117  3   3   Foot holder
+B1DA  4   4   Crazy Razy (??? seems not)
+B23C  5   5   Picket Man
+B2D6  6   6   Screw bomber (on ceiling)
+AF26  7   7
+B6AF  8   8   Horizontal firestump
+B3B0  9   9
+B6C3  A   A
+B6C7  B   B   Explosion?...
+B6CF  C   C   Scissor machine?
+B70F  D   D
+B756  E   E
+B80A  F   F   It's the head of HeadLosingRobot
+B868 20  A0
+ACCA  1   1   Octopus Battery/Suzy (horizontal moving)
+AF26  2   2   Beak/wallgun (on left wall)
+AF26  3   3
+B3B0  4   4   Electricity B
+B3B0  5   5
+B876  6   6   Bombomb cluster
+B4C2  7   7   Temporary block
+B898  8   8   (Bomb explodes) individual explosion part (
+B8A8  9   9
+B8AF  A   A
+B6C3  B   B
+B921  C   C   Lift
+B6C3  D   D   Diagonal bullet dowm (from Met)
+B6C3  E   E
+BA6E  F   F   Gutsman stage: Enable lift sound. Wily3: Contr←水流
+BAD0 30  B0   Gutsman stage: Stop SFX. Wily3: Setup BG palet
+BB3F  1   1   Tackle fire
+F3BD  2   2   Rotates palettes (Fireman and Wily2 battle)
+BC01  3   3   Scissor weapon?
+B6C3  4   4   Ice weapon?
+BCA5  5   5   Bomb weapon?
+B6C3  6   6   Fire weapon?
+BCC8  7   7   Fire shield weapon?
+BCF4  8   8
+BD83  9   9
+F3FC  A   A   Boss8 (Wily3 boss)
+BD98  B   B
+------------------------敵はここまで
+B6AF  C   C   Bonus pearl
+B6AF  D   D   Small weapon capsule
+B6AF  E   E
+B6AF  F   F   Large weapon capsule
+B6AF 40  C0   Large Life Capsule
+B6AF  1   1   ExtraLife
+B6C3  2   2   Magnet beam adapter
+B6C3  3   3   Teleport
+B6C3  4   4   Level-end
+B6C3  5   5   Yashichi
+B6C3  6   6
+B6C3  7   7
+BDEB  8   8
+B6C3  9   9   Random powerup (?)
+BE26  A   A
+------------------------オブジェ クトはここまで
+40BD  B   B   
+D006  C   C   DelayTransform
+203F  D   D   
+F63B  E   E   EnemySearchMegaman
+28C9  F   F   
+0390 50  D0   
+5F4C  1   1   
+38AB  2   2   
+00AD  3   3   
+FD06  4   4   
+0600  5   5   
+B008  6   6   
+4904  7   7   
+69FF  8   8   
+AA01  9   9   
+00A0  A   A   
+18A9  B   B   
+AC20  C   C   AI_Flea
+A6C5  D   D   DelayWarpDeath
+A52F  E   E   BKeyHoldingAI_E
+9D04  F   F   
+0660 60  E0   
+05A5  1   1   
+809D  2   2   ClearMusicDelayStageClear(many resets)
+2806  3   3   
+0390  4   4   
+6320  5   5   
+A9AB  6   6   
+9D33  7   7   ObjectDoCollisionChecksAndAvoidWalls
+0640  8   8   
+00A9  9   9   
+E09D  A   A   BombmanStrategyThrowBombAfterDelay
+9D04  B   B   
+04C0  C   C   
+40BD  D   D   
+C906  E   E   TestShotHit
+901B  F   F   Clear rest of CPU-RAM
+1814 70  F0   
+E0BD  1   1   BombmanStrategyDecideNextAction
+6904  2   2   
+9D18  3   3   ObjectCheckIfOutScreenVertically
+04E0  4   4   
+C0BD  5   5   DelayStageClear
+6904  6   6   
+9D00  7   7   ObjectCheckIfOutScreenVertically
+04C0  8   8   
+484C  9   9   
+C9AB  A   A   TestEnemyDamages
+D01A  B   B   EnemyTransformMegaman
+2003  C   C   
+AB63  D   D   ObjectFlipYmovement
+BD18  E   E   AI_Object38
+04E0  F   F   

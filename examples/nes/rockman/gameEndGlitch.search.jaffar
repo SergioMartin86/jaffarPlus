@@ -1,0 +1,115 @@
+{
+ "Driver Configuration": {
+  "End On First Win State": true,
+  "Max Steps": 16,
+  "Save Intermediate Results": {
+   "Enabled": true,
+   "Frequency (s)": 1.0,
+   "Best Solution Path": "/tmp/jaffar.best.sol",
+   "Worst Solution Path": "/tmp/jaffar.worst.sol"
+  },
+  "Reference Reward Floor": {
+   "Enabled": false,
+   "Tolerance": 0.0,
+   "Path": ""
+  }
+ },
+ "Engine Configuration": {
+  "Hash Database": {
+   "Max Store Count": 4,
+   "Max Store Size (Mb)": 2000,
+   "Enabled": true
+  },
+  "State Database": {
+   "Max Size (Mb)": 8000
+  }
+ },
+ "Emulator Configuration": {
+  "Emulator Name": "NesHawk",
+  "Rom File Path": "Rockman (J) [!].nes",
+  "Rom File SHA1": "5914D409EA027A96C2BB58F5136C5E7E9B2E8300",
+  "Initial State File Path": "preTrigger.1920.state",
+  "Initial Sequence File Path": "",
+  "Initial RAM Data File Path": "",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "Joypad"
+ },
+ "Runner Configuration": {
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+  "Bypass Hash Calculation": false,
+  "Store Input History": {
+   "Type": "Raw",
+   "Max Size": 40
+  },
+  "Allowed Input Sets": [],
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [],
+  "Frameskip": {
+   "Rate": 0,
+   "Use Custom Input": false,
+   "Custom Input": ""
+  }
+ },
+ "Game Configuration": {
+  "Game Name": "NES / Rockman",
+  "Frame Rate": 60.1,
+  "Bypass Emulator State": false,
+  "Print Properties": [
+   "Game Mode",
+   "Game Timer",
+   "Object 0"
+  ],
+  "Hash Properties": [],
+  "Rules": [
+   {
+    "Label": 1,
+    "Conditions": [],
+    "Satisfies": [],
+    "Actions": [
+     {
+      "Type": "Set Fire Delay Magnet",
+      "Intensity": 2.0
+     },
+     {
+      "Type": "Set Code Pattern Magnet",
+      "Intensity": 100.0
+     },
+     {
+      "Type": "Set Bullet Magnet",
+      "Exist Intensity": 30.0,
+      "Y Intensity": 2.0,
+      "Y Center": 78.0
+     },
+     {
+      "Type": "Set Player Position Magnet",
+      "Intensity": 1.0,
+      "X Center": 32.0,
+      "Y Center": 46.0
+     }
+    ]
+   },
+   {
+    "Label": 1000,
+    "Conditions": [
+     {
+      "Property": "Game Mode",
+      "Op": "==",
+      "Value": 11
+     }
+    ],
+    "Satisfies": [],
+    "Actions": [
+     {
+      "Type": "Trigger Win"
+     },
+     {
+      "Type": "Trigger Save Solution",
+      "Path": "/tmp/jaffar.win.sol"
+     }
+    ]
+   }
+  ]
+ }
+}
