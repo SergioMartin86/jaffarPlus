@@ -1,7 +1,7 @@
 {
  "Driver Configuration": {
-  "End On First Win State": false,
-  "Max Steps": 6000,
+  "End On First Win State": true,
+  "Max Steps": 56000,
   "Save Intermediate Results": {
    "Enabled": true,
    "Frequency (s)": 0.5,
@@ -21,23 +21,18 @@
    "Enabled": true
   },
   "State Database": {
-   "Max Size (Mb)": 16000
+   "Max Size (Mb)": 32000
   }
  },
  "Emulator Configuration": {
-  "Emulator Name": "QuickerNES",
-  "Use Flat Code Map": false,
-  "SRAM Block Size": 8192,
+  "Emulator Name": "NesHawk",
   "Rom File Path": "Prince of Persia (U) [!].nes",
   "Rom File SHA1": "6B58F149F34FA829135619C58700CAAA95B9CDE3",
   "Initial State File Path": "",
-  "Initial Sequence File Path": "lvl01.initial.sol",
+  "Initial Sequence File Path": "",
   "Initial RAM Data File Path": "",
   "Controller 1 Type": "Joypad",
-  "Controller 2 Type": "None",
-  "Disabled State Properties": [],
-  "Nametable Block Size": 4096,
-  "Precise State Timing": true
+  "Controller 2 Type": "None"
  },
  "Runner Configuration": {
   "Hash Step Tolerance": 0,

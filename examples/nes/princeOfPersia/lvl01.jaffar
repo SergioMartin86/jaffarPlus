@@ -9,15 +9,15 @@
       "Worst Solution Path": "/tmp/jaffar.worst.sol"
     },
     "Reference Reward Floor": {
-      "Enabled": true,
+      "Enabled": false,
       "Tolerance": 0.0,
-      "Path": "lvl01.tas.reward"
+      "Path": ""
     }
   },
   "Engine Configuration": {
     "Hash Database": {
       "Max Store Count": 2,
-      "Max Store Size (Mb)": 500,
+      "Max Store Size (Mb)": 5000,
       "Enabled": true
     },
     "State Database": {
@@ -45,7 +45,7 @@
     "Bypass Hash Calculation": false,
     "Store Input History": {
       "Type": "Raw",
-      "Max Size": 10100
+      "Max Size": 6000
     },
     "Allowed Input Sets": [],
     "Test Candidate Inputs": false,

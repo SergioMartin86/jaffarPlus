@@ -1,17 +1,17 @@
 {
  "Driver Configuration": {
-  "End On First Win State": false,
+  "End On First Win State": true,
   "Max Steps": 6000,
   "Save Intermediate Results": {
    "Enabled": true,
-   "Frequency (s)": 0.5,
+   "Frequency (s)": 1.0,
    "Best Solution Path": "/tmp/jaffar.best.sol",
    "Worst Solution Path": "/tmp/jaffar.worst.sol"
   },
   "Reference Reward Floor": {
-   "Enabled": false,
+   "Enabled": true,
    "Tolerance": 0.0,
-   "Path": "lvl01.tas.reward"
+   "Path": "lvl01.neshawk.tas.reward"
   }
  },
  "Engine Configuration": {
@@ -25,19 +25,14 @@
   }
  },
  "Emulator Configuration": {
-  "Emulator Name": "QuickerNES",
-  "Use Flat Code Map": false,
-  "SRAM Block Size": 8192,
+  "Emulator Name": "NesHawk",
   "Rom File Path": "Prince of Persia (U) [!].nes",
   "Rom File SHA1": "6B58F149F34FA829135619C58700CAAA95B9CDE3",
   "Initial State File Path": "",
-  "Initial Sequence File Path": "lvl01.initial.sol",
+  "Initial Sequence File Path": "lvl01.neshawk.initial.sol",
   "Initial RAM Data File Path": "",
   "Controller 1 Type": "Joypad",
-  "Controller 2 Type": "None",
-  "Disabled State Properties": [],
-  "Nametable Block Size": 4096,
-  "Precise State Timing": true
+  "Controller 2 Type": "None"
  },
  "Runner Configuration": {
   "Hash Step Tolerance": 0,
@@ -1258,6 +1253,31 @@
     ]
    },
    {
+    "Label": 1020,
+    "Conditions": [
+     {
+      "Property": "Current Level",
+      "Op": ">",
+      "Value": 0
+     },
+     {
+      "Property": "Is Paused",
+      "Op": "!=",
+      "Value": 6
+     }
+    ],
+    "Satisfies": [],
+    "Actions": [
+     {
+      "Type": "Trigger Win"
+     },
+     {
+      "Type": "Trigger Save Solution",
+      "Path": "/tmp/pop.win.sol"
+     }
+    ]
+   },
+   {
     "Label": 1120,
     "Conditions": [
      {
@@ -1299,68 +1319,10 @@
     ]
    },
    {
-    "Label": 2010,
+    "Label": 1122,
     "Conditions": [
      {
-      "Property": "CPU Bad Access",
-      "Op": "==",
-      "Value": 1
-     },
-     {
-      "Property": "Current Level",
-      "Op": ">",
-      "Value": 0
-     }
-    ],
-    "Satisfies": [],
-    "Actions": [
-     {
-      "Type": "Add Reward",
-      "Value": 5000000.0
-     },
-     {
-      "Type": "Trigger Win"
-     },
-     {
-      "Type": "Trigger Save Solution",
-      "Path": "/tmp/pop.glitch.levelup.sol"
-     }
-    ]
-   },
-   {
-    "Label": 2011,
-    "Conditions": [
-     {
-      "Property": "CPU Bad Access",
-      "Op": "==",
-      "Value": 1
-     },
-     {
-      "Property": "Game State",
-      "Op": "==",
-      "Value": 8
-     }
-    ],
-    "Satisfies": [],
-    "Actions": [
-     {
-      "Type": "Add Reward",
-      "Value": 2000000.0
-     },
-     {
-      "Type": "Trigger Win"
-     },
-     {
-      "Type": "Trigger Save Solution",
-      "Path": "/tmp/pop.glitch.exit.sol"
-     }
-    ]
-   },
-   {
-    "Label": 2012,
-    "Conditions": [
-     {
-      "Property": "Glitch Advanced",
+      "Property": "CPU Halted",
       "Op": "==",
       "Value": 1
      }
@@ -1368,15 +1330,7 @@
     "Satisfies": [],
     "Actions": [
      {
-      "Type": "Add Reward",
-      "Value": 1000000.0
-     },
-     {
-      "Type": "Trigger Win"
-     },
-     {
-      "Type": "Trigger Save Solution",
-      "Path": "/tmp/pop.glitch.reward.sol"
+      "Type": "Trigger Fail"
      }
     ]
    }

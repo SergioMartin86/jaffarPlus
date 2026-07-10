@@ -1,0 +1,158 @@
+{
+ "Driver Configuration": {
+  "End On First Win State": false,
+  "Max Steps": 200,
+  "Save Intermediate Results": {
+   "Enabled": true,
+   "Frequency (s)": 0.5,
+   "Best Solution Path": "/tmp/jaffar.best.sol",
+   "Worst Solution Path": "/tmp/jaffar.worst.sol"
+  },
+  "Reference Reward Floor": {
+   "Enabled": false,
+   "Tolerance": 0.0,
+   "Path": "lvl01.neshawk.tas.reward"
+  }
+ },
+ "Engine Configuration": {
+  "Hash Database": {
+   "Max Store Count": 2,
+   "Max Store Size (Mb)": 500,
+   "Enabled": true
+  },
+  "State Database": {
+   "Max Size (Mb)": 16000
+  }
+ },
+ "Emulator Configuration": {
+  "Emulator Name": "NesHawk",
+  "Rom File Path": "Prince of Persia (U) [!].nes",
+  "Rom File SHA1": "6B58F149F34FA829135619C58700CAAA95B9CDE3",
+  "Initial State File Path": "lvl01.neshawk.room7stand.state",
+  "Initial Sequence File Path": "",
+  "Initial RAM Data File Path": "",
+  "Controller 1 Type": "Joypad",
+  "Controller 2 Type": "None"
+ },
+ "Runner Configuration": {
+  "Hash Step Tolerance": 0,
+  "Show Empty Input Slots": true,
+  "Show Allowed Inputs": true,
+  "Bypass Hash Calculation": false,
+  "Store Input History": {
+   "Type": "Raw",
+   "Max Size": 10100
+  },
+  "Allowed Input Sets": [],
+  "Test Candidate Inputs": false,
+  "Candidate Input Sets": [],
+  "Frameskip": {
+   "Rate": 0,
+   "Use Custom Input": false,
+   "Custom Input": ""
+  }
+ },
+ "Game Configuration": {
+  "Game Name": "NES / Prince Of Persia",
+  "Frame Rate": 60.1,
+  "Bypass Emulator State": false,
+  "Enable Pause": false,
+  "Timer Tolerance": 0,
+  "Print Properties": [
+   "Player Room",
+   "Player Pos X",
+   "Player Pos Y Actual"
+  ],
+  "Hash Properties": [],
+  "Rules": [
+   {
+    "Label": 5001,
+    "Conditions": [
+     {
+      "Property": "CPU Bad Access",
+      "Op": "==",
+      "Value": 1
+     }
+    ],
+    "Satisfies": [],
+    "Actions": [
+     {
+      "Type": "Add Reward",
+      "Value": 1000000.0
+     },
+     {
+      "Type": "Trigger Win"
+     },
+     {
+      "Type": "Trigger Save Solution",
+      "Path": "/tmp/pop.run3.derail.sol"
+     }
+    ]
+   },
+   {
+    "Label": 5002,
+    "Conditions": [
+     {
+      "Property": "Current Level",
+      "Op": ">",
+      "Value": 0
+     }
+    ],
+    "Satisfies": [],
+    "Actions": [
+     {
+      "Type": "Add Reward",
+      "Value": 5000000.0
+     },
+     {
+      "Type": "Trigger Win"
+     },
+     {
+      "Type": "Trigger Save Solution",
+      "Path": "/tmp/pop.run3.levelup.sol"
+     }
+    ]
+   },
+   {
+    "Label": 5003,
+    "Conditions": [
+     {
+      "Property": "Game State",
+      "Op": "==",
+      "Value": 8
+     }
+    ],
+    "Satisfies": [],
+    "Actions": [
+     {
+      "Type": "Add Reward",
+      "Value": 2000000.0
+     },
+     {
+      "Type": "Trigger Win"
+     },
+     {
+      "Type": "Trigger Save Solution",
+      "Path": "/tmp/pop.run3.exit.sol"
+     }
+    ]
+   },
+   {
+    "Label": 5101,
+    "Conditions": [
+     {
+      "Property": "Player HP",
+      "Op": "==",
+      "Value": 0
+     }
+    ],
+    "Satisfies": [],
+    "Actions": [
+     {
+      "Type": "Trigger Fail"
+     }
+    ]
+   }
+  ]
+ }
+}
