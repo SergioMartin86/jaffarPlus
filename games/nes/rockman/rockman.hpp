@@ -236,6 +236,25 @@ private:
       align += (uint16_t)(128 - d);
     }
     if (align > _maxAlign) _maxAlign = align;
+
+    // Accumulation: number of active delay-object slots ($06F0[0..6]), which climbs 2->7 as half-enemies
+    // are accumulated and converted. Latched furthest -- the setup-phase progress toward an armable stock.
+    uint8_t accum = 0;
+    for (int i = 0; i < 7; i++)
+      if (_lowMem[0x6F0 + i] != 0) accum++;
+    if (accum > _maxAccum) _maxAccum = accum;
+
+    // Shots fired: firing a bullet is the ACTION that removes an enemy's bottom half (essential to the
+    // accumulation mechanic), so reward it directly. A new shot = a bullet slot ($602-$604) transitioning
+    // inactive(0xF8)->active. Count them cumulatively (latched) so the search is rewarded for shooting.
+    uint8_t nowActive = 0;
+    for (int i = 0; i < 3; i++)
+    {
+      const bool a = (_bulletY[i] != 0xF8);
+      if (a) nowActive |= (uint8_t)(1u << i);
+      if (a && (_prevBulletActive & (1u << i)) == 0) _shotsFired++; // inactive -> active = a new shot
+    }
+    _prevBulletActive = nowActive;
   }
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
@@ -257,8 +276,13 @@ private:
   __INLINE__ void ruleUpdatePreHook() override
   {
     _camProgressMagnet = 0.0f;
+    _camCap            = 65535;
     _bulletArmMagnet   = 0.0f;
     _fireDelayMagnet   = 0.0f;
+    _skipReadinessMagnet = 0.0f;
+    _coexistBase         = 0.0f;
+    _accumMagnet         = 0.0f;
+    _shotFiredMagnet     = 0.0f;
     _leverBulletA = _leverBulletB = _leverSpawn650 = _leverSpawn653 = 0.0f;
     _bulletInstMagnet = _fireDelayInstMagnet = _objectAliveMagnet = 0.0f;
     _playerXMagnet = _playerYMagnet = _playerXCenter = _playerYCenter = 0.0f;
@@ -275,6 +299,9 @@ private:
     serializer.pushContiguous(&_maxBulletProx, sizeof(_maxBulletProx));
     serializer.pushContiguous(&_maxFireDelayProx, sizeof(_maxFireDelayProx));
     serializer.pushContiguous(&_maxAlign, sizeof(_maxAlign));
+    serializer.pushContiguous(&_maxAccum, sizeof(_maxAccum));
+    serializer.pushContiguous(&_shotsFired, sizeof(_shotsFired));
+    serializer.pushContiguous(&_prevBulletActive, sizeof(_prevBulletActive));
     serializer.pushContiguous(&_leverFlags, sizeof(_leverFlags));
   }
 
@@ -287,6 +314,9 @@ private:
     deserializer.popContiguous(&_maxBulletProx, sizeof(_maxBulletProx));
     deserializer.popContiguous(&_maxFireDelayProx, sizeof(_maxFireDelayProx));
     deserializer.popContiguous(&_maxAlign, sizeof(_maxAlign));
+    deserializer.popContiguous(&_maxAccum, sizeof(_maxAccum));
+    deserializer.popContiguous(&_shotsFired, sizeof(_shotsFired));
+    deserializer.popContiguous(&_prevBulletActive, sizeof(_prevBulletActive));
     deserializer.popContiguous(&_leverFlags, sizeof(_leverFlags));
   }
 
@@ -294,8 +324,11 @@ private:
   {
     float reward = 0.0;
 
-    // Position magnet: stage-traversal progress = furthest camera scroll reached (latched).
-    reward += _camProgressMagnet * (float)_maxCam;
+    // Position magnet: stage-traversal progress = furthest camera scroll reached (latched), capped at the
+    // reference movie's endpoint (_camCap, default none). A SMALL rightward push fosters new enemies
+    // spawning as the screen scrolls (feeding the accumulation); the cap stops rewarding overshoot past
+    // where the reference performs the skip.
+    reward += _camProgressMagnet * (float)std::min<uint16_t>(_maxCam, _camCap);
 
     // Bullet magnet: furthest progress bringing the two code-forming shots to their target Ys, credited
     // only in the pass window (see updateProgress). Latched.
@@ -304,6 +337,49 @@ private:
     // Fire-delay PHASE-ALIGNMENT magnet (the fix): furthest on-track-ness reached toward the skip's
     // two-clock coincidence (see updateProgress). Latched, so it advances monotonically.
     reward += _fireDelayMagnet * (float)_maxAlign;
+
+    // PRECISE SKIP-READINESS (instantaneous): the skip needs all 5 delay-object fire-delay slots
+    // ($651-$655) to COEXIST and be phase-aligned to hit their targets (AD,22,1F,6C,18) on the same
+    // frame $23 reaches a pass (0x56). The reference achieves this only at frame 1929; the earlier
+    // passes have 0-1 of the 5 slots populated (the delay-objects flicker in and out). So each slot is
+    // credited ONLY when populated (a delay-object exists there), scaled by its phase alignment -- this
+    // rewards creating, keeping, AND phasing the objects together, and is maximized exactly at a fully
+    // armed pass. Plus proximity of the two code-forming shots ($602->0x50, $603->0x4D). Instantaneous:
+    // it measures current armed-ness (the skip requires simultaneity), guiding a from-level-start search
+    // to the earliest fully-armed state.
+    if (std::abs(_skipReadinessMagnet) > 0.0f)
+    {
+      static constexpr int     sa[5] = {0x651, 0x652, 0x653, 0x654, 0x655};
+      static constexpr uint8_t sv[5] = {0xAD, 0x22, 0x1F, 0x6C, 0x18};
+      const int                t23   = (int)*_gameTimer;
+      float                    sr    = 0.0f;
+      for (int i = 0; i < 5; i++)
+      {
+        if (_lowMem[sa[i]] == 0) continue; // slot empty -> no delay-object present -> no credit
+        int offNow = (((int)_lowMem[sa[i]] - t23) % 256 + 256) % 256;
+        int offTgt = (((int)sv[i] - 0x56) % 256 + 256) % 256;
+        int d      = std::abs(offNow - offTgt);
+        if (d > 128) d = 256 - d;
+        sr += _coexistBase + (float)(128 - d); // coexistence (populated) + phase alignment
+      }
+      if (_bulletY[0] != 0xF8) sr += 0.5f * (float)(64 - std::min(std::abs((int)_bulletY[0] - 0x50), 64));
+      if (_bulletY[1] != 0xF8) sr += 0.5f * (float)(64 - std::min(std::abs((int)_bulletY[1] - 0x4D), 64));
+      reward += _skipReadinessMagnet * sr;
+    }
+
+    // ACCUMULATION reward: the skip is armed by accumulating delay-objects (the reference shoots the
+    // bottom half of two-part enemies so the top half survives and follows/scrolls with the screen, then
+    // converts the accumulated half-enemies into delay-objects ~frame 1700). Those delay-objects surface
+    // as active slots in the $06D0/$06F0 parallel arrays, whose count climbs 2 -> 7 across the stage. This
+    // is the setup-phase gradient the arming reward lacks (the $0650 timers only complete at the arming):
+    // rewarding the number of accumulated delay-objects drives the search to shoot enemies and build the
+    // stockpile that a later pass can arm. Latched furthest so it monotonically rewards a bigger stockpile.
+    reward += _accumMagnet * (float)_maxAccum; // latched in updateProgress()
+
+    // Shots fired: firing bullets at enemies (to strip their bottom half) is essential to the mechanic, so
+    // reward the cumulative number of shots taken. Latched/monotonic; small weight so it nudges the search
+    // to shoot without competing with the accumulation term that rewards the productive (enemy-hitting) shots.
+    reward += _shotFiredMagnet * (float)_shotsFired; // latched in updateProgress()
 
     // Optional fine positioning magnet toward a target pixel (X=$22, Y=$25); off unless configured.
     if (std::abs(_playerXMagnet) > 0.0f) reward -= _playerXMagnet * std::abs((float)*_playerPosX2 - _playerXCenter);
@@ -349,8 +425,12 @@ private:
     // Position magnet: stage-traversal progress (latched furthest camera scroll).
     if (actionType == "Set Camera Progress Magnet")
     {
-      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
-      rule.addAction([=, this]() { this->_camProgressMagnet = intensity; });
+      auto     intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      uint16_t cap       = actionJs.contains("Cap") ? jaffarCommon::json::getNumber<uint16_t>(actionJs, "Cap") : (uint16_t)65535;
+      rule.addAction([=, this]() {
+        this->_camProgressMagnet = intensity;
+        this->_camCap            = cap;
+      });
       recognizedActionType = true;
     }
 
@@ -367,6 +447,36 @@ private:
     {
       auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       rule.addAction([=, this]() { this->_fireDelayMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    // Precise skip-readiness magnet: instantaneous coexistence + phase alignment of the 5 arming slots
+    // (+ bullet code-byte proximity). "Coexist Base" weights each populated slot's presence vs its phase.
+    if (actionType == "Set Skip Readiness Magnet")
+    {
+      auto intensity   = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      auto coexistBase = jaffarCommon::json::getNumber<float>(actionJs, "Coexist Base");
+      rule.addAction([=, this]() {
+        this->_skipReadinessMagnet = intensity;
+        this->_coexistBase         = coexistBase;
+      });
+      recognizedActionType = true;
+    }
+
+    // Accumulation magnet: reward for the number of accumulated delay-objects ($06F0 active slots, 2->7),
+    // the setup-phase gradient (shoot enemy bottoms -> half-enemies follow -> convert to delay-objects).
+    if (actionType == "Set Accumulation Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_accumMagnet = intensity; });
+      recognizedActionType = true;
+    }
+
+    // Shots fired: reward the cumulative number of bullets fired (essential enemy-stripping action).
+    if (actionType == "Set Shot Fired Magnet")
+    {
+      auto intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
+      rule.addAction([=, this]() { this->_shotFiredMagnet = intensity; });
       recognizedActionType = true;
     }
 
@@ -461,9 +571,13 @@ private:
   static constexpr uint8_t LEVER_SPAWN_653 = 0x08; // $0653 == 0x1F
 
   // Config magnet weights (set by rule actions, reset each rule pass)
-  float _camProgressMagnet = 0.0f;
-  float _bulletArmMagnet   = 0.0f;
+  float    _camProgressMagnet = 0.0f;
+  uint16_t _camCap            = 65535; // rightward-push cap (reference endpoint); no cap by default
+  float    _bulletArmMagnet   = 0.0f;
   float _fireDelayMagnet   = 0.0f;
+  float _skipReadinessMagnet = 0.0f; // precise instantaneous coexistence+phase reward
+  float _coexistBase         = 0.0f; // per-populated-slot base (weights presence vs phase)
+  float _accumMagnet         = 0.0f; // reward for accumulated delay-objects ($06F0 active count)
   float _leverBulletA = 0.0f, _leverBulletB = 0.0f, _leverSpawn650 = 0.0f, _leverSpawn653 = 0.0f;
   float _bulletInstMagnet = 0.0f, _fireDelayInstMagnet = 0.0f, _objectAliveMagnet = 0.0f; // fine per-frame gradient
   float _playerXMagnet = 0.0f, _playerYMagnet = 0.0f, _playerXCenter = 0.0f, _playerYCenter = 0.0f;
@@ -475,6 +589,10 @@ private:
   uint16_t _maxBulletProx    = 0;
   uint16_t _maxFireDelayProx = 0;
   uint16_t _maxAlign         = 0;
+  uint8_t  _maxAccum         = 0;
+  uint16_t _shotsFired       = 0; // cumulative bullets fired (latched)
+  uint8_t  _prevBulletActive = 0; // bitmask of bullet slots active last frame (edge-detect new shots)
+  float    _shotFiredMagnet  = 0.0f;
   uint8_t  _leverFlags       = 0;
 
   // Cached property pointers
