@@ -275,10 +275,10 @@ private:
 
   __INLINE__ void ruleUpdatePreHook() override
   {
-    _camProgressMagnet = 0.0f;
-    _camCap            = 65535;
-    _bulletArmMagnet   = 0.0f;
-    _fireDelayMagnet   = 0.0f;
+    _camProgressMagnet   = 0.0f;
+    _camCap              = 65535;
+    _bulletArmMagnet     = 0.0f;
+    _fireDelayMagnet     = 0.0f;
     _skipReadinessMagnet = 0.0f;
     _coexistBase         = 0.0f;
     _accumMagnet         = 0.0f;
@@ -427,10 +427,12 @@ private:
     {
       auto     intensity = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       uint16_t cap       = actionJs.contains("Cap") ? jaffarCommon::json::getNumber<uint16_t>(actionJs, "Cap") : (uint16_t)65535;
-      rule.addAction([=, this]() {
-        this->_camProgressMagnet = intensity;
-        this->_camCap            = cap;
-      });
+      rule.addAction(
+          [=, this]()
+          {
+            this->_camProgressMagnet = intensity;
+            this->_camCap            = cap;
+          });
       recognizedActionType = true;
     }
 
@@ -456,10 +458,12 @@ private:
     {
       auto intensity   = jaffarCommon::json::getNumber<float>(actionJs, "Intensity");
       auto coexistBase = jaffarCommon::json::getNumber<float>(actionJs, "Coexist Base");
-      rule.addAction([=, this]() {
-        this->_skipReadinessMagnet = intensity;
-        this->_coexistBase         = coexistBase;
-      });
+      rule.addAction(
+          [=, this]()
+          {
+            this->_skipReadinessMagnet = intensity;
+            this->_coexistBase         = coexistBase;
+          });
       recognizedActionType = true;
     }
 
@@ -571,16 +575,16 @@ private:
   static constexpr uint8_t LEVER_SPAWN_653 = 0x08; // $0653 == 0x1F
 
   // Config magnet weights (set by rule actions, reset each rule pass)
-  float    _camProgressMagnet = 0.0f;
-  uint16_t _camCap            = 65535; // rightward-push cap (reference endpoint); no cap by default
-  float    _bulletArmMagnet   = 0.0f;
-  float _fireDelayMagnet   = 0.0f;
-  float _skipReadinessMagnet = 0.0f; // precise instantaneous coexistence+phase reward
-  float _coexistBase         = 0.0f; // per-populated-slot base (weights presence vs phase)
-  float _accumMagnet         = 0.0f; // reward for accumulated delay-objects ($06F0 active count)
-  float _leverBulletA = 0.0f, _leverBulletB = 0.0f, _leverSpawn650 = 0.0f, _leverSpawn653 = 0.0f;
-  float _bulletInstMagnet = 0.0f, _fireDelayInstMagnet = 0.0f, _objectAliveMagnet = 0.0f; // fine per-frame gradient
-  float _playerXMagnet = 0.0f, _playerYMagnet = 0.0f, _playerXCenter = 0.0f, _playerYCenter = 0.0f;
+  float    _camProgressMagnet   = 0.0f;
+  uint16_t _camCap              = 65535; // rightward-push cap (reference endpoint); no cap by default
+  float    _bulletArmMagnet     = 0.0f;
+  float    _fireDelayMagnet     = 0.0f;
+  float    _skipReadinessMagnet = 0.0f; // precise instantaneous coexistence+phase reward
+  float    _coexistBase         = 0.0f; // per-populated-slot base (weights presence vs phase)
+  float    _accumMagnet         = 0.0f; // reward for accumulated delay-objects ($06F0 active count)
+  float    _leverBulletA = 0.0f, _leverBulletB = 0.0f, _leverSpawn650 = 0.0f, _leverSpawn653 = 0.0f;
+  float    _bulletInstMagnet = 0.0f, _fireDelayInstMagnet = 0.0f, _objectAliveMagnet = 0.0f; // fine per-frame gradient
+  float    _playerXMagnet = 0.0f, _playerYMagnet = 0.0f, _playerXCenter = 0.0f, _playerYCenter = 0.0f;
 
   // Latched progression state (serialized; only ever advances -> monotonic reward)
   uint8_t  _progressInit     = 0;
