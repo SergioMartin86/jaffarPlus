@@ -77,3 +77,6 @@ site/
 emulators/exciteBikeNative/track_layout.hpp
 emulators/exciteBikeNative/track_sections.hpp
 examples/nes/exciteBike/*.seed.ram
+
+# Rockman: ROM-derived save states (regenerable via jaffar-player --saveStateStep); do not commit
+examples/nes/rockman/*.state
