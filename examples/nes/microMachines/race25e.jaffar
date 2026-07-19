@@ -23,7 +23,7 @@
         "Emulator Name": "QuickerNES",
         "Use Flat Code Map": false,
         "SRAM Block Size": 8192,
-        "Rom File Path": "../../../extern/jaffarPlus/extern/quickerNES/tests/roms/Micro Machines (U).nes",
+        "Rom File Path": "Micro Machines (U).nes",
         "Rom File SHA1": "EC7BB4D11AFA5A955010BB9A548C1460EAC08FE0",
         "Initial State File Path": "",
         "Initial Sequence File Path": "race25e.initial.sol",
