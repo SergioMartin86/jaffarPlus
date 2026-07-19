@@ -1,11 +1,11 @@
 {
     "Driver Configuration": {
         "End On First Win State": true,
-        "Max Steps": 800,
+        "Max Steps": 2700,
         "Reference Reward Floor": {
             "Enabled": true,
             "Tolerance": 0.0,
-            "Solution File": "race00a.reference.sol"
+            "Solution File": "race01a.reference.sol"
         },
         "Save Intermediate Results": {
             "Enabled": true,
@@ -21,7 +21,7 @@
             "Max Store Size (Mb)": 8000
         },
         "State Database": {
-            "Max Size (Mb)": 100000
+            "Max Size (Mb)": 10000
         }
     },
     "Emulator Configuration": {
@@ -29,7 +29,7 @@
         "Rom File Path": "Micro Machines (USA).md",
         "Rom File SHA1": "39B25DBFA7A80AEBDEFC19AC2DF4BC75B934BBDA",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "race00a.initial.sol",
+        "Initial Sequence File Path": "race01a.initial.sol",
         "Initial RAM Data File Path": "",
         "Initial Video RAM Data File Path": "",
         "Bios File Path": "",
@@ -53,7 +53,7 @@
         },
         "Store Input History": {
             "Type": "Raw",
-            "Max Size": 800
+            "Max Size": 2700
         },
         "Allowed Input Sets": [
             {
@@ -61,7 +61,9 @@
                 "Inputs": [
                     "|..|.....B..|",
                     "|..|...R.B..|",
-                    "|..|..L..B..|"
+                    "|..|..L..B..|",
+                    "|..|..L.....|",
+                    "|..|...R....|"
                 ],
                 "Stop Input Evaluation": false
             }
