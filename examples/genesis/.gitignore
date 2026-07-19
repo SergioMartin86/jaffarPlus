@@ -3,3 +3,7 @@
 *.iso
 *.cue
 
+
+# but do keep documentation notes
+!NOTES.md
+!*/NOTES.md
