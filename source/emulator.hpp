@@ -225,6 +225,13 @@ public:
    */
   virtual void saveScreenshot(const std::string& /*path*/) {}
 
+  /**
+   * @brief Enables offline (no-window) frame rendering so subsequent steps can be screenshotted headlessly.
+   * @details Default: no-op. Emulators with a windowless render path (e.g. QuickerGPGX) override this so the
+   * player can capture screenshots without initializing SDL video output.
+   */
+  virtual void enableHeadlessRendering() {}
+
 protected:
   /**
    * @brief Core-specific state advancement, invoked by @ref advanceState.

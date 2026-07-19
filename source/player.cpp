@@ -21,6 +21,7 @@
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/logger.hpp>
 #include <jaffarCommon/string.hpp>
+#include <map>
 #include <set>
 
 bool isUnattended; ///< Prevents the interactive player from stalling for a keystroke.
@@ -48,6 +49,8 @@ std::string dumpHashesPath;
 ///        as a flat binary blob (size-of-LRAM bytes per step). Diffing two emulators' RAM dumps
 ///        byte-by-byte identifies the exact RAM addresses (hence game variables) that diverge.
 std::string dumpRamPath;
+/// @brief When non-empty, writes the full VRAM for every step to this file as a flat binary blob.
+std::string dumpVramPath;
 
 /// @brief When non-empty (--dumpReward), writes the per-step game reward (one value per line) for the
 ///        replayed solution to this file. Suitable as a driver "Reference Reward Floor" trace.
@@ -56,6 +59,8 @@ std::string dumpRewardPath;
 /// @brief When non-empty (--dumpTrace), writes the game's per-step trace line (Game::getTraceLine, one line per
 ///        step) for the replayed solution to this file. Suitable as a game "Trace File Path" (trace-magnet ref).
 std::string dumpTracePath;
+/// @brief When non-empty (--dumpRacer), dumps frame,gx,gy,spd + the full 234-byte racer struct per frame.
+std::string dumpRacerPath;
 
 /// @brief When set (--saveStateStep), the step at which to capture a full emulator savestate (paired
 ///        with --saveStateFile). Parsed as an unsigned step index; empty unless saving is requested.
@@ -69,6 +74,18 @@ std::string saveStateFilePath;
 std::string screenshotDir;
 /// @brief Steps to capture as screenshots; empty captures all rendered steps when a dir is given.
 std::set<size_t> screenshotSteps;
+
+/// @brief Work-RAM bytes to poke into the post-initial-sequence state before replaying (for mechanic
+///        experiments, e.g. perturbing an RNG/counter). Parsed from --pokeRAM "0xADDR=VAL,0xADDR=VAL".
+std::vector<std::pair<uint32_t, uint8_t>> pokeRam;
+/// @brief When set (--terrainSweep "out.csv:x0,x1,y0,y1,step"), probe the terrain the game computes at a grid
+///        of player positions: reload the post-init state, poke player pos (0x80A6/0x80A8), step, read the
+///        surface byte (0xA649), attribute (0xA648) and fall state (0xA66C). Writes CSV and exits.
+std::string terrainSweepSpec;
+/// @brief When set (--terrainDrive out.csv), branch off the replayed solution every few frames and steer a REAL
+///        driving car into neighboring cells, logging the true physics effect (min speed = slowdown, fall = hole,
+///        max Z = jump) per grid cell. Correct effects (consistent state) for the drivable band. Writes CSV & exits.
+std::string terrainDrivePath;
 
 /**
  * @brief Parses a non-negative integer from a CLI argument value.
@@ -123,6 +140,319 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
   // Getting input sequence
   const auto solutionSequence = jaffarCommon::string::split(solutionFileString, '\0');
 
+  // Optional RAM poke(s) into the post-initial-sequence state, before any replay (mechanic experiments).
+  if (pokeRam.empty() == false)
+  {
+    auto* ram = r.getGame()->getEmulator()->getProperty("LRAM").pointer;
+    for (const auto& [addr, val] : pokeRam)
+    {
+      ram[addr] = val;
+      jaffarCommon::logger::log("[J+] Poked RAM 0x%04X = 0x%02X (%u)\n", addr, val, val);
+    }
+  }
+
+  // Per-frame trace: replay the solution and dump frame,gx,gy,spd + the whole racer struct (234 bytes) so we can
+  // empirically find the byte that flags "on honey" (true on the real slowdown crossing, false in corners).
+  if (dumpRacerPath.empty() == false)
+  {
+    auto* emu  = r.getGame()->getEmulator();
+    auto* ram  = emu->getProperty("LRAM").pointer;
+    auto  rd16 = [&](int a) { return ram[a] | (ram[a + 1] << 8); };
+    auto  s16  = [&](int a)
+    {
+      int v = rd16(a);
+      return v >= 0x8000 ? v - 0x10000 : v;
+    };
+    auto spd = [&]()
+    {
+      double vx = s16(0xA614) + rd16(0xA616) / 65536.0, vy = s16(0xA618) + rd16(0xA61A) / 65536.0;
+      return std::sqrt(vx * vx + vy * vy);
+    };
+    std::string out = "frame,gx,gy,spd,posX,posY"; // posX/posY = Player 1 Pos X/Y (0x80A6/0x80A8), the magnet/reference coords
+    for (int i = 0; i < 234; i++)
+    {
+      char h[8];
+      snprintf(h, sizeof h, ",b%02X", i);
+      out += h;
+    }
+    out += "\n";
+    char buf[80];
+    for (size_t f = 0; f < solutionSequence.size(); f++)
+    {
+      r.advanceState(emu->registerInput(solutionSequence[f]));
+      snprintf(buf, sizeof buf, "%zu,%d,%d,%.3f,%d,%d", f, rd16(0xA658) & 31, rd16(0xA656) & 31, spd(), rd16(0x80A6), rd16(0x80A8));
+      out += buf;
+      for (int i = 0; i < 234; i++)
+      {
+        snprintf(buf, sizeof buf, ",%d", ram[0xA60C + i]);
+        out += buf;
+      }
+      out += "\n";
+    }
+    jaffarCommon::file::saveStringToFile(out, dumpRacerPath.c_str());
+    return false;
+  }
+
+  // Coverage drive: branch off the replayed solution and steer a REAL car into neighbors, logging true effects
+  // (min speed = slowdown, fall state = hole, max Z = jump) per grid cell. Consistent physics state throughout.
+  if (terrainDrivePath.empty() == false)
+  {
+    auto*        emu       = r.getGame()->getEmulator();
+    auto*        ram       = emu->getProperty("LRAM").pointer;
+    const size_t stateSize = emu->getStateSize();
+    auto         rd16      = [&](int a) { return ram[a] | (ram[a + 1] << 8); };
+    auto         s16       = [&](int a)
+    {
+      int v = rd16(a);
+      return v >= 0x8000 ? v - 0x10000 : v;
+    };
+    auto spd = [&]()
+    {
+      double vx = s16(0xA614) + rd16(0xA616) / 65536.0, vy = s16(0xA618) + rd16(0xA61A) / 65536.0;
+      return std::sqrt(vx * vx + vy * vy);
+    };
+    // Fan the car widely into adjacent cells (accelerate straight / soft & hard L/R) so the probe reaches
+    // off-racing-line cells from their normal neighbours — the "drive through it from an adjacent block" method.
+    // Faithful terrain map = the REAL driven racing line (stays on-track by construction). For each cell the
+    // car actually drives through we record the true effect: attr (0xA648, honey sinks it), surf category
+    // (0xA649), speed band, fall (0xA66C, hole), Z (0xA64C, jump/ramp). No teleport, no off-road excursions.
+    struct Agg
+    {
+      double minSpd = 99, maxSpd = 0, maxDrop = 0;
+      int    maxFall = 0, maxZ = -999, minAttr = 99, maxAttr = 0, n = 0, surf = 0;
+    };
+    std::map<std::pair<int, int>, Agg> cells;
+    double                             prev = spd();
+    for (size_t f = 0; f < solutionSequence.size(); f++)
+    {
+      r.advanceState(emu->registerInput(solutionSequence[f]));
+      double s = spd(), drop = prev - s;
+      prev    = s;
+      auto& a = cells[{rd16(0xA658), rd16(0xA656)}];
+      if (s < a.minSpd) a.minSpd = s;
+      if (s > a.maxSpd) a.maxSpd = s;
+      if (drop > a.maxDrop) a.maxDrop = drop;
+      if (ram[0xA66C] > a.maxFall) a.maxFall = ram[0xA66C];
+      int z = s16(0xA64C);
+      if (z > a.maxZ) a.maxZ = z;
+      int at = ram[0xA648];
+      if (at < a.minAttr) a.minAttr = at;
+      if (at > a.maxAttr) a.maxAttr = at;
+      a.surf = ram[0xA649];
+      a.n++;
+    }
+    std::string csv = "gx,gy,surf,minAttr,maxAttr,minSpd,maxSpd,maxDrop,maxFall,maxZ,n\n";
+    for (auto& kv : cells)
+    {
+      char buf[160];
+      snprintf(buf, sizeof buf, "%d,%d,%d,%d,%d,%.2f,%.2f,%.2f,%d,%d,%d\n", kv.first.first, kv.first.second, kv.second.surf, kv.second.minAttr, kv.second.maxAttr, kv.second.minSpd,
+               kv.second.maxSpd, kv.second.maxDrop, kv.second.maxFall, kv.second.maxZ, kv.second.n);
+      csv += buf;
+    }
+    jaffarCommon::file::saveStringToFile(csv, terrainDrivePath.c_str());
+    jaffarCommon::logger::log("[J+] Terrain drive: %lu cells logged to %s\n", cells.size(), terrainDrivePath.c_str());
+    return false;
+  }
+
+  // Synthetic terrain sweep: probe the surface the game computes at a grid of player positions.
+  if (terrainSweepSpec.empty() == false)
+  {
+    // parse "out.csv:x0,x1,y0,y1,step"
+    auto         colon   = terrainSweepSpec.find(':');
+    std::string  outPath = terrainSweepSpec.substr(0, colon);
+    auto         nums    = jaffarCommon::string::split(terrainSweepSpec.substr(colon + 1), ',');
+    int          x0 = std::stoi(nums[0]), x1 = std::stoi(nums[1]), y0 = std::stoi(nums[2]), y1 = std::stoi(nums[3]), st = std::stoi(nums[4]);
+    auto*        emu       = r.getGame()->getEmulator();
+    auto*        ram       = emu->getProperty("LRAM").pointer;
+    const size_t stateSize = emu->getStateSize();
+    // capture the base (post-init) state
+    std::string base;
+    base.resize(stateSize);
+    {
+      jaffarCommon::serializer::Contiguous s(base.data(), stateSize);
+      emu->serializeState(s);
+    }
+    const auto nullInput  = emu->registerInput("|..|........|");
+    const auto accelInput = emu->registerInput("|..|.....B..|"); // hold accelerate (B) so the car actually DRIVES
+    // Force the whole player position block to the target world (x,y) every frame so no velocity update can drift
+    // it, then read the surface (0xA649), attribute (0xA648), checkpoint (0xA6DB) and fall (0xA66C) the game computes.
+    // DRIVE-THROUGH PROBE: for each grid cell, place a MOVING car one cell before it (on a road approach) and drive
+    // it INTO the cell, measuring the true physics response: slowdown, slip, fall (hole), bump (solid), jump (ramp).
+    // grid gy <-> racer[0x00](0xA60C) (worldX), grid gx <-> racer[0x04](0xA610) (worldY); vel = racer[0x08]/[0x0C].
+    auto rd16 = [&](int adr) { return ram[adr] | (ram[adr + 1] << 8); };
+    auto s16  = [&](int adr)
+    {
+      int v = rd16(adr);
+      return v >= 0x8000 ? v - 0x10000 : v;
+    };
+    auto setPos = [&](int a, int b)
+    {
+      ram[0xA60C] = a & 0xFF;
+      ram[0xA60D] = (a >> 8) & 0xFF;
+      ram[0xA60E] = 0;
+      ram[0xA60F] = 0;
+      ram[0xA610] = b & 0xFF;
+      ram[0xA611] = (b >> 8) & 0xFF;
+      ram[0xA612] = 0;
+      ram[0xA613] = 0;
+    };
+    auto setVel = [&](int vx, int vy)
+    {
+      ram[0xA614] = vx & 0xFF;
+      ram[0xA615] = (vx >> 8) & 0xFF;
+      ram[0xA616] = 0;
+      ram[0xA617] = 0;
+      ram[0xA618] = vy & 0xFF;
+      ram[0xA619] = (vy >> 8) & 0xFF;
+      ram[0xA61A] = 0;
+      ram[0xA61B] = 0;
+    };
+    auto speed = [&]()
+    {
+      double vx = rd16(0xA614) + rd16(0xA616) / 65536.0, vy = rd16(0xA618) + rd16(0xA61A) / 65536.0;
+      return std::sqrt(vx * vx + vy * vy);
+    };
+    auto gyOf    = [&]() { return ((rd16(0xA60C) >> 3) / 12) & 31; };
+    auto gxOf    = [&]() { return ((rd16(0xA610) >> 3) / 12) & 31; };
+    auto gxOfPos = [&](int b) { return ((b >> 3) / 12) & 31; };
+    // Drive the car INTO target cell (gx,gy) from one adjacent cell, along one of the 4 axes. The approach cell
+    // and the whole path must stay ON-track: if recovery (0xA66C) fires BEFORE we reach the target, this approach
+    // started/passed through void -> discard it. A hole = 0xA66C fires only AFTER we cleanly enter the target.
+    // Returns a per-approach result. dir: 0=+X(from gy-1) 1=-X(gy+1) 2=+Y(gx-1) 3=-Y(gx+1).
+    struct Res
+    {
+      int    reached = 0, valid = 0, blocked = 0, hole = 0, maxZ = -32768, minAttr = 99, surf = -1;
+      double minSpd = 99;
+    };
+    auto probe = [&](int gx, int gy, int dir) -> Res
+    {
+      Res R;
+      {
+        jaffarCommon::deserializer::Contiguous d(base.data(), stateSize);
+        emu->deserializeState(d);
+      }
+      const int V = 6; // approach speed (px/frame): ~16 frames to cross a 96u cell
+      if (dir == 0)
+      {
+        setPos((gy - 1) * 96 + 48, gx * 96 + 48);
+        setVel(+V, 0);
+      }
+      else if (dir == 1)
+      {
+        setPos((gy + 1) * 96 + 48, gx * 96 + 48);
+        setVel(-V, 0);
+      }
+      else if (dir == 2)
+      {
+        setPos(gy * 96 + 48, (gx - 1) * 96 + 48);
+        setVel(0, +V);
+      }
+      else
+      {
+        setPos(gy * 96 + 48, (gx + 1) * 96 + 48);
+        setVel(0, -V);
+      }
+      ram[0xA66C]  = 0;
+      int lastMove = rd16(dir < 2 ? 0xA60C : 0xA610), stuck = 0, entered = 0;
+      for (int k = 0; k < 32; k++)
+      {
+        r.advanceState(accelInput);
+        bool inTarget = (gyOf() == gy && gxOf() == gx);
+        if (!entered && ram[0xA66C] != 0)
+        {
+          R.valid = 0;
+          return R;
+        } // recovery before entry -> void approach, discard
+        if (inTarget)
+        {
+          entered   = 1;
+          R.reached = 1;
+          R.valid   = 1;
+          double s  = speed();
+          if (s < R.minSpd) R.minSpd = s;
+          int at = rd16(0xA648) & 0xFF;
+          if (at < R.minAttr) R.minAttr = at;
+          R.surf = rd16(0xA649) & 0xFF;
+          int z  = s16(0xA64C);
+          if (z > R.maxZ) R.maxZ = z;
+          if (ram[0xA66C] != 0) R.hole = 1; // fell AT the target on a clean approach = real hole
+        }
+        int mv = rd16(dir < 2 ? 0xA60C : 0xA610);
+        if (std::abs(mv - lastMove) < 2)
+          stuck++;
+        else
+          stuck = 0;
+        lastMove = mv;
+        if (stuck >= 6)
+        {
+          if (!entered) R.blocked = 1;
+          R.valid = 1;
+          break;
+        } // stopped before entering = solid wall
+      }
+      return R;
+    };
+    // DIAGNOSTIC: single-cell range -> poke car onto the tile, hold accelerate, print attr/surf/spd/fall per frame
+    if (x0 == x1 && y0 == y1)
+    {
+      {
+        jaffarCommon::deserializer::Contiguous d(base.data(), stateSize);
+        emu->deserializeState(d);
+      }
+      setPos(x0 * 96 + 48, y0 * 96 + 48);
+      setVel(2, 0);
+      ram[0xA66C]    = 0;
+      std::string dg = "f,gy,gx,attr,surf,spd,fall,Z\n";
+      char        b[128];
+      for (int k = 0; k < 90; k++)
+      {
+        r.advanceState(accelInput);
+        snprintf(b, sizeof b, "%d,%d,%d,%d,%d,%.2f,%d,%d\n", k, gyOf(), gxOf(), rd16(0xA648) & 0xFF, rd16(0xA649) & 0xFF, speed(), ram[0xA66C], s16(0xA64C));
+        dg += b;
+      }
+      jaffarCommon::file::saveStringToFile(dg, outPath.c_str());
+      return false;
+    }
+    // interpret range as GRID cells: gy in [x0,x1], gx in [y0,y1]
+    std::string csv = "gy,gx,reached,surf,minAttr,minSpd,hole,maxZ,solid,nApproach\n";
+    for (int gx = y0; gx <= y1; gx += st)
+      for (int gy = x0; gy <= x1; gy += st)
+      {
+        Res best;
+        int nApproach = 0, solidVotes = 0;
+        for (int dir = 0; dir < 4; dir++)
+        {
+          Res R = probe(gx, gy, dir);
+          if (!R.valid) continue; // approach came through void; ignore
+          nApproach++;
+          if (R.blocked)
+          {
+            solidVotes++;
+            continue;
+          }
+          if (R.reached)
+          { // merge the effect from any clean reaching approach
+            best.reached = 1;
+            if (R.minAttr < best.minAttr) best.minAttr = R.minAttr;
+            if (R.minSpd < best.minSpd) best.minSpd = R.minSpd;
+            if (R.maxZ > best.maxZ) best.maxZ = R.maxZ;
+            if (R.hole) best.hole = 1;
+            best.surf = R.surf;
+          }
+        }
+        if (best.minSpd > 50) best.minSpd = 0;
+        // solid = a clean road approach reached the adjacent cell but was walled out, and NO approach entered
+        int  solid = (best.reached == 0 && solidVotes > 0) ? 1 : 0;
+        char buf[160];
+        snprintf(buf, sizeof buf, "%d,%d,%d,%d,%d,%.2f,%d,%d,%d,%d\n", gy, gx, best.reached, best.surf, best.reached ? best.minAttr : -1, best.minSpd, best.hole, best.maxZ, solid,
+                 nApproach);
+        csv += buf;
+      }
+    jaffarCommon::file::saveStringToFile(csv, outPath.c_str());
+    jaffarCommon::logger::log("[J+] Terrain sweep written to %s\n", outPath.c_str());
+    return false;
+  }
+
   // Variable for current step in view
   ssize_t currentStep = 0;
 
@@ -141,6 +471,38 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
 
   // Instantiating playback instance
   jaffarPlus::Playback p(r);
+
+  // Headless screenshot pass: capture each requested step to BMP. A per-step state RESTORE does NOT correctly
+  // repaint the framebuffer (GPGX's tile caches are not rebuilt by a state-load), so we replay the solution
+  // linearly from the emulator's FRESH step-0 state (as left by the runner's init sequence, before the playback
+  // build advances it) -- each advanceState() paints its frame -- and screenshot along the way, then finalize.
+  // This is a one-shot terminal pass: we MUST return false (finalize/quit) so the caller's playback loop does
+  // not re-run us. A repeat pass would restore the initial state via deserialize (which cannot repaint GPGX),
+  // then overwrite every good frame with a black one -- exactly the black-frame regression this avoids.
+  if (screenshotDir.empty() == false)
+  {
+    auto* emu = r.getGame()->getEmulator();
+    emu->enableHeadlessRendering();
+    for (ssize_t s = 0; s < sequenceLength; s++)
+    {
+      const auto inputIndex = emu->registerInput(solutionSequence[s]);
+      r.advanceState(inputIndex);
+      if (screenshotSteps.empty() || screenshotSteps.count((size_t)(s + 1)) > 0)
+      {
+        char path[1024];
+        snprintf(path, sizeof(path), "%s/step_%06ld.bmp", screenshotDir.c_str(), s + 1);
+        emu->saveScreenshot(path);
+        // Also dump the LIVE video RAM (correct here, since we advanced via advanceState rather than a
+        // state-load) so it can be lifted into a transplanted state whose vram is from a different track.
+        const auto vram = emu->getProperty("VRAM");
+        char       vpath[1024];
+        snprintf(vpath, sizeof(vpath), "%s/vram_%06ld.bin", screenshotDir.c_str(), s + 1);
+        std::string vdump((const char*)vram.pointer, vram.size);
+        jaffarCommon::file::saveStringToFile(vdump, vpath);
+      }
+    }
+    return false;
+  }
 
   // Initializing playback instance
   p.initialize(solutionSequence);
@@ -198,6 +560,21 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       dump.append((const char*)lram.pointer, lram.size);
     }
     if (jaffarCommon::file::saveStringToFile(dump, dumpRamPath.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step RAM dump to: %s\n", dumpRamPath.c_str());
+  }
+
+  // If requested, dump the full video RAM (VRAM) for every step as a flat binary blob (for finding the
+  // VRAM region inside a foreign emulator savestate by cross-correlation).
+  if (dumpVramPath.empty() == false)
+  {
+    const auto  vram = r.getGame()->getEmulator()->getProperty("VRAM");
+    std::string dump;
+    dump.reserve((size_t)(sequenceLength + 1) * vram.size);
+    for (ssize_t i = 0; i <= sequenceLength; i++)
+    {
+      p.loadStepData(i);
+      dump.append((const char*)vram.pointer, vram.size);
+    }
+    if (jaffarCommon::file::saveStringToFile(dump, dumpVramPath.c_str()) == false) JAFFAR_THROW_LOGIC("[ERROR] Could not write per-step VRAM dump to: %s\n", dumpVramPath.c_str());
   }
 
   // If requested, write the per-step game reward (one value per line) to a file. The reward is part of the
@@ -258,22 +635,9 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
   // Interactive section
   while (isFinalize == false)
   {
-    // Updating display
+    // Updating the SDL display window (headless screenshots are handled by a separate pass above)
     if (disableRender == false)
-      if (currentStep % frameskip == 0)
-      {
-        p.renderFrame(currentStep);
-
-        // Capture this frame if requested (whole list, or every rendered frame if no list). The
-        // actual save is emulator-specific (no-op for emulators without a screenshot backend), so
-        // the player stays emulator-agnostic and links without SDL/SDLPoP symbols.
-        if (screenshotDir.empty() == false && (screenshotSteps.empty() || screenshotSteps.count((size_t)currentStep) > 0))
-        {
-          char path[1024];
-          snprintf(path, sizeof(path), "%s/step_%06ld.bmp", screenshotDir.c_str(), currentStep);
-          r.getGame()->getEmulator()->saveScreenshot(path);
-        }
-      }
+      if (currentStep % frameskip == 0) p.renderFrame(currentStep);
 
     // Loading step data
     p.loadStepData(currentStep);
@@ -527,11 +891,25 @@ int main(int argc, char* argv[])
   program.add_argument("--dumpRam")
       .help("Writes the full low work-RAM (LRAM) for every step to the given file as flat binary (for byte-level cross-emulator diffs).")
       .default_value(std::string(""));
+  program.add_argument("--dumpVram")
+      .help("Writes the full video RAM (VRAM) for every step to the given file as flat binary (for locating VRAM in a foreign savestate).")
+      .default_value(std::string(""));
   program.add_argument("--dumpReward")
       .help("Writes the per-step game reward (one value per line) to the given file (for use as a 'Reference Reward Floor' trace).")
       .default_value(std::string(""));
   program.add_argument("--dumpTrace")
       .help("Writes the game's per-step trace line (Game::getTraceLine) to the given file (for use as a game 'Trace File Path' / trace magnet).")
+      .default_value(std::string(""));
+  program.add_argument("--dumpRacer").help("Replay solution, dump frame,gx,gy,spd + full 234-byte racer struct per frame to CSV, then exit.").default_value(std::string(""));
+  program.add_argument("--pokeRAM")
+      .help("Poke work-RAM bytes into the post-initial-sequence state before replay, e.g. --pokeRAM \"0x8010=0x42,0x804e=0x00\" (mechanic experiments).")
+      .default_value(std::string(""));
+  program.add_argument("--terrainDrive")
+      .help("Branch off the replayed solution, steer a real car into neighboring cells, log true effect (slowdown/hole/jump) per cell to CSV, then exit.")
+      .default_value(std::string(""));
+  program.add_argument("--terrainSweep")
+      .help(
+          "Probe terrain at a grid of player positions: \"out.csv:x0,x1,y0,y1,step\". Reloads state, pokes 0x80A6/0x80A8, steps, reads 0xA649/0xA648/0xA66C. Writes CSV and exits.")
       .default_value(std::string(""));
   program.add_argument("--saveStateStep").help("Step at which to save the emulator state (used with --saveStateFile), then exit.").default_value(std::string(""));
   program.add_argument("--saveStateFile")
@@ -563,8 +941,24 @@ int main(int argc, char* argv[])
   // Getting disablerender flag
   bool disableRender = program.get<bool>("--disableRender");
 
+  // Parsing --pokeRAM "0xADDR=VAL,0xADDR=VAL" (addresses/values accept 0x hex or decimal)
+  {
+    const auto pokeSpec = program.get<std::string>("--pokeRAM");
+    if (pokeSpec.empty() == false)
+      for (const auto& tok : jaffarCommon::string::split(pokeSpec, ','))
+      {
+        const auto eq = tok.find('=');
+        if (eq == std::string::npos) JAFFAR_THROW_LOGIC("Bad --pokeRAM token (need addr=val): '%s'", tok.c_str());
+        const uint32_t addr = std::stoul(tok.substr(0, eq), nullptr, 0);
+        const uint32_t val  = std::stoul(tok.substr(eq + 1), nullptr, 0);
+        pokeRam.emplace_back((uint32_t)addr, (uint8_t)val);
+      }
+  }
+
   // Getting screenshot options
-  screenshotDir = program.get<std::string>("--screenshotDir");
+  terrainDrivePath = program.get<std::string>("--terrainDrive");
+  terrainSweepSpec = program.get<std::string>("--terrainSweep");
+  screenshotDir    = program.get<std::string>("--screenshotDir");
   {
     const auto stepsStr = program.get<std::string>("--screenshotSteps");
     if (stepsStr.empty() == false)
@@ -595,8 +989,10 @@ int main(int argc, char* argv[])
 
   // Getting the per-step RAM dump path (if any)
   dumpRamPath       = program.get<std::string>("--dumpRam");
+  dumpVramPath      = program.get<std::string>("--dumpVram");
   dumpRewardPath    = program.get<std::string>("--dumpReward");
   dumpTracePath     = program.get<std::string>("--dumpTrace");
+  dumpRacerPath     = program.get<std::string>("--dumpRacer");
   saveStateStepStr  = program.get<std::string>("--saveStateStep");
   saveStateFilePath = program.get<std::string>("--saveStateFile");
 
@@ -643,7 +1039,12 @@ int main(int argc, char* argv[])
   r->initialize();
 
   // Enabling rendering, if required
-  if (disableRender == false)
+  if (screenshotDir.empty() == false)
+  {
+    // Headless screenshot mode: render frames into the emulator's framebuffer without opening an SDL window.
+    r->getGame()->getEmulator()->enableHeadlessRendering();
+  }
+  else if (disableRender == false)
   {
     r->getGame()->getEmulator()->initializeVideoOutput();
     r->getGame()->getEmulator()->enableRendering();

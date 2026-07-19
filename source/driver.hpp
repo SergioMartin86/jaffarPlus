@@ -12,6 +12,10 @@
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
+#include <jaffarCommon/deserializers/contiguous.hpp>
+#include <jaffarCommon/file.hpp>
+#include <jaffarCommon/serializers/contiguous.hpp>
+#include <jaffarCommon/string.hpp>
 #include <limits>
 #include <vector>
 
@@ -45,7 +49,9 @@ public:
 
     inputHistoryNearCapacity = 4, ///< The shared input-history trie neared/hit its hard memory ceiling
 
-    referenceBelowWorst = 5 ///< The reference reward fell below the worst kept state (reference evicted from the frontier)
+    referenceBelowWorst = 5, ///< The reference reward fell below the worst kept state (reference evicted from the frontier)
+
+    exceededReferenceFrames = 6 ///< The run reached the reference's frame count without winning (can no longer beat it)
   };
 
   /**
@@ -100,17 +106,24 @@ public:
       auto refJs               = jaffarCommon::json::popObject(driverConfig, "Reference Reward Floor");
       _referenceFloorEnabled   = jaffarCommon::json::popBoolean(refJs, "Enabled");
       _referenceFloorTolerance = jaffarCommon::json::popNumber<float>(refJs, "Tolerance");
-      const auto refPath       = jaffarCommon::json::popString(refJs, "Path");
+      // The reference reward trace can be supplied two ways:
+      //  - "Solution File": a reference solution (a .sol input sequence). Its per-step floor-reward trace is
+      //    computed at engine init by replaying it through THIS run's own runner/game (see initialize()), so the
+      //    floor is always consistent with the live reward function -- no external jaffar-player --dumpReward pass.
+      //  - "Path": a precomputed file with one reward value per line (legacy; kept for backward compatibility).
+      _referenceSolutionPath = refJs.contains("Solution File") ? jaffarCommon::json::popString(refJs, "Solution File") : std::string();
+      const auto refPath     = refJs.contains("Path") ? jaffarCommon::json::popString(refJs, "Path") : std::string();
       // Optional (default false): also cancel the instant the reference reward falls BELOW the worst kept
       // state -- i.e. the reference solution has been evicted from the frontier, so the winning line can no
       // longer be reached no matter how good "best" looks. A stricter companion to the best-below check.
       _cancelIfReferenceBelowWorst = refJs.contains("Cancel If Reference Below Worst") ? jaffarCommon::json::popBoolean(refJs, "Cancel If Reference Below Worst") : false;
       jaffarCommon::json::checkEmpty(refJs, "Driver Configuration > Reference Reward Floor");
-      // The trace file is a runtime artifact: only open it for a real run. Under --dryRun (JAFFAR_IS_DRY_RUN)
-      // we validate the config shape but skip the read, matching how ROM / initial-solution files are deferred
-      // to engine init (which dryRun never reaches) -- so config validation does not depend on the cwd-relative
-      // trace being present next to the build directory.
-      if (_referenceFloorEnabled && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr)
+      if (_referenceFloorEnabled && _referenceSolutionPath.empty() && refPath.empty())
+        JAFFAR_THROW_LOGIC("[ERROR] 'Reference Reward Floor' is enabled but neither 'Solution File' nor 'Path' was provided\n");
+      // Legacy precomputed-trace file: load it now. (The "Solution File" form defers to initialize(), once the
+      // runner/game exist to replay it.) Files are runtime artifacts, so skip the read under --dryRun
+      // (JAFFAR_IS_DRY_RUN): validate the config shape but don't depend on the cwd-relative file being present.
+      if (_referenceFloorEnabled && _referenceSolutionPath.empty() && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr)
       {
         std::ifstream f(refPath);
         if (f.good() == false) JAFFAR_THROW_RUNTIME("[ERROR] Could not open 'Reference Reward Floor' > 'Path': '%s'\n", refPath.c_str());
@@ -174,6 +187,59 @@ public:
     _stateSize = _engine->getFullStateSize();
     _bestStateStorage.resize(_stateSize);
     _worstStateStorage.resize(_stateSize);
+
+    // If a reference SOLUTION file was provided for the reward floor, compute its per-step floor-reward trace
+    // now by replaying it through our own runner/game -- guaranteeing the floor is measured with the exact same
+    // reward function the search uses. Depth 0 (the initial post-initial-sequence state, i.e. the search root)
+    // is recorded first, then one reward per applied input, so _referenceReward[N] is the reference's floor
+    // reward at search depth N -- aligned with _bestStateFloorReward, which the run loop compares against it.
+    if (_referenceFloorEnabled && _referenceSolutionPath.empty() == false && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr)
+    {
+      // Load the reference solution (.sol files are null-separated input strings, as the player reads them)
+      std::string solutionString;
+      if (jaffarCommon::file::loadStringFromFile(solutionString, _referenceSolutionPath) == false)
+        JAFFAR_THROW_RUNTIME("[ERROR] Could not open 'Reference Reward Floor' > 'Solution File': '%s'\n", _referenceSolutionPath.c_str());
+      const auto referenceInputs = jaffarCommon::string::split(solutionString, '\0');
+
+      // Snapshot the runner's initial (post-initial-sequence) state so we can restore it after the replay. The
+      // engine already captured the root from this same state above, so the replay only borrows the runner.
+      std::vector<uint8_t> initialStateStorage(_runner->getStateSize());
+      {
+        jaffarCommon::serializer::Contiguous s(initialStateStorage.data(), initialStateStorage.size());
+        _runner->serializeState(s);
+      }
+
+      auto* game     = _runner->getGame();
+      auto* emulator = game->getEmulator();
+      _referenceReward.clear();
+
+      // Depth 0: evaluate the initial state exactly as the engine does when it seeds the root
+      game->evaluateRules();
+      game->updateGameStateType();
+      game->updateReward();
+      _referenceReward.push_back(game->getFloorReward());
+
+      // Replay each input, recording the floor reward at each resulting depth
+      for (const auto& inputString : referenceInputs)
+      {
+        if (inputString.empty()) continue;
+        _runner->advanceState(emulator->registerInput(inputString));
+        game->evaluateRules();
+        game->updateGameStateType();
+        game->updateReward();
+        _referenceReward.push_back(game->getFloorReward());
+      }
+
+      // Restore the runner to its initial state (and reset its step counter) for the search
+      _runner->setStepCount(0);
+      {
+        jaffarCommon::deserializer::Contiguous d(initialStateStorage.data(), initialStateStorage.size());
+        _runner->deserializeState(d);
+      }
+
+      jaffarCommon::logger::log("[J+] Reference reward floor computed from solution '%s': %lu steps, tolerance %.4f\n", _referenceSolutionPath.c_str(), _referenceReward.size(),
+                                _referenceFloorTolerance);
+    }
   }
 
   /**
@@ -229,6 +295,17 @@ public:
       // Updating best and worst states
       updateBestState();
       updateWorstState();
+
+      // Reference frame-count cap: the win state is checked at the top of the loop, so if the floor is enabled and
+      // we have reached the reference's frame count here without winning, the run has spent the reference's entire
+      // frame budget -- it can no longer even match, let alone beat, the reference. Cancel.
+      if (_referenceFloorEnabled && _referenceReward.size() > 0 && _currentStep >= _referenceReward.size())
+      {
+        jaffarCommon::logger::log("[J+] Reached reference frame count (%lu frames) at step %lu without winning -- can no longer beat the reference, cancelling.\n",
+                                  _referenceReward.size(), _currentStep);
+        exitReason = exitReason_t::exceededReferenceFrames;
+        break;
+      }
 
       // Reference reward floor: if the best leading edge has fallen below the reference at this step, the run
       // can no longer keep pace with the reference -- cancel now (purely a stop signal; nothing was pruned).
@@ -560,10 +637,11 @@ public:
     if (_referenceFloorEnabled)
     {
       if (_currentStep < _referenceReward.size())
-        jaffarCommon::logger::log("[J+] Reference Reward (Best - Ref):               %.6f (Best %+.6f, tol %.4f)\n", _referenceReward[_currentStep],
-                                  _bestStateFloorReward - _referenceReward[_currentStep], _referenceFloorTolerance);
+        jaffarCommon::logger::log("[J+] Reference Reward (Best - Ref):               %.6f (Best %+.6f, tol %.4f) [step %lu / %lu ref steps]\n", _referenceReward[_currentStep],
+                                  _bestStateFloorReward - _referenceReward[_currentStep], _referenceFloorTolerance, _currentStep, _referenceReward.size());
       else
-        jaffarCommon::logger::log("[J+] Reference Reward (Best - Ref):               (none: step beyond reference trace)\n");
+        jaffarCommon::logger::log("[J+] Reference Reward (Best - Ref):               (none: step %lu beyond reference trace of %lu steps)\n", _currentStep,
+                                  _referenceReward.size());
     }
 
     // Printing engine information
@@ -637,6 +715,7 @@ private:
   float              _referenceFloorTolerance;     ///< Allowed shortfall of best below the reference per step.
   bool               _cancelIfReferenceBelowWorst; ///< Opt-in: cancel when the reference reward drops below the worst kept state (reference evicted).
   std::vector<float> _referenceReward;             ///< Per-step reference reward floor (index = step).
+  std::string        _referenceSolutionPath;       ///< Optional reference solution (.sol) replayed at init to build @ref _referenceReward.
 
   /// @brief Fraction of the input-history trie's hard ceiling at which the run stops gracefully (high-water
   /// mark). One step's growth (~ live-states nodes) is far below the remaining headroom at this level, so the

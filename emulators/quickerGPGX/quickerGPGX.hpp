@@ -9,6 +9,11 @@
 #include <jaffarCommon/serializers/base.hpp>
 #include <memory>
 
+// GPGX-core headless screenshot hooks (defined in the quickerGPGX core's main.c). They paint frames into
+// bitmap.data with no SDL window and dump the active viewport as a 24-bit BMP.
+extern "C" void gpgxEnableHeadlessRender();
+extern "C" void gpgxSaveScreenshotBMP(const char* path);
+
 namespace jaffarPlus
 {
 
@@ -159,7 +164,8 @@ public:
 
   property_t getProperty(const std::string& propertyName) const override
   {
-    if (propertyName == "RAM") return property_t(_quickerGPGX->getWorkRamPointer(), _quickerGPGX->getWorkRamSize());
+    if (propertyName == "RAM" || propertyName == "LRAM") return property_t(_quickerGPGX->getWorkRamPointer(), _quickerGPGX->getWorkRamSize());
+    if (propertyName == "VRAM") return property_t(_quickerGPGX->getVideoRamPointer(), 0x10000);
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }
@@ -205,6 +211,11 @@ public:
   }
 
   __INLINE__ void showRender() override { _quickerGPGX->updateRenderer(); }
+
+  // Headless rendering + screenshot (no SDL window): enable makes subsequent advanceState frames paint into
+  // bitmap.data; saveScreenshot dumps the current frame's active viewport as a 24-bit BMP.
+  __INLINE__ void enableHeadlessRendering() override { gpgxEnableHeadlessRender(); }
+  void            saveScreenshot(const std::string& path) override { gpgxSaveScreenshotBMP(path.c_str()); }
 
 private:
   std::unique_ptr<gpgx::EmuInstance> _quickerGPGX;
