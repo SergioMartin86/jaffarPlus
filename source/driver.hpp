@@ -117,6 +117,10 @@ public:
       // state -- i.e. the reference solution has been evicted from the frontier, so the winning line can no
       // longer be reached no matter how good "best" looks. A stricter companion to the best-below check.
       _cancelIfReferenceBelowWorst = refJs.contains("Cancel If Reference Below Worst") ? jaffarCommon::json::popBoolean(refJs, "Cancel If Reference Below Worst") : false;
+      // Optional margin for the below-worst check (default 0): cancel only when ref + margin < worst. Set this
+      // to the Reference Pinning bonus so the guard does not fire while the pinned reference state (whose
+      // stored reward includes that bonus) is in fact still alive in the frontier.
+      _referenceBelowWorstMargin = refJs.contains("Below Worst Margin") ? jaffarCommon::json::popNumber<float>(refJs, "Below Worst Margin") : 0.0f;
       jaffarCommon::json::checkEmpty(refJs, "Driver Configuration > Reference Reward Floor");
       if (_referenceFloorEnabled && _referenceSolutionPath.empty() && refPath.empty())
         JAFFAR_THROW_LOGIC("[ERROR] 'Reference Reward Floor' is enabled but neither 'Solution File' nor 'Path' was provided\n");
@@ -318,15 +322,14 @@ public:
         break;
       }
 
-      // Reference-below-worst guard (opt-in): the reference reward has dropped below the WORST kept state,
-      // which means the reference solution was evicted from the frontier -- the winning line is gone even if
-      // "best" still looks healthy. Cancel immediately so we don't grind a frontier that no longer contains it.
-      if (_cancelIfReferenceBelowWorst && _referenceFloorEnabled && _currentStep < _referenceReward.size() && _referenceReward[_currentStep] < _worstStateReward)
+      // Reference-below-worst check (opt-in): the reference reward has dropped below the WORST kept state,
+      // meaning the (un-pinned, un-bonused) reference would be evicted from the frontier. This is a WARNING
+      // only -- the pinned reference lineage may still survive via its pinning bonus, and a frontier composed
+      // entirely of states ahead of the reference is a healthy sign, not a failure. No cancellation.
+      if (_cancelIfReferenceBelowWorst && _referenceFloorEnabled && _currentStep < _referenceReward.size() && _referenceReward[_currentStep] + _referenceBelowWorstMargin < _worstStateReward)
       {
-        jaffarCommon::logger::log("[J+] Reference (%.6f) fell below worst kept state (%.6f) at step %lu -- reference evicted from frontier, cancelling.\n",
+        jaffarCommon::logger::log("[J+] WARNING: reference (%.6f) below worst kept state (%.6f) at step %lu -- un-pinned reference would be evicted (pinned lineage survives only via its pin bonus).\n",
                                   _referenceReward[_currentStep], _worstStateReward, _currentStep);
-        exitReason = exitReason_t::referenceBelowWorst;
-        break;
       }
 
       // Input-history backing guard: the "Trie" strategy's shared node pool grows ~ live-states x depth
@@ -714,6 +717,7 @@ private:
   bool               _referenceFloorEnabled;       ///< Whether the reference reward floor cancel is active.
   float              _referenceFloorTolerance;     ///< Allowed shortfall of best below the reference per step.
   bool               _cancelIfReferenceBelowWorst; ///< Opt-in: cancel when the reference reward drops below the worst kept state (reference evicted).
+  float              _referenceBelowWorstMargin;   ///< Margin added to the reference before the below-worst comparison (typically the pinning bonus).
   std::vector<float> _referenceReward;             ///< Per-step reference reward floor (index = step).
   std::string        _referenceSolutionPath;       ///< Optional reference solution (.sol) replayed at init to build @ref _referenceReward.
 

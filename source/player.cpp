@@ -494,11 +494,16 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
         emu->saveScreenshot(path);
         // Also dump the LIVE video RAM (correct here, since we advanced via advanceState rather than a
         // state-load) so it can be lifted into a transplanted state whose vram is from a different track.
-        const auto vram = emu->getProperty("VRAM");
-        char       vpath[1024];
-        snprintf(vpath, sizeof(vpath), "%s/vram_%06ld.bin", screenshotDir.c_str(), s + 1);
-        std::string vdump((const char*)vram.pointer, vram.size);
-        jaffarCommon::file::saveStringToFile(vdump, vpath);
+        // Not all emulators expose a VRAM property (e.g. QuickerNES) -- skip quietly if absent.
+        try
+        {
+          const auto vram = emu->getProperty("VRAM");
+          char       vpath[1024];
+          snprintf(vpath, sizeof(vpath), "%s/vram_%06ld.bin", screenshotDir.c_str(), s + 1);
+          std::string vdump((const char*)vram.pointer, vram.size);
+          jaffarCommon::file::saveStringToFile(vdump, vpath);
+        }
+        catch (const std::exception&) {}
       }
     }
     return false;

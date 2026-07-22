@@ -304,6 +304,10 @@ public:
 
   __INLINE__ void enableRendering() override { _quickerNES->enableRendering(); }
 
+  // Headless (no-SDL) screenshots: just enable core video rendering; saveScreenshot refreshes the
+  // blit itself, so no SDL window/renderer/texture is needed.
+  __INLINE__ void enableHeadlessRendering() override { _quickerNES->enableRendering(); }
+
   __INLINE__ void disableRendering() override { _quickerNES->disableRendering(); }
 
   __INLINE__ void updateRendererState(const size_t stepIdx, const std::string input) override
@@ -315,6 +319,8 @@ public:
   // No SDL/display needed -- _curBlit holds 0x00RRGGBB pixels at image_width x image_height.
   void saveScreenshot(const std::string& path) override
   {
+    // Refresh the blit from the core's last rendered frame (headless path never calls updateRendererState)
+    saveBlit(_quickerNES->getInternalEmulatorPointer(), _curBlit, NES_VIDEO_PALETTE, 0, 0, 0, 0);
     const int W            = (int)emulator_t::image_width;
     const int H            = (int)emulator_t::image_height;
     const int rowSize      = ((W * 3 + 3) / 4) * 4;
