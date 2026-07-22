@@ -1019,8 +1019,8 @@ private:
           // claim flag is kept as a statistic only: a single-shot claim burned the pin when a lookahead
           // leader touched a depth and later died, leaving the true reference lineage to be discarded
           // as "repeated" against the dead leader's hash.
-          pinBonus = _refPinBonus + (float)k * _refPinLookaheadBonus;
-          isRefPin = true;
+          pinBonus         = _refPinBonus + (float)k * _refPinLookaheadBonus;
+          isRefPin         = true;
           uint8_t expected = 0;
           if (_refPinnedAtDepth[idx].compare_exchange_strong(expected, 1, std::memory_order_relaxed))
           {

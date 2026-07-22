@@ -1,11 +1,11 @@
 #pragma once
 
-#include <limits>
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/file.hpp>
 #include <jaffarCommon/json.hpp>
 #include <jaffarCommon/string.hpp>
+#include <limits>
 
 namespace jaffarPlus
 {
@@ -56,15 +56,15 @@ public:
     // position+velocity match over a step window), minus its deviation from that corridor.
     if (_gameConfigRemaining.contains("Progress Magnet"))
     {
-      auto pm             = jaffarCommon::json::popObject(_gameConfigRemaining, "Progress Magnet");
-      _pmIntensity        = jaffarCommon::json::popNumber<float>(pm, "Intensity");
-      _pmDeviationWeight  = jaffarCommon::json::popNumber<float>(pm, "Deviation Weight");
-      _pmWindowBehind     = jaffarCommon::json::popNumber<int>(pm, "Window Behind");
-      _pmWindowAhead      = jaffarCommon::json::popNumber<int>(pm, "Window Ahead");
-      _pmPositionScale    = jaffarCommon::json::popNumber<float>(pm, "Position Scale");
-      _pmVelocityScale    = jaffarCommon::json::popNumber<float>(pm, "Velocity Scale");
-      _pmZWeight          = jaffarCommon::json::popNumber<float>(pm, "Z Weight");
-      _pmAirbornePenalty  = jaffarCommon::json::popNumber<float>(pm, "Airborne Mismatch Penalty");
+      auto pm               = jaffarCommon::json::popObject(_gameConfigRemaining, "Progress Magnet");
+      _pmIntensity          = jaffarCommon::json::popNumber<float>(pm, "Intensity");
+      _pmDeviationWeight    = jaffarCommon::json::popNumber<float>(pm, "Deviation Weight");
+      _pmWindowBehind       = jaffarCommon::json::popNumber<int>(pm, "Window Behind");
+      _pmWindowAhead        = jaffarCommon::json::popNumber<int>(pm, "Window Ahead");
+      _pmPositionScale      = jaffarCommon::json::popNumber<float>(pm, "Position Scale");
+      _pmVelocityScale      = jaffarCommon::json::popNumber<float>(pm, "Velocity Scale");
+      _pmZWeight            = jaffarCommon::json::popNumber<float>(pm, "Z Weight");
+      _pmAirbornePenalty    = jaffarCommon::json::popNumber<float>(pm, "Airborne Mismatch Penalty");
       _pmDeviationGate      = pm.contains("Deviation Gate") ? jaffarCommon::json::popNumber<float>(pm, "Deviation Gate") : std::numeric_limits<float>::infinity();
       _pmOffCorridorPenalty = pm.contains("Off Corridor Penalty") ? jaffarCommon::json::popNumber<float>(pm, "Off Corridor Penalty") : 20.0f;
       const auto ptracePath = jaffarCommon::json::popString(pm, "Trace File Path");
@@ -330,7 +330,6 @@ private:
       _funnelState.exited   = 1;
       _funnelState.exitStep = _currentStep;
     }
-
   }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -433,8 +432,10 @@ private:
       progressMatch(jBest, cBest);
       if (jBest >= 0)
       {
-        if (cBest <= _pmDeviationGate) reward += _pmIntensity * (float)(jBest - (int)_currentStep) - _pmDeviationWeight * cBest;
-        else reward += -_pmOffCorridorPenalty - _pmDeviationWeight * cBest;
+        if (cBest <= _pmDeviationGate)
+          reward += _pmIntensity * (float)(jBest - (int)_currentStep) - _pmDeviationWeight * cBest;
+        else
+          reward += -_pmOffCorridorPenalty - _pmDeviationWeight * cBest;
       }
     }
 
@@ -448,23 +449,23 @@ private:
   __INLINE__ void progressMatch(int& jBest, float& cBest) const
   {
     // Velocity is sign-magnitude: unsigned 16-bit magnitude (hi:lo), direction flag 1 = negative.
-    const float vx = (float)((int)*_marbleVelXHi * 256 + (int)(uint8_t)*_marbleVelX) * (*_marbleMotion1 != 0 ? -1.0f : 1.0f);
-    const float vy = (float)((int)*_marbleVelYHi * 256 + (int)(uint8_t)*_marbleVelY) * (*_marbleMotion2 != 0 ? -1.0f : 1.0f);
-    const float z  = (float)*_marblePosZ1;
+    const float   vx  = (float)((int)*_marbleVelXHi * 256 + (int)(uint8_t)*_marbleVelX) * (*_marbleMotion1 != 0 ? -1.0f : 1.0f);
+    const float   vy  = (float)((int)*_marbleVelYHi * 256 + (int)(uint8_t)*_marbleVelY) * (*_marbleMotion2 != 0 ? -1.0f : 1.0f);
+    const float   z   = (float)*_marblePosZ1;
     const uint8_t air = (*_marbleAirborneFlag != 0) ? 1 : 0;
 
     const int jLo = std::max((int)_currentStep - _pmWindowBehind, 0);
     const int jHi = std::min((int)_currentStep + _pmWindowAhead, (int)_ptrace.size() - 1);
-    jBest = -1;
-    cBest = 0.0f;
+    jBest         = -1;
+    cBest         = 0.0f;
     for (int j = jLo; j <= jHi; j++)
     {
-      const auto& e  = _ptrace[j];
-      const float dx = _marblePosX - e.x;
-      const float dy = _marblePosY - e.y;
+      const auto& e   = _ptrace[j];
+      const float dx  = _marblePosX - e.x;
+      const float dy  = _marblePosY - e.y;
       const float dvx = vx - e.vx;
       const float dvy = vy - e.vy;
-      float c = sqrtf(dx * dx + dy * dy) / _pmPositionScale;
+      float       c   = sqrtf(dx * dx + dy * dy) / _pmPositionScale;
       // Inside a funnel the motion is scripted and the velocity bytes are meaningless -- match on
       // position (+Z) only, or riders would be spuriously flagged off-corridor.
       if (_insideFunnel == false)
@@ -473,7 +474,11 @@ private:
         if (air != e.air) c += _pmAirbornePenalty;
       }
       c += _pmZWeight * std::abs(z - e.z);
-      if (jBest < 0 || c <= cBest) { jBest = j; cBest = c; }   // <= : ties go to the largest j
+      if (jBest < 0 || c <= cBest)
+      {
+        jBest = j;
+        cBest = c;
+      } // <= : ties go to the largest j
     }
   }
 
@@ -663,12 +668,12 @@ private:
   float                      _pmAirbornePenalty;
   float                      _pmDeviationGate;
   float                      _pmOffCorridorPenalty;
-  bool          _useFunnelReward = false;
-  float         _funnelEnterReward;
-  float         _funnelFrameReward;
-  float         _funnelExitReward;
-  funnelState_t _funnelState;
-  bool          _insideFunnel = false;
+  bool                       _useFunnelReward = false;
+  float                      _funnelEnterReward;
+  float                      _funnelFrameReward;
+  float                      _funnelExitReward;
+  funnelState_t              _funnelState;
+  bool                       _insideFunnel = false;
   std::vector<ptraceEntry_t> _ptrace;
 
   float   _marbleDistanceToPointX;

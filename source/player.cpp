@@ -503,7 +503,9 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
           std::string vdump((const char*)vram.pointer, vram.size);
           jaffarCommon::file::saveStringToFile(vdump, vpath);
         }
-        catch (const std::exception&) {}
+        catch (const std::exception&)
+        {
+        }
       }
     }
     return false;

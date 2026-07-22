@@ -326,10 +326,12 @@ public:
       // meaning the (un-pinned, un-bonused) reference would be evicted from the frontier. This is a WARNING
       // only -- the pinned reference lineage may still survive via its pinning bonus, and a frontier composed
       // entirely of states ahead of the reference is a healthy sign, not a failure. No cancellation.
-      if (_cancelIfReferenceBelowWorst && _referenceFloorEnabled && _currentStep < _referenceReward.size() && _referenceReward[_currentStep] + _referenceBelowWorstMargin < _worstStateReward)
+      if (_cancelIfReferenceBelowWorst && _referenceFloorEnabled && _currentStep < _referenceReward.size() &&
+          _referenceReward[_currentStep] + _referenceBelowWorstMargin < _worstStateReward)
       {
-        jaffarCommon::logger::log("[J+] WARNING: reference (%.6f) below worst kept state (%.6f) at step %lu -- un-pinned reference would be evicted (pinned lineage survives only via its pin bonus).\n",
-                                  _referenceReward[_currentStep], _worstStateReward, _currentStep);
+        jaffarCommon::logger::log(
+            "[J+] WARNING: reference (%.6f) below worst kept state (%.6f) at step %lu -- un-pinned reference would be evicted (pinned lineage survives only via its pin bonus).\n",
+            _referenceReward[_currentStep], _worstStateReward, _currentStep);
       }
 
       // Input-history backing guard: the "Trie" strategy's shared node pool grows ~ live-states x depth
