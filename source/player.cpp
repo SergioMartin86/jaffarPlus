@@ -197,11 +197,10 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
   // (min speed = slowdown, fall state = hole, max Z = jump) per grid cell. Consistent physics state throughout.
   if (terrainDrivePath.empty() == false)
   {
-    auto*        emu       = r.getGame()->getEmulator();
-    auto*        ram       = emu->getProperty("LRAM").pointer;
-    const size_t stateSize = emu->getStateSize();
-    auto         rd16      = [&](int a) { return ram[a] | (ram[a + 1] << 8); };
-    auto         s16       = [&](int a)
+    auto* emu  = r.getGame()->getEmulator();
+    auto* ram  = emu->getProperty("LRAM").pointer;
+    auto  rd16 = [&](int a) { return ram[a] | (ram[a + 1] << 8); };
+    auto  s16  = [&](int a)
     {
       int v = rd16(a);
       return v >= 0x8000 ? v - 0x10000 : v;
@@ -272,7 +271,6 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       jaffarCommon::serializer::Contiguous s(base.data(), stateSize);
       emu->serializeState(s);
     }
-    const auto nullInput  = emu->registerInput("|..|........|");
     const auto accelInput = emu->registerInput("|..|.....B..|"); // hold accelerate (B) so the car actually DRIVES
     // Force the whole player position block to the target world (x,y) every frame so no velocity update can drift
     // it, then read the surface (0xA649), attribute (0xA648), checkpoint (0xA6DB) and fall (0xA66C) the game computes.
@@ -312,9 +310,8 @@ bool mainCycle(jaffarPlus::Runner& r, const std::string& solutionFile, bool disa
       double vx = rd16(0xA614) + rd16(0xA616) / 65536.0, vy = rd16(0xA618) + rd16(0xA61A) / 65536.0;
       return std::sqrt(vx * vx + vy * vy);
     };
-    auto gyOf    = [&]() { return ((rd16(0xA60C) >> 3) / 12) & 31; };
-    auto gxOf    = [&]() { return ((rd16(0xA610) >> 3) / 12) & 31; };
-    auto gxOfPos = [&](int b) { return ((b >> 3) / 12) & 31; };
+    auto gyOf = [&]() { return ((rd16(0xA60C) >> 3) / 12) & 31; };
+    auto gxOf = [&]() { return ((rd16(0xA610) >> 3) / 12) & 31; };
     // Drive the car INTO target cell (gx,gy) from one adjacent cell, along one of the 4 axes. The approach cell
     // and the whole path must stay ON-track: if recovery (0xA66C) fires BEFORE we reach the target, this approach
     // started/passed through void -> discard it. A hole = 0xA66C fires only AFTER we cleanly enter the target.
