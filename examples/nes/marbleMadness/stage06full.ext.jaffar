@@ -1,10 +1,10 @@
 {
     "Driver Configuration": {
         "End On First Win State": false,
-        "Max Steps": 1170,
+        "Max Steps": 1360,
         "Reference Reward Floor": {
             "Enabled": true,
-            "Solution File": "stage06full.tas.sol",
+            "Solution File": "stage06full.ext.ref.sol",
             "Tolerance": 0.0,
             "Cancel If Reference Below Worst": true,
             "Below Worst Margin": 0.0
@@ -19,15 +19,15 @@
     "Engine Configuration": {
         "Hash Database": {
             "Max Store Count": 2,
-            "Max Store Size (Mb)": 16000,
+            "Max Store Size (Mb)": 24000,
             "Enabled": true
         },
         "State Database": {
-            "Max Size (Mb)": 5000
+            "Max Size (Mb)": 200000
         },
         "Reference Pinning": {
             "Enabled": true,
-            "Path": "stage06full.full.ref.hashes",
+            "Path": "stage06full.ext.ref.hashes",
             "Bonus": 60.0,
             "Lookahead": 16,
             "Lookahead Bonus": 0.5
@@ -40,18 +40,17 @@
         "Rom File Path": "Marble Madness (U) [!].nes",
         "Rom File SHA1": "DB009866ECF20CFDCE93DCA861F5BE1F9DFAAF2B",
         "Initial State File Path": "",
-        "Initial Sequence File Path": "stage06full.initial.sol",
+        "Initial Sequence File Path": "stage06full.ext.initial.sol",
         "Initial RAM Data File Path": "",
         "Controller 1 Type": "Joypad",
         "Controller 2 Type": "None",
         "Disabled State Properties": [
             "SRAM",
-            "CHRR",
-            "NTAB",
             "SPRT",
             "CTRL"
         ],
-        "Nametable Block Size": 0
+        "Nametable Block Size": 4096,
+        "Precise State Timing": true
     },
     "Runner Configuration": {
         "Hash Step Tolerance": 4,
@@ -60,7 +59,7 @@
         "Bypass Hash Calculation": false,
         "Store Input History": {
             "Type": "Raw",
-            "Max Size": 1170
+            "Max Size": 1360
         },
         "Allowed Input Sets": [
             {
@@ -89,7 +88,7 @@
                     {
                         "Property": "Current Step",
                         "Op": "<",
-                        "Value": 1160
+                        "Value": 1350
                     },
                     {
                         "Property": "Try New Inputs",
@@ -184,7 +183,11 @@
             "Marble Vel Z Hi",
             "Marble Fall Counter",
             "Marble Airborne Flag",
-            "Marble In Catapult"
+            "Marble In Catapult",
+            "Funnel Timer",
+            "Camera Scroll Lo",
+            "Camera Scroll Hi",
+            "Platform Phase"
         ],
         "Rules": [
             {
@@ -280,7 +283,14 @@
             "Velocity Scale": 24.0,
             "Z Weight": 1.0,
             "Airborne Mismatch Penalty": 1.0,
-            "Trace File Path": "stage06full.ptrace"
+            "Trace File Path": "stage06full.ext.ptrace",
+            "Deviation Gate": 8.0,
+            "Off Corridor Penalty": 20.0
+        },
+        "Funnel Reward": {
+            "Enter Reward": 5.0,
+            "Frame Reward": 0.1,
+            "Exit Reward": 5.0
         }
     }
 }

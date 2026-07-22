@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <emulator.hpp>
 #include <game.hpp>
 #include <jaffarCommon/file.hpp>
@@ -64,6 +65,8 @@ public:
       _pmVelocityScale    = jaffarCommon::json::popNumber<float>(pm, "Velocity Scale");
       _pmZWeight          = jaffarCommon::json::popNumber<float>(pm, "Z Weight");
       _pmAirbornePenalty  = jaffarCommon::json::popNumber<float>(pm, "Airborne Mismatch Penalty");
+      _pmDeviationGate      = pm.contains("Deviation Gate") ? jaffarCommon::json::popNumber<float>(pm, "Deviation Gate") : std::numeric_limits<float>::infinity();
+      _pmOffCorridorPenalty = pm.contains("Off Corridor Penalty") ? jaffarCommon::json::popNumber<float>(pm, "Off Corridor Penalty") : 20.0f;
       const auto ptracePath = jaffarCommon::json::popString(pm, "Trace File Path");
       jaffarCommon::json::checkEmpty(pm, "Game Configuration > Progress Magnet");
       if (ptracePath != "")
@@ -88,6 +91,20 @@ public:
       }
     }
 
+    // Funnel Reward (optional): scripted-transit (funnel) traversal rewards, detected via the game's
+    // own scripted-motion state ($7B == 1), not a position box. Discrete reward on entry, a small
+    // reward per frame WHILE inside (only during traversal -- after exit the PM resumes and carries
+    // the entry-time gradient via position), and a discrete reward on exit.
+    if (_gameConfigRemaining.contains("Funnel Reward"))
+    {
+      auto fj            = jaffarCommon::json::popObject(_gameConfigRemaining, "Funnel Reward");
+      _funnelEnterReward = jaffarCommon::json::popNumber<float>(fj, "Enter Reward");
+      _funnelFrameReward = jaffarCommon::json::popNumber<float>(fj, "Frame Reward");
+      _funnelExitReward  = jaffarCommon::json::popNumber<float>(fj, "Exit Reward");
+      jaffarCommon::json::checkEmpty(fj, "Game Configuration > Funnel Reward");
+      _useFunnelReward = true;
+    }
+
     // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
@@ -106,6 +123,14 @@ private:
     float   vx;
     float   vy;
     uint8_t air;
+  };
+
+  struct funnelState_t
+  {
+    uint8_t  entered  = 0;
+    uint8_t  exited   = 0;
+    uint16_t frames   = 0;
+    uint16_t exitStep = 0; ///< Step at which the funnel released this line (0 = not yet exited)
   };
 
   __INLINE__ void registerGameProperties() override
@@ -140,6 +165,17 @@ private:
     registerGameProperty("Marble Vel Z Hi", &_lowMem[0x03F8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Fall Counter", &_lowMem[0x0082], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Airborne Flag", &_lowMem[0x007B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    // Funnel transit countdown (decrements once per frame while the marble rides a funnel; release at 0).
+    // Must be hashed: riders pinned at the funnel point are byte-identical in position/velocity, and this
+    // timer is what distinguishes an early entrant from a late one.
+    registerGameProperty("Funnel Timer", &_lowMem[0x00DE], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    // Clock-coupled causal state: the camera scroll ($30/$31) anchors the platform schedule (its freeze
+    // at $0343 starts the phase machine) and the phase counter ($9B) drives every blink window. Hashing
+    // them separates same-position states with different schedules -- the correct, principled form of
+    // "clock in the hash": two states are interchangeable only if position AND schedule state agree.
+    registerGameProperty("Camera Scroll Lo", &_lowMem[0x0030], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Camera Scroll Hi", &_lowMem[0x0031], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Platform Phase", &_lowMem[0x009B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Dead Flag", &_lowMem[0x0400], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Motion 1", &_lowMem[0x0410], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Surface Angle", &_lowMem[0x0428], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -223,7 +259,16 @@ private:
     // Hash the step counter whenever the marble is frozen in place (paused, or in the pre-roll
     // intro where marbleState==0 and input is ignored). Without this, the inert first frame(s)
     // produce successors identical to the base state, which all dedup away -> "ran out of states".
-    if (*_pauseState == 0 || *_marbleState == 0) hashEngine.Update(_currentStep);
+    if (*_pauseState == 0 || *_marbleState == 0 || _insideFunnel) hashEngine.Update(_currentStep);
+    // Funnel-release cohorts: riders released at different times play byte-identical trajectories
+    // offset in absolute time -- and the global clock is causal (platform phases, camera). Hashing the
+    // release step separates cohorts permanently while keeping within-cohort dedup intact.
+    hashEngine.Update(_funnelState.exitStep);
+    // Full rest: a marble at complete rest differs from its successor only by the clock. Hash the step
+    // so waiting chains stay distinct (waiting is meaningful in a clock-driven game).
+    const uint16_t velXMag = (uint16_t)((uint16_t)*_marbleVelXHi * 256 + (uint8_t)*_marbleVelX);
+    const uint16_t velYMag = (uint16_t)((uint16_t)*_marbleVelYHi * 256 + (uint8_t)*_marbleVelY);
+    if (velXMag == 0 && velYMag == 0 && *_marbleAirborneFlag == 0) hashEngine.Update(_currentStep);
     // hashEngine.Update(&_lowMem[0x0001], 0x0018);
     // hashEngine.Update(&_lowMem[0x001C], 0x0050);
   }
@@ -272,6 +317,20 @@ private:
       _surfaceAngleX = -5.0;
       _surfaceAngleY = -5.0;
     }
+    // Funnel bookkeeping (scripted transits), detected via the game's own scripted-motion state:
+    // $7B == 1 during a funnel traversal (255 = ordinary airborne, 0 = grounded).
+    _insideFunnel = (*_marbleAirborneFlag == 1);
+    if (_insideFunnel)
+    {
+      if (_funnelState.entered == 0) _funnelState.entered = 1;
+      _funnelState.frames++;
+    }
+    else if (_funnelState.entered == 1 && _funnelState.exited == 0)
+    {
+      _funnelState.exited   = 1;
+      _funnelState.exitStep = _currentStep;
+    }
+
   }
 
   __INLINE__ void ruleUpdatePreHook() override
@@ -316,6 +375,7 @@ private:
     serializer.push(&_prevInputIdx, sizeof(_prevInputIdx));
     serializer.push(&_prevInputRepeatedTimes, sizeof(_prevInputRepeatedTimes));
     serializer.push(&_tryNewInputs, sizeof(_tryNewInputs));
+    serializer.push(&_funnelState, sizeof(_funnelState));
   }
 
   __INLINE__ void deserializeStateImpl(jaffarCommon::deserializer::Base& deserializer)
@@ -325,6 +385,7 @@ private:
     deserializer.pop(&_prevInputIdx, sizeof(_prevInputIdx));
     deserializer.pop(&_prevInputRepeatedTimes, sizeof(_prevInputRepeatedTimes));
     deserializer.pop(&_tryNewInputs, sizeof(_tryNewInputs));
+    deserializer.pop(&_funnelState, sizeof(_funnelState));
   }
 
   __INLINE__ float calculateGameSpecificReward() const
@@ -350,13 +411,31 @@ private:
     // If trace is used, compute its magnet's effect
     if (_useTrace == true) reward += -1.0 * _traceMagnet.intensity * _traceDistance;
 
-    // Progress magnet: alpha * (frames ahead on the corridor) - beta * (phase-space deviation from it)
-    if (_usePMagnet == true)
+    // Funnel rewards: entry/exit latches persist; the per-frame term counts ONLY during traversal
+    // (after exit the PM resumes and carries the entry-time gradient through position).
+    if (_useFunnelReward)
+    {
+      reward += _funnelEnterReward * (float)_funnelState.entered + _funnelExitReward * (float)_funnelState.exited;
+      if (_insideFunnel) reward += _funnelFrameReward * (float)_funnelState.frames;
+    }
+
+    // Progress magnet: alpha * (frames ahead on the corridor) - beta * (phase-space deviation from it).
+    // Lead credit is GATED on actually being on the corridor: beyond the deviation gate the state gets no
+    // lead term and a sinking penalty instead. Without the gate, geometry exploits the matcher -- the course
+    // is a tight serpentine, so an off-route state (a pit, an adjacent lane) can sit near a reference index
+    // far ahead and collect a huge false lead at modest deviation cost.
+    // Fully suppressed inside a funnel: position is scripted there, so the matcher is degenerate (all
+    // transit indices tie at deviation 0 and the tie-break grants a spurious full-window lead).
+    if (_usePMagnet == true && _insideFunnel == false)
     {
       int   jBest = -1;
       float cBest = 0.0f;
       progressMatch(jBest, cBest);
-      if (jBest >= 0) reward += _pmIntensity * (float)(jBest - (int)_currentStep) - _pmDeviationWeight * cBest;
+      if (jBest >= 0)
+      {
+        if (cBest <= _pmDeviationGate) reward += _pmIntensity * (float)(jBest - (int)_currentStep) - _pmDeviationWeight * cBest;
+        else reward += -_pmOffCorridorPenalty - _pmDeviationWeight * cBest;
+      }
     }
 
     // Returning reward
@@ -385,9 +464,15 @@ private:
       const float dy = _marblePosY - e.y;
       const float dvx = vx - e.vx;
       const float dvy = vy - e.vy;
-      float c = sqrtf(dx * dx + dy * dy) / _pmPositionScale + sqrtf(dvx * dvx + dvy * dvy) / _pmVelocityScale;
+      float c = sqrtf(dx * dx + dy * dy) / _pmPositionScale;
+      // Inside a funnel the motion is scripted and the velocity bytes are meaningless -- match on
+      // position (+Z) only, or riders would be spuriously flagged off-corridor.
+      if (_insideFunnel == false)
+      {
+        c += sqrtf(dvx * dvx + dvy * dvy) / _pmVelocityScale;
+        if (air != e.air) c += _pmAirbornePenalty;
+      }
       c += _pmZWeight * std::abs(z - e.z);
-      if (air != e.air) c += _pmAirbornePenalty;
       if (jBest < 0 || c <= cBest) { jBest = j; cBest = c; }   // <= : ties go to the largest j
     }
   }
@@ -576,6 +661,14 @@ private:
   float                      _pmVelocityScale;
   float                      _pmZWeight;
   float                      _pmAirbornePenalty;
+  float                      _pmDeviationGate;
+  float                      _pmOffCorridorPenalty;
+  bool          _useFunnelReward = false;
+  float         _funnelEnterReward;
+  float         _funnelFrameReward;
+  float         _funnelExitReward;
+  funnelState_t _funnelState;
+  bool          _insideFunnel = false;
   std::vector<ptraceEntry_t> _ptrace;
 
   float   _marbleDistanceToPointX;
