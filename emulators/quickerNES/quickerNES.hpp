@@ -207,6 +207,23 @@ public:
       if (p == nullptr) JAFFAR_THROW_LOGIC("Property 'CPU Bad Access' requires a -D_QUICKERNES_DETECT_BAD_ACCESS build.");
       return property_t(p, 1);
     }
+    // Per-frame count of instructions executed from work RAM (data-as-code "walk" detector). Normal
+    // play touches RAM code only a few times per frame (jump-notes); a large value flags a derail such
+    // as the NES Pinball score-warp. uint16, always available.
+    if (propertyName == "CPU RAM Exec Count")
+    {
+      auto* p = _quickerNES->getRamExecCountPtr();
+      if (p == nullptr) JAFFAR_THROW_LOGIC("Property 'CPU RAM Exec Count' requires a -DquickerNESStudyTracers=true build.");
+      return property_t((uint8_t*)p, 2);
+    }
+    // Packed frame-timing accumulators (burst_phase, frame_length_extra) that drive NMI alignment. Add
+    // this to a config's "Hash Properties" to distinguish timing-different states (glitch/walk hunting).
+    if (propertyName == "CPU Timing State")
+    {
+      auto* p = _quickerNES->getTimingHashPtr();
+      if (p == nullptr) JAFFAR_THROW_LOGIC("Property 'CPU Timing State' requires a -DquickerNESStudyTracers=true build.");
+      return property_t(p, 8);
+    }
 
     JAFFAR_THROW_LOGIC("Property name: '%s' not found in emulator '%s'", propertyName.c_str(), getName().c_str());
   }

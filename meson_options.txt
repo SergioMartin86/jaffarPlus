@@ -63,3 +63,9 @@ option('doomCore',
   value : 'new',
   description : 'QuickerDSDA: which core to link -- new (headless TLS, for parallel search) or base (pristine non-TLS, full SDL rendering, for a visual jaffar-player)'
 )
+
+option('quickerNESStudyTracers',
+       type : 'boolean',
+       value : false,
+       description : 'Compile the QuickerNES env-gated CPU study tracers (RE aids). Costs ~30%% engine throughput even when env-disabled; enable for reverse-engineering sessions only.'
+)
