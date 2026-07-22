@@ -74,7 +74,7 @@
         "Test Candidate Inputs": false,
         "Candidate Input Sets": [],
         "Frameskip": {
-            "Rate": 2,
+            "Rate": 0,
             "Use Custom Input": false,
             "Custom Input": ""
         }

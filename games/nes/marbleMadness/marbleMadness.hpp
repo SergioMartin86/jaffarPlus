@@ -50,6 +50,44 @@ public:
       }
     }
 
+    // Progress Magnet (optional): phase-space progress reward along a reference trajectory.
+    // Rewards how many frames AHEAD of schedule a state sits on the reference corridor (best
+    // position+velocity match over a step window), minus its deviation from that corridor.
+    if (_gameConfigRemaining.contains("Progress Magnet"))
+    {
+      auto pm             = jaffarCommon::json::popObject(_gameConfigRemaining, "Progress Magnet");
+      _pmIntensity        = jaffarCommon::json::popNumber<float>(pm, "Intensity");
+      _pmDeviationWeight  = jaffarCommon::json::popNumber<float>(pm, "Deviation Weight");
+      _pmWindowBehind     = jaffarCommon::json::popNumber<int>(pm, "Window Behind");
+      _pmWindowAhead      = jaffarCommon::json::popNumber<int>(pm, "Window Ahead");
+      _pmPositionScale    = jaffarCommon::json::popNumber<float>(pm, "Position Scale");
+      _pmVelocityScale    = jaffarCommon::json::popNumber<float>(pm, "Velocity Scale");
+      _pmZWeight          = jaffarCommon::json::popNumber<float>(pm, "Z Weight");
+      _pmAirbornePenalty  = jaffarCommon::json::popNumber<float>(pm, "Airborne Mismatch Penalty");
+      const auto ptracePath = jaffarCommon::json::popString(pm, "Trace File Path");
+      jaffarCommon::json::checkEmpty(pm, "Game Configuration > Progress Magnet");
+      if (ptracePath != "")
+      {
+        std::string ptraceData;
+        bool        status = jaffarCommon::file::loadStringFromFile(ptraceData, ptracePath.c_str());
+        if (status == false && std::getenv("JAFFAR_IS_DRY_RUN") == nullptr) JAFFAR_THROW_LOGIC("Could not find/read progress trace file: %s\n", ptracePath.c_str());
+        std::istringstream f(ptraceData);
+        std::string        line;
+        while (std::getline(f, line))
+        {
+          auto c = jaffarCommon::string::split(line, ' ');
+          if (c.size() < 6) continue;
+          _ptrace.push_back(ptraceEntry_t{.x   = (float)std::atof(c[0].c_str()),
+                                          .y   = (float)std::atof(c[1].c_str()),
+                                          .z   = (float)std::atof(c[2].c_str()),
+                                          .vx  = (float)std::atof(c[3].c_str()),
+                                          .vy  = (float)std::atof(c[4].c_str()),
+                                          .air = (uint8_t)std::atoi(c[5].c_str())});
+        }
+        _usePMagnet = _ptrace.size() > 0;
+      }
+    }
+
     // All recognized game-configuration keys have now been consumed; reject any leftover (unrecognized) key.
   }
 
@@ -58,6 +96,16 @@ private:
   {
     float x;
     float y;
+  };
+
+  struct ptraceEntry_t
+  {
+    float   x;
+    float   y;
+    float   z;
+    float   vx;
+    float   vy;
+    uint8_t air;
   };
 
   __INLINE__ void registerGameProperties() override
@@ -81,6 +129,17 @@ private:
     registerGameProperty("Marble Airtime", &_lowMem[0x03C8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Vel X", &_lowMem[0x03D0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Vel Y", &_lowMem[0x03E0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    // Velocity is 16-bit sign-magnitude: high bytes + Y direction flag (X direction = "Marble Motion 1").
+    // Hash these too, or states differing only in the high byte / Y direction dedup wrongly.
+    registerGameProperty("Marble Vel X Hi", &_lowMem[0x03D8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Vel Y Hi", &_lowMem[0x03E8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Motion 2", &_lowMem[0x0418], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    // Airborne physics state: Z velocity, fall counter and airborne flag are causal during hops/falls
+    // (pit-corner cuts). States identical in X/Y but differing here diverge — they must hash apart.
+    registerGameProperty("Marble Vel Z", &_lowMem[0x03F0], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Vel Z Hi", &_lowMem[0x03F8], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Fall Counter", &_lowMem[0x0082], Property::datatype_t::dt_uint8, Property::endianness_t::little);
+    registerGameProperty("Marble Airborne Flag", &_lowMem[0x007B], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Dead Flag", &_lowMem[0x0400], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Motion 1", &_lowMem[0x0410], Property::datatype_t::dt_uint8, Property::endianness_t::little);
     registerGameProperty("Marble Surface Angle", &_lowMem[0x0428], Property::datatype_t::dt_uint8, Property::endianness_t::little);
@@ -113,6 +172,11 @@ private:
     _marbleDeadFlag     = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Dead Flag")]->getPointer();
     _marbleSurfaceAngle = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Surface Angle")]->getPointer();
     _pauseState         = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Pause State")]->getPointer();
+    _marbleVelXHi       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Vel X Hi")]->getPointer();
+    _marbleVelYHi       = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Vel Y Hi")]->getPointer();
+    _marbleMotion1      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Motion 1")]->getPointer();
+    _marbleMotion2      = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Motion 2")]->getPointer();
+    _marbleAirborneFlag = (uint8_t*)_propertyMap[jaffarCommon::hash::hashString("Marble Airborne Flag")]->getPointer();
 
     // Getting index for a non input
     _nullInputIdx = _emulator->registerInput("|..|........|");
@@ -156,7 +220,10 @@ private:
 
   __INLINE__ void computeAdditionalHashing(MetroHash128& hashEngine) const override
   {
-    if (*_pauseState == 0) hashEngine.Update(_currentStep);
+    // Hash the step counter whenever the marble is frozen in place (paused, or in the pre-roll
+    // intro where marbleState==0 and input is ignored). Without this, the inert first frame(s)
+    // produce successors identical to the base state, which all dedup away -> "ran out of states".
+    if (*_pauseState == 0 || *_marbleState == 0) hashEngine.Update(_currentStep);
     // hashEngine.Update(&_lowMem[0x0001], 0x0018);
     // hashEngine.Update(&_lowMem[0x001C], 0x0050);
   }
@@ -268,6 +335,12 @@ private:
     // Subtracting reward for having made an input recently (for early termination)
     reward += _lastInputMagnet * _lastInputStep;
 
+    // Continuous last-input pressure (config "Last Input Step Reward", typically negative): rewards
+    // coasting lines at every step, not just at the win. Without it, a line that stops steering early
+    // to glide into the goal scores worse on the instantaneous trace metric than greedy still-steering
+    // lines and gets evicted from a full state DB before its win can pay out.
+    reward += _lastInputStepReward * _lastInputStep;
+
     // If this is a win state, then evaluate only w.r.t. how long since the last input
     if (_stopProcessingReward) return reward;
 
@@ -277,8 +350,46 @@ private:
     // If trace is used, compute its magnet's effect
     if (_useTrace == true) reward += -1.0 * _traceMagnet.intensity * _traceDistance;
 
+    // Progress magnet: alpha * (frames ahead on the corridor) - beta * (phase-space deviation from it)
+    if (_usePMagnet == true)
+    {
+      int   jBest = -1;
+      float cBest = 0.0f;
+      progressMatch(jBest, cBest);
+      if (jBest >= 0) reward += _pmIntensity * (float)(jBest - (int)_currentStep) - _pmDeviationWeight * cBest;
+    }
+
     // Returning reward
     return reward;
+  }
+
+  /// @brief Finds the reference index (within the step window) best matching the marble's current
+  ///        phase-space state (position + true 16-bit signed velocity + height + airborne flag).
+  ///        Ties in cost break toward the LARGEST index, so waiting plateaus credit full progress.
+  __INLINE__ void progressMatch(int& jBest, float& cBest) const
+  {
+    // Velocity is sign-magnitude: unsigned 16-bit magnitude (hi:lo), direction flag 1 = negative.
+    const float vx = (float)((int)*_marbleVelXHi * 256 + (int)(uint8_t)*_marbleVelX) * (*_marbleMotion1 != 0 ? -1.0f : 1.0f);
+    const float vy = (float)((int)*_marbleVelYHi * 256 + (int)(uint8_t)*_marbleVelY) * (*_marbleMotion2 != 0 ? -1.0f : 1.0f);
+    const float z  = (float)*_marblePosZ1;
+    const uint8_t air = (*_marbleAirborneFlag != 0) ? 1 : 0;
+
+    const int jLo = std::max((int)_currentStep - _pmWindowBehind, 0);
+    const int jHi = std::min((int)_currentStep + _pmWindowAhead, (int)_ptrace.size() - 1);
+    jBest = -1;
+    cBest = 0.0f;
+    for (int j = jLo; j <= jHi; j++)
+    {
+      const auto& e  = _ptrace[j];
+      const float dx = _marblePosX - e.x;
+      const float dy = _marblePosY - e.y;
+      const float dvx = vx - e.vx;
+      const float dvy = vy - e.vy;
+      float c = sqrtf(dx * dx + dy * dy) / _pmPositionScale + sqrtf(dvx * dvx + dvy * dvy) / _pmVelocityScale;
+      c += _pmZWeight * std::abs(z - e.z);
+      if (air != e.air) c += _pmAirbornePenalty;
+      if (jBest < 0 || c <= cBest) { jBest = j; cBest = c; }   // <= : ties go to the largest j
+    }
   }
 
   void printInfoImpl() const override
@@ -295,6 +406,13 @@ private:
     jaffarCommon::logger::log("[Jaffar]  + Marble Airtime:         %02u\n", *_marbleAirtime);
     jaffarCommon::logger::log("[Jaffar]  + Marble Surface Angle:   %02u\n", *_marbleSurfaceAngle);
 
+    if (_usePMagnet == true)
+    {
+      int   jBest = -1;
+      float cBest = 0.0f;
+      progressMatch(jBest, cBest);
+      jaffarCommon::logger::log("[Jaffar]  + Progress Magnet:        lead %+d frames (ref idx %d), deviation %.3f\n", jBest - (int)_currentStep, jBest, cBest);
+    }
     jaffarCommon::logger::log("[Jaffar]  + Prev Input:             %02u\n", _prevInputIdx);
     jaffarCommon::logger::log("[Jaffar]  + Prev Input Repetitions: %02u / %02u (Try new: %s)\n", _prevInputRepeatedTimes, _repeatPrevInputCount, _tryNewInputs ? "Yes" : "No");
 
@@ -442,6 +560,23 @@ private:
   uint8_t* _marbleDeadFlag;
   uint8_t* _marbleSurfaceAngle;
   uint8_t* _pauseState;
+  uint8_t* _marbleVelXHi;
+  uint8_t* _marbleVelYHi;
+  uint8_t* _marbleMotion1;
+  uint8_t* _marbleMotion2;
+  uint8_t* _marbleAirborneFlag;
+
+  // Progress Magnet configuration/state
+  bool                       _usePMagnet = false;
+  float                      _pmIntensity;
+  float                      _pmDeviationWeight;
+  int                        _pmWindowBehind;
+  int                        _pmWindowAhead;
+  float                      _pmPositionScale;
+  float                      _pmVelocityScale;
+  float                      _pmZWeight;
+  float                      _pmAirbornePenalty;
+  std::vector<ptraceEntry_t> _ptrace;
 
   float   _marbleDistanceToPointX;
   float   _marbleDistanceToPointY;

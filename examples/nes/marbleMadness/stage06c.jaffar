@@ -2,6 +2,11 @@
     "Driver Configuration": {
         "End On First Win State": false,
         "Max Steps": 260,
+        "Reference Reward Floor": {
+            "Enabled": true,
+            "Solution File": "stage06c.tas.sol",
+            "Tolerance": 0.0
+        },
         "Save Intermediate Results": {
             "Enabled": true,
             "Frequency (s)": 1.0,
@@ -169,7 +174,15 @@
             "Marble Vel Y",
             "Marble Motion 1",
             "Pause State",
-            "Prev Pause State"
+            "Prev Pause State",
+            "Marble Vel X Hi",
+            "Marble Vel Y Hi",
+            "Marble Motion 2",
+            "Marble Vel Z",
+            "Marble Vel Z Hi",
+            "Marble Fall Counter",
+            "Marble Airborne Flag",
+            "Marble In Catapult"
         ],
         "Rules": [
             {
