@@ -105,6 +105,13 @@ test('DocsExamples',
       suite : [ 'docs', 'TestEmulator' ])
 
 # Core correctness: optimality + save-solution + reproduction + determinism + differential equivalence
+test('gridWalker_reference_floor',
+      bash,
+      workdir : meson.current_source_dir() + '/testEmulator',
+      timeout: testTimeout,
+      args : [ 'checkReferenceFloor.sh', jaffar.full_path(), jaffarPlayer.full_path() ],
+      suite : [ 'runs', 'TestEmulator', 'gridWalker' ])
+
 test('gridWalker_optimal',
       bash,
       workdir : meson.current_source_dir() + '/testEmulator',
